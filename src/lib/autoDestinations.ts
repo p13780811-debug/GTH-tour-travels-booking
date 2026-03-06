@@ -21,8 +21,7 @@ export function generateDestinations() {
             description: `Discover ${name}. Compare hotels, tours and travel deals.`,
 
             // ✅ AUTO IMAGE (never blank)
-            heroImage: `https://picsum.photos/seed/${slug}/1600/900`,
-
+            heroImage: `https://picsum.photos/seed/${slug}-travel-hotel-city/1600/900`,
             featuredHotel: {
                 name: `${name} Grand Resort`,
                 location: name,

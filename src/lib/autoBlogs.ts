@@ -14,7 +14,7 @@ export function generateBlogs() {
             slug: `${city}-travel-guide`,
             title: `${name} Travel Guide 2026`,
             description: `Complete travel guide for ${name}. Best hotels, attractions and travel tips.`,
-            image: "https://source.unsplash.com/1200x800/?jaipur,travel"
+            image: "https://picsum.photos/seed/${slug}-travel-blog/1200/800"
         }
 
     })
