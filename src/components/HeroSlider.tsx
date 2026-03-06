@@ -1,5 +1,6 @@
 "use client"
 
+import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react"
 
 const slides = [
@@ -19,6 +20,22 @@ const slides = [
 
 export default function HeroSlider() {
     const [current, setCurrent] = useState(0)
+
+    // --- GTH PRO Search Logic Start ---
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+
+    const handleSearch = async (query: string) => {
+        if (query.length < 2) {
+            setSearchResults([]);
+            return;
+        }
+        const { data } = await supabase
+            .from('destinations')
+            .select('*')
+            .ilike('name', `%${query}%`);
+        setSearchResults(data || []);
+    };
+    // --- GTH PRO Search Logic End ---
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -58,8 +75,28 @@ export default function HeroSlider() {
                     <input
                         type="text"
                         placeholder="Destination"
-                        className="flex-1 px-4 py-3 rounded-lg bg-black text-white border border-yellow-500/30 focus:outline-none focus:border-yellow-400"
+                        className="flex-1 px-4 py-3 rounded-lg bg-black text-white border border-yellow-500/30 outline-none focus:border-yellow-500"
+                        onChange={(e) => handleSearch(e.target.value)}
                     />
+                    {/* GTH PRO Floating Results */}
+                    {searchResults.length > 0 && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-black/95 border border-yellow-500/40 backdrop-blur-2xl rounded-xl z-[999] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                            {searchResults.map((item) => (
+                                <div key={item.id} className="flex justify-between items-center p-4 hover:bg-yellow-500/10 transition-all border-b border-white/5 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-yellow-500">📍</span>
+                                        <span className="text-white font-medium">{item.name}</span>
+                                    </div>
+                                    <a
+                                        href={`${item.partner_link}&return_url=https://gthpro.com/success`}
+                                        className="bg-yellow-500 text-black text-xs font-bold px-4 py-2 rounded-lg hover:scale-105 transition-transform"
+                                    >
+                                        BOOK NOW
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <input
                         type="date"

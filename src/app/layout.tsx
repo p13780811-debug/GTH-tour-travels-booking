@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar"
 import ChatBot from "@/components/ChatBot"
+import Footer from "@/components/Footer";
 const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700", "900"],
@@ -85,7 +86,9 @@ export default function RootLayout({
 
         <Navbar />
         <ChatBot />
+
         {children}
+        <Footer />
       </body>
     </html>
   );

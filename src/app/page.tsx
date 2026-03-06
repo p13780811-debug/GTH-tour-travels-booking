@@ -1,3 +1,4 @@
+import { blogs } from "@/data/blogs"
 import Link from "next/link"
 import HeroSlider from "@/components/HeroSlider"
 import { hotels } from "@/data/hotels"
@@ -128,8 +129,8 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            {destinations.map((destination) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {destinations.slice(0, 8).map((destination) => (
               <Link
                 key={destination.slug}
                 href={`/destinations/${destination.slug}`}
@@ -161,6 +162,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="py-24 bg-black border-t border-yellow-500/10">
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="flex justify-between items-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-yellow-400">
+              Travel Guides & Tips
+            </h2>
+
+            <Link
+              href="/blog"
+              className="text-yellow-400 hover:text-yellow-300 text-sm"
+            >
+              View All →
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+
+            {blogs.slice(0, 3).map((blog) => (
+              <Link
+                key={blog.slug}
+                href={`/blog/${blog.slug}`}
+                className="group bg-[#1a1a1a] rounded-xl overflow-hidden"
+              >
+
+                <img
+                  src={blog.image}
+                  alt={blog.title}
+                  className="h-56 w-full object-cover group-hover:scale-110 transition duration-700"
+                />
+
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-yellow-400 mb-2">
+                    {blog.title}
+                  </h3>
+
+                  <p className="text-gray-400 text-sm line-clamp-2">
+                    {blog.description}
+                  </p>
+                </div>
+
+              </Link>
+            ))}
+
+          </div>
+
+        </div>
+      </section>
+
+      <section className="bg-[#111] py-20">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 text-center gap-10 px-6">
+
+          {[
+            { number: "10,000+", label: "Happy Travelers" },
+            { number: "500+", label: "Premium Hotels" },
+            { number: "120+", label: "Destinations" },
+            { number: "24/7", label: "Support" },
+          ].map((stat, index) => (
+
+            <div key={index}>
+              <h3 className="text-4xl font-bold text-yellow-400 mb-2">
+                {stat.number}
+              </h3>
+              <p className="text-gray-400">
+                {stat.label}
+              </p>
+            </div>
+
+          ))}
+
+        </div>
+      </section>
 
       {/* WHY CHOOSE US */}
       <section className="bg-gray-100 py-20 px-6">
