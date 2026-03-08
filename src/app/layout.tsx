@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar"
 import ChatBot from "@/components/ChatBot"
 import Footer from "@/components/Footer";
+
 const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700", "900"],
@@ -20,44 +21,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "GTH Luxury Travel | International Premium Travel Ecosystem",
-  description:
-    "GTH Luxury Travel is an international travel ecosystem offering premium destinations, luxury hotels, verified local guides and seamless booking experiences worldwide.",
-  keywords: [
-    "Luxury Travel",
-    "International Travel Platform",
-    "Premium Hotels",
-    "Global Travel Booking",
-    "Elite Travel Experience",
-  ],
+  description: "GTH Luxury Travel offers premium destinations and luxury hotels worldwide.",
+  // YE LINE SABSE ZAROORI HAI: Google ko rokne ke liye
+  robots: {
+    index: false,
+    follow: false,
+  },
+  keywords: ["Luxury Travel", "Premium Hotels"],
   openGraph: {
     title: "GTH Luxury Travel",
-    description:
-      "Discover premium global destinations with verified luxury hotels and elite travel experiences.",
+    description: "Premium global destinations.",
     type: "website",
   },
-}
-export const metadata2: Metadata = {
-  title: "GTH Luxury | International Travel & Hotels",
-  description:
-    "Book luxury hotels worldwide with best prices, AI travel assistant and premium destinations.",
-  keywords: [
-    "luxury hotels",
-    "international travel",
-    "beach resorts",
-    "Dubai hotels",
-    "Goa luxury stay"
-  ],
-  openGraph: {
-    title: "GTH Luxury",
-    description: "International luxury travel ecosystem",
-    url: "https://yourdomain.com",
-    siteName: "GTH Luxury",
-    locale: "en_US",
-    type: "website",
-  },
-}
+};
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -85,6 +63,7 @@ export default function RootLayout({
 
 
         <Navbar />
+        <main className="pt-10"></main>
         <ChatBot />
 
         {children}

@@ -1,8 +1,9 @@
 "use client"
 
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"
 import { useState, useEffect } from "react"
 
+import TripPlanner from "@/components/TripPlanner"
 const slides = [
     {
         image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
@@ -19,98 +20,129 @@ const slides = [
 ]
 
 export default function HeroSlider() {
+    // --- States ---
     const [current, setCurrent] = useState(0)
+    const [searchResults, setSearchResults] = useState<any[]>([])
 
-    // --- GTH PRO Search Logic Start ---
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-
+    // --- Search Logic (Original) ---
     const handleSearch = async (query: string) => {
         if (query.length < 2) {
-            setSearchResults([]);
-            return;
+            setSearchResults([])
+            return
         }
-        const { data } = await supabase
-            .from('destinations')
-            .select('*')
-            .ilike('name', `%${query}%`);
-        setSearchResults(data || []);
-    };
-    // --- GTH PRO Search Logic End ---
 
+        const { data } = await supabase
+            .from("destinations")
+            .select("*")
+            .ilike("name", `%${query}%`)
+
+        setSearchResults(data || [])
+    }
+
+    // --- Slider Interval ---
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrent((prev) => (prev + 1) % slides.length)
         }, 5000)
+
         return () => clearInterval(interval)
     }, [])
 
     return (
-        <section className="relative w-full h-screen pt-28 overflow-hidden bg-[#0a0a0a]">
+        <section className="relative w-full h-[50vh] min-h-[600px] overflow-hidden bg-[#0a0a0a]">
 
-            {/* Background */}
+            {/* Background Image Layer */}
             <div
-                className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105"
+                className="absolute inset-0  bg-cover bg-center transition-all duration-1000 scale-105"
                 style={{ backgroundImage: `url(${slides[current].image})` }}
             >
-                <div className="absolute inset-0 bg-black/70"></div>
+                {/* Overlay for Readability */}
+                <div className="absolute inset-0 bg-black/65"></div>
             </div>
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+            {/* Main Content Container */}
+            <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-between py-16">
 
-                <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-4xl font-black mb-6 tracking-wide uppercase leading-tight">
-                    <span className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-700 bg-clip-text text-transparent">
-                        {slides[current].title}
-                    </span>
-                </h1>
+                {/* SECTION 1: AI TRIP PLANNER (Top) */}
+                <div className="w-full flex justify-start">
+                    <div className="w-full max-w-2xl">
+                        {/* Aapne jo overlay code diya tha, 
+                           usse absolute hata kar yahan TripPlanner 
+                           ko wrapper mein dala hai taaki overlap na ho
+                        */}
+                        <TripPlanner />
+                    </div>
+                </div>
 
-                <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-3xl leading-relaxed">
-                    An elite international travel ecosystem connecting luxury hotels,
-                    private guides and seamless global booking experiences.
-                </p>
+                {/* SECTION 2: HERO TEXT (Middle) */}
+                <div className="flex flex-col items-center justify-center text-center">
 
-                {/* GOLD BOOKING BAR */}
-                <div className="bg-black/60 backdrop-blur-lg border border-yellow-500/40 rounded-2xl p-6 flex flex-col md:flex-row gap-4 w-full max-w-5xl shadow-[0_0_40px_rgba(255,215,0,0.15)]">
+                    <h1 className="text-4xl md:text-5xl font-black mb-6 uppercase tracking-tighter">
+                        <span className="bg-gradient-to-b from-yellow-500 bg-clip-text text-transparent drop-shadow-20xl0">
+                            {slides[current].title}
+                        </span>
+                    </h1>
 
-                    <input
-                        type="text"
-                        placeholder="Destination"
-                        className="flex-1 px-4 py-3 rounded-lg bg-black text-white border border-yellow-500/30 outline-none focus:border-yellow-500"
-                        onChange={(e) => handleSearch(e.target.value)}
-                    />
-                    {/* GTH PRO Floating Results */}
-                    {searchResults.length > 0 && (
-                        <div className="absolute top-full left-0 w-full mt-2 bg-black/95 border border-yellow-500/40 backdrop-blur-2xl rounded-xl z-[999] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                            {searchResults.map((item) => (
-                                <div key={item.id} className="flex justify-between items-center p-4 hover:bg-yellow-500/10 transition-all border-b border-white/5 last:border-0">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-yellow-500">📍</span>
-                                        <span className="text-white font-medium">{item.name}</span>
-                                    </div>
-                                    <a
-                                        href={`${item.partner_link}&return_url=https://gthpro.com/success`}
-                                        className="bg-yellow-500 text-black text-xs font-bold px-4 py-2 rounded-lg hover:scale-105 transition-transform"
-                                    >
-                                        BOOK NOW
-                                    </a>
+                    <p className="text-sm md:text-xl text-gray-200 max-w-3xl leading-relaxed font-medium drop-shadow-lg">
+                        Discover curated luxury hotels, private guides and elite global travel
+                        experiences through the GTH international ecosystem.
+                    </p>
+
+                </div>
+
+                {/* SECTION 3: SEARCH BAR (Bottom Wide) */}
+                <div className="w-full">
+
+                    <div className="bg-black/65 backdrop-blur-2xl border border-yellow-500/25 rounded-2xl p-3 flex flex-col md:flex-row gap-4 w-full shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+
+                        {/* Destination Input */}
+                        <div className="relative flex-[2.5]">
+                            <input
+                                type="text"
+                                placeholder="Search destination..."
+                                className="w-full px-5 py-4 rounded-xl bg-white/5 text-white border border-white/10 focus:border-yellow-500/60 outline-none transition-all placeholder:text-gray-500"
+                                onChange={(e) => handleSearch(e.target.value)}
+                            />
+
+                            {/* Search Dropdown */}
+                            {searchResults.length > 0 && (
+                                <div className="absolute bottom-full left-0 right-0 mb-4 bg-black/95 border border-yellow-500/40 backdrop-blur-2xl rounded-2xl z-[999] max-h-60 overflow-y-auto shadow-2xl">
+                                    {searchResults.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex justify-between items-center p-4 hover:bg-yellow-500/10 transition border-b border-white/5 last:border-0"
+                                        >
+                                            <span className="text-white font-bold">{item.name}</span>
+                                            <a
+                                                href={`/destinations/${item.slug}`}
+                                                className="bg-yellow-500 text-black text-[10px] font-black px-4 py-2 rounded-lg uppercase tracking-widest"
+                                            >
+                                                Book Now
+                                            </a>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
-                    )}
 
-                    <input
-                        type="date"
-                        className="flex-1 px-4 py-3 rounded-lg bg-black text-white border border-yellow-500/30 focus:outline-none focus:border-yellow-400"
-                    />
+                        {/* Date Inputs */}
+                        <div className="flex flex-1 gap-3">
+                            <input
+                                type="date"
+                                className="flex-1 px-4 py-4 rounded-xl bg-white/5 text-white border border-white/10 text-xs outline-none focus:border-yellow-500/40"
+                            />
+                            <input
+                                type="date"
+                                className="flex-1 px-4 py-4 rounded-xl bg-white/5 text-white border border-white/10 text-xs outline-none focus:border-yellow-500/40"
+                            />
+                        </div>
 
-                    <input
-                        type="date"
-                        className="flex-1 px-4 py-3 rounded-lg bg-black text-white border border-yellow-500/30 focus:outline-none focus:border-yellow-400"
-                    />
+                        {/* Search Button */}
+                        <button className="px-12 py-4 rounded-xl font-black text-black bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 transition-all shadow-xl uppercase text-xs tracking-[0.2em] active:scale-95">
+                            Search Hotels
+                        </button>
 
-                    <button className="px-8 py-3 rounded-lg font-semibold text-black bg-gradient-to-r from-yellow-400 to-yellow-600 hover:scale-105 transition">
-                        Book Now
-                    </button>
+                    </div>
                 </div>
 
             </div>

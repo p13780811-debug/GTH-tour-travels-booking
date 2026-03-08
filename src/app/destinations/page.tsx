@@ -25,9 +25,9 @@ export default function DestinationsPage() {
                     <LuxuryCard
                         key={city.slug}
                         title={city.name}
-                        description={city.description || `Explore luxury stays in ${city.name}`}
+                        description={city.description}
                         price={city.price || "4,999"}
-                        image={city.image || "/images/placeholder.jpg"}
+                        image={city.heroImage || `https://images.unsplash.com/photo-XXXX?auto=format&fit=crop&w=800&q=80`}
                         slug={city.slug}
                     />
                 ))}
