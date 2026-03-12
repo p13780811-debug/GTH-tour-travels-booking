@@ -10,15 +10,18 @@ export async function POST(req: Request) {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + process.env.GEMINI_API_KEY,
             {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     contents: [
                         {
                             parts: [
                                 {
                                     text: `You are an expert luxury travel agent. 
-                  Create a travel itinerary with flights, hotels and activities.
-                  User request: ${message}`
+Create a travel itinerary with flights, hotels and activities.
+
+User request: ${message}`
                                 }
                             ]
                         }

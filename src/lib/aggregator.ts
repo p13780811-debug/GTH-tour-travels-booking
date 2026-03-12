@@ -1,39 +1,33 @@
-export const fetchGTHData = async (query: string) => {
+import { generateHotels } from "./autoHotels"
+
+export const fetchGTHData = async (city: string) => {
+
     try {
-        const token = process.env.NEXT_PUBLIC_TRAVELPAYOUTS_API_TOKEN;
-        const marker = process.env.NEXT_PUBLIC_TRAVELPAYOUTS_MARKER;
 
-        // NAYA URL: Travelpayouts Hotel Search API v2/v3 logic
-        // Hum 'engine' endpoint use kar rahe hain jo sabhi programs ko aggregate karta hai
-        const response = await fetch(
-            `https://api.travelpayouts.com/v1/search_hotels_by_location?name=${query}&marker=${marker}&token=${token}`,
-            {
-                method: 'GET',
-                headers: { 'Accept-Encoding': 'gzip' },
-                next: { revalidate: 3600 }
-            }
-        );
+        // Supabase data fetch
+        const res = await fetch(`${process.env.TRAVELPAYOUTS_API_TOKEN}/api/hotels?city=${city}`, {
+            cache: "no-store"
+        })
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error("Travelpayouts API Status:", response.status);
-            throw new Error(`Connection Error: ${response.status}`);
+        if (!res.ok) {
+            console.log("Supabase API failed, using fallback")
+            return generateHotels(city)
         }
 
-        const data = await response.json();
+        const data = await res.json()
 
-        // Data mapping for your UI
-        return (data.hotels || data).map((item: any) => ({
-            id: item.id || Math.random().toString(36),
-            name: item.name || item.label,
-            description: `Luxury stay in ${query}`,
-            partner_link: `https://search.hotellook.com/?marker=${marker}&destination=${query}`,
-            price: item.price || 'Check Live',
-            currency: 'INR'
-        }));
+        if (!data || data.length === 0) {
+            return generateHotels(city)
+        }
+
+        return data
 
     } catch (error) {
-        console.error("GTH Aggregator Error:", error);
-        return [];
+
+        console.log("Aggregator fallback mode")
+
+        return generateHotels(city)
+
     }
-};
+
+}

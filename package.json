@@ -1,5 +1,6 @@
 {
   "name": "gth-ecosystem",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,11 +12,15 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.98.0",
+    "dotenv": "^17.3.1",
     "framer-motion": "^12.34.5",
+    "lucide-react": "^0.577.0",
     "next": "^15.5.12",
     "openai": "^6.25.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     const baseUrl = "https://gth-tour-travels-booking.vercel.app"
 
-    const destinationPages = destinations.map((d) => ({
+    const destinationPages = destinations.map((d: any) => ({
         url: `${baseUrl}/destinations/${d.slug}`,
         lastModified: new Date(),
         changeFrequency: "weekly" as const,

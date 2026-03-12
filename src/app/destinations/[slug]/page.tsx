@@ -1,6 +1,7 @@
-import { destinations } from "@/data/destinations"
+
 import { blogs } from "@/data/blogs"
-import { notFound } from "next/navigation"
+import { destinations as staticDestinations } from "@/data/destinations"
+import { createClient } from "@supabase/supabase-js"
 
 import HeroSection from "@/components/destination/HeroSection"
 import ContentSection from "@/components/destination/ContentSection"
@@ -9,13 +10,69 @@ import ActivitySection from "@/components/destination/ActivitySection"
 import BlogSection from "@/components/destination/BlogSection"
 import RelatedSection from "@/components/destination/RelatedSection"
 
-export default async function DestinationPage({ params }: any) {
-    // Params ko await kiya taaki slug mil sake
-    const { slug } = await params;
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-    const destination = destinations.find(d => d.slug === slug);
+export default async function DestinationPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>
+}) {
 
-    if (!destination) return notFound();
+    const { slug } = await params
+
+    // slug → city
+    const city = slug.split("-")[0].toLowerCase()
+
+    // fetch destination
+    const { data: destinationData } = await supabase
+        .from("destinations")
+        .select("*")
+        .ilike("name", city)
+        .maybeSingle()
+
+    // fetch hotels
+    const { data: hotels } = await supabase
+        .from("hotels")
+        .select("*")
+        .ilike("city", city)
+
+    // fallback static data
+    const fallback: any = staticDestinations.find(
+        (d: any) => d.slug === slug
+    )
+
+    console.log("CITY:", city)
+    console.log("HOTELS:", hotels)
+
+    const destination: any = {
+        slug,
+
+        name:
+            destinationData?.name ||
+            fallback?.name ||
+            city.charAt(0).toUpperCase() + city.slice(1),
+
+        description:
+            destinationData?.description ||
+            fallback?.description ||
+            "",
+
+        heroImage:
+            destinationData?.image_url ||
+            fallback?.heroImage ||
+            "/images/default-city.jpg",
+
+        partnerLink:
+            destinationData?.partner_link || null,
+
+        hotels: hotels || [],
+
+        activities:
+            fallback?.activities || []
+    }
 
     return (
         <div className="bg-black text-white">
@@ -35,3 +92,4 @@ export default async function DestinationPage({ params }: any) {
         </div>
     )
 }
+

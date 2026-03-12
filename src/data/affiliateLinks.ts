@@ -1,10 +1,13 @@
-
 export const affiliateLinks: Record<string, string> = {
 
-    goa: "https://your-affiliate-link.com/goa",
-    dubai: "https://your-affiliate-link.com/dubai",
-    manali: "https://your-affiliate-link.com/manali",
-    jaipur: "https://your-affiliate-link.com/jaipur",
-    digha: "https://your-affiliate-link.com/digha",
-    darjeeling: "https://your-affiliate-link.com/darjeeling",
+    dubai: "https://tp.media/r?marker=417668&u=https://www.hotellook.com/?destination=dubai",
+
+    goa: "https://tp.media/r?marker=417668&u=https://www.hotellook.com/?destination=goa",
+
+    manali: "https://klook.tpo.lv/IKb6eSUe/manali",
+
+    jaipur: "https://klook.tpo.lv/IKb6eSUe/jaipur",
+
+    digha: "https://tp.media/r?marker=417668&u=https://www.hotellook.com/?destination=digha"
+
 }

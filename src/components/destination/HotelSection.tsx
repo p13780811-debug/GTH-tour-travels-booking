@@ -2,44 +2,47 @@ import { generateHotels } from "@/lib/autoHotels"
 
 export default function HotelSection({ destination }: any) {
 
-    const hotels = generateHotels(destination.slug).slice(0, 4)
-
     return (
 
-        <section className="max-w-7xl mx-auto px-6 py-20">
+        <section className="max-w-7xl mx-auto py-20 px-6">
 
-            <h2 className="text-3xl font-bold text-yellow-400 mb-10">
-                Featured Hotels
+            <h2 className="text-3xl font-bold mb-10">
+                Best Hotels in {destination.name}
             </h2>
 
-            <div className="grid md:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
 
-                {hotels.map((hotel: any) => (
+                {destination.hotels?.map((hotel: any, i: number) => (
 
-                    <div
-                        key={hotel.id}
-                        className="relative group rounded-xl overflow-hidden"
-                    >
+                    <div key={i} className="bg-zinc-900 rounded-xl overflow-hidden">
 
                         <img
-                            src={hotel.images[0]}
-                            className="h-40 w-full object-cover group-hover:scale-110 transition"
+                            src={hotel.image_url}
+                            alt={hotel.name}
+                            className="w-full h-56 object-cover"
                         />
 
-                        <div className="absolute inset-0 bg-black/50" />
+                        <div className="p-6">
 
-                        <div className="absolute bottom-4 left-4">
-
-                            <h3 className="text-white text-sm">
+                            <h3 className="text-xl font-semibold mb-2">
                                 {hotel.name}
                             </h3>
 
-                            <a
-                                href={`/hotels/${hotel.slug}`}
-                                className="text-yellow-400 text-xs"
-                            >
-                                View →
-                            </a>
+                            <p className="text-gray-400 mb-4">
+                                {hotel.price}
+                            </p>
+
+                            {hotel.affiliate_link && (
+
+                                <a
+                                    href={hotel.affiliate_link}
+                                    target="_blank"
+                                    className="inline-block bg-yellow-500 text-black px-5 py-2 rounded-lg"
+                                >
+                                    View Deal
+                                </a>
+
+                            )}
 
                         </div>
 

@@ -160,6 +160,21 @@ export function generateDestinations() {
             price: `₹${(2000 + i * 700).toLocaleString()}`
         }))
 
+        const activities = [
+            {
+                name: `${name} City Tour`,
+                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+            },
+            {
+                name: `${name} Local Food Tour`,
+                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+            },
+            {
+                name: `${name} Night Experience`,
+                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+            }
+        ]
+
         const keyword = imageMap[slug] || `${slug}-travel`
 
         return {
@@ -178,6 +193,8 @@ export function generateDestinations() {
             },
 
             hotels,
+
+            activities,
 
             guides: [
                 { name: `${name} Local Guide`, experience: "5 years experience" },

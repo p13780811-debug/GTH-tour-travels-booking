@@ -2,149 +2,146 @@
 
 import { supabase } from "@/lib/supabase"
 import { useState, useEffect } from "react"
-
 import TripPlanner from "@/components/TripPlanner"
+
 const slides = [
     {
-        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        video: "/gth-main-tour.mp4", // Aapka social media wala video path
         title: "Luxury Beach Escape",
+        subtitle: "Experience the pinnacle of coastal elegance."
     },
     {
-        image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        video: "gth-main-tour.mp4",
         title: "Elite Hotel Experience",
+        subtitle: "Redefining comfort in the world's finest suites."
     },
     {
-        image: "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
+        video: "gth-main-tour.mp4",
         title: "Global Travel Redefined",
-    },
-]
+        subtitle: "Your gateway to the international elite ecosystem."
+    }
+];
+
 
 export default function HeroSlider() {
-    // --- States ---
     const [current, setCurrent] = useState(0)
     const [searchResults, setSearchResults] = useState<any[]>([])
 
-    // --- Search Logic (Original) ---
     const handleSearch = async (query: string) => {
         if (query.length < 2) {
             setSearchResults([])
             return
         }
-
         const { data } = await supabase
             .from("destinations")
             .select("*")
             .ilike("name", `%${query}%`)
-
         setSearchResults(data || [])
     }
 
-    // --- Slider Interval ---
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrent((prev) => (prev + 1) % slides.length)
-        }, 5000)
-
+        }, 8000) // 8 seconds for video flow
         return () => clearInterval(interval)
     }, [])
 
     return (
-        <section className="relative w-full h-[50vh] min-h-[600px] overflow-hidden bg-[#0a0a0a]">
+        <section className="relative w-full h-[85vh] min-h-[750px] overflow-hidden bg-black">
 
-            {/* Background Image Layer */}
-            <div
-                className="absolute inset-0  bg-cover bg-center transition-all duration-1000 scale-105"
-                style={{ backgroundImage: `url(${slides[current].image})` }}
-            >
-                {/* Overlay for Readability */}
-                <div className="absolute inset-0 bg-black/65"></div>
+            {/* --- VIDEO BACKGROUND LAYER --- */}
+            <div className="absolute inset-0 z-0">
+                <video
+                    key={slides[current].video}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover opacity-60 scale-105 transition-all duration-1000"
+                >
+                    <source src={slides[current].video} type="video/mp4" />
+                </video>
+                {/* Vignette Overlay for Depth */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
             </div>
 
-            {/* Main Content Container */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-between py-16">
+            {/* --- MAIN CONTENT --- */}
+            <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-between py-12">
 
-                {/* SECTION 1: AI TRIP PLANNER (Top) */}
-                <div className="w-full flex justify-start">
-                    <div className="w-full max-w-2xl">
-                        {/* Aapne jo overlay code diya tha, 
-                           usse absolute hata kar yahan TripPlanner 
-                           ko wrapper mein dala hai taaki overlap na ho
-                        */}
+                {/* TOP: AI Trip Planner with Glass Effect */}
+                <div className="w-full animate-fade-in-down">
+                    <div className="max-w-xl backdrop-blur-md bg-black/20 p-1 rounded-3xl border border-white/5 shadow-2xl">
                         <TripPlanner />
                     </div>
                 </div>
 
-                {/* SECTION 2: HERO TEXT (Middle) */}
-                <div className="flex flex-col items-center justify-center text-center">
+                {/* MIDDLE: Hero Text with Premium Typography */}
+                <div className="flex flex-col items-center text-center space-y-4">
+                    <span className="text-[#d4af37] font-bold tracking-[0.6em] text-[20px] uppercase animate-pulse">
+                        GTH Pro Exclusive
+                    </span>
 
-                    <h1 className="text-4xl md:text-5xl font-black mb-6 uppercase tracking-tighter">
-                        <span className="bg-gradient-to-b from-yellow-500 bg-clip-text text-transparent drop-shadow-20xl0">
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
+                        <span className="bg-gradient-to-r from-[#d4af37] via-yellow-200 to-[#8a6d3b] bg-clip-text text-transparent filter drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
                             {slides[current].title}
                         </span>
                     </h1>
 
-                    <p className="text-sm md:text-xl text-gray-200 max-w-3xl leading-relaxed font-medium drop-shadow-lg">
-                        Discover curated luxury hotels, private guides and elite global travel
-                        experiences through the GTH international ecosystem.
+                    <p className="text-sm md:text-lg text-gray-400 max-w-2xl font-light tracking-wide leading-relaxed">
+                        {slides[current].subtitle}
                     </p>
-
                 </div>
 
-                {/* SECTION 3: SEARCH BAR (Bottom Wide) */}
-                <div className="w-full">
-
-                    <div className="bg-black/65 backdrop-blur-2xl border border-yellow-500/25 rounded-2xl p-3 flex flex-col md:flex-row gap-4 w-full shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+                {/* BOTTOM: Ultimate Search Bar */}
+                <div className="w-full pb-8">
+                    <div className="backdrop-blur-3xl bg-white/5 border border-white/10 rounded-[2.5rem] p-4 flex flex-col md:flex-row gap-4 shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
 
                         {/* Destination Input */}
-                        <div className="relative flex-[2.5]">
+                        <div className="relative flex-[2]">
+                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-yellow-500/50">📍</div>
                             <input
                                 type="text"
-                                placeholder="Search destination..."
-                                className="w-full px-5 py-4 rounded-xl bg-white/5 text-white border border-white/10 focus:border-yellow-500/60 outline-none transition-all placeholder:text-gray-500"
+                                placeholder="Where to next?"
+                                className="w-full pl-12 pr-5 py-5 rounded-3xl bg-white/5 text-white border border-white/5 focus:border-[#d4af37]/50 outline-none transition-all placeholder:text-gray-500 text-sm"
                                 onChange={(e) => handleSearch(e.target.value)}
                             />
 
-                            {/* Search Dropdown */}
+                            {/* Dropdown Polish */}
                             {searchResults.length > 0 && (
-                                <div className="absolute bottom-full left-0 right-0 mb-4 bg-black/95 border border-yellow-500/40 backdrop-blur-2xl rounded-2xl z-[999] max-h-60 overflow-y-auto shadow-2xl">
+                                <div className="absolute bottom-full left-0 right-0 mb-6 bg-black/90 border border-[#d4af37]/30 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(212,175,55,0.2)]">
                                     {searchResults.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex justify-between items-center p-4 hover:bg-yellow-500/10 transition border-b border-white/5 last:border-0"
-                                        >
-                                            <span className="text-white font-bold">{item.name}</span>
-                                            <a
-                                                href={`/destinations/${item.slug}`}
-                                                className="bg-yellow-500 text-black text-[10px] font-black px-4 py-2 rounded-lg uppercase tracking-widest"
-                                            >
-                                                Book Now
-                                            </a>
-                                        </div>
+                                        <a key={item.id} href={`/destinations/${item.slug}`} className="flex justify-between items-center p-5 hover:bg-[#d4af37]/10 transition-colors group">
+                                            <span className="text-white font-medium">{item.name}</span>
+                                            <span className="text-[#d4af37] text-[10px] font-black group-hover:translate-x-1 transition-transform uppercase">Visit →</span>
+                                        </a>
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        {/* Date Inputs */}
-                        <div className="flex flex-1 gap-3">
-                            <input
-                                type="date"
-                                className="flex-1 px-4 py-4 rounded-xl bg-white/5 text-white border border-white/10 text-xs outline-none focus:border-yellow-500/40"
-                            />
-                            <input
-                                type="date"
-                                className="flex-1 px-4 py-4 rounded-xl bg-white/5 text-white border border-white/10 text-xs outline-none focus:border-yellow-500/40"
-                            />
+                        {/* Dates */}
+                        <div className="flex flex-1 gap-2">
+                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl bg-white/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all custom-calendar-icon" />
+                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl bg-white/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all" />
                         </div>
 
                         {/* Search Button */}
-                        <button className="px-12 py-4 rounded-xl font-black text-black bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 transition-all shadow-xl uppercase text-xs tracking-[0.2em] active:scale-95">
-                            Search Hotels
+                        <button className="flex-1 px-10 py-5 rounded-3xl font-black text-black bg-gradient-to-r from-[#d4af37] to-[#8a6d3b] hover:brightness-125 transition-all shadow-[0_10px_30px_rgba(212,175,55,0.3)] uppercase text-[10px] tracking-widest active:scale-95">
+                            Search Inventory
                         </button>
-
                     </div>
                 </div>
 
+            </div>
+
+            {/* Slider Dots */}
+            <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-20">
+                {slides.map((_, i) => (
+                    <div
+                        key={i}
+                        className={`h-12 w-1 transition-all duration-500 ${current === i ? 'bg-[#d4af37] shadow-[0_0_15px_#d4af37]' : 'bg-white/20'}`}
+                    />
+                ))}
             </div>
         </section>
     )

@@ -5,6 +5,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar"
 import ChatBot from "@/components/ChatBot"
 import Footer from "@/components/Footer";
+import MobileNav from "@/components/MobileNav";
+
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -22,9 +24,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gth-ecosystem.vercel.app"),
+
   title: "GTH Luxury Travel | International Premium Travel Ecosystem",
   description: "GTH Luxury Travel offers premium destinations and luxury hotels worldwide.",
-  // YE LINE SABSE ZAROORI HAI: Google ko rokne ke liye
   robots: {
     index: false,
     follow: false,
@@ -35,39 +38,44 @@ export const metadata: Metadata = {
     description: "Premium global destinations.",
     type: "website",
   },
+
+
+
 };
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${cinzel.className} bg-black text-white`}>
-
 
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"
         />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXX');
-    `,
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XXXXXXX');
+            `,
           }}
         />
 
-
         <Navbar />
-        <main className="pt-10"></main>
-        <ChatBot />
 
-        {children}
+        <main className="pt-10">
+          {children}
+        </main>
+        <MobileNav />
+        <ChatBot />
         <Footer />
+
       </body>
     </html>
   );

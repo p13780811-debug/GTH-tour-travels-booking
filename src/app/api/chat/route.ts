@@ -15,7 +15,7 @@ export async function POST(req: Request) {
                 },
                 body: JSON.stringify({
                     contents: [
-                        ...history,
+                        ...(history || []),
                         {
                             role: "user",
                             parts: [{ text: message }]

@@ -4,7 +4,7 @@ import Link from "next/link"
 export default function RelatedSection({ currentSlug }: any) {
 
     const related = destinations
-        .filter(d => d.slug !== currentSlug)
+        .filter((d: any) => d.slug !== currentSlug)
         .slice(0, 3)
 
     return (
