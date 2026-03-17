@@ -2,6 +2,7 @@ import fs from "fs"
 import path from "path"
 import https from "https"
 import dotenv from "dotenv"
+
 dotenv.config({ path: ".env.local" })
 
 console.log("PEXELS KEY:", process.env.PEXELS_KEY)

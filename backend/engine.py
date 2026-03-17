@@ -3,7 +3,9 @@ from cities import cities
 from ai_engine import generate_city_batch
 from supabase_db import save_destination
 from image_api import get_city_image
-BATCH_SIZE = 15
+from urllib.parse import quote
+
+BATCH_SIZE = 50
 
 print("Cities Loaded:", cities)
 print("🚀 GTH Engine Started\n")
@@ -20,7 +22,6 @@ for city in cities:
 
         ai_data = generate_city_batch(batch)
 
-        # safety check
         if not ai_data:
             print("❌ AI returned no valid data — skipping batch")
             batch = []
@@ -28,13 +29,25 @@ for city in cities:
 
         for item in ai_data:
 
+            # slug generate
+            slug = item["name"].lower().replace(" ", "-")
+
+            # 🔹 Fetch image from Pexels
+            image = get_city_image(item["name"])
+
+            # 🔹 Fallback image if API fails
+            if not image:
+                image = "https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg"
+
             data = {
                 "name": item["name"],
+                "slug": slug,
+                "country": "Unknown",
                 "description": item["description"],
                 "seo_title": item["seo_title"],
                 "seo_description": item["seo_description"],
-                "image_url": f"get_city_image(city){item['name'].lower().replace(' ','-')}.jpg",
-                "partner_link": f"https://tp.media/r?marker=YOURID&city={item['name']}"
+                "image_url": image,
+                "partner_link": f"https://tp.media/r?marker=417668&city={quote(item['name'])}"
             }
 
             save_destination(data)

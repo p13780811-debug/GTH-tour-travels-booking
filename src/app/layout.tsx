@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar"
 import ChatBot from "@/components/ChatBot"
 import Footer from "@/components/Footer";
 import MobileNav from "@/components/MobileNav";
-
+import TravelMasterTemplate from "@/components/templates/TravelMasterTemplate"
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -69,6 +69,9 @@ export default function RootLayout({
 
         <Navbar />
 
+
+
+
         <main className="pt-10">
           {children}
         </main>
@@ -80,3 +83,9 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+
+
+
+

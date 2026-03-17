@@ -18,7 +18,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
             lastModified: new Date(),
             priority: 1
         },
+
+        {
+            url: `${baseUrl}/mega-aggregator`,
+            lastModified: new Date(),
+        },
         ...destinationPages
+
+
     ]
 
 }

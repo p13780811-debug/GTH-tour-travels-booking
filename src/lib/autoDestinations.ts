@@ -1,6 +1,6 @@
 import { cities } from "@/data/cities"
 
-const imageMap: Record<string, string> = {
+export const imageMap: Record<string, string> = {
 
 
     // 🇮🇳 INDIA
@@ -163,15 +163,15 @@ export function generateDestinations() {
         const activities = [
             {
                 name: `${name} City Tour`,
-                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+                image: `/images/cities/${slug}.jpg`
             },
             {
                 name: `${name} Local Food Tour`,
-                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+                image: `/images/cities/${slug}.jpg`
             },
             {
                 name: `${name} Night Experience`,
-                image: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=800&q=80`
+                image: `/images/cities/${slug}.jpg`
             }
         ]
 
@@ -184,7 +184,7 @@ export function generateDestinations() {
 
 
 
-            heroImage: `https://images.unsplash.com/${imageMap[slug] || "photo-1501785888041-af3ef285b470"}?auto=format&fit=crop&w=1600&q=80`,
+            heroImage: `/images/cities/${slug}.jpg`,
             featuredHotel: {
                 name: `${name} Grand Resort`,
                 location: name,

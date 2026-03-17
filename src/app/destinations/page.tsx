@@ -56,25 +56,6 @@ export default async function DestinationsPage() {
 
             </div>
 
-            {/* Floating Badge */}
-
-            <div className="fixed bottom-10 right-10 z-50">
-
-                <div className="bg-black/50 backdrop-blur-md border border-yellow-500/30 p-4 rounded-2xl flex items-center gap-3 shadow-2xl">
-
-                    <span className="text-2xl animate-pulse">💛</span>
-
-                    <p className="text-[10px] text-white font-bold leading-tight">
-                        1% OF ALL BOOKINGS<br />
-                        <span className="text-yellow-500">
-                            GO TO EDUCATION FUND
-                        </span>
-                    </p>
-
-                </div>
-
-            </div>
-
         </main>
     )
 }

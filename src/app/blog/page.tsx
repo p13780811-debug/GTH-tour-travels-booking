@@ -4,6 +4,13 @@ import { blogs } from "@/data/blogs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+
+const blogImages = [
+    "/images/blogs/manali.jpg",
+    "/images/blogs/jaipur.jpg",
+    "/images/blogs/goa.jpg"
+]
+
 export default function BlogList() {
     return (
         <main className="min-h-screen bg-[#050505] text-white">
@@ -12,6 +19,7 @@ export default function BlogList() {
             {/* --- HERO SECTION: High Definition Impact --- */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-24">
                 {/* Background HD Image - Ab link ekdum clean hai */}
+
                 <Image
                     src="https://images.unsplash.com/photo-1569949381669-ecf31ae8e613?q=80&w=2000&auto=format&fit=crop"
                     alt="Luxury Travel"

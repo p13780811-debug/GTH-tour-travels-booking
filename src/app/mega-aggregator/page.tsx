@@ -1,0 +1,362 @@
+// File: src/app/mega-aggregator/page.tsx
+import React from "react";
+import Image from "next/image";
+import HotelGrid from "@/components/cards/HotelGrid";
+import HeroSearch from "@/components/sections/HeroSearch"
+import HotelQuadSection from "@/components/sections/hotelpro/HotelQuadSection";
+import { goaData, parisData } from "@/data/hotelData";
+
+
+export const metadata = {
+    title: "Luxury Travel Marketplace | Flights Hotels Tours | GTH",
+    description:
+        "Compare flights, luxury hotels, tours and travel services worldwide with GTH Travel marketplace.",
+    openGraph: {
+        title: "GTH Luxury Travel Marketplace",
+        description: "Compare travel services globally",
+        images: ["/images/og/gth-travel.jpg"],
+    },
+};
+const partners = [
+    { name: "Global Bookings", original: "Trip.com", reward: "1-5.5%", description: "Worldwide stay network", image: "/images/mega/tripcom.jpg", link: "https://www.agoda.com/Mega_Sale?ds=vg6cMO3W6BdKIZNe" },
+    { name: "Experience Hub", original: "Klook", reward: "2-5%", description: "Curated local adventures", image: "/images/mega/klook.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
+    { name: "Elite Transfers", original: "Welcome Pickups", reward: "8-9%", description: "VIP airport logistics", image: "/images/mega/welcome.jpg", link: "https://tpo.lv/GFuzmgYk" },
+    { name: "Sky Rights", original: "AirHelp", reward: "15-16.6%", description: "Legal flight protection", image: "/images/mega/airhelp.jpg", link: "https://airhelp.tpo.lv/W9baN8JY" },
+    { name: "Safe Guard", original: "EKTA", reward: "20%", description: "Global health & safety cover", image: "/images/mega/ekta.jpg", link: "https://ektatraveling.tpo.lv/zRNsrOPf" },
+];
+
+const categories = [
+    { name: "Flights", description: "Compare & book flights worldwide", image: "/images/mega/flights.jpg" },
+    { name: "Hotels", description: "Luxury stays & deals", image: "/images/mega/hotels.jpg" },
+    { name: "Tours & Activities", description: "Explore curated experiences", image: "/images/mega/tours.jpg" },
+    { name: "Transfers & Rentals", description: "Airport & local transport", image: "/images/mega/transfers.jpg" },
+    { name: "Insurance", description: "Travel safely with coverage", image: "/images/mega/insurance.jpg" },
+];
+
+const featuredCities = [
+    { name: "Paris", image: "/images/cities/paris.jpg" },
+    { name: "Goa", image: "/images/cities/goa.jpg" },
+    { name: "Bali", image: "/images/cities/bali.jpg" },
+    { name: "Dubai", image: "/images/cities/dubai.jpg" },
+    { name: "Tokyo", image: "/images/cities/tokyo.jpg" },
+];
+
+export default function MegaAggregator() {
+    console.log("Goa Data:", goaData);
+
+    return (
+        <div className="w-full">
+            {/* Hero Section with video */}
+            <section className="relative -mt-8 w-full h-[65vh] overflow-hidden group">
+                {/* Background Video - Height reduced to 60vh */}
+                <video
+                    className="absolute inset-0 w-full h-full object-cover"
+                    autoPlay loop muted playsInline
+                    src="/hero video.mp4"
+                />
+
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white p-4">
+
+                    {/* Heading - Size reduced to 4xl/5xl */}
+                    <h1 className="text-2xl md:text-3xl font-black mb-2 flex text-center uppercase tracking-tight">
+                        Luxury <span className="text-skyBlue">Travel</span> Portal
+                    </h1>
+
+                    <p className="text-sm md:text-base text-center mb-8 font-medium opacity-80 tracking-wide">
+                        Flights • Hotels • Tours • Insurance — All in one place.
+                    </p>
+                    <HeroSearch />
+
+
+
+
+
+
+
+
+                    {/* Small Trust Markers */}
+                    <div className="mt-8 flex gap-6 text-[9px] font-bold uppercase tracking-widest opacity-60">
+                        <span>Verified APIs</span>
+                        <span>5M+ Properties</span>
+                        <span>24/7 Support</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* Goa ka Jhakkas Section */}
+            <HotelQuadSection {...goaData} />
+
+            {/* Featured Cities */}
+            <section className="py-5 bg-gray-50 px-8">
+                <h2 className="text-3xl font-bold text-black text-center mb-10">Featured Destinations</h2>
+                <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    {featuredCities.map((city, idx) => (
+                        <div
+                            key={idx}
+                            className="relative rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition"
+                        >
+                            <Image src={city.image} alt={city.name} width={400} height={250} className="object-cover w-full h-48" />
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-3 text-center">
+                                <h3 className="font-semibold text-lg">{city.name}</h3>
+                                <a href={`/destinations/${city.name.toLowerCase()}`}>
+                                    <button className="mt-2 bg-skyBlue px-4 py-2 rounded-lg text-white hover:bg-skyPink transition">
+                                        Explore
+                                    </button>
+                                </a>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+
+            {/* Paris ka Cinematic Section */}
+            <HotelQuadSection {...parisData} />
+
+
+
+
+            <section className="py-8 bg-[#050505] overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6">
+
+                    {/* Minimal Heading */}
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-[1px] w-6 bg-skyBlue"></div>
+                        <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">
+                            GTH <span className="text-white">Network</span>
+                        </h2>
+                    </div>
+
+                    {/* Hidden Scrollbar Container */}
+                    <div className="relative w-full">
+                        <div
+                            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-2"
+                            style={{
+                                scrollbarWidth: 'none', /* Firefox */
+                                msOverflowStyle: 'none', /* IE/Edge */
+                            }}
+                        >
+                            {partners.map((p, idx) => (
+                                <div
+                                    key={idx}
+                                    className="relative min-w-[180px] md:min-w-[232px] aspect-[16/9] rounded-xl overflow-hidden group">
+                                    {/* IMAGE: Fit for Luxury - Top focused so names aren't cut */}
+                                    <Image
+                                        src={p.image}
+                                        alt={p.name}
+                                        fill
+                                        className="object-cover object-top opacity-80 group-hover:scale-110 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 180px, 232px"
+                                        unoptimized
+                                    />
+
+                                    {/* Premium White-Label Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-4">
+                                        <h3 className="font-bold text-white text-xs tracking-tight mb-0.5">
+                                            GTH {p.name.split('.')[0]}
+                                        </h3>
+                                        <p className="text-[7px] text-skyBlue font-black uppercase tracking-widest mb-3">
+                                            Verified access
+                                        </p>
+                                        <a href={p.link} target="_blank" rel="nofollow sponsored">
+                                            <button className="w-full bg-white/5 backdrop-blur-md text-white text-[8px] font-black py-2 rounded-lg border border-white/10 hover:bg-skyBlue transition-all uppercase">
+                                                View Deal
+                                            </button>
+                                        </a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* CSS to kill the white scrollbar for Chrome/Safari */}
+
+            </section>
+
+            {/* Categories Section - FULL IMAGE MODERN LOOK */}
+            <section className="py-20 px-8 max-w-7xl mx-auto">
+                <h2 className="md:text-4xl font-black text-center gold-text uppercase leading-tight tracking-widest italic text-yellow-900">
+                    Premium Services
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {categories.map((c, idx) => (
+                        <div
+                            key={idx}
+                            className="group relative h-[350px] rounded-[2.5rem] overflow-hidden shadow-2xl cursor-pointer"
+                        >
+                            {/* BACKGROUND IMAGE - POORI COVER */}
+                            <Image
+                                src={c.image}
+                                alt={c.name}
+                                fill
+                                className="object-cover group-hover:scale-125 transition-transform duration-1000 ease-in-out"
+                                unoptimized
+                            />
+
+                            {/* PREMIUM GLASS OVERLAY */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent flex flex-col justify-end p-6 text-center">
+                                <h3 className="text-white font-black text-2xl uppercase tracking-tighter mb-2 group-hover:text-sky-400 transition-colors">
+                                    {c.name}
+                                </h3>
+                                <div className="h-0 group-hover:h-12 opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
+                                    <p className="text-gray-300 text-xs font-medium">
+                                        {c.description}
+                                    </p>
+                                </div>
+
+                                {/* BOTTOM ACCENT LINE */}
+                                <div className="w-12 h-1 bg-sky-500 mx-auto mt-4 group-hover:w-full transition-all duration-500 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+
+
+            {/* Travel Guides - Cocktail Version (Airbnb Style + Gemini Clean Look) */}
+            <section className="py-20 bg-black text-white">
+                <div className="max-w-7xl mx-auto px-8">
+                    <div className="flex flex-col items-center mb-12">
+                        <h2 className="text-4xl font-bold tracking-tight mb-4">
+                            Popular Travel Guides
+                        </h2>
+                        <div className="h-1 w-20 bg-blue-600 rounded-full"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                        {/* Goa Guide Card - Updated for Originality */}
+                        <a href="/blog/goa-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-skyBlue">
+                            <div className="relative h-64 w-full overflow-hidden">
+                                <img
+                                    // Yahan static ki jagah koi bhi popular hotel id dalo testing ke liye
+                                    src="/images/hotels/goa-1.jpg"
+                                    alt="Goa Luxury"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
+                                />
+                                {/* Live Price Tag overlay */}
+                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                                    <p className="text-[10px] font-bold text-skyBlue">LIVE DEALS FROM ₹2,499</p>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+                            </div>
+                            <div className="absolute bottom-0 p-6">
+                                <h3 className="text-xl font-bold">Goa Travel Guide</h3>
+                                <p className="text-sm text-neutral-400 mt-1 italic">Real-time luxury aggregator access</p>
+                            </div>
+                        </a>
+
+                        {/* Paris Guide Card */}
+                        <a href="/blog/paris-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                            <div className="relative h-64 w-full overflow-hidden">
+                                <img
+                                    // GOA WALA SAME FORMULA (Paris Hotel ID: 255541)
+                                    src="/images/hotels/paris-1.jpg"
+                                    alt="Paris Travel Guide"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                                    <p className="text-[10px] font-bold text-sky-400">LIVE DEALS FROM ₹12,999</p>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            </div>
+                            <div className="absolute bottom-0 p-6">
+                                <h3 className="text-xl font-bold text-white">Paris Travel Guide</h3>
+                                <p className="text-sm text-neutral-400 mt-1">Art, Romance & Cuisine</p>
+                            </div>
+                        </a>
+
+                        {/* Dubai Guide Card */}
+                        <a href="/blog/dubai-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                            <div className="relative h-64 w-full overflow-hidden">
+                                <img
+                                    // GOA WALA SAME FORMULA (Dubai Hotel ID: 16522)
+                                    src="/images/hotels/dubai-1.jpg"
+                                    alt="Dubai Travel Guide"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                                    <p className="text-[10px] font-bold text-sky-400">LIVE DEALS FROM ₹8,499</p>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            </div>
+                            <div className="absolute bottom-0 p-6">
+                                <h3 className="text-xl font-bold text-white">Dubai Travel Guide</h3>
+                                <p className="text-sm text-neutral-400 mt-1">Luxury, Desert & Skyscrapers</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            {/* Mega Deals Section - HIGH CONVERSION DESIGN */}
+            <section className="py-20 px-8 bg-white max-w-7xl mx-auto">
+                <h2 className="text-4xl font-black text-center mb-16 uppercase tracking-tighter text-gray-900">
+                    🔥 Exclusive Mega Deals
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {partners.map((p, idx) => (
+                        <div
+                            key={idx}
+                            className="group bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 flex flex-col hover:shadow-skyBlue/20 transition-all duration-500"
+                        >
+                            {/* IMAGE BOX - PERFECT FIT */}
+                            <div className="relative w-full h-56 overflow-hidden">
+                                <Image
+                                    src={p.image}
+                                    alt={p.name}
+                                    fill
+                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                    unoptimized
+                                />
+                                {/* TOP BADGE */}
+                                <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full animate-pulse">
+                                    LIMITED OFFER
+                                </div>
+                            </div>
+
+                            {/* CONTENT BOX */}
+                            <div className="p-6 flex flex-col flex-grow">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="font-black text-xl text-gray-800 leading-tight">
+                                        {p.name} <br /> <span className="text-gray-400 text-sm font-medium italic underline decoration-skyBlue">Special</span>
+                                    </h3>
+                                    <div className="bg-sky-50 p-2 rounded-lg">
+                                        <span className="text-sky-600 font-black text-xs uppercase tracking-tighter">
+                                            {p.reward}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p className="text-gray-500 text-xs mb-6 line-clamp-2">
+                                    {p.description}. Book today to claim your exclusive AI-verified travel rewards.
+                                </p>
+                                <a href={p.link} target="_blank" rel="nofollow sponsored">
+                                    <button className="mt-auto w-full bg-gray-900 group-hover:bg-sky-500 text-white font-black py-4 rounded-2xl transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                                        CLAIM DEAL
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </button>
+                                </a>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-gray-900 text-white py-10 px-8 mt-16">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p>© 2026 GTH PRO. All rights reserved.</p>
+                    <div className="flex gap-4">
+                        {partners.map((p, idx) => (
+                            <Image key={idx} src={p.image} alt={p.name} width={40} height={40} />
+                        ))}
+                    </div>
+                </div>
+            </footer>
+        </div>
+    );
+}

@@ -11,7 +11,7 @@ export default function Navbar() {
 
     return (
 
-        <nav className="fixed top-0 left-0 w-full z-50 bg-black/70 backdrop-blur-lg border-b border-yellow-500/20">
+        <nav className="sticky top-0 left-0 w-full z-50 bg-black/70 backdrop-blur-lg border-b border-yellow-500/20">
 
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
@@ -19,6 +19,7 @@ export default function Navbar() {
                 <Link href="/" className="text-2xl font-bold text-white tracking-wider">
                     GTH <span className="text-yellow-400">Luxury</span>
                 </Link>
+
 
                 {/* SEARCH */}
                 <div className="hidden md:block w-72">
