@@ -1,94 +1,130 @@
 // @ts-nocheck
-import { generateHotels } from "@/lib/autoHotels"
-import Link from "next/link"
-import HotelSearch from "@/components/HotelSearch"
+"use client";
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import HotelWidget from "@/components/HotelWidget";
+import HotelResults from "./results/HotelResults";
 
 export const dynamic = "force-dynamic"
 
-export default function HotelsPage() {
-    const mainCities = ["goa", "paris", "dubai", "jaipur"];
-    const allHotels = mainCities.flatMap(city => generateHotels(city).slice(0, 20));
-
-    // Pexels Image Generator Helper
-    // Bhai, yahan query me city name dalne se Pexels us city ki hotel wali image dega
-    const getPexelsImage = (city, index) => {
-        const keywords = ["luxury-hotel", "resort", "hotel-room", "swimming-pool"];
-        const keyword = keywords[index % keywords.length];
-        return `https://images.pexels.com/photos/${1000000 + (index * 5000)}/pexels-photo-${1000000 + (index * 5000)}.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=600&w=800`;
-        // Note: Asli automation ke liye hum Pexels API key se fetch bhi kar sakte hain, 
-        // par ye direct link method fast hai.
-    }
-
+function HotelsContent() {
+    const searchParams = useSearchParams();
+    // URL se searched city nikalna (e.g. ?city=Dubai)
+    const cityFromUrl = searchParams.get('city') || "";
+    const city = searchParams.get('city') || "Global";
     return (
         <div className="bg-[#050505] min-h-screen text-white font-sans">
-            {/* 1. Header Section - Compact for Mobile */}
-            <div className="pt-16 pb-8 px-6 text-center">
-                <div className="inline-block border-b border-yellow-500/30 pb-1 mb-4">
-                    <span className="text-yellow-500 text-[9px] font-black tracking-[0.4em] uppercase">
-                        GTS BRO EXCLUSIVE
-                    </span>
+
+            {/* --- ULTRA PRO HEADER SECTION --- */}
+            <div className="relative pt-10 pb-16 px-6">
+                <div className="max-w-7xl mx-auto">
+
+                    {/* 1. Breadcrumb (Chota sa rasta) */}
+                    <div className="flex items-center gap-2 mb-6 opacity-40">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Home</span>
+                        <span className="text-sky-500">/</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-500">Hotels</span>
+                    </div>
+
+                    {/* 2. Dynamic Title */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="space-y-2">
+                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none">
+                                Find Your <br />
+                                <span className="text-sky-500 italic">Dream Escape</span>
+                            </h1>
+                            <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em] pl-1">
+                                Results for: <span className="text-white">{city || "Global Destinations"}</span>
+                            </p>
+                        </div>
+
+                        {/* 3. Minimalist Search Input (Jo aapne manga tha) */}
+                        <div className="relative group w-full md:w-96">
+                            <input
+                                type="text"
+                                placeholder="WHERETO NEXT?"
+                                className="w-full bg-white/5 border-b-2 border-white/10 p-4 text-[10px] font-black uppercase tracking-[0.4em] text-white focus:outline-none focus:border-sky-500 transition-all placeholder:text-gray-700"
+                            />
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-sky-500 font-black text-xs hover:scale-110 transition-transform">
+                                GO
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic">
-                    World <span className="text-yellow-500">Elite</span> Stays
-                </h1>
             </div>
 
-            <main className="px-4 md:px-12 pb-20">
-                {/* 2. Search Bar - Polished */}
-                <div className="max-w-3xl mx-auto mb-12">
-                    <HotelSearch />
+            {/* --- DIVIDER LINE --- */}
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-10" />
+
+            {/* 1. Header Section - Dynamic City Name */}
+            <div className="pt-20 pb-12 px-6 text-center">
+                <div className="inline-block border-b border-yellow-500/30 pb-1 mb-4">
+                    <span className="text-yellow-500 text-[10px] font-black tracking-[0.4em] uppercase">
+                        GTH PRO LUXURY SEARCH
+                    </span>
                 </div>
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-none">
+                    {cityFromUrl ? (
+                        <>Premium Stays In <span className="text-yellow-500">{cityFromUrl}</span></>
+                    ) : (
+                        <>Find Your <span className="text-yellow-500">Elite</span> Stay</>
+                    )}
+                </h1>
+                <p className="mt-4 text-gray-500 text-xs uppercase tracking-widest font-bold">
+                    Showing real-time curated results from our global partners
+                </p>
+            </div>
 
-                {/* 3. The Grid - Now with Pexels Power */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {allHotels.map((hotel, index) => (
-                        <Link
-                            key={hotel.slug}
-                            href={`/hotels/${hotel.slug}`}
-                            className="group bg-[#0f0f0f] rounded-3xl overflow-hidden border border-white/5 hover:border-yellow-500/40 transition-all duration-500"
-                        >
-                            {/* Image Section */}
-                            <div className="relative h-56 overflow-hidden">
-                                <img
-                                    // Pexels API Se Image Link
-                                    src={hotel.image || getPexelsImage(hotel.id.split('-')[0], index)}
-                                    alt={hotel.name}
-                                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent" />
+            <main className="px-4 md:px-12 pb-20 max-w-7xl mx-auto">
 
-                                {/* Price Tag Over Image (Booking.com Style) */}
-                                <div className="absolute bottom-4 left-4 bg-yellow-500 text-black px-3 py-1 rounded-lg font-black text-sm">
-                                    ₹{hotel.price || '12,999'}
-                                </div>
-                            </div>
+                {/* 2. Real Results Section */}
+                <div className="animate-fade-in space-y-20">
+                    {cityFromUrl ? (
+                        <div className="min-h-[400px]">
+                            <HotelResults city={cityFromUrl} />
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 border border-white/5 rounded-[3rem] bg-white/[0.02]">
+                            <p className="text-gray-600 font-bold uppercase tracking-[0.3em] text-sm">
+                                No Destination Selected. <br />
+                                <span className="text-xs opacity-50">Please use the search bar on home page.</span>
+                            </p>
+                        </div>
+                    )}
 
-                            {/* Info Section */}
-                            <div className="p-5">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h2 className="text-lg font-bold text-white group-hover:text-yellow-500 transition-colors line-clamp-1">
-                                        {hotel.name}
-                                    </h2>
-                                    <div className="flex items-center text-yellow-500 text-[10px]">
-                                        ★ <span className="text-white ml-1 font-bold">4.8</span>
-                                    </div>
-                                </div>
-
-                                <p className="text-gray-500 text-[10px] uppercase tracking-widest font-bold">
-                                    {hotel.id.split('-')[0]} • Luxury Suite
-                                </p>
-
-                                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                                    <span className="text-[10px] text-green-500 font-bold uppercase">AI Verified Deal</span>
-                                    <div className="flex items-center gap-1 text-yellow-500 font-bold text-xs">
-                                        View Details <span>→</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+                    {/* Widget hamesha niche rahega help ke liye */}
+                    <div className="pt-10">
+                        <div className="flex items-center gap-4 mb-10 opacity-20">
+                            <div className="h-[1px] bg-white flex-grow"></div>
+                            <span className="text-[10px] font-black tracking-widest uppercase">Modify Search</span>
+                            <div className="h-[1px] bg-white flex-grow"></div>
+                        </div>
+                        <HotelWidget />
+                    </div>
                 </div>
             </main>
+
+            {/* Simple Luxury Footer */}
+            <footer className="py-10 border-t border-white/5 text-center">
+                <p className="text-[9px] text-gray-600 uppercase tracking-[0.5em] font-bold">
+                    © GTH Luxury Travel Group • All Rights Reserved
+                </p>
+            </footer>
         </div>
     )
+}
+
+// Next.js Search Params Wrapper (Build error se bachne ke liye)
+export default function HotelsPage() {
+    return (
+        <Suspense fallback={
+            <div className="bg-black min-h-screen flex items-center justify-center">
+                <div className="animate-pulse text-yellow-500 font-black tracking-widest uppercase text-xs">
+                    Initializing Luxury Engine...
+                </div>
+            </div>
+        }>
+            <HotelsContent />
+        </Suspense>
+    );
 }

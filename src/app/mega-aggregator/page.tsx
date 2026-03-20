@@ -1,21 +1,35 @@
 // File: src/app/mega-aggregator/page.tsx
 import React from "react";
 import Image from "next/image";
-import HotelGrid from "@/components/cards/HotelGrid";
+import Link from "next/link"
+import { createClient } from "@supabase/supabase-js"
 import HeroSearch from "@/components/sections/HeroSearch"
 import HotelQuadSection from "@/components/sections/hotelpro/HotelQuadSection";
 import { goaData, parisData } from "@/data/hotelData";
+import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
 
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export const metadata = {
-    title: "Luxury Travel Marketplace | Flights Hotels Tours | GTH",
+    title: "Luxury Flights, Hotels & Tours Marketplace | Flights Hotels Tours | GTH",
     description:
         "Compare flights, luxury hotels, tours and travel services worldwide with GTH Travel marketplace.",
+    keywords: [
+        "luxury travel",
+        "flight comparison",
+        "hotel booking",
+        "travel marketplace"
+    ],
     openGraph: {
         title: "GTH Luxury Travel Marketplace",
         description: "Compare travel services globally",
         images: ["/images/og/gth-travel.jpg"],
     },
+
+
 };
 const partners = [
     { name: "Global Bookings", original: "Trip.com", reward: "1-5.5%", description: "Worldwide stay network", image: "/images/mega/tripcom.jpg", link: "https://www.agoda.com/Mega_Sale?ds=vg6cMO3W6BdKIZNe" },
@@ -26,23 +40,37 @@ const partners = [
 ];
 
 const categories = [
-    { name: "Flights", description: "Compare & book flights worldwide", image: "/images/mega/flights.jpg" },
-    { name: "Hotels", description: "Luxury stays & deals", image: "/images/mega/hotels.jpg" },
-    { name: "Tours & Activities", description: "Explore curated experiences", image: "/images/mega/tours.jpg" },
-    { name: "Transfers & Rentals", description: "Airport & local transport", image: "/images/mega/transfers.jpg" },
-    { name: "Insurance", description: "Travel safely with coverage", image: "/images/mega/insurance.jpg" },
+    { name: "Flights", link: "/flights", description: "Compare & book flights worldwide", image: "/images/mega/flights.jpg" },
+    { name: "Hotels", link: "/hotels", description: "Luxury stays & deals", image: "/images/mega/hotels.jpg" },
+    { name: "Tours & Activities", link: "/tours", description: "Explore curated experiences", image: "/images/mega/tours.jpg" },
+    { name: "Transfers & Rentals", link: "/cars", description: "Airport & local transport", image: "/images/mega/transfers.jpg" },
+    { name: "Insurance", link: "/insurance", description: "Travel safely with coverage", image: "/images/mega/insurance.jpg" },
 ];
 
 const featuredCities = [
-    { name: "Paris", image: "/images/cities/paris.jpg" },
-    { name: "Goa", image: "/images/cities/goa.jpg" },
-    { name: "Bali", image: "/images/cities/bali.jpg" },
-    { name: "Dubai", image: "/images/cities/dubai.jpg" },
-    { name: "Tokyo", image: "/images/cities/tokyo.jpg" },
+    { name: "Paris", slug: "paris", image_url: "/images/cities/paris.jpg" },
+    { name: "Goa", slug: "goa", image_url: "/images/cities/goa.jpg" },
+    { name: "Bali", slug: "bali", image_url: "/images/cities/bali.jpg" },
+    { name: "Dubai", slug: "dubai", image_url: "/images/cities/dubai.jpg" },
+    { name: "Tokyo", slug: "tokyo", image_url: "/images/cities/tokyo.jpg" },
 ];
 
-export default function MegaAggregator() {
-    console.log("Goa Data:", goaData);
+export default async function MegaAggregator() {
+    const { data: destinations, error } = await supabase
+        .from("destinations")
+        .select("name, slug, image_url")
+        .order("name")
+        .limit(5)
+
+    if (error) {
+        console.log("SUPABASE DESTINATION ERROR:", error)
+    }
+
+    const allCities = [...featuredCities, ...(destinations || [])]
+
+    const citiesToShow = Array.from(
+        new Map(allCities.map(city => [city.slug, city])).values()
+    )
 
     return (
         <div className="w-full">
@@ -77,38 +105,105 @@ export default function MegaAggregator() {
 
                     {/* Small Trust Markers */}
                     <div className="mt-8 flex gap-6 text-[9px] font-bold uppercase tracking-widest opacity-60">
-                        <span>Verified APIs</span>
+                        <span>Best price guaranteed</span>
                         <span>5M+ Properties</span>
-                        <span>24/7 Support</span>
+                        <span>No booking fees</span>
                     </div>
                 </div>
             </section>
 
+
+            {/* --- SIGNATURE EXPERIENCE: Digha Special --- */}
+            <section className="py-24 bg-[#050505] border-y border-[#d4af37]/10">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center gap-16">
+
+                        {/* 1. Left Side: Bus Video + Hotel Gallery (Visual Core) */}
+                        <div className="w-full md:w-1/2 space-y-4">
+                            <div className="relative group cursor-pointer rounded-2xl overflow-hidden border border-[#1a1a1a] aspect-video">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-[#d4af37] to-[#8a6d3b] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+                                <img
+                                    src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1200"
+                                    alt="Digha Video Experience"
+                                    className="relative w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="h-16 w-16 bg-[#d4af37] rounded-full flex items-center justify-center shadow-[0_0_20px_#d4af37]">
+                                        <svg className="w-6 h-6 text-black fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { img: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39', label: 'Royal Suite' },
+                                    { img: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d', label: 'Ocean Pool' },
+                                    { img: 'https://images.unsplash.com/photo-1544148103-0773bf10d330', label: 'Fine Dine' }
+                                ].map((item, i) => (
+                                    <div key={i} className="h-20 rounded-xl overflow-hidden border border-white/5 relative group shadow-2xl">
+                                        <img src={`${item.img}?w=400`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" alt={item.label} />
+                                        <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[7px] text-center py-1 uppercase font-bold text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {item.label}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 2. Right Side: Balanced English Typography */}
+                        <div className="w-full md:w-1/2 space-y-5">
+                            <span className="text-[#d4af37] font-bold tracking-[0.5em] text-[8px] uppercase border-b border-[#d4af37]/30 pb-1">
+                                Partner Spotlight
+                            </span>
+
+                            {/* Scaled Down Heading to match Left Side height */}
+                            <h2 className="text-2xl md:text-4xl font-black gold-text leading-tight tracking-tighter uppercase">
+                                DIGHA ELITE: <br />
+                                <span className="font-light italic text-white/90">CINEMATIC LEGACY</span>
+                            </h2>
+
+                            <p className="text-gray-400 text-xs md:text-sm font-light leading-relaxed max-w-sm">
+                                Step beyond traditional travel. Our local partners offer West Bengal’s first
+                                <span className="text-white font-medium italic"> "Cinematic Expedition"</span>,
+                                transforming your journey into a high-definition documentary film.
+                            </p>
+
+                            <div className="bg-[#111] p-4 rounded-xl border-l-2 border-[#d4af37] space-y-1 max-w-sm">
+                                <p className="text-[#d4af37] text-[9px] font-black uppercase tracking-widest">Rare Advantage</p>
+                                <p className="text-[11px] text-gray-400 font-light italic leading-snug">
+                                    "Every guest receives a 4K Documentary of their journey and exclusive access to a private beachfront reserved for GTH members."
+                                </p>
+                            </div>
+
+                            <div className="pt-2 flex flex-wrap gap-3">
+                                <Link
+                                    href="/destinations/digha"
+                                    className="gold-gradient text-black px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:scale-105 transition-all text-[10px]"
+                                >
+                                    Explore More →
+                                </Link>
+                                <Link
+                                    href="https://wa.me/9339952669"
+                                    className="border border-white/10 text-white/50 px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:bg-white/5 transition-all text-[10px]"
+                                >
+                                    Inquire Now
+                                </Link>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+
             {/* Goa ka Jhakkas Section */}
             <HotelQuadSection {...goaData} />
 
-            {/* Featured Cities */}
-            <section className="py-5 bg-gray-50 px-8">
-                <h2 className="text-3xl font-bold text-black text-center mb-10">Featured Destinations</h2>
-                <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {featuredCities.map((city, idx) => (
-                        <div
-                            key={idx}
-                            className="relative rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition"
-                        >
-                            <Image src={city.image} alt={city.name} width={400} height={250} className="object-cover w-full h-48" />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-3 text-center">
-                                <h3 className="font-semibold text-lg">{city.name}</h3>
-                                <a href={`/destinations/${city.name.toLowerCase()}`}>
-                                    <button className="mt-2 bg-skyBlue px-4 py-2 rounded-lg text-white hover:bg-skyPink transition">
-                                        Explore
-                                    </button>
-                                </a>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+
+            <FeaturedDestinationsSlider cities={citiesToShow} />
+
+
+
 
 
             {/* Paris ka Cinematic Section */}
@@ -159,10 +254,12 @@ export default function MegaAggregator() {
                                         <p className="text-[7px] text-skyBlue font-black uppercase tracking-widest mb-3">
                                             Verified access
                                         </p>
-                                        <a href={p.link} target="_blank" rel="nofollow sponsored">
-                                            <button className="w-full bg-white/5 backdrop-blur-md text-white text-[8px] font-black py-2 rounded-lg border border-white/10 hover:bg-skyBlue transition-all uppercase">
-                                                View Deal
-                                            </button>
+                                        <a
+                                            href={`https://klook.tpo.lv/IKb6eSUe?destination=Goa&checkin=2026-04-01&checkout=2026-04-05`}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                        >
+                                            <button className="...">View Deal</button>
                                         </a>
                                     </div>
                                 </div>
@@ -229,7 +326,7 @@ export default function MegaAggregator() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
                         {/* Goa Guide Card - Updated for Originality */}
-                        <a href="/blog/goa-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-skyBlue">
+                        <Link href="/blog/goa-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-skyBlue">
                             <div className="relative h-64 w-full overflow-hidden">
                                 <img
                                     // Yahan static ki jagah koi bhi popular hotel id dalo testing ke liye
@@ -247,10 +344,10 @@ export default function MegaAggregator() {
                                 <h3 className="text-xl font-bold">Goa Travel Guide</h3>
                                 <p className="text-sm text-neutral-400 mt-1 italic">Real-time luxury aggregator access</p>
                             </div>
-                        </a>
+                        </Link>
 
                         {/* Paris Guide Card */}
-                        <a href="/blog/paris-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                        <Link href="/blog/paris-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
                             <div className="relative h-64 w-full overflow-hidden">
                                 <img
                                     // GOA WALA SAME FORMULA (Paris Hotel ID: 255541)
@@ -267,10 +364,10 @@ export default function MegaAggregator() {
                                 <h3 className="text-xl font-bold text-white">Paris Travel Guide</h3>
                                 <p className="text-sm text-neutral-400 mt-1">Art, Romance & Cuisine</p>
                             </div>
-                        </a>
+                        </Link>
 
                         {/* Dubai Guide Card */}
-                        <a href="/blog/dubai-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                        <Link href="/blog/dubai-travel-guide" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
                             <div className="relative h-64 w-full overflow-hidden">
                                 <img
                                     // GOA WALA SAME FORMULA (Dubai Hotel ID: 16522)
@@ -287,7 +384,7 @@ export default function MegaAggregator() {
                                 <h3 className="text-xl font-bold text-white">Dubai Travel Guide</h3>
                                 <p className="text-sm text-neutral-400 mt-1">Luxury, Desert & Skyscrapers</p>
                             </div>
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -334,12 +431,12 @@ export default function MegaAggregator() {
                                 <p className="text-gray-500 text-xs mb-6 line-clamp-2">
                                     {p.description}. Book today to claim your exclusive AI-verified travel rewards.
                                 </p>
-                                <a href={p.link} target="_blank" rel="nofollow sponsored">
+                                <Link href={p.link} target="_blank" rel="nofollow sponsored">
                                     <button className="mt-auto w-full bg-gray-900 group-hover:bg-sky-500 text-white font-black py-4 rounded-2xl transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
                                         CLAIM DEAL
                                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                                     </button>
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     ))}

@@ -1,16 +1,15 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import Link from "next/link";
 
 export default function DighaSpecialPage() {
     return (
         <main className="bg-[#050505] min-h-screen text-white">
-            <Navbar />
+
 
             {/* 1. HERO SECTION - Digha Elite Visual */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2000"
+                    src="/images/dighabus.jpg"
                     className="absolute inset-0 w-full h-full object-cover opacity-50"
                     alt="Digha Luxury Coast"
                 />
@@ -46,7 +45,7 @@ export default function DighaSpecialPage() {
                     {/* VIDEO PLAYER PLACEHOLDER */}
                     <div className="relative aspect-video bg-[#0a0a0a] rounded-2xl border border-[#d4af37]/20 flex items-center justify-center group overflow-hidden">
                         <img
-                            src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1200"
+                            src="/images/dighatempl.jpg"
                             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000"
                         />
                         <div className="relative z-10 h-20 w-20 bg-[#d4af37] rounded-full flex items-center justify-center shadow-[0_0_30px_#d4af37] cursor-pointer">
@@ -72,9 +71,9 @@ export default function DighaSpecialPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { name: 'Digha Elite Coast', price: '$450', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945' },
-                            { name: 'Marine Azure Resort', price: '$580', img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4' },
-                            { name: 'The Golden Sands', price: '$390', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4df85b' }
+                            { name: 'Digha Elite Coast', price: '$450', img: '/images/dighahotel.jpg' },
+                            { name: 'Marine Azure Resort', price: '$580', img: '/images/digharesort.jpg' },
+                            { name: 'The Golden Sands', price: '$390', img: '/images/digharoom.jpg' },
                         ].map((hotel, i) => (
                             <div key={i} className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-white/5 hover:border-[#d4af37]/30 transition-all duration-500">
                                 {/* Image Container */}
@@ -112,7 +111,7 @@ export default function DighaSpecialPage() {
                     </div>
                 </div>
             </section>
-            <Footer />
+
         </main>
     );
 }

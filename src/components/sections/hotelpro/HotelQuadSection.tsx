@@ -26,6 +26,8 @@ export default function HotelQuadSection({ sectionTitle, subtitle, description, 
   if (displayHotels.length < 1) return null;
 
   return (
+
+
     <section className="bg-black text-white py-20 px-6 md:px-12 border-t border-white/5">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 items-center">
 

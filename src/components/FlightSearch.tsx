@@ -9,107 +9,208 @@ export default function FlightSearch() {
     const [date, setDate] = useState("")
     const [flights, setFlights] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
 
     async function searchFlights() {
 
-        setLoading(true)
+        try {
 
-        const res = await fetch(
-            `/api/flights?origin=${origin}&destination=${destination}&depart_date=${date}`
-        )
+            setLoading(true)
+            setError("")
 
-        const data = await res.json()
+            const res = await fetch(
+                `/api/flights?origin=${origin}&destination=${destination}&depart_date=${date}`
+            )
 
-        setFlights(data.data || [])
+            if (!res.ok) {
+                throw new Error("Flight API failed")
+            }
 
-        setLoading(false)
+            const data = await res.json()
+
+            const results = data?.data || []
+
+            // sort cheapest first
+            results.sort((a: any, b: any) => a.price - b.price)
+
+            setFlights(results)
+
+        } catch (e) {
+
+            console.error(e)
+            setError("Unable to fetch flights right now")
+
+        } finally {
+
+            setLoading(false)
+
+        }
+
     }
 
     return (
 
-        <div className="max-w-5xl mx-auto bg-[#111] p-8 rounded-xl border border-yellow-500/20">
+        <div className="max-w-6xl mx-auto py-16 px-6">
 
-            {/* Search Row */}
-            <div className="grid md:grid-cols-4 gap-4 mb-6">
+            {/* HEADER */}
+
+            <div className="mb-10">
+
+                <h2 className="text-4xl font-black text-white mb-2">
+                    Search Flights
+                </h2>
+
+                <p className="text-gray-400">
+                    Find the best flight deals instantly
+                </p>
+
+            </div>
+
+
+            {/* SEARCH PANEL */}
+
+            <div className="bg-[#0f0f0f] border border-yellow-500/20 rounded-2xl p-6 grid md:grid-cols-4 gap-4 mb-10">
 
                 <input
                     value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
-                    placeholder="From (DEL)"
-                    className="p-3 rounded bg-black text-white border border-gray-700"
+                    onChange={(e) => setOrigin(e.target.value.toUpperCase())}
+                    placeholder="Origin (DEL)"
+                    className="bg-black border border-white/10 px-4 py-3 rounded-lg text-white"
                 />
 
                 <input
                     value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    placeholder="To (BOM)"
-                    className="p-3 rounded bg-black text-white border border-gray-700"
+                    onChange={(e) => setDestination(e.target.value.toUpperCase())}
+                    placeholder="Destination (DXB)"
+                    className="bg-black border border-white/10 px-4 py-3 rounded-lg text-white"
                 />
 
                 <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="p-3 rounded bg-black text-white border border-gray-700"
+                    className="bg-black border border-white/10 px-4 py-3 rounded-lg text-white"
                 />
 
                 <button
                     onClick={searchFlights}
-                    className="bg-yellow-400 text-black font-semibold rounded"
+                    disabled={loading}
+                    className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition disabled:opacity-50"
                 >
-                    Search
+
+                    {loading ? "Searching..." : "Search Flights"}
+
                 </button>
 
             </div>
 
-            {/* Loading */}
-            {loading && (
-                <p className="text-yellow-400">Searching flights...</p>
+
+            {/* ERROR */}
+
+            {error && (
+                <p className="text-red-400 mb-6">
+                    {error}
+                </p>
             )}
 
-            {/* Results */}
-            <div className="space-y-4">
 
-                {flights.map((f, i) => (
-                    <div key={i} className="bg-black border border-yellow-500/20 p-5 rounded flex justify-between">
+            {/* LOADING */}
 
-                        <div>
+            {loading && (
+                <div className="text-yellow-400">
+                    Searching best deals...
+                </div>
+            )}
 
-                            <p className="text-yellow-400 font-semibold">
-                                {f.origin} → {f.destination}
-                            </p>
 
-                            <p className="text-gray-400 text-sm">
-                                Airline: {f.airline}
-                            </p>
+            {/* RESULTS */}
 
-                            <p className="text-gray-400 text-sm">
-                                Departure: {f.departure_at}
-                            </p>
+            <div className="space-y-5">
+
+                {flights.map((f: any, i: number) => {
+
+                    const cheapest = i === 0
+
+                    return (
+
+                        <div
+                            key={i}
+                            className="bg-[#0f0f0f] border border-white/10 rounded-xl p-6 flex justify-between items-center hover:border-yellow-500/40 transition"
+                        >
+
+                            {/* LEFT */}
+
+                            <div>
+
+                                <div className="flex items-center gap-3 mb-2">
+
+                                    <p className="text-white font-bold text-lg">
+                                        {f.origin} → {f.destination}
+                                    </p>
+
+                                    {cheapest && (
+                                        <span className="bg-yellow-500 text-black text-xs px-2 py-1 rounded">
+                                            Best Deal
+                                        </span>
+                                    )}
+
+                                </div>
+
+                                <p className="text-gray-400 text-sm">
+                                    Airline: {f.airline || "Multiple airlines"}
+                                </p>
+
+                                <p className="text-gray-400 text-sm">
+                                    Departure: {f.departure_at
+                                        ? new Date(f.departure_at).toLocaleDateString()
+                                        : "N/A"}
+                                </p>
+
+                            </div>
+
+
+                            {/* RIGHT */}
+
+                            <div className="text-right">
+
+                                <p className="text-3xl font-black text-yellow-400 mb-2">
+                                    ₹{f.price}
+                                </p>
+
+                                <a
+                                    href={`https://aviasales.tp.st/?origin=${f.origin}&destination=${f.destination}&departure_at=${f.departure_at}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-yellow-500 hover:bg-white text-black px-5 py-2 rounded-lg text-sm font-bold transition"
+                                >
+
+                                    Book Flight
+
+                                </a>
+
+                            </div>
 
                         </div>
 
-                        <div className="text-right">
+                    )
 
-                            <p className="text-xl font-bold text-yellow-400">
-                                ₹{f.price}
-                            </p>
-
-                            <a
-                                href={`https://www.aviasales.com${f.link}`}
-                                target="_blank"
-                                className="text-sm text-blue-400 underline"
-                            >
-                                Book Flight
-                            </a>
-
-                        </div>
-
-                    </div>
-                ))}
+                })}
 
             </div>
 
+
+            {/* EMPTY STATE */}
+
+            {!loading && flights.length === 0 && (
+
+                <div className="text-gray-500 mt-10">
+                    No flights found. Try a different route.
+                </div>
+
+            )}
+
         </div>
+
     )
+
 }

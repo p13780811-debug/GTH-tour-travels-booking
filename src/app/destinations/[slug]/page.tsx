@@ -1,4 +1,3 @@
-
 import { blogs } from "@/data/blogs"
 import { destinations as staticDestinations } from "@/data/destinations"
 import { createClient } from "@supabase/supabase-js"
@@ -9,87 +8,103 @@ import HotelSection from "@/components/destination/HotelSection"
 import ActivitySection from "@/components/destination/ActivitySection"
 import BlogSection from "@/components/destination/BlogSection"
 import RelatedSection from "@/components/destination/RelatedSection"
+import FlightSection from "@/components/destination/FlightSection"
+
+import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
 
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
 export default async function DestinationPage({
-    params,
+  params,
 }: {
-    params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>
 }) {
 
-    const { slug } = await params
+  const { slug } = await params
 
-    // slug → city
-    const city = slug.split("-")[0].toLowerCase()
+  // slug → city
+  const city = slug.split("-")[0].toLowerCase()
 
-    // fetch destination
-    const { data: destinationData } = await supabase
-        .from("destinations")
-        .select("*")
-        .ilike("name", city)
-        .maybeSingle()
+  // fetch destination
+  const { data: destinationData } = await supabase
+    .from("destinations")
+    .select("*")
+    .ilike("name", city)
+    .maybeSingle()
 
-    // fetch hotels
-    const { data: hotels } = await supabase
-        .from("hotels")
-        .select("*")
-        .ilike("city", city)
+  // fetch hotels
+  const { data: hotels } = await supabase
+    .from("hotels")
+    .select("*")
+    .ilike("city", city)
 
-    // fallback static data
-    const fallback: any = staticDestinations.find(
-        (d: any) => d.slug === slug
-    )
+  // fetch cities for slider
+  const { data: cities } = await supabase
+    .from("destinations")
+    .select("name, slug, image_url")
+    .order("name")
+    .limit(10)
 
-    console.log("CITY:", city)
-    console.log("HOTELS:", hotels)
+  // fallback static data
+  const fallback: any = staticDestinations.find(
+    (d: any) => d.slug === slug
+  )
 
-    const destination: any = {
-        slug,
 
-        name:
-            destinationData?.name ||
-            fallback?.name ||
-            city.charAt(0).toUpperCase() + city.slice(1),
 
-        description:
-            destinationData?.description ||
-            fallback?.description ||
-            "",
+  const destination: any = {
+    slug,
 
-        heroImage:
-            destinationData?.image_url ||
-            fallback?.heroImage ||
-            "/images/default-city.jpg",
+    name:
+      destinationData?.name ||
+      fallback?.name ||
+      city.charAt(0).toUpperCase() + city.slice(1),
 
-        partnerLink:
-            destinationData?.partner_link || null,
+    description:
+      destinationData?.description ||
+      fallback?.description ||
+      "",
 
-        hotels: hotels || [],
+    heroImage:
+      destinationData?.image_url ||
+      fallback?.heroImage ||
+      "/images/default-city.jpg",
 
-        activities:
-            fallback?.activities || []
-    }
+    partnerLink:
+      destinationData?.partner_link || null,
 
-    return (
-        <div className="bg-black text-white">
+    hotels: hotels || [],
 
-            <HeroSection destination={destination} />
+    activities:
+      fallback?.activities || []
+  }
 
-            <ContentSection destination={destination} />
+  const citiesToShow = cities || []
 
-            <HotelSection destination={destination} />
+  return (
+    <div className="bg-black text-white">
 
-            <ActivitySection destination={destination} />
+      <HeroSection destination={destination} />
 
-            <BlogSection blogs={blogs} />
+      <FlightSection destination={destination} />
 
-            <RelatedSection currentSlug={destination.slug} />
 
-        </div>
-    )
+
+      <ContentSection destination={destination} />
+
+      <HotelSection destination={destination} />
+
+      <ActivitySection destination={destination} />
+
+      <BlogSection blogs={blogs} />
+
+      <FeaturedDestinationsSlider cities={citiesToShow} />
+
+      <RelatedSection currentSlug={destination.slug} />
+
+    </div>
+  )
 }
-
