@@ -15,9 +15,34 @@ export default function Navbar() {
 
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-                {/* LOGO */}
-                <Link href="/" className="text-2xl font-bold text-white tracking-wider">
-                    GTH <span className="text-yellow-400">Luxury</span>
+                {/* LOGO SECTION */}
+                <Link href="/" className="flex items-center gap-3 no-underline group">
+
+                    {/* --- LOGO SECTION --- */}
+                    <div className="flex items-center gap-1">
+                        {/* Round Logo Container - Ab ye chhota (h-10 w-10) aur perfect circle hai */}
+                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-yellow-500 bg-black flex items-center justify-center">
+                            <img
+                                src="/images/gth-logo.png"
+                                alt="GTH PRO Luxury Logo"
+                                className="h-full w-full object-cover scale-110"  // <-- Scale-110 se wo bahar ka kachra chhup jayega
+                                style={{
+                                    objectPosition: 'center' // Taaki bird ekdum beech mein rahe
+                                }}
+                            />
+                        </div>
+
+                        {/* LOGO TEXT - Isse Navbar ki motai nahi badhegi */}
+                        <div className="flex flex-col leading-none">
+                            <div className="flex items-center gap-1">
+                                <span className="text-lg font-bold text-white uppercase tracking-tight">GTH</span>
+                                <span className="text-lg font-bold text-yellow-500 uppercase tracking-tight">PRO</span>
+                            </div>
+                            <span className="text-[7px] text-gray-400 tracking-[1.5px] uppercase font-medium">
+                                Tour & Travels
+                            </span>
+                        </div>
+                    </div>
                 </Link>
 
 

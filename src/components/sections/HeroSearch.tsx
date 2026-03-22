@@ -7,7 +7,7 @@ import { getIata, cityToIata } from "@/lib/iata"
 
 
 
-export default function SearchSection() {
+export default function SearchSection({ city }: { city?: string }) {
     const [tab, setTab] = useState("flights");
     const [inputValue, setInputValue] = useState("");
     const [checkIn, setCheckIn] = useState("");
@@ -43,7 +43,7 @@ export default function SearchSection() {
 
             const klookUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${query}`)}`;
 
-            window.location.href = `/hotels?city=${encodeURIComponent(inputValue)}`;
+            window.open(klookUrl, "_blank");
         }
         else if (tab === "flights") {
             const code = query ? getIata(query) : "DEL";

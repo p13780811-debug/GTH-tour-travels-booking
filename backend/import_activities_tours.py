@@ -35,7 +35,7 @@ def insert_activities(city):
             "title": f"{city} City Tour",
             "city_slug": city,
             "price": "$45",
-            "image_url": "https://images.pexels.com/photos/3889843/pexels-photo-3889843.jpeg",
+            "image_url": "https://api.pexels.com/v1/search?query=${query}&per_page=3&page=${Math.floor(Math.random() * 5) + 1}",
             "affiliate_link": "https://tp.media/r?marker=417668"
         },
 

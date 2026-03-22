@@ -6,66 +6,54 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET(req: Request) {
-
+// 🚀 PEXELS SE IMAGE LANe WALA FUNCTION (With Cache)
+async function getPexelsImage(query: string) {
     try {
+        const res = await fetch(
+            `https://api.pexels.com/v1/search?query=${query}&per_page=3&page=${Math.floor(Math.random() * 5) + 1}`,
+            {
+                headers: { Authorization: process.env.NEXT_PUBLIC_PEXELS_API_KEY! },
+                next: { revalidate: 3600 } // 🔥 1 ghante tak Pexels ko dobara hit nahi karega (Cache)
+            }
+        );
+        const data = await res.json();
+        return data.photos.src.large || "/placeholder.jpg";
+    } catch (e) {
+        return "/placeholder-hotel.jpg";
+    }
+}
 
+export async function GET(req: Request) {
+    try {
         const { searchParams } = new URL(req.url);
-        const city = searchParams.get("city");
+        const city = searchParams.get("city") || "travel";
 
-        if (!city) return NextResponse.json([]);
+        // 1. Supabase se hotels lao
+        const { data: hotels, error } = await supabase
+            .from('hotels')
+            .select('*')
+            .ilike('city', `%${city}%`)
+            .limit(10); // Limit kam rakho taaki Pexels hit kam ho
 
-        const TOKEN = process.env.TRAVELPAYOUTS_TOKEN;
-        const MARKER = process.env.TRAVELPAYOUTS_MARKER;
+        if (error) return NextResponse.json({ error: "DB Error" }, { status: 500 });
 
-        // STEP 1 — Get cityId
-        const searchCity = await fetch(
-            `https://engine.hotellook.com/api/v2/lookup.json?query=${city}&token=${TOKEN}`
-        );
+        // 2. Har city ke liye EK hi Pexels image fetch karo (API Hits bachane ke liye)
+        const cityImage = await getPexelsImage(`${city} hotel`);
 
-        const cityData = await searchCity.json();
+        const formattedHotels = hotels.map((h: any) => ({
+            id: h.id,
+            name: h.name,
+            price: h.price,
+            stars: h.stars,
+            city: h.city,
+            // 🚀 AGAR DB mein image nahi hai, toh Pexels wali city image dikhao
+            image: h.image_url || cityImage,
+            affiliate_link: h.affiliate_link
+        }));
 
-        const cityId = cityData?.results?.locations?.[0]?.id;
-
-        if (!cityId) {
-            console.log("City not found in TP");
-            return NextResponse.json([]);
-        }
-
-        // STEP 2 — Get hotels using cityId
-        const hotelRes = await fetch(
-            `https://engine.hotellook.com/api/v2/cache.json?locationId=${cityId}&currency=inr&token=${TOKEN}`,
-            { next: { revalidate: 3600 } }
-        );
-
-        const hotelData = await hotelRes.json();
-
-        if (!Array.isArray(hotelData)) {
-            return NextResponse.json([]);
-        }
-
-        const hotels = hotelData.slice(0, 20).map((h: any) => ({
-
-            id: h.hotelId,
-            name: h.hotelName,
-            price: h.priceAvg || 0,
-            stars: h.stars || 0,
-
-            image: `https://photos.hotellook.com/hotels/720x400/${h.hotelId}.jpg`,
-
-            affiliate_link:
-                `https://tp.media/r?marker=${MARKER}&hotel_id=${h.hotelId}`
-
-        }))
-
-        return NextResponse.json(hotels)
+        return NextResponse.json(formattedHotels);
 
     } catch (err) {
-
-        console.error(err)
-
-        return NextResponse.json({ error: "server error" })
-
+        return NextResponse.json({ error: "Server Error" }, { status: 500 });
     }
-
 }

@@ -1,0 +1,6 @@
+# GTH PRO Robots File
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://gthpro.com/sitemap.xml

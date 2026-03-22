@@ -10,5 +10,5 @@ export const cityToIata: Record<string, string> = {
 };
 
 export function getIata(city: string) {
-  return cityToIata[city.toLowerCase()] || "DEL";
+  return cityToIata[city.toLowerCase()] || "null";
 }

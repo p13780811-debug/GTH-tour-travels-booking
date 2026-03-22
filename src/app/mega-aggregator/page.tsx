@@ -7,7 +7,7 @@ import HeroSearch from "@/components/sections/HeroSearch"
 import HotelQuadSection from "@/components/sections/hotelpro/HotelQuadSection";
 import { goaData, parisData } from "@/data/hotelData";
 import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
-
+import GTHNetwork from "@/components/sections/GTHNetwork";
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -32,7 +32,7 @@ export const metadata = {
 
 };
 const partners = [
-    { name: "Global Bookings", original: "Trip.com", reward: "1-5.5%", description: "Worldwide stay network", image: "/images/mega/tripcom.jpg", link: "https://www.agoda.com/Mega_Sale?ds=vg6cMO3W6BdKIZNe" },
+    { name: "Global Bookings", original: "Trip.com", reward: "1-5.5%", description: "Worldwide stay network", image: "/images/mega/tripcom.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
     { name: "Experience Hub", original: "Klook", reward: "2-5%", description: "Curated local adventures", image: "/images/mega/klook.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
     { name: "Elite Transfers", original: "Welcome Pickups", reward: "8-9%", description: "VIP airport logistics", image: "/images/mega/welcome.jpg", link: "https://tpo.lv/GFuzmgYk" },
     { name: "Sky Rights", original: "AirHelp", reward: "15-16.6%", description: "Legal flight protection", image: "/images/mega/airhelp.jpg", link: "https://airhelp.tpo.lv/W9baN8JY" },
@@ -87,7 +87,7 @@ export default async function MegaAggregator() {
                 <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white p-4">
 
                     {/* Heading - Size reduced to 4xl/5xl */}
-                    <h1 className="text-2xl md:text-3xl font-black mb-2 flex text-center uppercase tracking-tight">
+                    <h1 className="text-2xl md:text-2xl font-black mb-2 flex text-center uppercase tracking-tight">
                         Luxury <span className="text-skyBlue">Travel</span> Portal
                     </h1>
 
@@ -209,81 +209,30 @@ export default async function MegaAggregator() {
             {/* Paris ka Cinematic Section */}
             <HotelQuadSection {...parisData} />
 
+            <GTHNetwork partners={partners} />
 
 
 
-            <section className="py-8 bg-[#050505] overflow-hidden">
-                <div className="max-w-7xl mx-auto px-6">
-
-                    {/* Minimal Heading */}
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-[1px] w-6 bg-skyBlue"></div>
-                        <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">
-                            GTH <span className="text-white">Network</span>
-                        </h2>
-                    </div>
-
-                    {/* Hidden Scrollbar Container */}
-                    <div className="relative w-full">
-                        <div
-                            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-2"
-                            style={{
-                                scrollbarWidth: 'none', /* Firefox */
-                                msOverflowStyle: 'none', /* IE/Edge */
-                            }}
-                        >
-                            {partners.map((p, idx) => (
-                                <div
-                                    key={idx}
-                                    className="relative min-w-[180px] md:min-w-[232px] aspect-[16/9] rounded-xl overflow-hidden group">
-                                    {/* IMAGE: Fit for Luxury - Top focused so names aren't cut */}
-                                    <Image
-                                        src={p.image}
-                                        alt={p.name}
-                                        fill
-                                        className="object-cover object-top opacity-80 group-hover:scale-110 transition-transform duration-500"
-                                        sizes="(max-width: 768px) 180px, 232px"
-                                        unoptimized
-                                    />
-
-                                    {/* Premium White-Label Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-4">
-                                        <h3 className="font-bold text-white text-xs tracking-tight mb-0.5">
-                                            GTH {p.name.split('.')[0]}
-                                        </h3>
-                                        <p className="text-[7px] text-skyBlue font-black uppercase tracking-widest mb-3">
-                                            Verified access
-                                        </p>
-                                        <a
-                                            href={`https://klook.tpo.lv/IKb6eSUe?destination=Goa&checkin=2026-04-01&checkout=2026-04-05`}
-                                            target="_blank"
-                                            rel="nofollow noopener noreferrer"
-                                        >
-                                            <button className="...">View Deal</button>
-                                        </a>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* CSS to kill the white scrollbar for Chrome/Safari */}
-
-            </section>
 
             {/* Categories Section - FULL IMAGE MODERN LOOK */}
             <section className="py-20 px-8 max-w-7xl mx-auto">
                 <h2 className="md:text-4xl font-black text-center gold-text uppercase leading-tight tracking-widest italic text-yellow-900">
                     Premium Services
                 </h2>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+
                     {categories.map((c, idx) => (
-                        <div
+
+                        <a
                             key={idx}
-                            className="group relative h-[350px] rounded-[2.5rem] overflow-hidden shadow-2xl cursor-pointer"
+                            href={c.link}   // 🔥 IMPORTANT
+                            target="_blank"
+                            rel="nofollow noopener noreferrer"
+                            className="group relative h-[350px] rounded-[2.5rem] overflow-hidden shadow-2xl cursor-pointer block"
                         >
-                            {/* BACKGROUND IMAGE - POORI COVER */}
+
+                            {/* IMAGE */}
                             <Image
                                 src={c.image}
                                 alt={c.name}
@@ -292,22 +241,26 @@ export default async function MegaAggregator() {
                                 unoptimized
                             />
 
-                            {/* PREMIUM GLASS OVERLAY */}
+                            {/* OVERLAY */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent flex flex-col justify-end p-6 text-center">
+
                                 <h3 className="text-white font-black text-2xl uppercase tracking-tighter mb-2 group-hover:text-sky-400 transition-colors">
                                     {c.name}
                                 </h3>
+
                                 <div className="h-0 group-hover:h-12 opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
                                     <p className="text-gray-300 text-xs font-medium">
                                         {c.description}
                                     </p>
                                 </div>
 
-                                {/* BOTTOM ACCENT LINE */}
                                 <div className="w-12 h-1 bg-sky-500 mx-auto mt-4 group-hover:w-full transition-all duration-500 rounded-full" />
                             </div>
-                        </div>
+
+                        </a>
+
                     ))}
+
                 </div>
             </section>
 

@@ -37,7 +37,7 @@ for city in cities:
 
             # 🔹 Fallback image if API fails
             if not image:
-                image = "https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg"
+                image = "https://api.pexels.com/v1/search?query=${query}&per_page=3&page=${Math.floor(Math.random() * 5) + 1}"
 
             data = {
                 "name": item["name"],

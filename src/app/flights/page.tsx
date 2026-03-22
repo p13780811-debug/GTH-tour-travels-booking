@@ -1,8 +1,11 @@
 "use client";
-
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FlightHero from '@/components/flights/FlightHero';
+import PopularDestinations from "@/components/flights/PopularDestinations";
+import { flightDestinations } from "@/data/flight/destinations";
+
 
 const getAirlineLogo = (name?: string) => {
     if (!name) return null;
@@ -22,7 +25,7 @@ const getAirlineLogo = (name?: string) => {
 };
 
 
-export default function FlightsPage() {
+function FlightsContent() {
     const params = useSearchParams();
 
     const origin = params.get("origin") || "DEL";
@@ -82,8 +85,9 @@ export default function FlightsPage() {
     const groupedByDate: any = {};
 
     flights.forEach((f) => {
-        const date = f.departure_at?.split("T")[0];
-        if (!date) return;
+        if (!f.departure_at) return;
+
+        const [date] = f.departure_at.split("T");
 
         if (!groupedByDate[date] || f.price < groupedByDate[date]) {
             groupedByDate[date] = f.price;
@@ -94,6 +98,8 @@ export default function FlightsPage() {
     return (
         <div className="relative min-h-screen text-white p-6 overflow-hidden bg-[#050505]">
             <FlightHero />
+            <PopularDestinations destinations={flightDestinations} />
+
             <div className="absolute inset-0 -z-20 bg-gradient-to-br from-[#0a0a0a] via-[#050505] to-black"></div>
             {/* BACKGROUND GLOW */}
             {/* ANIMATED GRADIENT BACKGROUND */}
@@ -230,8 +236,20 @@ export default function FlightsPage() {
                         </div>
                     );
                 })
+
             )}
         </div>
+
     )
+}
+
+<PopularDestinations destinations={flightDestinations} />
+
+export default function FlightsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading search results...</div>}>
+            <FlightsContent />
+        </Suspense>
+    );
 }
 
