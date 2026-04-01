@@ -77,10 +77,18 @@ export default async function MegaAggregator() {
             {/* Hero Section with video */}
             <section className="relative -mt-8 w-full h-[65vh] overflow-hidden group">
                 {/* Background Video - Height reduced to 60vh */}
+                {/* 1. DESKTOP VIDEO (MD:BLOCK ka matlab sirf bade screen par dikhega) */}
                 <video
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="hidden md:block absolute inset-0 w-full h-full object-cover"
                     autoPlay loop muted playsInline
                     src="/hero video.mp4"
+                />
+
+                {/* 2. MOBILE PHOTO (MD:HIDDEN ka matlab bade screen par gayab rahega) */}
+                <img
+                    src="/maldives-bg.jpg"
+                    alt="Maldives Luxury"
+                    className="block md:hidden absolute inset-0 w-full h-full object-cover"
                 />
 
                 {/* Dark Overlay */}
@@ -114,7 +122,7 @@ export default async function MegaAggregator() {
 
 
             {/* --- SIGNATURE EXPERIENCE: Digha Special --- */}
-            <section className="py-24 bg-[#050505] border-y border-[#d4af37]/10">
+            <section className="py-24 bg-rgba(2, 88, 63, 0.03) border-y border-[#d4af37]/10">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row items-center gap-16">
 

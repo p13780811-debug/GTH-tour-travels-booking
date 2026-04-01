@@ -19,10 +19,23 @@
   }
 }
 
+/* GTH PRO: Global Luxury Background - Sabse Powerful Code */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* 1. Ye background har page par apne aap apply hoga */
+  background: radial-gradient(circle at 50% 0%, #1a2a44 0%, #000b1a 70%) !important;
+  background-attachment: fixed !important;
+  background-color: #000d1f !important;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. Glassmorphism Class: Isse aapke icons aur cards chamkenge */
+.gth-card-glow {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
 }
 
 /* GTH Pro Luxury Palette */
@@ -33,11 +46,12 @@ body {
   --glass-effect: rgba(255, 255, 255, 0.05);
 }
 
-body {
-  background-color: var(--deep-black);
-  color: white;
-  font-family: 'Inter', sans-serif;
+/* globals.css mein ye class dalo */
+.gth-text-glow {
+  color: white !important;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 20px rgba(0, 0, 0, 0.5) !important;
 }
+
 
 /* Gold Gradient Text */
 
@@ -73,5 +87,17 @@ body {
 
   .text-glow {
     text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+}
+
+/* GTH PRO: Sabhi 'bg-black' ko Luxury Glass mein badlo */
+@layer base {
+  .bg-black {
+    background-color: rgba(2, 88, 63, 0.03) !important;
+    /* Kaala rang hat gaya, halka shisha aa gaya */
+    backdrop-filter: blur(12px) !important;
+    /* Saare components ab Maldives ke upar chamkenge */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Halka border luxury look ke liye */
   }
 }

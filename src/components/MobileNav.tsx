@@ -16,7 +16,7 @@ const MobileNav = () => {
                 </Link>
 
                 {/* Flights (Ab link kaam karega) */}
-                <Link href="https://www.skyscanner.com" target="_blank" className="flex flex-col items-center gap-1 text-white/60">
+                <Link href="https://aviasales.tpo.lv/KkWURb6L" target="_blank" className="flex flex-col items-center gap-1 text-white/60">
                     <Plane size={20} />
                     <span className="text-[10px] uppercase">Flights</span>
                 </Link>

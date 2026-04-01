@@ -88,10 +88,11 @@ export default function SearchSection({ city }: { city?: string }) {
                 </div>
 
                 {/* SEARCH CONTAINER (Glassmorphism Effect) */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,180,255,0.25)]">
+                {/* SEARCH CONTAINER - Luxury Mobile Fix */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 bg-white/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 -mt-10 md:-mt-2 relative z-50">
 
                     {/* DESTINATION INPUT */}
-                    <div className="relative border-r border-white/5">
+                    <div className="relative border-b md:border-b-0 md:border-r border-white/10">
                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 w-4 h-4 z-10" />
                         <input
                             ref={inputRef}
@@ -157,7 +158,7 @@ export default function SearchSection({ city }: { city?: string }) {
                         type="button"
                         onClick={() => handleSearch()}
 
-                        className="bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-white hover:to-white hover:text-black text-white font-bold text-xs tracking-widest transition-all duration-500 flex items-center justify-center gap-2 uppercase"
+                        className="w-full h-[45px] md:w-[215px] md:h-full bg-gradient-to-r from-sky-500 to-cyan-400 text-black flex items-center justify-center gap-2 font-bold uppercase rounded-2xl md:rounded-r-full shadow-lg transition-all active:scale-95 mt-4 md:mt-0"
                     >
                         <Search className="w-4 h-4" />
                         Search

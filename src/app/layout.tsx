@@ -50,7 +50,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.className} bg-black text-white`}>
+      <body className={`${cinzel.className} text-white`}>
 
         <script
           async

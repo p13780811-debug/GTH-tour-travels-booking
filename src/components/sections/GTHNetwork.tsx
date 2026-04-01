@@ -25,7 +25,7 @@ export default function GTHNetwork({ partners = [] }: { partners?: Partner[] }) 
 
                 {/* Scroll Cards Container */}
                 <div className="relative w-full [perspective:2000px]">
-                    <div className="flex gap-6 animate-scroll hover:[animation-play-state:paused] py-4">
+                    <div className="flex gap-6 hover:[animation-play-state:paused] py-4">
 
                         {[...partners, ...partners].map((p, idx) => (
                             <div
