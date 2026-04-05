@@ -8,11 +8,14 @@ import HotelQuadSection from "@/components/sections/hotelpro/HotelQuadSection";
 import { goaData, parisData } from "@/data/hotelData";
 import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
 import GTHNetwork from "@/components/sections/GTHNetwork";
+import dynamic from "next/dynamic"
+
+
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
+export const revalidate = 60
 export const metadata = {
     title: "Luxury Flights, Hotels & Tours Marketplace | Flights Hotels Tours | GTH",
     description:
@@ -56,15 +59,13 @@ const featuredCities = [
 ];
 
 export default async function MegaAggregator() {
-    const { data: destinations, error } = await supabase
+    const { data: destinations } = await supabase
         .from("destinations")
         .select("name, slug, image_url")
         .order("name")
         .limit(5)
 
-    if (error) {
-        console.log("SUPABASE DESTINATION ERROR:", error)
-    }
+
 
     const allCities = [...featuredCities, ...(destinations || [])]
 
@@ -73,7 +74,7 @@ export default async function MegaAggregator() {
     )
 
     return (
-        <div className="w-full">
+        <div className="w-full transition-all duration-500 ease-in-out transform-gpu">
             {/* Hero Section with video */}
             <section className="relative -mt-8 w-full h-[65vh] overflow-hidden group">
                 {/* Background Video - Height reduced to 60vh */}
@@ -102,7 +103,11 @@ export default async function MegaAggregator() {
                     <p className="text-sm md:text-base text-center mb-8 font-medium opacity-80 tracking-wide">
                         Flights • Hotels • Tours • Insurance — All in one place.
                     </p>
-                    <HeroSearch />
+
+
+                    <div className="will-change-transform">
+                        <HeroSearch />
+                    </div>
 
 
 
@@ -368,7 +373,8 @@ export default async function MegaAggregator() {
                                     alt={p.name}
                                     fill
                                     className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                    unoptimized
+                                    priority={idx < 2}
+                                    quality={75}
                                 />
                                 {/* TOP BADGE */}
                                 <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full animate-pulse">

@@ -71,7 +71,7 @@ export default function SearchSection({ city }: { city?: string }) {
             <div className="w-full max-w-4xl">
 
                 {/* TABS */}
-                <div className="flex justify-center gap-6 mb-3">
+                <div className="flex justify-center gap-6 mb-3 text-sm sticky top-[60px] md:top-[80px] z-50 md:static">
                     {tabs.map((t) => (
                         <button
                             key={t}
@@ -89,7 +89,7 @@ export default function SearchSection({ city }: { city?: string }) {
 
                 {/* SEARCH CONTAINER (Glassmorphism Effect) */}
                 {/* SEARCH CONTAINER - Luxury Mobile Fix */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 bg-white/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 -mt-10 md:-mt-2 relative z-50">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 bg-white/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 mt-2 md:-mt-2 relative z-50">
 
                     {/* DESTINATION INPUT */}
                     <div className="relative border-b md:border-b-0 md:border-r border-white/10">

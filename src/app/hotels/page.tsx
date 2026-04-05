@@ -29,18 +29,19 @@ const generate3000Hotels = () => {
     const data = [];
     for (let i = 1; i <= 3000; i++) {
         // 1. Har 30 hotel ke baad shehar badlega (Total 100 cities coverage)
-        const city = globalCities[Math.floor((i - 1) / 30) % globalCities.length];
+        const city = globalCities[i % globalCities.length];
 
         // 2. UNIQUE NAME: Prefix + City + Type + Unique ID
         // Example: "Royal Mumbai Resort 145"
         const name = `${prefixes[i % prefixes.length]} ${city} ${types[i % types.length]} ${i}`;
-
+        const pexelsIds = [6071476, 5245473, 33726143, 33803739, 29396983, 10256408, 34062192, 16901228, 16967890, 32895277, 10047588, 12827798, 29066859, 12335278, 18678368, 7380282,]; // Kuch luxury IDs
+        const photoId = pexelsIds[i % pexelsIds.length];
         data.push({
             id: i,
             name: name,
             city: city,
             // 🖼️ PREMIUM IMAGES: Seed ID ke saath (No Repetition)
-            img: `https://picsum.photos/seed/gth-luxury-stay-${i}/1200/800`,
+            img: `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&w=1600`,
             price: Math.floor(Math.random() * (75000 - 12000) + 12000), // Premium pricing ₹12k to ₹75k
             rating: (Math.random() * (10 - 8.5) + 8.5).toFixed(1), // Sab 8.5+ ratings (Luxury branding)
             reviews: Math.floor(Math.random() * 5000 + 100),
@@ -56,37 +57,66 @@ function HotelsContent() {
     const [searchTerm, setSearchTerm] = useState(initialCity);
     const [allHotels, setAllHotels] = useState<any[]>([]); // Original data backup ke liye
     const [loading, setLoading] = useState(false);
-    const [hotels, setHotels] = useState<any[]>([]); // Khali array, data yahan bharega
+    const [hotels, setHotels] = useState<any[]>([]);
+
+    const [selectedStars, setSelectedStars] = useState<number[]>([]);
 
     const [isFetching, setIsFetching] = useState(true);
     // LIVE STATE: Search aur Filters ko control karne ke liye
     const [destination, setDestination] = useState("");
 
-    // Dummy Data ko Array of Objects mein badla hai (Live Database Jaisa)
-    const liveHotels = [
-        { id: 1, name: "The Grand GTH Resort", price: 12500, rating: 9.2, location: "Maldives", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb" },
-        { id: 2, name: "SkyBlue Heritage Villa", price: 8900, rating: 8.8, location: "Pune", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945" },
-        { id: 3, name: "Royal Apartment Suites", price: 15000, rating: 9.5, location: "Dubai", img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b" },
-    ];
+    useEffect(() => {
+        const data = generate3000Hotels();
+        setAllHotels(data);
+
+        if (initialCity) {
+            const filtered = data.filter(h =>
+                h.city.toLowerCase().includes(initialCity.toLowerCase())
+            );
+            setFilteredHotels(filtered.slice(0, 20));
+            setDestination(initialCity);
+        } else {
+            setFilteredHotels(data.slice(0, 20));
+        }
+
+        setIsFetching(false);
+    }, []);
+
+
 
     // 3000 Hotels Memory mein load (Performance Optimized)
-    const [filteredHotels, setFilteredHotels] = useState(() => {
-        return initialCity
-            ? allHotels.filter(h => h.city.toLowerCase() === initialCity.toLowerCase()).slice(0, 20)
-            : allHotels.slice(0, 20);
-    });
+    const [filteredHotels, setFilteredHotels] = useState<any[]>([]);
 
+
+    const applyFilters = (search = searchTerm, stars = selectedStars) => {
+        let results = allHotels;
+
+        // 🔍 search filter
+        if (search) {
+            results = results.filter(h =>
+                h.city.toLowerCase().includes(search.toLowerCase()) ||
+                h.name.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        // ⭐ star filter
+        if (stars.length > 0) {
+            results = results.filter(h =>
+                stars.some(star => Math.floor(h.rating) === star)
+            );
+        }
+
+        setFilteredHotels(results.slice(0, 30));
+    };
     // 🚀 LIVE SEARCH LOGIC
     const handleSearch = () => {
         setLoading(true);
+
         setTimeout(() => {
-            const results = allHotels.filter(h =>
-                h.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                h.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            setFilteredHotels(results.slice(0, 30)); // Top 30 unique results dikhao
+            applyFilters(searchTerm, selectedStars);
+            setDestination(searchTerm);
             setLoading(false);
-        }, 600);
+        }, 300);
     };
 
     return (
@@ -150,6 +180,9 @@ function HotelsContent() {
                                 className="w-full outline-none font-bold placeholder:font-normal"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearch();
+                                }}
                             />
                         </div>
                         <div className="flex-1 bg-white flex items-center gap-3 px-4 py-4 text-black border-x border-gray-100">
@@ -178,7 +211,39 @@ function HotelsContent() {
                         <Filter size={14} className="text-skyBlue" /> Filter
                     </button>
                     {Array.from({ length: 5 }, (_, i) => i + 1).map((s: number) => (
-                        <button key={s} className="px-5 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold shrink-0">{s} Stars</button>
+                        <label key={s} className="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded border-white/20 bg-transparent checked:bg-skyBlue transition-all"
+                                onChange={(e) => {
+                                    let updated = [...selectedStars];
+
+                                    if (e.target.checked) {
+                                        updated.push(s);
+                                    } else {
+                                        updated = updated.filter(star => star !== s);
+                                    }
+
+                                    setSelectedStars(updated);
+                                    applyFilters(searchTerm, updated);
+
+                                    const results = allHotels.filter(h => {
+                                        const matchSearch =
+                                            h.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            h.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+                                        const matchStar =
+                                            updated.length === 0 ||
+                                            updated.some(star => Math.floor(h.rating) === star);
+
+                                        return matchSearch && matchStar;
+                                    });
+
+                                    setFilteredHotels(results.slice(0, 30));
+                                }}
+                            />
+                            <span className="text-xs text-gray-400 group-hover:text-white uppercase font-bold">{s} Stars</span>
+                        </label>
                     ))}
                 </div>
 
@@ -200,13 +265,18 @@ function HotelsContent() {
 
                 {/* RIGHT: LIVE HOTEL LIST */}
                 <main className="flex-1 space-y-6">
+                    {loading && (
+                        <div className="text-center py-10 text-gray-400 font-bold">
+                            Searching premium stays...
+                        </div>
+                    )}
                     <div className="flex justify-between items-end mb-4">
                         <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">
-                            {destination || "Global"} : {liveHotels.length} properties found
+                            {destination || "Global"} : {filteredHotels.length} properties found
                         </p>
                     </div>
 
-                    {liveHotels.map((hotel) => (
+                    {filteredHotels.map((hotel) => (
                         <div key={hotel.id} className="group flex flex-col md:flex-row bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-skyBlue/40 transition-all duration-300">
                             {/* Hotel Image */}
                             <div className="md:w-72 h-56 md:h-auto overflow-hidden">
@@ -224,7 +294,7 @@ function HotelsContent() {
                                         </div>
                                     </div>
                                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1 underline underline-offset-4 decoration-skyBlue/30 cursor-pointer">
-                                        <MapPin size={12} /> {hotel.location} • Show on map
+                                        <MapPin size={12} /> {hotel.city} • Show on map
                                     </p>
                                 </div>
 
@@ -241,6 +311,12 @@ function HotelsContent() {
                             </div>
                         </div>
                     ))}
+
+                    {!loading && filteredHotels.length === 0 && (
+                        <div className="text-center py-20 text-gray-500 font-bold">
+                            No hotels found for "{searchTerm}"
+                        </div>
+                    )}
                 </main>
 
             </div>
