@@ -256,9 +256,8 @@ export default function App() {
             />
 
             {isMobile && (
-                <div className="p-3 space-y-3">
+                <div className="p-3 space-y-3 pb-28">
 
-                    {/* LOGIN CARD */}
                     {!user && (
                         <div className="bg-slate-900 p-3 rounded-xl">
                             <p className="text-xs text-slate-400 mb-2">
@@ -273,12 +272,12 @@ export default function App() {
                         </div>
                     )}
 
-                    {/* MAP PREVIEW */}
-                    <div className="h-40 rounded overflow-hidden border border-slate-700">
+                    {/* MAP */}
+                    <div className="h-44 rounded overflow-hidden border border-slate-700">
                         <MapWrapper data={filtered} active={active} />
                     </div>
 
-                    {/* FILTER BUTTON */}
+                    {/* FILTER */}
                     <button
                         onClick={() => setShowFilters(true)}
                         className="w-full bg-white text-black p-2 rounded font-bold"
@@ -432,11 +431,11 @@ export default function App() {
                     </div>
 
                     {/* GRID */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         {filtered.map((p) => (
                             <div
                                 key={p.id}
-                                className="bg-slate-900 p-4 rounded border border-slate-700"
+                                className="bg-slate-900 p-4 rounded-xl border border-slate-700 hover:border-cyan-500/40 transition"
                             >
                                 <img
                                     src={p.image}
