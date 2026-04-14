@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 1. Right Click Disable
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Keyboard Shortcuts Disable (Ctrl+U, Ctrl+Shift+I, F12)
+        document.onkeydown = function (e) {
+            if (e.keyCode == 123) { // F12
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { // Ctrl+Shift+I
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { // Ctrl+Shift+J
+                return false;
+            }
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { // Ctrl+U
+                return false;
+            }
+        };
+
+        // 3. Console Monitoring (Agar koi inspect khola toh site gayab)
+        setInterval(function () {
+            if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                document.body.innerHTML = "<h1>SECURITY BREACH: ACCESS DENIED</h1>";
+            }
+        }, 1000);
+
+        // GTH PRO: Core System Logic 
+        const gthConfig = {
+            languages: ['en', 'hi', 'mr', 'bn'], // Hindi, Marathi, Bangla included [cite: 2026-02-16]
+            charityPercent: 0.01, // 1% for Education [cite: 2026-02-17, 2026-02-20]
+            commission: 0.01 // 1% Business Commission [cite: 2026-02-22]
+        };
+
+        console.log("GTH PRO AI System: Online & Ready.");
+        // 1. Function jo Modal ko kholega
+        function openAIModal() {
+            const modal = document.getElementById('aiSearchModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        // 2. Function jo Modal ko band karega
+        function closeAIModal() {
+            const modal = document.getElementById('aiSearchModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // 3. Search Button Click aur Enter Key Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.querySelector('input[type="text"]');
+            const searchBtn = document.querySelector('button');
+
+            // Click par kaam karega
+            if (searchBtn) {
+                searchBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openAIModal();
+                });
+            }
+
+            // Enter key dabane par kaam karega
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        openAIModal();
+                    }
+                });
+            }
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Business | Global Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 1. DESKTOP & GLOBAL (Jo aapne set kiya tha) */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #020617;
+            font-family: sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Hero Title: Desktop par bada aur ek line mein */
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: white;
+            font-style: italic;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Ray: Desktop par lambi aur chamakti hui */
+        .hero-ray {
+            width: 300px;
+            height: 4px;
+            background: #22d3ee;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 0 25px #22d3ee;
+        }
+
+        /* 2. MOBILE FRIENDLY (Sirf mobile par chalega) */
+        @media (max-width: 768px) {
+
+            /* Mobile par height apne aap adjust hogi */
+            section {
+                height: auto !important;
+                padding: 50px 15px !important;
+            }
+
+            /* Mobile par text chhota ho jayega aur do line mein aa jayega */
+            .hero-title {
+                font-size: 1.8rem !important;
+                white-space: normal !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Mobile par Ray choti ho jayegi */
+            .hero-ray {
+                width: 150px !important;
+            }
+
+            /* Mobile par menu gayab */
+            .nav-links {
+                display: none;
+            }
+
+            /* Mobile par boxes ek ke niche ek */
+            .section-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-white font-sans">
+
+    <header
+        class="w-full py-5 px-10 flex justify-between items-center border-b border-neon blue/10 backdrop-blur-md sticky top-0 z-50">
+        <div id="gth-logo-final"
+            style="display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; padding: 5px;">
+
+            <div
+                style="position: relative; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 242, 255, 0.6);">
+
+                <div class="glow-ring"
+                    style="position: absolute; width: 40px; height: 40px; border: 2px solid #00f2ff; border-radius: 50%; border-top-color: transparent; border-bottom-color: transparent;">
+                </div>
+
+                <div
+                    style="width: 25px; height: 25px; background: radial-gradient(circle, #00f2ff, #005f6b); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #fff; font-size: 14px; font-weight: 900; text-shadow: 0 0 5px #fff;">G</span>
+                </div>
+            </div>
+
+
+            <style>
+                .glow-ring {
+                    animation: spin-glow 3s infinite linear;
+                }
+
+                @keyframes spin-glow {
+                    0% {
+                        transform: rotate(0deg);
+                        box-shadow: 0 0 5px #00f2ff;
+                    }
+
+                    50% {
+                        box-shadow: 0 0 20px #00f2ff;
+                    }
+
+                    100% {
+                        transform: rotate(360deg);
+                        box-shadow: 0 0 5px #00f2ff;
+                    }
+                }
+            </style>
+        </div>
+
+        <span
+            style="font-size: 14px; font-weight: 900; color: #333; z-index: 2; position: relative; margin-top: 2px;">G</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; line-height: 1;">
+            <span style="font-size: 1.1rem; font-weight: 900; color: #06e436; letter-spacing: 1px;">GTH <span
+                    style="color: #00f2ff; text-shadow: 0 0 5px rgba(0,242,255,0.3);">PRO</span></span>
+            <span
+                style="font-size: 0.45rem; color: #ecf004; letter-spacing: 3px; margin-top: 4px; font-weight: bold;">GLOBAL
+                VFX NODE</span>
+        </div>
+
+        <style>
+            .logo-orbit {
+                animation: logo-spin 4s infinite linear;
+                opacity: 0.6;
+            }
+
+            @keyframes logo-spin {
+                0% {
+                    transform: rotateX(70deg) rotateZ(0deg);
+                }
+
+                100% {
+                    transform: rotateX(70deg) rotateZ(360deg);
+                }
+            }
+        </style>
+
+        <div style="display: flex; align-items: center; gap: 30px; margin-left: auto;"></div>
+        <nav class="hidden md:flex space-x-10 text-xs uppercase tracking-[0.3em] text-gray-400">
+            <a href="#" class="hover:text-cyan-400 transition">Network</a>
+            <a href="#" class="hover:text-cyan-400 transition">Solution</a>
+            <a href="#" class="hover:text-cyan-400 transition">Mission</a>
+        </nav>
+
+        <div
+            style="display: flex; align-items: center; border: 1px solid #333; padding: 2px 10px; border-radius: 15px;">
+            <span style="font-size: 0.9rem; margin-right: 5px;">🌐</span>
+            <select onchange="doGTranslate(this.value)"
+                style="background: transparent; color: #66f5fa; border: none; font-size: 0.6rem; cursor: pointer; outline: none;">
+                <option value="">Language</option>
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="ar">Arabic</option>
+                <option value="ru">Russian</option>
+                <option value="ja">Japanese</option>
+            </select>
+        </div>
+        <div class="h-2 w-2 rounded-full bg-cyan-500 animate-ping"></div>
+    </header>
+
+    <section
+        style="position: relative; height: 50vh; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020617;">
+
+        <canvas id="tech-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+
+        <div style="position: relative; z-index: 10; text-align: center; width: 100%;">
+            <h1
+                style="font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; font-style: italic; color: white; white-space: nowrap; width: 100%;">
+                GLOBAL <span style="color: #22d3ee; text-shadow: 0 0 25px rgba(34, 211, 238, 0.8);">TECHNICAL</span> HUB
+            </h1>
+            <div
+                style="margin: 5px auto; width: 85%; max-width: 450px; text-align: center; position: relative; z-index: 10;">
+
+                <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 8px;">
+                    <span
+                        style="height: 6px; width: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; display: inline-block;"></span>
+                    <span
+                        style="color: #22c55e; font-size: 8px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">AI
+                        Online</span>
+                </div>
+
+                <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 4px; border-radius: 10px; display: flex; align-items: center;">
+                    <input type="text" placeholder="Search Innovation & Projects..."
+                        style="flex: 1; background: transparent; border: none; color: white; padding: 5px 12px; outline: none; font-size: 12px; width: 100%;">
+                    <button
+                        style="background: #22c55e; color: black; border: none; padding: 6px 15px; border-radius: 7px; font-weight: 900; font-size: 10px; cursor: pointer; text-transform: uppercase;">
+                        GO
+                    </button>
+                </div>
+
+                <p
+                    style="color: rgba(255, 215, 0, 0.5); font-size: 7px; margin-top: 5px; text-transform: uppercase; font-weight: bold;">
+                    1% Education Fund
+                </p>
+                <div id="aiSearchModal"
+                    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div
+                        class="relative bg-[#0d0d0f] border border-green-500/30 p-8 rounded-3xl max-w-sm w-[90%] text-center shadow-[0_0_50px_rgba(34,197,94,0.2)]">
+                        <div class="flex justify-center mb-4">
+                            <span class="relative flex h-4 w-4">
+                                <span
+                                    class="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="h-4 w-4 rounded-full bg-[#22c55e] shadow-[0_0_15px_#22c55e]"></span>
+                            </span>
+                        </div>
+
+                        <h3 class="text-white text-xl font-black tracking-tighter mb-2 uppercase">GTH AI Processing</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                            GTH Tenders & Marketplace indexing is in progress. This feature will be live soon as part of
+                            the GTH PRO ecosystem.
+                        </p>
+
+                        <button onclick="closeAIModal()"
+                            class="w-full bg-[#22c55e] hover:bg-[#16a34a] text-black font-black py-3 rounded-xl transition-all uppercase text-xs tracking-widest">
+                            Understood
+                        </button>
+
+                        <p class="text-[9px] text-yellow-500/50 mt-4 font-bold uppercase tracking-widest">1% Education
+                            Fund Active</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="
+    width: 400px; 
+    height: 6px; 
+    background: radial-gradient(circle, #fff 0%, #22d3ee 40%, transparent 100%); 
+    margin: 30px auto; 
+    filter: blur(1px);
+    box-shadow: 
+        0 0 20px #22d3ee, 
+        0 0 40px #22d3ee, 
+        0 0 60px rgba(34, 211, 238, 0.4);
+    border-radius: 50%; /* Isse roshni phat ke nikalne wali vibe aayegi */
+    opacity: 0.9;
+">
+            </div>
+            <p
+                style="margin-top: 15px; color: #64748b; letter-spacing: 10px; text-transform: uppercase; font-size: 0.75rem; font-weight: bold;">
+                Innovation • Technology • Future
+            </p>
+        </div>
+    </section>
+
+
+    <section id="gth-global-portal"
+        style="padding: 60px 20px; background: #000; font-family: 'Arial', sans-serif; color: #fff;">
+
+        <div style="text-align: center; margin-bottom: 50px;">
+            <h2 style="color: #fff; font-size: 2.2rem; letter-spacing: 5px; text-transform: uppercase;">Technical <span
+                    style="color: #00f2ff;">Solutions</span></h2>
+            <div style="width: 60px; height: 2px; background: #00f2ff; margin: 15px auto;"></div>
+        </div>
+
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto;">
+
+            <div class="gth-card">
+                <div>
+                    <div class="card-id">[ 01 ]</div>
+                    <h3 class="card-title">Full-Stack Development</h3>
+                    <p class="card-desc">Complete A-Z development of high-performance websites with clean code
+                        architecture.</p>
+                    <ul class="card-list">
+                        <li>+ Responsive Frontend UI</li>
+                        <li>+ Robust Backend Logic</li>
+                        <li>+ API Integrations</li>
+                        <li>+ Database Management</li>
+                    </ul>
+                </div>
+                <button class="gth-order-btn" onclick="openOrderModal('Full-Stack Development')">INITIALIZE
+                    ORDER</button>
+            </div>
+
+            <div class="gth-card">
+                <div>
+                    <div class="card-id">[ 02 ]</div>
+                    <h3 class="card-title">Advanced UI/UX Engines</h3>
+                    <p class="card-desc">Specialized in "Zero-Section" cinematic intros and robotic scanning interfaces.
+                    </p>
+                    <ul class="card-list">
+                        <li>+ Cinematic Entry Transitions</li>
+                        <li>+ Voice-Activated UI</li>
+                        <li>+ Dynamic CSS Animations</li>
+                        <li>+ Cyberpunk Visual Theme</li>
+                    </ul>
+                </div>
+                <button class="gth-order-btn" onclick="openOrderModal('Advanced UI/UX Engines')">INITIALIZE
+                    ORDER</button>
+            </div>
+
+            <div class="gth-card">
+                <div>
+                    <div class="card-id">[ 03 ]</div>
+                    <h3 class="card-title">Management Portals</h3>
+                    <p class="card-desc">Power-packed Dashboards for monitoring orders, users, and real-time business
+                        data.</p>
+                    <ul class="card-list">
+                        <li>+ Real-time Order Tracking</li>
+                        <li>+ User Activity Monitoring</li>
+                        <li>+ Financial Data Reporting</li>
+                        <li>+ Secure Admin Login</li>
+                    </ul>
+                </div>
+                <button class="gth-order-btn" onclick="openOrderModal('Management Portals')">INITIALIZE ORDER</button>
+            </div>
+
+            <div class="gth-card">
+                <div>
+                    <div class="card-id">[ 04 ]</div>
+                    <h3 class="card-title">Scale & Optimization</h3>
+                    <p class="card-desc">Taking local businesses global with high-speed hosting and SEO-ready
+                        structures.</p>
+                    <ul class="card-list">
+                        <li>+ Global SEO Ranking</li>
+                        <li>+ High-Speed Load Optimization</li>
+                        <li>+ 24/7 Cloud Support</li>
+                        <li>+ E-Commerce Scaling</li>
+                    </ul>
+                </div>
+                <button class="gth-order-btn" onclick="openOrderModal('Scale & Optimization')">INITIALIZE ORDER</button>
+            </div>
+        </div>
+
+        <div id="aiSearchModal"
+            style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+            <div
+                style="background: #0a0a0a; border: 2px solid #00ff00; padding: 30px; border-radius: 20px; max-width: 450px; text-align: center; color: white; box-shadow: 0 0 30px rgba(0,255,0,0.3);">
+                <h3 style="color: #00ff00; font-size: 24px; margin-bottom: 15px; font-family: sans-serif;">GTH AI
+                    ANALYSIS</h3>
+                <p id="aiStatusText"
+                    style="font-size: 16px; line-height: 1.6; margin-bottom: 25px; font-family: sans-serif;"></p>
+                <button id="aiModalBtn"
+                    style="background: #00ff00; color: black; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s;">
+                    PROCEED TO ORDER FORM
+                </button>
+            </div>
+        </div>
+
+        <div id="orderModal"
+            style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999999; justify-content: center; align-items: center; padding: 20px;">
+            <div
+                style="background: #050505; border: 1px solid #00f2ff; width: 100%; max-width: 450px; padding: 30px; position: relative; border-radius: 5px;">
+                <span onclick="closeOrderModal()"
+                    style="position: absolute; top: 10px; right: 15px; color: #fff; cursor: pointer; font-size: 28px;">&times;</span>
+                <h3 style="color: #fff; margin-bottom: 20px; text-transform: uppercase;">ORDER: <span
+                        id="selectedService" style="color: #00f2ff;"></span></h3>
+                <form id="waForm" style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="text" id="clientName" placeholder="Full Name" class="gth-input" required>
+                    <input type="email" id="clientEmail" placeholder="Work Email" class="gth-input" required>
+                    <textarea id="clientDetails" placeholder="Tell us about your project requirements..." rows="4"
+                        class="gth-input" required></textarea>
+                    <button type="button" class="gth-final-btn" onclick="sendToWhatsApp()">SEND REQUEST TO GTH PRO
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <style>
+            .gth-card {
+                background: rgba(0, 15, 15, 0.5);
+                border: 1px solid rgba(0, 242, 255, 0.2);
+                padding: 25px;
+                border-radius: 4px;
+                border-top: 3px solid #00f2ff;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                transition: 0.3s;
+            }
+
+            .gth-card:hover {
+                border-color: #00f2ff;
+                background: rgba(0, 242, 255, 0.08);
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2);
+            }
+
+            .card-id {
+                color: #00f2ff;
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+
+            .card-title {
+                color: #fff;
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+                letter-spacing: 1px;
+            }
+
+            .card-desc {
+                color: #888;
+                font-size: 0.85rem;
+                line-height: 1.6;
+                margin-bottom: 15px;
+            }
+
+            .card-list {
+                color: #00f2ff;
+                list-style: none;
+                padding: 0;
+                font-size: 0.8rem;
+                line-height: 2;
+                margin-bottom: 20px;
+            }
+
+            .gth-order-btn {
+                background: transparent;
+                border: 1px solid #00f2ff;
+                color: #00f2ff;
+                padding: 12px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: 0.3s;
+                letter-spacing: 1px;
+                width: 100%;
+            }
+
+            .gth-order-btn:hover {
+                background: #00f2ff;
+                color: #000;
+            }
+
+            .gth-input {
+                background: #000;
+                border: 1px solid #222;
+                padding: 12px;
+                color: #fff;
+                outline: none;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .gth-input:focus {
+                border-color: #00f2ff;
+            }
+
+            .gth-final-btn {
+                background: #00f2ff;
+                color: #000;
+                border: none;
+                padding: 15px;
+                font-weight: bold;
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .gth-final-btn:hover {
+                box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            }
+        </style>
+
+        <script>
+            function openOrderModal(name) {
+                document.getElementById('selectedService').innerText = name;
+                document.getElementById('orderModal').style.display = 'flex';
+            }
+
+            function closeOrderModal() {
+                document.getElementById('orderModal').style.display = 'none';
+            }
+
+            function sendToWhatsApp() {
+                const service = document.getElementById('selectedService').innerText;
+                const name = document.getElementById('clientName').value;
+                const email = document.getElementById('clientEmail').value;
+                const details = document.getElementById('clientDetails').value;
+
+                if (!name || !email || !details) {
+                    alert("Please fill all fields.");
+                    return;
+                }
+
+                const waNumber = "916290731180";
+                const message = `*NEW GTH PRO ORDER*%0A%0A` +
+                    `*Service:* ${service}%0A` +
+                    `*Name:* ${name}%0A` +
+                    `*Email:* ${email}%0A` +
+                    `*Project:* ${details}`;
+
+                const url = `https://wa.me/${waNumber}?text=${message}`;
+                window.open(url, '_blank').focus();
+                closeOrderModal();
+            }
+        </script>
+
+        <section id="vfx-heavy-glass"
+            style="padding: 80px 20px; background: #000; font-family: 'Segoe UI', Roboto, sans-serif;">
+
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2
+                    style="color: #fff; font-size: 2.5rem; letter-spacing: 8px; text-transform: uppercase; font-weight: 900;">
+                    Visual <span style="color: #00f2ff; text-shadow: 0 0 20px rgba(0, 242, 255, 0.6);">Command</span>
+                </h2>
+                <p style="color: #555; letter-spacing: 2px; font-size: 0.8rem; margin-top: 10px;">HYBRID INTELLIGENCE ×
+                    CINEMATIC ARTISTRY</p>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1400px; margin: 0 auto;">
+
+                <div class="heavy-glass-card">
+                    <div class="tech-label">NEURAL ENGINE</div>
+                    <h3 class="card-h">Viral Retention Architecture</h3>
+                    <p class="card-p">Crafting high-velocity social clips with AI-driven hook strategies and aggressive
+                        Premiere Pro pacing to dominate the algorithm.</p>
+                    <div class="card-price">$49 <small style="font-size: 0.6rem; opacity: 0.6;">BASE UNIT</small></div>
+                    <button onclick="openOrderModal('Viral Retention Architecture')" class="solid-btn">DEPLOY
+                        PROJECT</button>
+                </div>
+
+                <div class="heavy-glass-card">
+                    <div class="tech-label">MOTION DYNAMICS</div>
+                    <h3 class="card-h">Robotic UI & HUD Systems</h3>
+                    <p class="card-p">Engineering complex cybernetic interfaces and 2.5D motion assets. Precision
+                        keyframing in After Effects for a futuristic digital identity.</p>
+                    <div class="card-price">$149 <small style="font-size: 0.6rem; opacity: 0.6;">BASE UNIT</small></div>
+                    <button onclick="openOrderModal('Robotic UI Systems')" class="solid-btn">DEPLOY PROJECT</button>
+                </div>
+
+                <div class="heavy-glass-card">
+                    <div class="tech-label">VFX CORE</div>
+                    <h3 class="card-h">Cinematic Reality Warping</h3>
+                    <p class="card-p">Advanced compositing including 3D camera tracking, particle simulation, and
+                        Hollywood-grade color science for high-impact visual depth.</p>
+                    <div class="card-price">$299 <small style="font-size: 0.6rem; opacity: 0.6;">BASE UNIT</small></div>
+                    <button onclick="openOrderModal('Cinematic Reality Warping')" class="solid-btn">DEPLOY
+                        PROJECT</button>
+                </div>
+
+                <div class="heavy-glass-card"
+                    style="border: 1px solid #00f2ff; box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.1);">
+                    <div class="tech-label" style="background: #00f2ff; color: #000;">STAKEHOLDER'S CHOICE</div>
+                    <h3 class="card-h">Synthetix Commercial Ad</h3>
+                    <p class="card-p"><strong>Zero-Shoot Production.</strong> Utilizing AI Virtual Avatars and
+                        high-bitrate stock sequences fused with custom VFX for rapid brand scaling.</p>
+                    <div class="card-price">CUSTOM <small style="font-size: 0.6rem; opacity: 0.6;">QUOTE</small></div>
+                    <button onclick="openOrderModal('Synthetix Commercial Ad')" class="solid-btn"
+                        style="background: #00f2ff; color: #000;">GET ESTIMATE</button>
+                </div>
+
+            </div>
+
+            <style>
+                .heavy-glass-card {
+                    background: rgba(15, 15, 15, 0.8);
+                    /* Solid background, kam hawa */
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    padding: 40px 30px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    min-height: 380px;
+                    transition: all 0.4s ease-in-out;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .heavy-glass-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+                    transition: 0.5s;
+                }
+
+                .heavy-glass-card:hover::before {
+                    left: 100%;
+                }
+
+                .heavy-glass-card:hover {
+                    border-color: #00f2ff;
+                    transform: scale(1.02);
+                    box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+                }
+
+                .tech-label {
+                    font-size: 0.6rem;
+                    letter-spacing: 2px;
+                    border: 1px solid #333;
+                    padding: 4px 8px;
+                    color: #00f2ff;
+                    width: fit-content;
+                    margin-bottom: 20px;
+                    font-weight: bold;
+                }
+
+                .card-h {
+                    color: #fff;
+                    font-size: 1.5rem;
+                    margin-bottom: 15px;
+                    font-weight: 700;
+                    line-height: 1.2;
+                }
+
+                .card-p {
+                    color: #aaa;
+                    font-size: 0.85rem;
+                    line-height: 1.7;
+                    margin-bottom: 25px;
+                }
+
+                .card-price {
+                    color: #fff;
+                    font-size: 1.8rem;
+                    font-weight: 300;
+                    margin-top: auto;
+                    border-top: 1px solid #222;
+                    padding-top: 20px;
+                }
+
+                .solid-btn {
+                    background: transparent;
+                    border: 1px solid #00f2ff;
+                    color: #00f2ff;
+                    padding: 14px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: 0.3s;
+                    letter-spacing: 2px;
+                    margin-top: 20px;
+                    font-size: 0.75rem;
+                }
+
+                .solid-btn:hover {
+                    background: #00f2ff;
+                    color: #000;
+                    box-shadow: 0 0 15px #00f2ff;
+                }
+            </style>
+        </section>
+
+        <section id="nexus-fixed"
+            style="padding: 100px 20px; background: #000; position: relative; overflow: hidden; font-family: 'Orbitron', sans-serif;">
+
+            <div style="position: absolute; inset: 0; opacity: 0.15; 
+        background-image: radial-gradient(#00f2ff 0.8px, transparent 0.8px); 
+        background-size: 20px 20px; z-index: 1;">
+            </div>
+
+            <div
+                style="position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 0%, #000 90%); z-index: 2;">
+            </div>
+
+            <div style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 5;">
+
+                <div style="text-align: center; margin-bottom: 80px;">
+                    <h2
+                        style="color: #fff; font-size: 2.2rem; letter-spacing: 15px; text-transform: uppercase; font-weight: 900;">
+                        NEXUS <span style="color: #00f2ff;">2.0</span></h2>
+                    <p style="color: #00f2ff; font-size: 0.6rem; letter-spacing: 5px; margin-top: 10px;">GLOBAL
+                        COORDINATES LOCKED</p>
+                </div>
+
+                <div
+                    style="position: relative; height: 400px; border-top: 1px solid rgba(0, 242, 255, 0.1); border-bottom: 1px solid rgba(0, 242, 255, 0.1);">
+
+                    <svg style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;">
+                        <path d="M720,250 Q500,50 200,180" fill="none" stroke="#00f2ff" stroke-width="1"
+                            stroke-dasharray="8" opacity="0.4">
+                            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="5s"
+                                repeatCount="indefinite" />
+                        </path>
+                        <path d="M720,250 Q550,80 450,150" fill="none" stroke="#00f2ff" stroke-width="1"
+                            stroke-dasharray="8" opacity="0.4">
+                            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3s"
+                                repeatCount="indefinite" />
+                        </path>
+                    </svg>
+
+                    <div class="map-node-v2" style="top: 35%; left: 15%;">
+                        <div class="ping-circle"></div>
+                        <div class="tag">USA_GATEWAY <br><span>ACTIVE</span></div>
+                    </div>
+
+                    <div class="map-node-v2" style="top: 25%; left: 42%;">
+                        <div class="ping-circle"></div>
+                        <div class="tag">EURO_NODE_v2 <br><span>SYNCED</span></div>
+                    </div>
+
+                    <div class="map-node-v2" style="top: 55%; left: 70%;">
+                        <div class="ping-circle master-ping"></div>
+                        <div class="tag hq-tag">GTH_HQ_INDIA <br><span style="color: #0f0;">COMMAND CENTER</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <style>
+                .map-node-v2 {
+                    position: absolute;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+                .ping-circle {
+                    width: 12px;
+                    height: 12px;
+                    background: #00f2ff;
+                    border-radius: 50%;
+                    box-shadow: 0 0 15px #00f2ff;
+                }
+
+                .master-ping {
+                    background: #fff;
+                    width: 16px;
+                    height: 16px;
+                    box-shadow: 0 0 25px #fff;
+                }
+
+                .ping-circle::after {
+                    content: '';
+                    position: absolute;
+                    inset: -10px;
+                    border: 1px solid #00f2ff;
+                    border-radius: 50%;
+                    animation: ripple 2s infinite;
+                }
+
+                .tag {
+                    margin-top: 15px;
+                    color: #00f2ff;
+                    font-size: 0.6rem;
+                    letter-spacing: 2px;
+                    background: rgba(0, 0, 0, 0.85);
+                    padding: 8px 12px;
+                    border: 1px solid rgba(0, 242, 255, 0.2);
+                    text-align: center;
+                }
+
+                .hq-tag {
+                    border-color: #fff;
+                    color: #fff;
+                    border-bottom: 2px solid #fff;
+                }
+
+                .tag span {
+                    font-size: 0.45rem;
+                    opacity: 0.7;
+                }
+
+                @keyframes ripple {
+                    0% {
+                        transform: scale(0.5);
+                        opacity: 1;
+                    }
+
+                    100% {
+                        transform: scale(3);
+                        opacity: 0;
+                    }
+                }
+            </style>
+        </section>
+
+        <section id="final-terminal"
+            style="padding: 25px 15px; background: #000; font-family: 'Orbitron', sans-serif; border-top: 1px solid #111; color: #fff; position: relative;">
+
+            <div
+                style="display: flex; justify-content: space-between; max-width: 900px; margin: 0 auto 15px; font-size: 0.5rem; color: #00f2ff; letter-spacing: 2px;">
+                <span id="sync-status">● SYSTEM_READY</span>
+                <span>NODE: GTH_HQ_INDIA</span>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div
+                    style="display: inline-flex; border: 1px solid #222; border-radius: 4px; overflow: hidden; background: #080808;">
+                    <button onclick="changeCcy('USD')" id="t-usd"
+                        style="background:#00f2ff; color:#000; border:none; padding:5px 15px; font-size:0.6rem; cursor:pointer; font-weight:bold;">USD</button>
+                    <button onclick="changeCcy('EUR')" id="t-eur"
+                        style="background:transparent; color:#fff; border:none; padding:5px 15px; font-size:0.6rem; cursor:pointer; border-left:1px solid #222;">EUR</button>
+                    <button onclick="changeCcy('AED')" id="t-aed"
+                        style="background:transparent; color:#fff; border:none; padding:5px 15px; font-size:0.6rem; cursor:pointer; border-left:1px solid #222;">AED</button>
+                    <button onclick="changeCcy('INR')" id="t-inr"
+                        style="background:transparent; color:#fff; border:none; padding:5px 15px; font-size:0.6rem; cursor:pointer; border-left:1px solid #222;">INR</button>
+                </div>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; max-width: 950px; margin: 0 auto;">
+
+                <div class="ind-card">
+                    <div style="font-size: 1.3rem; margin: 8px 0; font-weight: 900; color: #fff;">
+                        <span class="s-sym">$</span><span class="v-val" data-usd="299" data-eur="275" data-aed="1099"
+                            data-inr="24999">299</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: #555; margin-bottom: 10px;">CORE VFX PACKAGE</div>
+                    <button class="s-btn">DEPLOY</button>
+                </div>
+
+                <div class="ind-card" style="border-color: #00f2ff; background: rgba(0,242,255,0.02);">
+                    <div style="font-size: 1.3rem; margin: 8px 0; font-weight: 900; color: #fff;">
+                        <span class="s-sym">$</span><span class="v-val" data-usd="899" data-eur="825" data-aed="3299"
+                            data-inr="74999">899</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: #00f2ff; margin-bottom: 10px;">PRO AI DEPLOYMENT</div>
+                    <button class="s-btn" style="background: #00f2ff; color: #000;">DEPLOY</button>
+                </div>
+
+                <div class="ind-card">
+                    <div style="font-size: 1.3rem; margin: 8px 0; font-weight: 900; color: #fff;">
+                        <span class="s-sym">$</span><span class="v-val" data-usd="1499" data-eur="1380" data-aed="5500"
+                            data-inr="124999">1499</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: #555; margin-bottom: 10px;">ENTERPRISE SCALE</div>
+                    <button class="s-btn">DEPLOY</button>
+                </div>
+
+            </div>
+
+            <div style="margin-top: 25px; text-align: center;">
+                <div
+                    style="font-size: 0.45rem; color: #333; margin-bottom: 10px; border-top: 1px solid #111; padding-top: 10px;">
+                    AUTHORIZED PAYMENT CHANNELS</div>
+                <div
+                    style="display: flex; justify-content: center; gap: 20px; font-size: 0.6rem; opacity: 0.5; filter: grayscale(1);">
+                    <span style="color:#fff;">VISA</span>
+                    <span style="color:#fff;">PAYPAL</span>
+                    <span style="color:#f7931a;">BITCOIN</span>
+                    <span style="color:#26a17b;">USDT</span>
+                </div>
+            </div>
+
+        </section>
+
+        <script>
+            function changeCcy(c) {
+                const syms = { 'USD': '$', 'EUR': '€', 'AED': 'د.إ', 'INR': '₹' };
+                const status = document.getElementById('sync-status');
+
+                // Indication: Processing Start
+                status.innerText = "● SYNCING_" + c + "...";
+                status.style.color = "#ff0";
+
+                setTimeout(() => {
+                    ['usd', 'eur', 'aed', 'inr'].forEach(k => {
+                        const b = document.getElementById('t-' + k);
+                        b.style.background = (k === c.toLowerCase()) ? '#00f2ff' : 'transparent';
+                        b.style.color = (k === c.toLowerCase()) ? '#000' : '#fff';
+                    });
+                    document.querySelectorAll('.v-val').forEach((el, i) => {
+                        const s = document.querySelectorAll('.s-sym')[i];
+                        s.innerText = syms[c];
+                        el.innerText = el.getAttribute('data-' + c.toLowerCase());
+                    });
+                    // Indication: Processing Complete
+                    status.innerText = "● " + c + "_LINK_STABLE";
+                    status.style.color = "#00f2ff";
+                }, 600);
+            }
+        </script>
+
+        <style>
+            .ind-card {
+                background: #050505;
+                border: 1px solid #111;
+                padding: 15px;
+                transition: 0.3s;
+                text-align: center;
+            }
+
+            .s-btn {
+                width: 100%;
+                padding: 7px;
+                background: transparent;
+                border: 1px solid #00f2ff;
+                color: #00f2ff;
+                font-size: 0.6rem;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            .ind-card:hover {
+                border-color: #222;
+                transform: translateY(-2px);
+            }
+        </style>
+
+        <section id="nexus-core-live"
+            style="padding: 100px 20px; background: #000; overflow: hidden; position: relative;">
+
+            <div
+                style="position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #001a1a 0%, #000 80%);">
+            </div>
+            <div
+                style="position: absolute; inset: 0; opacity: 0.1; background-image: radial-gradient(#00f2ff 1px, transparent 1px); background-size: 30px 30px;">
+            </div>
+
+            <div style="text-align: center; margin-bottom: 80px; position: relative; z-index: 2;">
+                <h2
+                    style="color: #fff; font-size: 2.5rem; letter-spacing: 15px; text-transform: uppercase; font-weight: 900; filter: drop-shadow(0 0 15px #00f2ff);">
+                    NEXUS <span style="color: #00f2ff;">CORE</span></h2>
+                <p style="color: #444; font-size: 0.7rem; letter-spacing: 4px; margin-top: 10px;">ALL SYSTEMS
+                    OPERATIONAL // GLOBAL DEPLOYMENT ACTIVE</p>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1400px; margin: 0 auto; position: relative; z-index: 2;">
+
+                <div class="nexus-terminal active-node">
+                    <div class="terminal-header">
+                        <span class="status-dot pulsing-cyan"></span> NODE_01: AI_BRAIN
+                    </div>
+                    <div class="terminal-body">
+                        <h3 style="color: #00f2ff; margin-bottom: 10px;">Neural Logic</h3>
+                        <p style="color: #888; font-size: 0.85rem; line-height: 1.8;">Gemini-integrated script analysis.
+                            Processing audience retention data and cinematic blueprints.</p>
+                        <div class="data-stream">SCANNING DATA... [78%]</div>
+                    </div>
+                </div>
+
+                <div class="nexus-terminal active-node">
+                    <div class="terminal-header">
+                        <span class="status-dot pulsing-cyan"></span> NODE_02: RENDER_UNIT
+                    </div>
+                    <div class="terminal-body">
+                        <h3 style="color: #00f2ff; margin-bottom: 10px;">VFX Engine</h3>
+                        <p style="color: #888; font-size: 0.85rem; line-height: 1.8;">High-bitrate After Effects
+                            rendering. Reality-bending layers and 3D environment tracking active.</p>
+                        <div class="data-stream">RENDERING... FRAME 4022</div>
+                    </div>
+                </div>
+
+                <div class="nexus-terminal active-node">
+                    <div class="terminal-header">
+                        <span class="status-dot pulsing-cyan"></span> NODE_03: FINAL_SYNC
+                    </div>
+                    <div class="terminal-body">
+                        <h3 style="color: #00f2ff; margin-bottom: 10px;">Asset Deployment</h3>
+                        <p style="color: #888; font-size: 0.85rem; line-height: 1.8;">Final assembly of AI-generated
+                            assets. Precision sound engineering and color science implementation.</p>
+                        <div class="data-stream">UPLOADING TO CLOUD... OK</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <style>
+                /* Terminal Styling */
+                .nexus-terminal {
+                    background: rgba(5, 15, 15, 0.9);
+                    border: 1px solid rgba(0, 242, 255, 0.3);
+                    position: relative;
+                    transition: 0.4s;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+                }
+
+                .nexus-terminal:hover {
+                    border-color: #00f2ff;
+                    transform: translateY(-10px);
+                    box-shadow: 0 0 50px rgba(0, 242, 255, 0.25);
+                }
+
+                .terminal-header {
+                    background: rgba(0, 242, 255, 0.15);
+                    padding: 12px 18px;
+                    color: #00f2ff;
+                    font-size: 0.75rem;
+                    font-family: 'Courier New', monospace;
+                    border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    font-weight: bold;
+                }
+
+                .terminal-body {
+                    padding: 35px 25px;
+                }
+
+                /* The Blinking Dot Logic */
+                .status-dot {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background: #00f2ff;
+                    box-shadow: 0 0 10px #00f2ff;
+                }
+
+                .pulsing-cyan {
+                    animation: blink-animation 1s infinite alternate;
+                }
+
+                @keyframes blink-animation {
+                    from {
+                        opacity: 0.2;
+                        transform: scale(0.8);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform: scale(1.1);
+                        box-shadow: 0 0 15px #00f2ff;
+                    }
+                }
+
+                /* Bottom Data Strip */
+                .data-stream {
+                    margin-top: 25px;
+                    font-family: monospace;
+                    font-size: 0.65rem;
+                    color: #00f2ff;
+                    background: rgba(0, 0, 0, 0.5);
+                    padding: 10px;
+                    border-left: 3px solid #00f2ff;
+                    letter-spacing: 1px;
+                }
+            </style>
+        </section>
+
+        <section id="portfolio-node" style="background: #000; padding: 80px 20px; font-family: 'Orbitron', sans-serif;">
+
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="color: #00f2ff; letter-spacing: 10px; font-size: 2rem; text-shadow: 0 0 15px #00f2ff;">
+                    PORTFOLIO</h2>
+                <p style="color: #555; font-size: 0.7rem; margin-top: 10px;">[ VISUAL INTELLIGENCE TERMINAL ]</p>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
+
+                <div class="portfolio-card"
+                    style="position: relative; height: 350px; background: #080808; border: 1px solid #111; overflow: hidden;">
+                    <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=600&q=80"
+                        style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                    <div style="position: absolute; top: 20px; left: 20px; z-index: 5;">
+                        <h4
+                            style="color: #00f2ff; margin: 0; font-size: 0.8rem; background: rgba(0,0,0,0.7); padding: 5px;">
+                            AI_HUMAN_GEN</h4>
+                    </div>
+                    <div class="card-footer">VIEW PROJECT</div>
+                </div>
+
+                <div class="portfolio-card"
+                    style="position: relative; height: 350px; background: #080808; border: 1px solid #111; overflow: hidden;">
+                    <video autoplay loop muted playsinline
+                        style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                        <source
+                            src="https://cdn.pixabay.com/vimeo/328946124/city-24365.mp4?width=640&hash=8560195650742f5399589d813735745143a4e9b9"
+                            type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 20px; left: 20px; z-index: 5;">
+                        <h4
+                            style="color: #00f2ff; margin: 0; font-size: 0.8rem; background: rgba(0,0,0,0.7); padding: 5px;">
+                            VFX_CITY_WALK</h4>
+                    </div>
+                    <div class="card-footer">VIEW PROJECT</div>
+                </div>
+
+                <div class="portfolio-card"
+                    style="position: relative; height: 350px; background: #080808; border: 1px solid #111; overflow: hidden;">
+                    <video autoplay loop muted playsinline
+                        style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                        <source
+                            src="https://cdn.pixabay.com/vimeo/147055310/neon-1563.mp4?width=640&hash=1481e1498b95889e47854611449c485c29210e74"
+                            type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 20px; left: 20px; z-index: 5;">
+                        <h4
+                            style="color: #00f2ff; margin: 0; font-size: 0.8rem; background: rgba(0,0,0,0.7); padding: 5px;">
+                            3D_NEON_STRUCTURE</h4>
+                    </div>
+                    <div class="card-footer">VIEW PROJECT</div>
+                </div>
+
+            </div>
+        </section>
+
+        <style>
+            .portfolio-card {
+                transition: 0.4s;
+                cursor: pointer;
+            }
+
+            .portfolio-card:hover {
+                border-color: #00f2ff;
+                transform: scale(1.02);
+            }
+
+            .portfolio-card:hover img,
+            .portfolio-card:hover video {
+                opacity: 1 !important;
+            }
+
+            .card-footer {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                background: #00f2ff;
+                color: #000;
+                text-align: center;
+                padding: 10px;
+                font-size: 0.6rem;
+                font-weight: 900;
+                transform: translateY(100%);
+                transition: 0.3s;
+            }
+
+            .portfolio-card:hover .card-footer {
+                transform: translateY(0);
+            }
+        </style>
+
+        <section id="gth-contact-area"
+            style="background: #000; padding: 60px 20px; font-family: 'Orbitron', sans-serif;">
+            <div
+                style="max-width: 600px; margin: 0 auto; border: 1px solid #00f2ff; border-radius: 15px; padding: 30px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);">
+
+                <h2
+                    style="color: #00f2ff; text-align: center; letter-spacing: 5px; font-size: 1.5rem; margin-bottom: 30px;">
+                    CONTACT NODE</h2>
+
+                <form id="main-contact-form" onsubmit="handleGTHSubmit(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #00f2ff; font-size: 0.7rem; display: block; margin-bottom: 8px;">FULL
+                            NAME</label>
+                        <input type="text" id="user-name" required placeholder="Type Name..."
+                            style="width: 100%; background: #080808; border: 1px solid #222; color: #fff; padding: 12px; font-family: 'Orbitron'; outline: none;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #00f2ff; font-size: 0.7rem; display: block; margin-bottom: 8px;">EMAIL
+                            ADDRESS</label>
+                        <input type="email" id="user-email" required placeholder="email@gthpro.com"
+                            style="width: 100%; background: #080808; border: 1px solid #222; color: #fff; padding: 12px; font-family: 'Orbitron'; outline: none;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #00f2ff; font-size: 0.7rem; display: block; margin-bottom: 8px;">PROJECT
+                            TYPE</label>
+                        <select id="user-project"
+                            style="width: 100%; background: #080808; border: 1px solid #222; color: #00f2ff; padding: 12px; font-family: 'Orbitron'; outline: none;">
+                            <option>VFX PRODUCTION</option>
+                            <option>AI COMMERCIALS</option>
+                            <option>3D ARCHITECTURE</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <label
+                            style="color: #00f2ff; font-size: 0.7rem; display: block; margin-bottom: 8px;">MESSAGE</label>
+                        <textarea id="user-msg" rows="5" required placeholder="Describe your vision..."
+                            style="width: 100%; background: #080808; border: 1px solid #222; color: #fff; padding: 12px; font-family: 'Orbitron'; outline: none; resize: none;"></textarea>
+                    </div>
+
+                    <button type="submit"
+                        style="width: 100%; background: #00f2ff; color: #000; border: none; padding: 15px; font-weight: 900; letter-spacing: 3px; cursor: pointer; transition: 0.3s;">
+                        SEND MESSAGE
+                    </button>
+                </form>
+
+                <div id="form-status" style="margin-top: 20px; text-align: center; color: #00f2ff; display: none;">
+                </div>
+            </div>
+        </section>
+
+        <script>
+            function handleGTHSubmit(e) {
+                e.preventDefault();
+                const status = document.getElementById('form-status');
+                status.style.display = "block";
+                status.innerText = "TRANSMITTING DATA...";
+
+                setTimeout(() => {
+                    status.innerText = "SUCCESS: MESSAGE SENT TO GTH NODE!";
+                    document.getElementById('main-contact-form').reset();
+                }, 2000);
+            }
+        </script>
+
+    </section>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <section id="automation-hub"
+        style="padding: 80px 20px; background: #010409; position: relative; overflow: hidden; font-family: 'Segoe UI', sans-serif; border-top: 1px solid rgba(168, 85, 247, 0.2);">
+
+        <div style="max-width: 1000px; margin: 0 auto; position: relative; z-index: 10;">
+
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2
+                    style="color: #fff; font-size: 1.3rem; font-weight: 800; letter-spacing: 5px; text-transform: uppercase;">
+                    AI <span style="color: #a855f7; text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);">CONTENT
+                        ENGINE</span>
+                </h2>
+                <div style="width: 40px; height: 2px; background: #a855f7; margin: 15px auto;"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+
+                <a href="studio.html" style="text-decoration: none; display: block;">
+                    <div class="pro-auto-card">
+                        <i class="fab fa-youtube" style="color: #ff0000; font-size: 2.5rem; margin-bottom: 20px;"></i>
+                        <h4 style="color:#fff;">YT SHORTS</h4>
+                        <p style="color:#94a3b8; font-size:0.85rem;">Auto-generate scripts and AI voiceovers for YouTube
+                            Shorts.</p>
+                        <div class="action-btn">OPEN ENGINE</div>
+                    </div>
+                </a>
+
+                <a href="studio.html" style="text-decoration: none; display: block;">
+                    <div class="pro-auto-card">
+                        <i class="fab fa-instagram" style="color: #e1306c; font-size: 2.5rem; margin-bottom: 20px;"></i>
+                        <h4 style="color:#fff;">INSTA REELS</h4>
+                        <p style="color:#94a3b8; font-size:0.85rem;">Trending music sync & AI video creation for Reels.
+                        </p>
+                        <div class="action-btn">OPEN ENGINE</div>
+                    </div>
+                </a>
+
+                <a href="studio.html" style="text-decoration: none; display: block;">
+                    <div class="pro-auto-card">
+                        <i class="fab fa-facebook" style="color: #1877f2; font-size: 2.5rem; margin-bottom: 20px;"></i>
+                        <h4 style="color:#fff;">FB CONTENT</h4>
+                        <p style="color:#94a3b8; font-size:0.85rem;">High-conversion video ads and posts generated in
+                            seconds.</p>
+                        <div class="action-btn">OPEN ENGINE</div>
+                    </div>
+                </a>
+
+            </div>
+
+            <style>
+                .pro-auto-card {
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px dashed rgba(168, 85, 247, 0.3);
+                    padding: 40px 30px;
+                    border-radius: 12px;
+                    text-align: center;
+                    transition: all 0.4s ease;
+                }
+
+                .pro-auto-card:hover {
+                    background: rgba(168, 85, 247, 0.08);
+                    border: 1px solid #a855f7;
+                    transform: translateY(-10px);
+                    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.2);
+                }
+
+                .action-btn {
+                    margin-top: 20px;
+                    background: #a855f7;
+                    color: white;
+                    padding: 8px 18px;
+                    border-radius: 50px;
+                    font-size: 0.7rem;
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                    display: inline-block;
+                }
+            </style>
+        </div>
+        </div>
+
+        <style>
+            .pro-auto-card {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px dashed rgba(168, 85, 247, 0.3);
+                padding: 40px 30px;
+                border-radius: 12px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+            }
+
+            /* 🔥 ZABARDAST HOVER EFFECT */
+            .pro-auto-card:hover {
+                background: rgba(168, 85, 247, 0.08);
+                border: 1px solid #a855f7;
+                transform: translateY(-12px);
+                box-shadow: 0 15px 35px rgba(168, 85, 247, 0.2);
+            }
+
+            .s-icon {
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+                transition: 0.3s;
+            }
+
+            .pro-auto-card:hover .s-icon {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+            }
+
+            .pro-auto-card h4 {
+                color: #fff;
+                font-size: 1.1rem;
+                letter-spacing: 2px;
+                margin-bottom: 15px;
+            }
+
+            .pro-auto-card p {
+                color: #94a3b8;
+                font-size: 0.85rem;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+
+            .action-btn {
+                display: inline-block;
+                font-size: 0.7rem;
+                color: #fff;
+                background: #a855f7;
+                padding: 8px 18px;
+                border-radius: 50px;
+                font-weight: bold;
+                letter-spacing: 1px;
+                transition: 0.3s;
+                box-shadow: 0 5px 15px rgba(168, 85, 247, 0.3);
+            }
+
+            .pro-auto-card:hover .action-btn {
+                background: #fff;
+                color: #a855f7;
+                box-shadow: 0 5px 20px #fff;
+            }
+        </style>
+
+        <script>
+            function startAutomation(platform, url) {
+                // Voice feedback
+                const msg = new SpeechSynthesisUtterance("Opening " + platform + " Automation Workspace");
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(msg);
+
+                // Yeh line user ko naye page par bhej degi
+                setTimeout(() => {
+                    window.location.href = "studio.html";
+                }, 1200);
+            }
+        </script>
+    </section>
+
+    <section id="live-counter" style="padding: 50px 20px; background: #000; border-top: 1px solid #111;">
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; text-align: center;">
+
+            <div>
+                <div style="color: #00f2ff; font-size: 2.5rem; font-weight: 800; font-family: 'Segoe UI';">
+                    <span class="stat-number" data-target="24">0</span>
+                </div>
+                <div
+                    style="color: #444; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px;">
+                    High-End Projects</div>
+            </div>
+
+            <div>
+                <div style="color: #fff; font-size: 2.5rem; font-weight: 800;">
+                    <span class="stat-number" data-target="98">0</span>.4%
+                </div>
+                <div
+                    style="color: #444; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px;">
+                    Client Satisfaction</div>
+            </div>
+
+            <div>
+                <div style="color: #00f2ff; font-size: 2.5rem; font-weight: 800; font-family: 'Courier New';">
+                    <span id="frame-counter">1420</span>
+                </div>
+                <div
+                    style="color: #444; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px;">
+                    VFX Frames Processed</div>
+                <div style="color: #555; font-size: 0.55rem; margin-top: 5px; font-family: monospace;"
+                    id="status-light">● SYSTEM IDLE</div>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        // 1. Slow & Smooth Start
+        const counters = document.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const increment = target / 100; // Aur slow kar diya
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(updateCount, 50);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+
+        // 2. Realistic Render Pulse (Slow & Random)
+        function updateFrames() {
+            const frameCounter = document.getElementById('frame-counter');
+            const statusLight = document.getElementById('status-light');
+
+            // Kabhi badhega, kabhi nahi (Randomness)
+            if (Math.random() > 0.5) {
+                let currentFrames = parseInt(frameCounter.innerText);
+                frameCounter.innerText = currentFrames + 1;
+                statusLight.style.color = "#0f0";
+                statusLight.innerText = "● RENDERING FRAME...";
+
+                // 2 second baad wapas idle
+                setTimeout(() => {
+                    statusLight.style.color = "#555";
+                    statusLight.innerText = "● SYSTEM IDLE";
+                }, 2000);
+            }
+
+            // Agla update kab hoga? (5 to 10 seconds ke beech)
+            let nextUpdate = Math.floor(Math.random() * 5000) + 5000;
+            setTimeout(updateFrames, nextUpdate);
+        }
+        updateFrames();
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <section id="capabilities-final"
+        style="padding: 60px 20px; background: #010409; position: relative; overflow: hidden; font-family: 'Segoe UI', sans-serif;">
+
+        <div
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.05) 0%, transparent 80%); pointer-events: none;">
+        </div>
+
+        <div style="max-width: 1000px; margin: 0 auto; position: relative; z-index: 10;">
+
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2
+                    style="color: #fff; font-size: 1.2rem; font-weight: 800; letter-spacing: 6px; text-transform: uppercase; margin: 0;">
+                    OUR <span style="color: #22d3ee;">CAPABILITIES</span>
+                </h2>
+                <div style="width: 40px; height: 2px; background: #22d3ee; margin: 12px auto;"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+
+                <div class="tech-card">
+                    <i class="fas fa-network-wired tech-icon"></i>
+                    <h4>NETWORK</h4>
+                    <p>Advanced secure infrastructure for global businesses and encrypted data tunneling for maximum
+                        speed and safety.</p>
+                </div>
+
+                <div class="tech-card">
+                    <i class="fas fa-microchip tech-icon"></i>
+                    <h4>MISSION</h4>
+                    <p>Empowering industries with AI-driven architecture and next-gen digital transformation for future
+                        scaling.</p>
+                </div>
+
+                <div class="tech-card">
+                    <i class="fas fa-headset tech-icon"></i>
+                    <h4>GLOBAL SUPPORT</h4>
+                    <p>24/7 technical monitoring by world-class experts. We ensure zero-downtime and instant resolution
+                        for every client.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <style>
+            .tech-card {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(34, 211, 238, 0.15);
+                padding: 30px 25px;
+                border-radius: 4px;
+                transition: 0.3s ease;
+                text-align: left;
+            }
+
+            .tech-card:hover {
+                background: rgba(34, 211, 238, 0.05);
+                border-color: #22d3ee;
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(34, 211, 238, 0.1);
+            }
+
+            .tech-icon {
+                color: #22d3ee;
+                font-size: 2rem;
+                margin-bottom: 20px;
+                display: block;
+            }
+
+            .tech-card h4 {
+                color: #fff;
+                font-size: 1rem;
+                letter-spacing: 2px;
+                margin: 0 0 12px 0;
+                font-weight: 700;
+            }
+
+            .tech-card p {
+                color: #94a3b8;
+                font-size: 0.85rem;
+                line-height: 1.6;
+                margin: 0;
+            }
+        </style>
+    </section>
+
+    <script>
+        const canvas = document.getElementById('tech-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const particleCount = 80;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = '#22d3ee';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connect() {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 150) {
+                        ctx.strokeStyle = 'rgba(34, 211, 238,' + (1 - distance / 150) + ')';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            connect();
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+
+    <script>
+        const vfxCanvas = document.getElementById('hero-vfx');
+        const vfxCtx = vfxCanvas.getContext('2d');
+        vfxCanvas.width = window.innerWidth;
+        vfxCanvas.height = window.innerHeight;
+
+        let vfxStars = [];
+        for (let i = 0; i < 150; i++) {
+            vfxStars.push({
+                x: Math.random() * vfxCanvas.width,
+                y: Math.random() * vfxCanvas.height,
+                size: Math.random() * 1.5,
+                speed: Math.random() * 0.5
+            });
+        }
+
+        function animateVFX() {
+            vfxCtx.clearRect(0, 0, vfxCanvas.width, vfxCanvas.height);
+            vfxCtx.fillStyle = "white";
+            vfxStars.forEach(s => {
+                vfxCtx.beginPath();
+                vfxCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                vfxCtx.fill();
+                s.y += s.speed;
+                if (s.y > vfxCanvas.height) s.y = 0;
+            });
+            requestAnimationFrame(animateVFX);
+        }
+        animateVFX();
+    </script>
+
+    <script>
+        window.addEventListener('click', function () {
+            const synth = window.speechSynthesis;
+            const message = new SpeechSynthesisUtterance("Welcome to Global Technical Hub. We are shaping the future of business.");
+
+            // Sabhi available voices check karega
+            const voices = synth.getVoices();
+
+            // Alexa jaisi 'Female' ya 'Google' voice dhoondne ki koshish
+            const femaleVoice = voices.find(v =>
+                v.name.includes('Female') ||
+                v.name.includes('Google US English') ||
+                v.name.includes('Microsoft Zira') ||
+                v.name.includes('Samantha')
+            );
+
+            if (femaleVoice) message.voice = femaleVoice;
+
+            message.rate = 0.8;  // Thoda dhire (Royal feel)
+            message.pitch = 1.2; // Thodi meethi aur saaf awaaz
+            message.volume = 1;  // Full volume
+
+            synth.cancel(); // Purani koi bhi robotic voice ko stop karega
+            synth.speak(message);
+        }, { once: true });
+    </script>
+    <div id="z-screen"
+        style="position: fixed; inset: 0; background: #000; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: sans-serif;">
+
+        <div
+            style="position: absolute; inset: 0; background: radial-gradient(circle at center, #001a1a 0%, #000 100%); z-index: -1;">
+        </div>
+
+        <div id="s-line"
+            style="display: none; position: absolute; top: 0; width: 100%; height: 4px; background: #00f2ff; box-shadow: 0 0 20px #00f2ff; z-index: 1000000; animation: scanMove 2s linear infinite;">
+        </div>
+
+        <div id="content-box" style="text-align: center; transition: 0.5s;">
+            <h1 style="color: #fff; font-size: 3.5rem; letter-spacing: 5px; margin: 0;">GTH|<span
+                    style="color: #00f2ff; text-shadow: 0 0 20px #00f2ff;">PRO</span></h1>
+            <p style="color: #00f2ff; letter-spacing: 5px; font-size: 12px; margin-bottom: 30px;">GLOBAL TECHNICAL HUB
+            </p>
+
+            <button onclick="launchNow()" id="l-btn"
+                style="background: transparent; border: 1px solid #00f2ff; color: #00f2ff; padding: 15px 45px; cursor: pointer; font-weight: bold; letter-spacing: 3px; text-transform: uppercase;">INITIALIZE
+                SYSTEM</button>
+        </div>
+
+        <div id="s-text"
+            style="display: none; color: #00f2ff; font-family: monospace; font-size: 12px; margin-top: 20px;">SCANNING
+            NEURAL LINK...</div>
+    </div>
+
+    <div id="scan-data"
+        style="display: none; position: absolute; bottom: 10%; color: #00f2ff; font-family: monospace; font-size: 11px; text-align: center; width: 100%; opacity: 0.7;">
+        CONNECTING_TO_GLOBAL_NETWORK... [OK]<br>
+        AUTHENTICATING_SANJAY_SIR... [SUCCESS]<br>
+        WELCOME TO GLOBAL TECHNICAL HUB
+    </div>
+    </div>
+
+    <style>
+        @keyframes scanMove {
+            0% {
+                top: 0%;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        function launchNow() {
+            // 1. Professional Robotic Voice (ElevenLabs Level Quality)
+            // Maine ek open-source high-quality API link set kar diya hai
+            const audio = new Audio("https://dictation.io/proxy/tts?q=Welcome%20to%20Global%20Technical%20Hub%20PRO.%20Systems%20Online.%20Initializing%20Neural%20Scan.&tl=en-GB");
+            audio.play();
+
+            // 2. UI Action
+            document.getElementById('l-btn').style.display = 'none';
+            document.getElementById('s-line').style.display = 'block';
+            document.getElementById('s-text').style.display = 'block';
+
+            // 3. Smooth Exit
+            setTimeout(() => {
+                const s = document.getElementById('z-screen');
+                s.style.opacity = '0';
+                s.style.transition = 'opacity 1.5s';
+                setTimeout(() => { s.remove(); }, 1500);
+            }, 5000);
+        }
+    </script>
+</body>
+<div id="gth-stable-bot"
+    style="position: fixed; bottom: 30px; right: 30px; z-index: 999999; font-family: 'Orbitron', sans-serif;">
+
+    <div onclick="toggleGTH()" id="gth-bubble"
+        style="width: 65px; height: 65px; background: #000; border: 2px solid #00f2ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px #00f2ff;">
+        <span style="color: #fff; text-shadow: 0 0 10px #00f2ff; font-weight: 900;">AI</span>
+    </div>
+
+    <div id="gth-window"
+        style="display: none; width: 320px; height: 450px; background: #080808; border: 1px solid #00f2ff; border-radius: 12px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+        <div
+            style="background: #00f2ff; color: #000; padding: 12px; font-weight: 900; display: flex; justify-content: space-between;">
+            <span>GTH_CORE_v3.0</span>
+            <span onclick="toggleGTH()" style="cursor: pointer; padding: 0 5px;">×</span>
+        </div>
+
+        <div id="gth-display" style="flex: 1; padding: 15px; font-size: 0.7rem; color: #ccc; overflow-y: auto;">
+            <div style="color: #00f2ff;">> SYSTEM READY. Languages: EN/HI/AR</div>
+        </div>
+
+        <div style="padding: 15px; background: #000; border-top: 1px solid #111;">
+            <input type="text" id="gth-input" placeholder="Ask anything..."
+                style="width: 100%; background: #050505; border: 1px solid #333; color: #00f2ff; padding: 10px; font-size: 0.7rem; outline: none; font-family: 'Orbitron';">
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function toggleGTH() {
+        const win = document.getElementById('gth-window');
+        win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
+    }
+
+    // Input handle karne ka sahi tarika
+    document.getElementById('gth-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            const val = this.value.trim();
+            if (val !== "") {
+                sendToAI(val);
+                this.value = ""; // Input clear
+            }
+        }
+    });
+
+    function sendToAI(msg) {
+        const display = document.getElementById('gth-display');
+        display.innerHTML += `<div style="text-align:right; color:#777; margin: 10px 0;">User: ${msg}</div>`;
+
+        let reply = "";
+        const q = msg.toLowerCase();
+
+        // 🧠 Smart Logic (Gemini Style)
+        if (q.includes('know') || q.includes('tell') || q.includes('what') || q.includes('kya hai')) {
+            if (q.includes('vfx')) reply = "GTH PRO provides industry-leading VFX, Motion Tracking, and CGI services.";
+            else if (q.includes('price')) reply = "Our pricing starts from $299. We accept USD, AED, and INR.";
+            else reply = "GTH PRO is an AI-driven VFX agency. We specialize in global standard digital production.";
+        }
+        else if (q.includes('hi') || q.includes('hello')) {
+            reply = "Hello! GTH AI Core is online. How can I help you today?";
+        }
+        else if (/[\u0900-\u097F]/.test(msg)) { // Hindi Detection
+            reply = "नमस्ते! मैं GTH AI हूँ। मैं आपकी VFX या Pricing में मदद कर सकता हूँ।";
+        }
+        else {
+            reply = "Message processed. For more details, ask about 'VFX' or 'Pricing'.";
+        }
+
+        setTimeout(() => {
+            display.innerHTML += `<div style="color:#00f2ff; margin-bottom:10px;">> GTH: ${reply}</div>`;
+            display.scrollTop = display.scrollHeight;
+        }, 500);
+    }
+</script>
+
+<div id="geminiAIModal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; justify-content:center; align-items:center; backdrop-filter:blur(10px);">
+    <div
+        style="background:linear-gradient(145deg, #0a0a0a, #1a1a1a); border:1px solid #00ff00; padding:20px; border-radius:15px; width:95%; max-width:450px; box-shadow:0 0 30px rgba(0,255,0,0.3);">
+
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+            <span style="color:#00ff00; font-weight:bold; font-size:18px;">✨ GTH GEMINI PRO</span>
+            <span onclick="document.getElementById('geminiAIModal').style.display='none'"
+                style="color:#fff; cursor:pointer; font-size:24px;">&times;</span>
+        </div>
+
+        <div id="geminiChatBox"
+            style="height:280px; overflow-y:auto; margin-bottom:15px; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div id="geminiResponse" style="color:#e0e0e0; line-height:1.5; font-size:14px;"></div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="geminiUserInput" placeholder="Type here & press Enter..."
+                style="flex:1; background:#111; border:1px solid #00ff00; color:white; padding:10px; border-radius:5px; outline:none;">
+            <button onclick="askGeminiDetailed()"
+                style="background:#00ff00; color:black; border:none; padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">ASK</button>
+        </div>
+
+        <div style="margin-top:15px; text-align:center;">
+            <button onclick="closeGeminiAndOpenForm()"
+                style="background:transparent; color:#00ff00; border:1px solid #00ff00; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold; width:100%;">PROCEED
+                TO ORDER</button>
+            <p style="color:gold; font-size:11px; margin-top:10px;">💛 1% Reserved for Children's Education. [cite:
+                2026-02-17]</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentActiveService = "";
+
+    // YE WOH FUNCTION HAI JO BUTTON CLICK PAR CHALTA HAI
+    function openOrderModal(serviceName) {
+        currentActiveService = serviceName;
+        const modal = document.getElementById('geminiAIModal');
+        const resp = document.getElementById('geminiResponse');
+
+        if (modal) {
+            modal.style.display = 'flex';
+            resp.innerHTML = `<div style="color:#00ff00; margin-bottom:10px;"><b>Gemini:</b> Systems Online. You selected <b>${serviceName}</b>. How can I help you today? (English/Hindi/Bangla/Marathi etc.)</div>`;
+        } else {
+            console.error("Error: geminiAIModal not found!");
+        }
+    }
+
+    function askGeminiDetailed() {
+        const input = document.getElementById('geminiUserInput');
+        const resp = document.getElementById('geminiResponse');
+        const msg = input.value.toLowerCase();
+
+        if (msg.trim() !== "") {
+            resp.innerHTML += `<div style="text-align:right; margin-bottom:10px; color:#888;"><b>You:</b> ${input.value}</div>`;
+
+            setTimeout(() => {
+                let reply = "";
+                // Universal Language Logic [cite: 2026-02-16, 2026-02-22]
+                if (msg.match(/jante chai|janate|ki eta|bolo/)) {
+                    reply = `<b>Gemini (Bangla):</b> Ei ${currentActiveService} service-ti ekhon ready. Er 1% taka shishu-der jonno dewa hobe.`;
+                } else if (msg.match(/samjhao|batao|detail|kya hai/)) {
+                    reply = `<b>Gemini (Hindi):</b> ${currentActiveService} ki poori jankari taiyar hai. 1% hissa bacho ki shiksha mein jayega.`;
+                } else {
+                    reply = `<b>Gemini (English):</b> GTH Analysis for ${currentActiveService} is complete. 1% is secured for social mission. Shall we proceed?`;
+                }
+                resp.innerHTML += `<div style="color:#00ff00; margin-bottom:10px;"><b>Gemini:</b> ${reply}</div>`;
+                document.getElementById('geminiChatBox').scrollTop = document.getElementById('geminiChatBox').scrollHeight;
+                input.value = "";
+            }, 600);
+        }
+    }
+
+    // ENTER KEY FIX
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && document.activeElement.id === 'geminiUserInput') {
+            askGeminiDetailed();
+        }
+    });
+
+    function closeGeminiAndOpenForm() {
+        document.getElementById('geminiAIModal').style.display = 'none';
+        const originalForm = document.getElementById('orderModal'); // Make sure your order form ID is 'orderModal'
+        if (originalForm) {
+            // If you have a specific element to show service name in form
+            const serviceLabel = document.getElementById('selectedService');
+            if (serviceLabel) serviceLabel.innerText = currentActiveService;
+            originalForm.style.display = 'block';
+        }
+    }
+</script>
+
+</html>

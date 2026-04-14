@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTH AI Studio | Professional Video Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --neon: #a855f7;
+            --bg: #020617;
+            --card: #0f172a;
+            --text: #f8fafc;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-home {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .back-home:hover {
+            color: var(--neon);
+        }
+
+        .workspace-grid {
+            max-width: 1200px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .creation-card {
+            background: var(--card);
+            border: 1px solid rgba(168, 85, 247, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-box {
+            width: 100%;
+            background: #010409;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: white;
+            padding: 15px;
+            font-size: 1rem;
+            margin: 15px 0;
+            box-sizing: border-box;
+            resize: none;
+            transition: 0.3s;
+        }
+
+        .input-box:focus {
+            border-color: var(--neon);
+            outline: none;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+
+        .preview-card {
+            background: #000;
+            border-radius: 20px;
+            border: 2px solid #1e293b;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .glow-btn {
+            width: 100%;
+            background: var(--neon);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.4s;
+            text-transform: uppercase;
+        }
+
+        .glow-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(168, 85, 247, 0.4);
+            background: #b865ff;
+        }
+
+        .glow-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .status-step.active {
+            color: var(--neon);
+            font-weight: bold;
+        }
+
+        .note-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #eab308;
+            font-size: 0.8rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <a href="main.html" class="back-home"><i class="fas fa-arrow-left"></i> BACK TO DASHBOARD</a>
+        <h2 style="margin:0; letter-spacing: 1px;">GTH <span style="color:var(--neon)">AI STUDIO</span></h2>
+        <div style="width: 100px;"></div>
+    </header>
+
+    <main class="workspace-grid">
+        <div class="creation-card">
+            <h3 style="margin-top:0;">VIDEO GENERATOR</h3>
+            <p style="color: #64748b; font-size: 0.85rem;">Enter your vision. Our AI will optimize the prompt and
+                connect you to the high-speed rendering engine.</p>
+
+            <label style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: bold;">Describe
+                Your Video</label>
+            <textarea id="topic" class="input-box" rows="4"
+                placeholder="e.g. A futuristic city with flying cars in 4K cinematic style..."></textarea>
+
+            <button class="glow-btn" id="genBtn" onclick="runAISystem()">INITIALIZE AI ENGINE</button>
+
+            <div style="margin-top: 30px;" id="statusArea">
+                <div class="status-step" id="s1"><i class="fas fa-brain"></i> Context Analysis...</div>
+                <div class="status-step" id="s2"><i class="fas fa-magic"></i> Engineering Professional Prompt...</div>
+                <div class="status-step" id="s3"><i class="fas fa-network-wired"></i> Synchronizing with Neural
+                    Engine...</div>
+            </div>
+        </div>
+
+        <div class="preview-card" id="previewContainer">
+            <div id="renderScreen">
+                <i class="fas fa-microchip" style="font-size: 4rem; color: #1e293b; margin-bottom: 20px;"></i>
+                <p style="color: #475569; font-weight: 500;">Ready to Process Your Request</p>
+                <p style="color: #334155; font-size: 0.8rem;">Waiting for user input...</p>
+            </div>
+
+            <div id="resultActions" style="display:none; width: 100%;">
+                <button class="glow-btn" onclick="window.open('https://pika.art', '_blank')">
+                    <i class="fas fa-play-circle"></i> LAUNCH VIDEO ENGINE
+                </button>
+
+                <div class="note-box" id="signInNote">
+                    <i class="fas fa-info-circle"></i> <strong>Note:</strong> You may need to Sign In via Google on the
+                    next page to access the free rendering credits.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function runAISystem() {
+            const topic = document.getElementById('topic').value;
+            if (!topic) {
+                alert("Error: Please provide a description for the AI.");
+                return;
+            }
+
+            const genBtn = document.getElementById('genBtn');
+            const renderScreen = document.getElementById('renderScreen');
+            const resActions = document.getElementById('resultActions');
+            const note = document.getElementById('signInNote');
+
+            // Reset UI for Processing
+            genBtn.disabled = true;
+            genBtn.innerText = "PROCESSING...";
+            resActions.style.display = 'none';
+            [1, 2, 3].forEach(i => document.getElementById('s' + i).classList.remove('active'));
+
+            // Simulation Sequence
+            setTimeout(() => document.getElementById('s1').classList.add('active'), 800);
+            setTimeout(() => document.getElementById('s2').classList.add('active'), 1800);
+            setTimeout(() => {
+                document.getElementById('s3').classList.add('active');
+
+                // Result Display
+                const finalPrompt = `Ultra-realistic 8K cinematic footage of ${topic}, masterfully crafted, volumetric lighting, highly detailed environment.`;
+
+                renderScreen.innerHTML = `
+                    <div style="background:#0f172a; border:1px solid #a855f7; padding:20px; border-radius:15px; text-align:left; width:100%; box-sizing:border-box; margin-bottom:15px;">
+                        <span style="color:#a855f7; font-size:0.7rem; font-weight:bold; text-transform:uppercase;">AI Optimized Prompt:</span>
+                        <p id="pText" style="color:#fff; font-family:'Courier New', monospace; margin:10px 0; font-size:0.9rem; line-height:1.4;">${finalPrompt}</p>
+                        <button onclick="copyPrompt()" style="background:#334155; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-size:0.8rem; font-weight:bold;">
+                            <i class="fas fa-copy"></i> COPY PROMPT
+                        </button>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.85rem;">Prompt generated successfully. Use the engine below to render your video.</p>
+                `;
+
+                resActions.style.display = 'block';
+                note.style.display = 'block';
+                genBtn.disabled = false;
+                genBtn.innerText = "GENERATE ANOTHER";
+            }, 3000);
+        }
+
+        function copyPrompt() {
+            const text = document.getElementById('pText').innerText;
+            navigator.clipboard.writeText(text);
+            const copyBtn = event.currentTarget;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIED!';
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> COPY PROMPT';
+            }, 2000);
+        }
+    </script>
+
+</body>
+
+</html>

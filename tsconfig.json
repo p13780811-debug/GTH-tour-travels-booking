@@ -22,12 +22,16 @@
         "name": "next"
       }
     ],
+    // ✅ KEEP (so nothing breaks)
     "baseUrl": ".",
+    // ✅ PATHS (already working in your app)
     "paths": {
       "@/*": [
         "src/*"
       ]
-    }
+    },
+    // 🔥 FIX (removes deprecation warning safely)
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "next-env.d.ts",
@@ -35,7 +39,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

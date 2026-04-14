@@ -160,8 +160,8 @@ export default async function Page({
                             Location View
                         </h3>
 
-                        <div className="h-48 w-full rounded-2xl overflow-hidden border border-white/10">
-                            <MapWrapper tours={sorted} />
+                        <div className="h-64 w-full rounded-2xl overflow-hidden border border-white/10">
+                            <MapWrapper data={sorted} />
                         </div>
                     </div>
                 </aside>
