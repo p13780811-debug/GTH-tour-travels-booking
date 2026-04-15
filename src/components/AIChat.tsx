@@ -107,7 +107,9 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                     body: JSON.stringify({ query: input }),
                 })
                 filters = await res.json()
-            } catch { }
+            } catch (err) {
+                console.error("AI Search Error", err)
+            }
 
             if (!filters || Object.keys(filters).length === 0) {
 
@@ -165,9 +167,19 @@ function AIChat({ properties, setFiltered, setActive }: any) {
             }
 
             const first = result[0]
-            setActive({
-                id: first.id,
-                coords: [first.lat, first.lng],
+            if (first?.lat && first?.lng) {
+                setActive({
+                    id: first.id,
+                    coords: [first.lat, first.lng],
+                })
+            }
+
+            setMemory({
+                lastCity: filters.city || memory.lastCity,
+                lastBudget: filters.maxPrice || memory.lastBudget,
+                lastType: filters.type || memory.lastType,
+                intent: "search",
+                lastMode: "real_estate"
             })
 
             const area = suggestArea(filters.city, filters.maxPrice)

@@ -2,64 +2,80 @@
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
+import styles from "@/app/real-estate/RealEstate.module.css"
 
 export default function LoginModal({ onClose }: any) {
     const [email, setEmail] = useState("")
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
+    const [error, setError] = useState("")
 
     const handleLogin = async () => {
         if (!email) {
-            setMessage("Enter email first")
+            setError("Enter email first")
             return
         }
 
-        setLoading(true)
+        try {
+            setLoading(true)
+            setError("")
+            setMessage("")
 
-        const { error } = await supabase.auth.signInWithOtp({
-            email
-        })
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/real-estate`
+                }
+            })
 
-        if (error) {
-            setMessage("Login failed")
-        } else {
-            setMessage("Check your email for login link 🚀")
+            if (error) throw error
+
+            setMessage("📩 Magic link sent! Check your email")
+
+        } catch (err: any) {
+            setError(err.message || "Login failed")
+        } finally {
+            setLoading(false)
         }
-
-        setLoading(false)
     }
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
 
-            <div className="bg-white text-black p-6 w-[400px] rounded-2xl shadow-xl">
+            <div className={`${styles.glassCard} w-[400px]`}>
 
-                <h2 className="text-xl font-bold mb-2">
+                <h2 className="text-lg font-semibold mb-2">
                     Login / Register
                 </h2>
 
-                <p className="text-sm text-gray-500 mb-4">
-                    Access dashboard, leads & boost features
+                <p className="text-sm text-gray-400 mb-4">
+                    Access dashboard, leads & premium tools
                 </p>
 
                 <input
                     type="email"
                     placeholder="Enter your email"
-                    className="w-full border p-3 rounded mb-3"
+                    className="w-full mb-3 p-3 rounded bg-black/40 border border-white/10"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
                 <button
                     onClick={handleLogin}
-                    className="w-full bg-cyan-500 text-black p-3 rounded font-bold"
+                    className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black p-3 rounded font-bold"
                 >
-                    {loading ? "Sending..." : "Send Login Link"}
+                    {loading ? "Sending..." : "Send Magic Link"}
                 </button>
 
                 {message && (
-                    <p className="text-sm mt-3 text-center text-gray-600">
+                    <p className="text-green-400 text-sm mt-3 text-center">
                         {message}
+                    </p>
+                )}
+
+                {error && (
+                    <p className="text-red-400 text-sm mt-3 text-center">
+                        {error}
                     </p>
                 )}
 

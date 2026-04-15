@@ -93,12 +93,12 @@ body {
 
 /* GTH PRO: Sabhi 'bg-black' ko Luxury Glass mein badlo */
 @layer base {
-  .bg-black {
-    background-color: rgba(2, 88, 63, 0.03) !important;
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.6);
     /* Kaala rang hat gaya, halka shisha aa gaya */
-    backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px);
     /* Saare components ab Maldives ke upar chamkenge */
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     /* Halka border luxury look ke liye */
   }
 }
@@ -111,4 +111,28 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #0f172a;
+  --card: rgba(255, 255, 255, 0.7);
+  --border: rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #08090a;
+    --text: #e5e7eb;
+    --card: rgba(0, 0, 0, 0.4);
+    --border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.text-primary {
+  color: #ffffff;
+}
+
+.text-secondary {
+  color: rgba(255, 255, 255, 0.7);
 }

@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import styles from './RealEstate.module.css';
 import { Search, ChevronRight, Plus, BarChart3, Shield } from "lucide-react"
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
-import AIChat from "@/components/AIChat"
+
 import MapWrapper from "@/components/MapWrapper"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import AddPropertyModal from "@/components/real-estate/AddPropertyModal"
@@ -26,8 +27,7 @@ export default function App() {
 
     const [showAdd, setShowAdd] = useState(false)
     const [showDashboard, setShowDashboard] = useState(false)
-    const [isLoginOpen, setIsLoginOpen] = useState(false)
-    const [isEmailSent, setIsEmailSent] = useState(false)
+
     const [leads, setLeads] = useState<any[]>([])
     const [showLogin, setShowLogin] = useState(false)
     const [showMap, setShowMap] = useState(false)
@@ -36,6 +36,8 @@ export default function App() {
 
     // 📱 Mobile Detection Logic
     const [isMobile, setIsMobile] = useState(false)
+
+
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768)
@@ -246,13 +248,16 @@ export default function App() {
     // UI
     // ============================
     return (
-        <div className="bg-[#0a0f14] text-white min-h-screen flex flex-col">
+        <div className={`${styles.mainContainer} bg-[#0a0f14] text-white min-h-screen flex flex-col`}>
 
             {/* HERO */}
             <RealEstateHero
                 query={query}
                 setQuery={setQuery}
                 onSearch={aiSearch}
+                properties={properties}
+                setFiltered={setFiltered}
+                setActive={setActive}
             />
 
             {isMobile && (
@@ -390,20 +395,7 @@ export default function App() {
                 <div className="flex-1 p-3 md:p-6 overflow-y-auto">
 
                     {/* SEARCH */}
-                    <div className="flex gap-2 mb-6">
-                        <input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            className="flex-1 p-3 rounded bg-slate-900 border border-slate-700"
-                            placeholder="Search properties..."
-                        />
-                        <button
-                            onClick={aiSearch}
-                            className="bg-cyan-500 text-black px-6 rounded font-bold"
-                        >
-                            Search
-                        </button>
-                    </div>
+
 
                     {/* HEADER */}
                     {user && (
