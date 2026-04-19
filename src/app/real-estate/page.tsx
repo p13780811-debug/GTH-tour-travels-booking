@@ -6,7 +6,8 @@ import { supabase } from "@/lib/supabase"
 import styles from './RealEstate.module.css';
 import { Search, ChevronRight, Plus, BarChart3, Shield } from "lucide-react"
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
-
+import { useThemeMode } from "@/lib/hooks/useThemeMode"
+import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
 import MapWrapper from "@/components/MapWrapper"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import AddPropertyModal from "@/components/real-estate/AddPropertyModal"
@@ -32,8 +33,10 @@ export default function App() {
     const [showLogin, setShowLogin] = useState(false)
     const [showMap, setShowMap] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
+    const mode = useThemeMode()
     const router = useRouter()
-
+    const theme = useThemeMode()
+    const isDay = theme === "day"
     // 📱 Mobile Detection Logic
     const [isMobile, setIsMobile] = useState(false)
 
@@ -176,7 +179,7 @@ export default function App() {
 
         setFiltered(result)
 
-        if (result.length > 0) {
+        if (result[0]?.lat && result[0]?.lng) {
             setActive({
                 id: result[0].id,
                 coords: [result[0].lat, result[0].lng],
@@ -244,11 +247,25 @@ export default function App() {
     const totalLeads = leads.length
     const boosted = properties.filter(p => p.is_featured).length
 
+    const getAIRecommendations = () => {
+        if (!properties.length) return []
+
+        return properties
+            .filter(p => p.is_featured || p.price < 50)
+            .slice(0, 6)
+    }
+
+    const aiRecommended = getAIRecommendations()
+
     // ============================
     // UI
     // ============================
     return (
-        <div className={`${styles.mainContainer} bg-[#0a0f14] text-white min-h-screen flex flex-col`}>
+        <div className={`${styles.mainContainer} min-h-screen flex flex-col
+${isDay
+                ? "bg-[#f8f5f0] text-black"
+                : "bg-[#0a0f14] text-white"
+            }`}>
 
             {/* HERO */}
             <RealEstateHero
@@ -392,7 +409,7 @@ export default function App() {
 
 
                 {/* RIGHT SIDE */}
-                <div className="flex-1 p-3 md:p-6 overflow-y-auto">
+                <div className="flex-1 p-3 md:p-6 overflow-y-auto pb-24 md:pb-6">
 
                     {/* SEARCH */}
 
@@ -422,58 +439,56 @@ export default function App() {
                         </button>
                     </div>
 
+                    {aiRecommended.length > 0 && (
+                        <div className="mb-8">
+
+                            <h2 className="text-xl font-bold mb-4 text-yellow-400">
+                                🤖 AI Recommended
+                            </h2>
+
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+
+                                {aiRecommended.map((p) => (
+                                    <div key={p.id} className="min-w-[250px]">
+                                        <PropertyCardPro
+                                            p={p}
+                                            user={user}
+                                            onSelect={(property: any) => {
+                                                setActive({
+                                                    id: property.id,
+                                                    coords: [property.lat, property.lng],
+                                                })
+                                            }}
+                                            onLead={(id: number) => addLead(id)}
+                                            onBoost={(id: number) => payForBoost(id)}
+                                        />
+                                    </div>
+                                ))}
+
+                            </div>
+                        </div>
+                    )}
+
                     {/* GRID */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         {filtered.map((p) => (
-                            <div
+                            <PropertyCardPro
                                 key={p.id}
-                                className="bg-slate-900 p-4 rounded-xl border border-slate-700 hover:border-cyan-500/40 transition"
-                            >
-                                <img
-                                    src={p.image}
-                                    className="h-40 w-full object-cover rounded"
-                                />
+                                p={p}
+                                user={user}
+                                onSelect={(prop: any) => {
+                                    if (!prop?.lat || !prop?.lng) return
 
-                                <h3 className="mt-2 font-bold">{p.title}</h3>
-                                <p className="text-sm text-gray-400">
-                                    {p.location}
-                                </p>
-
-                                <div className="flex justify-between mt-3 gap-2 items-center">
-                                    <span className="font-bold text-cyan-400">₹ {p.price} L</span>
-
-                                    <div className="flex gap-1">
-                                        {/* 📞 ENQUIRE: Hamesha dikhega (Except apni property pe lead kyun dena?) */}
-                                        {user?.email !== p.created_by && (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); addLead(p.id); }}
-                                                className="bg-white text-black px-2 py-1 text-[10px] rounded font-bold uppercase"
-                                            >
-                                                ENQUIRE
-                                            </button>
-                                        )}
-
-                                        {/* 🚀 BOOST: Sirf tab dikhega jab user logged in ho aur ye uski apni property ho */}
-                                        {user?.email === p.created_by && !p.is_featured && (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); payForBoost(p.id); }}
-                                                className="bg-yellow-500 text-black px-2 py-1 text-[10px] rounded font-black uppercase italic shadow-lg"
-                                            >
-                                                BOOST
-                                            </button>
-                                        )}
-
-                                        {/* ✅ FEATURED BADGE: Agar pehle se boosted hai */}
-                                        {p.is_featured && (
-                                            <span className="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-1 text-[10px] rounded font-bold uppercase">
-                                                🚀 LIVE
-                                            </span>
-                                        )}
-                                    </div>
-
-                                </div>
-                            </div>
+                                    setActive({
+                                        id: prop.id,
+                                        coords: [prop.lat, prop.lng]
+                                    })
+                                }}
+                                onLead={addLead}
+                                onBoost={payForBoost}
+                            />
                         ))}
+
                     </div>
                 </div>
             </div>

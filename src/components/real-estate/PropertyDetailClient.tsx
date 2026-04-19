@@ -22,6 +22,15 @@ export default function PropertyDetailClient({ slug }: { slug: string }) {
     const [property, setProperty] = useState<Property | null>(null)
     const [showAI, setShowAI] = useState(false)
 
+
+    useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem("viewed_props") || "[]")
+
+        const updated = [property?.id, ...saved.filter((x: any) => x !== property?.id)].slice(0, 10)
+
+        localStorage.setItem("viewed_props", JSON.stringify(updated))
+    }, [property])
+
     useEffect(() => {
         const fetchProperty = async () => {
             const { data } = await supabase
