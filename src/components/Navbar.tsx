@@ -2,170 +2,151 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import SearchBox from "@/components/SearchBox"
 
 export default function Navbar() {
-
     const [menuOpen, setMenuOpen] = useState(false)
-    const [destOpen, setDestOpen] = useState(false)
+    const pathname = usePathname()
+
+    const navItems = [
+        { name: "Destinations", href: "/destinations" },
+        { name: "Hotels", href: "/hotels" },
+        { name: "Real Estate", href: "/real-estate" },
+        { name: "Tender", href: "/tender" },
+        { name: "Guides", href: "/guides" },
+        { name: "Contact", href: "/contact" },
+    ]
 
     return (
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/30 border-b border-white/10">
 
-        <nav className="sticky top-0 left-0 w-full z-50 bg-black/70 backdrop-blur-lg border-b border-yellow-500/20">
+            {/* MAIN BAR */}
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
 
-            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                {/* LOGO */}
+                <Link href="/" className="flex items-center gap-3 group">
+                    <div className="h-11 w-11 rounded-full overflow-hidden border border-yellow-500/40">
+                        <img
+                            src="/images/gth-logo.png"
+                            className="h-full w-full object-cover scale-110 group-hover:scale-125 transition"
+                        />
+                    </div>
 
-                {/* LOGO SECTION */}
-                <Link href="/" className="flex items-center gap-3 no-underline group">
-
-                    {/* --- LOGO SECTION --- */}
-                    <div className="flex items-center gap-1">
-                        {/* Round Logo Container - Ab ye chhota (h-10 w-10) aur perfect circle hai */}
-                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-yellow-500 bg-black flex items-center justify-center">
-                            <img
-                                src="/images/gth-logo.png"
-                                alt="GTH PRO Luxury Logo"
-                                className="h-full w-full object-cover scale-110"  // <-- Scale-110 se wo bahar ka kachra chhup jayega
-                                style={{
-                                    objectPosition: 'center' // Taaki bird ekdum beech mein rahe
-                                }}
-                            />
+                    <div className="leading-none">
+                        <div className="flex gap-1">
+                            <span className="text-white font-bold">GTH</span>
+                            <span className="text-yellow-400 font-bold">PRO</span>
                         </div>
-
-                        {/* LOGO TEXT - Isse Navbar ki motai nahi badhegi */}
-                        <div className="flex flex-col leading-none">
-                            <div className="flex items-center gap-1">
-                                <span className="text-lg font-bold text-white uppercase tracking-tight">GTH</span>
-                                <span className="text-lg font-bold text-yellow-500 uppercase tracking-tight">PRO</span>
-                            </div>
-                            <span className="text-[7px] text-gray-400 tracking-[1.5px] uppercase font-medium">
-                                Tour & Travels
-                            </span>
-                        </div>
+                        <span className="text-[8px] text-gray-500 uppercase tracking-widest">
+                            Global Platform
+                        </span>
                     </div>
                 </Link>
 
-
                 {/* SEARCH */}
-                <div className="hidden md:block w-72">
+                <div className="hidden lg:block w-72">
                     <SearchBox />
                 </div>
 
-                {/* DESKTOP MENU */}
-                <div className="hidden md:flex items-center gap-8 text-gray-300 font-medium">
+                {/* DESKTOP NAV */}
+                <div className="hidden md:flex items-center gap-6 text-xs uppercase tracking-wider">
 
-                    {/* DESTINATION DROPDOWN */}
-                    <div className="relative group">
+                    {navItems.map((item) => (
+                        <div key={item.href} className="relative group">
 
-                        <button className="hover:text-yellow-400">
-                            Destinations
-                        </button>
-
-                        <div className="absolute hidden group-hover:grid grid-cols-2 gap-4 p-6 bg-black border border-yellow-500/20 w-96">
-
-                            <Link href="/destinations/goa" className="flex gap-3">
-
-                                <img src="/goa.jpg" className="w-16 h-16 object-cover rounded" />
-
-                                <span>Goa</span>
-
+                            <Link
+                                href={item.href}
+                                className={`pb-1 transition ${pathname === item.href
+                                        ? "text-yellow-400 border-b border-yellow-400/50"
+                                        : "text-gray-400 hover:text-white"
+                                    }`}
+                            >
+                                {item.name}
                             </Link>
 
-                            <Link href="/destinations/dubai" className="flex gap-3">
+                            {/* 🔥 MEGA MENU (ONLY FOR MAIN SECTIONS) */}
+                            {(item.name === "Destinations" || item.name === "Real Estate") && (
+                                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-[700px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
 
-                                <img src="/dubai.jpg" className="w-16 h-16 object-cover rounded" />
+                                    <div className="gth-glass p-6 grid grid-cols-3 gap-6">
 
-                                <span>Dubai</span>
+                                        {item.name === "Destinations" && (
+                                            <>
+                                                <Link href="/destinations/goa">Goa</Link>
+                                                <Link href="/destinations/dubai">Dubai</Link>
+                                                <Link href="/destinations/manali">Manali</Link>
+                                                <Link href="/destinations/jaipur">Jaipur</Link>
+                                                <Link href="/destinations/bali">Bali</Link>
+                                                <Link href="/destinations/paris">Paris</Link>
+                                            </>
+                                        )}
 
-                            </Link>
+                                        {item.name === "Real Estate" && (
+                                            <>
+                                                <Link href="/real-estate?type=buy">Buy Property</Link>
+                                                <Link href="/real-estate?type=rent">Rent Property</Link>
+                                                <Link href="/real-estate?type=luxury">Luxury Homes</Link>
+                                                <Link href="/real-estate?type=commercial">Commercial</Link>
+                                                <Link href="/real-estate?type=plots">Plots</Link>
+                                                <Link href="/real-estate?type=new">New Launch</Link>
+                                            </>
+                                        )}
 
-                            <Link href="/destinations/manali" className="flex gap-3">
-
-                                <img src="/manali.jpg" className="w-16 h-16 object-cover rounded" />
-
-                                <span>Manali</span>
-
-                            </Link>
-
-                            <Link href="/destinations/jaipur" className="flex gap-3">
-
-                                <img src="/jaipur.jpg" className="w-16 h-16 object-cover rounded" />
-
-                                <span>Jaipur</span>
-
-                            </Link>
-
+                                    </div>
+                                </div>
+                            )}
                         </div>
-
-                    </div>
-
-                    <Link href="/hotels" className="hover:text-yellow-400 transition">
-                        Hotels
-                    </Link>
-
-                    <Link href="/guides" className="hover:text-yellow-400 transition">
-                        Guides
-                    </Link>
-
-                    <Link href="/owners" className="hover:text-yellow-400 transition">
-                        List Your Hotel
-                    </Link>
-
-                    <Link href="/contact" className="hover:text-yellow-400 transition">
-                        Contact
-                    </Link>
+                    ))}
 
                 </div>
 
-                {/* EXPLORE BUTTON */}
+                {/* CTA */}
                 <Link
-                    href="/destinations"
-                    className="hidden md:block px-5 py-2 rounded-lg font-semibold text-black bg-gradient-to-r from-yellow-400 to-yellow-600 hover:scale-105 transition"
+                    href="/real-estate"
+                    className="hidden md:block px-5 py-2 rounded-full text-xs font-bold text-black bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728]"
                 >
                     Explore
                 </Link>
 
-                {/* MOBILE HAMBURGER */}
+                {/* MOBILE BTN */}
                 <button
-                    className="md:hidden text-white text-2xl"
                     onClick={() => setMenuOpen(!menuOpen)}
+                    className="md:hidden text-white text-xl"
                 >
-                    ☰
+                    {menuOpen ? "✕" : "☰"}
                 </button>
-
             </div>
 
-            {/* MOBILE MENU */}
+            {/* 📱 MOBILE FULLSCREEN MENU */}
             {menuOpen && (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex flex-col p-6">
 
-                <div className="md:hidden bg-black border-t border-yellow-500/20 px-6 py-4 space-y-4">
+                    <div className="flex justify-between items-center mb-6">
+                        <span className="text-white font-bold">Menu</span>
+                        <button onClick={() => setMenuOpen(false)}>✕</button>
+                    </div>
 
                     <SearchBox />
 
-                    <Link href="/destinations" className="block text-gray-300">
-                        Destinations
-                    </Link>
-
-                    <Link href="/hotels" className="block text-gray-300">
-                        Hotels
-                    </Link>
-
-                    <Link href="/guides" className="block text-gray-300">
-                        Guides
-                    </Link>
-
-                    <Link href="/owners" className="block text-gray-300">
-                        List Your Hotel
-                    </Link>
-
-                    <Link href="/contact" className="block text-gray-300">
-                        Contact
-                    </Link>
+                    <div className="flex flex-col gap-5 mt-6 text-lg">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setMenuOpen(false)}
+                                className={`${pathname === item.href
+                                        ? "text-yellow-400"
+                                        : "text-gray-300"
+                                    }`}
+                            >
+                                {item.name}
+                            </Link>
+                        ))}
+                    </div>
 
                 </div>
-
             )}
-
         </nav>
     )
 }

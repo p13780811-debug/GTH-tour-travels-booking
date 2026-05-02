@@ -13,7 +13,7 @@ export default function DestinationScroll({ city }: { city?: string }) {
 
     return (
 
-        <section className="py-16 bg-white">
+        <section className="py-16 gth-glass">
 
             <div className="max-w-7xl mx-auto px-6">
 

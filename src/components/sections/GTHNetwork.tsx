@@ -67,7 +67,7 @@ export default function GTHNetwork({ partners = [] }: { partners?: Partner[] }) 
                                             </p>
                                         </div>
 
-                                        <button className="w-full py-2 bg-white/10 backdrop-blur-md border border-white/20 text-[10px] text-white uppercase font-bold rounded-lg hover:bg-sky-400 hover:text-black shadow-lg transition-all duration-300 active:scale-95">
+                                        <button className="w-full py-2 gth-glass/10 backdrop-blur-md border border-white/20 text-[10px] text-white uppercase font-bold rounded-lg hover:bg-sky-400 hover:text-black shadow-lg transition-all duration-300 active:scale-95">
                                             View Deal
                                         </button>
                                     </div>

@@ -53,7 +53,7 @@ export default function HeroSection({ destination }: any) {
 
                     <Link
                         href={`/go/${slug}`}
-                        className="bg-yellow-500 hover:bg-white text-black px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(234,179,8,0.4)]"
+                        className="gth-btn-gold hover:gth-glass text-black px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(234,179,8,0.4)]"
                     >
                         View Deals
                     </Link>

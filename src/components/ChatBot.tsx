@@ -71,8 +71,8 @@ export default function ChatBot() {
                             <div
                                 key={i}
                                 className={`text-sm p-2 rounded max-w-[80%] ${m.role === "bot"
-                                    ? "bg-gray-800"
-                                    : "bg-yellow-500 text-black ml-auto"
+                                    ? "gth-glass-800"
+                                    : "gth-btn-gold text-black ml-auto"
                                     }`}
                             >
                                 {m.text}
@@ -91,7 +91,7 @@ export default function ChatBot() {
                     <div className="flex">
 
                         <input
-                            className="flex-1 bg-gray-800 text-white p-2 text-sm rounded-l outline-none"
+                            className="flex-1 gth-glass-800 text-white p-2 text-sm rounded-l outline-none"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask about travel..."
@@ -99,7 +99,7 @@ export default function ChatBot() {
 
                         <button
                             onClick={sendMessage}
-                            className="bg-yellow-500 px-4 rounded-r text-black font-bold"
+                            className="gth-btn-gold px-4 rounded-r text-black font-bold"
                         >
                             ➤
                         </button>
@@ -112,7 +112,7 @@ export default function ChatBot() {
 
             <button
                 onClick={() => setOpen(!open)}
-                className="bg-yellow-500 text-black px-4 py-3 rounded-full shadow-lg font-bold"
+                className="gth-btn-gold text-black px-4 py-3 rounded-full shadow-lg font-bold"
             >
                 AI
             </button>

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import styles from './RealEstate.module.css';
-import { Search, ChevronRight, Plus, BarChart3, Shield } from "lucide-react"
+
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
 import { useThemeMode } from "@/lib/hooks/useThemeMode"
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
@@ -33,14 +32,39 @@ export default function App() {
     const [showLogin, setShowLogin] = useState(false)
     const [showMap, setShowMap] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
-    const mode = useThemeMode()
+
     const router = useRouter()
     const theme = useThemeMode()
     const isDay = theme === "day"
     // 📱 Mobile Detection Logic
     const [isMobile, setIsMobile] = useState(false)
 
-
+    const categories = [
+        {
+            title: "BUY PROPERTY",
+            desc: "Find your dream home",
+            icon: "🏠",
+            query: "buy property"
+        },
+        {
+            title: "RENT PROPERTY",
+            desc: "Explore rental homes",
+            icon: "🏢",
+            query: "rent property"
+        },
+        {
+            title: "COMMERCIAL",
+            desc: "Office, shops & spaces",
+            icon: "🏬",
+            query: "commercial property"
+        },
+        {
+            title: "LUXURY HOMES",
+            desc: "Premium & high-end living",
+            icon: "💎",
+            query: "luxury villa"
+        }
+    ]
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768)
@@ -261,11 +285,7 @@ export default function App() {
     // UI
     // ============================
     return (
-        <div className={`${styles.mainContainer} min-h-screen flex flex-col
-${isDay
-                ? "bg-[#f8f5f0] text-black"
-                : "bg-[#0a0f14] text-white"
-            }`}>
+        <div className="min-h-screen flex flex-col backdrop-blur-xl bg-transparent pb-24 md:pb-0">
 
             {/* HERO */}
             <RealEstateHero
@@ -278,10 +298,10 @@ ${isDay
             />
 
             {isMobile && (
-                <div className="p-3 space-y-3 pb-28">
+                <div className="p-3 space-y-2 pb-20">
 
                     {!user && (
-                        <div className="bg-slate-900 p-3 rounded-xl">
+                        <div className="gth-glass p-3 rounded-xl">
                             <p className="text-xs text-slate-400 mb-2">
                                 Login for leads & dashboard
                             </p>
@@ -302,7 +322,7 @@ ${isDay
                     {/* FILTER */}
                     <button
                         onClick={() => setShowFilters(true)}
-                        className="w-full bg-white text-black p-2 rounded font-bold"
+                        className="w-full gth-glass text-black p-2 rounded font-bold"
                     >
                         Filters
                     </button>
@@ -310,188 +330,232 @@ ${isDay
                 </div>
             )}
 
+
+
+
             {/* MAIN LAYOUT */}
-            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+            <div className="gth-container">
 
-                {/* LEFT SIDEBAR */}
+                <div className={isMobile ? "block" : "gth-layout"}>
 
-                {!isMobile && (
-                    <div className="w-80 p-4 bg-[#0a1016] border-r border-slate-800">
 
-                        {!user ? (
-                            <div className="bg-slate-900 p-4 rounded-xl mb-4">
+                    {/* LEFT SIDEBAR */}
 
-                                <h2 className="text-sm font-bold mb-2">
-                                    Guest User
-                                </h2>
+                    {!isMobile && (
+                        <div className="gth-sidebar gth-glass p-4 h-fit sticky top-20">
 
-                                <p className="text-xs text-slate-400 mb-3">
-                                    Login to access dashboard, leads & premium boosts
-                                </p>
-                                <div className="order-3 md:order-1">
+                            {!user ? (
+                                <div className="gth-glass p-4 rounded-xl mb-4">
+
+                                    <h2 className="text-sm font-bold mb-2">
+                                        Guest User
+                                    </h2>
+
+                                    <p className="text-xs text-slate-400 mb-3">
+                                        Login to access dashboard, leads & premium boosts
+                                    </p>
+                                    <div className="order-3 md:order-1">
+                                        <button
+                                            onClick={() => setShowLogin(true)}
+                                            className="w-full bg-cyan-500 text-black p-2 rounded font-bold"
+                                        >
+                                            LOGIN / REGISTER
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="gth-glass p-4 rounded-xl mb-4">
+
+                                    <h2 className="text-sm font-bold">
+                                        Agent Dashboard
+                                    </h2>
+
+                                    <p className="text-xs text-slate-400">
+                                        {user.email}
+                                    </p>
+
                                     <button
-                                        onClick={() => setShowLogin(true)}
-                                        className="w-full bg-cyan-500 text-black p-2 rounded font-bold"
+                                        onClick={() => setShowDashboard(true)}
+                                        className="mt-3 w-full gth-btn-gold text-black p-2 rounded"
                                     >
-                                        LOGIN / REGISTER
+                                        Open Dashboard
+                                    </button>
+
+                                    <button
+                                        onClick={logout}
+                                        className="mt-2 w-full bg-red-500 text-white p-2 rounded"
+                                    >
+                                        Logout
                                     </button>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="bg-slate-900 p-4 rounded-xl mb-4">
+                            )}
 
-                                <h2 className="text-sm font-bold">
-                                    Agent Dashboard
+                            <button
+                                onClick={() => setShowFilters(true)}
+                                className="fixed bottom-20 right-4 gth-btn-gold text-black px-4 py-2 rounded-full shadow-lg md:hidden"
+                            >
+                                Filters
+                            </button>
+
+                            <div className="mt-6">
+                                <h2 className="text-sm font-bold mb-3 text-gth-gold">
+                                    Categories
                                 </h2>
 
-                                <p className="text-xs text-slate-400">
-                                    {user.email}
-                                </p>
-
-                                <button
-                                    onClick={() => setShowDashboard(true)}
-                                    className="mt-3 w-full bg-yellow-500 text-black p-2 rounded"
-                                >
-                                    Open Dashboard
-                                </button>
-
-                                <button
-                                    onClick={logout}
-                                    className="mt-2 w-full bg-red-500 text-white p-2 rounded"
-                                >
-                                    Logout
-                                </button>
+                                <div className="space-y-2">
+                                    {categories.map((c, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setQuery(c.query)
+                                                aiSearch()
+                                            }}
+                                            className="w-full text-left px-3 py-2 rounded-lg gth-glass hover:opacity-80 text-xs"
+                                        >
+                                            {c.icon} {c.title}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
+
+
+                            <div className="order-1 md:order-2">
+                                <h2 className="font-black text-cyan-400 mb-4">Filters</h2>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowDashboard(false);
+                                    setQuery("");
+                                    fetchProperties(user)
+                                }}
+                                className="w-full gth-glass text-black p-2 rounded mb-3 font-bold uppercase text-[10px]"
+                            >
+                                Reset to Global View
+                            </button>
+
+                            <button
+                                onClick={() => setQuery("2bhk")}
+                                className="w-full gth-glass p-2 rounded mb-2"
+                            >
+                                2 BHK
+                            </button>
+
+                            <button
+                                onClick={() => setQuery("under 5000000")}
+                                className="w-full gth-glass p-2 rounded mb-4"
+                            >
+                                Under 50L
+                            </button>
+
+                            <div className="order-2 md:order-3">
+                                <div className="gth-glass h-[220px] overflow-hidden">
+                                    <MapWrapper data={filtered} active={active} />
+                                </div>
+                            </div>
+                        </div>
+
+                    )}
+
+
+                    {/* RIGHT SIDE */}
+                    <div className="flex-1 gth-stack">
+
+
+
+
+                        {/* HEADER */}
+                        {user && (
+                            <div className="gth-glass p-4 rounded mb-4 border border-slate-700">
+                                <h2 className="text-lg font-bold mb-2">📊 Your Dashboard</h2>
+
+                                <div className="flex gap-6 text-sm">
+                                    <p>Leads: {totalLeads}</p>
+                                    <p>Boosted: {boosted}</p>
+                                </div>
+                            </div>
+
                         )}
 
-                        <button
-                            onClick={() => setShowFilters(true)}
-                            className="fixed bottom-20 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full shadow-lg md:hidden"
-                        >
-                            Filters
-                        </button>
 
-                        <div className="order-1 md:order-2">
-                            <h2 className="font-black text-cyan-400 mb-4">Filters</h2>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setShowDashboard(false);
-                                setQuery("");
-                                fetchProperties(user)
-                            }}
-                            className="w-full bg-white text-black p-2 rounded mb-3 font-bold uppercase text-[10px]"
-                        >
-                            Reset to Global View
-                        </button>
+                        <div className="flex justify-between items-center mb-8 px-2 md:px-0">
 
-                        <button
-                            onClick={() => setQuery("2bhk")}
-                            className="w-full bg-slate-800 p-2 rounded mb-2"
-                        >
-                            2 BHK
-                        </button>
-
-                        <button
-                            onClick={() => setQuery("under 5000000")}
-                            className="w-full bg-slate-800 p-2 rounded mb-4"
-                        >
-                            Under 50L
-                        </button>
-
-                        <div className="order-2 md:order-3">
-                            <div className="bg-black rounded border border-slate-700 h-[180px] md:h-48">
-                                <MapWrapper data={filtered} active={active} />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* RIGHT SIDE */}
-                <div className="flex-1 p-3 md:p-6 overflow-y-auto pb-24 md:pb-6">
-
-                    {/* SEARCH */}
-
-
-                    {/* HEADER */}
-                    {user && (
-                        <div className="bg-slate-900 p-4 rounded mb-4 border border-slate-700">
-                            <h2 className="text-lg font-bold mb-2">📊 Your Dashboard</h2>
-
-                            <div className="flex gap-6 text-sm">
-                                <p>Leads: {totalLeads}</p>
-                                <p>Boosted: {boosted}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold">
-                            Properties ({filtered.length})
-                        </h2>
-
-                        <button
-                            onClick={() => setShowAdd(true)}
-                            className="bg-yellow-500 text-black px-4 py-2 rounded"
-                        >
-                            + Add Property
-                        </button>
-                    </div>
-
-                    {aiRecommended.length > 0 && (
-                        <div className="mb-8">
-
-                            <h2 className="text-xl font-bold mb-4 text-yellow-400">
-                                🤖 AI Recommended
+                            {/* Left Side: Title with GTH Luxury Typography */}
+                            <h2 className="gth-title text-xl md:text-2xl uppercase tracking-wider">
+                                Properties ({filtered.length})
                             </h2>
 
-                            <div className="flex gap-4 overflow-x-auto pb-2">
+                            {/* Right Side: Add Property (Properly Aligned & Scaled) */}
+                            <button
+                                onClick={() => setShowAdd(true)}
+                                className="gth-btn-gold text-black px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold whitespace-nowrap shadow-lg flex items-center gap-1 md:gap-2 hover:scale-105 transition-all z-30"
+                            >
+                                <span className="text-lg md:text-xl leading-none">+</span>
+                                <span className="text-[10px] md:text-xs">ADD PROPERTY</span>
+                            </button>
 
-                                {aiRecommended.map((p) => (
-                                    <div key={p.id} className="min-w-[250px]">
-                                        <PropertyCardPro
-                                            p={p}
-                                            user={user}
-                                            onSelect={(property: any) => {
-                                                setActive({
-                                                    id: property.id,
-                                                    coords: [property.lat, property.lng],
-                                                })
-                                            }}
-                                            onLead={(id: number) => addLead(id)}
-                                            onBoost={(id: number) => payForBoost(id)}
-                                        />
-                                    </div>
-                                ))}
-
-                            </div>
                         </div>
-                    )}
 
-                    {/* GRID */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                        {filtered.map((p) => (
-                            <PropertyCardPro
-                                key={p.id}
-                                p={p}
-                                user={user}
-                                onSelect={(prop: any) => {
-                                    if (!prop?.lat || !prop?.lng) return
 
-                                    setActive({
-                                        id: prop.id,
-                                        coords: [prop.lat, prop.lng]
-                                    })
-                                }}
-                                onLead={addLead}
-                                onBoost={payForBoost}
-                            />
-                        ))}
+                        {aiRecommended.length > 0 && (
+                            <section className="gth-section">
+                                <div className="gth-container">
 
+                                    <h2 className="text-xl font-bold mb-4 text-yellow-400">
+                                        🤖 Recommended For You
+                                    </h2>
+
+                                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+
+                                        {aiRecommended.map((p) => (
+                                            <div key={p.id} className="min-w-[260px]">
+                                                <PropertyCardPro
+                                                    p={p}
+                                                    user={user}
+                                                    onSelect={(prop: any) => {
+                                                        router.push(`/real-estate/${prop.slug}`)
+                                                    }}
+                                                    onLead={addLead}
+                                                    onBoost={payForBoost}
+                                                />
+                                            </div>
+
+                                        ))}
+
+                                    </div>
+                                </div>
+
+                            </section>
+
+                        )}
+
+
+
+                        {/* GRID */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 pb-10">
+                            {filtered.map((p) => (
+                                <PropertyCardPro
+                                    key={p.id}
+                                    p={p}
+                                    user={user}
+                                    onSelect={(prop: any) => {
+                                        if (!prop?.lat || !prop?.lng) return
+
+                                        setActive({
+                                            id: prop.id,
+                                            coords: [prop.lat, prop.lng]
+                                        })
+                                    }}
+                                    onLead={addLead}
+                                    onBoost={payForBoost}
+                                />
+                            ))}
+
+                        </div>
                     </div>
                 </div>
             </div>
+
+
 
             {/* MODALS */}
             {showAdd && (
@@ -525,6 +589,7 @@ ${isDay
             />
 
             {isMobile && (
+
                 <BottomNav
                     onMap={() => setShowMap(true)}
                     onFilter={() => setShowFilters(true)}

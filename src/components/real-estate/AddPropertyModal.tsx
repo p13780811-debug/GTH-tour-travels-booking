@@ -262,7 +262,7 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
                 <button
                     onClick={handleSave}
                     disabled={loading}
-                    className="w-full bg-white text-black py-2 rounded font-bold"
+                    className="w-full gth-glass text-black py-2 rounded font-bold"
                 >
                     {loading ? "Saving..." : "Save Property"}
                 </button>

@@ -26,7 +26,7 @@ export default function BookingSection({ partner_link }: PartnerItem) {
 
             <button
                 onClick={() => setOpen(true)}
-                className="px-6 py-3 bg-yellow-500 text-black rounded-xl font-semibold"
+                className="px-6 py-3 gth-btn-gold text-black rounded-xl font-semibold"
             >
                 {buttonText}
             </button>
@@ -53,7 +53,7 @@ export default function BookingSection({ partner_link }: PartnerItem) {
                         <a
                             href={link}
                             target="_blank"
-                            className="block text-center w-full py-3 bg-yellow-500 text-black font-semibold rounded-xl"
+                            className="block text-center w-full py-3 gth-btn-gold text-black font-semibold rounded-xl"
                         >
                             Continue Booking
                         </a>

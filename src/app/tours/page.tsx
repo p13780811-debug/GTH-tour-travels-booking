@@ -105,7 +105,7 @@ export default async function Page({
 
                         <button
                             type="submit"
-                            className="bg-yellow-500 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-400 transition"
+                            className="gth-btn-gold text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-400 transition"
                         >
                             Search
                         </button>
@@ -149,7 +149,7 @@ export default async function Page({
                             <option value="luxury">Luxury</option>
                         </select>
 
-                        <button className="bg-yellow-500 w-full py-3 text-black font-bold rounded-lg">
+                        <button className="gth-btn-gold w-full py-3 text-black font-bold rounded-lg">
                             Apply Filters
                         </button>
                     </form>
@@ -187,7 +187,7 @@ export default async function Page({
                                     />
 
                                     {i === 0 && (
-                                        <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded">
+                                        <span className="absolute top-2 left-2 gth-btn-gold text-black text-xs px-2 py-1 rounded">
                                             BEST DEAL 🔥
                                         </span>
                                     )}
@@ -204,7 +204,7 @@ export default async function Page({
                                 <a
 
                                     href={`/tours/${tour.city_slug}`}
-                                    className="block mt-4 bg-white/10 hover:bg-yellow-500 hover:text-black text-white text-center py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all border border-white/10"
+                                    className="block mt-4 gth-glass/10 hover:gth-btn-gold hover:text-black text-white text-center py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all border border-white/10"
                                 >
                                     View Details →
 

@@ -95,7 +95,7 @@ export default function FlightSearch() {
                 <button
                     onClick={searchFlights}
                     disabled={loading}
-                    className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition disabled:opacity-50"
+                    className="gth-btn-gold hover:bg-yellow-400 text-black font-bold rounded-lg transition disabled:opacity-50"
                 >
 
                     {loading ? "Searching..." : "Search Flights"}
@@ -149,7 +149,7 @@ export default function FlightSearch() {
                                     </p>
 
                                     {cheapest && (
-                                        <span className="bg-yellow-500 text-black text-xs px-2 py-1 rounded">
+                                        <span className="gth-btn-gold text-black text-xs px-2 py-1 rounded">
                                             Best Deal
                                         </span>
                                     )}
@@ -181,7 +181,7 @@ export default function FlightSearch() {
                                     href={`https://aviasales.tp.st/?origin=${f.origin}&destination=${f.destination}&departure_at=${f.departure_at}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="bg-yellow-500 hover:bg-white text-black px-5 py-2 rounded-lg text-sm font-bold transition"
+                                    className="gth-btn-gold hover:gth-glass text-black px-5 py-2 rounded-lg text-sm font-bold transition"
                                 >
 
                                     Book Flight

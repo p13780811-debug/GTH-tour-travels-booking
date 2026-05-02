@@ -94,7 +94,7 @@ export default function HeroSlider() {
 
                 {/* BOTTOM: Ultimate Search Bar */}
                 <div className="w-full pb-8">
-                    <div className="backdrop-blur-3xl bg-white/5 border border-white/10 rounded-[2.5rem] p-4 flex flex-col md:flex-row gap-4 shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
+                    <div className="backdrop-blur-3xl gth-glass/5 border border-white/10 rounded-[2.5rem] p-4 flex flex-col md:flex-row gap-4 shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
 
                         {/* Destination Input */}
                         <div className="relative flex-[2]">
@@ -102,7 +102,7 @@ export default function HeroSlider() {
                             <input
                                 type="text"
                                 placeholder="Where to next?"
-                                className="w-full pl-12 pr-5 py-5 rounded-3xl bg-white/5 text-white border border-white/5 focus:border-[#d4af37]/50 outline-none transition-all placeholder:text-gray-500 text-sm"
+                                className="w-full pl-12 pr-5 py-5 rounded-3xl gth-glass/5 text-white border border-white/5 focus:border-[#d4af37]/50 outline-none transition-all placeholder:text-gray-500 text-sm"
                                 onChange={(e) => handleSearch(e.target.value)}
                             />
 
@@ -121,8 +121,8 @@ export default function HeroSlider() {
 
                         {/* Dates */}
                         <div className="flex flex-1 gap-2">
-                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl bg-white/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all custom-calendar-icon" />
-                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl bg-white/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all" />
+                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl gth-glass/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all custom-calendar-icon" />
+                            <input type="date" className="flex-1 px-4 py-5 rounded-3xl gth-glass/5 text-white border border-white/5 text-[10px] outline-none hover:border-[#d4af37]/20 transition-all" />
                         </div>
 
                         {/* Search Button */}
@@ -139,7 +139,7 @@ export default function HeroSlider() {
                 {slides.map((_, i) => (
                     <div
                         key={i}
-                        className={`h-12 w-1 transition-all duration-500 ${current === i ? 'bg-[#d4af37] shadow-[0_0_15px_#d4af37]' : 'bg-white/20'}`}
+                        className={`h-12 w-1 transition-all duration-500 ${current === i ? 'bg-[#d4af37] shadow-[0_0_15px_#d4af37]' : 'gth-glass/20'}`}
                     />
                 ))}
             </div>

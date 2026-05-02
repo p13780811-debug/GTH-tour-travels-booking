@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function CocktailCard({ hotel }) {
     return (
-        <div className="bg-white border-b md:border md:rounded-2xl overflow-hidden flex flex-col md:flex-row group transition-all hover:shadow-lg">
+        <div className="gth-glass border-b md:border md:rounded-2xl overflow-hidden flex flex-col md:flex-row group transition-all hover:shadow-lg">
 
             {/* 1. AIRBNB STYLE IMAGE (Mobile par square, Desktop par side mein) */}
             <div className="relative w-full md:w-72 h-56 md:h-auto overflow-hidden">

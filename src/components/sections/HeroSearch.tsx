@@ -89,7 +89,7 @@ export default function SearchSection({ city }: { city?: string }) {
 
                 {/* SEARCH CONTAINER (Glassmorphism Effect) */}
                 {/* SEARCH CONTAINER - Luxury Mobile Fix */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 bg-white/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 mt-2 md:-mt-2 relative z-50">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 gth-glass/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 mt-2 md:-mt-2 relative z-50">
 
                     {/* DESTINATION INPUT */}
                     <div className="relative border-b md:border-b-0 md:border-r border-white/10">
@@ -113,7 +113,7 @@ export default function SearchSection({ city }: { city?: string }) {
 
                         {/* Suggestions Dropdown */}
                         {isOpen && suggestions.length > 0 && inputValue.length > 1 && (
-                            <div className="absolute top-full left-0 mt-2 w-full bg-slate-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+                            <div className="absolute top-full left-0 mt-2 w-full gth-glass border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
                                 {suggestions.map((s, i) => (
                                     <button
                                         key={i}

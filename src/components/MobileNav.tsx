@@ -32,7 +32,7 @@ const MobileNav = () => {
 
                 {/* Center REAL ESTATE (MAIN CTA) */}
                 <Link href="/real-estate"
-                    className="relative -mt-6 bg-white p-3 rounded-2xl border-4 border-black shadow-xl active:scale-95 transition"
+                    className="relative -mt-6 gth-glass p-3 rounded-2xl border-4 border-black shadow-xl active:scale-95 transition"
                 >
                     <Building2 size={22} className="text-black" />
                 </Link>

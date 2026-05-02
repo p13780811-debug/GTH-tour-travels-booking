@@ -19,7 +19,7 @@ export default function ActivitySection() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {activities.map((item) => (
                         <div key={item.id} className="group relative overflow-hidden rounded-xl border border-[#222] hover:border-[#d4af37] transition-all duration-500">
-                            <div className="h-64 bg-gray-800 relative">
+                            <div className="h-64 gth-glass-800 relative">
                                 {/* Image Placeholder - Yahan hum cinematic video bhi daal sakte hain */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
                             </div>
@@ -30,7 +30,7 @@ export default function ActivitySection() {
                                 </h3>
                                 <div className="flex justify-between items-center mt-4">
                                     <span className="text-2xl text-white font-light">{item.price}</span>
-                                    <button className="bg-[#d4af37] text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-white transition-all">
+                                    <button className="bg-[#d4af37] text-black px-4 py-2 rounded-full font-bold text-sm hover:gth-glass transition-all">
                                         BOOK NOW
                                     </button>
                                 </div>

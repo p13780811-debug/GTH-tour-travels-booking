@@ -27,14 +27,14 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                 <div className="flex gap-2">
                     <button
                         onClick={() => scroll("left")}
-                        className="bg-white/10 hover:bg-yellow-500 hover:text-black p-2 rounded-full backdrop-blur border border-white/20"
+                        className="gth-glass/10 hover:gth-btn-gold hover:text-black p-2 rounded-full backdrop-blur border border-white/20"
                     >
                         ←
                     </button>
 
                     <button
                         onClick={() => scroll("right")}
-                        className="bg-white/10 hover:bg-yellow-500 hover:text-black p-2 rounded-full backdrop-blur border border-white/20"
+                        className="gth-glass/10 hover:gth-btn-gold hover:text-black p-2 rounded-full backdrop-blur border border-white/20"
                     >
                         →
                     </button>
@@ -51,7 +51,7 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                         <Link
                             key={item.id}
                             href={`/tours/${item.city_slug}`}
-                            className="min-w-[300px] snap-start group rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 hover:scale-[1.03] transition"
+                            className="min-w-[300px] snap-start group rounded-2xl overflow-hidden gth-glass/5 backdrop-blur-md border border-white/10 hover:scale-[1.03] transition"
                         >
 
                             {/* IMAGE FIX */}

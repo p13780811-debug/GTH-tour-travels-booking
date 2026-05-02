@@ -115,7 +115,7 @@ export default function HotelResults({ city }: { city: string }) {
                                         </div>
                                         <button
                                             onClick={() => window.open(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${city}&aid=IKb6eSUe`, "_blank")}
-                                            className="bg-white text-black hover:bg-sky-500 hover:text-white px-6 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-90"
+                                            className="gth-glass text-black hover:bg-sky-500 hover:text-white px-6 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-90"
                                         >
                                             View Deals
                                         </button>

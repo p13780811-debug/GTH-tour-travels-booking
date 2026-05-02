@@ -63,10 +63,10 @@ export default function Page({ params }: any) {
             <Suspense
                 fallback={
                     <div className="p-6 animate-pulse space-y-4">
-                        <div className="h-6 w-1/2 bg-slate-800 rounded"></div>
-                        <div className="h-64 bg-slate-800 rounded"></div>
-                        <div className="h-4 w-3/4 bg-slate-800 rounded"></div>
-                        <div className="h-4 w-1/2 bg-slate-800 rounded"></div>
+                        <div className="h-6 w-1/2 gth-glass rounded"></div>
+                        <div className="h-64 gth-glass rounded"></div>
+                        <div className="h-4 w-3/4 gth-glass rounded"></div>
+                        <div className="h-4 w-1/2 gth-glass rounded"></div>
                     </div>
                 }
             >

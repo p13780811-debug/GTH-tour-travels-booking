@@ -151,7 +151,7 @@ export default function TrainServicePage() {
                             className={`flex flex-col items-center gap-1 px-6 py-3 rounded-xl transition-all
                 ${activeTab === tab.key
                                     ? 'bg-[#e6b800] text-[#000d1a] shadow-lg'
-                                    : 'text-slate-400 hover:bg-white/5'
+                                    : 'text-slate-400 hover:gth-glass/5'
                                 }`}
                         >
                             {tab.icon}
@@ -266,7 +266,7 @@ export default function TrainServicePage() {
                                         {searchResult.map((train: any) => (
                                             <tr
                                                 key={train.TrainNo || train.name}
-                                                className="hover:bg-white/10 transition-colors"
+                                                className="hover:gth-glass/10 transition-colors"
                                             >
                                                 <td className="p-2 border border-slate-700">{train.TrainName}</td>
                                                 <td className="p-2 border border-slate-700">{train.DepartureTime || train.src_departure_time}</td>

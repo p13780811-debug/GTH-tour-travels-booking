@@ -73,7 +73,7 @@ export default function FeaturedDestinationsSlider({
                                 </div>
 
                                 <Link href={`/destinations/${city.slug}`}>
-                                    <button className="w-full py-2 bg-white/10 backdrop-blur-md border border-white/20 text-[10px] md:text-sm text-white uppercase font-bold rounded-lg hover:bg-[#f59e0b] hover:text-black transition-all duration-300 active:scale-5">
+                                    <button className="w-full py-2 gth-glass/10 backdrop-blur-md border border-white/20 text-[10px] md:text-sm text-white uppercase font-bold rounded-lg hover:bg-[#f59e0b] hover:text-black transition-all duration-300 active:scale-5">
                                         Explore Destination
                                     </button>
                                 </Link>

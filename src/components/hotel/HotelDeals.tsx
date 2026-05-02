@@ -43,7 +43,7 @@ export default async function HotelDeals({ city }: any) {
                         COMPARED BY AI • VERIFIED BY GTH PRO
                     </p>
                 </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-2 rounded-2xl hidden md:block">
+                <div className="gth-glass/5 backdrop-blur-sm border border-white/10 p-2 rounded-2xl hidden md:block">
                     <span className="text-[10px] text-yellow-400 font-black px-4 py-2 uppercase tracking-widest">
                         {hotels.length} Live Results
                     </span>
@@ -119,7 +119,7 @@ export default async function HotelDeals({ city }: any) {
                                 <a
                                     href={hotel.partner_link}
                                     target="_blank"
-                                    className="bg-yellow-400 hover:bg-white text-black px-10 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-[0_10px_30px_-10px_rgba(234,179,8,0.5)] active:scale-95"
+                                    className="bg-yellow-400 hover:gth-glass text-black px-10 py-4 rounded-2xl font-black text-xs uppercase transition-all shadow-[0_10px_30px_-10px_rgba(234,179,8,0.5)] active:scale-95"
                                 >
                                     Book Now
                                 </a>

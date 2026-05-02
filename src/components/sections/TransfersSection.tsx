@@ -21,7 +21,7 @@ export default function TransfersSection({ city }: { city?: string }) {
 
                     {items.map((t, i) => (
 
-                        <div key={i} className="p-12 bg-white/10 rounded-xl text-center">
+                        <div key={i} className="p-12 gth-glass/10 rounded-xl text-center">
 
                             {t}
 

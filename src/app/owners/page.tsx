@@ -47,7 +47,7 @@ export default function OwnersPage() {
                 />
                 <button
                     onClick={handleAdd}
-                    className="bg-yellow-500 text-black px-4 py-3 rounded font-bold"
+                    className="gth-btn-gold text-black px-4 py-3 rounded font-bold"
                 >
                     Add Hotel
                 </button>

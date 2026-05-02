@@ -13,7 +13,7 @@ export default function TourCard({ tour }: any) {
   }
 
   return (
-    <div className="flex border rounded-xl overflow-hidden hover:shadow-md transition bg-white">
+    <div className="flex border rounded-xl overflow-hidden hover:shadow-md transition gth-glass">
 
       {/* IMAGE */}
       <img
@@ -47,7 +47,7 @@ export default function TourCard({ tour }: any) {
             href={buildAffiliateLink(tour.city_slug)}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-yellow-500 text-black px-4 py-2 rounded"
+            className="gth-btn-gold text-black px-4 py-2 rounded"
           >
             Book Now
           </a>

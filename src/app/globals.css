@@ -1,138 +1,356 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* ========================= */
+/* 🌍 ROOT TOKENS */
+/* ========================= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f8fafc;
+  --text: #0f172a;
+
+  /* ✅ Glass FIX (white layer issue solved) */
+  --card: rgba(255, 255, 255, 0.08);
+  --border: rgba(0, 0, 0, 0.06);
+
+  --gold: #d4af37;
+  --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+
+  --radius: 16px;
+  --blur: 14px;
+
+  --btn-bg: #111827;
+  --btn-text: #ffffff;
+
+  /* ✅ Background system */
+  --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
 }
 
-:root inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ========================= */
+/* 🌙 DARK MODE */
+/* ========================= */
+html.dark {
+  --bg: #0a0f14;
+  --text: #e5e7eb;
+
+  --card: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.08);
+
+  --btn-bg: var(--gold-gradient);
+  --btn-text: #000;
+
+  --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* GTH PRO: Global Luxury Background - Sabse Powerful Code */
+/* ========================= */
+/* 🔥 BODY (MAIN FIX) */
+/* ========================= */
 body {
-  /* 1. Ye background har page par apne aap apply hoga */
-  background: radial-gradient(circle at 50% 0%, #1a2a44 0%, #000b1a 70%) !important;
-  background-attachment: fixed !important;
-  background-color: #000d1f !important;
-  color: white;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text);
   margin: 0;
-  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.3s ease;
 }
 
-/* 2. Glassmorphism Class: Isse aapke icons aur cards chamkenge */
-.gth-card-glow {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(15px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+/* ========================= */
+/* 💎 GLASS SYSTEM */
+/* ========================= */
+.gth-glass {
+  background: var(--card);
+  backdrop-filter: blur(var(--blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-/* GTH Pro Luxury Palette */
-:root {
-  --gold-primary: #d4af37;
-  --gold-secondary: #f9e29c;
-  --deep-black: #050505;
-  --glass-effect: rgba(255, 255, 255, 0.05);
+.gth-glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* globals.css mein ye class dalo */
-.gth-text-glow {
-  color: white !important;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 20px rgba(0, 0, 0, 0.5) !important;
+html.dark .gth-glass-strong {
+  background: rgba(10, 15, 20, 0.6);
 }
 
+/* ========================= */
+/* 🔘 BUTTON SYSTEM */
+/* ========================= */
+.gth-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: 0.3s;
+}
 
-/* Gold Gradient Text */
+.gth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
 
+/* GOLD */
+.gth-btn-gold {
+  background: var(--gold-gradient);
+  color: #000;
+  font-weight: 700;
+  border-radius: 999px;
+  transition: 0.3s;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+}
+
+.gth-btn-gold:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+}
+
+/* ✅ LIGHT MODE GOLD FIX (important) */
+html:not(.dark) .gth-btn-gold {
+  border: 1.5px solid #b38728;
+  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ========================= */
+/* ✨ TEXT */
+/* ========================= */
 .gold-text {
-
+  background: var(--gold-gradient);
   background-clip: text;
-
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  background-image: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-
-
-  display: inline-block;
 }
 
-/* Luxury Glow Effect for Cards */
-.luxury-card:hover {
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
-  transform: translateY(-5px);
+.gth-title {
+  font-weight: 800;
 }
 
-@layer utilities {
-  .gold-gradient {
-    background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 70%, #fbf5b7 100%);
+.gth-sub {
+  opacity: 0.7;
+}
+
+/* ========================= */
+/* 🚀 HOVER */
+/* ========================= */
+.gth-hover {
+  transition: 0.35s;
+}
+
+.gth-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================= */
+/* 📐 LAYOUT SYSTEM */
+/* ========================= */
+.gth-container {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.gth-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.gth-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.gth-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ========================= */
+/* 📱 RESPONSIVE */
+/* ========================= */
+@media (max-width: 768px) {
+  .gth-layout {
+    flex-direction: column;
   }
 
-  .glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(212, 175, 55, 0.1);
+  .gth-sidebar {
+    width: 100%;
   }
 
-  .text-glow {
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  .gth-container {
+    padding: 0 12px;
   }
 }
 
-/* GTH PRO: Sabhi 'bg-black' ko Luxury Glass mein badlo */
-@layer base {
-  .glass-dark {
-    background: rgba(0, 0, 0, 0.6);
-    /* Kaala rang hat gaya, halka shisha aa gaya */
-    backdrop-filter: blur(12px);
-    /* Saare components ab Maldives ke upar chamkenge */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Halka border luxury look ke liye */
+/* Desktop enhance */
+@media (min-width: 1280px) {
+  .gth-layout {
+    gap: 40px;
+  }
+
+  .gth-sidebar {
+    position: sticky;
+    top: 100px;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
   }
 }
 
-/* hide scrollbar */
+/* ========================= */
+/* 📦 GRID */
+/* ========================= */
+.gth-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ========================= */
+/* 🧼 SCROLL */
+/* ========================= */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-:root {
-  --bg: #ffffff;
-  --text: #0f172a;
-  --card: rgba(255, 255, 255, 0.7);
-  --border: rgba(0, 0, 0, 0.1);
+/* ========================= */
+/* 🗺️ MAP FIX */
+/* ========================= */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #08090a;
-    --text: #e5e7eb;
-    --card: rgba(0, 0, 0, 0.4);
-    --border: rgba(255, 255, 255, 0.1);
+/* ========================= */
+/* ⚡ GLOBAL SMOOTH */
+/* ========================= */
+* {
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+/* ========================= */
+/* 🚀 ULTRA WIDE */
+/* ========================= */
+@media (min-width: 1536px) {
+  .gth-container {
+    max-width: 1450px;
   }
 }
 
-.text-primary {
-  color: #ffffff;
+/* ========================= */
+/* 📱 MOBILE = LIGHT MODE */
+/* ========================= */
+@media (max-width: 768px) {
+  html {
+    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
+    --text: #0f172a;
+    --card: rgba(255, 255, 255, 0.12);
+    --border: rgba(0, 0, 0, 0.06);
+  }
 }
 
-.text-secondary {
-  color: rgba(255, 255, 255, 0.7);
+/* ========================= */
+/* 💻 DESKTOP = DARK MODE */
+/* ========================= */
+@media (min-width: 769px) {
+  html {
+    --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%);
+    --text: #e5e7eb;
+    --card: rgba(255, 255, 255, 0.06);
+    --border: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 768px) {
+  .gth-btn-gold {
+    box-shadow: none;
+  }
+}
+
+/* ========================= */
+/* 🎬 THEME ANIMATION */
+/* ========================= */
+
+html,
+body,
+.gth-glass,
+.gth-btn,
+.gth-btn-gold {
+  transition:
+    background 0.4s ease,
+    color 0.3s ease,
+    border 0.3s ease,
+    backdrop-filter 0.4s ease;
+}
+
+/* Smooth dark switch */
+html.dark body {
+  transition: background 0.5s ease;
+}
+
+/* ========================= */
+/* 🛡️ ZERO LEAKAGE & FIT FIX */
+/* ========================= */
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+  touch-action: pan-y;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ========================= */
+/* 🌓 DYNAMIC THEME ENGINE (NO CONFLICT) */
+/* ========================= */
+
+/* Mobile Default (Light) - Only if NOT dark class */
+@media (max-width: 768px) {
+  html:not(.dark) {
+    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
+    --text: #0f172a;
+    --card: rgba(255, 255, 255, 0.12);
+    --border: rgba(0, 0, 0, 0.06);
+  }
+
+  .gth-container {
+    padding: 0 16px;
+    width: 100%;
+  }
+
+  .gth-btn-gold {
+    box-shadow: none;
+    flex-shrink: 0;
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+}
+
+/* Desktop Default (Dark) - Only if NOT dark class (optional override) */
+@media (min-width: 769px) {
+  html:not(.dark) {
+    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
+    --text: #0f172a;
+    --card: rgba(255, 255, 255, 0.45);
+    --border: rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* 🌙 UNIVERSAL DARK OVERRIDE (Priority 1) */
+/* Yeh class media query ke hardcoding ko override karegi */
+html.dark {
+  --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%) !important;
+  --text: #e5e7eb !important;
+  --card: rgba(255, 255, 255, 0.06) !important;
+  --border: rgba(255, 255, 255, 0.08) !important;
 }

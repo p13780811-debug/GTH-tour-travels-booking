@@ -127,7 +127,7 @@ export default async function Page({ params }: any) {
                     <a
                         href={affiliate}
                         target="_blank"
-                        className="inline-block mt-6 bg-yellow-500 text-black px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition"
+                        className="inline-block mt-6 gth-btn-gold text-black px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition"
                     >
                         Book Now →
                     </a>
@@ -179,7 +179,7 @@ export default async function Page({ params }: any) {
                         <a
                             href={affiliate}
                             target="_blank"
-                            className="block mt-6 bg-yellow-500 hover:bg-yellow-400 text-black py-4 text-center rounded-xl font-black text-lg transition-all"
+                            className="block mt-6 gth-btn-gold hover:bg-yellow-400 text-black py-4 text-center rounded-xl font-black text-lg transition-all"
                         >
                             Book Now →
                         </a>

@@ -42,14 +42,14 @@ export default function SearchSection() {
                     type="text"
                     onChange={(e) => handleSearch(e.target.value)}
                     placeholder="Search Destinations..."
-                    className="w-full p-6 rounded-full bg-white/5 border border-white/20 text-white outline-none focus:border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.2)]"
+                    className="w-full p-6 rounded-full gth-glass/5 border border-white/20 text-white outline-none focus:border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.2)]"
                 />
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#0070f3] rounded-full shadow-[0_0_10px_#0070f3] animate-pulse"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {results.map((item) => (
-                    <div key={item.id} className="p-1 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md">
+                    <div key={item.id} className="p-1 rounded-3xl gth-glass/5 border border-white/10 backdrop-blur-md">
                         <img src={item.image_url} className="w-full h-48 object-cover rounded-2xl mb-4" />
                         <div className="p-4">
                             <h3 className="text-2xl font-bold text-white mb-2">{item.name}</h3>
@@ -57,7 +57,7 @@ export default function SearchSection() {
                                 <span className="text-yellow-500 font-bold">GTH PRO Rate</span>
                                 <a
                                     href={`${item.partner_link}&return_url=https://gthpro.com/success`}
-                                    className="px-6 py-2 bg-yellow-500 text-black font-extrabold rounded-lg shadow-[0_0_15px_rgba(234,179,8,0.4)]"
+                                    className="px-6 py-2 gth-btn-gold text-black font-extrabold rounded-lg shadow-[0_0_15px_rgba(234,179,8,0.4)]"
                                 >
                                     Book Now
                                 </a>

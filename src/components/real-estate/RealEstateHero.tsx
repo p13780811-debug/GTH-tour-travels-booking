@@ -6,14 +6,15 @@ import { motion } from "framer-motion"
 import AIChatToggle from "@/components/AIChatToggle"
 import { useThemeMode } from "@/lib/hooks/useThemeMode"
 
-
 export default function RealEstateHero({
     query,
     setQuery,
     onSearch,
 }: any) {
+
     const theme = useThemeMode()
     const isDay = theme === "day"
+
     const [index, setIndex] = useState(0)
     const [suggestions, setSuggestions] = useState<string[]>([])
     const [recent, setRecent] = useState<string[]>([])
@@ -22,12 +23,11 @@ export default function RealEstateHero({
     const images = [
         "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=90",
         "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=90",
-        "https://images.unsplash.com/photo-1599809275671-b300947a5927?w=1920&q=90",
+        "https://images.unsplash.com/photo-1599423300746-b62533397364?w=1920&q=90",
     ]
 
     const tabs = ["Buy", "Rent", "New Launch", "Commercial"]
 
-    // 🎥 IMAGE SLIDER
     useEffect(() => {
         const t = setInterval(() => {
             setIndex((p) => (p + 1) % images.length)
@@ -35,7 +35,6 @@ export default function RealEstateHero({
         return () => clearInterval(t)
     }, [])
 
-    // 🕘 LOAD RECENT
     useEffect(() => {
         const saved = localStorage.getItem("recent_searches")
         if (saved) setRecent(JSON.parse(saved))
@@ -47,7 +46,6 @@ export default function RealEstateHero({
         localStorage.setItem("recent_searches", JSON.stringify(updated))
     }
 
-    // 🤖 LOCAL SUGGESTIONS (NO 404 ERROR)
     useEffect(() => {
         if (!query) return setSuggestions([])
 
@@ -62,7 +60,6 @@ export default function RealEstateHero({
         setSuggestions(local)
     }, [query])
 
-    // 🎤 VOICE SEARCH
     const startVoice = () => {
         const SpeechRecognition =
             (window as any).SpeechRecognition ||
@@ -81,7 +78,6 @@ export default function RealEstateHero({
         }
     }
 
-    // 📍 LOCATION SEARCH
     const getLocation = () => {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords
@@ -103,7 +99,6 @@ export default function RealEstateHero({
         })
     }
 
-    // 🧠 TAB HANDLER
     const handleTab = (tab: string) => {
         setActiveTab(tab)
 
@@ -118,74 +113,62 @@ export default function RealEstateHero({
         onSearch()
     }
 
-    // 🔍 SEARCH HANDLER
     const handleSearch = () => {
         if (!query.trim()) return
         saveRecent(query)
         onSearch()
     }
 
-
     return (
-        <section className="relative w-full h-[320px] md:h-[440px] flex items-end justify-center pb-10 overflow-hidden">
+        <section className="relative w-full h-[90vh] md:h-screen flex items-center justify-center overflow-hidden">
 
-            {/* 🤖 AI BUTTON */}
+            {/* BG IMAGE */}
+            <motion.img
+                key={index}
+                initial={{ scale: 1.15 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 6 }}
+                src={images[index]}
+                className="absolute inset-0 w-full h-full object-cover"
+            />
+
+            {/* OVERLAY */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+            {/* PREMIUM GRADIENT */}
+            <div className={`absolute inset-0 ${isDay
+                ? ``
+                : "bg-gradient-to-t from-black via-black/40 to-transparent"
+                }`} />
+
+            {/* AI BUTTON */}
             <div className="absolute bottom-6 right-6 z-20">
                 <AIChatToggle />
             </div>
 
-            {/* 🎥 BACKGROUND IMAGE */}
-            <motion.img
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 6 }}
-                src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=90"
-                className="absolute inset-0 w-full h-full object-cover"
-            />
-
-            {/* 🌗 DYNAMIC OVERLAY */}
-            <div className={`absolute inset-0 transition-all duration-500
-                ${isDay
-                    ? "bg-white/60 backdrop-blur-[2px]"
-                    : "bg-black/70"
-                }`} />
-
-            {/* ⚡ AI TAG */}
-            <div className={`absolute top-3 right-3 text-xs px-3 py-1 rounded-full backdrop-blur-md border
-                ${isDay
-                    ? "bg-white/70 text-black border-gray-200"
-                    : "bg-black/40 text-cyan-300 border-white/10"
-                }`}>
-                ⚡ AI Powered Search
-            </div>
-
             {/* CONTENT */}
-            <div className="relative z-10 w-full max-w-6xl px-4">
+            <div className="relative z-10 text-center px-4">
 
-                {/* TITLE */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`text-2xl md:text-4xl font-bold mb-4 leading-tight
-                    ${isDay ? "text-black" : "text-white"}`}
-                >
-                    Find Your Dream Property 🌍
-                </motion.h1>
+                {/* 🔥 PREMIUM TITLE */}
+                <h1 className="gth-title text-3xl md:text-5xl">
+                    GLOBAL PROPERTY <br />
+                    <span className="gold-text">MARKETPLACE</span>
+                </h1>
 
-                {/* 🧭 TABS */}
-                <div className="flex gap-3 mb-3 overflow-x-auto no-scrollbar">
+                <p className="gth-sub">
+                    Buy • Rent • Invest in premium real estate worldwide
+                </p>
+
+                {/* 🔥 TABS (FIXED) */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4">
                     {tabs.map((t: string) => (
                         <button
                             key={t}
                             onClick={() => handleTab(t)}
-                            className={`px-4 py-1 text-sm rounded-full whitespace-nowrap transition-all duration-300
-                            ${activeTab === t
-                                    ? isDay
-                                        ? "bg-black text-white shadow"
-                                        : "bg-cyan-500 text-black"
-                                    : isDay
-                                        ? "bg-black/10 text-black hover:bg-black/20"
-                                        : "bg-white/20 text-white hover:bg-white/30"
+                            className={`px-3 py-1 text-[11px] rounded-full whitespace-nowrap transition shrink-0
+          ${activeTab === t
+                                    ? "gth-btn"
+                                    : "bg-white/10 backdrop-blur text-white hover:bg-white/20"
                                 }`}
                         >
                             {t}
@@ -193,90 +176,46 @@ export default function RealEstateHero({
                     ))}
                 </div>
 
-                {/* 🔍 COMMAND CENTER SEARCH */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`rounded-2xl p-3 border backdrop-blur-xl transition-all
-                    ${isDay
-                            ? "bg-white/80 border-gray-200 shadow-lg"
-                            : "bg-white/10 border-white/20 shadow-xl"
-                        }`}
-                >
+                {/* 🔥 SEARCH BOX (UPGRADED) */}
+                <div className="gth-glass flex items-center gap-3 p-4 max-w-2xl mx-auto">
 
-                    <div className="flex flex-col md:flex-row gap-2 items-center">
+                    <Search size={18} className="opacity-70" />
 
-                        {/* INPUT */}
-                        <div className="flex items-center gap-2 bg-white rounded-lg px-3 w-full shadow-sm">
-                            <Search size={18} />
-                            <input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Search by city, budget, type..."
-                                className="w-full py-2 outline-none text-black bg-transparent"
-                            />
-                        </div>
+                    <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search city, budget, 2BHK..."
+                        className={`flex-1 bg-transparent outline-none text-sm ${isDay ? "placeholder:text-black/40" : "placeholder:text-white/40"
+                            }`}
+                    />
 
-                        {/* ACTIONS */}
-                        <div className="flex gap-3 items-center">
+                    <MapPin
+                        size={18}
+                        onClick={getLocation}
+                        className="cursor-pointer opacity-70 hover:opacity-100"
+                    />
 
-                            <MapPin
-                                onClick={getLocation}
-                                className={`cursor-pointer transition hover:scale-110 
-                                ${isDay ? "text-black" : "text-white"}`}
-                            />
+                    <Mic
+                        size={18}
+                        onClick={startVoice}
+                        className="cursor-pointer opacity-70 hover:opacity-100"
+                    />
 
-                            <Mic
-                                onClick={startVoice}
-                                className={`cursor-pointer transition hover:scale-110 
-                                ${isDay ? "text-black" : "text-white"}`}
-                            />
+                    {/* ✅ FIXED BUTTON */}
+                    <button
+                        onClick={handleSearch}
+                        className="gth-btn text-xs px-4 py-2"
+                    >
+                        Search
+                    </button>
 
-                            <button
-                                onClick={handleSearch}
-                                className={`px-6 py-2 rounded-lg font-bold transition-all
-                                ${isDay
-                                        ? "bg-black text-white hover:bg-gray-800"
-                                        : "bg-cyan-500 text-black hover:bg-cyan-400"
-                                    }`}
-                            >
-                                Search
-                            </button>
-
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* 🤖 AI SMART CHIPS */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                    {[
-                        "2BHK under 50L in Mumbai",
-                        "Luxury villa in Goa",
-                        "Rental flats near me",
-                        "High ROI investment property"
-                    ].map((item, i) => (
-                        <button
-                            key={i}
-                            onClick={() => {
-                                setQuery(item)
-                                handleSearch()
-                            }}
-                            className={`text-xs px-3 py-1 rounded-full transition-all
-                            ${isDay
-                                    ? "bg-black/10 text-black hover:bg-black/20"
-                                    : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30"
-                                }`}
-                        >
-                            🤖 {item}
-                        </button>
-                    ))}
                 </div>
 
-                {/* 💡 AI SUGGESTIONS */}
+
+
+                {/* 🔥 SUGGESTIONS */}
                 {suggestions.length > 0 && (
-                    <div className={`mt-2 rounded-xl shadow overflow-hidden
-                        ${isDay ? "bg-white" : "bg-black border border-white/10"}
-                    `}>
+                    <div className="mt-3 gth-glass rounded-xl overflow-hidden">
                         {suggestions.map((s: string, i: number) => (
                             <div
                                 key={i}
@@ -284,24 +223,12 @@ export default function RealEstateHero({
                                     setQuery(s)
                                     handleSearch()
                                 }}
-                                className={`p-2 cursor-pointer transition
-                                ${isDay
-                                        ? "hover:bg-gray-100 text-black"
-                                        : "hover:bg-white/10 text-white"
-                                    }`}
+                                className="p-3 text-sm cursor-pointer hover:bg-white/10 transition"
                             >
                                 {s}
                             </div>
                         ))}
                     </div>
-                )}
-
-                {/* 🧠 AI HINT */}
-                {query && (
-                    <p className={`text-xs mt-2
-                        ${isDay ? "text-gray-600" : "text-cyan-300"}`}>
-                        💡 Try: "3BHK under 80L in Bangalore"
-                    </p>
                 )}
 
             </div>

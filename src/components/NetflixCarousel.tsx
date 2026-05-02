@@ -76,14 +76,14 @@ export default function NetflixCarousel({
 
             <button
                 onClick={() => scroll("left")}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-yellow-500/80 hover:bg-white text-black p-3 rounded-full hidden md:block"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 gth-btn-gold/80 hover:gth-glass text-black p-3 rounded-full hidden md:block"
             >
                 ❮
             </button>
 
             <button
                 onClick={() => scroll("right")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-yellow-500/80 hover:bg-white text-black p-3 rounded-full hidden md:block"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 gth-btn-gold/80 hover:gth-glass text-black p-3 rounded-full hidden md:block"
             >
                 ❯
             </button>
@@ -145,7 +145,7 @@ export default function NetflixCarousel({
                                     <a
                                         href={item.affiliate_link}
                                         target="_blank"
-                                        className="block text-center bg-white/5 hover:bg-yellow-400 text-white hover:text-black py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
+                                        className="block text-center gth-glass/5 hover:bg-yellow-400 text-white hover:text-black py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
                                     >
                                         View Deal
                                     </a>

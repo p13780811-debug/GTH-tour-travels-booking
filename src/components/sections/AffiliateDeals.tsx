@@ -8,7 +8,7 @@ export default function AffiliateDeals({ city }: { city?: string }) {
 
     return (
 
-        <section className="py-20 bg-gray-900 text-white">
+        <section className="py-20 gth-glass-900 text-white">
 
             <div className="max-w-7xl mx-auto px-6">
 
@@ -23,7 +23,7 @@ export default function AffiliateDeals({ city }: { city?: string }) {
                         <a
                             key={i}
                             href="/go/klook"
-                            className="p-12 bg-white/10 rounded-xl text-center hover:bg-sky-500 transition block"
+                            className="p-12 gth-glass/10 rounded-xl text-center hover:bg-sky-500 transition block"
                         >
                             {p}
                         </a>

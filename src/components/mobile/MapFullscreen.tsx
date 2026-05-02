@@ -10,7 +10,7 @@ export default function MapFullscreen({ open, onClose, data, active }: any) {
 
             <button
                 onClick={onClose}
-                className="absolute top-4 left-4 z-50 bg-white text-black px-3 py-1 rounded"
+                className="absolute top-4 left-4 z-50 gth-glass text-black px-3 py-1 rounded"
             >
                 Back
             </button>

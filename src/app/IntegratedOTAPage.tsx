@@ -136,7 +136,7 @@ export default function FlightSearch() {
                             <a
                                 href={f.deeplink}
                                 target="_blank"
-                                className="inline-block mt-2 bg-yellow-500 text-black px-5 py-2 rounded-lg font-semibold hover:bg-white"
+                                className="inline-block mt-2 gth-btn-gold text-black px-5 py-2 rounded-lg font-semibold hover:gth-glass"
                             >
                                 Book Now
                             </a>

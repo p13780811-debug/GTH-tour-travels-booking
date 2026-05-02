@@ -125,7 +125,7 @@ function HotelsContent() {
             <div className="flex items-center gap-2 md:gap-8 overflow-x-auto no-scrollbar mb-10 pb-2 border-b border-white/5">
 
                 {/* Active Item: Stays/Hotels */}
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-white text-xs font-bold whitespace-nowrap transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <button className="flex items-center gap-2 px-4 py-2 gth-glass/10 border border-white/20 rounded-full text-white text-xs font-bold whitespace-nowrap transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                     <div className="p-1.5 bg-skyBlue/20 rounded-full">
                         <Hotel size={16} className="text-skyBlue" />
                     </div>
@@ -133,31 +133,31 @@ function HotelsContent() {
                 </button>
 
                 {/* Flights */}
-                <button className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
+                <button className="flex items-center gap-2 px-4 py-2 hover:gth-glass/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
                     <Plane size={18} className="group-hover:text-skyBlue transition-colors" />
                     Flights
                 </button>
 
                 {/* Flight + Hotel (Package) */}
-                <button className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
+                <button className="flex items-center gap-2 px-4 py-2 hover:gth-glass/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
                     <Package size={18} className="group-hover:text-skyBlue transition-colors" />
                     Flight + Hotel
                 </button>
 
                 {/* Car Rentals */}
-                <button className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
+                <button className="flex items-center gap-2 px-4 py-2 hover:gth-glass/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
                     <Car size={18} className="group-hover:text-skyBlue transition-colors" />
                     Car rentals
                 </button>
 
                 {/* Attractions */}
-                <button className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
+                <button className="flex items-center gap-2 px-4 py-2 hover:gth-glass/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
                     <MapPin size={18} className="group-hover:text-skyBlue transition-colors" />
                     Attractions
                 </button>
 
                 {/* Airport Taxis */}
-                <button className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
+                <button className="flex items-center gap-2 px-4 py-2 hover:gth-glass/5 rounded-full text-gray-400 hover:text-white text-xs font-bold whitespace-nowrap transition-all group">
                     <Zap size={18} className="group-hover:text-skyBlue transition-colors" />
                     Airport taxis
                 </button>
@@ -172,7 +172,7 @@ function HotelsContent() {
 
                     {/* THE LIVE SEARCH BAR (Booking.com Style - Yellow Border Logic) */}
                     <div className="bg-[#ffb700] p-1 rounded-xl shadow-2xl flex flex-col md:flex-row gap-1 items-stretch">
-                        <div className="flex-[1.5] bg-white flex items-center gap-3 px-4 py-4 rounded-l-lg text-black">
+                        <div className="flex-[1.5] gth-glass flex items-center gap-3 px-4 py-4 rounded-l-lg text-black">
                             <MapPin size={22} className="text-gray-400" />
                             <input
                                 type="text"
@@ -185,11 +185,11 @@ function HotelsContent() {
                                 }}
                             />
                         </div>
-                        <div className="flex-1 bg-white flex items-center gap-3 px-4 py-4 text-black border-x border-gray-100">
+                        <div className="flex-1 gth-glass flex items-center gap-3 px-4 py-4 text-black border-x border-gray-100">
                             <Calendar size={20} className="text-gray-400" />
                             <span className="text-sm font-bold whitespace-nowrap">Check-in — Check-out</span>
                         </div>
-                        <div className="flex-1 bg-white flex items-center gap-3 px-4 py-4 text-black">
+                        <div className="flex-1 gth-glass flex items-center gap-3 px-4 py-4 text-black">
                             <User size={20} className="text-gray-400" />
                             <span className="text-sm font-bold whitespace-nowrap">2 adults · 1 room</span>
                         </div>
@@ -207,7 +207,7 @@ function HotelsContent() {
 
                 {/* 📱 MOBILE FILTER BAR (Only on Mobile) */}
                 <div className="lg:hidden flex items-center gap-3 overflow-x-auto no-scrollbar py-4 border-y border-white/10 mb-2">
-                    <button className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20 text-[10px] font-bold uppercase shrink-0">
+                    <button className="flex items-center gap-2 gth-glass/10 px-4 py-2 rounded-full border border-white/20 text-[10px] font-bold uppercase shrink-0">
                         <Filter size={14} className="text-skyBlue" /> Filter
                     </button>
                     {Array.from({ length: 5 }, (_, i) => i + 1).map((s: number) => (
@@ -249,7 +249,7 @@ function HotelsContent() {
 
                 {/* 💻 DESKTOP SIDEBAR (Only on Desktop) */}
                 <aside className="hidden lg:block lg:w-[280px] shrink-0 h-fit sticky top-28">
-                    <div className="bg-white/5 backdrop-blur-3xl p-8 rounded-[2rem] border border-white/10 shadow-2xl">
+                    <div className="gth-glass/5 backdrop-blur-3xl p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                         <h3 className="text-skyBlue font-black text-[10px] uppercase tracking-widest mb-8 border-b border-white/10 pb-4">Filters</h3>
                         <div className="space-y-6">
                             <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Star Rating</p>
@@ -277,7 +277,7 @@ function HotelsContent() {
                     </div>
 
                     {filteredHotels.map((hotel) => (
-                        <div key={hotel.id} className="group flex flex-col md:flex-row bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-skyBlue/40 transition-all duration-300">
+                        <div key={hotel.id} className="group flex flex-col md:flex-row gth-glass/5 border border-white/10 rounded-2xl overflow-hidden hover:border-skyBlue/40 transition-all duration-300">
                             {/* Hotel Image */}
                             <div className="md:w-72 h-56 md:h-auto overflow-hidden">
                                 <img src={hotel.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={hotel.name} />

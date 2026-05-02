@@ -103,7 +103,7 @@ export default function SearchPage() {
                     Syncing Ecosystem...
                 </div>
                 <div className="w-48 h-[2px] bg-zinc-800 mt-4 overflow-hidden">
-                    <div className="w-full h-full bg-yellow-500 animate-[loading_2s_infinite]" />
+                    <div className="w-full h-full gth-btn-gold animate-[loading_2s_infinite]" />
                 </div>
             </div>
         }>

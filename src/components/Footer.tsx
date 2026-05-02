@@ -39,7 +39,7 @@ export default function Footer() {
                     </ul>
                 </div>
 
-                <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <div className="gth-glass/5 p-4 rounded-xl border border-white/10">
                     <h3 className="text-sm font-semibold mb-2">Security Priority</h3>
                     <p className="text-[10px] text-gray-400 leading-tight">
                         Government-standard encryption and secure data masking enabled for all transactions. your information is protected with the highest level of integrity.

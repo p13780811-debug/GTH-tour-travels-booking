@@ -60,7 +60,7 @@ export default function LuxuryCard({
 
             <div className="absolute bottom-3 right-3">
 
-                <span className="bg-yellow-500 text-black text-xs px-3 py-2 rounded-md font-semibold">
+                <span className="gth-btn-gold text-black text-xs px-3 py-2 rounded-md font-semibold">
                     View →
                 </span>
 

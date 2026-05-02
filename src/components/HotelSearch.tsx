@@ -42,7 +42,7 @@ export default function HotelSearch() {
                     />
                     <button
                         onClick={searchHotels}
-                        className="bg-yellow-400 text-black font-semibold rounded hover:bg-white transition"
+                        className="bg-yellow-400 text-black font-semibold rounded hover:gth-glass transition"
                     >
                         Search
                     </button>

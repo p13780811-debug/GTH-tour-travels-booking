@@ -11,7 +11,7 @@ export default function SuccessPage() {
             </h1>
 
             {/* 1% Education Fund Glow - Golden Heart */}
-            <div className="mt-8 p-8 bg-white/5 border border-yellow-500/20 rounded-3xl backdrop-blur-2xl flex flex-col items-center max-w-md">
+            <div className="mt-8 p-8 gth-glass/5 border border-yellow-500/20 rounded-3xl backdrop-blur-2xl flex flex-col items-center max-w-md">
                 <div className="text-yellow-500 text-5xl mb-4 animate-bounce">💛</div>
                 <h2 className="text-yellow-500 font-bold tracking-widest text-sm uppercase mb-2">Social Contribution Active</h2>
                 <p className="text-gray-300 text-sm leading-relaxed">

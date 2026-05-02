@@ -22,7 +22,7 @@ export default function GuidesScroll({ city }: { city?: string }) {
 
                     {guides.map((g, i) => (
 
-                        <div key={i} className="min-w-[240px] p-10 bg-gray-100 rounded-xl">
+                        <div key={i} className="min-w-[240px] p-10 gth-glass-100 rounded-xl">
 
                             {g}
 

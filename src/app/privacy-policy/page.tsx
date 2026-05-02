@@ -4,7 +4,7 @@ export default function PrivacyPolicy() {
             <h1 className="text-4xl font-bold text-[#00FF41] mb-8">Privacy Policy</h1>
 
             <div className="max-w-4xl space-y-8">
-                <section className="p-6 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+                <section className="p-6 gth-glass/5 backdrop-blur-md rounded-xl border border-white/10">
                     <h2 className="text-2xl font-semibold mb-4 text-blue-400">Data Protection & Security</h2>
                     <p className="opacity-80">At GTH PRO, security is our biggest priority. We ensure that all user information is handled with the highest level of integrity.</p>
                     <ul className="list-disc pl-5 mt-4 space-y-2 opacity-90">
@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
                     </ul>
                 </section>
 
-                <section className="p-6 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+                <section className="p-6 gth-glass/5 backdrop-blur-md rounded-xl border border-white/10">
                     <h2 className="text-2xl font-semibold mb-4">Cookie Policy</h2>
                     <p className="opacity-80">We use cookies to improve your browsing experience and provide personalized travel recommendations across our ecosystem.</p>
                 </section>

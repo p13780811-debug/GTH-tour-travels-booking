@@ -67,7 +67,7 @@ export default function FlightSearch() {
                     />
                     <button
                         onClick={searchFlights}
-                        className="bg-yellow-400 text-black font-semibold rounded hover:bg-white transition"
+                        className="bg-yellow-400 text-black font-semibold rounded hover:gth-glass transition"
                     >
                         Search
                     </button>

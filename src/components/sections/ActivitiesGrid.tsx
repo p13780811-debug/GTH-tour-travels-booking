@@ -21,7 +21,7 @@ export default function ActivitiesGrid({ city }: { city?: string }) {
 
                     {activities.map((a, i) => (
 
-                        <div key={i} className="p-10 bg-gray-100 rounded-xl text-center font-semibold">
+                        <div key={i} className="p-10 gth-glass-100 rounded-xl text-center font-semibold">
 
                             {a}
 

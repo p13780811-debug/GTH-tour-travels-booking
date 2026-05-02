@@ -82,7 +82,7 @@ export default function HotelGrid({ citySlug }: { citySlug: string }) {
                       </span>
                     </div>
 
-                    <div className="bg-white text-black text-[10px] font-black px-6 py-2.5 rounded-full uppercase italic tracking-tighter hover:bg-yellow-400 transition-colors">
+                    <div className="gth-glass text-black text-[10px] font-black px-6 py-2.5 rounded-full uppercase italic tracking-tighter hover:bg-yellow-400 transition-colors">
                       Explore Now
                     </div>
                   </div>

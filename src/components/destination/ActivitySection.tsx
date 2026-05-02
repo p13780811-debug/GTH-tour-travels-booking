@@ -247,7 +247,7 @@ export default function ActivitySection({ destination }: { destination: any }) {
                                         ₹{item.price}
                                     </span>
 
-                                    <button className="bg-yellow-500 text-black text-xs px-3 py-1 rounded-full font-bold">
+                                    <button className="gth-btn-gold text-black text-xs px-3 py-1 rounded-full font-bold">
                                         Book
                                     </button>
 

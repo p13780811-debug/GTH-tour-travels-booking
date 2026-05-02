@@ -112,7 +112,7 @@ export default async function HomePage() {
                                 </Link>
                                 <Link
                                     href="https://wa.me/YOUR_FRIEND_NUMBER"
-                                    className="border border-white/10 text-white/50 px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:bg-white/5 transition-all text-[10px]"
+                                    className="border border-white/10 text-white/50 px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:gth-glass/5 transition-all text-[10px]"
                                 >
                                     Inquire Now
                                 </Link>
@@ -208,7 +208,7 @@ export default async function HomePage() {
                                         <h3 className="text-lg font-bold text-yellow-500 tracking-tight">
                                             {hotel.name}
                                         </h3>
-                                        <div className="flex items-center gap-1 bg-yellow-500/10 backdrop-blur-md px-2 py-1 rounded-lg border border-yellow-500/20">
+                                        <div className="flex items-center gap-1 gth-btn-gold/10 backdrop-blur-md px-2 py-1 rounded-lg border border-yellow-500/20">
                                             <Star size={10} className="text-yellow-500 fill-yellow-500" />
                                             <span className="text-[9px] text-yellow-500 font-bold">5.0</span>
                                         </div>
@@ -231,7 +231,7 @@ export default async function HomePage() {
                                         </div>
 
                                         {/* Compact Button */}
-                                        <div className="bg-yellow-500 text-black text-[9px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full group-hover:bg-white transition-all">
+                                        <div className="gth-btn-gold text-black text-[9px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full group-hover:gth-glass transition-all">
                                             Book Now
                                         </div>
                                     </div>
@@ -300,7 +300,7 @@ export default async function HomePage() {
                             <h2 className="text-3xl md:text-4xl font-bold text-yellow-500 tracking-tighter">
                                 Travel Guides & Tips
                             </h2>
-                            <div className="h-1 w-20 bg-yellow-500 mt-4 rounded-full" />
+                            <div className="h-1 w-20 gth-btn-gold mt-4 rounded-full" />
                         </div>
                     </div>
 
@@ -333,7 +333,7 @@ export default async function HomePage() {
 
                                     {/* 3. TOP LEFT CONTENT: Title & Tag */}
                                     <div className="absolute top-0 left-0 p-8 z-20 w-full text-left">
-                                        <span className="inline-block bg-yellow-500/10 backdrop-blur-md border border-yellow-500/20 text-yellow-500 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full mb-4">
+                                        <span className="inline-block gth-btn-gold/10 backdrop-blur-md border border-yellow-500/20 text-yellow-500 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full mb-4">
                                             Luxury Guide
                                         </span>
                                         <h3 className="text-xl font-bold text-white leading-tight group-hover:text-yellow-500 transition-colors duration-300 drop-shadow-lg">
@@ -343,7 +343,7 @@ export default async function HomePage() {
 
                                     {/* 4. BOTTOM CONTENT: Glassmorphism Panel (Hover Only) */}
                                     <div className="absolute bottom-0 left-0 right-0 p-8 z-10 translate-y-6 group-hover:translate-y-0 transition-all duration-500">
-                                        <div className="relative overflow-hidden bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-0 group-hover:backdrop-blur-xl transition-all duration-700 opacity-0 group-hover:opacity-100 shadow-2xl">
+                                        <div className="relative overflow-hidden gth-glass/5 border border-white/10 rounded-2xl p-4 backdrop-blur-0 group-hover:backdrop-blur-xl transition-all duration-700 opacity-0 group-hover:opacity-100 shadow-2xl">
                                             <p className="text-gray-300 text-[11px] leading-relaxed italic line-clamp-2">
                                                 {blog.description}
                                             </p>
@@ -369,7 +369,7 @@ export default async function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {activities.map((item) => (
                             <div key={item.id} className="group relative overflow-hidden rounded-xl border border-[#222] hover:border-[#d4af37] transition-all duration-500">
-                                <div className="h-64 bg-gray-800 relative">
+                                <div className="h-64 gth-glass-800 relative">
                                     {/* Image Placeholder - Yahan hum cinematic video bhi daal sakte hain */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
                                 </div>
@@ -380,7 +380,7 @@ export default async function HomePage() {
                                     </h3>
                                     <div className="flex justify-between items-center mt-4">
                                         <span className="text-2xl text-white font-light">{item.price}</span>
-                                        <button className="bg-[#d4af37] text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-white transition-all">
+                                        <button className="bg-[#d4af37] text-black px-4 py-2 rounded-full font-bold text-sm hover:gth-glass transition-all">
                                             BOOK NOW
                                         </button>
                                     </div>

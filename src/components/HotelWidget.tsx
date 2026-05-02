@@ -19,7 +19,7 @@ const HotelWidget = () => {
     }, []);
 
     return (
-        <div className="w-full max-w-4xl mx-auto my-8 p-4 bg-white rounded-2xl shadow-sm">
+        <div className="w-full max-w-4xl mx-auto my-8 p-4 gth-glass rounded-2xl shadow-sm">
             <h2 className="text-xl font-bold mb-4 text-gray-800">Explore Top Tours & Hotels</h2>
             <div id="tp-widget-container" className="min-h-[400px]">
                 {/* Widget yahan load hoga */}

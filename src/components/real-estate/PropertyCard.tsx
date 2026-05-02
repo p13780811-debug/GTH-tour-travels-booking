@@ -48,7 +48,7 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
                                 e.stopPropagation();
                                 onLead(p.id);
                             }}
-                            className="bg-slate-900 text-white hover:bg-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md"
+                            className="gth-glass text-white hover:bg-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md"
                         >
                             Enquire
                         </button>
@@ -67,7 +67,7 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
                                 alert("Boost failed. Check console.");
                             }
                         }}
-                        className="w-full bg-yellow-400 text-black hover:bg-yellow-500 py-3 rounded-2xl font-black text-[11px] uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_10px_20px_rgba(250,204,21,0.2)] active:scale-95 flex items-center justify-center gap-2"
+                        className="w-full bg-yellow-400 text-black hover:gth-btn-gold py-3 rounded-2xl font-black text-[11px] uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_10px_20px_rgba(250,204,21,0.2)] active:scale-95 flex items-center justify-center gap-2"
                     >
                         ⚡ Boost Visibility (₹199)
                     </button>

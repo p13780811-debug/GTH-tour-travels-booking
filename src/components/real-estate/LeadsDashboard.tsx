@@ -38,7 +38,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                     </div>
 
                     {/* 💰 REVENUE DISPLAY - Exact Logic Added */}
-                    <div className="bg-slate-950 p-6 rounded-[24px] border-b-4 border-cyan-500 shadow-xl text-right">
+                    <div className="gth-glass950 p-6 rounded-[24px] border-b-4 border-cyan-500 shadow-xl text-right">
                         <p className="text-[8px] font-black text-cyan-500 uppercase tracking-[0.3em] mb-1 italic">Potential Revenue</p>
                         <p className="text-3xl font-black text-white italic">
                             ₹{leads.length * 25}
@@ -50,7 +50,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                 {/* Leads Scrollable List */}
                 <div className="max-h-[400px] overflow-y-auto space-y-3 pr-4 custom-scrollbar">
                     {leads.length > 0 ? leads.map(l => (
-                        <div key={l.id} className="bg-white border border-slate-200 p-5 rounded-2xl flex justify-between items-center group hover:border-cyan-500 transition-all shadow-sm">
+                        <div key={l.id} className="gth-glass border border-slate-200 p-5 rounded-2xl flex justify-between items-center group hover:border-cyan-500 transition-all shadow-sm">
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mobile_Auth_Node</span>
                                 <span className="text-xl font-black text-slate-900 tracking-tight">{l.phone}</span>
@@ -72,7 +72,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                 {/* Footer Action */}
                 <button
                     onClick={onClose}
-                    className="mt-10 w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] hover:bg-red-600 transition-all active:scale-95 shadow-2xl"
+                    className="mt-10 w-full gth-glass text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] hover:bg-red-600 transition-all active:scale-95 shadow-2xl"
                 >
                     Disconnect Terminal
                 </button>

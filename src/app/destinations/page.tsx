@@ -24,7 +24,7 @@ export default async function DestinationsPage() {
                 </h1>
 
                 <div className="flex items-center gap-3 mt-2">
-                    <div className="w-12 h-[2px] bg-yellow-500"></div>
+                    <div className="w-12 h-[2px] gth-btn-gold"></div>
 
                     <p className="text-gray-500 font-bold tracking-[0.2em] uppercase text-sm">
                         Premium Travel Tenders & Destinations

@@ -110,7 +110,7 @@ function FlightsContent() {
             <div className="absolute inset-0 -z-10 opacity-[0.15] bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-[size:30px_30px]"></div>
             <div className="absolute inset-0 -z-10">
 
-                <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] bg-yellow-500/20 blur-[120px] rounded-full animate-pulse"></div>
+                <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] gth-btn-gold/20 blur-[120px] rounded-full animate-pulse"></div>
 
                 <div className="absolute bottom-[-100px] right-[-100px] w-[400px] h-[400px] bg-blue-500/20 blur-[120px] rounded-full animate-pulse"></div>
 
@@ -127,7 +127,7 @@ function FlightsContent() {
             </h1>
 
             {/* FILTERS */}
-            <div className="mb-6 flex gap-4 bg-white/5 backdrop-blur-lg border border-white/10 p-3 rounded-xl w-fit">
+            <div className="mb-6 flex gap-4 gth-glass/5 backdrop-blur-lg border border-white/10 p-3 rounded-xl w-fit">
                 <input
                     type="text"
                     placeholder="Filter by airline"
@@ -174,7 +174,7 @@ function FlightsContent() {
 
                             className={`relative overflow-hidden rounded-2xl p-6 mb-6 border transition-all duration-500 group ${isBest
                                 ? "border-yellow-500 bg-gradient-to-br from-yellow-500/10 to-black shadow-[0_0_40px_rgba(255,215,0,0.25)]"
-                                : "border-white/10 bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 hover:scale-[1.01] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8)]"
+                                : "border-white/10 gth-glass/5 backdrop-blur-xl border-white/10 hover:gth-glass/10 hover:scale-[1.01] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8)]"
                                 }`}
                         >
                             {/* TOP */}
@@ -197,7 +197,7 @@ function FlightsContent() {
                             {/* AIRLINE */}
                             <div className="flex items-center gap-3 mb-3">
                                 {logo && (
-                                    <div className="bg-white/10 p-1 rounded">
+                                    <div className="gth-glass/10 p-1 rounded">
                                         <img src={logo} className="h-4 object-contain" />
                                     </div>
                                 )}

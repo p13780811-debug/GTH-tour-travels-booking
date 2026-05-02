@@ -174,8 +174,8 @@ export default function FlightHero() {
                             key={t.id}
                             onClick={() => setTab(t.id)}
                             className={`px-5 py-2 rounded-full text-xs font-bold uppercase ${tab === t.id
-                                ? "bg-yellow-500 text-black"
-                                : "bg-white/10 text-gray-400"
+                                ? "gth-btn-gold text-black"
+                                : "gth-glass/10 text-gray-400"
                                 }`}
                         >
                             <t.icon className="inline w-3 h-3 mr-1" />
@@ -226,7 +226,7 @@ export default function FlightHero() {
                                     <div
                                         key={i}
                                         onClick={() => selectPlace(s)}
-                                        className="p-3 hover:bg-yellow-500 cursor-pointer"
+                                        className="p-3 hover:gth-btn-gold cursor-pointer"
                                     >
                                         {s.name} ({s.code})
                                     </div>
@@ -264,7 +264,7 @@ export default function FlightHero() {
                     {/* SEARCH */}
                     <button
                         onClick={handleSearch}
-                        className="bg-yellow-500 text-black px-8 font-bold flex items-center justify-center gap-2"
+                        className="gth-btn-gold text-black px-8 font-bold flex items-center justify-center gap-2"
                     >
                         <Search />
                         Search

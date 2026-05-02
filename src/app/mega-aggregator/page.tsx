@@ -191,13 +191,13 @@ export default async function MegaAggregator() {
                             <div className="pt-2 flex flex-wrap gap-3">
                                 <Link
                                     href="/destinations/digha"
-                                    className="gold-gradient text-black px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:scale-105 transition-all text-[10px]"
+                                    className="gth-btn-gold px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:scale-105 transition-all text-[10px]"
                                 >
                                     Explore More →
                                 </Link>
                                 <Link
                                     href="https://wa.me/9339952669"
-                                    className="border border-white/10 text-white/50 px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:bg-white/5 transition-all text-[10px]"
+                                    className="border border-white/10 text-white/50 px-7 py-3 rounded-full font-black uppercase tracking-tighter hover:gth-glass/5 transition-all text-[10px]"
                                 >
                                     Inquire Now
                                 </Link>
@@ -356,7 +356,7 @@ export default async function MegaAggregator() {
             </section>
 
             {/* Mega Deals Section - HIGH CONVERSION DESIGN */}
-            <section className="py-20 px-8 bg-white max-w-7xl mx-auto">
+            <section className="py-20 px-8 gth-glass max-w-7xl mx-auto">
                 <h2 className="text-4xl font-black text-center mb-16 uppercase tracking-tighter text-gray-900">
                     🔥 Exclusive Mega Deals
                 </h2>
@@ -364,7 +364,7 @@ export default async function MegaAggregator() {
                     {partners.map((p, idx) => (
                         <div
                             key={idx}
-                            className="group bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 flex flex-col hover:shadow-skyBlue/20 transition-all duration-500"
+                            className="group gth-glass rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 flex flex-col hover:shadow-skyBlue/20 transition-all duration-500"
                         >
                             {/* IMAGE BOX - PERFECT FIT */}
                             <div className="relative w-full h-56 overflow-hidden">
@@ -399,7 +399,7 @@ export default async function MegaAggregator() {
                                     {p.description}. Book today to claim your exclusive AI-verified travel rewards.
                                 </p>
                                 <Link href={p.link} target="_blank" rel="nofollow sponsored">
-                                    <button className="mt-auto w-full bg-gray-900 group-hover:bg-sky-500 text-white font-black py-4 rounded-2xl transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                                    <button className="mt-auto w-full gth-glass-900 group-hover:bg-sky-500 text-white font-black py-4 rounded-2xl transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
                                         CLAIM DEAL
                                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                                     </button>
@@ -411,7 +411,7 @@ export default async function MegaAggregator() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white py-10 px-8 mt-16">
+            <footer className="gth-glass-900 text-white py-10 px-8 mt-16">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <p>© 2026 GTH PRO. All rights reserved.</p>
                     <div className="flex gap-4">

@@ -65,7 +65,7 @@ export default function HotelScroll({ city }: { city?: string }) {
                                     </div>
 
                                     {/* Location Badge: Smaller */}
-                                    <div className="absolute top-6 right-6 text-[8px] font-black text-black bg-white px-3 py-1.5 rounded-full uppercase tracking-widest shadow-xl group-hover:bg-skyBlue group-hover:text-white transition-colors duration-500">
+                                    <div className="absolute top-6 right-6 text-[8px] font-black text-black gth-glass px-3 py-1.5 rounded-full uppercase tracking-widest shadow-xl group-hover:bg-skyBlue group-hover:text-white transition-colors duration-500">
                                         {h.city || city || "Elite"}
                                     </div>
 
@@ -91,7 +91,7 @@ export default function HotelScroll({ city }: { city?: string }) {
                                         <a
                                             href={h.affiliate_link || `https://search.hotellook.com/hotels?hotelId=${h.hotelId}&marker=YOUR_MARKER`}
                                             target="_blank"
-                                            className="bg-white text-black text-[9px] font-black px-5 py-3 rounded-xl hover:bg-skyBlue hover:text-white transition-all duration-500 uppercase tracking-widest shadow-2xl"
+                                            className="gth-glass text-black text-[9px] font-black px-5 py-3 rounded-xl hover:bg-skyBlue hover:text-white transition-all duration-500 uppercase tracking-widest shadow-2xl"
                                         >
                                             Inquire
                                         </a>

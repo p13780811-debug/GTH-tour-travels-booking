@@ -252,8 +252,8 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 {messages.map((m, i) => (
                     <div key={i}
                         className={`p-2 rounded ${m.role === "user"
-                            ? "bg-yellow-500 text-black ml-auto"
-                            : "bg-gray-800"}`}>
+                            ? "gth-btn-gold text-black ml-auto"
+                            : "gth-glass-800"}`}>
                         {m.text}
                     </div>
                 ))}
@@ -269,7 +269,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 />
                 <button
                     onClick={sendMessage}
-                    className="bg-yellow-500 px-4 text-black font-bold"
+                    className="gth-btn-gold px-4 text-black font-bold"
                 >
                     Send
                 </button>

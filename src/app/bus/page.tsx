@@ -90,7 +90,7 @@ export default function TravelDashboard() {
                             key={tab.key}
                             onClick={() => { setActiveTab(tab.key); setSearchResult([]); setError(''); }}
                             className={`flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold transition-all
-                ${activeTab === tab.key ? 'bg-[#e6b800] text-[#000d1a]' : 'bg-[#001a33] text-slate-400 hover:bg-white/10'}`}
+                ${activeTab === tab.key ? 'bg-[#e6b800] text-[#000d1a]' : 'bg-[#001a33] text-slate-400 hover:gth-glass/10'}`}
                         >
                             {tab.icon} {tab.label}
                         </button>
@@ -231,7 +231,7 @@ function SearchResultsTable({ activeTab, searchResult, setShowSeatModal }: any) 
                 </thead>
                 <tbody>
                     {searchResult.map((item: SearchItem) => (
-                        <tr key={item.id} className="hover:bg-white/10 transition-colors">
+                        <tr key={item.id} className="hover:gth-glass/10 transition-colors">
                             <td className="p-2 border border-slate-700">{item.name}</td>
                             <td className="p-2 border border-slate-700">{item.departure}</td>
                             <td className="p-2 border border-slate-700">{item.arrival}</td>

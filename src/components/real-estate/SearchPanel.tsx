@@ -68,7 +68,7 @@ export default function SearchPanel({ setQuery }: any) {
                         <button
                             key={i}
                             onClick={() => setQuery(s)}
-                            className="text-xs px-2 py-1 rounded bg-black/10 md:bg-white/10"
+                            className="text-xs px-2 py-1 rounded bg-black/10 md:gth-glass/10"
                         >
                             {s}
                         </button>
@@ -92,7 +92,7 @@ export default function SearchPanel({ setQuery }: any) {
             {/* 📍 LOCATION */}
             <button
                 onClick={detectLocation}
-                className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-black py-2 rounded text-sm"
+                className="w-full flex items-center justify-center gap-2 gth-btn-gold text-black py-2 rounded text-sm"
             >
                 <MapPin size={14} />
                 Detect Location

@@ -121,7 +121,7 @@ export default function AdminDashboard() {
                             {bookings.map((b) => (
                                 <tr
                                     key={b.id}
-                                    className="border-t border-slate-800 hover:bg-white/5 transition"
+                                    className="border-t border-slate-800 hover:gth-glass/5 transition"
                                 >
                                     <td className="p-4">{b.hotel_id}</td>
                                     <td className="p-4">{b.full_name}</td>

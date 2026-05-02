@@ -83,7 +83,7 @@ export default function HotelQuadSection({
           </p>
 
           {/* Rare Advantage Box */}
-          <div className="relative bg-white/5 border border-sky-500/20 rounded-2xl p-6 shadow-lg backdrop-blur-md">
+          <div className="relative gth-glass/5 border border-sky-500/20 rounded-2xl p-6 shadow-lg backdrop-blur-md">
             <div className="absolute -top-3 left-6 bg-black px-3 py-1 rounded-lg">
               <span className="text-sky-400 text-[10px] font-black uppercase tracking-widest">
                 Global Access

@@ -27,7 +27,7 @@ export default function HeroSection({ slug, city }) {
                 </p>
 
                 {/* Global Search Bar (Booking.com Style) */}
-                <div className="mt-8 w-full max-w-4xl bg-white p-1 md:p-2 rounded-xl shadow-2xl flex flex-col md:flex-row gap-2">
+                <div className="mt-8 w-full max-w-4xl gth-glass p-1 md:p-2 rounded-xl shadow-2xl flex flex-col md:flex-row gap-2">
                     <div className="flex-1 px-4 py-2 text-black flex items-center gap-2 border-b md:border-b-0 md:border-r">
                         <span className="text-blue-600">📍</span>
                         <input type="text" placeholder="Search hotels, activities..." className="w-full outline-none font-bold" />

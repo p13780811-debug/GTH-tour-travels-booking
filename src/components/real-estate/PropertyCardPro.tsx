@@ -15,7 +15,7 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
             onClick={() => onSelect(p)}
             className={`group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 
             ${isDay
-                    ? "bg-white border border-gray-200 shadow-lg hover:shadow-2xl"
+                    ? "gth-glass border border-gray-200 shadow-lg hover:shadow-2xl"
                     : "bg-[#0f172a] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)] hover:shadow-yellow-500/10"
                 }`}
         >
@@ -65,7 +65,7 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
                                     e.stopPropagation()
                                     onLead(p.id)
                                 }}
-                                className="px-3 py-1 text-xs rounded font-bold bg-white text-black"
+                                className="px-3 py-1 text-xs rounded font-bold gth-glass text-black"
                             >
                                 ENQUIRE
                             </button>
@@ -78,7 +78,7 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
                                     e.stopPropagation()
                                     onBoost(p.id)
                                 }}
-                                className="px-3 py-1 text-xs rounded font-bold bg-yellow-500 text-black"
+                                className="px-3 py-1 text-xs rounded font-bold gth-btn-gold text-black"
                             >
                                 BOOST
                             </button>
