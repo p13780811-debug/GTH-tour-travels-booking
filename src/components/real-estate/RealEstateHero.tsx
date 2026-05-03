@@ -120,7 +120,7 @@ export default function RealEstateHero({
     }
 
     return (
-        <section className="relative w-full h-[90vh] md:h-screen flex items-center justify-center overflow-hidden">
+        <section className="relative w-full h-[70vh] md:h-[80vh] flex items-center justify-center overflow-hidden">
 
             {/* BG IMAGE */}
             <motion.img
@@ -133,7 +133,7 @@ export default function RealEstateHero({
             />
 
             {/* OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
             {/* PREMIUM GRADIENT */}
             <div className={`absolute inset-0 ${isDay
@@ -147,7 +147,7 @@ export default function RealEstateHero({
             </div>
 
             {/* CONTENT */}
-            <div className="relative z-10 text-center px-4">
+            <div className="relative z-10 text-center px-4 w-full max-w-2xl mx-auto">
 
                 {/* 🔥 PREMIUM TITLE */}
                 <h1 className="gth-title text-3xl md:text-5xl">
@@ -160,16 +160,14 @@ export default function RealEstateHero({
                 </p>
 
                 {/* 🔥 TABS (FIXED) */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4">
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide mb-4 py-2 justify-start md:justify-center">
                     {tabs.map((t: string) => (
                         <button
                             key={t}
                             onClick={() => handleTab(t)}
                             className={`px-3 py-1 text-[11px] rounded-full whitespace-nowrap transition shrink-0
-          ${activeTab === t
-                                    ? "gth-btn"
-                                    : "bg-white/10 backdrop-blur text-white hover:bg-white/20"
-                                }`}
+    ${activeTab === t ? "gth-btn" : "gth-glass"}
+`}
                         >
                             {t}
                         </button>
@@ -177,7 +175,7 @@ export default function RealEstateHero({
                 </div>
 
                 {/* 🔥 SEARCH BOX (UPGRADED) */}
-                <div className="gth-glass flex items-center gap-3 p-4 max-w-2xl mx-auto">
+                <div className="gth-glass flex items-center gap-3 p-4 w-full mx-auto">
 
                     <Search size={18} className="opacity-70" />
 
@@ -185,8 +183,8 @@ export default function RealEstateHero({
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search city, budget, 2BHK..."
-                        className={`flex-1 bg-transparent outline-none text-sm ${isDay ? "placeholder:text-black/40" : "placeholder:text-white/40"
-                            }`}
+                        className="flex-1 bg-transparent outline-none text-sm placeholder:opacity-50"
+
                     />
 
                     <MapPin
@@ -204,7 +202,7 @@ export default function RealEstateHero({
                     {/* ✅ FIXED BUTTON */}
                     <button
                         onClick={handleSearch}
-                        className="gth-btn text-xs px-4 py-2"
+                        className="gth-btn px-4 py-2 text-xs"
                     >
                         Search
                     </button>
@@ -223,7 +221,7 @@ export default function RealEstateHero({
                                     setQuery(s)
                                     handleSearch()
                                 }}
-                                className="p-3 text-sm cursor-pointer hover:bg-white/10 transition"
+                                className="p-3 text-sm cursor-pointer gth-hover"
                             >
                                 {s}
                             </div>

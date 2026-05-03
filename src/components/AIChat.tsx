@@ -241,30 +241,32 @@ function AIChat({ properties, setFiltered, setActive }: any) {
     }
 
     return (
-
-        <div className="fixed bottom-6 right-6 w-80 bg-black text-white rounded-xl shadow-2xl flex flex-col z-[9999] border border-yellow-500">
+        <div className="w-full h-full flex flex-col text-white">
 
             <div className="p-3 border-b border-white/10 font-bold">
                 🤖 GTH AI HUB
             </div>
 
-            <div className="h-64 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {messages.map((m, i) => (
-                    <div key={i}
+                    <div
+                        key={i}
                         className={`p-2 rounded ${m.role === "user"
-                            ? "gth-btn-gold text-black ml-auto"
-                            : "gth-glass-800"}`}>
+                                ? "gth-btn-gold text-black ml-auto"
+                                : "gth-glass-800"
+                            }`}
+                    >
                         {m.text}
                     </div>
                 ))}
                 {loading && <div>⚡ AI Thinking...</div>}
             </div>
 
-            <div className="flex border-t border-white/10">
+            <div className="flex border-t border-white/10 bg-black sticky bottom-0">
                 <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="flex-1 p-2 bg-black outline-none"
+                    className="flex-1 p-2 bg-transparent outline-none"
                     placeholder="Ask anything..."
                 />
                 <button
@@ -274,6 +276,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                     Send
                 </button>
             </div>
+
         </div>
     )
 }

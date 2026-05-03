@@ -18,7 +18,7 @@ export default function LayoutWrapper({
     return (
         <>
             {/* ✅ CONTENT */}
-            <main className="min-h-screen pb-24 md:pb-0">
+            <main className={`min-h-screen ${isRealEstate ? 'pb-0' : 'pb-24 md:pb-0'}`}>
                 {children}
             </main>
 

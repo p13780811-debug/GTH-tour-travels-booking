@@ -48,7 +48,7 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
                                 e.stopPropagation();
                                 onLead(p.id);
                             }}
-                            className="gth-glass text-white hover:bg-black px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md"
+                            className="px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_4px_15px_rgba(212,175,55,0.35)] hover:shadow-[0_0_25px_rgba(212,175,55,0.7)] hover:scale-105 active:scale-95"
                         >
                             Enquire
                         </button>

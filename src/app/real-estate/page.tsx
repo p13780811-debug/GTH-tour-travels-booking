@@ -34,8 +34,7 @@ export default function App() {
     const [showFilters, setShowFilters] = useState(false)
 
     const router = useRouter()
-    const theme = useThemeMode()
-    const isDay = theme === "day"
+
     // 📱 Mobile Detection Logic
     const [isMobile, setIsMobile] = useState(false)
 
@@ -296,9 +295,36 @@ export default function App() {
                 setFiltered={setFiltered}
                 setActive={setActive}
             />
+            <div className="px-3 mt-3">
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+
+                    {[
+                        { name: "Buy", icon: "🏠", q: "buy property" },
+                        { name: "Rent", icon: "🏢", q: "rent property" },
+                        { name: "Luxury", icon: "💎", q: "luxury villa" },
+                        { name: "Commercial", icon: "🏬", q: "commercial property" },
+                        { name: "Plots", icon: "📍", q: "plots" },
+                    ].map((c, i) => (
+                        <div
+                            key={i}
+                            onClick={() => {
+                                setQuery(c.q)
+                                aiSearch()
+                            }}
+                            className="min-w-[80px] text-center cursor-pointer"
+                        >
+                            <div className="gth-glass rounded-xl py-3 gth-hover">
+                                <div className="text-xl">{c.icon}</div>
+                            </div>
+                            <p className="text-[11px] mt-1 opacity-70">{c.name}</p>
+                        </div>
+                    ))}
+
+                </div>
+            </div>
 
             {isMobile && (
-                <div className="p-3 space-y-2 pb-20">
+                <div className="p-3 space-y-3 pb-20">
 
                     {!user && (
                         <div className="gth-glass p-3 rounded-xl">
@@ -307,7 +333,7 @@ export default function App() {
                             </p>
                             <button
                                 onClick={() => setShowLogin(true)}
-                                className="w-full bg-cyan-500 text-black p-2 rounded font-bold"
+                                className="w-full gth-btn p-2 rounded font-bold"
                             >
                                 LOGIN / REGISTER
                             </button>
@@ -315,14 +341,14 @@ export default function App() {
                     )}
 
                     {/* MAP */}
-                    <div className="h-44 rounded overflow-hidden border border-slate-700">
+                    <div className="h-44 rounded-xl overflow-hidden gth-glass">
                         <MapWrapper data={filtered} active={active} />
                     </div>
 
                     {/* FILTER */}
                     <button
                         onClick={() => setShowFilters(true)}
-                        className="w-full gth-glass text-black p-2 rounded font-bold"
+                        className="w-full gth-btn p-2 rounded font-bold"
                     >
                         Filters
                     </button>
@@ -357,7 +383,7 @@ export default function App() {
                                     <div className="order-3 md:order-1">
                                         <button
                                             onClick={() => setShowLogin(true)}
-                                            className="w-full bg-cyan-500 text-black p-2 rounded font-bold"
+                                            className="w-full gth-btn p-2 rounded font-bold"
                                         >
                                             LOGIN / REGISTER
                                         </button>
@@ -370,20 +396,20 @@ export default function App() {
                                         Agent Dashboard
                                     </h2>
 
-                                    <p className="text-xs text-slate-400">
+                                    <p className="text-xs opacity-70">
                                         {user.email}
                                     </p>
 
                                     <button
                                         onClick={() => setShowDashboard(true)}
-                                        className="mt-3 w-full gth-btn-gold text-black p-2 rounded"
+                                        className="mt-3 w-full gth-btn-gold  p-2 rounded"
                                     >
                                         Open Dashboard
                                     </button>
 
                                     <button
                                         onClick={logout}
-                                        className="mt-2 w-full bg-red-500 text-white p-2 rounded"
+                                        className="mt-2 w-full gth-btn p-2 rounded"
                                     >
                                         Logout
                                     </button>
@@ -392,9 +418,9 @@ export default function App() {
 
                             <button
                                 onClick={() => setShowFilters(true)}
-                                className="fixed bottom-20 right-4 gth-btn-gold text-black px-4 py-2 rounded-full shadow-lg md:hidden"
+                                className="gth-btn-gold filter-mobile-fix md:hidden"
                             >
-                                Filters
+                                ✨ FILTERS
                             </button>
 
                             <div className="mt-6">
@@ -410,7 +436,7 @@ export default function App() {
                                                 setQuery(c.query)
                                                 aiSearch()
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-lg gth-glass hover:opacity-80 text-xs"
+                                            className="w-full text-left px-3 py-2 rounded-lg gth-glass text-xs"
                                         >
                                             {c.icon} {c.title}
                                         </button>
@@ -420,7 +446,9 @@ export default function App() {
 
 
                             <div className="order-1 md:order-2">
-                                <h2 className="font-black text-cyan-400 mb-4">Filters</h2>
+                                <h2 className="font-black gold-text mb-2 mt-4 tracking-wide text-sm uppercase">
+                                    Filters
+                                </h2>
                             </div>
                             <button
                                 onClick={() => {
@@ -428,27 +456,27 @@ export default function App() {
                                     setQuery("");
                                     fetchProperties(user)
                                 }}
-                                className="w-full gth-glass text-black p-2 rounded mb-3 font-bold uppercase text-[10px]"
+                                className="w-full gth-glass p-2 rounded mb-3 font-bold uppercase text-[10px]"
                             >
                                 Reset to Global View
                             </button>
 
                             <button
                                 onClick={() => setQuery("2bhk")}
-                                className="w-full gth-glass p-2 rounded mb-2"
+                                className="w-full gth-glass bg-white/10 hover:bg-white/20 p-2 rounded mb-2"
                             >
                                 2 BHK
                             </button>
 
                             <button
                                 onClick={() => setQuery("under 5000000")}
-                                className="w-full gth-glass p-2 rounded mb-4"
+                                className="w-full gth-glass bg-white/10 hover:bg-white/20 p-2 rounded mb-4"
                             >
                                 Under 50L
                             </button>
 
-                            <div className="order-2 md:order-3">
-                                <div className="gth-glass h-[220px] overflow-hidden">
+                            <div className="h-[260px] w-full rounded-xl overflow-hidden relative gth-glass">
+                                <div className="absolute inset-0 z-0">
                                     <MapWrapper data={filtered} active={active} />
                                 </div>
                             </div>
@@ -459,9 +487,17 @@ export default function App() {
 
                     {/* RIGHT SIDE */}
                     <div className="flex-1 gth-stack">
-
-
-
+                        <div className="flex gap-2 flex-wrap">
+                            {["2BHK", "3BHK", "Villa", "Near Metro"].map((t, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setQuery(t)}
+                                    className="gth-glass bg-white/10 hover:bg-white/20 p-2 rounded-lg text-xs"
+                                >
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
 
                         {/* HEADER */}
                         {user && (
@@ -487,7 +523,7 @@ export default function App() {
                             {/* Right Side: Add Property (Properly Aligned & Scaled) */}
                             <button
                                 onClick={() => setShowAdd(true)}
-                                className="gth-btn-gold text-black px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold whitespace-nowrap shadow-lg flex items-center gap-1 md:gap-2 hover:scale-105 transition-all z-30"
+                                className="gth-btn-gold  px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold whitespace-nowrap shadow-lg flex items-center gap-1 md:gap-2 hover:scale-105 transition-all z-30"
                             >
                                 <span className="text-lg md:text-xl leading-none">+</span>
                                 <span className="text-[10px] md:text-xs">ADD PROPERTY</span>
@@ -500,7 +536,7 @@ export default function App() {
                             <section className="gth-section">
                                 <div className="gth-container">
 
-                                    <h2 className="text-xl font-bold mb-4 text-yellow-400">
+                                    <h2 className="text-xl font-bold mb-4 gold-text">
                                         🤖 Recommended For You
                                     </h2>
 

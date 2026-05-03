@@ -13,11 +13,7 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             onClick={() => onSelect(p)}
-            className={`group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 
-            ${isDay
-                    ? "gth-glass border border-gray-200 shadow-lg hover:shadow-2xl"
-                    : "bg-[#0f172a] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)] hover:shadow-yellow-500/10"
-                }`}
+            className="group relative rounded-3xl overflow-hidden cursor-pointer gth-glass gth-hover"
         >
 
             {/* IMAGE */}
@@ -42,17 +38,17 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
             {/* CONTENT */}
             <div className="p-4">
 
-                <h3 className={`font-bold text-lg truncate ${isDay ? "text-black" : "text-white"}`}>
+                <h3 className="font-bold text-lg truncate">
                     {p.title}
                 </h3>
 
-                <p className={`text-sm ${isDay ? "text-gray-500" : "text-gray-400"}`}>
+                <p className="text-sm opacity-70">
                     {p.location}
                 </p>
 
                 <div className="flex justify-between items-center mt-4">
 
-                    <span className={`font-bold text-lg ${isDay ? "text-black" : "text-yellow-400"}`}>
+                    <span className="font-bold text-lg gold-text">
                         ₹ {p.price} L
                     </span>
 
@@ -65,7 +61,7 @@ export default function PropertyCardPro({ p, user, onSelect, onLead, onBoost }: 
                                     e.stopPropagation()
                                     onLead(p.id)
                                 }}
-                                className="px-3 py-1 text-xs rounded font-bold gth-glass text-black"
+                                className="px-3 py-1 text-xs rounded font-bold gth-btn-gold text-black"
                             >
                                 ENQUIRE
                             </button>
