@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
-import { useThemeMode } from "@/lib/hooks/useThemeMode"
+
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
 import MapWrapper from "@/components/MapWrapper"
 import { PropertyService } from "@/lib/real-estate/propertyService"
@@ -15,6 +15,7 @@ import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
 import MapFullscreen from "@/components/mobile/MapFullscreen"
 import FiltersSheet from "@/components/mobile/FiltersSheet"
+import AIChatToggle from "@/components/AIChatToggle"
 // ============================
 // 🧠 MAIN APP
 // ============================
@@ -284,9 +285,26 @@ export default function App() {
     // UI
     // ============================
     return (
-        <div className="min-h-screen flex flex-col backdrop-blur-xl bg-transparent pb-24 md:pb-0">
+        <div className="min-h-screen relative overflow-hidden pb-24 md:pb-0">
 
-            {/* HERO */}
+            {/* ====================================================== */}
+            {/* 🌌 PREMIUM BACKGROUND */}
+            {/* ====================================================== */}
+
+            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+
+                <div className="absolute top-[-120px] left-[-80px] w-[320px] h-[320px] rounded-full blur-3xl bg-blue-500/10" />
+
+                <div className="absolute top-[20%] right-[-120px] w-[360px] h-[360px] rounded-full blur-3xl bg-purple-500/10" />
+
+                <div className="absolute bottom-[-140px] left-[20%] w-[300px] h-[300px] rounded-full blur-3xl bg-amber-400/10" />
+
+            </div>
+
+            {/* ====================================================== */}
+            {/* 🏆 HERO */}
+            {/* ====================================================== */}
+
             <RealEstateHero
                 query={query}
                 setQuery={setQuery}
@@ -295,255 +313,459 @@ export default function App() {
                 setFiltered={setFiltered}
                 setActive={setActive}
             />
-            <div className="px-3 mt-3">
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
 
-                    {[
-                        { name: "Buy", icon: "🏠", q: "buy property" },
-                        { name: "Rent", icon: "🏢", q: "rent property" },
-                        { name: "Luxury", icon: "💎", q: "luxury villa" },
-                        { name: "Commercial", icon: "🏬", q: "commercial property" },
-                        { name: "Plots", icon: "📍", q: "plots" },
-                    ].map((c, i) => (
-                        <div
-                            key={i}
-                            onClick={() => {
-                                setQuery(c.q)
-                                aiSearch()
-                            }}
-                            className="min-w-[80px] text-center cursor-pointer"
-                        >
-                            <div className="gth-glass rounded-xl py-3 gth-hover">
-                                <div className="text-xl">{c.icon}</div>
-                            </div>
-                            <p className="text-[11px] mt-1 opacity-70">{c.name}</p>
+            {/* ====================================================== */}
+            {/* ⚡ QUICK CATEGORY ENGINE */}
+            {/* ====================================================== */}
+
+            <section className="px-3 md:px-6 -mt-6 relative z-20">
+
+                <div className="gth-glass-ultra rounded-[30px] p-4 md:p-6 border border-white/10 shadow-2xl overflow-hidden">
+
+                    <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+
+                        <div className="min-w-0">
+
+                            <h2 className="text-lg md:text-2xl font-black gold-text uppercase tracking-wider">
+                                Explore Categories
+                            </h2>
+
+                            <p className="text-xs opacity-70 mt-1">
+                                AI-powered luxury property discovery
+                            </p>
+
                         </div>
-                    ))}
+
+                        {/* DESKTOP BADGES */}
+
+                        <div className="hidden lg:flex items-center gap-2 shrink-0">
+
+                            <div className="gth-badge">
+                                🔥 Trending
+                            </div>
+
+                            <div className="gth-badge">
+                                🤖 Smart AI
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {/* CATEGORY SCROLL FIX */}
+
+                    <div className="overflow-x-auto scrollbar-hide">
+
+                        <div className="flex gap-3 min-w-max pb-2">
+
+                            {[
+                                {
+                                    name: "Buy",
+                                    icon: "🏠",
+                                    q: "buy property",
+                                    glow: "from-blue-500/20 to-cyan-500/10"
+                                },
+                                {
+                                    name: "Rent",
+                                    icon: "🏢",
+                                    q: "rent property",
+                                    glow: "from-emerald-500/20 to-green-500/10"
+                                },
+                                {
+                                    name: "Luxury",
+                                    icon: "💎",
+                                    q: "luxury villa",
+                                    glow: "from-purple-500/20 to-indigo-500/10"
+                                },
+                                {
+                                    name: "Commercial",
+                                    icon: "🏬",
+                                    q: "commercial property",
+                                    glow: "from-orange-500/20 to-amber-500/10"
+                                },
+                                {
+                                    name: "Plots",
+                                    icon: "📍",
+                                    q: "plots",
+                                    glow: "from-pink-500/20 to-rose-500/10"
+                                },
+                            ].map((c, i) => (
+
+                                <button
+                                    key={i}
+                                    onClick={() => {
+                                        setQuery(c.q)
+                                        aiSearch()
+                                    }}
+                                    className="
+                  relative overflow-hidden
+                  min-w-[120px]
+                  md:min-w-[150px]
+                  rounded-2xl
+                  p-4
+                  text-left
+                  transition-all duration-300
+                  hover:scale-[1.03]
+                  gth-glass
+                  shrink-0
+                "
+                                >
+
+                                    <div className={`
+                  absolute inset-0 opacity-60
+                  bg-gradient-to-br ${c.glow}
+                `} />
+
+                                    <div className="relative z-10">
+
+                                        <div className="text-2xl mb-3">
+                                            {c.icon}
+                                        </div>
+
+                                        <h3 className="text-sm font-bold uppercase tracking-wide">
+                                            {c.name}
+                                        </h3>
+
+                                        <p className="text-[11px] opacity-70 mt-1">
+                                            AI Curated
+                                        </p>
+
+                                    </div>
+
+                                </button>
+
+                            ))}
+
+                        </div>
+
+                    </div>
 
                 </div>
-            </div>
+
+            </section>
+
+            {/* ====================================================== */}
+            {/* 📱 MOBILE QUICK UI */}
+            {/* ====================================================== */}
 
             {isMobile && (
-                <div className="p-3 space-y-3 pb-20">
+
+                <div className="p-3 space-y-4 mt-2">
 
                     {!user && (
-                        <div className="gth-glass p-3 rounded-xl">
-                            <p className="text-xs text-slate-400 mb-2">
-                                Login for leads & dashboard
+
+                        <div className="gth-glass-ultra rounded-2xl p-4">
+
+                            <h2 className="font-bold text-sm mb-2">
+                                Unlock Premium Features
+                            </h2>
+
+                            <p className="text-xs opacity-70 mb-4">
+                                Access dashboard, leads & boosted listings
                             </p>
+
                             <button
                                 onClick={() => setShowLogin(true)}
-                                className="w-full gth-btn p-2 rounded font-bold"
+                                className="w-full gth-btn"
                             >
                                 LOGIN / REGISTER
                             </button>
+
                         </div>
+
                     )}
 
-                    {/* MAP */}
-                    <div className="h-44 rounded-xl overflow-hidden gth-glass">
-                        <MapWrapper data={filtered} active={active} />
+                    <div className="h-48 rounded-3xl overflow-hidden gth-glass-ultra">
+
+                        <MapWrapper
+                            data={filtered}
+                            active={active}
+                        />
+
                     </div>
 
-                    {/* FILTER */}
                     <button
                         onClick={() => setShowFilters(true)}
-                        className="w-full gth-btn p-2 rounded font-bold"
+                        className="w-full gth-btn-gold py-3"
                     >
-                        Filters
+                        ✨ OPEN SMART FILTERS
                     </button>
 
                 </div>
+
             )}
 
+            {/* ====================================================== */}
+            {/* 🏛️ MAIN DESKTOP LAYOUT */}
+            {/* ====================================================== */}
 
+            <div className="gth-container mt-6 px-3 md:px-4">
 
+                <div
+                    className={
+                        isMobile
+                            ? "block"
+                            : "grid grid-cols-[320px_minmax(0,1fr)] gap-7 items-start"
+                    }
+                >
 
-            {/* MAIN LAYOUT */}
-            <div className="gth-container">
-
-                <div className={isMobile ? "block" : "gth-layout"}>
-
-
-                    {/* LEFT SIDEBAR */}
+                    {/* ================================================= */}
+                    {/* 🧠 SIDEBAR */}
+                    {/* ================================================= */}
 
                     {!isMobile && (
-                        <div className="gth-sidebar gth-glass p-4 h-fit sticky top-20">
+
+                        <aside className="w-[320px] shrink-0 sticky top-24 space-y-5">
+
+                            {/* USER */}
 
                             {!user ? (
-                                <div className="gth-glass p-4 rounded-xl mb-4">
 
-                                    <h2 className="text-sm font-bold mb-2">
-                                        Guest User
+                                <div className="gth-glass-ultra p-5 rounded-3xl">
+
+                                    <h2 className="font-black text-lg mb-2">
+                                        Guest Access
                                     </h2>
 
-                                    <p className="text-xs text-slate-400 mb-3">
-                                        Login to access dashboard, leads & premium boosts
-                                    </p>
-                                    <div className="order-3 md:order-1">
-                                        <button
-                                            onClick={() => setShowLogin(true)}
-                                            className="w-full gth-btn p-2 rounded font-bold"
-                                        >
-                                            LOGIN / REGISTER
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="gth-glass p-4 rounded-xl mb-4">
-
-                                    <h2 className="text-sm font-bold">
-                                        Agent Dashboard
-                                    </h2>
-
-                                    <p className="text-xs opacity-70">
-                                        {user.email}
+                                    <p className="text-sm opacity-70 mb-4">
+                                        Login to unlock premium dashboard & AI tools
                                     </p>
 
                                     <button
-                                        onClick={() => setShowDashboard(true)}
-                                        className="mt-3 w-full gth-btn-gold  p-2 rounded"
+                                        onClick={() => setShowLogin(true)}
+                                        className="w-full gth-btn"
                                     >
-                                        Open Dashboard
+                                        LOGIN / REGISTER
+                                    </button>
+
+                                </div>
+
+                            ) : (
+
+                                <div className="gth-glass-ultra p-5 rounded-3xl">
+
+                                    <div className="flex items-start justify-between mb-4">
+
+                                        <div className="min-w-0">
+
+                                            <h2 className="font-black">
+                                                Agent Dashboard
+                                            </h2>
+
+                                            <p className="text-xs opacity-70 truncate mt-1">
+                                                {user.email}
+                                            </p>
+
+                                        </div>
+
+                                        <div className="text-2xl shrink-0">
+                                            🏆
+                                        </div>
+
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+
+                                        <div className="gth-glass rounded-2xl p-3">
+
+                                            <p className="text-[10px] opacity-60 uppercase">
+                                                Leads
+                                            </p>
+
+                                            <h2 className="text-xl font-black mt-1">
+                                                {totalLeads}
+                                            </h2>
+
+                                        </div>
+
+                                        <div className="gth-glass rounded-2xl p-3">
+
+                                            <p className="text-[10px] opacity-60 uppercase">
+                                                Boosted
+                                            </p>
+
+                                            <h2 className="text-xl font-black mt-1">
+                                                {boosted}
+                                            </h2>
+
+                                        </div>
+
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowDashboard(true)}
+                                        className="w-full gth-btn-gold mb-2"
+                                    >
+                                        OPEN DASHBOARD
                                     </button>
 
                                     <button
                                         onClick={logout}
-                                        className="mt-2 w-full gth-btn p-2 rounded"
+                                        className="w-full gth-btn"
                                     >
-                                        Logout
+                                        LOGOUT
                                     </button>
+
                                 </div>
+
                             )}
 
-                            <button
-                                onClick={() => setShowFilters(true)}
-                                className="gth-btn-gold filter-mobile-fix md:hidden"
-                            >
-                                ✨ FILTERS
-                            </button>
+                            {/* FILTERS */}
 
-                            <div className="mt-6">
-                                <h2 className="text-sm font-bold mb-3 text-gth-gold">
-                                    Categories
-                                </h2>
+                            <div className="gth-glass-ultra rounded-3xl p-5">
 
-                                <div className="space-y-2">
-                                    {categories.map((c, i) => (
+                                <div className="flex items-center justify-between mb-4">
+
+                                    <h2 className="font-black gold-text uppercase tracking-wide text-sm">
+                                        Smart Filters
+                                    </h2>
+
+                                    <span className="text-xs opacity-60">
+                                        AI
+                                    </span>
+
+                                </div>
+
+                                <div className="space-y-3">
+
+                                    {[
+                                        "2BHK",
+                                        "3BHK",
+                                        "Villa",
+                                        "Near Metro",
+                                        "Luxury",
+                                        "Under 50L"
+                                    ].map((t, i) => (
+
                                         <button
                                             key={i}
                                             onClick={() => {
-                                                setQuery(c.query)
+                                                setQuery(t)
                                                 aiSearch()
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-lg gth-glass text-xs"
+                                            className="
+                      w-full
+                      text-left
+                      gth-glass
+                      rounded-2xl
+                      px-4 py-3
+                      transition-all
+                      hover:scale-[1.02]
+                    "
                                         >
-                                            {c.icon} {c.title}
+                                            {t}
                                         </button>
+
                                     ))}
+
                                 </div>
+
                             </div>
 
+                            {/* MAP */}
 
-                            <div className="order-1 md:order-2">
-                                <h2 className="font-black gold-text mb-2 mt-4 tracking-wide text-sm uppercase">
-                                    Filters
-                                </h2>
+                            <div className="h-[320px] rounded-3xl overflow-hidden gth-glass-ultra">
+
+                                <MapWrapper
+                                    data={filtered}
+                                    active={active}
+                                />
+
                             </div>
-                            <button
-                                onClick={() => {
-                                    setShowDashboard(false);
-                                    setQuery("");
-                                    fetchProperties(user)
-                                }}
-                                className="w-full gth-glass p-2 rounded mb-3 font-bold uppercase text-[10px]"
-                            >
-                                Reset to Global View
-                            </button>
 
-                            <button
-                                onClick={() => setQuery("2bhk")}
-                                className="w-full gth-glass bg-white/10 hover:bg-white/20 p-2 rounded mb-2"
-                            >
-                                2 BHK
-                            </button>
-
-                            <button
-                                onClick={() => setQuery("under 5000000")}
-                                className="w-full gth-glass bg-white/10 hover:bg-white/20 p-2 rounded mb-4"
-                            >
-                                Under 50L
-                            </button>
-
-                            <div className="h-[260px] w-full rounded-xl overflow-hidden relative gth-glass">
-                                <div className="absolute inset-0 z-0">
-                                    <MapWrapper data={filtered} active={active} />
-                                </div>
-                            </div>
-                        </div>
+                        </aside>
 
                     )}
 
+                    {/* ================================================= */}
+                    {/* 🏠 MAIN CONTENT */}
+                    {/* ================================================= */}
 
-                    {/* RIGHT SIDE */}
-                    <div className="flex-1 gth-stack">
-                        <div className="flex gap-2 flex-wrap">
-                            {["2BHK", "3BHK", "Villa", "Near Metro"].map((t, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setQuery(t)}
-                                    className="gth-glass bg-white/10 hover:bg-white/20 p-2 rounded-lg text-xs"
-                                >
-                                    {t}
-                                </button>
-                            ))}
-                        </div>
+                    <div className="min-w-0 w-full">
 
-                        {/* HEADER */}
-                        {user && (
-                            <div className="gth-glass p-4 rounded mb-4 border border-slate-700">
-                                <h2 className="text-lg font-bold mb-2">📊 Your Dashboard</h2>
+                        {/* TOP BAR */}
 
-                                <div className="flex gap-6 text-sm">
-                                    <p>Leads: {totalLeads}</p>
-                                    <p>Boosted: {boosted}</p>
-                                </div>
+                        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
+
+                            <div className="min-w-0">
+
+                                <h1 className="gth-title uppercase">
+                                    Properties
+                                </h1>
+
+                                <p className="opacity-70 text-sm mt-2">
+                                    {filtered.length} curated properties found
+                                </p>
+
                             </div>
 
-                        )}
+                            {/* BUTTON FIX */}
 
-
-                        <div className="flex justify-between items-center mb-8 px-2 md:px-0">
-
-                            {/* Left Side: Title with GTH Luxury Typography */}
-                            <h2 className="gth-title text-xl md:text-2xl uppercase tracking-wider">
-                                Properties ({filtered.length})
-                            </h2>
-
-                            {/* Right Side: Add Property (Properly Aligned & Scaled) */}
                             <button
                                 onClick={() => setShowAdd(true)}
-                                className="gth-btn-gold  px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold whitespace-nowrap shadow-lg flex items-center gap-1 md:gap-2 hover:scale-105 transition-all z-30"
+                                className="
+                shrink-0
+                gth-btn-gold
+                px-5 py-3
+                rounded-full
+                flex items-center
+                gap-2
+                whitespace-nowrap
+              "
                             >
-                                <span className="text-lg md:text-xl leading-none">+</span>
-                                <span className="text-[10px] md:text-xs">ADD PROPERTY</span>
+                                <span className="text-lg">+</span>
+                                ADD PROPERTY
                             </button>
 
                         </div>
 
+                        {/* ================================================= */}
+                        {/* 🤖 AI RECOMMENDATIONS */}
+                        {/* ================================================= */}
 
                         {aiRecommended.length > 0 && (
-                            <section className="gth-section">
-                                <div className="gth-container">
 
-                                    <h2 className="text-xl font-bold mb-4 gold-text">
-                                        🤖 Recommended For You
-                                    </h2>
+                            <section className="mb-10">
 
-                                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                                <div className="flex items-center justify-between mb-5">
+
+                                    <div>
+
+                                        <h2 className="text-2xl font-black gold-text">
+                                            🤖 AI Recommendations
+                                        </h2>
+
+                                        <p className="text-sm opacity-70 mt-1">
+                                            Personalized luxury picks
+                                        </p>
+
+                                    </div>
+
+                                    <div className="hidden lg:flex gth-badge">
+                                        Smart Match
+                                    </div>
+
+                                </div>
+
+                                {/* DESKTOP SCROLL FIX */}
+
+                                <div className="overflow-x-auto scrollbar-hide">
+
+                                    <div className="flex gap-5 min-w-max pb-2">
 
                                         {aiRecommended.map((p) => (
-                                            <div key={p.id} className="min-w-[260px]">
+
+                                            <div
+                                                key={p.id}
+                                                className="
+                        min-w-[260px]
+                        md:min-w-[280px]
+                        lg:min-w-[300px]
+                        max-w-[300px]
+                        flex-shrink-0
+                      "
+                                            >
+
                                                 <PropertyCardPro
                                                     p={p}
                                                     user={user}
@@ -553,62 +775,102 @@ export default function App() {
                                                     onLead={addLead}
                                                     onBoost={payForBoost}
                                                 />
+
                                             </div>
 
                                         ))}
 
                                     </div>
+
                                 </div>
 
                             </section>
 
                         )}
 
+                        {/* ================================================= */}
+                        {/* 🏠 PROPERTY GRID */}
+                        {/* ================================================= */}
 
+                        <section>
 
-                        {/* GRID */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 pb-10">
-                            {filtered.map((p) => (
-                                <PropertyCardPro
-                                    key={p.id}
-                                    p={p}
-                                    user={user}
-                                    onSelect={(prop: any) => {
-                                        if (!prop?.lat || !prop?.lng) return
+                            <div
+                                className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                xl:grid-cols-3
+                2xl:grid-cols-4
+                gap-5
+                md:gap-6
+              "
+                            >
 
-                                        setActive({
-                                            id: prop.id,
-                                            coords: [prop.lat, prop.lng]
-                                        })
-                                    }}
-                                    onLead={addLead}
-                                    onBoost={payForBoost}
-                                />
-                            ))}
+                                {filtered.map((p) => (
 
-                        </div>
+                                    <div
+                                        key={p.id}
+                                        className="w-full min-w-0"
+                                    >
+
+                                        <PropertyCardPro
+                                            p={p}
+                                            user={user}
+                                            onSelect={(prop: any) => {
+
+                                                if (!prop?.lat || !prop?.lng) return
+
+                                                setActive({
+                                                    id: prop.id,
+                                                    coords: [prop.lat, prop.lng]
+                                                })
+                                            }}
+                                            onLead={addLead}
+                                            onBoost={payForBoost}
+                                        />
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                        </section>
+
                     </div>
+
                 </div>
+
             </div>
 
+            {/* ====================================================== */}
+            {/* 🧩 MODALS */}
+            {/* ====================================================== */}
 
-
-            {/* MODALS */}
             {showAdd && (
+
                 <AddPropertyModal
                     onSave={addProperty}
                     onClose={() => setShowAdd(false)}
                 />
+
             )}
+
             {showDashboard && (
+
                 <LeadsDashboard
                     onClose={() => setShowDashboard(false)}
                     properties={properties}
                 />
+
             )}
 
             {showLogin && (
-                <LoginModal onClose={() => setShowLogin(false)} />
+
+                <LoginModal
+                    onClose={() => setShowLogin(false)}
+                />
+
             )}
 
             <MapFullscreen
@@ -624,17 +886,33 @@ export default function App() {
                 setQuery={setQuery}
             />
 
+            {/* ====================================================== */}
+            {/* 📱 MOBILE NAV */}
+            {/* ====================================================== */}
+
             {isMobile && (
 
                 <BottomNav
                     onMap={() => setShowMap(true)}
                     onFilter={() => setShowFilters(true)}
                 />
+
             )}
 
+            {/* ====================================================== */}
+            {/* 🤖 AI CHAT */}
+            {/* ====================================================== */}
+
+            <div className="relative z-[999999]">
+
+                <AIChatToggle
+                    properties={properties}
+                    setFiltered={setFiltered}
+                    setActive={setActive}
+                />
+
+            </div>
 
         </div>
-
-
     )
 }

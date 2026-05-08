@@ -6,6 +6,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import LayoutWrapper from "@/components/LayoutWrapper";
 
+
 const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["400", "700", "900"],
@@ -82,6 +83,7 @@ export default function RootLayout({
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
+
 
       </body>
     </html>

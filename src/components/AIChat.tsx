@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { detectMode } from "@/lib/aiRouter"
+import { Mic } from "lucide-react"
 
 function AIChat({ properties, setFiltered, setActive }: any) {
 
     const [messages, setMessages] = useState<any[]>([])
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
-
+    const [listening, setListening] = useState(false)
     // 🧠 GLOBAL MEMORY (MULTI DOMAIN)
     const [memory, setMemory] = useState<any>({
         lastCity: "",
@@ -197,6 +198,8 @@ function AIChat({ properties, setFiltered, setActive }: any) {
             return
         }
 
+
+
         // ============================
         // ✈️ TRAVEL MODE
         // ============================
@@ -239,12 +242,36 @@ function AIChat({ properties, setFiltered, setActive }: any) {
         setLoading(false)
         setInput("")
     }
+    const startVoice = () => {
+        const SpeechRecognition =
+            (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+        if (!SpeechRecognition) {
+            alert("Voice not supported")
+            return
+        }
+
+        const recognition = new SpeechRecognition()
+        recognition.lang = "en-IN"
+        recognition.start()
+
+        setListening(true)
+
+        recognition.onresult = (event: any) => {
+            const text = event.results[0][0].transcript
+            setInput(text)
+            setListening(false)
+        }
+
+        recognition.onend = () => setListening(false)
+    }
+
 
     return (
         <div className="w-full h-full flex flex-col text-white">
 
             <div className="p-3 border-b border-white/10 font-bold">
-                🤖 GTH AI HUB
+                GTH AI HUB
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -252,8 +279,8 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                     <div
                         key={i}
                         className={`p-2 rounded ${m.role === "user"
-                                ? "gth-btn-gold text-black ml-auto"
-                                : "gth-glass-800"
+                            ? "gth-btn-gold text-black ml-auto"
+                            : "gth-glass-800"
                             }`}
                     >
                         {m.text}
@@ -262,16 +289,29 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 {loading && <div>⚡ AI Thinking...</div>}
             </div>
 
-            <div className="flex border-t border-white/10 bg-black sticky bottom-0">
+            <div className="flex items-center border-t border-white/10 bg-black sticky bottom-0 p-2 gap-2">
+
+                {/* INPUT */}
                 <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="flex-1 p-2 bg-transparent outline-none"
-                    placeholder="Ask anything..."
+                    className="flex-1 p-2 bg-transparent outline-none text-white"
+                    placeholder={listening ? "Listening..." : "Ask anything..."}
                 />
+
+                {/* MIC */}
+                <button
+                    onClick={startVoice}
+                    className={`p-2 rounded-full transition ${listening ? "bg-red-500 animate-pulse" : "bg-white/10"
+                        }`}
+                >
+                    <Mic size={16} />
+                </button>
+
+                {/* SEND */}
                 <button
                     onClick={sendMessage}
-                    className="gth-btn-gold px-4 text-black font-bold"
+                    className="gth-btn-gold px-4 py-2 text-black font-bold rounded"
                 >
                     Send
                 </button>

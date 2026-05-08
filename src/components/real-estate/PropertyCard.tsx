@@ -1,3 +1,5 @@
+"use client";
+
 import { PropertyService } from "@/lib/real-estate/propertyService";
 
 export default function PropertyCard({ p, onSelect, onLead }: any) {

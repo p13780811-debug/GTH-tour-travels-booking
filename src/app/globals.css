@@ -4,156 +4,513 @@
 /* ========================= */
 /* 🌍 ROOT TOKENS */
 /* ========================= */
-:root {
-  --bg: #f8fafc;
-  --text: #0f172a;
 
-  /* ✅ Glass FIX (white layer issue solved) */
-  --card: rgba(255, 255, 255, 0.08);
-  --border: rgba(0, 0, 0, 0.06);
+:root {
+  --radius: 18px;
+  --blur: 18px;
+  /* ========================= */
+  /* ✨ LUXURY TYPOGRAPHY */
+  /* ========================= */
+
+  --font-2xs: clamp(0.55rem, 0.52rem + 0.1vw, 0.62rem);
+
+  --font-xs: clamp(0.68rem, 0.65rem + 0.15vw, 0.75rem);
+
+  --font-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.9rem);
+
+  --font-base: clamp(0.94rem, 0.9rem + 0.25vw, 1rem);
+
+  --font-lg: clamp(1.08rem, 1rem + 0.3vw, 1.18rem);
+
+  --font-xl: clamp(1.45rem, 1.3rem + 0.6vw, 1.7rem);
+
+  --font-2xl: clamp(2.2rem, 1.8rem + 1.4vw, 3.8rem);
+
+  /* ========================= */
+  /* ✨ EXTRA PREMIUM TOKENS */
+  /* ========================= */
+
+  --space-2xl: 54px;
+
+  --radius-full: 999px;
+
+  --blur-soft: 16px;
+  --blur-heavy: 28px;
+
+  --glow-gold:
+    0 10px 35px rgba(212, 175, 55, 0.16);
+
+  --glow-blue:
+    0 10px 40px rgba(59, 130, 246, 0.18);
+
+  --card-hover-transform:
+    translateY(-8px) scale(1.01);
+
+  /* ========================= */
+  /* 📐 SPACING SCALE */
+  /* ========================= */
+
+  --space-xs: 0.4rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* ========================= */
+  /* 💎 PREMIUM RADIUS */
+  /* ========================= */
+
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+
+  /* ========================= */
+  /* ⚡ PREMIUM MOTION */
+  /* ========================= */
+
+  --ease-premium: cubic-bezier(.16, 1, .3, 1);
+
+  --transition-fast:
+    0.22s var(--ease-premium);
+
+  --transition-slow:
+    0.45s var(--ease-premium);
+
+  /* ☀️ DAY MODE */
+  --bg: #f6f1e8;
+  --bg-soft: #fffaf2;
+
+  --text: #111827;
+
+  /* ✨ FIXED GLASS */
+  --card: rgba(255, 255, 255, 0.50);
+  --card-strong: rgba(255, 255, 255, 0.72);
+
+  --border: rgba(255, 255, 255, 0.38);
+
+  --shadow:
+    0 10px 30px rgba(15, 23, 42, 0.06),
+    0 2px 10px rgba(15, 23, 42, 0.03);
+
+  --shadow-hover:
+    0 20px 45px rgba(15, 23, 42, 0.12);
 
   --gold: #d4af37;
-  --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
 
-  --radius: 16px;
-  --blur: 14px;
+  --gold-gradient:
+    linear-gradient(135deg,
+      #bf953f,
+      #fcf6ba,
+      #b38728);
 
-  --btn-bg: #111827;
+  /* 🔵 CTA */
+  --btn-bg:
+    linear-gradient(135deg,
+      #2563eb 0%,
+      #3b82f6 45%,
+      #1d4ed8 100%);
+
   --btn-text: #ffffff;
 
-  /* ✅ Background system */
-  --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
+  --btn-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.25);
+
+  /* 🌤️ BG */
+  --bg-gradient:
+    radial-gradient(circle at top,
+      #fffdf8 0%,
+      #f8f4ec 40%,
+      #f2ede3 100%);
 }
 
 /* ========================= */
-/* 🌙 DARK MODE */
+/* 🌙 NIGHT MODE */
 /* ========================= */
-html.dark {
-  --bg: #0a0f14;
-  --text: #e5e7eb;
 
-  --card: rgba(255, 255, 255, 0.06);
+html.dark {
+  --bg: #060b12;
+  --bg-soft: #0f172a;
+  --text: #f3f4f6;
+
+  --card: rgba(15, 23, 42, 0.62);
+  --card-strong: rgba(2, 6, 23, 0.88);
+
   --border: rgba(255, 255, 255, 0.08);
 
-  --btn-bg: var(--gold-gradient);
-  --btn-text: #000;
+  --shadow:
+    0 12px 35px rgba(0, 0, 0, 0.45);
 
-  --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%);
+  --shadow-hover:
+    0 18px 55px rgba(0, 0, 0, 0.65);
+
+  /* 🟡 NIGHT BUTTON */
+  --btn-bg:
+    linear-gradient(135deg,
+      #bf953f 0%,
+      #fcf6ba 50%,
+      #b38728 100%);
+
+  --btn-text: #000000;
+
+  --btn-shadow:
+    0 10px 28px rgba(212, 175, 55, 0.30);
+
+  --bg-gradient:
+    radial-gradient(circle at top,
+      #111827 0%,
+      #05070b 65%,
+      #000000 100%);
 }
 
 /* ========================= */
-/* 🔥 BODY (MAIN FIX) */
+/* 🔥 BODY */
 /* ========================= */
+
+html,
 body {
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+
   background: var(--bg-gradient);
   background-attachment: fixed;
+
   color: var(--text);
-  margin: 0;
+
   -webkit-font-smoothing: antialiased;
-  transition: background 0.4s ease, color 0.3s ease;
+  text-rendering: optimizeLegibility;
+
+  transition:
+    background 0.35s ease,
+    color 0.25s ease;
+}
+
+body {
+  min-height: 100vh;
+
+  font-size: var(--font-base);
+
+  line-height: 1.6;
+
+  letter-spacing: -0.015em;
 }
 
 /* ========================= */
-/* 💎 GLASS SYSTEM */
+/* 🛡️ GLOBAL FIX */
 /* ========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* ========================= */
+/* 💎 GTH GLASS SYSTEM V2 (PRODUCTION FIXED) */
+/* ========================= */
+
 .gth-glass {
-  background: var(--card);
-  backdrop-filter: blur(var(--blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  border-radius: var(--radius, 16px);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08);
+
+  isolation: isolate;
+
+  z-index: 0;
 }
 
-/* ❌ Buttons me glass disable */
-button.gth-glass {
-  backdrop-filter: none !important;
+.gth-glass::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  border-radius: inherit;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.14),
+      rgba(255, 255, 255, 0.03));
+
+  z-index: -1;
+}
+
+
+
+/* ========================= */
+/* 🧠 NAVBAR FIX (ADAPTIVE) */
+/* ========================= */
+
+nav {
+  /* ❌ Hardcoded colors hatao */
+  background: var(--card);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+
+  /* ✅ Luxury Touch: Border ko subtle rakho */
+  border-bottom: 1px solid var(--border);
+
+  /* Shadow ko soft rakho */
+  box-shadow: var(--shadow);
+
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Nav ke andar ka text auto-adjust ho jaye */
+nav span,
+nav a {
+  color: var(--text);
+}
+
+/* ========================= */
+/* 📱 FLOATING UI SAFETY LAYER */
+/* ========================= */
+
+.ai-floating-safe {
+  position: fixed;
+  z-index: 9999;
+}
+
+/* Chat toggle / bottom nav separation */
+.bottom-nav-safe {
+  z-index: 40;
+}
+
+/* WHITE LAYER */
+
+
+
+
+/* 🌙 DARK MODE */
+html.dark .gth-glass {
+  background: rgba(17, 24, 39, 0.72);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(16px);
 }
 
 .gth-glass-strong {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  background: var(--card-strong);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  border: 1px solid var(--border);
+
+  border-radius: calc(var(--radius) + 4px);
+
+  box-shadow: var(--shadow-hover);
+}
+
+/* ========================= */
+/* 🌙 DARK GLASS ENHANCE */
+/* ========================= */
+
+html.dark .gth-glass {
+  background: rgba(15, 23, 42, 0.58);
 }
 
 html.dark .gth-glass-strong {
-  background: rgba(10, 15, 20, 0.6);
+  background: rgba(2, 6, 23, 0.88);
 }
 
 /* ========================= */
 /* 🔘 BUTTON SYSTEM */
 /* ========================= */
+
 .gth-btn {
   background: var(--btn-bg);
   color: var(--btn-text);
+
+  border: 0;
+  outline: none;
+
   padding: 10px 22px;
+
   border-radius: 999px;
-  font-weight: 600;
-  transition: 0.3s;
+
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  min-height: 46px;
+
+  font-size: var(--font-sm);
+  box-shadow: var(--btn-shadow);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    opacity 0.25s ease;
 }
 
 .gth-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  opacity: 0.96;
 }
 
-/* GOLD */
+.gth-btn:active {
+  transform: scale(0.97);
+}
+
+/* ========================= */
+/* 🟡 GOLD BUTTON */
+/* ========================= */
+
 .gth-btn-gold {
-  background: var(--gold-gradient);
-  color: #000;
-  font-weight: 700;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+
+  border: none;
+  outline: none;
+  min-height: 46px;
+
+  font-size: var(--font-sm);
   border-radius: 999px;
-  transition: 0.3s;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+
+  font-weight: 800;
+  letter-spacing: 0.4px;
+
+  box-shadow: var(--btn-shadow);
+
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    opacity 0.22s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.gth-btn-gold::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(120deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 80%);
+
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.gth-btn-gold:hover::before {
+  transform: translateX(120%);
 }
 
 .gth-btn-gold:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 14px 35px rgba(0, 0, 0, 0.18);
 }
 
-/* ✅ LIGHT MODE GOLD FIX (important) */
-html:not(.dark) .gth-btn-gold {
-  border: 1.5px solid #b38728;
-  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.4);
+.gth-btn-gold:active {
+  transform: scale(0.98);
 }
 
 /* ========================= */
-/* ✨ TEXT */
+/* ✨ TEXT SYSTEM */
 /* ========================= */
+
+h1,
+.gth-title {
+  font-size: var(--font-2xl);
+
+  font-weight: 900;
+
+  line-height: 0.95;
+
+  letter-spacing: -0.055em;
+}
+
+h2 {
+  font-size: var(--font-xl);
+
+  line-height: 1.05;
+
+  font-weight: 800;
+
+  letter-spacing: -0.04em;
+}
+
+h3 {
+  font-size: var(--font-lg);
+
+  line-height: 1.2;
+
+  font-weight: 700;
+}
+
+p {
+  font-size: var(--font-base);
+
+  line-height: 1.7;
+}
+
+.text-xs {
+  font-size: var(--font-xs);
+}
+
+.text-sm {
+  font-size: var(--font-sm);
+}
+
+.text-base {
+  font-size: var(--font-base);
+}
+
+.text-lg {
+  font-size: var(--font-lg);
+}
+
+.text-xl {
+  font-size: var(--font-xl);
+}
+
 .gold-text {
   background: var(--gold-gradient);
+
   background-clip: text;
   -webkit-background-clip: text;
+
   -webkit-text-fill-color: transparent;
 }
 
-.gth-title {
-  font-weight: 800;
-}
-
 .gth-sub {
-  opacity: 0.7;
+  opacity: 0.72;
+
+  font-size: var(--font-sm);
 }
 
 /* ========================= */
-/* 🚀 HOVER */
+/* 📐 LAYOUT */
 /* ========================= */
-.gth-hover {
-  transition: 0.35s;
-}
 
-.gth-hover:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-}
-
-/* ========================= */
-/* 📐 LAYOUT SYSTEM */
-/* ========================= */
 .gth-container {
-  max-width: 1300px;
+  max-width: 1380px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .gth-layout {
@@ -174,8 +531,19 @@ html:not(.dark) .gth-btn-gold {
 }
 
 /* ========================= */
+/* 📦 GRID */
+/* ========================= */
+
+.gth-grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+/* ========================= */
 /* 📱 RESPONSIVE */
 /* ========================= */
+
 @media (max-width: 768px) {
   .gth-layout {
     flex-direction: column;
@@ -186,36 +554,48 @@ html:not(.dark) .gth-btn-gold {
   }
 
   .gth-container {
-    padding: 0 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .gth-grid-auto {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .gth-btn {
+    padding: 9px 18px;
+    font-size: 13px;
+  }
+
+  .gth-btn-gold {
+    font-size: 12px;
+    padding: 8px 16px;
   }
 }
 
-/* Desktop enhance */
+/* ========================= */
+/* 💻 LARGE DESKTOP */
+/* ========================= */
+
 @media (min-width: 1280px) {
   .gth-layout {
-    gap: 40px;
+    gap: 36px;
   }
 
   .gth-sidebar {
     position: sticky;
     top: 100px;
+
     height: calc(100vh - 120px);
     overflow-y: auto;
   }
 }
 
 /* ========================= */
-/* 📦 GRID */
-/* ========================= */
-.gth-grid-auto {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-/* ========================= */
 /* 🧼 SCROLL */
 /* ========================= */
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -225,184 +605,19 @@ html:not(.dark) .gth-btn-gold {
 }
 
 /* ========================= */
-/* 🗺️ MAP FIX */
+/* 🗺️ MAP */
 /* ========================= */
+
 .leaflet-container {
   width: 100%;
   height: 100%;
   z-index: 0;
+  border-radius: inherit;
 }
 
 /* ========================= */
-/* ⚡ GLOBAL SMOOTH */
+/* 🎬 ANIMATION */
 /* ========================= */
-* {
-  transition: background 0.3s, color 0.3s, border 0.3s;
-}
-
-/* ========================= */
-/* 🚀 ULTRA WIDE */
-/* ========================= */
-@media (min-width: 1536px) {
-  .gth-container {
-    max-width: 1450px;
-  }
-}
-
-/* ========================= */
-/* 📱 MOBILE = LIGHT MODE */
-/* ========================= */
-@media (max-width: 768px) {
-  html {
-    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
-    --text: #0f172a;
-    --card: rgba(255, 255, 255, 0.12);
-    --border: rgba(0, 0, 0, 0.06);
-  }
-}
-
-/* ========================= */
-/* 💻 DESKTOP = DARK MODE */
-/* ========================= */
-@media (min-width: 769px) {
-  html {
-    --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%);
-    --text: #e5e7eb;
-    --card: rgba(255, 255, 255, 0.06);
-    --border: rgba(255, 255, 255, 0.08);
-  }
-}
-
-@media (max-width: 768px) {
-  .gth-btn-gold {
-    box-shadow: none;
-  }
-}
-
-/* ========================= */
-/* 🎬 THEME ANIMATION */
-/* ========================= */
-
-html,
-body,
-.gth-glass,
-.gth-btn,
-.gth-btn-gold {
-  transition:
-    background 0.4s ease,
-    color 0.3s ease,
-    border 0.3s ease,
-    backdrop-filter 0.4s ease;
-}
-
-/* Smooth dark switch */
-html.dark body {
-  transition: background 0.5s ease;
-}
-
-/* ========================= */
-/* 🛡️ ZERO LEAKAGE & FIT FIX */
-/* ========================= */
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  position: relative;
-  touch-action: pan-y;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-/* ========================= */
-/* 🌓 DYNAMIC THEME ENGINE (NO CONFLICT) */
-/* ========================= */
-
-/* Mobile Default (Light) - Only if NOT dark class */
-@media (max-width: 768px) {
-  html:not(.dark) {
-    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
-    --text: #0f172a;
-    --card: rgba(255, 255, 255, 0.12);
-    --border: rgba(0, 0, 0, 0.06);
-  }
-
-  .gth-container {
-    padding: 0 16px;
-    width: 100%;
-  }
-
-  .gth-btn-gold {
-    box-shadow: none;
-    flex-shrink: 0;
-    font-size: 10px;
-    padding: 6px 12px;
-  }
-}
-
-/* Desktop Default (Dark) - Only if NOT dark class (optional override) */
-@media (min-width: 769px) {
-  html:not(.dark) {
-    --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #eef2f7 100%);
-    --text: #0f172a;
-    --card: rgba(255, 255, 255, 0.45);
-    --border: rgba(0, 0, 0, 0.06);
-  }
-}
-
-/* 🌙 UNIVERSAL DARK OVERRIDE (Priority 1) */
-/* Yeh class media query ke hardcoding ko override karegi */
-html.dark {
-  --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 80%) !important;
-  --text: #e5e7eb !important;
-  --card: rgba(255, 255, 255, 0.06) !important;
-  --border: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* 💻 DESKTOP */
-@media (min-width: 769px) {
-  html {
-    --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 85%);
-    --text: #e5e7eb;
-    --card: rgba(255, 255, 255, 0.06);
-    --border: rgba(255, 255, 255, 0.1);
-
-    --btn-bg: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #b38728 100%);
-    --btn-text: #000000;
-    --btn-shadow: 0 8px 25px rgba(191, 149, 63, 0.4);
-  }
-}
-
-/* 📱 MOBILE */
-@media (max-width: 768px) {
-
-  @media (prefers-color-scheme: light) {
-    html {
-      --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f0f4f8 100%);
-      --text: #0f172a;
-      --card: rgba(255, 255, 255, 0.8);
-      --border: rgba(0, 0, 0, 0.08);
-
-      --btn-bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%);
-      --btn-text: #ffffff;
-      --btn-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html {
-      --bg-gradient: radial-gradient(circle at 50% 0%, #0a0f14 0%, #000000 85%);
-      --text: #e5e7eb;
-      --card: rgba(255, 255, 255, 0.06);
-      --border: rgba(255, 255, 255, 0.1);
-
-      --btn-bg: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #b38728 100%);
-      --btn-text: #000000;
-      --btn-shadow: 0 8px 25px rgba(191, 149, 63, 0.4);
-    }
-  }
-}
 
 @keyframes slideUp {
   from {
@@ -418,4 +633,269 @@ html.dark {
 
 .animate-slideUp {
   animation: slideUp 0.35s ease;
+}
+
+/* ========================= */
+/* ✨ SMOOTH TRANSITIONS */
+/* ========================= */
+
+html,
+body,
+.gth-glass,
+.gth-glass-strong,
+.gth-btn,
+.gth-btn-gold {
+  transition:
+    background 0.35s ease,
+    color 0.25s ease,
+    border 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+
+/* ========================================================= */
+/* 🧠 GTH PRO DESIGN ENGINE V3 */
+/* ========================================================= */
+
+
+
+
+/* ========================================================= */
+/* 💎 ULTRA GLASS */
+/* ========================================================= */
+
+.gth-glass-ultra {
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.04));
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  backdrop-filter: blur(var(--blur-heavy)) saturate(180%);
+
+  -webkit-backdrop-filter:
+    blur(var(--blur-heavy)) saturate(180%);
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.10);
+
+  border-radius: var(--radius-lg);
+
+  isolation: isolate;
+}
+
+html.dark .gth-glass-ultra {
+  background:
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.75),
+      rgba(2, 6, 23, 0.88));
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ========================================================= */
+/* ✨ CARD HOVER ENGINE */
+/* ========================================================= */
+
+.gth-card-premium {
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease,
+    border 0.35s ease;
+}
+
+.gth-card-premium:hover {
+  transform: var(--card-hover-transform);
+
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.18);
+
+  border-color:
+    rgba(255, 255, 255, 0.22);
+}
+
+/* ========================================================= */
+/* 🪄 SHIMMER */
+/* ========================================================= */
+
+.gth-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.gth-shimmer::after {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -140%;
+
+  width: 120%;
+  height: 100%;
+
+  background:
+    linear-gradient(120deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 80%);
+
+  transform: skewX(-20deg);
+
+  transition: all 1.2s ease;
+}
+
+.gth-shimmer:hover::after {
+  left: 140%;
+}
+
+/* ========================================================= */
+/* 🟡 PREMIUM BADGE */
+/* ========================================================= */
+
+.gth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: var(--font-xs);
+  font-weight: 800;
+
+  backdrop-filter: blur(10px);
+
+  background:
+    rgba(255, 255, 255, 0.14);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ========================================================= */
+/* 🔘 PREMIUM INPUT */
+/* ========================================================= */
+
+.gth-input {
+  width: 100%;
+
+  border: 1px solid var(--border);
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: var(--text);
+
+  padding: 14px 18px;
+
+  border-radius: var(--radius-full);
+
+  outline: none;
+
+  backdrop-filter: blur(10px);
+
+  transition:
+    border 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.gth-input:focus {
+  border-color: rgba(59, 130, 246, 0.55);
+
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* ========================================================= */
+/* 🧠 PREMIUM SECTION */
+/* ========================================================= */
+
+.gth-section {
+  position: relative;
+  padding-top: clamp(60px, 8vw, 110px);
+  padding-bottom: clamp(60px, 8vw, 110px);
+}
+
+/* ========================================================= */
+/* 📦 AUTO LUXURY GRID */
+/* ========================================================= */
+
+.gth-grid-luxury {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(320px, 1fr));
+
+  gap: clamp(18px, 2vw, 30px);
+}
+
+/* ========================================================= */
+/* 📱 MOBILE OPTIMIZATION */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+  .gth-title {
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .gth-glass,
+  .gth-glass-ultra {
+    backdrop-filter: blur(12px);
+  }
+
+  .gth-grid-luxury {
+    grid-template-columns: 1fr;
+  }
+
+  .gth-btn,
+  .gth-btn-gold {
+    min-height: 46px;
+  }
+}
+
+/* ========================= */
+/* 🏷️ BADGE VARIANTS */
+/* ========================= */
+
+.gth-badge-gold {
+  background:
+    linear-gradient(135deg,
+      #bf953f,
+      #fcf6ba,
+      #b38728);
+
+  color: #111827;
+
+  box-shadow:
+    0 8px 20px rgba(212, 175, 55, 0.22);
+}
+
+.gth-badge-ultra {
+  background:
+    linear-gradient(135deg,
+      #7c3aed,
+      #4f46e5);
+
+  color: white;
+
+  box-shadow:
+    0 10px 24px rgba(99, 102, 241, 0.26);
+}
+
+/* ========================================================= */
+/* 🚀 PERFORMANCE */
+/* ========================================================= */
+
+.gth-card-premium,
+.gth-btn,
+.gth-btn-gold {
+  will-change:
+    transform,
+    opacity;
 }
