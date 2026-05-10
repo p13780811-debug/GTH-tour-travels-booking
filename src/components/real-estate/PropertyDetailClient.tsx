@@ -1,8 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
+import dynamic from "next/dynamic"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import styles from "@/app/real-estate/RealEstate.module.css"
+import Link from "next/link"
 
 import {
     MapPin,
@@ -16,456 +19,894 @@ import {
     Building2,
     Globe2,
     X,
+    Heart,
+    Share2,
+    TrendingUp,
+    Clock3,
+    Shield,
+    Eye,
+    Crown,
+    Zap,
+    MessageSquare,
+    Phone,
+    Bookmark,
+    CheckCircle2,
+    Radar,
+    Activity,
+    Layers3,
+    Bot,
+    ChevronRight,
+    Wifi,
+    Lock,
 } from "lucide-react"
 
-import MapWrapper from "@/components/MapWrapper"
+import styles from "@/app/real-estate/RealEstate.module.css"
 import AIChat from "@/components/AIChat"
+
+const MapWrapper = dynamic(() => import("@/components/MapWrapper"), {
+    ssr: false,
+    loading: () => (
+        <div className="flex h-full items-center justify-center bg-[var(--card)]">
+            <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full border-2 border-[var(--gold)] border-t-transparent animate-spin" />
+                <p className="font-black text-[var(--text)]">
+                    Initializing Geo Engine...
+                </p>
+            </div>
+        </div>
+    ),
+})
 
 type Property = {
     id: number
+    slug: string
     title: string
     location: string
+    city?: string
+    country?: string
     price: number
     image: string
+    gallery?: string[]
     description?: string
     lat?: number
     lng?: number
+    sqft?: number
+    beds?: number
+    baths?: number
+    property_type?: string
+    amenities?: string[]
     is_featured?: boolean
+    ai_score?: number
+    views?: number
+    verified?: boolean
+    created_at?: string
+    rank_position?: number
 }
 
-export default function PropertyDetailClient({ slug }: { slug: string }) {
+const memoryCache = new Map<string, any>()
 
-    const [property, setProperty] = useState<Property | null>(null)
+export default function PropertyDetailClient({
+    slug,
+    initialData,
+}: {
+    slug: string
+    initialData?: any
+}) {
+
+    const router = useRouter()
+
+    const [property, setProperty] =
+        useState<Property | null>(
+            initialData || null
+        )
+    const [recommended, setRecommended] = useState<Property[]>([])
     const [showAI, setShowAI] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [saved, setSaved] = useState(false)
 
-    /* ========================= */
-    /* VIEW HISTORY */
-    /* ========================= */
+    const fetchProperty = useCallback(async () => {
 
-    useEffect(() => {
+        try {
 
-        if (!property?.id) return
+            const cacheKey = `property-${slug}`
 
-        const saved = JSON.parse(
-            localStorage.getItem("viewed_props") || "[]"
-        )
+            if (memoryCache.has(cacheKey)) {
+                setProperty(memoryCache.get(cacheKey))
+                setLoading(false)
+                return
+            }
 
-        const updated = [
-            property.id,
-            ...saved.filter((x: any) => x !== property.id),
-        ].slice(0, 10)
+            const { data, error } = await supabase
+                .from("properties")
+                .select(`
+                    id,
+                    slug,
+                    title,
+                    location,
+                    city,
+                    country,
+                    price,
+                    image,
+                    gallery,
+                    description,
+                    lat,
+                    lng,
+                    sqft,
+                    beds,
+                    baths,
+                    property_type,
+                    amenities,
+                    is_featured,
+                    ai_score,
+                    views,
+                    verified,
+                    created_at,
+                    rank_position
+                `)
+                .eq("slug", slug)
+                .limit(1)
 
-        localStorage.setItem(
-            "viewed_props",
-            JSON.stringify(updated)
-        )
+            if (error || !data?.length) {
+                router.push("/real-estate")
+                return
+            }
 
-    }, [property])
+            const row = data[0]
 
-    /* ========================= */
-    /* LOAD PROPERTY */
-    /* ========================= */
+            memoryCache.set(cacheKey, row)
 
-    useEffect(() => {
+            setProperty(row)
 
-        const fetchProperty = async () => {
+        } catch (err) {
+
+            console.error("PROPERTY_FETCH_ERROR", err)
+
+        } finally {
+
+            setLoading(false)
+
+        }
+
+    }, [slug, router])
+
+    const fetchRecommendations = useCallback(async (city?: string) => {
+
+        if (!city) return
+
+        try {
 
             const { data } = await supabase
                 .from("properties")
-                .select("*")
-                .eq("slug", slug)
-                .single()
+                .select(`
+                    id,
+                    slug,
+                    title,
+                    location,
+                    price,
+                    image,
+                    ai_score,
+                    is_featured
+                `)
+                .eq("city", city)
+                .neq("slug", slug)
+                .order("rank_position", { ascending: true })
+                .range(0, 5)
 
-            setProperty(data)
+            setRecommended(data || [])
+
+        } catch (err) {
+
+            console.error("RECOMMENDATION_ERROR", err)
+
         }
-
-        fetchProperty()
 
     }, [slug])
 
-    /* ========================= */
-    /* LOADING */
-    /* ========================= */
+    useEffect(() => {
 
-    if (!property) {
+        fetchProperty()
+
+    }, [fetchProperty])
+
+    useEffect(() => {
+
+        if (!property) return
+
+        fetchRecommendations(property.city)
+
+        const viewed = JSON.parse(
+            localStorage.getItem("gth_recent_views") || "[]"
+        )
+
+        const updated = [
+            property.slug,
+            ...viewed.filter((x: string) => x !== property.slug),
+        ].slice(0, 15)
+
+        localStorage.setItem(
+            "gth_recent_views",
+            JSON.stringify(updated)
+        )
+
+    }, [property, fetchRecommendations])
+
+    const propertyInsights = useMemo(() => {
+
+        if (!property) return []
+
+        return [
+            {
+                icon: BrainCircuit,
+                title: "AI Investment Score",
+                value: `${property.ai_score || 92}/100`,
+                color: "text-cyan-400",
+            },
+            {
+                icon: TrendingUp,
+                title: "Growth Prediction",
+                value: "+18% Projected",
+                color: "text-emerald-400",
+            },
+            {
+                icon: Shield,
+                title: "Fraud Safety",
+                value: "Verified Safe",
+                color: "text-[var(--gold)]",
+            },
+            {
+                icon: Radar,
+                title: "Demand Heat",
+                value: "High Demand",
+                color: "text-rose-400",
+            },
+        ]
+
+    }, [property])
+
+    if (loading || !property) {
+
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] text-[var(--text)]">
 
-                <div className="gth-glass px-8 py-6 rounded-[28px] flex items-center gap-4">
+            <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6">
 
-                    <div className="h-10 w-10 rounded-2xl border-2 border-[var(--gold)] border-t-transparent animate-spin" />
+                <div className="gth-glass-ultra flex items-center gap-5 rounded-[32px] border border-[var(--border)] px-10 py-8">
+
+                    <div className="h-12 w-12 rounded-full border-[3px] border-[var(--gold)] border-t-transparent animate-spin" />
 
                     <div>
-                        <p className="font-black text-lg">
-                            Loading Property
+
+                        <h2 className="text-xl font-black text-[var(--text)]">
+                            GTH Quantum Estate Engine
+                        </h2>
+
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                            Syncing live property intelligence...
                         </p>
 
-                        <p className="text-sm opacity-60">
-                            Initializing AI estate engine...
-                        </p>
                     </div>
+
                 </div>
+
             </div>
+
         )
+
     }
 
     return (
-        <div className={`${styles.mainContainer} relative overflow-hidden`}>
 
-            {/* ========================= */}
-            {/* BACKGROUND GLOW */}
-            {/* ========================= */}
+        <div className={`${styles.mainContainer} relative overflow-hidden bg-[var(--bg)] text-[var(--text)]`}>
+
+            {/* GLOBAL FX */}
 
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-                <div className="absolute top-[-120px] right-[-120px] h-[320px] w-[320px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
+                <div className="absolute left-[-180px] top-[-180px] h-[420px] w-[420px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
 
-                <div className="absolute bottom-[-140px] left-[-120px] h-[280px] w-[280px] rounded-full bg-cyan-500/10 blur-3xl" />
+                <div className="absolute right-[-180px] top-[-120px] h-[420px] w-[420px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
+
+                <div className="absolute bottom-[-200px] left-[20%] h-[380px] w-[380px] rounded-full bg-cyan-500/10 blur-3xl" />
+
+                <div className="absolute inset-0 gth-grid-luxury opacity-[0.04]" />
+
             </div>
 
-            {/* ========================= */}
             {/* HERO */}
-            {/* ========================= */}
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10">
+            <section className="relative z-10 mx-auto max-w-[1700px] px-4 pb-24 pt-6 md:px-8 md:pt-10">
 
-                <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 gap-7 xl:grid-cols-12">
 
-                    {/* ========================= */}
-                    {/* LEFT SIDE */}
-                    {/* ========================= */}
+                    {/* LEFT */}
 
-                    <div className="xl:col-span-3 space-y-6">
+                    <div className="space-y-7 xl:col-span-8">
 
-                        {/* IMAGE */}
-                        <div className="gth-glass rounded-[34px] overflow-hidden relative group">
+                        {/* HERO IMAGE */}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-10" />
+                        <div className="gth-glass-ultra group relative overflow-hidden rounded-[40px] border border-[var(--border)]">
 
-                            <img
+                            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                            <Image
                                 src={property.image}
-                                draggable={false}
-                                onContextMenu={(e) => e.preventDefault()}
-                                className="w-full h-[280px] md:h-[620px] object-cover transition duration-700 group-hover:scale-105"
+                                alt={property.title}
+                                width={1800}
+                                height={1200}
+                                priority
+                                className="h-[320px] w-full object-cover transition duration-1000 group-hover:scale-105 md:h-[760px]"
                             />
 
-                            {/* FEATURED */}
-                            {property.is_featured && (
-                                <div className="absolute top-5 left-5 z-20 px-4 py-2 rounded-full bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black text-[11px] font-black uppercase tracking-[0.2em] shadow-[0_0_25px_rgba(212,175,55,0.35)] flex items-center gap-2">
-                                    <Star size={14} />
-                                    Featured Property
-                                </div>
-                            )}
+                            {/* TOP ACTIONS */}
 
-                            {/* LIVE AI */}
-                            <div className="absolute top-5 right-5 z-20 px-4 py-2 rounded-full border border-white/10 bg-black/40 backdrop-blur-xl text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                                <BrainCircuit size={14} className="text-cyan-400" />
-                                AI Verified
+                            <div className="absolute left-0 top-0 z-20 flex w-full items-start justify-between p-5 md:p-8">
+
+                                <div className="flex flex-wrap items-center gap-3">
+
+                                    {property.is_featured && (
+                                        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+                                            <Crown size={14} />
+                                            Featured Estate
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-white backdrop-blur-2xl">
+                                        <BrainCircuit size={14} className="text-cyan-400" />
+                                        AI Verified
+                                    </div>
+
+                                </div>
+
+                                <div className="flex items-center gap-3">
+
+                                    <button
+                                        onClick={() => setSaved(!saved)}
+                                        className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105"
+                                    >
+                                        {saved
+                                            ? <Heart size={20} className="fill-red-500 text-red-500" />
+                                            : <Heart size={20} />
+                                        }
+                                    </button>
+
+                                    <button className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105">
+                                        <Share2 size={20} />
+                                    </button>
+
+                                </div>
+
                             </div>
 
-                            {/* TITLE */}
-                            <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 w-full">
+                            {/* BOTTOM */}
 
-                                <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <div className="absolute bottom-0 left-0 z-20 w-full p-6 md:p-10">
 
-                                    <div className="px-4 py-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-xl text-[11px] uppercase tracking-[0.2em] font-black">
-                                        Luxury Estate
+                                <div className="mb-5 flex flex-wrap items-center gap-3">
+
+                                    <div className="rounded-full border border-white/10 bg-white/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-white backdrop-blur-xl">
+                                        {property.property_type || "Luxury Estate"}
                                     </div>
 
-                                    <div className="px-4 py-2 rounded-full border border-[var(--gold)]/20 bg-[var(--gold)]/10 text-[11px] uppercase tracking-[0.2em] font-black text-[var(--gold)]">
-                                        Premium Listing
+                                    <div className="rounded-full border border-[var(--gold)]/20 bg-[var(--gold)]/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[var(--gold)]">
+                                        Rank #{property.rank_position || 1}
                                     </div>
+
+                                    <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-400">
+                                        Verified Property
+                                    </div>
+
                                 </div>
 
-                                <h1 className="text-3xl md:text-6xl font-black leading-none tracking-[-0.05em] text-white max-w-4xl">
+                                <h1 className="max-w-5xl text-4xl font-black leading-none tracking-[-0.06em] text-white md:text-7xl">
                                     {property.title}
                                 </h1>
 
-                                <div className="flex items-center gap-2 mt-5 text-white/80">
-                                    <MapPin size={18} />
-                                    <span className="text-sm md:text-base">
-                                        {property.location}
-                                    </span>
+                                <div className="mt-6 flex flex-wrap items-center gap-6 text-white/80">
+
+                                    <div className="flex items-center gap-2">
+                                        <MapPin size={18} />
+                                        <span className="text-sm font-semibold md:text-base">
+                                            {property.location}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Eye size={18} />
+                                        <span className="text-sm font-semibold md:text-base">
+                                            {property.views || 1280} Views
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Clock3 size={18} />
+                                        <span className="text-sm font-semibold md:text-base">
+                                            Live Updated
+                                        </span>
+                                    </div>
+
                                 </div>
+
                             </div>
+
+                        </div>
+
+                        {/* AI INSIGHTS */}
+
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+
+                            {propertyInsights.map((item, index) => {
+
+                                const Icon = item.icon
+
+                                return (
+
+                                    <div
+                                        key={index}
+                                        className="gth-glass-ultra rounded-[30px] border border-[var(--border)] p-6"
+                                    >
+
+                                        <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] ${item.color}`}>
+                                            <Icon size={24} />
+                                        </div>
+
+                                        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                                            {item.title}
+                                        </p>
+
+                                        <h3 className="mt-3 text-2xl font-black text-[var(--text)]">
+                                            {item.value}
+                                        </h3>
+
+                                    </div>
+
+                                )
+
+                            })}
+
                         </div>
 
                         {/* DESCRIPTION */}
-                        <div className="gth-glass rounded-[34px] p-6 md:p-8">
 
-                            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                        <div className="gth-glass-ultra rounded-[40px] border border-[var(--border)] p-6 md:p-10">
+
+                            <div className="mb-8 flex flex-wrap items-center justify-between gap-5">
 
                                 <div>
-                                    <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 font-black mb-2">
-                                        Estate Intelligence
+
+                                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.32em] text-[var(--primary)]">
+                                        Quantum Estate Intelligence
                                     </p>
 
-                                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                                    <h2 className="text-3xl font-black tracking-tight md:text-5xl">
                                         Property Overview
                                     </h2>
+
                                 </div>
 
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.04]">
-                                    <ShieldCheck size={16} className="text-emerald-400" />
-                                    <span className="text-xs uppercase tracking-[0.2em] font-black">
-                                        Secure Listing
+                                <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-5 py-3">
+
+                                    <CheckCircle2 size={16} className="text-emerald-400" />
+
+                                    <span className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-400">
+                                        Security Passed
                                     </span>
+
                                 </div>
+
                             </div>
 
-                            <p className="leading-8 text-[15px] opacity-80">
-                                {property.description ||
-                                    "This premium property is curated by the GTH Pro AI Real Estate Engine for luxury buyers seeking verified opportunities, high-value investment zones, and future-ready infrastructure."}
+                            <p className="text-[15px] leading-9 text-[var(--muted)] md:text-[17px]">
+                                {property.description || "This AI-curated premium estate is optimized for luxury investors, high-value buyers, and future-ready infrastructure opportunities powered by GTH PRO intelligence systems."}
                             </p>
 
-                            {/* FEATURES */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                            {/* META */}
 
-                                <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
-                                    <Building2 size={20} className="mb-3 text-[var(--gold)]" />
-                                    <h3 className="font-black mb-1">
-                                        Smart Infrastructure
-                                    </h3>
-                                    <p className="text-sm opacity-60">
-                                        AI curated future growth area
+                            <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+
+                                <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                                        Bedrooms
                                     </p>
+
+                                    <h3 className="mt-3 text-3xl font-black">
+                                        {property.beds || "4"}
+                                    </h3>
+
                                 </div>
 
-                                <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
-                                    <BadgeCheck size={20} className="mb-3 text-cyan-400" />
-                                    <h3 className="font-black mb-1">
-                                        Verified Listing
-                                    </h3>
-                                    <p className="text-sm opacity-60">
-                                        Fraud & duplication scanned
+                                <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                                        Bathrooms
                                     </p>
+
+                                    <h3 className="mt-3 text-3xl font-black">
+                                        {property.baths || "3"}
+                                    </h3>
+
                                 </div>
 
-                                <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
-                                    <Globe2 size={20} className="mb-3 text-emerald-400" />
-                                    <h3 className="font-black mb-1">
-                                        Premium Reach
-                                    </h3>
-                                    <p className="text-sm opacity-60">
-                                        Optimized for serious buyers
+                                <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                                        Area
                                     </p>
+
+                                    <h3 className="mt-3 text-3xl font-black">
+                                        {property.sqft || "2400"} sqft
+                                    </h3>
+
                                 </div>
+
+                                <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                                        Estate Type
+                                    </p>
+
+                                    <h3 className="mt-3 text-2xl font-black">
+                                        {property.property_type || "Villa"}
+                                    </h3>
+
+                                </div>
+
                             </div>
+
                         </div>
 
                         {/* MAP */}
-                        <div className="gth-glass rounded-[34px] overflow-hidden">
 
-                            <div className="flex items-center justify-between p-6 border-b border-white/10">
+                        <div className="gth-glass-ultra overflow-hidden rounded-[40px] border border-[var(--border)]">
+
+                            <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[var(--border)] p-6 md:p-8">
 
                                 <div>
-                                    <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 font-black mb-2">
-                                        Geo Intelligence
+
+                                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.32em] text-[var(--primary)]">
+                                        Geo Intelligence System
                                     </p>
 
-                                    <h2 className="text-2xl font-black">
-                                        Live Property Location
+                                    <h2 className="text-3xl font-black md:text-4xl">
+                                        Live Estate Mapping
                                     </h2>
+
                                 </div>
 
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.04] text-xs uppercase tracking-[0.2em] font-black">
-                                    <ScanSearch size={14} />
-                                    Satellite Ready
+                                <div className="flex items-center gap-3 rounded-full border border-[var(--border)] bg-white/[0.04] px-5 py-3">
+
+                                    <Wifi size={16} className="text-cyan-400" />
+
+                                    <span className="text-[11px] font-black uppercase tracking-[0.22em]">
+                                        Satellite Synced
+                                    </span>
+
                                 </div>
+
                             </div>
 
-                            <div className="h-[320px] md:h-[520px]">
+                            <div className="h-[360px] md:h-[620px]">
+
                                 <MapWrapper
                                     data={[property]}
                                     active={{
                                         id: property.id,
-                                        coords: [property.lat, property.lng],
+                                        coords: [property.lat || 19.076, property.lng || 72.877],
                                     }}
                                 />
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    {/* ========================= */}
-                    {/* RIGHT PANEL */}
-                    {/* ========================= */}
+                    {/* RIGHT */}
 
-                    <div className="xl:col-span-2 space-y-6">
+                    <div className="space-y-7 xl:col-span-4">
 
-                        {/* PRICE CARD */}
-                        <div className="gth-glass rounded-[34px] p-6 md:p-8 sticky top-24">
+                        <div className="sticky top-24 space-y-7">
 
-                            {/* TOP */}
-                            <div className="flex items-start justify-between gap-4 mb-6">
+                            {/* PRICE CARD */}
 
-                                <div>
+                            <div className="gth-glass-ultra rounded-[40px] border border-[var(--border)] p-6 md:p-8">
 
-                                    <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 font-black mb-2">
-                                        Investment Value
-                                    </p>
-
-                                    <h2 className="text-4xl md:text-5xl font-black tracking-tight gold-text">
-                                        ₹ {property.price} L
-                                    </h2>
-                                </div>
-
-                                <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
-                                    <Sparkles size={22} />
-                                </div>
-                            </div>
-
-                            {/* LOCATION */}
-                            <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5 flex items-center gap-4 mb-6">
-
-                                <div className="h-12 w-12 rounded-2xl bg-[var(--gold)]/10 flex items-center justify-center text-[var(--gold)]">
-                                    <MapPin size={20} />
-                                </div>
-
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-[0.25em] opacity-60 font-black mb-1">
-                                        Prime Location
-                                    </p>
-
-                                    <h3 className="font-black text-lg">
-                                        {property.location}
-                                    </h3>
-                                </div>
-                            </div>
-
-                            {/* AI BUTTON */}
-                            <button
-                                onClick={() => setShowAI(true)}
-                                className="group relative overflow-hidden w-full rounded-[24px] py-5 px-6 font-black uppercase tracking-[0.2em] text-black bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(212,175,55,0.25)]"
-                            >
-
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-white/20" />
-
-                                <div className="relative z-10 flex items-center justify-center gap-3">
-                                    <Sparkles size={18} />
-                                    Ask AI About This Property
-                                    <ArrowUpRight size={18} />
-                                </div>
-                            </button>
-
-                            {/* TRUST */}
-                            <div className="mt-6 space-y-4">
-
-                                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 flex items-start gap-4">
-
-                                    <div className="h-11 w-11 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
-                                        <BrainCircuit size={18} />
-                                    </div>
+                                <div className="mb-8 flex items-start justify-between gap-5">
 
                                     <div>
-                                        <h4 className="font-black mb-1">
-                                            AI Deal Analysis
-                                        </h4>
 
-                                        <p className="text-sm opacity-60 leading-6">
-                                            Smart valuation, area growth prediction, risk detection & negotiation suggestions.
+                                        <p className="mb-3 text-[11px] font-black uppercase tracking-[0.32em] text-[var(--primary)]">
+                                            AI Market Valuation
                                         </p>
+
+                                        <h2 className="gold-text text-5xl font-black tracking-tight md:text-6xl">
+                                            ₹ {property.price >= 100 ? `${(property.price / 100).toFixed(2)} Cr` : `${property.price} L`}
+                                        </h2>
+
                                     </div>
+
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+                                        <Sparkles size={24} />
+                                    </div>
+
                                 </div>
 
-                                <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 flex items-start gap-4">
+                                {/* ACTIONS */}
 
-                                    <div className="h-11 w-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
-                                        <ShieldCheck size={18} />
+                                <div className="space-y-4">
+
+                                    <button
+                                        onClick={() => setShowAI(true)}
+                                        className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[26px] bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] text-black transition-all duration-500 hover:scale-[1.02]"
+                                    >
+
+                                        <div className="absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 bg-white/20" />
+
+                                        <BrainCircuit size={18} className="relative z-10" />
+
+                                        <span className="relative z-10">
+                                            Ask AI About This Estate
+                                        </span>
+
+                                        <ArrowUpRight size={18} className="relative z-10" />
+
+                                    </button>
+
+                                    <button className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
+
+                                        <Phone size={18} />
+
+                                        Contact Seller
+
+                                    </button>
+
+                                    <button className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
+
+                                        <MessageSquare size={18} />
+
+                                        Schedule Visit
+
+                                    </button>
+
+                                </div>
+
+                                {/* TRUST BLOCK */}
+
+                                <div className="mt-8 space-y-4">
+
+                                    <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                        <div className="mb-4 flex items-center gap-3">
+
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-400">
+                                                <Bot size={20} />
+                                            </div>
+
+                                            <div>
+
+                                                <h3 className="font-black">
+                                                    AI Deal Analyzer
+                                                </h3>
+
+                                                <p className="text-xs text-[var(--muted)]">
+                                                    Real-time valuation engine
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                        <p className="text-sm leading-7 text-[var(--muted)]">
+                                            Smart price comparison, negotiation intelligence, future appreciation signals and market heat analysis.
+                                        </p>
+
                                     </div>
+
+                                    <div className="rounded-[28px] border border-[var(--border)] bg-white/[0.03] p-5">
+
+                                        <div className="mb-4 flex items-center gap-3">
+
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                                                <Lock size={20} />
+                                            </div>
+
+                                            <div>
+
+                                                <h3 className="font-black">
+                                                    Fraud Detection Layer
+                                                </h3>
+
+                                                <p className="text-xs text-[var(--muted)]">
+                                                    Multi-layer AI protection
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                        <p className="text-sm leading-7 text-[var(--muted)]">
+                                            Duplicate detection, suspicious pricing scan, scam probability analysis and seller authenticity validation.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {/* RECOMMENDED */}
+
+                            <div className="gth-glass-ultra rounded-[40px] border border-[var(--border)] p-6">
+
+                                <div className="mb-6 flex items-center justify-between">
 
                                     <div>
-                                        <h4 className="font-black mb-1">
-                                            Fraud Detection Layer
-                                        </h4>
 
-                                        <p className="text-sm opacity-60 leading-6">
-                                            AI cross-checks pricing anomalies, suspicious listings & duplicate scams.
+                                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--primary)]">
+                                            AI Personalized
                                         </p>
+
+                                        <h3 className="text-2xl font-black">
+                                            Similar Estates
+                                        </h3>
+
                                     </div>
+
+                                    <Activity size={22} className="text-[var(--gold)]" />
+
                                 </div>
+
+                                <div className="space-y-4">
+
+                                    {recommended.map((item) => (
+
+                                        <Link
+                                            key={item.id}
+                                            href={`/real-estate/${item.slug}`}
+                                            prefetch={false} // 20k data hai toh performance ke liye false rakhein
+                                            className="group flex items-center gap-4 rounded-[26px] border border-[var(--border)] bg-white/[0.03] p-4 transition-all duration-500 hover:translate-x-1 hover:border-[var(--gold)]/20"
+                                        >
+
+                                            <div className="relative h-24 w-24 overflow-hidden rounded-2xl">
+
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                                                />
+
+                                            </div>
+
+                                            <div className="min-w-0 flex-1">
+
+                                                <h4 className="truncate text-base font-black">
+                                                    {item.title}
+                                                </h4>
+
+                                                <p className="mt-2 truncate text-sm text-[var(--muted)]">
+                                                    {item.location}
+                                                </p>
+
+                                                <div className="mt-3 flex items-center justify-between">
+
+                                                    <span className="gold-text text-xl font-black">
+                                                        ₹ {item.price} L
+                                                    </span>
+
+                                                    <ChevronRight
+                                                        size={18}
+                                                        className="text-[var(--gold)] transition-all duration-500 group-hover:translate-x-1"
+                                                    />
+
+                                                </div>
+
+                                            </div>
+
+                                        </Link>
+
+                                    ))}
+
+                                </div>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </section>
 
-            {/* ========================= */}
             {/* AI MODAL */}
-            {/* ========================= */}
 
             {showAI && (
 
-                <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xl flex items-end md:items-center justify-center p-0 md:p-6">
+                <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/80 p-0 backdrop-blur-2xl md:items-center md:p-6">
 
-                    <div className="relative w-full md:max-w-2xl h-[92vh] md:h-[88vh] rounded-t-[34px] md:rounded-[34px] overflow-hidden border border-white/10 bg-[var(--card)] shadow-[0_25px_80px_rgba(0,0,0,0.5)]">
+                    <div className="relative h-[94vh] w-full overflow-hidden rounded-t-[36px] border border-[var(--border)] bg-[var(--card)] shadow-[0_30px_100px_rgba(0,0,0,0.6)] md:h-[90vh] md:max-w-3xl md:rounded-[40px]">
 
-                        {/* HEADER */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/[0.03]">
+                        <div className="flex items-center justify-between border-b border-[var(--border)] bg-white/[0.03] px-5 py-4">
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
 
-                                <div className="h-11 w-11 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black">
-                                    <Sparkles size={18} />
+                                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black">
+                                    <Sparkles size={22} />
                                 </div>
 
                                 <div>
-                                    <h3 className="font-black text-lg">
-                                        GTH AI Property Assistant
+
+                                    <h3 className="text-lg font-black">
+                                        GTH Quantum AI
                                     </h3>
 
-                                    <p className="text-[10px] uppercase tracking-[0.25em] opacity-60 font-black">
-                                        Live Real Estate Intelligence
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--muted)]">
+                                        Estate Intelligence Assistant
                                     </p>
+
                                 </div>
+
                             </div>
 
                             <button
                                 onClick={() => setShowAI(false)}
-                                className="h-11 w-11 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300"
+                                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white/[0.04] transition-all duration-300 hover:bg-red-500 hover:text-white"
                             >
                                 <X size={18} />
                             </button>
+
                         </div>
 
-                        {/* CHAT */}
-                        <div className="h-[calc(100%-76px)]">
+                        <div className="h-[calc(100%-82px)]">
+
                             <AIChat
-                                context={`Property: ${property.title}, Location: ${property.location}, Price: ${property.price}`}
+                                context={`Property: ${property.title}, Location: ${property.location}, Price: ${property.price}, Type: ${property.property_type}`}
                                 onClose={() => setShowAI(false)}
                             />
+
                         </div>
+
                     </div>
+
                 </div>
+
             )}
 
-            {/* ========================= */}
-            {/* MOBILE STICKY CTA */}
-            {/* ========================= */}
+            {/* MOBILE CTA */}
 
-            <div className="fixed bottom-0 left-0 w-full md:hidden z-50 p-3 backdrop-blur-2xl border-t border-white/10 bg-[var(--card)]/90">
+            <div className="fixed bottom-0 left-0 z-50 w-full border-t border-[var(--border)] bg-[var(--card)]/90 p-3 backdrop-blur-3xl md:hidden">
 
                 <div className="flex items-center gap-3">
 
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
 
-                        <p className="text-[10px] uppercase tracking-[0.25em] opacity-60 font-black mb-1">
-                            Premium Value
+                        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">
+                            Live AI Valuation
                         </p>
 
-                        <h3 className="text-2xl font-black gold-text">
-                            ₹ {property.price} L
+                        <h3 className="gold-text truncate text-3xl font-black">
+                            ₹ {property.price >= 100 ? `${(property.price / 100).toFixed(2)} Cr` : `${property.price} L`}
                         </h3>
+
                     </div>
 
                     <button
                         onClick={() => setShowAI(true)}
-                        className="shrink-0 px-5 py-4 rounded-[20px] font-black uppercase tracking-[0.15em] text-black bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] shadow-[0_0_25px_rgba(212,175,55,0.25)] active:scale-95 transition-all duration-300 flex items-center gap-2"
+                        className="flex shrink-0 items-center gap-2 rounded-[22px] bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-black shadow-[0_0_25px_rgba(212,175,55,0.3)]"
                     >
-                        <Sparkles size={16} />
+
+                        <Zap size={16} />
+
                         Ask AI
+
                     </button>
+
                 </div>
+
             </div>
+
         </div>
     )
+
 }

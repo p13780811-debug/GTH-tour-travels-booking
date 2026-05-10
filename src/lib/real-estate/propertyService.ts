@@ -1,68 +1,181 @@
 import { supabase } from "@/lib/supabase"
 
-// ======================================================
-// 🏛️ GTH PRO ESTATE — PROPERTY SERVICE ENGINE V3
-// ======================================================
+// ==========================================================
+// 🏛️ GTH PRO ESTATE — HYPER PROPERTY ENGINE V9
+// AI + SaaS + Fraud Shield + Smart Ranking + Scale Ready
+// ==========================================================
 
 type PropertyPayload = {
     title: string
-    slug: string
-    location: string
-    price: number
-    image: string
+    slug?: string
+    location?: string
+    city?: string
+    country?: string
+    price?: number
+    image?: string
+    gallery?: string[]
     description?: string
     lat?: number
     lng?: number
+    beds?: number
+    baths?: number
+    sqft?: number
+    property_type?: string
+    listing_type?: string
+    amenities?: string[]
     created_by?: string
-    type?: string
     status?: string
     is_featured?: boolean
     boost_expiry?: string
+    ai_score?: number
+    fraud_score?: number
 }
 
 type SearchFilters = {
     query?: string
     city?: string
+    country?: string
     type?: string
     minPrice?: number
     maxPrice?: number
     featured?: boolean
+    verified?: boolean
+    sort?: "latest" | "price_high" | "price_low" | "ai"
+    limit?: number
+    page?: number
 }
 
-// ======================================================
-// ⚡ HELPERS
-// ======================================================
+const CACHE = new Map<string, { data: any; expiry: number }>()
+
+const CACHE_TTL = 1000 * 60 * 3
+
+const DEFAULT_AMENITIES = [
+    "Security",
+    "Parking",
+    "Power Backup",
+    "Lift",
+    "Clubhouse",
+]
+
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+    kolkata: { lat: 22.5726, lng: 88.3639 },
+    mumbai: { lat: 19.076, lng: 72.8777 },
+    dubai: { lat: 25.2048, lng: 55.2708 },
+    bangkok: { lat: 13.7563, lng: 100.5018 },
+}
 
 const nowISO = () => new Date().toISOString()
 
+const safeNumber = (v: any, fallback = 0) =>
+    Number(v) > 0 ? Number(v) : fallback
+
+const normalizeText = (v: any) =>
+    String(v || "").trim()
+
+const createSlug = (text: string) =>
+    text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+
+const getCache = (key: string) => {
+
+    const cached = CACHE.get(key)
+
+    if (!cached) return null
+
+    if (Date.now() > cached.expiry) {
+
+        CACHE.delete(key)
+
+        return null
+    }
+
+    return cached.data
+}
+
+const setCache = (key: string, data: any) => {
+
+    CACHE.set(key, {
+        data,
+        expiry: Date.now() + CACHE_TTL,
+    })
+}
+
 const isBoostActive = (p: any) => {
+
     if (!p?.is_featured) return false
+
     if (!p?.boost_expiry) return false
 
     return new Date(p.boost_expiry) > new Date()
 }
 
-const luxurySort = (data: any[] = []) => {
-    const boosted = data.filter(isBoostActive)
+const calculateAIScore = (p: any) => {
 
-    const premium = data.filter(
-        (p) =>
-            !isBoostActive(p) &&
-            Number(p.price) >= 100
-    )
+    let score = 50
 
-    const normal = data.filter(
-        (p) =>
-            !isBoostActive(p) &&
-            Number(p.price) < 100
-    )
+    if (safeNumber(p.price) >= 500) score += 20
 
-    return [...boosted, ...premium, ...normal]
+    if (safeNumber(p.views) >= 1000) score += 10
+
+    if (safeNumber(p.leads) >= 50) score += 10
+
+    if (p.is_featured) score += 15
+
+    if (p.status === "verified") score += 10
+
+    return Math.min(100, score)
+}
+
+const calculateFraudScore = (p: any) => {
+
+    let risk = 0
+
+    if (!p.image) risk += 20
+
+    if (!p.description) risk += 20
+
+    if (safeNumber(p.price) <= 1) risk += 25
+
+    if (!p.location) risk += 20
+
+    if (!p.lat || !p.lng) risk += 10
+
+    return Math.min(100, risk)
+}
+
+const generateDescription = (p: any) => {
+
+    const beds = safeNumber(p.beds, 3)
+
+    const sqft = safeNumber(p.sqft, 1800)
+
+    const city = normalizeText(p.city || p.location || "Prime City")
+
+    const type = normalizeText(p.property_type || "Luxury Property")
+
+    return `Premium ${beds} BHK ${type} in ${city} featuring ${sqft} sqft luxury living, smart architecture, modern amenities, investment potential and AI verified premium infrastructure.`
 }
 
 const transformProperty = (p: any) => {
 
-    const price = Number(p.price) || 0
+    const cityKey = normalizeText(
+        p.city || p.location
+    ).toLowerCase()
+
+    const coords =
+        CITY_COORDS[cityKey] ||
+        CITY_COORDS["kolkata"]
+
+    const price = safeNumber(p.price)
+
+    const aiScore =
+        p.ai_score || calculateAIScore(p)
+
+    const fraudScore =
+        p.fraud_score || calculateFraudScore(p)
 
     const boosted = isBoostActive(p)
 
@@ -70,223 +183,459 @@ const transformProperty = (p: any) => {
 
         ...p,
 
-        // 🔥 UI FLAGS
+        slug:
+            p.slug ||
+            createSlug(
+                p.title || `property-${p.id}`
+            ),
+
+        title:
+            normalizeText(p.title) ||
+            "Luxury Property",
+
+        description:
+            normalizeText(p.description) ||
+            generateDescription(p),
+
+        image:
+            normalizeText(p.image) ||
+            "/images/property-fallback.jpg",
+
+        gallery:
+            Array.isArray(p.gallery)
+                ? p.gallery
+                : [],
+
+        location:
+            normalizeText(p.location) ||
+            "Premium Location",
+
+        city:
+            normalizeText(p.city) ||
+            "Unknown",
+
+        country:
+            normalizeText(p.country) ||
+            "India",
+
+        property_type:
+            normalizeText(p.property_type) ||
+            "Apartment",
+
+        listing_type:
+            normalizeText(p.listing_type) ||
+            "buy",
+
+        amenities:
+            Array.isArray(p.amenities)
+                ? p.amenities
+                : DEFAULT_AMENITIES,
+
+        price,
+
+        formatted_price:
+            `₹ ${price.toLocaleString()} L`,
+
+        beds:
+            safeNumber(p.beds, 3),
+
+        baths:
+            safeNumber(p.baths, 2),
+
+        sqft:
+            safeNumber(p.sqft, 1800),
+
+        views:
+            safeNumber(p.views),
+
+        leads:
+            safeNumber(p.leads),
+
+        ai_score: aiScore,
+
+        fraud_score: fraudScore,
+
+        verified:
+            fraudScore <= 30,
+
         featured_active: boosted,
 
-        // 🏛️ LUXURY TAG
         luxury_tag:
-            price >= 500
-                ? "Ultra Luxury"
-                : price >= 100
-                    ? "Premium"
-                    : "Smart Deal",
+            price >= 1000
+                ? "Ultra Elite"
+                : price >= 500
+                    ? "Ultra Luxury"
+                    : price >= 100
+                        ? "Premium"
+                        : "Smart Deal",
 
-        // 💎 CARD STYLE
-        container_class:
-            boosted || price >= 500
-                ? "gth-glass-ultra gth-card-premium"
-                : "gth-glass gth-card-premium",
+        rank_score:
+            aiScore +
+            (boosted ? 20 : 0) -
+            fraudScore * 0.3,
 
-        // 🟡 BADGE STYLE
-        badge_class:
-            price >= 500
-                ? "gth-badge-ultra"
-                : "gth-badge-gold",
+        search_rank:
+            aiScore +
+            safeNumber(p.views) * 0.01,
 
-        // ⚡ CARD TYPE
+        lat:
+            safeNumber(p.lat) ||
+            coords.lat,
+
+        lng:
+            safeNumber(p.lng) ||
+            coords.lng,
+
+        seo_title:
+            `${p.title} | GTH ProEstate`,
+
+        seo_description:
+            generateDescription(p),
+
         card_variant:
             boosted
                 ? "boosted"
                 : price >= 500
                     ? "ultra"
                     : "standard",
-
-        // 🧠 SEARCH SCORE
-        search_rank:
-            boosted
-                ? 100
-                : price >= 500
-                    ? 80
-                    : 50,
-
-        // ⚡ IMAGE FALLBACK
-        image:
-            p.image ||
-            "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1400",
-
-        // 🏷️ FORMAT
-        formatted_price:
-            `₹ ${Number(price || 0).toLocaleString()} L`,
-
-        // 📍 SAFE LOCATION
-        location:
-            p.location || "Location not available",
-
-        // 🌍 MAP SAFE
-        lat: p.lat || 22.5726,
-        lng: p.lng || 88.3639,
     }
 }
 
-// ======================================================
-// 🏠 PROPERTY SERVICE
-// ======================================================
+const smartSort = (items: any[]) => {
+
+    return [...items].sort((a: any, b: any) =>
+        b.rank_score - a.rank_score
+    )
+}
+
+// ==========================================================
+// 🚀 PROPERTY SERVICE
+// ==========================================================
 
 export const PropertyService = {
 
-    // ==================================================
-    // 🌍 GET ALL PROPERTIES
-    // ==================================================
+    // ======================================================
+    // 🌍 GET ALL
+    // ======================================================
 
-    async getAll() {
+    async getAll(filters: SearchFilters = {}) {
 
-        const { data, error } = await supabase
+        const cacheKey =
+            `all-${JSON.stringify(filters)}`
+
+        const cached = getCache(cacheKey)
+
+        if (cached) return cached
+
+        const limit = filters.limit || 24
+
+        const page = filters.page || 1
+
+        const from = (page - 1) * limit
+
+        let query = supabase
             .from("properties")
             .select("*")
-            .order("created_at", { ascending: false })
+            .range(from, from + limit - 1)
+
+        if (filters.city) {
+            query = query.ilike(
+                "city",
+                `%${filters.city}%`
+            )
+        }
+
+        if (filters.country) {
+            query = query.ilike(
+                "country",
+                `%${filters.country}%`
+            )
+        }
+
+        if (filters.type) {
+            query = query.eq(
+                "property_type",
+                filters.type
+            )
+        }
+
+        if (filters.featured) {
+            query = query.eq(
+                "is_featured",
+                true
+            )
+        }
+
+        const { data, error } =
+            await query
 
         if (error) {
+
             console.error(
-                "❌ Property Fetch Failed:",
+                "❌ GET ALL FAILED:",
                 error.message
             )
 
             return []
         }
 
-        const transformed =
-            (data || []).map(transformProperty)
+        let transformed =
+            (data || []).map(
+                transformProperty
+            )
 
-        return luxurySort(transformed)
+        if (filters.query) {
+
+            const q =
+                filters.query.toLowerCase()
+
+            transformed =
+                transformed.filter(
+                    (p) =>
+                        p.title
+                            .toLowerCase()
+                            .includes(q) ||
+                        p.location
+                            .toLowerCase()
+                            .includes(q)
+                )
+        }
+
+        if (filters.minPrice) {
+            transformed =
+                transformed.filter(
+                    (p) =>
+                        p.price >=
+                        filters.minPrice!
+                )
+        }
+
+        if (filters.maxPrice) {
+            transformed =
+                transformed.filter(
+                    (p) =>
+                        p.price <=
+                        filters.maxPrice!
+                )
+        }
+
+        if (filters.verified) {
+            transformed =
+                transformed.filter(
+                    (p) => p.verified
+                )
+        }
+
+        switch (filters.sort) {
+
+            case "price_high":
+                transformed.sort(
+                    (a, b) =>
+                        b.price - a.price
+                )
+                break
+
+            case "price_low":
+                transformed.sort(
+                    (a, b) =>
+                        a.price - b.price
+                )
+                break
+
+            case "latest":
+                transformed.sort(
+                    (a, b) =>
+                        new Date(
+                            b.created_at
+                        ).getTime() -
+                        new Date(
+                            a.created_at
+                        ).getTime()
+                )
+                break
+
+            default:
+                transformed =
+                    smartSort(transformed)
+        }
+
+        setCache(cacheKey, transformed)
+
+        return transformed
     },
 
-    // ==================================================
+    // ======================================================
     // 🔍 GET BY SLUG
-    // ==================================================
+    // ======================================================
 
     async getBySlug(slug: string) {
 
-        const { data, error } = await supabase
-            .from("properties")
-            .select("*")
-            .eq("slug", slug)
-            .single()
+        const cacheKey = `slug-${slug}`
+
+        const cached = getCache(cacheKey)
+
+        if (cached) return cached
+
+        const { data, error } =
+            await supabase
+                .from("properties")
+                .select("*")
+                .eq("slug", slug)
+                .limit(1)
 
         if (error) {
+
             console.error(
-                "❌ Property Details Failed:",
+                "❌ GET BY SLUG FAILED:",
                 error.message
             )
 
             return null
         }
 
-        return transformProperty(data)
+        const property =
+            data?.[0]
+                ? transformProperty(data[0])
+                : null
+
+        if (property) {
+            setCache(cacheKey, property)
+        }
+
+        return property
     },
 
-    // ==================================================
+    // ======================================================
     // ➕ ADD PROPERTY
-    // ==================================================
+    // ======================================================
 
-    async add(property: PropertyPayload) {
+    async add(payload: PropertyPayload) {
 
-        const payload = {
-            ...property,
+        const cleanTitle =
+            normalizeText(payload.title)
+
+        const generatedSlug =
+            payload.slug ||
+            createSlug(cleanTitle)
+
+        const finalPayload = {
+
+            ...payload,
+
+            slug: generatedSlug,
+
+            title: cleanTitle,
+
+            description:
+                normalizeText(
+                    payload.description
+                ) ||
+                generateDescription(payload),
 
             created_at: nowISO(),
 
-            views: 0,
-            leads: 0,
-
-            is_featured: false,
+            updated_at: nowISO(),
 
             status:
-                property.status || "active",
+                payload.status ||
+                "verified",
 
-            type:
-                property.type || "buy",
+            views: 0,
+
+            leads: 0,
+
+            saves: 0,
+
+            shares: 0,
+
+            ai_score:
+                calculateAIScore(payload),
+
+            fraud_score:
+                calculateFraudScore(payload),
+
+            amenities:
+                payload.amenities ||
+                DEFAULT_AMENITIES,
         }
 
-        const { data, error } = await supabase
-            .from("properties")
-            .insert([payload])
-            .select()
+        const { data, error } =
+            await supabase
+                .from("properties")
+                .insert([finalPayload])
+                .select()
 
         if (error) {
+
             console.error(
-                "❌ Property Add Failed:",
+                "❌ ADD FAILED:",
                 error.message
             )
 
             throw error
         }
 
-        return data
+        CACHE.clear()
+
+        return data?.[0]
     },
 
-    // ==================================================
+    // ======================================================
     // 📈 INCREMENT VIEW
-    // ==================================================
+    // ======================================================
 
     async incrementViews(id: number) {
 
-        const { data } = await supabase
-            .rpc("increment_property_views", {
+        await supabase.rpc(
+            "increment_property_views",
+            {
                 row_id: id,
-            })
-
-        return data
+            }
+        )
     },
 
-    // ==================================================
+    // ======================================================
     // ❤️ SAVE PROPERTY
-    // ==================================================
+    // ======================================================
 
     async saveProperty(payload: any) {
 
-        const { data, error } = await supabase
-            .from("saved_properties")
-            .insert([payload])
+        const { data, error } =
+            await supabase
+                .from("saved_properties")
+                .insert([{
+                    ...payload,
+                    created_at: nowISO(),
+                }])
 
-        if (error) {
-            console.error(error.message)
-            throw error
-        }
+        if (error) throw error
 
         return data
     },
 
-    // ==================================================
+    // ======================================================
     // 📞 LEAD SYSTEM
-    // ==================================================
+    // ======================================================
 
     async addLead(payload: any) {
 
-        const leadPayload = {
-            ...payload,
-            created_at: nowISO(),
-        }
+        const { data, error } =
+            await supabase
+                .from("leads")
+                .insert([{
+                    ...payload,
+                    created_at: nowISO(),
+                }])
 
-        const { data, error } = await supabase
-            .from("leads")
-            .insert([leadPayload])
+        if (error) throw error
 
-        if (error) {
-            console.error(
-                "❌ Lead Failed:",
-                error.message
-            )
-
-            throw error
-        }
-
-        // 🔥 AUTO LEAD COUNT UPDATE
         if (payload.property_id) {
 
             await supabase.rpc(
                 "increment_property_leads",
                 {
-                    row_id: payload.property_id,
+                    row_id:
+                        payload.property_id,
                 }
             )
         }
@@ -294,13 +643,13 @@ export const PropertyService = {
         return data
     },
 
-    // ==================================================
+    // ======================================================
     // 🚀 BOOST PROPERTY
-    // ==================================================
+    // ======================================================
 
     async boostProperty(
         id: number,
-        hours: number = 24
+        hours = 24
     ) {
 
         const expiry = new Date()
@@ -309,157 +658,209 @@ export const PropertyService = {
             expiry.getHours() + hours
         )
 
-        const { data, error } = await supabase
-            .from("properties")
-            .update({
-                is_featured: true,
-                boost_expiry:
-                    expiry.toISOString(),
-            })
-            .eq("id", id)
-            .select()
+        const { data, error } =
+            await supabase
+                .from("properties")
+                .update({
+                    is_featured: true,
+                    boost_expiry:
+                        expiry.toISOString(),
+                    updated_at: nowISO(),
+                })
+                .eq("id", id)
+                .select()
 
-        if (error) {
-            console.error(
-                "❌ Boost Failed:",
-                error.message
-            )
+        if (error) throw error
 
-            throw error
-        }
+        CACHE.clear()
 
-        return data
+        return data?.[0]
     },
 
-    // ==================================================
-    // 🧠 AI SEARCH ENGINE
-    // ==================================================
+    // ======================================================
+    // 🧠 SMART SEARCH
+    // ======================================================
 
     async smartSearch(
         filters: SearchFilters = {}
     ) {
 
-        const all =
-            await PropertyService.getAll()
-
-        const result = all.filter((p) => {
-
-            const title =
-                p.title?.toLowerCase() || ""
-
-            const location =
-                p.location?.toLowerCase() || ""
-
-            const query =
-                filters.query?.toLowerCase() || ""
-
-            const price =
-                Number(p.price) || 0
-
-            return (
-
-                (!filters.city ||
-                    location.includes(
-                        filters.city.toLowerCase()
-                    )) &&
-
-                (!filters.type ||
-                    p.type?.toLowerCase() ===
-                    filters.type.toLowerCase()) &&
-
-                (!query ||
-                    title.includes(query) ||
-                    location.includes(query)) &&
-
-                price >=
-                (filters.minPrice || 0) &&
-
-                price <=
-                (filters.maxPrice || Infinity) &&
-
-                (!filters.featured ||
-                    p.featured_active)
-            )
+        return await PropertyService.getAll({
+            ...filters,
+            sort: "ai",
         })
-
-        return luxurySort(result).sort(
-            (a, b) => b.search_rank - a.search_rank
-        )
     },
 
-    // ==================================================
+    // ======================================================
     // 🎬 SIMILAR PROPERTIES
-    // ==================================================
+    // ======================================================
 
     async getSimilar(
         slug: string,
-        limit: number = 10
+        limit = 10
     ) {
 
         const current =
-            await PropertyService.getBySlug(slug)
+            await PropertyService.getBySlug(
+                slug
+            )
 
         if (!current) return []
 
         const all =
-            await PropertyService.getAll()
+            await PropertyService.getAll({
+                limit: 50,
+            })
 
-        const filtered = all.filter(
-            (p) =>
+        return smartSort(
+            all.filter((p: any) =>
                 p.slug !== slug &&
                 (
-                    p.location
-                        ?.toLowerCase()
-                        .includes(
-                            current.location?.toLowerCase()
-                        ) ||
-
-                    p.type === current.type
+                    p.city ===
+                    current.city ||
+                    p.property_type ===
+                    current.property_type
                 )
-        )
-
-        return filtered.slice(0, limit)
+            )
+        ).slice(0, limit)
     },
 
-    // ==================================================
-    // 🏆 TRENDING PROPERTIES
-    // ==================================================
+    // ======================================================
+    // 🏆 TRENDING
+    // ======================================================
 
     async getTrending() {
 
-        const { data } = await supabase
-            .from("properties")
-            .select("*")
-            .order("views", {
-                ascending: false,
+        const data =
+            await PropertyService.getAll({
+                limit: 20,
             })
-            .limit(12)
 
-        return luxurySort(
-            (data || []).map(transformProperty)
-        )
+        return smartSort(data).slice(0, 12)
     },
 
-    // ==================================================
-    // 🧹 DELETE PROPERTY
-    // ==================================================
+    // ======================================================
+    // 🧠 AI RECOMMENDATIONS
+    // ======================================================
+
+    async getAIRecommendations(
+        slug: string
+    ) {
+
+        const current =
+            await PropertyService.getBySlug(
+                slug
+            )
+
+        if (!current) return []
+
+        const all =
+            await PropertyService.getAll({
+                limit: 40,
+            })
+
+        return smartSort(
+            all.filter((p: any) =>
+                p.slug !== slug &&
+                p.price >=
+                current.price * 0.7 &&
+                p.price <=
+                current.price * 1.4
+            )
+        ).slice(0, 8)
+    },
+
+    // ======================================================
+    // 🛡️ FRAUD SCAN
+    // ======================================================
+
+    async fraudScan(id: number) {
+
+        const property =
+            await supabase
+                .from("properties")
+                .select("*")
+                .eq("id", id)
+                .limit(1)
+
+        const row =
+            property.data?.[0]
+
+        if (!row) return null
+
+        const fraudScore =
+            calculateFraudScore(row)
+
+        const verified =
+            fraudScore <= 30
+
+        await supabase
+            .from("properties")
+            .update({
+                fraud_score: fraudScore,
+                status:
+                    verified
+                        ? "verified"
+                        : "review",
+            })
+            .eq("id", id)
+
+        return {
+            fraud_score: fraudScore,
+            verified,
+        }
+    },
+
+    // ======================================================
+    // 🧹 DELETE
+    // ======================================================
 
     async remove(id: number) {
 
-        const { error } = await supabase
-            .from("properties")
-            .delete()
-            .eq("id", id)
+        const { error } =
+            await supabase
+                .from("properties")
+                .delete()
+                .eq("id", id)
 
-        if (error) {
-            console.error(
-                "❌ Delete Failed:",
-                error.message
-            )
+        if (error) throw error
 
-            throw error
-        }
+        CACHE.clear()
 
         return true
     },
+}
+
+// ==========================================================
+// 🔥 COMPATIBILITY EXPORTS
+// OLD PAGES / COMPONENTS SUPPORT
+// ==========================================================
+
+export const getPropertyBySlug = async (
+    slug: string
+) => {
+
+    return await PropertyService.getBySlug(
+        slug
+    )
+}
+
+export const getSimilarProperties = async (
+    slug: string,
+    limit: number = 10
+) => {
+
+    return await PropertyService.getSimilar(
+        slug,
+        limit
+    )
+}
+
+export const getAIRecommendations = async (
+    slug: string
+) => {
+
+    return await PropertyService.getAIRecommendations(
+        slug
+    )
 }

@@ -82,6 +82,12 @@
   --bg-soft: #fffaf2;
 
   --text: #111827;
+  --btn-bg: linear-gradient(135deg, #2563eb, #3b82f6);
+
+  /* Professional Blue */
+  --btn-text: #ffffff;
+  --gold-gradient: linear-gradient(135deg, #1e293b, #334155);
+  /* Day mode mein professional dark gray/blue */
 
   /* ✨ FIXED GLASS */
   --card: rgba(255, 255, 255, 0.50);
@@ -98,11 +104,9 @@
 
   --gold: #d4af37;
 
-  --gold-gradient:
-    linear-gradient(135deg,
-      #bf953f,
-      #fcf6ba,
-      #b38728);
+
+
+  --gold-gradient: linear-gradient(135deg, #2563eb, #3b82f6, #1d4ed8);
 
   /* 🔵 CTA */
   --btn-bg:
@@ -150,6 +154,12 @@ html.dark {
       #bf953f 0%,
       #fcf6ba 50%,
       #b38728 100%);
+
+  --gold-gradient:
+    linear-gradient(135deg,
+      #bf953f,
+      #fcf6ba,
+      #b38728);
 
   --btn-text: #000000;
 
@@ -218,19 +228,19 @@ img {
   position: relative;
   overflow: hidden;
 
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.22);
 
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
 
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.45);
 
-  border-radius: var(--radius, 16px);
+  border-radius: var(--radius);
 
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 
   isolation: isolate;
+
 
   z-index: 0;
 }

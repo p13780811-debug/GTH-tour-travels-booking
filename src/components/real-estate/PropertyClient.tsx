@@ -62,14 +62,14 @@ export default function PropertyClient() {
             const now = new Date();
 
             const boosted = data.filter(
-                (p) =>
+                (p: any) =>
                     p.is_featured &&
                     p.boost_expiry &&
                     new Date(p.boost_expiry) > now
             );
 
             const normal = data.filter(
-                (p) =>
+                (p: any) =>
                     !p.is_featured ||
                     !p.boost_expiry ||
                     new Date(p.boost_expiry) <= now
@@ -98,7 +98,7 @@ export default function PropertyClient() {
 
         const filters = parseSearch(query);
 
-        const result = properties.filter((p) => {
+        const result = properties.filter((p: any) => {
 
             const price = Number(p.price) || 0;
 
@@ -119,14 +119,14 @@ export default function PropertyClient() {
         const now = new Date();
 
         const boosted = result.filter(
-            (p) =>
+            (p: any) =>
                 p.is_featured &&
                 p.boost_expiry &&
                 new Date(p.boost_expiry) > now
         );
 
         const normal = result.filter(
-            (p) =>
+            (p: any) =>
                 !p.is_featured ||
                 !p.boost_expiry ||
                 new Date(p.boost_expiry) <= now

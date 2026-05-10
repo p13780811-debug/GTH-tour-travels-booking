@@ -1,5 +1,5 @@
 "use client"
-
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import {
     Crown,
@@ -11,7 +11,7 @@ import {
     Bath,
     Maximize,
 } from "lucide-react"
-import { useThemeMode } from "@/lib/hooks/useThemeMode"
+
 
 export default function PropertyCardPro({
     p,
@@ -21,8 +21,7 @@ export default function PropertyCardPro({
     onBoost,
 }: any) {
 
-    const theme = useThemeMode()
-    const isDay = theme === "day"
+    const router = useRouter()
 
     return (
         <motion.div
@@ -30,8 +29,8 @@ export default function PropertyCardPro({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
             whileHover={{ y: -6 }}
-            onClick={() => onSelect(p)}
-            className="group relative overflow-hidden rounded-[32px] border border-white/10 bg-[var(--card)] text-[var(--text)] shadow-[0_15px_60px_rgba(0,0,0,0.18)] transition-all duration-500 cursor-pointer hover:border-[#d4af37]/30 hover:shadow-[0_25px_80px_rgba(212,175,55,0.12)]"
+            onClick={() => router.push(`/real-estate/${p.slug}`)}
+            className="group gth-glass gth-card-premium relative overflow-hidden rounded-[32px] cursor-pointer"
         >
 
             {/* ========================= */}
@@ -70,14 +69,14 @@ export default function PropertyCardPro({
                 <div className="absolute top-4 left-4 flex items-center gap-2">
 
                     {p.is_featured && (
-                        <div className="flex items-center gap-1 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-black shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+                        <div className="gth-badge gth-badge-gold">
                             <Crown size={12} />
                             Featured
                         </div>
                     )}
 
                     {p.type && (
-                        <div className="rounded-full border border-white/15 bg-black/35 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-xl">
+                        <div className="gth-badge">
                             {p.type}
                         </div>
                     )}
@@ -88,7 +87,7 @@ export default function PropertyCardPro({
 
                 <button
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-black/35 text-white backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
+                    className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 gth-glass backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
                 >
                     <Heart size={18} />
                 </button>
@@ -103,7 +102,7 @@ export default function PropertyCardPro({
                             Starting Price
                         </p>
 
-                        <h2 className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-3xl font-black text-transparent drop-shadow-[0_0_18px_rgba(212,175,55,0.25)]">
+                        <h2 className="gold-text text-3xl font-black drop-shadow-[0_0_18px_rgba(212,175,55,0.25)]">
                             ₹ {p.price} L
                         </h2>
                     </div>
@@ -143,7 +142,7 @@ export default function PropertyCardPro({
 
                 <div className="mb-5 grid grid-cols-3 gap-3">
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-[#d4af37]/20 hover:bg-[#d4af37]/[0.05]">
+                    <div className="rounded-2xl border gth-glass p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-[#d4af37]/20 hover:bg-[#d4af37]/[0.05]">
 
                         <BedDouble size={16} className="mx-auto mb-2 text-[#d4af37]" />
 
@@ -156,7 +155,7 @@ export default function PropertyCardPro({
                         </h4>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/20 hover:bg-cyan-400/[0.05]">
+                    <div className="rounded-2xl border gth-glass p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/20 hover:bg-cyan-400/[0.05]">
 
                         <Bath size={16} className="mx-auto mb-2 text-cyan-400" />
 
@@ -169,7 +168,7 @@ export default function PropertyCardPro({
                         </h4>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-purple-400/20 hover:bg-purple-400/[0.05]">
+                    <div className="rounded-2xl border gth-glass p-3 text-center backdrop-blur-xl transition-all duration-300 hover:border-purple-400/20 hover:bg-purple-400/[0.05]">
 
                         <Maximize size={16} className="mx-auto mb-2 text-purple-400" />
 
@@ -178,7 +177,7 @@ export default function PropertyCardPro({
                         </p>
 
                         <h4 className="mt-1 text-sm font-black">
-                            {p.area || "1800"}ft
+                            {p.sqft ? `${p.sqft} ft²` : "N/A"}
                         </h4>
                     </div>
 
@@ -190,7 +189,7 @@ export default function PropertyCardPro({
 
                     {/* trust badge */}
 
-                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl">
+                    <div className="flex items-center gap-2 rounded-full border gth-glass px-3 py-2 backdrop-blur-xl">
 
                         <Sparkles size={14} className="text-[#d4af37]" />
 
@@ -211,11 +210,9 @@ export default function PropertyCardPro({
                                     e.stopPropagation()
                                     onLead(p.id)
                                 }}
-                                className="group/btn relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] p-[1px] transition-all duration-300 hover:scale-105 active:scale-95"
+                                className="gth-btn-gold px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em]"
                             >
-                                <div className="rounded-2xl bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-black">
-                                    Enquire
-                                </div>
+                                Enquire
                             </button>
                         )}
 
@@ -227,7 +224,7 @@ export default function PropertyCardPro({
                                     e.stopPropagation()
                                     onBoost(p.id)
                                 }}
-                                className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[#d4af37] transition-all duration-300 hover:scale-105 hover:bg-[#d4af37] hover:text-black active:scale-95"
+                                className="gth-btn-gold px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em]"
                             >
                                 Boost
                             </button>

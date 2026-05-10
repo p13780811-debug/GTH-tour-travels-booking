@@ -7,9 +7,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx src/app/scripts/seed-properties.ts",
+    "seed:cities": "tsx src/app/scripts/seed-cities.ts",
+    "seed:ai": "tsx src/app/scripts/generate-ai-data.ts",
+    "engine:intelligence": "tsx src/data/generate-intelligence.ts",
+    "engine:rank": "tsx src/data/generate-ranking-search.ts",
+    "engine:full": "npm run engine:intelligence && npm run engine:rank"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.98.0",
     "dotenv": "^17.3.1",

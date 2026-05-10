@@ -1,11 +1,13 @@
 "use client";
-
+import { useRouter } from "next/navigation"
 import { PropertyService } from "@/lib/real-estate/propertyService";
 
 export default function PropertyCard({ p, onSelect, onLead }: any) {
+
+    const router = useRouter()
     return (
         <div
-            onClick={() => onSelect(p)}
+            onClick={() => router.push(`/real-estate/${p.slug}`)}
             className="group relative bg-[#f1f5f9] border border-white rounded-[32px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.3)] cursor-pointer transition-all duration-700 hover:-translate-y-3 hover:shadow-cyan-500/10"
         >
             {/* Property Image with Badge */}
@@ -50,7 +52,10 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
                                 e.stopPropagation();
                                 onLead(p.id);
                             }}
-                            className="px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_4px_15px_rgba(212,175,55,0.35)] hover:shadow-[0_0_25px_rgba(212,175,55,0.7)] hover:scale-105 active:scale-95"
+                            className="px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all 
+           bg-[var(--btn-bg)] text-[var(--btn-text)] 
+           shadow-[var(--btn-shadow)] 
+           hover:scale-105 active:scale-95"
                         >
                             Enquire
                         </button>

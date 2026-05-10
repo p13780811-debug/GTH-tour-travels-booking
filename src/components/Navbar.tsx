@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -8,7 +9,6 @@ import {
     Search,
     Menu,
     X,
-    ChevronRight,
     Sparkles,
     Crown,
     Globe,
@@ -16,96 +16,218 @@ import {
     Compass,
     Plane,
     ShieldCheck,
+    BadgeCheck,
+    ChevronRight,
+    ArrowUpRight,
+    Gem,
+    MapPinned,
+    Hotel,
+    BriefcaseBusiness,
+    Headphones,
+    BellRing,
+    Orbit,
 } from "lucide-react"
 
 import SearchBox from "@/components/SearchBox"
+import ThemeToggle from "@/components/ThemeToggle"
 
 export default function Navbar() {
 
     const pathname = usePathname()
 
     const [menuOpen, setMenuOpen] = useState(false)
+
     const [scrolled, setScrolled] = useState(false)
+
+    const [hoveredMenu, setHoveredMenu] =
+        useState<string | null>(null)
+
+    // =====================================================
+    // SCROLL
+    // =====================================================
 
     useEffect(() => {
 
         const handleScroll = () => {
-            setScrolled(window.scrollY > 12)
+
+            setScrolled(window.scrollY > 10)
+
         }
 
-        window.addEventListener("scroll", handleScroll)
+        window.addEventListener(
+            "scroll",
+            handleScroll
+        )
 
         return () =>
-            window.removeEventListener("scroll", handleScroll)
+            window.removeEventListener(
+                "scroll",
+                handleScroll
+            )
 
     }, [])
 
-    const navItems = [
+    // =====================================================
+    // BODY LOCK
+    // =====================================================
+
+    useEffect(() => {
+
+        document.body.style.overflow =
+            menuOpen
+                ? "hidden"
+                : "auto"
+
+        return () => {
+
+            document.body.style.overflow =
+                "auto"
+
+        }
+
+    }, [menuOpen])
+
+    // =====================================================
+    // NAV ITEMS
+    // =====================================================
+
+    const navItems = useMemo(() => [
+
         {
             name: "Destinations",
             href: "/destinations",
             icon: Globe,
+            mega: true,
+            featured: [
+                "Dubai",
+                "Bali",
+                "Maldives",
+                "Goa",
+            ],
         },
+
         {
             name: "Hotels",
             href: "/hotels",
-            icon: Plane,
+            icon: Hotel,
+            mega: false,
         },
+
         {
             name: "Real Estate",
             href: "/real-estate",
             icon: Building2,
+            mega: true,
+            featured: [
+                "Luxury Villas",
+                "Commercial",
+                "Penthouses",
+                "Smart Homes",
+            ],
         },
+
         {
             name: "Tender",
             href: "/tender",
             icon: ShieldCheck,
+            mega: false,
         },
+
         {
             name: "Guides",
             href: "/guides",
             icon: Compass,
+            mega: false,
         },
-        {
-            name: "Contact",
-            href: "/contact",
-            icon: Sparkles,
-        },
-    ]
+
+    ], [])
 
     return (
 
         <>
 
-            {/* ======================================== */}
-            {/* PREMIUM TOP STRIP */}
-            {/* ======================================== */}
+            {/* ================================================= */}
+            {/* TOP STRIP */}
+            {/* ================================================= */}
 
-            <div className="relative z-[70] border-b border-[var(--border)] bg-black/30 backdrop-blur-3xl">
+            <div className="relative z-[120] border-b border-[var(--border)] bg-[var(--card-strong)]/80 backdrop-blur-[40px]">
 
-                <div className="mx-auto flex max-w-7xl items-center justify-center gap-4 overflow-x-auto px-4 py-2 scrollbar-hide">
+                <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 overflow-x-auto px-4 py-2 scrollbar-hide lg:px-8">
 
-                    <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-cyan-400">
+                    {/* left */}
 
-                        <Sparkles size={12} />
+                    <div className="flex items-center gap-2 whitespace-nowrap">
 
-                        AI Powered Platform
+                        <div className="gth-glass flex items-center gap-2 rounded-full px-3 py-2">
+
+                            <Sparkles
+                                size={11}
+                                className="text-[var(--primary)]"
+                            />
+
+                            <span className="gth-nav-mini">
+                                AI Powered
+                            </span>
+
+                        </div>
+
+                        <div className="gth-glass flex items-center gap-2 rounded-full px-3 py-2">
+
+                            <Gem
+                                size={11}
+                                className="text-[var(--gold)]"
+                            />
+
+                            <span className="gth-nav-mini">
+                                Luxury Ecosystem
+                            </span>
+
+                        </div>
+
+                        <div className="gth-glass hidden items-center gap-2 rounded-full px-3 py-2 md:flex">
+
+                            <BadgeCheck
+                                size={11}
+                                className="text-emerald-400"
+                            />
+
+                            <span className="gth-nav-mini">
+                                Verified
+                            </span>
+
+                        </div>
 
                     </div>
 
-                    <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37]">
+                    {/* right */}
 
-                        <Crown size={12} />
+                    <div className="hidden items-center gap-2 xl:flex">
 
-                        Luxury Experience
+                        <div className="gth-glass flex items-center gap-2 rounded-full px-3 py-2">
 
-                    </div>
+                            <Orbit
+                                size={11}
+                                className="text-[var(--primary)]"
+                            />
 
-                    <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">
+                            <span className="gth-nav-mini">
+                                Global Network
+                            </span>
 
-                        <ShieldCheck size={12} />
+                        </div>
 
-                        Verified Ecosystem
+                        <div className="gth-glass flex items-center gap-2 rounded-full px-3 py-2">
+
+                            <BellRing
+                                size={11}
+                                className="text-[var(--gold)]"
+                            />
+
+                            <span className="gth-nav-mini">
+                                Live Intelligence
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -113,83 +235,108 @@ export default function Navbar() {
 
             </div>
 
-            {/* ======================================== */}
-            {/* MAIN NAVBAR */}
-            {/* ======================================== */}
+            {/* ================================================= */}
+            {/* NAVBAR */}
+            {/* ================================================= */}
 
-            <nav className={`sticky top-0 z-[60] transition-all duration-500 ${scrolled
-                ? "border-b border-[var(--border)] bg-[var(--card)]/80 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-3xl"
-                : "bg-transparent"
-                }`}>
+            <nav className={`
+                sticky
+                top-0
+                z-[110]
+                border-b
+                border-[var(--border)]
+                transition-all
+                duration-500
 
-                {/* ======================================== */}
-                {/* BACKGROUND FX */}
-                {/* ======================================== */}
+                ${scrolled
+                    ? `
+                        bg-[var(--card-strong)]/88
+                        shadow-[var(--shadow)]
+                        backdrop-blur-[40px]
+                    `
+                    : `
+                        bg-[var(--card)]/65
+                        backdrop-blur-[24px]
+                    `
+                }
+            `}>
+
+                {/* bg fx */}
 
                 <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-                    <div className="absolute left-0 top-[-100px] h-[220px] w-[220px] rounded-full bg-cyan-500/10 blur-3xl" />
+                    <div className="absolute left-[-120px] top-[-120px] h-[260px] w-[260px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
 
-                    <div className="absolute right-0 top-[-120px] h-[260px] w-[260px] rounded-full bg-[#d4af37]/10 blur-3xl" />
+                    <div className="absolute right-[-120px] top-[-120px] h-[260px] w-[260px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
 
                 </div>
 
-                {/* ======================================== */}
-                {/* NAV CONTAINER */}
-                {/* ======================================== */}
+                {/* container */}
 
-                <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
+                <div className="relative mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 lg:px-8">
 
-                    {/* ======================================== */}
+                    {/* ================================================= */}
                     {/* LOGO */}
-                    {/* ======================================== */}
+                    {/* ================================================= */}
 
                     <Link
                         href="/"
-                        className="group relative flex items-center gap-4"
+                        className="group relative flex shrink-0 items-center gap-3"
                     >
 
                         {/* glow */}
-                        <div className="absolute inset-0 rounded-full bg-[#d4af37]/10 opacity-0 blur-2xl transition-all duration-700 group-hover:opacity-100" />
 
-                        {/* logo */}
-                        <div className="relative">
+                        <div className="absolute inset-0 rounded-full bg-[var(--gold)]/10 opacity-0 blur-3xl transition-all duration-700 group-hover:opacity-100" />
 
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] opacity-40 blur-xl transition-all duration-700 group-hover:scale-125" />
+                        {/* image */}
 
-                            <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#d4af37]/40 bg-black shadow-[0_10px_40px_rgba(212,175,55,0.2)]">
+                        <div className="gth-glass-ultra relative h-12 w-12 overflow-hidden rounded-full border border-[var(--gold)]/20">
 
-                                <img
-                                    src="/images/gth-logo.png"
-                                    alt="GTH PRO"
-                                    className="h-full w-full object-cover scale-110 transition-all duration-700 group-hover:scale-125 group-hover:rotate-6"
-                                />
-
-                            </div>
+                            <img
+                                src="/images/gth-logo.png"
+                                alt="GTH"
+                                className="
+                                    h-full
+                                    w-full
+                                    object-cover
+                                    scale-110
+                                    transition-all
+                                    duration-700
+                                    group-hover:scale-125
+                                    group-hover:rotate-6
+                                "
+                            />
 
                         </div>
 
                         {/* text */}
-                        <div className="leading-none">
 
-                            <div className="flex items-center gap-2">
+                        <div className="flex flex-col justify-center leading-none">
 
-                                <span className="text-xl font-black tracking-tight text-[var(--text)]">
+                            <div className="flex items-center gap-1">
+
+                                <span className="gth-logo-text text-[var(--text)]">
+
                                     GTH
+
                                 </span>
 
-                                <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-xl font-black tracking-tight text-transparent">
+                                <span className="gth-logo-text gold-text">
+
                                     PRO
+
                                 </span>
 
                             </div>
 
                             <div className="mt-1 flex items-center gap-2">
 
-                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(0,255,150,0.8)]" />
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(16,185,129,1)]" />
 
-                                <span className="text-[9px] font-black uppercase tracking-[0.35em] text-[var(--muted)]">
-                                    Global Intelligence Platform
+                                <span className="gth-logo-sub">
+
+                                    Global Platform
+
                                 </span>
 
                             </div>
@@ -198,17 +345,23 @@ export default function Navbar() {
 
                     </Link>
 
-                    {/* ======================================== */}
-                    {/* CENTER SEARCH */}
-                    {/* ======================================== */}
+                    {/* ================================================= */}
+                    {/* SEARCH */}
+                    {/* ================================================= */}
 
-                    <div className="hidden xl:flex flex-1 justify-center px-8">
+                    <div className="hidden flex-1 items-center justify-center xl:flex">
 
-                        <div className="relative w-full max-w-md">
+                        <div className="relative w-full max-w-xl">
 
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/10 via-[#d4af37]/10 to-cyan-500/10 blur-2xl" />
+                            <div className="absolute inset-0 rounded-full bg-[var(--gold)]/10 blur-3xl" />
 
-                            <div className="relative rounded-full border border-[var(--border)] bg-[var(--card)]/70 backdrop-blur-3xl">
+                            <div className="gth-glass-ultra relative overflow-hidden rounded-full border border-[var(--border)]">
+
+                                <div className="absolute left-5 top-1/2 z-20 -translate-y-1/2 text-[var(--muted)]">
+
+                                    <Search size={14} />
+
+                                </div>
 
                                 <SearchBox />
 
@@ -218,15 +371,16 @@ export default function Navbar() {
 
                     </div>
 
-                    {/* ======================================== */}
+                    {/* ================================================= */}
                     {/* DESKTOP NAV */}
-                    {/* ======================================== */}
+                    {/* ================================================= */}
 
-                    <div className="hidden items-center gap-1 lg:flex">
+                    <div className="hidden items-center gap-2 lg:flex">
 
                         {navItems.map((item: any) => {
 
-                            const Icon = item.icon
+                            const Icon =
+                                item.icon
 
                             const active =
                                 pathname === item.href
@@ -236,155 +390,203 @@ export default function Navbar() {
                                 <div
                                     key={item.href}
                                     className="group relative"
+                                    onMouseEnter={() =>
+                                        setHoveredMenu(item.name)
+                                    }
+                                    onMouseLeave={() =>
+                                        setHoveredMenu(null)
+                                    }
                                 >
+
+                                    {/* nav button */}
 
                                     <Link
                                         href={item.href}
-                                        className={`relative flex items-center gap-2 overflow-hidden rounded-full px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all duration-500 ${active
-                                            ? "bg-gradient-to-r from-[#bf953f]/20 via-[#fcf6ba]/10 to-[#b38728]/20 text-[#d4af37] shadow-[0_10px_30px_rgba(212,175,55,0.15)]"
-                                            : "text-[var(--muted)] hover:bg-white/[0.04] hover:text-[var(--text)]"
-                                            }`}
+                                        className={`
+                                            flex
+                                            items-center
+                                            gap-2
+                                            rounded-full
+                                            px-4
+                                            py-2.5
+                                            transition-all
+                                            duration-500
+
+                                            ${active
+                                                ? `
+                                                    gth-btn-gold
+                                                    scale-105
+                                                `
+                                                : `
+                                                    gth-glass
+                                                    text-[var(--text)]
+                                                    hover:scale-105
+                                                `
+                                            }
+                                        `}
                                     >
 
-                                        <div className={`absolute inset-0 opacity-0 transition-all duration-700 group-hover:opacity-100 ${active
-                                            ? "bg-gradient-to-r from-[#bf953f]/10 to-[#b38728]/10"
-                                            : "bg-white/[0.03]"
-                                            }`} />
+                                        <Icon size={13} />
 
-                                        <Icon
-                                            size={14}
-                                            className="relative z-10"
-                                        />
+                                        <span className="gth-nav-text">
 
-                                        <span className="relative z-10">
                                             {item.name}
+
                                         </span>
 
                                     </Link>
 
-                                    {/* ======================================== */}
-                                    {/* MEGA MENU */}
-                                    {/* ======================================== */}
+                                    {/* mega */}
 
-                                    {(item.name === "Destinations" ||
-                                        item.name === "Real Estate") && (
+                                    {item.mega && (
 
-                                            <div className="pointer-events-none invisible absolute left-1/2 top-full z-50 mt-6 w-[880px] -translate-x-1/2 opacity-0 transition-all duration-500 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100">
+                                        <div className={`
+                                            absolute
+                                            left-1/2
+                                            top-full
+                                            z-[150]
+                                            mt-5
+                                            w-[760px]
+                                            -translate-x-1/2
+                                            transition-all
+                                            duration-500
 
-                                                <div className="overflow-hidden rounded-[36px] border border-white/10 bg-[var(--card)]/85 p-8 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-3xl">
+                                            ${hoveredMenu === item.name
+                                                ? `
+                                                    visible
+                                                    opacity-100
+                                                    translate-y-0
+                                                `
+                                                : `
+                                                    invisible
+                                                    opacity-0
+                                                    translate-y-4
+                                                `
+                                            }
+                                        `}>
 
-                                                    {/* bg fx */}
-                                                    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                                            <div className="gth-glass-ultra overflow-hidden rounded-[32px] border border-[var(--border)] p-6 shadow-[var(--shadow)]">
 
-                                                        <div className="absolute right-[-80px] top-[-80px] h-[240px] w-[240px] rounded-full bg-[#d4af37]/10 blur-3xl" />
+                                                {/* bg */}
 
-                                                        <div className="absolute bottom-[-100px] left-[-80px] h-[220px] w-[220px] rounded-full bg-cyan-500/10 blur-3xl" />
+                                                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+
+                                                    <div className="absolute right-[-80px] top-[-80px] h-[200px] w-[200px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
+
+                                                    <div className="absolute bottom-[-80px] left-[-80px] h-[200px] w-[200px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
+
+                                                </div>
+
+                                                <div className="relative grid grid-cols-3 gap-5">
+
+                                                    {/* left */}
+
+                                                    <div className="gth-grid-luxury rounded-[26px] p-5">
+
+                                                        <div className="gth-btn-gold inline-flex items-center gap-2 rounded-full px-3 py-2">
+
+                                                            <Sparkles size={11} />
+
+                                                            <span className="gth-nav-mini text-black">
+
+                                                                Premium
+
+                                                            </span>
+
+                                                        </div>
+
+                                                        <h3 className="mt-5 text-xl font-black leading-tight text-[var(--text)]">
+
+                                                            Luxury
+                                                            Experience
+
+                                                        </h3>
+
+                                                        <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
+
+                                                            Premium travel,
+                                                            investment and
+                                                            global real estate
+                                                            ecosystem.
+
+                                                        </p>
+
+                                                        <Link
+                                                            href={item.href}
+                                                            className="gth-btn mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2"
+                                                        >
+
+                                                            <span className="gth-nav-mini">
+
+                                                                Explore
+
+                                                            </span>
+
+                                                            <ArrowUpRight
+                                                                size={13}
+                                                            />
+
+                                                        </Link>
 
                                                     </div>
 
-                                                    <div className="relative grid grid-cols-3 gap-8">
+                                                    {/* right */}
 
-                                                        {/* left */}
-                                                        <div className="col-span-1 rounded-[28px] border border-white/10 bg-white/[0.03] p-6">
+                                                    <div className="col-span-2 grid grid-cols-2 gap-4">
 
-                                                            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37]">
+                                                        {item.featured.map((x: string) => (
 
-                                                                <Sparkles size={12} />
+                                                            <Link
+                                                                key={x}
+                                                                href={item.href}
+                                                                className="
+                                                                    gth-glass
+                                                                    group/item
+                                                                    rounded-[24px]
+                                                                    p-5
+                                                                    transition-all
+                                                                    duration-500
+                                                                    hover:-translate-y-1
+                                                                "
+                                                            >
 
-                                                                Premium Access
+                                                                <div className="flex items-start justify-between gap-4">
 
-                                                            </div>
+                                                                    <div>
 
-                                                            <h3 className="text-2xl font-black leading-tight text-[var(--text)]">
+                                                                        <div className="gth-btn-gold mb-4 flex h-10 w-10 items-center justify-center rounded-2xl">
 
-                                                                Explore the next
-                                                                generation
-                                                                platform
-
-                                                            </h3>
-
-                                                            <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
-
-                                                                Discover premium
-                                                                destinations,
-                                                                intelligent real
-                                                                estate and luxury
-                                                                lifestyle
-                                                                services.
-
-                                                            </p>
-
-                                                        </div>
-
-                                                        {/* links */}
-                                                        <div className="col-span-2 grid grid-cols-2 gap-4">
-
-                                                            {(item.name === "Destinations"
-                                                                ? [
-                                                                    "Goa",
-                                                                    "Dubai",
-                                                                    "Bali",
-                                                                    "Paris",
-                                                                    "Manali",
-                                                                    "Jaipur",
-                                                                    "Thailand",
-                                                                    "Singapore",
-                                                                ]
-                                                                : [
-                                                                    "Buy Property",
-                                                                    "Rent Homes",
-                                                                    "Luxury Villas",
-                                                                    "Commercial",
-                                                                    "Plots",
-                                                                    "New Launch",
-                                                                    "Smart Homes",
-                                                                    "Investment Deals",
-                                                                ]).map((x) => (
-
-                                                                    <Link
-                                                                        key={x}
-                                                                        href={item.name === "Destinations"
-                                                                            ? `/destinations/${x.toLowerCase().replace(/\s/g, "-")}`
-                                                                            : `/real-estate`}
-                                                                        className="group/item relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-5 transition-all duration-500 hover:-translate-y-1 hover:border-[#d4af37]/20 hover:bg-[#d4af37]/[0.05]"
-                                                                    >
-
-                                                                        <div className="absolute inset-0 bg-gradient-to-r from-[#d4af37]/0 via-[#d4af37]/5 to-cyan-500/0 opacity-0 transition-all duration-700 group-hover/item:opacity-100" />
-
-                                                                        <div className="relative flex items-center justify-between">
-
-                                                                            <div>
-
-                                                                                <p className="text-sm font-black tracking-wide text-[var(--text)]">
-
-                                                                                    {x}
-
-                                                                                </p>
-
-                                                                                <p className="mt-2 text-xs text-[var(--muted)]">
-
-                                                                                    Explore premium listings
-
-                                                                                </p>
-
-                                                                            </div>
-
-                                                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/20 transition-all duration-500 group-hover/item:translate-x-1 group-hover/item:border-[#d4af37]/20">
-
-                                                                                <ChevronRight
-                                                                                    size={16}
-                                                                                    className="text-[#d4af37]"
-                                                                                />
-
-                                                                            </div>
+                                                                            {item.name === "Destinations"
+                                                                                ? <MapPinned size={16} />
+                                                                                : <Building2 size={16} />
+                                                                            }
 
                                                                         </div>
 
-                                                                    </Link>
+                                                                        <h4 className="text-sm font-black text-[var(--text)]">
 
-                                                                ))}
+                                                                            {x}
 
-                                                        </div>
+                                                                        </h4>
+
+                                                                        <p className="mt-2 text-xs text-black leading-relaxed text-[var(--muted)]">
+
+                                                                            Explore premium listings.
+
+                                                                        </p>
+
+                                                                    </div>
+
+                                                                    <ChevronRight
+                                                                        size={15}
+                                                                        className="text-[var(--gold)] transition-all duration-500 group-hover/item:translate-x-1"
+                                                                    />
+
+                                                                </div>
+
+                                                            </Link>
+
+                                                        ))}
 
                                                     </div>
 
@@ -392,7 +594,9 @@ export default function Navbar() {
 
                                             </div>
 
-                                        )}
+                                        </div>
+
+                                    )}
 
                                 </div>
 
@@ -402,97 +606,135 @@ export default function Navbar() {
 
                     </div>
 
-                    {/* ======================================== */}
-                    {/* CTA */}
-                    {/* ======================================== */}
+                    {/* ================================================= */}
+                    {/* RIGHT */}
+                    {/* ================================================= */}
 
-                    <div className="hidden items-center gap-3 md:flex">
+                    <div className="flex shrink-0 items-center gap-2">
+
+                        <ThemeToggle />
 
                         <Link
                             href="/real-estate"
-                            className="group relative overflow-hidden rounded-full border border-[#d4af37]/30 px-6 py-3"
+                            className="
+                                gth-btn-gold
+                                hidden
+                                items-center
+                                gap-2
+                                rounded-full
+                                px-5
+                                py-2.5
+                                xl:flex
+                            "
                         >
 
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728]" />
+                            <Crown size={14} />
 
-                            <div className="absolute inset-0 opacity-0 transition-all duration-700 group-hover:opacity-100 bg-white/20" />
+                            <span className="gth-nav-mini text-black">
 
-                            <div className="relative flex items-center gap-2">
+                                Premium Access
 
-                                <Crown
-                                    size={15}
-                                    className="text-black"
-                                />
-
-                                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black">
-
-                                    Explore Luxury
-
-                                </span>
-
-                            </div>
+                            </span>
 
                         </Link>
 
+                        {/* mobile */}
+
+                        <button
+                            onClick={() =>
+                                setMenuOpen(!menuOpen)
+                            }
+                            className="
+                                gth-glass-ultra
+                                flex
+                                h-11
+                                w-11
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                transition-all
+                                duration-500
+                                hover:scale-105
+                                lg:hidden
+                            "
+                        >
+
+                            {menuOpen
+                                ? (
+                                    <X
+                                        size={18}
+                                        className="text-[var(--text)]"
+                                    />
+                                )
+                                : (
+                                    <Menu
+                                        size={18}
+                                        className="text-[var(--text)]"
+                                    />
+                                )
+                            }
+
+                        </button>
+
                     </div>
-
-                    {/* ======================================== */}
-                    {/* MOBILE MENU BTN */}
-                    {/* ======================================== */}
-
-                    <button
-                        onClick={() =>
-                            setMenuOpen(!menuOpen)
-                        }
-                        className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--text)] backdrop-blur-2xl transition-all duration-500 hover:scale-105 md:hidden"
-                    >
-
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-[#d4af37]/10" />
-
-                        {menuOpen
-                            ? <X size={20} className="relative z-10" />
-                            : <Menu size={20} className="relative z-10" />}
-
-                    </button>
 
                 </div>
 
             </nav>
 
-            {/* ======================================== */}
-            {/* MOBILE FULLSCREEN MENU */}
-            {/* ======================================== */}
+            {/* ================================================= */}
+            {/* MOBILE MENU */}
+            {/* ================================================= */}
 
-            <div className={`fixed inset-0 z-[100] transition-all duration-700 md:hidden ${menuOpen
-                ? "visible opacity-100"
-                : "invisible opacity-0"
-                }`}>
+            <div className={`
+                fixed
+                inset-0
+                z-[200]
+                transition-all
+                duration-500
+                lg:hidden
+
+                ${menuOpen
+                    ? `
+                        visible
+                        opacity-100
+                    `
+                    : `
+                        invisible
+                        opacity-0
+                    `
+                }
+            `}>
 
                 {/* bg */}
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-3xl" />
 
-                {/* glow */}
-                <div className="absolute left-[-100px] top-[-100px] h-[260px] w-[260px] rounded-full bg-cyan-500/20 blur-3xl" />
+                <div className="absolute inset-0 bg-[var(--bg)]/96 backdrop-blur-[40px]" />
 
-                <div className="absolute bottom-[-120px] right-[-100px] h-[280px] w-[280px] rounded-full bg-[#d4af37]/20 blur-3xl" />
+                {/* fx */}
+
+                <div className="absolute left-[-100px] top-[-100px] h-[220px] w-[220px] rounded-full bg-[var(--primary)]/20 blur-3xl" />
+
+                <div className="absolute bottom-[-100px] right-[-100px] h-[220px] w-[220px] rounded-full bg-[var(--gold)]/20 blur-3xl" />
 
                 {/* content */}
-                <div className="relative flex h-full flex-col overflow-y-auto p-6">
+
+                <div className="relative flex h-full flex-col overflow-y-auto p-5">
 
                     {/* top */}
+
                     <div className="flex items-center justify-between">
 
                         <div>
 
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400">
+                            <p className="gth-nav-mini text-[var(--primary)]">
 
                                 GTH PRO
 
                             </p>
 
-                            <h2 className="mt-2 text-3xl font-black text-white">
+                            <h2 className="mt-2 text-3xl font-black text-[var(--text)]">
 
-                                Navigation Hub
+                                Navigation
 
                             </h2>
 
@@ -502,12 +744,12 @@ export default function Navbar() {
                             onClick={() =>
                                 setMenuOpen(false)
                             }
-                            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]"
+                            className="gth-glass-ultra flex h-11 w-11 items-center justify-center rounded-2xl"
                         >
 
                             <X
-                                size={20}
-                                className="text-white"
+                                size={18}
+                                className="text-[var(--text)]"
                             />
 
                         </button>
@@ -515,18 +757,21 @@ export default function Navbar() {
                     </div>
 
                     {/* search */}
-                    <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-3 backdrop-blur-2xl">
+
+                    <div className="gth-glass-ultra mt-6 rounded-[24px] p-3">
 
                         <SearchBox />
 
                     </div>
 
-                    {/* nav */}
-                    <div className="mt-8 space-y-3">
+                    {/* nav items */}
+
+                    <div className="mt-6 space-y-3">
 
                         {navItems.map((item: any) => {
 
-                            const Icon = item.icon
+                            const Icon =
+                                item.icon
 
                             const active =
                                 pathname === item.href
@@ -539,29 +784,60 @@ export default function Navbar() {
                                     onClick={() =>
                                         setMenuOpen(false)
                                     }
-                                    className={`group flex items-center justify-between overflow-hidden rounded-[26px] border p-5 transition-all duration-500 ${active
-                                        ? "border-[#d4af37]/30 bg-[#d4af37]/10"
-                                        : "border-white/10 bg-white/[0.03]"
-                                        }`}
+                                    className="
+                                        gth-glass-ultra
+                                        flex
+                                        items-center
+                                        justify-between
+                                        rounded-[26px]
+                                        p-4
+                                        transition-all
+                                        duration-500
+                                        hover:translate-x-1
+                                    "
                                 >
 
                                     <div className="flex items-center gap-4">
 
-                                        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${active
-                                            ? "bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black"
-                                            : "border border-white/10 bg-black/20 text-white"
-                                            }`}>
+                                        <div className={`
+                                            flex
+                                            h-12
+                                            w-12
+                                            items-center
+                                            justify-center
+                                            rounded-2xl
 
-                                            <Icon size={22} />
+                                            ${active
+                                                ? `
+                                                    gth-btn-gold
+                                                    text-black
+                                                `
+                                                : `
+                                                    gth-glass
+                                                    text-[var(--text)]
+                                                `
+                                            }
+                                        `}>
+
+                                            <Icon size={18} />
 
                                         </div>
 
                                         <div>
 
-                                            <p className={`text-base font-black ${active
-                                                ? "text-[#d4af37]"
-                                                : "text-white"
-                                                }`}>
+                                            <p className={`
+                                                text-sm
+                                                font-black
+
+                                                ${active
+                                                    ? `
+                                                        text-[var(--gold)]
+                                                    `
+                                                    : `
+                                                        text-[var(--text)]
+                                                    `
+                                                }
+                                            `}>
 
                                                 {item.name}
 
@@ -569,7 +845,7 @@ export default function Navbar() {
 
                                             <p className="mt-1 text-xs text-[var(--muted)]">
 
-                                                Explore premium ecosystem
+                                                Explore ecosystem
 
                                             </p>
 
@@ -578,11 +854,8 @@ export default function Navbar() {
                                     </div>
 
                                     <ChevronRight
-                                        size={18}
-                                        className={`${active
-                                            ? "text-[#d4af37]"
-                                            : "text-white/40"
-                                            }`}
+                                        size={15}
+                                        className="text-[var(--gold)]"
                                     />
 
                                 </Link>
@@ -594,34 +867,74 @@ export default function Navbar() {
                     </div>
 
                     {/* bottom */}
-                    <div className="mt-auto pt-10">
+
+                    <div className="mt-auto pt-8">
 
                         <Link
                             href="/real-estate"
                             onClick={() =>
                                 setMenuOpen(false)
                             }
-                            className="group relative flex items-center justify-center gap-3 overflow-hidden rounded-[26px] border border-[#d4af37]/20 py-5"
+                            className="
+                                gth-btn-gold
+                                flex
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-[24px]
+                                px-5
+                                py-4
+                            "
                         >
 
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728]" />
+                            <Crown
+                                size={16}
+                                className="text-black"
+                            />
 
-                            <div className="relative flex items-center gap-3">
+                            <span className="gth-nav-mini text-black">
 
-                                <Crown
-                                    size={18}
-                                    className="text-black"
+                                Explore Premium Real Estate
+
+                            </span>
+
+                        </Link>
+
+                        {/* cards */}
+
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+
+                            <div className="gth-glass rounded-[22px] p-4">
+
+                                <Headphones
+                                    size={16}
+                                    className="text-[var(--primary)]"
                                 />
 
-                                <span className="text-sm font-black uppercase tracking-[0.25em] text-black">
+                                <p className="mt-3 text-xs font-black uppercase tracking-[0.15em] text-[var(--text)]">
 
-                                    Explore Premium Real Estate
+                                    24/7 Support
 
-                                </span>
+                                </p>
 
                             </div>
 
-                        </Link>
+                            <div className="gth-glass rounded-[22px] p-4">
+
+                                <BriefcaseBusiness
+                                    size={16}
+                                    className="text-[var(--gold)]"
+                                />
+
+                                <p className="mt-3 text-xs font-black uppercase tracking-[0.15em] text-[var(--text)]">
+
+                                    Global Deals
+
+                                </p>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
