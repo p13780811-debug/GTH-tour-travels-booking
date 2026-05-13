@@ -74,7 +74,7 @@ export default function AIRecommendations({ slug, user }: any) {
 
                         <BrainCircuit size={14} className="text-[#d4af37]" />
 
-                        <span className="text-[10px] uppercase tracking-[0.3em] font-black text-[#d4af37]">
+                        <span className="text-[10px] uppercase tracking-[0.3em] font-black gold-text">
                             AI PROPERTY ENGINE
                         </span>
                     </div>
@@ -84,7 +84,7 @@ export default function AIRecommendations({ slug, user }: any) {
 
                         Recommended{" "}
 
-                        <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                        <span className="gold-text gold-text italic">
                             For You
                         </span>
                     </h2>
@@ -166,7 +166,7 @@ export default function AIRecommendations({ slug, user }: any) {
 
                                 <Sparkles size={12} className="text-[#d4af37]" />
 
-                                <span className="text-[10px] uppercase tracking-[0.25em] font-black text-[#d4af37]">
+                                <span className="text-[10px] uppercase tracking-[0.25em] font-black gold-text">
                                     AI PICK
                                 </span>
                             </div>

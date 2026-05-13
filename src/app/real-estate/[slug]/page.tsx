@@ -159,7 +159,7 @@ export default async function Page({
 
                 <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
 
-                <div className="absolute bottom-[-120px] right-[-120px] h-[320px] w-[320px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
+                <div className="absolute bottom-[-120px] right-[-120px] h-[320px] w-[320px] rounded-full bg-[var(--card)] blur-3xl" />
 
                 <div className="gth-glass-ultra relative z-10 max-w-2xl rounded-[42px] p-10 text-center">
 
@@ -167,7 +167,7 @@ export default async function Page({
 
                         <ScanSearch
                             size={42}
-                            className="text-[var(--gold)]"
+                            className="text-[var(--text)]"
                         />
 
                     </div>
@@ -222,7 +222,7 @@ export default async function Page({
 
                 <div className="absolute left-[-180px] top-[-180px] h-[420px] w-[420px] rounded-full bg-[var(--primary)]/10 blur-3xl" />
 
-                <div className="absolute right-[-200px] top-[10%] h-[460px] w-[460px] rounded-full bg-[var(--gold)]/10 blur-3xl" />
+                <div className="absolute right-[-200px] top-[10%] h-[460px] w-[460px] rounded-full bg-[var(--card)] blur-3xl" />
 
                 <div className="absolute bottom-[-180px] left-[20%] h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-3xl" />
 
@@ -276,7 +276,7 @@ export default async function Page({
 
                     </div>
 
-                    <div className="gth-glass flex items-center gap-2 rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-[0.28em] text-[var(--gold)]">
+                    <div className="gth-glass flex items-center gap-2 rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-[0.28em] text-[var(--text)]">
 
                         <TrendingUp size={14} />
 
@@ -348,7 +348,7 @@ export default async function Page({
 
                                     <Globe2
                                         size={18}
-                                        className="text-[var(--gold)]"
+                                        className="text-[var(--text)]"
                                     />
 
                                     <span className="text-sm font-bold tracking-wide text-[var(--text)]">
@@ -404,7 +404,7 @@ export default async function Page({
 
                                 </p>
 
-                                <h3 className="mt-3 text-2xl font-black text-[var(--text)]">
+                                <h3 className="mt-3 text-2xl font-black gold-text">
 
                                     {property.sqft || "--"}
 
@@ -420,7 +420,7 @@ export default async function Page({
 
                                 </p>
 
-                                <h3 className="mt-3 text-2xl font-black text-[var(--text)]">
+                                <h3 className="mt-3 text-2xl font-black gold-text">
 
                                     {property.beds || "--"}
 
@@ -436,7 +436,7 @@ export default async function Page({
 
                                 </p>
 
-                                <h3 className="mt-3 text-2xl font-black text-[var(--text)]">
+                                <h3 className="mt-3 text-2xl font-black gold-text">
 
                                     {property.baths || "--"}
 
@@ -506,7 +506,7 @@ export default async function Page({
 
                         <div>
 
-                            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-[var(--gold)]">
+                            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-[var(--text)]">
 
                                 AI Visibility Engine
 
@@ -586,7 +586,7 @@ export default async function Page({
 
                         <div className="max-w-3xl">
 
-                            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--gold)]/20 bg-[var(--gold)]/10 px-5 py-3 text-[10px] font-black uppercase tracking-[0.28em] text-[var(--gold)]">
+                            <div className="gth-btn-gold inline-flex items-center gap-2 rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-[0.28em]">
 
                                 <Sparkles size={14} />
 

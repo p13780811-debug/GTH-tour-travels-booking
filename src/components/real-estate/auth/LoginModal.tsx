@@ -87,7 +87,7 @@ export default function LoginModal({ onClose }: any) {
                                 <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-none">
                                     GTH{" "}
 
-                                    <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                                    <span className="gold-text gold-text italic">
                                         PRIME ACCESS
                                     </span>
                                 </h2>
@@ -167,9 +167,9 @@ export default function LoginModal({ onClose }: any) {
                     <button
                         onClick={handleLogin}
                         disabled={loading}
-                        className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] p-[1px] transition-all duration-500 hover:scale-[1.01] active:scale-95"
+                        className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r gth-btn-gold p-[1px] transition-all duration-500 hover:scale-[1.01] active:scale-95"
                     >
-                        <div className="flex items-center justify-center gap-3 rounded-2xl px-5 py-4 font-black uppercase tracking-[0.22em] text-black bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728]">
+                        <div className="flex items-center justify-center gap-3 rounded-2xl px-5 py-4 font-black uppercase tracking-[0.22em] text-black gold-text">
 
                             <span>
                                 {loading ? "Sending Magic Link..." : "Continue Securely"}

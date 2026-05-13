@@ -88,7 +88,7 @@ export default function SimilarProperties({ slug, user }: any) {
 
                                 Similar{" "}
 
-                                <span className="italic bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent">
+                                <span className="italic gold-text gold-text">
                                     Premium Properties
                                 </span>
 
@@ -250,7 +250,7 @@ export default function SimilarProperties({ slug, user }: any) {
                         </p>
                     </div>
 
-                    <button className="group flex items-center justify-center gap-3 rounded-2xl border border-[var(--gold)]/20 bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-4 text-black font-black uppercase tracking-[0.18em] text-xs transition-all duration-500 hover:scale-[1.03] active:scale-95 shadow-[0_0_30px_rgba(212,175,55,0.25)]">
+                    <button className="group flex items-center justify-center gap-3 rounded-2xl border border-[var(--gold)]/20 bg-gradient-to-r gth-btn-gold px-6 py-4 text-black font-black uppercase tracking-[0.18em] text-xs transition-all duration-500 hover:scale-[1.03] active:scale-95 shadow-[0_0_30px_rgba(212,175,55,0.25)]">
 
                         Explore More
 

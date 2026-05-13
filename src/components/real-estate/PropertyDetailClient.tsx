@@ -295,7 +295,7 @@ export default function PropertyDetailClient({
 
     return (
 
-        <div className={`${styles.mainContainer} relative overflow-hidden bg-[var(--bg)] text-[var(--text)]`}>
+        <div className="relative min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--text)]">
 
             {/* GLOBAL FX */}
 
@@ -343,7 +343,7 @@ export default function PropertyDetailClient({
                                 <div className="flex flex-wrap items-center gap-3">
 
                                     {property.is_featured && (
-                                        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+                                        <div className="flex items-center gap-2 rounded-full bg-[var(--btn-bg)] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
                                             <Crown size={14} />
                                             Featured Estate
                                         </div>
@@ -472,11 +472,11 @@ export default function PropertyDetailClient({
 
                                 <div>
 
-                                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.32em] text-[var(--primary)]">
+                                    <p className="gth-glass mb-3 text-[11px] font-black uppercase tracking-[0.32em] text-[var(--primary)]">
                                         Quantum Estate Intelligence
                                     </p>
 
-                                    <h2 className="text-3xl font-black tracking-tight md:text-5xl">
+                                    <h2 className="gold-text tracking-tight md:text-5xl">
                                         Property Overview
                                     </h2>
 
@@ -636,7 +636,7 @@ export default function PropertyDetailClient({
 
                                     <button
                                         onClick={() => setShowAI(true)}
-                                        className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[26px] bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] text-black transition-all duration-500 hover:scale-[1.02]"
+                                        className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[26px] bg-gradient-to-r gth-btn-gold px-6 py-5 text-sm font-black uppercase tracking-[0.22em] text-black transition-all duration-500 hover:scale-[1.02]"
                                     >
 
                                         <div className="absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 bg-white/20" />
@@ -893,7 +893,7 @@ export default function PropertyDetailClient({
 
                     <button
                         onClick={() => setShowAI(true)}
-                        className="flex shrink-0 items-center gap-2 rounded-[22px] bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-black shadow-[0_0_25px_rgba(212,175,55,0.3)]"
+                        className="flex shrink-0 items-center gap-2 rounded-[22px] bg-gradient-to-r gth-btn-gold px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-black shadow-[0_0_25px_rgba(212,175,55,0.3)]"
                     >
 
                         <Zap size={16} />

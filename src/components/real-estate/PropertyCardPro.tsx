@@ -49,7 +49,7 @@ export default function PropertyCardPro({
             {/* IMAGE */}
             {/* ========================= */}
 
-            <div className="relative h-64 overflow-hidden">
+            <div className="relative h-44 md:h-52 overflow-hidden">
 
                 <img
                     src={p.image}
@@ -124,7 +124,7 @@ export default function PropertyCardPro({
 
                 <div className="mb-4">
 
-                    <h3 className="line-clamp-1 text-[22px] font-black tracking-tight">
+                    <h3 className="line-clamp-1 text-base md:text-lg font-black tracking-tight">
                         {p.title}
                     </h3>
 

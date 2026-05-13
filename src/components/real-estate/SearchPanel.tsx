@@ -108,7 +108,7 @@ export default function SearchPanel({ setQuery }: any) {
                                 <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-none text-[var(--text)]">
                                     Smart Property{" "}
 
-                                    <span className="italic bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent">
+                                    <span className="italic gold-text gold-text">
                                         Discovery
                                     </span>
                                 </h2>
@@ -156,7 +156,7 @@ export default function SearchPanel({ setQuery }: any) {
 
                         <button
                             onClick={apply}
-                            className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-sm bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black transition-all duration-500 hover:scale-[1.03] active:scale-95 shadow-[0_0_25px_rgba(212,175,55,0.25)]"
+                            className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-sm bg-gradient-to-r gth-btn-gold text-black transition-all duration-500 hover:scale-[1.03] active:scale-95 shadow-[0_0_25px_rgba(212,175,55,0.25)]"
                         >
                             Search
                         </button>
@@ -271,7 +271,7 @@ export default function SearchPanel({ setQuery }: any) {
 
                             <button
                                 onClick={aiSuggest}
-                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black font-black uppercase tracking-[0.18em] text-xs transition-all duration-500 hover:scale-[1.02] active:scale-95"
+                                className="w-full h-12 rounded-2xl bg-gradient-to-r gth-btn-gold text-black font-black uppercase tracking-[0.18em] text-xs transition-all duration-500 hover:scale-[1.02] active:scale-95"
                             >
                                 Generate AI Suggestions
                             </button>
