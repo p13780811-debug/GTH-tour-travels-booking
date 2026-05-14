@@ -82,7 +82,7 @@ export default function HeroSlider() {
                     </span>
 
                     <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
-                        <span className="bg-gradient-to-r from-[#d4af37] via-yellow-200 to-[#8a6d3b] bg-clip-text text-transparent filter drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+                        <span className="bg-gradient-to-r from-[#d4af37] via-yellow-200 to-[#8a6d3b] gold-text filter drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
                             {slides[current].title}
                         </span>
                     </h1>

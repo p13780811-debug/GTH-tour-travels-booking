@@ -441,7 +441,7 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black font-black text-sm tracking-wide hover:scale-[1.01] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.25)]"
+                        className="w-full h-14 rounded-2xl bg-gradient-to-r gth-btn-gold text-black font-black text-sm tracking-wide hover:scale-[1.01] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.25)]"
                     >
 
                         {loading ? (

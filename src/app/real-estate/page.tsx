@@ -892,10 +892,7 @@ export default function App() {
 
             {isMobile && (
 
-                <BottomNav
-                    onMap={() => setShowMap(true)}
-                    onFilter={() => setShowFilters(true)}
-                />
+                <BottomNav />
 
             )}
 

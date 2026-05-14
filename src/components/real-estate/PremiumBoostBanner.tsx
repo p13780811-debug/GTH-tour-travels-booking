@@ -44,7 +44,7 @@ export default function PremiumBoostBanner({ slug }: any) {
                 <div className="flex items-start gap-5">
 
                     {/* ICON */}
-                    <div className="h-16 w-16 rounded-[24px] flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+                    <div className="gth-btn-gold h-16 w-16 rounded-[24px] flex items-center justify-center text-[var(--gold)]">
 
                         <Rocket size={28} />
                     </div>
@@ -55,9 +55,9 @@ export default function PremiumBoostBanner({ slug }: any) {
                         {/* TOP TAG */}
                         <div className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/10 px-3 py-1 mb-4">
 
-                            <Sparkles size={12} className="text-[#d4af37]" />
+                            <Sparkles size={12} className="gold-text" />
 
-                            <span className="text-[10px] font-black uppercase tracking-[0.28em] text-[#d4af37]">
+                            <span className="text-[10px] font-black uppercase tracking-[0.28em] gold-text">
                                 Premium Visibility Engine
                             </span>
                         </div>
@@ -67,7 +67,7 @@ export default function PremiumBoostBanner({ slug }: any) {
 
                             Boost Your{" "}
 
-                            <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                            <span className="gold-text italic">
                                 Property
                             </span>
                         </h3>
@@ -92,7 +92,7 @@ export default function PremiumBoostBanner({ slug }: any) {
                             </div>
 
                             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
-                                <Rocket size={14} className="text-[#d4af37]" />
+                                <Rocket size={14} className="gold-text" />
                                 Faster Leads
                             </div>
                         </div>
@@ -105,13 +105,13 @@ export default function PremiumBoostBanner({ slug }: any) {
                     {/* PRICE */}
                     <div className="text-center md:text-right">
 
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#d4af37] font-black mb-2">
+                        <p className="text-[10px] uppercase tracking-[0.3em] gold-text font-black mb-2">
                             Premium Activation
                         </p>
 
                         <div className="flex items-end justify-center md:justify-end gap-1">
 
-                            <span className="text-5xl font-black bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent">
+                            <span className="text-5xl font-black gold-text gold-text">
                                 ₹199
                             </span>
 
@@ -124,7 +124,7 @@ export default function PremiumBoostBanner({ slug }: any) {
                     {/* BUTTON */}
                     <button
                         onClick={handleBoost}
-                        className="group relative overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-black transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] active:scale-95"
+                        className="group relative overflow-hidden rounded-2xl border border-[#d4af37]/30 gth-btn-gold px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-black transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] active:scale-95"
                     >
 
                         {/* BUTTON SHINE */}

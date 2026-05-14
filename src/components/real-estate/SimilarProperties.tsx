@@ -67,7 +67,7 @@ export default function SimilarProperties({ slug, user }: any) {
                     {/* LEFT */}
                     <div className="flex items-center gap-4">
 
-                        <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+                        <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br var(--premium-gradient) text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
                             <Radar size={26} />
                         </div>
 
@@ -88,7 +88,7 @@ export default function SimilarProperties({ slug, user }: any) {
 
                                 Similar{" "}
 
-                                <span className="italic bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent">
+                                <span className="italic gold-text gold-text">
                                     Premium Properties
                                 </span>
 
@@ -174,7 +174,7 @@ export default function SimilarProperties({ slug, user }: any) {
                                     >
 
                                         {/* FLOATING BADGE */}
-                                        <div className="absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full border border-[var(--gold)]/20 bg-black/40 backdrop-blur-xl px-3 py-1.5">
+                                        <div className="absolute top-4 right-4 z-30 flex items-center gap-2 rounded-full border border-[var(--gold)]/20 bg-black/40 backdrop-blur-xl px-3 py-1.5">
 
                                             <Sparkles size={12} className="text-[var(--gold)]" />
 
@@ -204,7 +204,7 @@ export default function SimilarProperties({ slug, user }: any) {
 
                             <div className="relative z-10 flex flex-col items-center">
 
-                                <div className="h-20 w-20 rounded-[28px] flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_40px_rgba(212,175,55,0.25)] mb-6">
+                                <div className="h-20 w-20 rounded-[28px] flex items-center justify-center bg-gradient-to-br var(--premium-gradient) text-black shadow-[0_0_40px_rgba(212,175,55,0.25)] mb-6">
                                     <Sparkles size={34} />
                                 </div>
 
@@ -250,7 +250,7 @@ export default function SimilarProperties({ slug, user }: any) {
                         </p>
                     </div>
 
-                    <button className="group flex items-center justify-center gap-3 rounded-2xl border border-[var(--gold)]/20 bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] px-6 py-4 text-black font-black uppercase tracking-[0.18em] text-xs transition-all duration-500 hover:scale-[1.03] active:scale-95 shadow-[0_0_30px_rgba(212,175,55,0.25)]">
+                    <button className="group gth-btn-gold flex items-center justify-center gap-3 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-[0.18em] transition-all duration-500 hover:scale-[1.03] active:scale-95">
 
                         Explore More
 

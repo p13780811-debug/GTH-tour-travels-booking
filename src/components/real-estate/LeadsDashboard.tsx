@@ -59,7 +59,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                             <div>
                                 <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-none">
                                     Leads{" "}
-                                    <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                                    <span className="gold-text gold-text italic">
                                         Command Center
                                     </span>
                                 </h2>

@@ -74,7 +74,7 @@ export default function AIRecommendations({ slug, user }: any) {
 
                         <BrainCircuit size={14} className="text-[#d4af37]" />
 
-                        <span className="text-[10px] uppercase tracking-[0.3em] font-black text-[#d4af37]">
+                        <span className="text-[10px] uppercase tracking-[0.3em] font-black gold-text">
                             AI PROPERTY ENGINE
                         </span>
                     </div>
@@ -84,7 +84,7 @@ export default function AIRecommendations({ slug, user }: any) {
 
                         Recommended{" "}
 
-                        <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                        <span className="gold-text gold-text italic">
                             For You
                         </span>
                     </h2>
@@ -162,11 +162,11 @@ export default function AIRecommendations({ slug, user }: any) {
                             <div className="absolute inset-0 rounded-[32px] opacity-0 group-hover:opacity-100 transition-all duration-500 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.14),transparent_65%)]" />
 
                             {/* AI BADGE */}
-                            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-black/60 px-3 py-2 backdrop-blur-xl">
+                            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-black/60 px-3 py-2 backdrop-blur-xl">
 
                                 <Sparkles size={12} className="text-[#d4af37]" />
 
-                                <span className="text-[10px] uppercase tracking-[0.25em] font-black text-[#d4af37]">
+                                <span className="text-[10px] uppercase tracking-[0.25em] font-black gold-text">
                                     AI PICK
                                 </span>
                             </div>

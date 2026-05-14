@@ -191,7 +191,7 @@ export default function PropertyClient() {
                     <h2 className="text-3xl font-black tracking-tight">
                         GTH{" "}
 
-                        <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                        <span className="gold-text gold-text italic">
                             PRIME ESTATE
                         </span>
                     </h2>
@@ -248,7 +248,7 @@ export default function PropertyClient() {
                             <h1 className="text-2xl md:text-3xl font-black tracking-tight">
                                 GTH{" "}
 
-                                <span className="bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728] bg-clip-text text-transparent italic">
+                                <span className="gold-text gold-text italic">
                                     PRIME ESTATE
                                 </span>
                             </h1>

@@ -126,6 +126,53 @@
       #fffdf8 0%,
       #f8f4ec 40%,
       #f2ede3 100%);
+
+  /* ========================================================= */
+  /* 🧠 ENTERPRISE SEMANTIC TOKENS */
+  /* ========================================================= */
+
+  --surface-1: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --surface-3: rgba(255, 255, 255, 0.12);
+  --surface-4: rgba(255, 255, 255, 0.18);
+
+  /* TEXT */
+  --text-soft: rgba(17, 24, 39, 0.72);
+  --text-muted: rgba(17, 24, 39, 0.58);
+  --text-faint: rgba(17, 24, 39, 0.42);
+
+  /* ELEVATION */
+  --elevation-1:
+    0 2px 6px rgba(0, 0, 0, 0.04);
+
+  --elevation-2:
+    0 8px 20px rgba(0, 0, 0, 0.08);
+
+  --elevation-3:
+    0 18px 40px rgba(0, 0, 0, 0.12);
+
+  --elevation-4:
+    0 30px 80px rgba(0, 0, 0, 0.18);
+
+  /* STROKE */
+  --stroke-soft: rgba(255, 255, 255, 0.08);
+  --stroke-medium: rgba(255, 255, 255, 0.14);
+  --stroke-strong: rgba(255, 255, 255, 0.22);
+
+  /* PREMIUM MOTION */
+  --motion-premium:
+    cubic-bezier(0.22, 1, 0.36, 1);
+
+  --motion-snappy:
+    cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* SAFE BLUR */
+  --blur-xs: 6px;
+  --blur-sm: 10px;
+  --blur-md: 16px;
+  --blur-lg: 24px;
+  --blur-xl: 36px;
+
 }
 
 /* ========================= */
@@ -171,6 +218,10 @@ html.dark {
       #111827 0%,
       #05070b 65%,
       #000000 100%);
+
+  --text-soft: rgba(255, 255, 255, 0.74);
+  --text-muted: rgba(255, 255, 255, 0.58);
+  --text-faint: rgba(255, 255, 255, 0.38);
 }
 
 /* ========================= */
@@ -228,21 +279,40 @@ img {
   position: relative;
   overflow: hidden;
 
-  background: rgba(255, 255, 255, 0.22);
+  background:
+    linear-gradient(145deg,
+      rgba(255, 255, 255, 0.18),
+      rgba(255, 255, 255, 0.06));
 
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter:
+    blur(var(--blur-md)) saturate(180%);
 
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter:
+    blur(var(--blur-md)) saturate(180%);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.18);
 
   border-radius: var(--radius);
 
-  box-shadow: var(--shadow);
+  box-shadow:
+    var(--elevation-2);
 
   isolation: isolate;
 
+  transform: translateZ(0);
 
-  z-index: 0;
+  backface-visibility: hidden;
+}
+
+html.dark .gth-glass {
+  background:
+    linear-gradient(145deg,
+      rgba(15, 23, 42, 0.68),
+      rgba(2, 6, 23, 0.84));
+
+  border:
+    1px solid rgba(255, 255, 255, 0.06);
 }
 
 .gth-glass::before {
@@ -695,6 +765,7 @@ body,
   border-radius: var(--radius-lg);
 
   isolation: isolate;
+
 }
 
 html.dark .gth-glass-ultra {
@@ -711,20 +782,33 @@ html.dark .gth-glass-ultra {
 /* ========================================================= */
 
 .gth-card-premium {
+  position: relative;
+
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s var(--motion-premium),
     box-shadow 0.45s ease,
-    border 0.35s ease;
+    border-color 0.35s ease,
+    background 0.35s ease;
+
+  will-change: transform;
+
+  transform-origin: center;
+
+  transform: translateZ(0);
 }
 
 .gth-card-premium:hover {
-  transform: var(--card-hover-transform);
+  transform:
+    translateY(-10px) scale(1.012);
 
-  box-shadow:
-    0 30px 60px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--elevation-4);
 
   border-color:
     rgba(255, 255, 255, 0.22);
+}
+
+.gth-card-premium:active {
+  transform: scale(0.99);
 }
 
 /* ========================================================= */
@@ -908,4 +992,144 @@ html.dark .gth-glass-ultra {
   will-change:
     transform,
     opacity;
+}
+
+/* ========================================================= */
+/* 🚀 GPU SAFE RENDERING */
+/* ========================================================= */
+
+.gth-glass,
+.gth-glass-ultra,
+.gth-card-premium {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ========================================================= */
+/* ⚡ CONTENT VISIBILITY */
+/* ========================================================= */
+
+.gth-auto-render {
+  content-visibility: auto;
+  contain-intrinsic-size: 800px;
+}
+
+/* ========================================================= */
+/* 🎯 ACCESSIBLE STATES */
+/* ========================================================= */
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.75);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========================================================= */
+/* 🌊 PREMIUM SCROLL */
+/* ========================================================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  scroll-margin-top: 120px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ========================================================= */
+/* ✨ SKELETON ENGINE */
+/* ========================================================= */
+
+.gth-skeleton {
+  position: relative;
+  overflow: hidden;
+
+  background:
+    linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.04));
+
+  background-size: 200% 100%;
+
+  animation:
+    gthSkeleton 1.4s infinite linear;
+}
+
+@keyframes gthSkeleton {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ========================================================= */
+/* 🎬 PREMIUM MOTION */
+/* ========================================================= */
+
+.gth-fade-up {
+  animation:
+    gthFadeUp 0.8s var(--motion-premium);
+}
+
+@keyframes gthFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gth-fade {
+  animation: gthFade 0.5s ease;
+}
+
+@keyframes gthFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
