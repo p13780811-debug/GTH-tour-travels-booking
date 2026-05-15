@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, KeyboardEvent } from "react"
 
 export default function TripPlanner() {
 
@@ -10,64 +10,266 @@ export default function TripPlanner() {
 
     async function askAI() {
 
-        if (!question) return
+        if (!question.trim() || loading) return
 
-        setLoading(true)
+        try {
 
-        const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: question
+            setLoading(true)
+            setAnswer("")
+
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: question
+                })
             })
-        })
 
-        const data = await res.json()
+            const data = await res.json()
 
-        setAnswer(data.reply)
+            setAnswer(data.reply || "No response received.")
 
-        setLoading(false)
+        } catch {
+
+            setAnswer("Something went wrong. Please try again.")
+
+        } finally {
+
+            setLoading(false)
+
+        }
+
+    }
+
+    function handleKeyDown(
+        e: KeyboardEvent<HTMLInputElement>
+    ) {
+
+        if (e.key === "Enter") {
+            askAI()
+        }
 
     }
 
     return (
 
-        <div className="max-w-3xl mx-auto bg-black/70 backdrop-blur-md p-6 rounded-xl border border-yellow-500/20">
+        <div
+            className="
+            w-full
+            gth-glass
+            rounded-[1.8rem]
+            border border-primary/10
+            p-2.5 md:p-3
+            shadow-2xl
+            "
+        >
 
-            <h3 className="text-yellow-400 font-semibold mb-4">
-                AI Trip Planner
-            </h3>
+            {/* TOP */}
+            <div className="flex items-center justify-between mb-2">
 
-            <div className="flex gap-3">
+                <div>
 
-                <input
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ask about destinations..."
-                    className="flex-1 text-white p-3 rounded bg-black border border-gray-700"
+                    <p
+                        className="
+                        text-[9px]
+                        uppercase
+                        tracking-[0.3em]
+                        text-primary
+                        font-black
+                        "
+                    >
+                        GTH AI
+                    </p>
+
+                    <h3
+                        className="
+                        text-xs md:text-sm
+                        font-bold
+                        text-foreground
+                        "
+                    >
+                        Trip Planner
+                    </h3>
+
+                </div>
+
+                <div
+                    className="
+                    h-2 w-2
+                    rounded-full
+                    bg-green-500
+                    animate-pulse
+                    "
                 />
+
+            </div>
+
+            {/* INPUT */}
+            <div className="flex gap-2">
+
+                <div className="flex-1 relative">
+
+                    <input
+                        value={question}
+                        onChange={(e) =>
+                            setQuestion(e.target.value)
+                        }
+                        onKeyDown={handleKeyDown}
+                        placeholder="Ask your luxury destination..."
+                        className="
+                        w-full
+                        h-10 md:h-11
+                        rounded-2xl
+                        gth-glass
+                        border border-primary/10
+                        px-3 pr-10
+                        text-xs md:text-sm
+                        text-foreground
+                        placeholder:text-muted-foreground
+                        outline-none
+                        transition-all duration-300
+                        focus:border-primary/40
+                        "
+                    />
+
+                    <div
+                        className="
+                        absolute
+                        right-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-primary
+                        text-xs
+                        "
+                    >
+                        ✦
+                    </div>
+
+                </div>
 
                 <button
                     onClick={askAI}
-                    className="bg-yellow-400 px-5 rounded text-black font-semibold"
+                    disabled={loading}
+                    className="
+                    h-10 md:h-11
+                    px-4 md:px-5
+                    rounded-2xl
+                    gth-btn-gold
+                    text-[9px] md:text-[10px]
+                    uppercase
+                    tracking-[0.2em]
+                    font-black
+                    transition-all duration-300
+                    active:scale-95
+                    disabled:opacity-50
+                    whitespace-nowrap
+                    "
                 >
-                    Ask
+
+                    {loading
+                        ? "Thinking..."
+                        : "Ask AI"
+                    }
+
                 </button>
 
             </div>
 
-            {loading && (
-                <p className="text-gray-400 mt-4">Thinking...</p>
-            )}
+            {/* ANSWER */}
+            {(loading || answer) && (
 
-            {answer && (
-                <div className="mt-4 p-4 bg-[#111] rounded text-gray-300">
-                    {answer}
+                <div
+                    className="
+                    mt-3
+                    rounded-2xl
+                    gth-glass
+                    border border-primary/10
+                    p-3
+                    "
+                >
+
+                    {loading && (
+
+                        <div
+                            className="
+                            flex items-center gap-2
+                            text-xs
+                            text-muted-foreground
+                            "
+                        >
+
+                            <div className="flex gap-1">
+
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce" />
+
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.15s]" />
+
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.3s]" />
+
+                            </div>
+
+                            Planning your trip...
+
+                        </div>
+
+                    )}
+
+                    {!loading && answer && (
+
+                        <div className="space-y-2">
+
+                            <div className="flex items-center gap-2">
+
+                                <div
+                                    className="
+                                    h-6 w-6
+                                    rounded-full
+                                    gth-btn-gold
+                                    flex items-center justify-center
+                                    text-[9px]
+                                    font-black
+                                    "
+                                >
+                                    AI
+                                </div>
+
+                                <p
+                                    className="
+                                    text-[9px]
+                                    uppercase
+                                    tracking-[0.25em]
+                                    text-primary
+                                    font-bold
+                                    "
+                                >
+                                    GTH Concierge
+                                </p>
+
+                            </div>
+
+                            <p
+                                className="
+                                text-xs md:text-sm
+                                leading-relaxed
+                                text-foreground/90
+                                whitespace-pre-line
+                                "
+                            >
+                                {answer}
+                            </p>
+
+                        </div>
+
+                    )}
+
                 </div>
+
             )}
 
         </div>
+
     )
+
 }

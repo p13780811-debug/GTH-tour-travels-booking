@@ -3,8 +3,7 @@
 import { blogs } from "@/data/blogs";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import Image from "next/image"; // Next.js Optimized Image zaroori hai
 import { Metadata } from "next";
 
@@ -54,7 +53,7 @@ export default async function BlogPage({ params }: { params: Promise<{ slug: str
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <Navbar />
+
 
             {/* --- HERO SECTION: Dynamic Image Implemented --- */}
             <div className="relative h-[75vh] flex items-center overflow-hidden pt-24 border-b border-[#1a1a1a]">
@@ -125,7 +124,7 @@ export default async function BlogPage({ params }: { params: Promise<{ slug: str
                 </aside>
             </div>
 
-            <Footer />
+
         </main>
     );
 }

@@ -69,8 +69,11 @@ export default function NetflixCarousel({
 
             {/* Gradients */}
 
-            <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-black to-transparent pointer-events-none z-10" />
-            <div className="absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-black to-transparent pointer-events-none z-10" />
+            {/* Left Fade */}
+            <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r z-10" />
+
+            {/* Right Fade */}
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l z-10" />
 
             {/* Arrows */}
 

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { blogs } from "@/data/blogs";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 
 
 const blogImages = [
@@ -14,7 +13,7 @@ const blogImages = [
 export default function BlogList() {
     return (
         <main className="min-h-screen bg-[#050505] text-white">
-            <Navbar />
+
 
             {/* --- HERO SECTION: High Definition Impact --- */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-24">
@@ -119,7 +118,7 @@ export default function BlogList() {
                 </div>
             </section>
 
-            <Footer />
+
         </main>
     );
 }

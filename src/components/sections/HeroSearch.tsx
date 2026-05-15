@@ -1,52 +1,87 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Calendar, Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { getIata, cityToIata } from "@/lib/iata"
-
-
+import { MapPin, Calendar, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { getIata, cityToIata } from "@/lib/iata";
 
 export default function SearchSection({ city }: { city?: string }) {
     const [tab, setTab] = useState("flights");
-    const [inputValue, setInputValue] = useState("");
+    const [inputValue, setInputValue] = useState(city || "");
     const [checkIn, setCheckIn] = useState("");
     const [checkOut, setCheckOut] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const router = useRouter();
-    const inputRef = useRef<HTMLInputElement>(null);
-
-
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    useEffect(() => {
-        if (inputValue.length > 1) {
-            const filtered = Object.keys(cityToIata).filter((city) =>
-                city.toLowerCase().includes(inputValue.toLowerCase())
-            )
-            setSuggestions(filtered)
-        } else {
-            setSuggestions([])
-        }
-    }, [inputValue])
 
+    const router = useRouter();
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
     const tabs = ["flights", "hotels", "tours"];
 
+    // ✅ Debounced Suggestions
+    useEffect(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => {
+            if (inputValue.trim().length > 1) {
+                const filtered = Object.keys(cityToIata)
+                    .filter((cityName) =>
+                        cityName.toLowerCase().includes(inputValue.toLowerCase())
+                    )
+                    .slice(0, 8);
+
+                setSuggestions(filtered);
+                setIsOpen(true);
+            } else {
+                setSuggestions([]);
+                setIsOpen(false);
+            }
+        }, 250);
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, [inputValue]);
+
+    // ✅ Click Outside Close
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                wrapperRef.current &&
+                !wrapperRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const handleSearch = (searchQuery?: string) => {
         const query = searchQuery || inputValue;
-        if (!query) return;
+
+        if (!query.trim()) return;
 
         if (tab === "hotels") {
-
-            const marker = "417668";
-
-
-            const klookUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${query}`)}`;
+            const klookUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
+                `https://www.klook.com/en-IN/hotels/searchresult/?city_name=${query}`
+            )}`;
 
             window.open(klookUrl, "_blank");
         }
+
         else if (tab === "flights") {
-            const code = query ? getIata(query) : "DEL";
+            const code = getIata(query || "Delhi");
 
             router.push(
                 `/flights?origin=DEL&destination=${code}&depart_date=${checkIn}`
@@ -54,32 +89,34 @@ export default function SearchSection({ city }: { city?: string }) {
         }
 
         else if (tab === "tours") {
-            // Tours ke liye Klook Activities link
-            const toursUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(`https://www.klook.com/en-IN/search/result/?query=${query}`)}`;
+            const toursUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
+                `https://www.klook.com/en-IN/search/result/?query=${query}`
+            )}`;
+
             window.open(toursUrl, "_blank");
         }
+
         else {
             router.push(`/search?q=${encodeURIComponent(query)}`);
         }
 
-        inputRef.current?.blur();
         setIsOpen(false);
     };
 
     return (
-        <div className="w-full flex justify-center relative z-30 px-4 mt-6 font-sans">
+        <div className="relative z-30 flex w-full justify-center px-4 mt-6 font-sans" ref={wrapperRef}>
+
             <div className="w-full max-w-4xl">
 
                 {/* TABS */}
-                <div className="flex justify-center gap-6 mb-3 text-sm sticky top-[60px] md:top-[80px] z-50 md:static">
+                <div className="sticky top-[60px] z-40 mb-3 flex justify-center gap-6 md:static">
                     {tabs.map((t) => (
                         <button
                             key={t}
                             onClick={() => setTab(t)}
-                            className={`text-xs font-bold uppercase tracking-[0.25em] transition-all pb-1
-                            ${tab === t
-                                    ? "text-sky-400 border-b-2 border-sky-400"
-                                    : "text-gray-400 hover:text-white"
+                            className={`pb-1 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-300 ${tab === t
+                                    ? "text-[var(--gold)] border-b-2 border-[var(--gold)]"
+                                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
                                 }`}
                         >
                             {t}
@@ -87,19 +124,20 @@ export default function SearchSection({ city }: { city?: string }) {
                     ))}
                 </div>
 
-                {/* SEARCH CONTAINER (Glassmorphism Effect) */}
-                {/* SEARCH CONTAINER - Luxury Mobile Fix */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 gth-glass/10 backdrop-blur-xl overflow-hidden border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1 shadow-2xl mx-4 md:mx-0 mt-2 md:-mt-2 relative z-50">
+                {/* SEARCH BAR */}
+                <div className="relative grid grid-cols-1 md:grid-cols-4 gap-2 overflow-visible rounded-[28px] border border-[var(--border)] bg-[var(--surface-1)]/70 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.25)] p-2">
 
-                    {/* DESTINATION INPUT */}
-                    <div className="relative border-b md:border-b-0 md:border-r border-white/10">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 w-4 h-4 z-10" />
+                    {/* DESTINATION */}
+                    <div className="relative md:border-r border-[var(--border)]">
+                        <MapPin className="absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[var(--gold)]" />
+
                         <input
-                            ref={inputRef}
                             value={inputValue}
-                            onChange={(e) => {
-                                setInputValue(e.target.value);
-                                setIsOpen(true);
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onFocus={() => {
+                                if (suggestions.length > 0) {
+                                    setIsOpen(true);
+                                }
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
@@ -107,65 +145,77 @@ export default function SearchSection({ city }: { city?: string }) {
                                     handleSearch();
                                 }
                             }}
-                            placeholder={tab === "hotels" ? "Search Hotels in City..." : "Search Destination..."}
-                            className="w-full pl-10 pr-4 py-4 bg-transparent text-sm text-white focus:outline-none placeholder:text-gray-400"
+                            placeholder={
+                                tab === "hotels"
+                                    ? "Search Hotels..."
+                                    : "Search Destination..."
+                            }
+                            className="h-12 w-full rounded-2xl bg-transparent pl-11 pr-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
                         />
 
-                        {/* Suggestions Dropdown */}
-                        {isOpen && suggestions.length > 0 && inputValue.length > 1 && (
-                            <div className="absolute top-full left-0 mt-2 w-full gth-glass border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+                        {/* SUGGESTIONS */}
+                        {isOpen && suggestions.length > 0 && (
+                            <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] backdrop-blur-2xl shadow-2xl">
+
                                 {suggestions.map((s, i) => (
                                     <button
                                         key={i}
                                         onClick={() => {
                                             setInputValue(s);
-                                            setIsOpen(false);
                                             handleSearch(s);
                                         }}
-                                        className="block w-full text-left px-4 py-3 text-sm text-white hover:bg-sky-500/20 transition border-b border-white/5 last:border-0"
+                                        className="flex w-full items-center justify-between border-b border-[var(--border)] px-4 py-3 text-left text-sm text-[var(--foreground)] transition-all hover:bg-[var(--surface-2)] last:border-none"
                                     >
-                                        {s}
+                                        <span>{s}</span>
+
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-[var(--gold)]">
+                                            Visit →
+                                        </span>
                                     </button>
                                 ))}
+
                             </div>
                         )}
                     </div>
 
-                    {/* CHECK-IN DATE */}
-                    <div className="relative border-r border-white/5">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 w-4 h-4" />
+                    {/* CHECK IN */}
+                    <div className="relative md:border-r border-[var(--border)]">
+                        <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--gold)]" />
+
                         <input
                             type="date"
                             value={checkIn}
                             onChange={(e) => setCheckIn(e.target.value)}
-                            className="w-full pl-10 pr-4 py-4 bg-transparent text-sm text-white focus:outline-none [color-scheme:dark] cursor-pointer"
+                            className="h-12 w-full cursor-pointer rounded-2xl bg-transparent pl-11 pr-4 text-xs text-[var(--foreground)] outline-none [color-scheme:dark]"
                         />
                     </div>
 
-                    {/* CHECK-OUT DATE */}
-                    <div className="relative border-r border-white/5">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 w-4 h-4" />
+                    {/* CHECK OUT */}
+                    <div className="relative md:border-r border-[var(--border)]">
+                        <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--gold)]" />
+
                         <input
                             type="date"
                             value={checkOut}
                             onChange={(e) => setCheckOut(e.target.value)}
-                            className="w-full pl-10 pr-4 py-4 bg-transparent text-sm text-white focus:outline-none [color-scheme:dark] cursor-pointer"
+                            className="h-12 w-full cursor-pointer rounded-2xl bg-transparent pl-11 pr-4 text-xs text-[var(--foreground)] outline-none [color-scheme:dark]"
                         />
                     </div>
 
-                    {/* SEARCH BUTTON */}
+                    {/* BUTTON */}
                     <button
                         type="button"
                         onClick={() => handleSearch()}
-
-                        className="w-full h-[45px] md:w-[215px] md:h-full bg-gradient-to-r from-sky-500 to-cyan-400 text-black flex items-center justify-center gap-2 font-bold uppercase rounded-2xl md:rounded-r-full shadow-lg transition-all active:scale-95 mt-4 md:mt-0"
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--gold)] px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black transition-all duration-300 hover:scale-[1.02] active:scale-95"
                     >
-                        <Search className="w-4 h-4" />
+                        <Search className="h-4 w-4" />
                         Search
                     </button>
 
                 </div>
+
             </div>
+
         </div>
     );
 }

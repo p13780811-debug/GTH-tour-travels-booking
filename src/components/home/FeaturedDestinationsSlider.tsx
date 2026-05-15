@@ -1,131 +1,216 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, EffectCoverflow } from "swiper/modules";
+import Image from "next/image"
+import Link from "next/link"
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react"
+import { useRef } from "react"
 
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/effect-coverflow";
+interface City {
+    slug: string
+    name: string
+    image_url?: string
+}
 
 export default function FeaturedDestinationsSlider({
     cities,
 }: {
-    cities: any[];
+    cities: City[]
 }) {
+
+    const sliderRef = useRef<HTMLDivElement>(null)
+
+    const scroll = (direction: "left" | "right") => {
+
+        if (!sliderRef.current) return
+
+        const containerWidth =
+            sliderRef.current.offsetWidth
+
+        sliderRef.current.scrollBy({
+            left:
+                direction === "left"
+                    ? -(containerWidth * 0.82)
+                    : containerWidth * 0.82,
+            behavior: "smooth"
+        })
+
+    }
+
+    if (!cities?.length) return null
+
     return (
-        <section className="py-20 bg-black overflow-hidden perspective-1000">
-            {/* Professional Luxury Heading */}
-            <div className="text-center mb-16">
-                <h2 className="text-[#f59e0b] text-4xl md:text-5xl font-black tracking-[12px] uppercase drop-shadow-[0_0_12px_rgba(245,158,11,0.4)] transition-all duration-500">
-                    Featured Destinations
-                </h2>
-                <div className="h-1 w-28 md:w-32 bg-[#f59e0b] mx-auto mt-4 shadow-[0_0_18px_#f59e0b] rounded-full" />
+
+        <section className="relative overflow-hidden bg-[var(--bg)] w-full py-14 md:py-20">
+
+            {/* SOFT ATMOSPHERE */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+
+                <div className="absolute left-0 top-0 h-64 w-64 rounded-full bg-[var(--surface-1)] blur-[120px]" />
+
+                <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-[var(--surface-2)] blur-[140px]" />
+
             </div>
 
-            <Swiper
-                modules={[Navigation, Autoplay, EffectCoverflow]}
-                effect="coverflow"
-                grabCursor={true}
-                centeredSlides={true}
-                loop={true}
-                spaceBetween={30}
-                slidesPerView={"auto"}
-                autoplay={{
-                    delay: 2500,
-                    disableOnInteraction: false,
-                }}
-                coverflowEffect={{
-                    rotate: 30,
-                    stretch: 0,
-                    depth: 120,
-                    modifier: 1,
-                    slideShadows: false,
-                }}
-                navigation={true}
-                className="mySwiper px-10"
-            >
-                {cities.map((city) => (
-                    <SwiperSlide
-                        key={city.slug}
-                        className="!w-[350px] transition-transform duration-1000 ease-in-out"
-                    >
-                        <div className="relative group rounded-3xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-700 hover:shadow-sky-500/50 hover:border-[#f59e0b]/50">
-                            {/* Image */}
-                            <Image
-                                src={city.image_url || "/images/default-city.jpg"}
-                                alt={city.name}
-                                width={400}
-                                height={250}
-                                className="object-cover w-full h-[350px] transition-transform duration-1000 group-hover:scale-110"
+            <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6">
+
+                {/* HEADER */}
+                <div className="mb-8 flex items-end justify-between gap-4">
+
+                    <div className="max-w-2xl">
+
+                        <div className="gth-glass mb-4 inline-flex items-center rounded-full border border-[var(--border)] px-4 py-2">
+
+                            <span className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--text-soft)]">
+
+                                Featured Destinations
+
+                            </span>
+
+                        </div>
+
+                        <h2 className="text-3xl font-black tracking-tight text-[var(--text)] md:text-5xl">
+
+                            Explore the world's most{" "}
+
+                            <span className="gold-text">
+                                premium escapes
+                            </span>
+
+                        </h2>
+
+                    </div>
+
+                    {/* HOTSTAR STYLE NAV */}
+                    <div className="hidden items-center gap-3 md:flex">
+
+                        <button
+                            onClick={() => scroll("left")}
+                            className="gth-glass flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] transition-all duration-300 hover:-translate-y-1"
+                        >
+
+                            <ChevronLeft
+                                size={18}
+                                className="text-[var(--text)]"
                             />
 
-                            {/* ✅ Glass Strip Overlay ONLY behind text */}
-                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/40 via-black/50 to-transparent flex flex-col rounded-b-3xl">
-                                <div className="backdrop-blur-[2px] inline-block">
-                                    <h3 className="text-white font-black text-2xl md:text-3xl uppercase italic tracking-tight mb-2 text-shadow-sm">
+                        </button>
+
+                        <button
+                            onClick={() => scroll("right")}
+                            className="gth-btn-gold flex h-11 w-11 items-center justify-center rounded-full"
+                        >
+
+                            <ChevronRight size={18} />
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                {/* HOTSTAR STYLE ROW */}
+                <div
+                    ref={sliderRef}
+                    className="flex gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide"
+                >
+
+                    {cities.map((city, index) => (
+
+                        <Link
+                            key={city.slug}
+                            href={`/destinations/${city.slug}`}
+                            className="group relative w-[72vw] flex-shrink-0 overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] transition-all duration-500 hover:z-20 hover:-translate-y-1 hover:shadow-[var(--shadow-hover)] sm:w-[340px] lg:w-[360px]"
+                        >
+
+                            {/* IMAGE */}
+                            <div className="relative aspect-[4/5] overflow-hidden">
+
+                                <Image
+                                    src={
+                                        city.image_url ||
+                                        "/images/default-city.jpg"
+                                    }
+                                    alt={city.name}
+                                    fill
+                                    priority={index < 2}
+                                    sizes="(max-width:768px) 72vw, 360px"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                                />
+
+                                {/* OVERLAY */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+                                {/* CONTENT */}
+                                <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+
+                                    <div className="gth-glass mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--stroke-soft)] px-3 py-2">
+
+                                        <MapPin
+                                            size={12}
+                                            className="text-[var(--gold)]"
+                                        />
+
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text)]">
+
+                                            Global Luxury
+
+                                        </span>
+
+                                    </div>
+
+                                    <h3 className="text-2xl font-black tracking-tight text-white md:text-3xl">
+
                                         {city.name}
+
                                     </h3>
-                                    <p className="text-[#f59e0b] text-[10px] md:text-sm font-bold uppercase tracking-widest mb-3 text-shadow-sm">
-                                        Explore Luxury
+
+                                    <p className="mt-3 max-w-[240px] text-sm leading-relaxed text-white/75">
+
+                                        Curated stays, cinematic
+                                        experiences and elite travel
+                                        discovery.
+
                                     </p>
+
+                                    <div className="mt-5">
+
+                                        <div className="gth-btn-gold inline-flex items-center justify-center rounded-full px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em]">
+
+                                            Explore Destination
+
+                                        </div>
+
+                                    </div>
+
                                 </div>
 
-                                <Link href={`/destinations/${city.slug}`}>
-                                    <button className="w-full py-2 gth-glass/10 backdrop-blur-md border border-white/20 text-[10px] md:text-sm text-white uppercase font-bold rounded-lg hover:bg-[#f59e0b] hover:text-black transition-all duration-300 active:scale-5">
-                                        Explore Destination
-                                    </button>
-                                </Link>
                             </div>
-                        </div>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
 
-            {/* Navigation Buttons Styling */}
-            <style jsx global>{`
-        .swiper-button-next,
-        .swiper-button-prev {
-          color: #0cf0b7 !important;
-          background: rgba(0, 0, 0, 0.5);
-          width: 55px;
-          height: 55px;
-          border-radius: 50%;
-          border: 2px solid rgb(0, 255, 200);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          transition: all 0.3s ease-in-out;
-        }
+                        </Link>
 
-        .swiper-button-next:hover,
-        .swiper-button-prev:hover {
-          background: #f59e0b;
-          color: black !important;
-          box-shadow: 0 0 15px #f59e0b, 0 0 30px #f59e0b, 0 0 45px #f59e0b;
-          transform: scale(1.1);
-        }
+                    ))}
 
-        .swiper-button-next:after,
-        .swiper-button-prev:after {
-          font-size: 24px !important;
-          font-weight: bold;
-        }
+                </div>
 
-        .glow-neon {
-          box-shadow: 0 0 6px #f59e0b, 0 0 12px #f59e0b, 0 0 18px #f59e0b;
-        }
+                {/* MOBILE HINT */}
+                <div className="mt-5 flex items-center justify-center md:hidden">
 
-        .text-shadow-lg {
-          text-shadow: 0 0 4px rgba(0, 0, 0, 0.6), 0 0 6px #f59e0b;
-        }
+                    <div className="gth-glass rounded-full border border-[var(--border)] px-4 py-2">
 
-        .text-shadow-sm {
-          text-shadow: 0 0 2px rgba(0, 0, 0, 0.5), 0 0 4px #f59e0b;
-        }
-      `}</style>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+
+                            Swipe To Explore
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </section>
-    );
+
+    )
+
 }

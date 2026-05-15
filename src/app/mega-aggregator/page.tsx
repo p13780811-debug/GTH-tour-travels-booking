@@ -9,6 +9,7 @@ import { goaData, parisData } from "@/data/hotelData";
 import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
 import GTHNetwork from "@/components/sections/GTHNetwork";
 import dynamic from "next/dynamic"
+import HeroSlider from "@/components/HeroSlider";
 
 
 const supabase = createClient(
@@ -75,56 +76,9 @@ export default async function MegaAggregator() {
 
     return (
         <div className="w-full transition-all duration-500 ease-in-out transform-gpu">
-            {/* Hero Section with video */}
-            <section className="relative -mt-8 w-full h-[65vh] overflow-hidden group">
-                {/* Background Video - Height reduced to 60vh */}
-                {/* 1. DESKTOP VIDEO (MD:BLOCK ka matlab sirf bade screen par dikhega) */}
-                <video
-                    className="hidden md:block absolute inset-0 w-full h-full object-cover"
-                    autoPlay loop muted playsInline
-                    src="/hero video.mp4"
-                />
-
-                {/* 2. MOBILE PHOTO (MD:HIDDEN ka matlab bade screen par gayab rahega) */}
-                <img
-                    src="/maldives-bg.jpg"
-                    alt="Maldives Luxury"
-                    className="block md:hidden absolute inset-0 w-full h-full object-cover"
-                />
-
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white p-4">
-
-                    {/* Heading - Size reduced to 4xl/5xl */}
-                    <h1 className="text-2xl md:text-2xl font-black mb-2 flex text-center uppercase tracking-tight">
-                        Luxury <span className="text-skyBlue">Travel</span> Portal
-                    </h1>
-
-                    <p className="text-sm md:text-base text-center mb-8 font-medium opacity-80 tracking-wide">
-                        Flights • Hotels • Tours • Insurance — All in one place.
-                    </p>
-
-
-                    <div className="will-change-transform">
-                        <HeroSearch />
-                    </div>
-
-
-
-
-
-
-
-
-                    {/* Small Trust Markers */}
-                    <div className="mt-8 flex gap-6 text-[9px] font-bold uppercase tracking-widest opacity-60">
-                        <span>Best price guaranteed</span>
-                        <span>5M+ Properties</span>
-                        <span>No booking fees</span>
-                    </div>
-                </div>
-            </section>
-
+            <div className="-mt-8">
+                <HeroSlider />
+            </div>
 
             {/* --- SIGNATURE EXPERIENCE: Digha Special --- */}
             <section className="py-24 bg-rgba(2, 88, 63, 0.03) border-y border-[#d4af37]/10">
