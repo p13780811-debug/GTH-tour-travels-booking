@@ -69,8 +69,17 @@ const nowISO = () => new Date().toISOString()
 const safeNumber = (v: any, fallback = 0) =>
     Number(v) > 0 ? Number(v) : fallback
 
-const normalizeText = (v: any) =>
-    String(v || "").trim()
+// ==========================================================
+// 🛡️ CORRECTION 1: SECURITY LAYER - DATA GUARD SANITIZER
+// ==========================================================
+const normalizeText = (v: any) => {
+    const rawStr = String(v || "").trim();
+    // HTML tags, dangerous script tokens, aur event handlers ko completely strip out karein
+    return rawStr
+        .replace(/<[^>]*>/g, "")
+        .replace(/javascript:/gi, "")
+        .replace(/onclick|onerror|onmouseover|onload/gi, "");
+}
 
 const createSlug = (text: string) =>
     text
@@ -510,68 +519,39 @@ export const PropertyService = {
     // ======================================================
 
     async add(payload: PropertyPayload) {
-
-        const cleanTitle =
-            normalizeText(payload.title)
-
-        const generatedSlug =
-            payload.slug ||
-            createSlug(cleanTitle)
-
-        const finalPayload = {
-
-            ...payload,
-
-            slug: generatedSlug,
-
-            title: cleanTitle,
-
-            description:
-                normalizeText(
-                    payload.description
-                ) ||
-                generateDescription(payload),
-
-            created_at: nowISO(),
-
-            updated_at: nowISO(),
-
-            status:
-                payload.status ||
-                "verified",
-
-            views: 0,
-
-            leads: 0,
-
-            saves: 0,
-
-            shares: 0,
-
-            ai_score:
-                calculateAIScore(payload),
-
-            fraud_score:
-                calculateFraudScore(payload),
-
-            amenities:
-                payload.amenities ||
-                DEFAULT_AMENITIES,
+        // Enforce Server Execution Context Guard
+        if (typeof window !== "undefined") {
+            throw new Error("SERVER-SIDE SECURITY VIOLATION: Write mutations blocked on client context.");
         }
 
-        const { data, error } =
-            await supabase
-                .from("properties")
-                .insert([finalPayload])
-                .select()
+        const cleanTitle = normalizeText(payload.title)
+        const generatedSlug = payload.slug ? normalizeText(payload.slug) : createSlug(cleanTitle)
 
+        const finalPayload = {
+            ...payload,
+            slug: generatedSlug,
+            title: cleanTitle,
+            location: normalizeText(payload.location),
+            city: normalizeText(payload.city),
+            country: normalizeText(payload.country),
+            property_type: normalizeText(payload.property_type),
+            listing_type: normalizeText(payload.listing_type),
+            description: normalizeText(payload.description) || generateDescription(payload),
+            created_at: nowISO(),
+            updated_at: nowISO(),
+            status: payload.status || "verified",
+            views: 0,
+            leads: 0,
+            saves: 0,
+            shares: 0,
+            ai_score: calculateAIScore(payload),
+            fraud_score: calculateFraudScore(payload),
+            amenities: payload.amenities || DEFAULT_AMENITIES,
+        }
+
+        const { data, error } = await supabase.from("properties").insert([finalPayload]).select()
         if (error) {
-
-            console.error(
-                "❌ ADD FAILED:",
-                error.message
-            )
-
+            console.error("❌ ADD PROPERTY FAILED:", error.message)
             throw error
         }
 
@@ -864,3 +844,13 @@ export const getAIRecommendations = async (
         slug
     )
 }
+
+// ==========================================================
+// 🏛️ MISSING INFRASTRUCTURE PIECE: GET FEATURED PROPERTIES
+// ==========================================================
+export const getFeaturedProperties = async (filters: { limit?: number } = {}) => {
+    return await PropertyService.getAll({
+        featured: true,
+        limit: filters.limit || 8,
+    });
+};
