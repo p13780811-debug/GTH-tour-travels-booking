@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -28,5 +31,9 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: Typecheck
         run: npx tsc --noEmit
+      - name: Security regression tests
+        run: npm run test:security
+      - name: Lint
+        run: npm run lint
       - name: Production build
         run: npm run build

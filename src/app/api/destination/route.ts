@@ -9,10 +9,10 @@ const supabase = createClient(
 export async function GET() {
     const { data, error } = await supabase
         .from("destinations")
-        .select("*")
+        .select("*").limit(100)
 
     if (error) {
-        return NextResponse.json({ error: error.message })
+        return NextResponse.json({ error: "Data unavailable" }, { status: 500 })
     }
 
     return NextResponse.json(data)

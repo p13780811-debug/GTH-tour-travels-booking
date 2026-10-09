@@ -44,7 +44,7 @@ export function cleanDate(value: unknown): string | null {
 
   if (!date) return null;
   const parsed = new Date(`${date}T00:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? null : date;
+  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date ? null : date;
 }
 
 export function cleanPositiveInteger(
@@ -61,7 +61,7 @@ export function cleanPositiveInteger(
         ? Number(value)
         : NaN;
 
-  if (!Number.isInteger(numeric) || numeric < min || numeric > max) return null;
+  if (!Number.isSafeInteger(numeric) || numeric < min || numeric > max) return null;
   return numeric;
 }
 

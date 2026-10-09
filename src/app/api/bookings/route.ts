@@ -1,3 +1,4 @@
+import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import {
@@ -9,7 +10,7 @@ import {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await readJson(req);
 
     const hotelId = cleanString(body?.hotel_id, { min: 1, max: 120 });
     const fullName = cleanString(body?.full_name, { min: 2, max: 120 });
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("bookings")
       .insert([
         {
@@ -40,15 +41,15 @@ export async function POST(req: Request) {
           checkout,
           guests,
         },
-      ])
-      .select();
+      ]);
 
     if (error) {
       return NextResponse.json({ error: "Booking could not be created" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data }, { status: 201 });
-  } catch {
+    return NextResponse.json({ success: true }, { status: 201 });
+  } catch (error) {
+    if (error instanceof RequestError) return requestError(error);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

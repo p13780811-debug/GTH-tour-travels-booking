@@ -20,14 +20,11 @@ export default function PopularDestinations({
 
     useEffect(() => {
         const fetchImages = async () => {
-            const apiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
-            if (!apiKey) return;
 
             // Logic check: Cache check
-            const cached = localStorage.getItem("dest_images");
+            const cached = localStorage.getItem("dest_images_v2");
             if (cached) {
-                setImages(JSON.parse(cached));
-                return;
+                try { setImages(JSON.parse(cached)); return; } catch { localStorage.removeItem("dest_images_v2"); }
             }
 
             try {
@@ -36,13 +33,12 @@ export default function PopularDestinations({
                     destinations.map(async (dest) => {
                         try {
                             const res = await fetch(
-                                `https://api.pexels.com/v1/search?query=${dest.name}&per_page=1`,
-                                { headers: { Authorization: apiKey } }
+                                `/api/images?query=${encodeURIComponent(dest.name)}`
                             );
                             const data = await res.json();
                             return {
                                 name: dest.name,
-                                image: data.photos.src.large || "/placeholder.jpg",
+                                image: data.image || "/placeholder.jpg",
                             };
                         } catch {
                             return { name: dest.name, image: "/placeholder.jpg" };
@@ -53,7 +49,7 @@ export default function PopularDestinations({
                 const imgMap: any = {};
                 results.forEach((r) => (imgMap[r.name] = r.image));
                 setImages(imgMap);
-                localStorage.setItem("dest_images", JSON.stringify(imgMap));
+                localStorage.setItem("dest_images_v2", JSON.stringify(imgMap));
             } catch (err) {
                 console.log("Image Fetch Error:", err);
             }

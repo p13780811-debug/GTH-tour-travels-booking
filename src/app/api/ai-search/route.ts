@@ -1,9 +1,10 @@
+import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const query = cleanString(body?.query, { min: 2, max: 300 });
 
     if (!query) {
@@ -30,8 +31,10 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
+      signal: AbortSignal.timeout(20_000),
       body: JSON.stringify({
         model: "gpt-4o-mini",
+        max_tokens: 300,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
       }),
@@ -44,12 +47,17 @@ export async function POST(req: Request) {
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content || "{}";
 
-    try {
-      return NextResponse.json(JSON.parse(text));
-    } catch {
-      return NextResponse.json({});
-    }
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+    let filters: unknown;
+    try { filters = JSON.parse(text); } catch { throw new RequestError("Invalid AI response", 502); }
+    if (!filters || typeof filters !== "object" || Array.isArray(filters)) throw new RequestError("Invalid AI response", 502);
+    const values = filters as Record<string, unknown>;
+    const city = values.city == null ? null : cleanString(values.city, { max: 80 });
+    const type = values.type == null ? null : cleanString(values.type, { max: 40 });
+    const price = (value: unknown) => value == null ? null : typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1e12 ? value : undefined;
+    const minPrice = price(values.minPrice);
+    const maxPrice = price(values.maxPrice);
+    if ((values.city != null && !city) || (values.type != null && !type) || minPrice === undefined || maxPrice === undefined ||
+        (minPrice !== null && maxPrice !== null && minPrice > maxPrice)) throw new RequestError("Invalid AI response", 502);
+    return NextResponse.json({ city, type, minPrice, maxPrice });
+  } catch (error) { return requestError(error); }
 }

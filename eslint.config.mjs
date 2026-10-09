@@ -15,7 +15,7 @@ const eslintConfig = defineConfig([
       "@next/next/no-html-link-for-pages": "off",
       "react-hooks/exhaustive-deps": "off",
       "react-hooks/set-state-in-effect": "off",
-      "react-hooks/rules-of-hooks": "off",
+      "react-hooks/rules-of-hooks": "error",
       "react-hooks/immutability": "off",
       "react-hooks/purity": "off",
       "@typescript-eslint/ban-ts-comment": "off",

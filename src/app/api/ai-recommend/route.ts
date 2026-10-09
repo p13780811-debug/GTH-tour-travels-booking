@@ -1,10 +1,11 @@
+import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cleanSlug, cleanStringArray } from "@/lib/security/validators";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const slug = cleanSlug(body?.slug);
     const history = cleanStringArray(body?.history, { maxItems: 20, maxLength: 160 });
 
@@ -26,7 +27,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(data || []);
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestError) return requestError(error);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

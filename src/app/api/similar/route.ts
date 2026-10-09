@@ -1,10 +1,12 @@
+import { cleanSlug } from "@/lib/security/validators";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase"; // ✅ Same yahan bhi
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const slug = searchParams.get("slug");
+        const slug = cleanSlug(searchParams.get("slug"));
+        if (!slug) return NextResponse.json({ error: "Invalid property slug" }, { status: 400 });
 
         const { data, error } = await supabase
             .from("properties")
@@ -16,7 +18,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json(data || []);
     } catch (err) {
-        console.error("Similar API Error:", err);
+
         return NextResponse.json([], { status: 500 });
     }
 }
