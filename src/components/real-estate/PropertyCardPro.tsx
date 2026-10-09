@@ -52,7 +52,9 @@ export default function PropertyCardPro({
             <div className="relative h-44 md:h-52 overflow-hidden">
 
                 <img
-                    src={p.image}
+                    src={p.image || "/placeholder.jpg"}
+                    alt={p.title || "Property"}
+                    loading="lazy"
                     draggable={false}
                     onContextMenu={(e) => e.preventDefault()}
                     className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 select-none pointer-events-none"
@@ -151,7 +153,7 @@ export default function PropertyCardPro({
                         </p>
 
                         <h4 className="mt-1 text-sm font-black">
-                            {p.beds || "3"}
+                            {p.beds || "—"}
                         </h4>
                     </div>
 
@@ -164,7 +166,7 @@ export default function PropertyCardPro({
                         </p>
 
                         <h4 className="mt-1 text-sm font-black">
-                            {p.baths || "2"}
+                            {p.baths || "—"}
                         </h4>
                     </div>
 

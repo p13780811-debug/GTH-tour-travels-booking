@@ -19,7 +19,8 @@ export default function LoginModal({ onClose }: any) {
     const [error, setError] = useState("")
 
     const handleLogin = async () => {
-        if (!email) {
+        if (loading) return
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || email.length > 254) {
             setError("Enter email first")
             return
         }
@@ -30,7 +31,7 @@ export default function LoginModal({ onClose }: any) {
             setMessage("")
 
             const { error } = await supabase.auth.signInWithOtp({
-                email,
+                email: email.trim(),
                 options: {
                     emailRedirectTo: `${window.location.origin}/real-estate`,
                 },
@@ -41,7 +42,7 @@ export default function LoginModal({ onClose }: any) {
             setMessage("📩 Magic link sent! Check your email")
 
         } catch (err: any) {
-            setError(err.message || "Login failed")
+            setError("Unable to send sign-in link. Please retry shortly.")
         } finally {
             setLoading(false)
         }

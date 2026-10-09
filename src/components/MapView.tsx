@@ -18,6 +18,7 @@ function HeatMap({ data }: any) {
 
         const load = async () => {
             await import("leaflet.heat")
+            if (!isMounted) return
 
             const points = data
                 ?.filter((p: any) => p.lat && p.lng)
@@ -44,8 +45,10 @@ function HeatMap({ data }: any) {
         load()
 
         return () => {
+            isMounted = false
             if (layerRef.current) {
                 map.removeLayer(layerRef.current)
+                layerRef.current = null
             }
         }
     }, [data, map])
@@ -68,7 +71,7 @@ const createIcon = (price: number) =>
             font-weight:bold;
             box-shadow:0 2px 8px rgba(0,0,0,0.3);
         ">
-            ₹${price}
+            ${Number.isFinite(Number(price)) && Number(price) > 0 ? `₹${Number(price).toLocaleString("en-IN")}` : "Price on request"}
         </div>
         `,
         className: "",
@@ -132,6 +135,7 @@ export default function MapView({ data = [], active }: any) {
             {/* 🌍 MAP TILE */}
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 
             {/* 🔥 FEATURES */}
@@ -144,7 +148,7 @@ export default function MapView({ data = [], active }: any) {
                 data.map((item: any) => {
                     if (
                         typeof item.lat !== "number" ||
-                        typeof item.lng !== "number"
+                        typeof item.lng !== "number" || !Number.isFinite(item.lat) || !Number.isFinite(item.lng) || Math.abs(item.lat) > 90 || Math.abs(item.lng) > 180
                     ) return null
 
                     return (

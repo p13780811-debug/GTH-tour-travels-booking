@@ -47,15 +47,11 @@ type SearchFilters = {
 
 const CACHE = new Map<string, { data: any; expiry: number }>()
 
+export function clearPropertyCache() { CACHE.clear() }
+
 const CACHE_TTL = 1000 * 60 * 3
 
-const DEFAULT_AMENITIES = [
-    "Security",
-    "Parking",
-    "Power Backup",
-    "Lift",
-    "Clubhouse",
-]
+const DEFAULT_AMENITIES: string[] = []
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     kolkata: { lat: 22.5726, lng: 88.3639 },
@@ -156,19 +152,12 @@ const calculateFraudScore = (p: any) => {
 }
 
 const generateDescription = (p: any) => {
-
-    const beds = safeNumber(p.beds, 3)
-
-    const sqft = safeNumber(p.sqft, 1800)
-
-    const city = normalizeText(p.city || p.location || "Prime City")
-
-    const type = normalizeText(p.property_type || "Luxury Property")
-
-    return `Premium ${beds} BHK ${type} in ${city} featuring ${sqft} sqft luxury living, smart architecture, modern amenities, investment potential and AI verified premium infrastructure.`
+    const title = normalizeText(p.title) || "Property listing"
+    const location = normalizeText(p.city || p.location)
+    return `${title}${location ? ` in ${location}` : ""}. Contact the listing agent to confirm availability and details.`
 }
 
-const transformProperty = (p: any) => {
+export const transformProperty = (p: any) => {
 
     const cityKey = normalizeText(
         p.city || p.location
@@ -176,15 +165,15 @@ const transformProperty = (p: any) => {
 
     const coords =
         CITY_COORDS[cityKey] ||
-        CITY_COORDS["kolkata"]
+        { lat: undefined, lng: undefined }
 
     const price = safeNumber(p.price)
 
     const aiScore =
-        p.ai_score || calculateAIScore(p)
+        safeNumber(p.ai_score ?? p.intelligence_score)
 
     const fraudScore =
-        p.fraud_score || calculateFraudScore(p)
+        safeNumber(p.fraud_score)
 
     const boosted = isBoostActive(p)
 
@@ -208,7 +197,7 @@ const transformProperty = (p: any) => {
 
         image:
             normalizeText(p.image) ||
-            "/images/property-fallback.jpg",
+            "/placeholder.jpg",
 
         gallery:
             Array.isArray(p.gallery)
@@ -246,13 +235,13 @@ const transformProperty = (p: any) => {
             `₹ ${price.toLocaleString()} L`,
 
         beds:
-            safeNumber(p.beds, 3),
+            safeNumber(p.bedrooms ?? p.beds),
 
         baths:
-            safeNumber(p.baths, 2),
+            safeNumber(p.bathrooms ?? p.baths),
 
         sqft:
-            safeNumber(p.sqft, 1800),
+            safeNumber(p.area_sqft ?? p.sqft),
 
         views:
             safeNumber(p.views),
@@ -288,12 +277,10 @@ const transformProperty = (p: any) => {
             safeNumber(p.views) * 0.01,
 
         lat:
-            safeNumber(p.lat) ||
-            coords.lat,
+            typeof p.lat === "number" && Number.isFinite(p.lat) && Math.abs(p.lat) <= 90 ? p.lat : undefined,
 
         lng:
-            safeNumber(p.lng) ||
-            coords.lng,
+            typeof p.lng === "number" && Number.isFinite(p.lng) && Math.abs(p.lng) <= 180 ? p.lng : undefined,
 
         seo_title:
             `${p.title} | GTH ProEstate`,
@@ -336,9 +323,9 @@ export const PropertyService = {
 
         if (cached) return cached
 
-        const limit = filters.limit || 24
+        const limit = Math.min(100, Math.max(1, Math.floor(filters.limit || 24)))
 
-        const page = filters.page || 1
+        const page = Math.max(1, Math.floor(filters.page || 1))
 
         const from = (page - 1) * limit
 
@@ -375,6 +362,16 @@ export const PropertyService = {
             )
         }
 
+        if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice)
+        if (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) query = query.lte("price", filters.maxPrice)
+        if (filters.verified) query = query.eq("status", "verified")
+        if (filters.query) {
+            const term = filters.query.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120)
+            if (term) query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%,location.ilike.%${term}%`)
+        }
+        const orderColumn = filters.sort === "price_high" || filters.sort === "price_low" ? "price" : filters.sort === "latest" ? "created_at" : "final_score"
+        query = query.order(orderColumn, { ascending: filters.sort === "price_low", nullsFirst: false }).order("id", { ascending: false })
+
         const { data, error } =
             await query
 
@@ -385,30 +382,13 @@ export const PropertyService = {
                 error.message
             )
 
-            return []
+            throw new Error("Property inventory is temporarily unavailable. Please retry.")
         }
 
         let transformed =
             (data || []).map(
                 transformProperty
             )
-
-        if (filters.query) {
-
-            const q =
-                filters.query.toLowerCase()
-
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.title
-                            .toLowerCase()
-                            .includes(q) ||
-                        p.location
-                            .toLowerCase()
-                            .includes(q)
-                )
-        }
 
         if (filters.minPrice) {
             transformed =

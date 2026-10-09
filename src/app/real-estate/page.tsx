@@ -8,7 +8,7 @@ import RealEstateHero from "@/components/real-estate/RealEstateHero"
 
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
 import MapWrapper from "@/components/MapWrapper"
-import { PropertyService } from "@/lib/real-estate/propertyService"
+import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
 import AddPropertyModal from "@/components/real-estate/AddPropertyModal"
 import LeadsDashboard from "@/components/real-estate/LeadsDashboard"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
@@ -24,6 +24,8 @@ export default function App() {
     const [properties, setProperties] = useState<any[]>([])
     const [filtered, setFiltered] = useState<any[]>([])
     const [query, setQuery] = useState("")
+    const [inventoryError, setInventoryError] = useState("")
+    const [inventoryLoading, setInventoryLoading] = useState(true)
     const [active, setActive] = useState<any>(null)
 
     const [showAdd, setShowAdd] = useState(false)
@@ -90,6 +92,7 @@ export default function App() {
         }
 
         init()
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
 
         const channel = supabase
             .channel('properties-changes')
@@ -98,12 +101,14 @@ export default function App() {
                 { event: '*', schema: 'public', table: 'properties' },
                 async () => {
                     const { data } = await supabase.auth.getUser()
+                    clearPropertyCache()
                     await fetchProperties(data.user)
                 }
             )
             .subscribe()
 
         return () => {
+            authListener.subscription.unsubscribe()
             supabase.removeChannel(channel)
         }
     }, [showDashboard])
@@ -115,50 +120,38 @@ export default function App() {
     }
 
     const fetchProperties = async (currentUser: UserType | null) => {
-        let queryBuilder = supabase.from("properties").select("*");
-
-        if (currentUser?.email && showDashboard) {
-            queryBuilder = queryBuilder.eq("created_by", currentUser.email);
+        setInventoryLoading(true)
+        setInventoryError("")
+        try {
+            const data = await PropertyService.getAll({ limit: 100, sort: "latest" })
+            setProperties(data)
+            setFiltered(data)
+        } catch {
+            setInventoryError("Property inventory could not be loaded. Please retry.")
+        } finally {
+            setInventoryLoading(false)
         }
-
-        const { data, error } = await queryBuilder;
-
-        if (error) {
-            console.error("Matrix Error:", error.message);
-            return;
-        }
-
-        const sorted = (data || []).sort((a, b) => {
-            const aBoost = a.is_featured ? 1 : 0;
-            const bBoost = b.is_featured ? 1 : 0;
-
-            if (bBoost !== aBoost) return bBoost - aBoost;
-
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-
-        setProperties(sorted);
-        setFiltered(sorted);
     };
 
     // ============================
     // SEARCH (AI + LOCAL)
     // ============================
-    const aiSearch = async () => {
-        if (!query) return
+    const aiSearch = async (searchQuery = query) => {
+        if (!searchQuery) { setFiltered(properties); return }
 
         let filters: any = {}
 
         try {
             const res = await fetch("/api/ai-search", {
                 method: "POST",
-                body: JSON.stringify({ query }),
+                body: JSON.stringify({ query: searchQuery }),
+                headers: { "Content-Type": "application/json" },
             })
-            filters = await res.json()
+            if (res.ok) filters = await res.json()
         } catch { }
 
         if (!filters || Object.keys(filters).length === 0) {
-            const q = query.toLowerCase()
+            const q = searchQuery.toLowerCase()
 
             const cities = ["mumbai", "delhi", "kolkata", "bangalore", "pune"]
             let city = cities.find(c => q.includes(c)) || ""
@@ -187,16 +180,23 @@ export default function App() {
             filters = { city, minPrice, maxPrice, type }
         }
 
-        const result = properties.filter((p) => {
-            const price = Number(p.price || 0)
-
-            return (
-                (!filters.city || p.location?.toLowerCase().includes(filters.city)) &&
-                (!filters.minPrice || price >= filters.minPrice) &&
-                (!filters.maxPrice || price <= filters.maxPrice) &&
-                (!filters.type || p.title?.toLowerCase().includes(filters.type))
-            )
-        })
+        let result: any[] = []
+        setInventoryLoading(true)
+        setInventoryError("")
+        try {
+            result = await PropertyService.getAll({
+                city: typeof filters.city === "string" ? filters.city : undefined,
+                minPrice: typeof filters.minPrice === "number" ? filters.minPrice : undefined,
+                maxPrice: typeof filters.maxPrice === "number" && Number.isFinite(filters.maxPrice) ? filters.maxPrice : undefined,
+                query: !filters.city && !filters.type && !filters.minPrice && !Number.isFinite(filters.maxPrice) ? searchQuery : undefined,
+                limit: 100,
+            })
+            if (filters.type) result = result.filter(p => `${p.property_type} ${p.title}`.toLowerCase().includes(String(filters.type).toLowerCase()))
+        } catch {
+            setInventoryError("Search could not be completed. Please retry.")
+        } finally {
+            setInventoryLoading(false)
+        }
 
         setFiltered(result)
 
@@ -282,7 +282,7 @@ export default function App() {
             <RealEstateHero
                 query={query}
                 setQuery={setQuery}
-                onSearch={aiSearch}
+                onSearch={() => aiSearch()}
                 properties={properties}
                 setFiltered={setFiltered}
                 setActive={setActive}
@@ -369,7 +369,7 @@ export default function App() {
                                     key={i}
                                     onClick={() => {
                                         setQuery(c.q)
-                                        aiSearch()
+                                        aiSearch(c.q)
                                     }}
                                     className="
                   relative overflow-hidden
@@ -617,7 +617,7 @@ export default function App() {
                                             key={i}
                                             onClick={() => {
                                                 setQuery(t)
-                                                aiSearch()
+                                                aiSearch(t)
                                             }}
                                             className="
                       w-full
@@ -782,6 +782,9 @@ export default function App() {
               "
                             >
 
+                                {inventoryLoading && <p role="status">Loading property inventory…</p>}
+                                {inventoryError && <div role="alert">{inventoryError} <button className="gth-btn" onClick={() => fetchProperties(user)}>Retry</button></div>}
+                                {!inventoryLoading && !inventoryError && filtered.length === 0 && <p>No properties match your search.</p>}
                                 {filtered.map((p) => (
 
                                     <div

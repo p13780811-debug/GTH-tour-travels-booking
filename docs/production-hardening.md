@@ -63,3 +63,12 @@ Before deploying, add the missing server-only settings through Vercel Settings â
 Implementation references: Vercel request headers (https://vercel.com/docs/headers/request-headers), Upstash REST API (https://upstash.com/docs/redis/features/restapi), Redis scripting (https://redis.io/docs/latest/develop/programmability/eval-intro/), Supabase RLS (https://supabase.com/docs/guides/database/postgres/row-level-security).
 
 The limiter/auth unit tests mock provider transport. They validate request construction, denial, failures, identity and role checks; they do not prove real Redis execution or deployed RLS.
+
+
+## Real estate continuation (2026-10-10)
+
+Reviewed real-estate routes, components, shared services, ranking/search data scripts and related API consumers. Supabase screenshots establish only that properties/leads have RLS enabled and four policies each; they do not establish policy safety or app connectivity. No database policy changed.
+
+Implemented canonical property normalization (bedrooms/bathrooms/area_sqft), no invented amenities/dimensions/coordinates/verification or growth prediction, bounded inventory reads, database filtering/order before pagination, category query correction, auth subscription, load/error/retry/empty states, schema-compatible detail fetch, correct canonical domain and real account profile. Removed separate hardcoded mobile inventory by redirecting to responsive inventory. Fixed map async cleanup and numeric marker HTML.
+
+Remaining completion gates: actual property price units and columns; owner/agent identifiers; insert/moderation policies; saved_properties table is absent from screenshot inventory; admin membership and lead policy rules; upload storage rules; provider/Redis configuration; live enquiry/save/publish/admin E2E verification; existing legacy component hardcoded colors and promotional claims still need cleanup under global CSS. Existing ingestion scripts and generated properties.json are not proof of real verified inventory and were not executed. Do not present this pass as complete production readiness.

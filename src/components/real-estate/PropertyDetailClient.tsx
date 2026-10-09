@@ -1,4 +1,5 @@
 "use client"
+import { PropertyService } from "@/lib/real-estate/propertyService"
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
@@ -116,42 +117,11 @@ export default function PropertyDetailClient({
                 return
             }
 
-            const { data, error } = await supabase
-                .from("properties")
-                .select(`
-                    id,
-                    slug,
-                    title,
-                    location,
-                    city,
-                    country,
-                    price,
-                    image,
-                    gallery,
-                    description,
-                    lat,
-                    lng,
-                    sqft,
-                    beds,
-                    baths,
-                    property_type,
-                    amenities,
-                    is_featured,
-                    ai_score,
-                    views,
-                    verified,
-                    created_at,
-                    rank_position
-                `)
-                .eq("slug", slug)
-                .limit(1)
-
-            if (error || !data?.length) {
-                router.push("/real-estate")
+            const row = await PropertyService.getBySlug(slug)
+            if (!row) {
+                setProperty(null)
                 return
             }
-
-            const row = data[0]
 
             memoryCache.set(cacheKey, row)
 
@@ -189,7 +159,7 @@ export default function PropertyDetailClient({
                 `)
                 .eq("city", city)
                 .neq("slug", slug)
-                .order("rank_position", { ascending: true })
+                .order("final_score", { ascending: false, nullsFirst: false })
                 .range(0, 5)
 
             setRecommended(data || [])
@@ -238,30 +208,32 @@ export default function PropertyDetailClient({
             {
                 icon: BrainCircuit,
                 title: "AI Investment Score",
-                value: `${property.ai_score || 92}/100`,
+                value: property.ai_score ? `${property.ai_score}/100` : "Not available",
                 color: "text-cyan-400",
             },
             {
                 icon: TrendingUp,
                 title: "Growth Prediction",
-                value: "+18% Projected",
+                value: "Not available",
                 color: "text-emerald-400",
             },
             {
                 icon: Shield,
                 title: "Fraud Safety",
-                value: "Verified Safe",
+                value: property.verified ? "Verified listing" : "Not verified",
                 color: "text-[var(--gold)]",
             },
             {
                 icon: Radar,
                 title: "Demand Heat",
-                value: "High Demand",
+                value: "Not available",
                 color: "text-rose-400",
             },
         ]
 
     }, [property])
+
+    if (!loading && !property) return <main className="gth-container py-24"><h1 className="gold-text text-3xl">Property unavailable</h1><p>This listing could not be loaded.</p><Link className="gth-btn" href="/real-estate">Browse properties</Link></main>
 
     if (loading || !property) {
 
@@ -509,7 +481,7 @@ export default function PropertyDetailClient({
                                     </p>
 
                                     <h3 className="mt-3 text-3xl font-black">
-                                        {property.beds || "4"}
+                                        {property.beds || "—"}
                                     </h3>
 
                                 </div>
@@ -521,7 +493,7 @@ export default function PropertyDetailClient({
                                     </p>
 
                                     <h3 className="mt-3 text-3xl font-black">
-                                        {property.baths || "3"}
+                                        {property.baths || "—"}
                                     </h3>
 
                                 </div>
@@ -533,7 +505,7 @@ export default function PropertyDetailClient({
                                     </p>
 
                                     <h3 className="mt-3 text-3xl font-black">
-                                        {property.sqft || "2400"} sqft
+                                        {property.sqft || "—"} sqft
                                     </h3>
 
                                 </div>

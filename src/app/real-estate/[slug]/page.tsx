@@ -85,11 +85,11 @@ export async function generateMetadata({
 
     const description =
         property?.description ||
-        "AI powered luxury real estate platform with intelligent recommendations, smart analytics and premium verified listings."
+        "Browse property listings on GTH PRO. Confirm availability and details with the listing agent."
 
     const image =
         property?.image ||
-        "/images/og-real-estate.jpg"
+        "/placeholder.jpg"
 
     return {
         title:
@@ -131,7 +131,7 @@ export async function generateMetadata({
 
         alternates: {
             canonical:
-                `https://gth-tour-travels-booking.vercel.app/real-estate/${slug}`,
+                `https://gth-pro.vercel.app/real-estate/${slug}`,
         },
     }
 }
@@ -558,7 +558,7 @@ export default async function Page({
 
                             <p className="mt-5 text-base leading-8 text-[var(--muted)]">
 
-                                Hyper-personalized recommendations powered by live behavior analysis, pricing intelligence and luxury ranking systems.
+                                Related listings selected using stored property details.
 
                             </p>
 
@@ -602,7 +602,7 @@ export default async function Page({
 
                             <p className="mt-5 text-base leading-8 text-[var(--muted)]">
 
-                                Explore nearby premium listings with matching architecture, demand score and investment potential.
+                                Explore listings with similar city or property type.
 
                             </p>
 
