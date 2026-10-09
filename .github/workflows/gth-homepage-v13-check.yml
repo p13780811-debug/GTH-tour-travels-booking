@@ -1,17 +1,18 @@
-name: GTH Homepage v1.3 Check
+name: GTH Production Check
 
 on:
   push:
     branches:
       - gth-homepage-v1.3
+      - gth-production-hardening
   pull_request:
     branches:
       - main
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
@@ -25,5 +26,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      - name: Build
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Production build
         run: npm run build
