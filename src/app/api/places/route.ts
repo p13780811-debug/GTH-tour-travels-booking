@@ -1,25 +1,36 @@
+import { cleanString } from "@/lib/security/validators";
+
 export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
-    const term = searchParams.get("term");
+  const { searchParams } = new URL(req.url);
+  const term = cleanString(searchParams.get("term"), { min: 2, max: 80 });
 
-    if (!term) return Response.json([]);
+  if (!term) return Response.json([]);
 
-    try {
-        const res = await fetch(
-            `https://autocomplete.travelpayouts.com/places2?term=${term}&locale=en&types[]=city&types[]=airport`,
-            {
-                headers: {
-                    "X-Access-Token": process.env.TRAVELPAYOUTS_TOKEN || "",
-                },
-                cache: "no-store",
-            }
-        );
+  const token = process.env.TRAVELPAYOUTS_TOKEN;
+  if (!token) {
+    return Response.json(
+      { error: "Places service is not configured" },
+      { status: 503 },
+    );
+  }
 
-        const data = await res.json();
+  try {
+    const url = new URL("https://autocomplete.travelpayouts.com/places2");
+    url.searchParams.set("term", term);
+    url.searchParams.set("locale", "en");
+    url.searchParams.append("types[]", "city");
+    url.searchParams.append("types[]", "airport");
 
-        return Response.json(data.slice(0, 8)); // limit results
-    } catch (err) {
-        console.error(err);
-        return Response.json([]);
-    }
+    const res = await fetch(url.toString(), {
+      headers: { "X-Access-Token": token },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return Response.json([]);
+
+    const data = await res.json();
+    return Response.json(Array.isArray(data) ? data.slice(0, 8) : []);
+  } catch {
+    return Response.json([]);
+  }
 }
