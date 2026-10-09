@@ -26,6 +26,7 @@ export default function App() {
     const [query, setQuery] = useState("")
     const [inventoryError, setInventoryError] = useState("")
     const [inventoryLoading, setInventoryLoading] = useState(true)
+    const [inventoryPage, setInventoryPage] = useState(1)
     const [active, setActive] = useState<any>(null)
 
     const [showAdd, setShowAdd] = useState(false)
@@ -119,13 +120,14 @@ export default function App() {
         id?: string
     }
 
-    const fetchProperties = async (currentUser: UserType | null) => {
+    const fetchProperties = async (currentUser: UserType | null, page = 1) => {
         setInventoryLoading(true)
         setInventoryError("")
         try {
-            const data = await PropertyService.getAll({ limit: 100, sort: "latest" })
+            const data = await PropertyService.getAll({ limit: 100, page, sort: "latest" })
             setProperties(data)
             setFiltered(data)
+            setInventoryPage(page)
         } catch {
             setInventoryError("Property inventory could not be loaded. Please retry.")
         } finally {
@@ -281,6 +283,7 @@ export default function App() {
             {/* 🏆 HERO */}
             {/* ====================================================== */}
 
+            <div id="property-search" />
             <RealEstateHero
                 query={query}
                 setQuery={setQuery}
@@ -787,6 +790,11 @@ export default function App() {
                                 {inventoryLoading && <p role="status">Loading property inventory…</p>}
                                 {inventoryError && <div role="alert">{inventoryError} <button className="gth-btn" onClick={() => fetchProperties(user)}>Retry</button></div>}
                                 {!inventoryLoading && !inventoryError && filtered.length === 0 && <p>No properties match your search.</p>}
+                                {!query && <nav aria-label="Property pages" className="flex gap-3 col-span-full">
+                                    <button className="gth-btn" disabled={inventoryLoading || inventoryPage === 1} onClick={() => fetchProperties(user, inventoryPage - 1)}>Previous</button>
+                                    <span>Page {inventoryPage}</span>
+                                    <button className="gth-btn" disabled={inventoryLoading || properties.length < 100} onClick={() => fetchProperties(user, inventoryPage + 1)}>Next</button>
+                                </nav>}
                                 {filtered.map((p) => (
 
                                     <div

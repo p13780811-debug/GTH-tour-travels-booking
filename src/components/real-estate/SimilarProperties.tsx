@@ -29,7 +29,7 @@ export default function SimilarProperties({ slug, user }: any) {
     }
 
     const handleLead = (id: number) => {
-        console.log("Lead sent:", id)
+        window.location.href = `/real-estate/${data.find((p: any) => p.id === id)?.slug || ""}#enquiry`
     }
 
     const handleBoost = (id: number) => {

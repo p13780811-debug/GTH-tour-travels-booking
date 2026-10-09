@@ -3,6 +3,7 @@ import { PropertyService, transformProperty } from "@/lib/real-estate/propertySe
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
+import EnquiryForm from "./EnquiryForm"
 import PropertyImage from "./PropertyImage"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
@@ -104,7 +105,9 @@ export default function PropertyDetailClient({
     const [recommended, setRecommended] = useState<Property[]>([])
     const [showAI, setShowAI] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [saved, setSaved] = useState(false)
+    const [showEnquiry, setShowEnquiry] = useState(false)
+    useEffect(() => { if (window.location.hash === "#enquiry") setShowEnquiry(true) }, [])
+    const [shareMessage, setShareMessage] = useState("")
 
     const fetchProperty = useCallback(async () => {
 
@@ -317,7 +320,7 @@ export default function PropertyDetailClient({
 
                                     <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-white backdrop-blur-2xl">
                                         <BrainCircuit size={14} className="text-cyan-400" />
-                                        AI Verified
+                                        {property.verified ? "Verified listing" : "Listed property"}
                                     </div>
 
                                 </div>
@@ -325,16 +328,13 @@ export default function PropertyDetailClient({
                                 <div className="flex items-center gap-3">
 
                                     <button
-                                        onClick={() => setSaved(!saved)}
+                                        disabled aria-label="Saved listings are not available yet" title="Saved listings are not available yet"
                                         className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105"
                                     >
-                                        {saved
-                                            ? <Heart size={20} className="fill-red-500 text-red-500" />
-                                            : <Heart size={20} />
-                                        }
+                                        <Heart size={20} />
                                     </button>
 
-                                    <button className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105">
+                                    <button aria-label="Share property" onClick={async () => { try { if (navigator.share) await navigator.share({ title: property.title, url: window.location.href }); else { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied") } } catch { setShareMessage("Sharing cancelled or unavailable") } }} className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105">
                                         <Share2 size={20} />
                                     </button>
 
@@ -353,11 +353,11 @@ export default function PropertyDetailClient({
                                     </div>
 
                                     <div className="rounded-full border border-[var(--gold)]/20 bg-[var(--gold)]/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[var(--gold)]">
-                                        Rank #{property.rank_position || 1}
+                                        {property.rank_position ? `Rank #${property.rank_position}` : "Rank unavailable"}
                                     </div>
 
                                     <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-400">
-                                        Verified Property
+                                        {property.verified ? "Verified listing" : "Not verified"}
                                     </div>
 
                                 </div>
@@ -596,6 +596,7 @@ export default function PropertyDetailClient({
 
                                 </div>
 
+                                <div id="enquiry" className="scroll-mt-24" />
                                 {/* ACTIONS */}
 
                                 <div className="space-y-4">
@@ -617,7 +618,7 @@ export default function PropertyDetailClient({
 
                                     </button>
 
-                                    <button className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
+                                    <button onClick={() => setShowEnquiry(!showEnquiry)} aria-expanded={showEnquiry} className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
 
                                         <Phone size={18} />
 
@@ -625,16 +626,18 @@ export default function PropertyDetailClient({
 
                                     </button>
 
-                                    <button className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
+                                    <button onClick={() => setShowEnquiry(true)} className="gth-glass flex w-full items-center justify-center gap-3 rounded-[26px] border border-[var(--border)] px-6 py-5 text-sm font-black uppercase tracking-[0.22em] transition-all duration-500 hover:scale-[1.01]">
 
                                         <MessageSquare size={18} />
 
-                                        Schedule Visit
+                                        Request a visit
 
                                     </button>
 
                                 </div>
 
+                                {showEnquiry && <EnquiryForm propertyId={property.id} />}
+                                {shareMessage && <p role="status">{shareMessage}</p>}
                                 {/* TRUST BLOCK */}
 
                                 <div className="mt-8 space-y-4">
@@ -654,7 +657,7 @@ export default function PropertyDetailClient({
                                                 </h3>
 
                                                 <p className="text-xs text-[var(--muted)]">
-                                                    Real-time valuation engine
+                                                    Property assistant
                                                 </p>
 
                                             </div>
@@ -662,7 +665,7 @@ export default function PropertyDetailClient({
                                         </div>
 
                                         <p className="text-sm leading-7 text-[var(--muted)]">
-                                            Smart price comparison, negotiation intelligence, future appreciation signals and market heat analysis.
+                                            Ask about the stored listing details. Prices, availability and investment outcomes must be confirmed independently.
                                         </p>
 
                                     </div>

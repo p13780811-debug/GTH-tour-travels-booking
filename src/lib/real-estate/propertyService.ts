@@ -675,10 +675,7 @@ export const PropertyService = {
         return smartSort(
             all.filter((p: any) =>
                 p.slug !== slug &&
-                p.price >=
-                current.price * 0.7 &&
-                p.price <=
-                current.price * 1.4
+                (current.price > 0 ? (p.price >= current.price * 0.7 && p.price <= current.price * 1.4) : (p.city === current.city || p.property_type === current.property_type))
             )
         ).slice(0, 8)
     },

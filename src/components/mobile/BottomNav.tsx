@@ -56,7 +56,7 @@ export default function BottomNav({
         },
 
         {
-            href: "/real-estate/search",
+            href: "/real-estate#property-search",
             label: "Search",
             icon: Search,
         },

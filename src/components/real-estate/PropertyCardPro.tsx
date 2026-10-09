@@ -82,7 +82,7 @@ export default function PropertyCardPro({
                 {/* favorite */}
 
                 <button
-                    onClick={(e) => e.stopPropagation()}
+                    disabled aria-label="Saved listings are not available yet" onClick={(e) => e.stopPropagation()}
                     className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 gth-glass backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
                 >
                     <Heart size={18} />
@@ -190,7 +190,7 @@ export default function PropertyCardPro({
                         <Sparkles size={14} className="text-[#d4af37]" />
 
                         <span className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">
-                            AI Verified
+                            {p.verified ? "Verified listing" : "Listed property"}
                         </span>
                     </div>
 
@@ -204,7 +204,7 @@ export default function PropertyCardPro({
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation()
-                                    onLead(p.id)
+                                    if (onLead) onLead(p.id); else router.push(`/real-estate/${p.slug}#enquiry`)
                                 }}
                                 className="gth-btn-gold px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em]"
                             >
@@ -218,7 +218,7 @@ export default function PropertyCardPro({
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation()
-                                    onBoost(p.id)
+                                    if (onBoost) onBoost(p.id)
                                 }}
                                 className="gth-btn-gold px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em]"
                             >

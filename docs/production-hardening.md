@@ -80,3 +80,8 @@ Live schema supplied by owner: properties.price is text; cities has name not cit
 ## Property image provenance
 
 No image approvals have been established. Existing database media remain untouched, but property cards/details and property-specific social metadata cannot render them until their exact URL is reviewed in src/lib/real-estate/approved-media.ts with source and permission reference. The registry is initially empty. PropertyImage handles missing/unapproved/broken images with a text state and labels approved renders. Stock hero slider removed. SQL media inventory is read-only and has not been executed. Approval is separate from property verification and from upload validation. Do not enter credentials, private document contents or customer details in the registry. Review evidence reference should identify an internal review record without exposing it.
+
+
+## Estate actions
+
+Detail enquiries/visit requests connect to the validated enquiry endpoint, display actual HTTP outcome and never confirm appointments. Share uses native share or clipboard fallback. No saved_properties backend exists in supplied schema, so saved actions are disabled rather than simulating success. Unconditional detail/card verification labels removed; stored status drives listing label. Missing rank no longer defaults to #1. Browse pagination supports bounded 100-row pages; search still returns at most 100 matches. Mobile search navigation points to the real listing search anchor. No-price recommendations use city/type instead of zero-price comparisons. These changes do not verify live inserts or RLS.
