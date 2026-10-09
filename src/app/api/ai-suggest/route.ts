@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { cleanString } from "@/lib/security/validators";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 
@@ -8,6 +9,7 @@ export async function POST(req: Request) {
     if (!query) throw new RequestError("Invalid search query", 400);
     const key = process.env.OPENAI_API_KEY;
     if (!key) throw new RequestError("AI service is not configured", 503);
+    await enforceRateLimit(req, "ai");
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },

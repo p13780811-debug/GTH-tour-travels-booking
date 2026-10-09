@@ -1,3 +1,5 @@
+import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { requestError } from "@/lib/security/request";
 import { cleanString } from "@/lib/security/validators";
 
 export async function GET(req: Request) {
@@ -6,6 +8,7 @@ export async function GET(req: Request) {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return Response.json({ error: "Image service is not configured" }, { status: 503 });
   try {
+    await enforceRateLimit(req, "images");
     const url = new URL("https://api.pexels.com/v1/search");
     url.searchParams.set("query", query);
     url.searchParams.set("per_page", "1");
@@ -14,5 +17,5 @@ export async function GET(req: Request) {
     const data = await res.json();
     const image = data?.photos?.[0]?.src?.large;
     return Response.json({ image: typeof image === "string" && image.startsWith("https://images.pexels.com/") ? image : null });
-  } catch { return Response.json({ error: "Image service unavailable" }, { status: 502 }); }
+  } catch (error) { return requestError(error); }
 }

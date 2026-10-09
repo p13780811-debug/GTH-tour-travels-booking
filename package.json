@@ -14,7 +14,8 @@
     "engine:intelligence": "tsx src/data/generate-intelligence.ts",
     "engine:rank": "tsx src/data/generate-ranking-search.ts",
     "engine:full": "npm run engine:intelligence && npm run engine:rank",
-    "test:security": "node --test tests/security.test.mjs"
+    "test:security": "node --test tests/*.test.mjs",
+    "check:production-env": "node scripts/check-production-env.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

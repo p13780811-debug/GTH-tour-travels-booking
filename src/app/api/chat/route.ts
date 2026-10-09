@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { cleanString } from "@/lib/security/validators";
 import { chatHistory, readJson, RequestError, requestError } from "@/lib/security/request";
 
@@ -9,6 +10,7 @@ export async function POST(req: Request) {
     const history = chatHistory(body.history);
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new RequestError("AI service is not configured", 503);
+    await enforceRateLimit(req, "ai");
     const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },

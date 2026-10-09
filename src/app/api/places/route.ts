@@ -6,7 +6,7 @@ export async function GET(req: Request) {
 
   if (!term) return Response.json([]);
 
-  const token = process.env.TRAVELPAYOUTS_TOKEN;
+  const token = (process.env.TRAVELPAYOUTS_TOKEN || process.env.TRAVELPAYOUTS_API_TOKEN);
   if (!token) {
     return Response.json(
       { error: "Places service is not configured" },

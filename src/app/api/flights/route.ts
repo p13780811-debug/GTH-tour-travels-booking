@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
     const token =
       process.env.AVIASALES_API_TOKEN ||
-      process.env.TRAVELPAYOUTS_TOKEN;
+      (process.env.TRAVELPAYOUTS_TOKEN || process.env.TRAVELPAYOUTS_API_TOKEN);
 
     if (!token) {
       return NextResponse.json(
@@ -38,6 +38,7 @@ export async function GET(req: Request) {
 
     const res = await fetch(apiUrl.toString(), {
       next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!res.ok) {

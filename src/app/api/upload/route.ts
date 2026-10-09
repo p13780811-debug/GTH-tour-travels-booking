@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { NextResponse } from "next/server";
 import { authenticatedStorage } from "@/lib/security/auth";
 import { readBytes, RequestError, requestError } from "@/lib/security/request";
@@ -13,6 +14,7 @@ const ALLOWED_TYPES = new Set([
 export async function POST(req: Request) {
   try {
     const { client: supabase, user } = await authenticatedStorage(req);
+    await enforceRateLimit(req, "upload", user.id);
     const contentType = req.headers.get("content-type");
     if (!contentType?.toLowerCase().startsWith("multipart/form-data;")) throw new RequestError("Multipart image required", 415);
     const bytes = await readBytes(req, MAX_UPLOAD_BYTES + 64 * 1024);

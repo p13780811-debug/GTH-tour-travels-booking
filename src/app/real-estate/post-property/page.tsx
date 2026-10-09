@@ -13,7 +13,8 @@ import {
 
 export default function PostPropertyPage() {
 
-    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const loading = false
 
     async function handleSubmit(
         e: React.FormEvent<HTMLFormElement>
@@ -21,15 +22,8 @@ export default function PostPropertyPage() {
 
         e.preventDefault()
 
-        setLoading(true)
+        setError("Property submission is not available yet. No listing has been saved.")
 
-        await new Promise(resolve =>
-            setTimeout(resolve, 1500)
-        )
-
-        setLoading(false)
-
-        alert("Property Posted Successfully 🚀")
     }
 
     return (
@@ -78,6 +72,11 @@ export default function PostPropertyPage() {
                     </p>
 
                 </div>
+
+                <p className="gth-sub mb-4" role="status">
+                    Property submission is being prepared. This form does not save listings yet.
+                </p>
+                {error && <p className="gth-sub mb-4" role="alert">{error}</p>}
 
                 {/* FORM */}
 
@@ -415,7 +414,7 @@ export default function PostPropertyPage() {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled
                         className="
                             gth-btn-gold
                             py-4
@@ -426,7 +425,7 @@ export default function PostPropertyPage() {
 
                         {loading
                             ? "Posting..."
-                            : "Post Property"}
+                            : "Submission coming soon"}
 
                     </button>
 

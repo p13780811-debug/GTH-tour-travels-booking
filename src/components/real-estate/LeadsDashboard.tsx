@@ -7,18 +7,27 @@ import { X, Phone, TrendingUp, Crown, Activity, CalendarDays, Search, Sparkles }
 export default function LeadsDashboard({ onClose, properties }: any) {
     const [leads, setLeads] = useState<any[]>([]);
     const [search, setSearch] = useState("");
+    const [accessError, setAccessError] = useState("");
 
     useEffect(() => {
-        const fetch = async () => {
-            const { data } = await supabase
-                .from("leads")
-                .select("*")
-                .order("created_at", { ascending: false });
-
-            setLeads(data || []);
+        const controller = new AbortController();
+        const loadLeads = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("Sign in with an administrator account to view leads.");
+                const response = await fetch("/api/admin/leads", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                    cache: "no-store", signal: controller.signal,
+                });
+                if (!response.ok) throw new Error(response.status === 403 ? "Administrator access required." : "Lead data unavailable.");
+                const data = await response.json();
+                if (!controller.signal.aborted) setLeads(Array.isArray(data) ? data : []);
+            } catch (error) {
+                if (!controller.signal.aborted) setAccessError(error instanceof Error ? error.message : "Lead data unavailable.");
+            }
         };
-
-        fetch();
+        loadLeads();
+        return () => controller.abort();
     }, []);
 
     const filteredLeads = useMemo(() => {
@@ -28,10 +37,11 @@ export default function LeadsDashboard({ onClose, properties }: any) {
     }, [search, leads]);
 
     const boostedCount = properties.filter((p: any) => p.is_featured).length;
-    const revenue = leads.length * 25;
 
     return (
         <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-3 md:p-6">
+
+            {accessError && <p role="alert" className="gth-glass p-4">{accessError}</p>}
 
             {/* MAIN PANEL */}
             <div className="relative w-full max-w-6xl max-h-[95vh] overflow-hidden rounded-[34px] border border-white/10 bg-[var(--card)] text-[var(--text)] shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
@@ -100,11 +110,11 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                             </div>
 
                             <h3 className="text-3xl font-black">
-                                ₹{revenue}
+                                Not connected
                             </h3>
 
                             <p className="text-xs opacity-60 mt-1">
-                                ₹25 per lead
+                                Payment reporting is not enabled
                             </p>
                         </div>
 

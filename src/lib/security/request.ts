@@ -1,12 +1,12 @@
 import { cleanString } from "./validators";
 
 export class RequestError extends Error {
-  constructor(message: string, public status: number) { super(message); }
+  constructor(message: string, public status: number, public headers: Record<string, string> = {}) { super(message); }
 }
 
 // Bound the streamed body as well as Content-Length (which is untrusted).
 export async function readJson(req: Request, maxBytes = 32 * 1024): Promise<Record<string, unknown>> {
-  if (!req.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+  if (req.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "application/json") {
     throw new RequestError("JSON body required", 415);
   }
   const bytes = await readBytes(req, maxBytes);
@@ -42,7 +42,8 @@ export async function readBytes(req: Request, maxBytes: number): Promise<Uint8Ar
 
 export function requestError(error: unknown): Response {
   return Response.json({ error: error instanceof RequestError ? error.message : "Service unavailable" },
-    { status: error instanceof RequestError ? error.status : 502 });
+    { status: error instanceof RequestError ? error.status : 502,
+      headers: { "Cache-Control": "no-store", ...(error instanceof RequestError ? error.headers : {}) } });
 }
 
 export function chatHistory(value: unknown): { role: "user" | "model"; parts: { text: string }[] }[] {

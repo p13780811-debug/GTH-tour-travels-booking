@@ -1,5 +1,6 @@
 "use client"
 
+import { readAIReply } from "@/lib/api-response"
 import { useState } from "react"
 
 export default function ChatBot() {
@@ -19,41 +20,23 @@ export default function ChatBot() {
 
     async function sendMessage() {
 
-        if (!input) return
-
-        const userMessage = { role: "user", text: input }
-
-        const updatedMessages = [...messages, userMessage]
-
+        if (!input.trim() || loading) return
+        const message = input.trim()
+        const updatedMessages = [...messages, { role: "user", text: message }]
         setMessages(updatedMessages)
-
         setLoading(true)
-
-        const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: input,
-                history: history
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message, history: history.slice(-20) })
             })
-        })
-
-        const data = await res.json()
-
-        const botMessage = { role: "bot", text: data.reply }
-
-        setMessages([...updatedMessages, botMessage])
-
-        setHistory([
-            ...history,
-            { role: "user", parts: [{ text: input }] },
-            { role: "model", parts: [{ text: data.reply }] }
-        ])
-
-        setInput("")
-        setLoading(false)
+            const reply = await readAIReply(res)
+            setMessages([...updatedMessages, { role: "bot", text: reply }])
+            setHistory([...history, { role: "user", parts: [{ text: message }] }, { role: "model", parts: [{ text: reply.slice(0, 4000) }] }].slice(-20))
+            setInput("")
+        } catch (error) {
+            setMessages([...updatedMessages, { role: "bot", text: error instanceof Error ? error.message : "Unable to connect. Please try again." }])
+        } finally { setLoading(false) }
 
     }
 
@@ -92,12 +75,14 @@ export default function ChatBot() {
 
                         <input
                             className="flex-1 gth-glass-800 text-white p-2 text-sm rounded-l outline-none"
+                            maxLength={4000}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask about travel..."
                         />
 
                         <button
+                            disabled={loading}
                             onClick={sendMessage}
                             className="gth-btn-gold px-4 rounded-r text-black font-bold"
                         >

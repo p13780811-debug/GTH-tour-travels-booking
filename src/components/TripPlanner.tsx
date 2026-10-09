@@ -1,5 +1,6 @@
 "use client"
 
+import { readAIReply } from "@/lib/api-response"
 import { useState, KeyboardEvent } from "react"
 
 export default function TripPlanner() {
@@ -27,13 +28,13 @@ export default function TripPlanner() {
                 })
             })
 
-            const data = await res.json()
+            const reply = await readAIReply(res)
 
-            setAnswer(data.reply || "No response received.")
+            setAnswer(reply || "No response received.")
 
-        } catch {
+        } catch (error) {
 
-            setAnswer("Something went wrong. Please try again.")
+            setAnswer(error instanceof Error ? error.message : "Unable to connect. Please try again.")
 
         } finally {
 

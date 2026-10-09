@@ -33,8 +33,33 @@ The public /admin page currently disables administrative controls. This pass doe
 
 ## Remaining deployment gates
 
-- Add shared rate limits/quotas for public AI, image, booking and upload endpoints. Per-process counters alone are insufficient on serverless deployments.
+- Configure and exercise the new Redis-backed limits against a real store before release. Missing/failed Redis returns 503, with no per-process fallback. Direct Supabase calls are outside this HTTP limiter and must be blocked/scoped with RLS and grants.
 - Verify real provider credentials and provider responses in preview. Set only PEXELS_API_KEY, never NEXT_PUBLIC_PEXELS_API_KEY. If the old public key was deployed, rotate it with the provider.
 - Verify login, owner property creation, upload ownership, booking access, and anonymous denial with the deployed RLS policies.
 - Review remaining legacy lint suppressions independently; passing lint does not mean all recommended rules are enabled.
 - Placeholder Supabase environment values used for builds establish compilation only, not live data or database access.
+
+
+## Second pass
+
+- Shared Upstash Redis counters protect AI, images, bookings and uploads. AI routes share one budget. Caller and global minute/day counters are checked and incremented in one Lua EVAL. No unbounded provider call is made when the limiter denies or fails. Invalid requests are rejected before provider calls; upload sessions are verified before user quotas.
+- Limits are windows starting with the first accepted request, not sliding windows. Defaults: AI 20/minute and 100/day per caller, 100/minute and 1000/day globally; images 60/500 per caller and 300/5000 globally; bookings 3/10 per caller and 60/1000 globally; uploads 10/100 per verified user and 200/5000 globally.
+- Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN server-side. GTH_RATE_LIMIT_NAMESPACE defaults to gth-pro; VERCEL_ENV separates production and preview counters. Use a separate preview store where possible. Deployments on the same environment share quotas; this is deliberate. Keys contain HMACs rather than raw user IDs/IPs. EVAL keys share a Redis hash tag.
+- Trust x-vercel-forwarded-for only on Vercel. Other hosting and missing/malformed IPs share one bucket; they cannot bypass protection through arbitrary headers. Review trusted proxy configuration before changing this behavior. Global request caps bound application requests, not a currency-denominated bill; provider spend caps and edge/bot protection remain required.
+- /api/admin/leads verifies the bearer session and app_metadata.role=admin, projects only needed fields, returns at most 100 rows and sets private/no-store. It still uses the caller JWT and relies on RLS; no service-role bypass is introduced. The dashboard no longer queries all leads directly or invents revenue from the lead count.
+- Public boosts and automated verification writes are disabled. PropertyService.add defaults to review; transformed verification badges depend on stored verified status rather than a heuristic fraud score. Public paid-boost buttons clearly state they are unavailable.
+- The standalone post-property form no longer reports success without a database write. It remains visibly unavailable until a validated owner submission API and ownership policies are ready.
+- /api/flights/search reuses the validated handler, which has a provider timeout. Existing TRAVELPAYOUTS_API_TOKEN deployment naming is accepted as a server-only alias.
+- AI interfaces show safe retry/unavailable messages, recover loading state and do not store failed replies in chat history.
+- CI uses Node 24, matching the Vercel project runtime observed during this pass.
+- supabase/audits/production-access.sql is a read-only catalog report covering expected tables, RLS, all storage policies, effective grants, ownership columns, public functions and views. It has not been run against the deployed database. Run it in the Supabase SQL editor, review the results, then test anonymous and cross-owner denial before designing a migration. Do not blindly replace existing policies.
+
+## Deployment metadata observed during this pass
+
+The Vercel gth-pro project's environment names include GEMINI_API_KEY, AVIASALES_API_TOKEN, TRAVELPAYOUTS_API_TOKEN and the two public Supabase variables. They do not include OPENAI_API_KEY, PEXELS_API_KEY, UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN. The old NEXT_PUBLIC_PEXELS_API_KEY name is still present. Only names/targets were inspected; secret values and real service connectivity were not read or verified. No production variables were changed.
+
+Before deploying, add the missing server-only settings through Vercel Settings → Environment Variables; use a freshly rotated Pexels key, remove its public variable, and run npm run check:production-env with the intended environment. Never paste secret values into a PR or commit them. Builds with CI placeholders do not satisfy this release gate.
+
+Implementation references: Vercel request headers (https://vercel.com/docs/headers/request-headers), Upstash REST API (https://upstash.com/docs/redis/features/restapi), Redis scripting (https://redis.io/docs/latest/develop/programmability/eval-intro/), Supabase RLS (https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+The limiter/auth unit tests mock provider transport. They validate request construction, denial, failures, identity and role checks; they do not prove real Redis execution or deployed RLS.

@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
       `User query: ${query}`,
     ].join("\n");
 
+    await enforceRateLimit(req, "ai");
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {

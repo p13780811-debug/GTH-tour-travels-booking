@@ -265,7 +265,7 @@ const transformProperty = (p: any) => {
         fraud_score: fraudScore,
 
         verified:
-            fraudScore <= 30,
+            p.status === "verified",
 
         featured_active: boosted,
 
@@ -539,7 +539,7 @@ export const PropertyService = {
             description: normalizeText(payload.description) || generateDescription(payload),
             created_at: nowISO(),
             updated_at: nowISO(),
-            status: payload.status || "verified",
+            status: "review",
             views: 0,
             leads: 0,
             saves: 0,
@@ -632,29 +632,8 @@ export const PropertyService = {
         hours = 24
     ) {
 
-        const expiry = new Date()
+        throw new Error("Paid boosts are unavailable until payment and administrative approval are enabled.")
 
-        expiry.setHours(
-            expiry.getHours() + hours
-        )
-
-        const { data, error } =
-            await supabase
-                .from("properties")
-                .update({
-                    is_featured: true,
-                    boost_expiry:
-                        expiry.toISOString(),
-                    updated_at: nowISO(),
-                })
-                .eq("id", id)
-                .select()
-
-        if (error) throw error
-
-        CACHE.clear()
-
-        return data?.[0]
     },
 
     // ======================================================
@@ -756,39 +735,8 @@ export const PropertyService = {
 
     async fraudScan(id: number) {
 
-        const property =
-            await supabase
-                .from("properties")
-                .select("*")
-                .eq("id", id)
-                .limit(1)
+        throw new Error("Verification requires an authorized moderation workflow.")
 
-        const row =
-            property.data?.[0]
-
-        if (!row) return null
-
-        const fraudScore =
-            calculateFraudScore(row)
-
-        const verified =
-            fraudScore <= 30
-
-        await supabase
-            .from("properties")
-            .update({
-                fraud_score: fraudScore,
-                status:
-                    verified
-                        ? "verified"
-                        : "review",
-            })
-            .eq("id", id)
-
-        return {
-            fraud_score: fraudScore,
-            verified,
-        }
     },
 
     // ======================================================

@@ -123,11 +123,13 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
 
             const res = await fetch("/api/ai-search", {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     query: `${form.title || ""} ${form.location || ""}`,
                 }),
             })
 
+            if (!res.ok) throw new Error("AI service unavailable")
             const data = await res.json()
 
             setForm((prev: any) => ({

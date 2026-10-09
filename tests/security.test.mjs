@@ -33,3 +33,7 @@ test('conversation history rejects system roles and oversized parts', () => {
   assert.throws(() => chatHistory([{ role: 'user', parts: [{ text: 'x'.repeat(4001) }] }]), { status: 400 });
   assert.deepEqual(chatHistory([{ role: 'model', parts: [{ text: ' hello ' }] }]), [{ role: 'model', parts: [{ text: 'hello' }] }]);
 });
+
+test('JSON parser accepts application/json only, not a lookalike MIME type', async () => {
+  await assert.rejects(readJson(new Request('http://localhost', { method: 'POST', headers: { 'content-type': 'application/json-evil' }, body: '{}' })), { status: 415 });
+});

@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation"
-import { PropertyService } from "@/lib/real-estate/propertyService";
 
 export default function PropertyCard({ p, onSelect, onLead }: any) {
 
@@ -18,7 +17,7 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
                     alt={p.title}
                 />
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                    <p className="text-[9px] font-black text-white tracking-widest uppercase italic">Verified</p>
+                    <p className="text-[9px] font-black text-white tracking-widest uppercase italic">{p.status === "verified" ? "Verified" : "Listed"}</p>
                 </div>
 
                 {/* 🚀 NEW: BOOST STATUS BADGE (Only shows if boosted) */}
@@ -63,20 +62,12 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
 
                     {/* 🔥 GTH PRO: BOOST ACTION BUTTON */}
                     <button
-                        onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                                await PropertyService.boostProperty(p.id, 24);
-                                alert("Property boosted for 24 hours 🚀");
-                                // Page refresh ya data reload yahan trigger kar sakte hain
-                                window.location.reload();
-                            } catch (err) {
-                                alert("Boost failed. Check console.");
-                            }
-                        }}
+                        type="button"
+                        disabled
+                        title="Paid boosts are not available yet"
                         className="w-full bg-yellow-400 text-black hover:gth-btn-gold py-3 rounded-2xl font-black text-[11px] uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_10px_20px_rgba(250,204,21,0.2)] active:scale-95 flex items-center justify-center gap-2"
                     >
-                        ⚡ Boost Visibility (₹199)
+                        Boosts coming soon
                     </button>
                 </div>
             </div>

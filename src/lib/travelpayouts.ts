@@ -3,7 +3,7 @@ export async function getHotels(cityCode: string) {
         `https://api.travelpayouts.com/v1/hotels/search?city=${cityCode}`,
         {
             headers: {
-                "X-Access-Token": process.env.TRAVELPAYOUTS_TOKEN!,
+                "X-Access-Token": (process.env.TRAVELPAYOUTS_TOKEN || process.env.TRAVELPAYOUTS_API_TOKEN)!,
             },
         }
     )
