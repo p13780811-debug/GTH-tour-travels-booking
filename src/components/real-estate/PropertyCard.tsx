@@ -1,4 +1,5 @@
 "use client";
+import PropertyImage from "./PropertyImage"
 import { useRouter } from "next/navigation"
 
 export default function PropertyCard({ p, onSelect, onLead }: any) {
@@ -11,11 +12,7 @@ export default function PropertyCard({ p, onSelect, onLead }: any) {
         >
             {/* Property Image with Badge */}
             <div className="relative h-56 overflow-hidden">
-                <img
-                    src={p.image}
-                    className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                    alt={p.title}
-                />
+                <PropertyImage slug={p.slug} src={p.image} alt={p.title || "Property"} className="h-full w-full" />
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                     <p className="text-[9px] font-black text-white tracking-widest uppercase italic">{p.status === "verified" ? "Verified" : "Listed"}</p>
                 </div>

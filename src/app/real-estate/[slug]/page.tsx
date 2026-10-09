@@ -1,3 +1,4 @@
+import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import dynamic from "next/dynamic"
@@ -88,8 +89,8 @@ export async function generateMetadata({
         "Browse property listings on GTH PRO. Confirm availability and details with the listing agent."
 
     const image =
-        property?.image ||
-        "/placeholder.jpg"
+        approvedMedia(slug, property?.image)?.url ||
+        "/images/gth-logo.png"
 
     return {
         title:

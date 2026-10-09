@@ -3,7 +3,7 @@ import { PropertyService, transformProperty } from "@/lib/real-estate/propertySe
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
-import Image from "next/image"
+import PropertyImage from "./PropertyImage"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
@@ -300,14 +300,7 @@ export default function PropertyDetailClient({
 
                             <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                            <Image
-                                src={property.image}
-                                alt={property.title}
-                                width={1800}
-                                height={1200}
-                                priority
-                                className="h-[320px] w-full object-cover transition duration-1000 group-hover:scale-105 md:h-[760px]"
-                            />
+                            <PropertyImage slug={property.slug} src={property.image} alt={property.title} className="h-[320px] w-full md:h-[760px]" />
 
                             {/* TOP ACTIONS */}
 
@@ -741,13 +734,7 @@ export default function PropertyDetailClient({
 
                                             <div className="relative h-24 w-24 overflow-hidden rounded-2xl">
 
-                                                <Image
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    width={300}
-                                                    height={300}
-                                                    className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                                                />
+                                                <PropertyImage slug={item.slug} src={item.image} alt={item.title} className="h-full w-full" />
 
                                             </div>
 

@@ -75,3 +75,8 @@ Remaining completion gates: actual property price units and columns; owner/agent
 
 
 Live schema supplied by owner: properties.price is text; cities has name not city; contact_inquiries only id/created_at; saved_properties absent from provided results. Text price labels are preserved without guessing units. Numeric budget filters/sorts reject rather than compare text or return misleading subsets. A normalized numeric amount/currency model is needed before these can be enabled. Enquiries now use a bounded validated server endpoint with shared quotas, existing property check and acknowledgement-only insert into leads; no service-role key or client-side RPC counter mutation. Live insert access remains unverified.
+
+
+## Property image provenance
+
+No image approvals have been established. Existing database media remain untouched, but property cards/details and property-specific social metadata cannot render them until their exact URL is reviewed in src/lib/real-estate/approved-media.ts with source and permission reference. The registry is initially empty. PropertyImage handles missing/unapproved/broken images with a text state and labels approved renders. Stock hero slider removed. SQL media inventory is read-only and has not been executed. Approval is separate from property verification and from upload validation. Do not enter credentials, private document contents or customer details in the registry. Review evidence reference should identify an internal review record without exposing it.

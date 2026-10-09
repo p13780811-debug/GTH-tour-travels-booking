@@ -10,19 +10,12 @@ export default function RealEstateHero({
     onSearch,
 }: any) {
 
-    const [index, setIndex] = useState(0)
 
     const [suggestions, setSuggestions] = useState<string[]>([])
 
     const [recent, setRecent] = useState<string[]>([])
 
     const [activeTab, setActiveTab] = useState("Buy")
-
-    const images = [
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=90",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=90",
-        "https://images.unsplash.com/photo-1599423300746-b62533397364?w=1920&q=90",
-    ]
 
     const tabs = [
         "Buy",
@@ -35,17 +28,7 @@ export default function RealEstateHero({
     // AUTO BG SLIDER
     // =========================================
 
-    useEffect(() => {
 
-        const t = setInterval(() => {
-
-            setIndex((p) => (p + 1) % images.length)
-
-        }, 5000)
-
-        return () => clearInterval(t)
-
-    }, [])
 
     // =========================================
     // RECENT SEARCHES
@@ -240,59 +223,7 @@ export default function RealEstateHero({
             {/* BACKGROUND IMAGE */}
             {/* ========================================= */}
 
-            <AnimatePresence mode="wait">
-
-                <picture
-                    className="
-                        absolute
-                        inset-0
-                        h-full
-                        w-full
-                    "
-                >
-
-                    <source
-                        media="(max-width:768px)"
-                        srcSet={images[index].replace(
-                            "w=1920",
-                            "w=900&q=70"
-                        )}
-                    />
-
-                    <motion.img
-                        key={index}
-                        src={images[index]}
-                        initial={{
-                            scale: 1.12,
-                            opacity: 0,
-                        }}
-                        animate={{
-                            scale: 1,
-                            opacity: 1,
-                        }}
-                        exit={{
-                            opacity: 0,
-                        }}
-                        transition={{
-                            duration: 1.4,
-                        }}
-                        className="
-                            absolute
-                            inset-0
-                            h-full
-                            w-full
-                            object-cover
-                            brightness-[0.65]
-                            contrast-[1.08]
-                            saturate-[1.05]
-                            transition-all
-                            duration-1000
-                        "
-                    />
-
-                </picture>
-
-            </AnimatePresence>
+            <div aria-hidden="true" className="absolute inset-0 bg-[var(--bg)]" />
 
             {/* ========================================= */}
             {/* GLOBAL OVERLAY */}
