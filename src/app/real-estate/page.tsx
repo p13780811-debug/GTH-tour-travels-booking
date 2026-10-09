@@ -84,12 +84,9 @@ export default function App() {
 
             await fetchProperties(currentUser)
 
-            if (currentUser) {
-                const { data: leadsData } = await supabase
-                    .from("leads")
-                    .select("*")
-                setLeads(leadsData || [])
-            }
+            // Privileged lead data must never be fetched directly in the browser.
+            // Keep disabled until a server-authorized endpoint + verified RLS policy is in place.
+            setLeads([])
         }
 
         init()
@@ -229,22 +226,9 @@ export default function App() {
     // ============================
     // PROPERTY
     // ============================
-    const addProperty = async (form: any) => {
-        if (!user) {
-            alert("Please login first")
-            return
-        }
-        const payload = {
-            ...form,
-            slug: form.title?.toLowerCase().replace(/\s+/g, "-"),
-            is_featured: false,
-            boost_expiry: null,
-            created_by: user?.email || "guest"
-        }
-
-        await PropertyService.add(payload)
+    const addProperty = async (_form: any) => {
+        alert("Property publishing is temporarily disabled until server-side authorization and RLS are verified.")
         setShowAdd(false)
-        fetchProperties(user)
     }
 
     const addLead = async (id: number) => {
@@ -254,18 +238,8 @@ export default function App() {
         alert("Lead added")
     }
 
-    const payForBoost = async (id: number) => {
-        alert("Demo: Payment system next step me connect hoga")
-
-        await supabase
-            .from("properties")
-            .update({
-                is_featured: true,
-                boost_expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-            })
-            .eq("id", id)
-
-        fetchProperties(user)
+    const payForBoost = async (_id: number) => {
+        alert("Premium boost is temporarily disabled until payment verification and server-side authorization are connected.")
     }
 
     const totalLeads = leads.length
@@ -593,10 +567,12 @@ export default function App() {
                                     </div>
 
                                     <button
-                                        onClick={() => setShowDashboard(true)}
+                                        onClick={() =>
+                                            alert("Lead dashboard is disabled until server-side authorization and verified RLS are connected.")
+                                        }
                                         className="w-full gth-btn-gold mb-2"
                                     >
-                                        OPEN DASHBOARD
+                                        DASHBOARD LOCKED
                                     </button>
 
                                     <button
