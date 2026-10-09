@@ -1,16 +1,12 @@
+import type { Metadata } from "next";
+import GTHHomeV13 from "@/components/home/GTHHomeV13";
 
-
-import MegaAggregator from "./mega-aggregator/page";
-import TripPlanner from "@/components/TripPlanner"
-
-
-
+export const metadata: Metadata = {
+  title: "GTH PRO | Global Technical Hub",
+  description:
+    "GTH PRO is a development-stage technology ecosystem for Real Estate, Travel and Tender Intelligence.",
+};
 
 export default function Home() {
-  return (
-    <main className="bg-black min-h-screen">
-      <MegaAggregator />
-      <TripPlanner />
-    </main>
-  );
+  return <GTHHomeV13 />;
 }
