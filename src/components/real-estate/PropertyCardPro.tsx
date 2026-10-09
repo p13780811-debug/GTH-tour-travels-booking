@@ -105,7 +105,7 @@ export default function PropertyCardPro({
                         </p>
 
                         <h2 className="gold-text text-3xl font-black drop-shadow-[0_0_18px_rgba(212,175,55,0.25)]">
-                            ₹ {p.price} L
+                            {p.formatted_price || p.price || "Price on request"}
                         </h2>
                     </div>
 

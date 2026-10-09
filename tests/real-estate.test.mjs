@@ -16,3 +16,11 @@ test('southern and western coordinates are preserved and invalid coordinates omi
   assert.equal(p.lat, -33.9); assert.equal(p.lng, -70.6); assert.equal(p.verified, true);
   assert.equal(exports.transformProperty({ lat: 91, lng: 181 }).lat, undefined);
 });
+test('stored text prices retain their units and empty prices are not advertised as zero', () => {
+  assert.equal(exports.transformProperty({ price: '₹ 1.2 Cr' }).formatted_price, '₹ 1.2 Cr');
+  assert.equal(exports.transformProperty({ price: 'On request' }).formatted_price, 'On request');
+  assert.equal(exports.transformProperty({ price: null }).formatted_price, 'Price on request');
+});
+test('text price cannot be compared lexicographically as a numeric budget', async () => {
+  await assert.rejects(exports.PropertyService.getAll({ minPrice: 50 }), /Budget filtering requires normalized price data/);
+});

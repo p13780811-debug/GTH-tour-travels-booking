@@ -231,8 +231,7 @@ export const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price:
-            `₹ ${price.toLocaleString()} L`,
+        formatted_price: normalizeText(p.price) || "Price on request",
 
         beds:
             safeNumber(p.bedrooms ?? p.beds),
@@ -329,6 +328,11 @@ export const PropertyService = {
 
         const from = (page - 1) * limit
 
+        // The live schema stores price as text. Never compare/order it as a number.
+        if ((filters.minPrice ?? 0) > 0 || (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) || filters.sort === "price_high" || filters.sort === "price_low") {
+            throw new Error("Budget filtering requires normalized price data. Search by city or property type for now.")
+        }
+
         let query = supabase
             .from("properties")
             .select("*")
@@ -362,15 +366,13 @@ export const PropertyService = {
             )
         }
 
-        if (filters.minPrice !== undefined) query = query.gte("price", filters.minPrice)
-        if (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) query = query.lte("price", filters.maxPrice)
         if (filters.verified) query = query.eq("status", "verified")
         if (filters.query) {
             const term = filters.query.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120)
             if (term) query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%,location.ilike.%${term}%`)
         }
-        const orderColumn = filters.sort === "price_high" || filters.sort === "price_low" ? "price" : filters.sort === "latest" ? "created_at" : "final_score"
-        query = query.order(orderColumn, { ascending: filters.sort === "price_low", nullsFirst: false }).order("id", { ascending: false })
+        const orderColumn = filters.sort === "latest" ? "created_at" : "final_score"
+        query = query.order(orderColumn, { ascending: false, nullsFirst: false }).order("id", { ascending: false })
 
         const { data, error } =
             await query
@@ -416,20 +418,6 @@ export const PropertyService = {
         }
 
         switch (filters.sort) {
-
-            case "price_high":
-                transformed.sort(
-                    (a, b) =>
-                        b.price - a.price
-                )
-                break
-
-            case "price_low":
-                transformed.sort(
-                    (a, b) =>
-                        a.price - b.price
-                )
-                break
 
             case "latest":
                 transformed.sort(
@@ -579,28 +567,14 @@ export const PropertyService = {
 
     async addLead(payload: any) {
 
-        const { data, error } =
-            await supabase
-                .from("leads")
-                .insert([{
-                    ...payload,
-                    created_at: nowISO(),
-                }])
+        const res = await fetch("/api/real-estate/enquiries", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ property_id: payload.property_id, phone: payload.phone }),
+        })
+        if (!res.ok) throw new Error(res.status === 429 ? "Too many enquiries. Please retry later." : "Enquiry could not be sent. Please retry later.")
+        return { success: true }
 
-        if (error) throw error
-
-        if (payload.property_id) {
-
-            await supabase.rpc(
-                "increment_property_leads",
-                {
-                    row_id:
-                        payload.property_id,
-                }
-            )
-        }
-
-        return data
     },
 
     // ======================================================

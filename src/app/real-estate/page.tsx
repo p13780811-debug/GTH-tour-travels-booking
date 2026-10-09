@@ -193,7 +193,7 @@ export default function App() {
             })
             if (filters.type) result = result.filter(p => `${p.property_type} ${p.title}`.toLowerCase().includes(String(filters.type).toLowerCase()))
         } catch {
-            setInventoryError("Search could not be completed. Please retry.")
+            setInventoryError("Search unavailable. Budget filters require normalized price data; try a city or property name.")
         } finally {
             setInventoryLoading(false)
         }
@@ -234,8 +234,10 @@ export default function App() {
     const addLead = async (id: number) => {
         const phone = prompt("Enter phone")
         if (!phone) return
-        await PropertyService.addLead({ property_id: id, phone })
-        alert("Lead added")
+        try {
+            await PropertyService.addLead({ property_id: id, phone })
+            alert("Enquiry sent")
+        } catch { alert("Enquiry could not be sent. Please retry later.") }
     }
 
     const payForBoost = async (_id: number) => {

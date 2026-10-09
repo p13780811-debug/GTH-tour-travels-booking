@@ -2,12 +2,13 @@ import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { RequestError } from "./request";
 
-export type LimitScope = "ai" | "images" | "bookings" | "upload";
+export type LimitScope = "ai" | "images" | "bookings" | "upload" | "enquiries";
 
 // Shared across all routes within a scope, not per instance or per endpoint.
 const POLICIES: Record<LimitScope, { minute: number; day: number; globalMinute: number; globalDay: number }> = {
   ai: { minute: 20, day: 100, globalMinute: 100, globalDay: 1000 },
   images: { minute: 60, day: 500, globalMinute: 300, globalDay: 5000 },
+  enquiries: { minute: 3, day: 10, globalMinute: 60, globalDay: 1000 },
   bookings: { minute: 3, day: 10, globalMinute: 60, globalDay: 1000 },
   upload: { minute: 10, day: 100, globalMinute: 200, globalDay: 5000 },
 };

@@ -1,5 +1,5 @@
 "use client"
-import { PropertyService } from "@/lib/real-estate/propertyService"
+import { PropertyService, transformProperty } from "@/lib/real-estate/propertyService"
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
@@ -66,6 +66,7 @@ type Property = {
     city?: string
     country?: string
     price: number
+    formatted_price?: string
     image: string
     gallery?: string[]
     description?: string
@@ -162,7 +163,7 @@ export default function PropertyDetailClient({
                 .order("final_score", { ascending: false, nullsFirst: false })
                 .range(0, 5)
 
-            setRecommended(data || [])
+            setRecommended((data || []).map(transformProperty))
 
         } catch (err) {
 
@@ -591,7 +592,7 @@ export default function PropertyDetailClient({
                                         </p>
 
                                         <h2 className="gold-text text-5xl font-black tracking-tight md:text-6xl">
-                                            ₹ {property.price >= 100 ? `${(property.price / 100).toFixed(2)} Cr` : `${property.price} L`}
+                                            {property.formatted_price || "Price on request"}
                                         </h2>
 
                                     </div>
@@ -763,7 +764,7 @@ export default function PropertyDetailClient({
                                                 <div className="mt-3 flex items-center justify-between">
 
                                                     <span className="gold-text text-xl font-black">
-                                                        ₹ {item.price} L
+                                                        {item.formatted_price || item.price || "Price on request"}
                                                     </span>
 
                                                     <ChevronRight
