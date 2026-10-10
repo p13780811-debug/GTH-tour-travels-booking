@@ -24,7 +24,8 @@ type PropertyCardRecord = {
 export default function PropertyCardPro({ p }: { p: PropertyCardRecord }) {
  const detailUrl = `/real-estate/${encodeURIComponent(p.slug)}`
  const name = p.title || "Property listing"
- const intent = p.listing_type === "buy" ? "For sale" : p.listing_type === "rent" ? "For rent" : "Explore property"
+ const purpose = (p.listing_type || "").toLowerCase()
+ const intent = purpose === "buy" || purpose === "sale" || purpose === "sell" ? "For sale" : purpose === "rent" || purpose === "rental" ? "For rent" : "Explore property"
  const facts = [
   { label: "Beds", value: Number(p.beds) > 0 ? p.beds : "—", Icon: BedDouble },
   { label: "Baths", value: Number(p.baths) > 0 ? p.baths : "—", Icon: Bath },
