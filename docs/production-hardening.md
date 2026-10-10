@@ -140,3 +140,12 @@ Admin workspace now distinguishes auth loading, signed-out, ordinary-account and
 ## Related APIs and legacy entry points
 
 Similar and legacy ai-recommend endpoints now share bounded related-record queries with explicit public projection, excluding raw_json and created_by. Current listing lookup uses only id, city and property_type; the current slug is excluded from returned results. A recorded city drives related results, with recorded type as fallback; missing relationship fields return no unrelated suggestions. Lookup/database failures give safe unavailable responses rather than empty success. Legacy POST accepts bounded input but browsing history does not become a source of recommendations or ownership data. API compatibility name does not establish AI generation. The alternate real-estate-new landing redirects to the main maintained real-estate page, removing a second hardcoded theme and unsupported navigation from public access.
+
+
+### Property map usability and data integrity
+
+- Replaced narrow wrapping markers with fixed-width, single-line labels using existing global theme tokens. Full stored price remains visible in the popup.
+- Marker content uses DOM textContent instead of interpolated HTML. Removed synthetic uniform heat intensity.
+- Only finite numeric coordinates within geographic bounds are mapped, including zero and negative coordinates. Viewport fits actual available coordinates; wheel zoom does not capture page scrolling.
+- Stored price text keeps its supplied currency. Missing prices show Price on request; numeric values do not imply INR. Tile failures display a recoverable notice.
+- Validation: TypeScript, ESLint, all 39 security tests, and production build passed with placeholder build-only Supabase configuration. Protected preview browser verification and live data checks remain pending.

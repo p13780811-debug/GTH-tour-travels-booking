@@ -1,0 +1,44 @@
+.marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 38px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: var(--btn-shadow);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  isolation: isolate;
+}
+
+.notice {
+  position: absolute;
+  z-index: 1000;
+  bottom: 28px;
+  left: 12px;
+  right: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
