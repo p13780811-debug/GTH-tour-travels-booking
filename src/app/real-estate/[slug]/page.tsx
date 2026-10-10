@@ -2,6 +2,7 @@ import { cache } from "react"
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { PropertyService } from "@/lib/real-estate/propertyService"
+import { publicIndexingEnabled } from "@/lib/release"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
 
 const readProperty = cache((slug: string) => PropertyService.getBySlug(slug))
@@ -13,10 +14,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const title = property?.title || "Property unavailable"
     const description = property?.description?.slice(0, 180) || "Explore recorded project details on GTH PRO. Confirm current prices and availability with the listing contact."
     const image = approvedMedia(slug, property?.image)?.url || "/images/gth-logo.png"
+    const canIndex = Boolean(property) && publicIndexingEnabled
     return {
         title: `${title} | GTH PRO Real Estate`, description,
         alternates: { canonical: `https://gth-pro.vercel.app/real-estate/${encodeURIComponent(slug)}` },
-        robots: property ? { index: true, follow: true } : { index: false, follow: true },
+        robots: { index: canIndex, follow: true, nocache: !canIndex },
         openGraph: { title, description, type: "website", images: [image] },
         twitter: { card: "summary_large_image", title, description, images: [image] },
     }
