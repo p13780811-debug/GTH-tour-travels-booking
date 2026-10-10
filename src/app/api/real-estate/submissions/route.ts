@@ -3,7 +3,7 @@ import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { cleanString } from "@/lib/security/validators";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 export async function GET(req: Request) {
- try { const { client } = await authenticatedStorage(req); const {data,error}=await client.from("listing_submissions").select("id,title,status,property_id,created_at").order("created_at",{ascending:false}).limit(50); if(error) throw new RequestError("Submission history unavailable",503); return Response.json(data||[],{headers:{"Cache-Control":"private, no-store"}}); } catch(error){return requestError(error)}
+ try { const { client, user } = await authenticatedStorage(req); const {data,error}=await client.from("listing_submissions").select("id,title,status,property_id,created_at").eq("owner_id",user.id).order("created_at",{ascending:false}).limit(50); if(error) throw new RequestError("Submission history unavailable",503); return Response.json(data||[],{headers:{"Cache-Control":"private, no-store"}}); } catch(error){return requestError(error)}
 }
 export async function POST(req: Request) {
  try {

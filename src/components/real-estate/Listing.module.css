@@ -91,6 +91,22 @@
   font-size: 14px;
 }
 
+.authDialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--card);
+  color: inherit;
+  overflow-y: auto;
+}
+
+.authDialog::backdrop {
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: blur(8px);
+}
+
 .discoveryStory {
   display: grid;
   gap: 20px;
