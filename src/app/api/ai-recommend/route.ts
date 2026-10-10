@@ -1,34 +1,13 @@
-import { readJson, RequestError, requestError } from "@/lib/security/request";
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
-import { cleanSlug, cleanStringArray } from "@/lib/security/validators";
+import { cleanSlug } from "@/lib/security/validators"
+import { readJson, RequestError, requestError } from "@/lib/security/request"
+import { relatedProperties } from "@/lib/real-estate/related-properties"
 
+// Compatibility endpoint; selects related records, not AI-generated claims.
 export async function POST(req: Request) {
-  try {
-    const body = await readJson(req);
-    const slug = cleanSlug(body?.slug);
-    const history = cleanStringArray(body?.history, { maxItems: 20, maxLength: 160 });
-
-    if (!slug) {
-      return NextResponse.json({ error: "Invalid property slug" }, { status: 400 });
-    }
-
-    let query = supabase.from("properties").select("*");
-
-    if (history.length > 0) {
-      query = query.in("slug", history).limit(6);
-    } else {
-      query = query.neq("slug", slug).limit(6);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      return NextResponse.json([], { status: 500 });
-    }
-
-    return NextResponse.json(data || []);
-  } catch (error) {
-    if (error instanceof RequestError) return requestError(error);
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+    try {
+        const body = await readJson(req,4096)
+        const slug = cleanSlug(body.slug)
+        if (!slug) throw new RequestError("Invalid property slug",400)
+        return Response.json(await relatedProperties(slug,6),{headers:{"Cache-Control":"no-store"}})
+    } catch (error) { return requestError(error) }
 }
