@@ -1,29 +1,53 @@
-// src/app/api/tender/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+
+type TenderRequest = {
+  tenderId?: unknown;
+};
+
+function normalizeTenderId(value: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") {
+    return null;
+  }
+
+  const tenderId = String(value).trim();
+
+  if (!/^[a-zA-Z0-9._/-]{1,50}$/.test(tenderId)) {
+    return null;
+  }
+
+  return tenderId;
+}
 
 export async function POST(req: Request) {
-    try {
-        const body = await req.json();
+  try {
+    const body = (await req.json()) as TenderRequest;
+    const tenderId = normalizeTenderId(body.tenderId);
 
-        // 1. Data Guard: Validation & Sanitization
-        const tenderId = body.tenderId?.toString().trim();
-        if (!tenderId || tenderId.length > 50) {
-            return NextResponse.json({ error: "Invalid Data" }, { status: 400 });
-        }
-
-        // 2. Zero Leakage: Fetching from .env
-        const API_KEY = process.env.GTH_INTERNAL_KEY;
-
-        // 3. Server-side Priority Logic
-        // Logic process yahan hoga, browser par kabhi nahi dikhega
-        const result = {
-            status: "Verified",
-            bundle: "Luxury One-Shot Ready",
-            timestamp: new Date().toISOString()
-        };
-
-        return NextResponse.json(result);
-    } catch (error) {
-        return NextResponse.json({ error: "Internal Security Breach Prevention" }, { status: 500 });
+    if (!tenderId) {
+      return NextResponse.json(
+        { error: "Invalid tenderId" },
+        { status: 400 }
+      );
     }
+
+    return NextResponse.json(
+      {
+        tenderId,
+        status: "IN_DEVELOPMENT",
+        available: false,
+        message: "GTH PRO Tender Intelligence is currently in development.",
+      },
+      {
+        status: 501,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request" },
+      { status: 400 }
+    );
+  }
 }
