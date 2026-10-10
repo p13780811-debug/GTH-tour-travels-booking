@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BrandVideo from "@/components/brand/BrandVideo";
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
@@ -218,7 +219,7 @@ export default function GTHHomeV13() {
 
             const content = (
               <>
-                <img src={portal.image} alt="" className={styles.portalImage} />
+                {portal.id === "tender" ? <img src={portal.image} alt="" className={styles.portalImage} /> : <BrandVideo name={portal.id === "travel" ? "travel-story" : "property-story"} className={styles.portalImage} label="AI-generated GTH PRO brand visual" controls={false} />}
                 <div className={styles.portalShade} />
                 <div className={styles.portalTop}>
                   <span className={styles.portalIcon}><Icon size={20} /></span>

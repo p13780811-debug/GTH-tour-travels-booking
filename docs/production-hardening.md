@@ -160,3 +160,12 @@ Cards now use a consistent property-first hierarchy: available type/purpose, tit
 Added shared workspace navigation across detail, saved, submission and account routes, plus a real-estate route layout with metadata and a theme-token footer linking existing policies and the ecosystem home. Changed the outer layout wrapper to a div so individual page main landmarks are not nested. New layout styling uses existing global colors/buttons and responsive CSS modules.
 
 Release gates still outstanding: protected-preview day/night desktop/mobile visual inspection; authentic inventory/media population and approval; live Supabase policy/role audit; real email login, enquiry, moderation and rate-limit flow verification; current MahaRERA portal adapter validation. These cannot be certified by a local build with placeholder Supabase environment values. No live enquiry, import or moderation action was performed in this pass. This is a consolidated code/design pass, not certification that the entire international product is finished.
+
+
+### User-supplied animated branding
+
+Integrated supplied 40-second brand film as optimized building, flight and shield clips, plus supplied animated logo. Cropped the source frame to exclude the lower-right Gemini mark; retained the untouched uploads outside the repository. Silent H.264 assets with fast-start metadata and JPEG posters total under 1 MB.
+
+Real-estate search hero now contains a slim wide building film with visible AI-generated/conceptual labeling, native playback controls and a listing CTA. Shield branding is explicitly not a certification claim. Homepage property/travel portal visuals use the supplied conceptual clips, and the shared navbar uses the supplied animated logo. No advertising network or tracking scripts were added.
+
+BrandVideo pauses when off-screen, the tab is hidden, or reduced motion is requested. Native controls are provided for looping story clips. Compact logo/portal motion without controls stops at five seconds rather than running indefinitely. Video failures fall back to a matching poster. Browser autoplay behavior and day/night/mobile rendering still need protected-preview verification.
