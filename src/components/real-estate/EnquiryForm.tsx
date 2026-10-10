@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { readApiJson } from "@/lib/api-response"
+import styles from "./Listing.module.css"
 export default function EnquiryForm({ propertyId }: { propertyId: number }) {
  const [phone, setPhone] = useState("")
  const [busy, setBusy] = useState(false)
@@ -15,8 +16,8 @@ export default function EnquiryForm({ propertyId }: { propertyId: number }) {
  }}>
   <label htmlFor={`enquiry-${propertyId}`} className="block">Your phone number</label>
   <input id={`enquiry-${propertyId}`} className="gth-glass rounded-xl p-3 w-full" type="tel" autoComplete="tel" required minLength={8} maxLength={24} value={phone} onChange={e => setPhone(e.target.value)} />
-  <p className="text-sm text-[var(--muted)]">Your number will be shared with the listing team to respond to this enquiry.</p>
-  <button className="gth-btn-gold" disabled={busy}>{busy ? "Sending…" : "Send enquiry"}</button>
+  <p className="text-sm opacity-70">Your number will be shared with the listing team to respond to this enquiry.</p>
+  <button className={`gth-btn-gold ${styles.action}`} disabled={busy}>{busy ? "Sending…" : "Send enquiry"}</button>
   {message && <p role="status">{message}</p>}
  </form>
 }

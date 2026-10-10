@@ -29,3 +29,71 @@
   top: 12px;
   right: 12px;
 }
+
+.projectHeader {
+  display: grid;
+  gap: 28px;
+  align-items: end;
+}
+
+.projectTitle {
+  font-size: clamp(2rem, 4.5vw, 4.5rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.detailLayout {
+  display: grid;
+  gap: 28px;
+  align-items: start;
+}
+
+.gallery {
+  height: clamp(250px, 40vw, 520px);
+}
+
+.sectionNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.sectionNav a:hover {
+  text-decoration: underline;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.discoveryHeader {
+  display: grid;
+  align-items: center;
+  gap: 36px;
+}
+
+.discoveryStory {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border-left: 1px solid var(--border);
+}
+
+@media (min-width: 1024px) {
+  .projectHeader { grid-template-columns: minmax(0, 1fr) 340px; }
+  .detailLayout { grid-template-columns: minmax(0, 1fr) 360px; }
+  .enquiryPanel { position: sticky; top: 100px; }
+  .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .discoveryHeader { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action.action { transition: none; }
+}
