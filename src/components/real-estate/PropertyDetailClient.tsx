@@ -40,7 +40,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
     const hasCoordinates = typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180
     const facts = [
         ["Property type", property.property_type],
-        ["Listing purpose", property.listing_type],
+        ["Listing purpose", property.listing_type === "buy" ? "For sale" : property.listing_type === "rent" ? "For rent" : "Not provided"],
         ["Reported bedrooms", property.beds || "Not provided"],
         ["Reported bathrooms", property.baths || "Not provided"],
         ["Reported area", property.sqft ? `${property.sqft} ft²` : "Not provided"],
