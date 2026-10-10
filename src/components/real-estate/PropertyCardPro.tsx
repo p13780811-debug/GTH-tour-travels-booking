@@ -26,9 +26,9 @@ export default function PropertyCardPro({ p }: { p: PropertyCardRecord }) {
  const name = p.title || "Property listing"
  const intent = p.listing_type === "buy" ? "For sale" : p.listing_type === "rent" ? "For rent" : "Explore property"
  const facts = [
-  { label: "Beds", value: p.beds ?? "—", Icon: BedDouble },
-  { label: "Baths", value: p.baths ?? "—", Icon: Bath },
-  { label: "Reported area", value: p.sqft ? `${p.sqft} ft²` : "—", Icon: Maximize }
+  { label: "Beds", value: Number(p.beds) > 0 ? p.beds : "—", Icon: BedDouble },
+  { label: "Baths", value: Number(p.baths) > 0 ? p.baths : "—", Icon: Bath },
+  { label: "Reported area", value: Number(p.sqft) > 0 ? `${p.sqft} ft²` : "—", Icon: Maximize }
  ]
  return <article className={`gth-glass ${styles.card} ${styles.editorialCard}`}>
   <div className={`${styles.media} ${styles.editorialMedia}`}>
@@ -46,7 +46,7 @@ export default function PropertyCardPro({ p }: { p: PropertyCardRecord }) {
    <h2 className={styles.cardTitle}><Link href={detailUrl}>{name}</Link></h2>
    <p className={styles.cardLocation}><MapPin size={15} aria-hidden="true" />{p.location || p.city || "Location not provided"}</p>
    <div className={styles.cardPriceBlock}><span>RECORDED ASKING PRICE</span><strong>{p.formatted_price || "Price on request"}</strong></div>
-   <dl className={styles.cardFacts}>{facts.map(({label,value,Icon}) => <div key={label}><Icon size={16} aria-hidden="true" /><dt className="sr-only">{label}</dt><dd>{value === "" ? "—" : value} {label === "Beds" ? "beds" : label === "Baths" ? "baths" : ""}</dd></div>)}</dl>
+   <dl className={styles.cardFacts}>{facts.map(({label,value,Icon}) => <div key={label}><Icon size={16} aria-hidden="true" /><dt className="sr-only">{label}</dt><dd>{value === "" ? "—" : value}{value === "—" ? "" : label === "Beds" ? " beds" : label === "Baths" ? " baths" : ""}</dd></div>)}</dl>
    <div className={styles.cardFooter}>
     <Link href={detailUrl} className={styles.cardDetailLink}>Discover property <ArrowUpRight size={17} aria-hidden="true" /></Link>
     <Link href={`${detailUrl}#enquiry`} className={`gth-btn-gold ${styles.action}`}>Enquire</Link>
