@@ -3,8 +3,15 @@ import Link from "next/link"
 import styles from "@/components/real-estate/Listing.module.css"
 
 export const metadata: Metadata = {
+ metadataBase: new URL("https://gth-pro.vercel.app"),
  title: { default: "Explore properties | GTH PRO Real Estate", template: "%s" },
  description: "Explore available property listings, compare recorded project details and submit enquiries on GTH PRO Real Estate.",
+ openGraph: {
+  title: "GTH PRO Real Estate",
+  description: "Explore available property listings and compare recorded project details on GTH PRO.",
+  siteName: "GTH PRO",
+  type: "website",
+ },
 }
 
 export default function RealEstateLayout({ children }: { children: React.ReactNode }) {
