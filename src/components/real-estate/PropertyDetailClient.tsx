@@ -3,6 +3,7 @@ import { PropertyService, transformProperty } from "@/lib/real-estate/propertySe
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
+import SavePropertyButton from "./SavePropertyButton"
 import RegistryDetails from "./RegistryDetails"
 import EnquiryForm from "./EnquiryForm"
 import PropertyImage from "./PropertyImage"
@@ -328,12 +329,7 @@ export default function PropertyDetailClient({
 
                                 <div className="flex items-center gap-3">
 
-                                    <button
-                                        disabled aria-label="Saved listings are not available yet" title="Saved listings are not available yet"
-                                        className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105"
-                                    >
-                                        <Heart size={20} />
-                                    </button>
+                                    <SavePropertyButton slug={property.slug} />
 
                                     <button aria-label="Share property" onClick={async () => { try { if (navigator.share) await navigator.share({ title: property.title, url: window.location.href }); else { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied") } } catch { setShareMessage("Sharing cancelled or unavailable") } }} className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-white backdrop-blur-2xl transition-all duration-300 hover:scale-105">
                                         <Share2 size={20} />

@@ -1,4 +1,5 @@
 "use client"
+import SavePropertyButton from "./SavePropertyButton"
 import PropertyImage from "./PropertyImage"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -81,12 +82,7 @@ export default function PropertyCardPro({
 
                 {/* favorite */}
 
-                <button
-                    disabled aria-label="Saved listings are not available yet" onClick={(e) => e.stopPropagation()}
-                    className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 gth-glass backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
-                >
-                    <Heart size={18} />
-                </button>
+                <SavePropertyButton slug={p.slug} className="absolute top-4 right-4 gth-glass p-3 rounded-xl" />
 
                 {/* bottom price */}
 

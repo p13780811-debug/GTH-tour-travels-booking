@@ -20,6 +20,7 @@ export default function ProfilePage() {
     }, [])
     return <main className="gth-container min-h-screen py-24 px-4">
         <section className="gth-glass rounded-3xl p-8 max-w-2xl mx-auto">
+            <Link className="gth-btn inline-block mb-4" href="/real-estate/saved">Saved & compare on this device</Link>
             <h1 className="text-3xl font-bold gold-text">Your account</h1>
             {loading ? <p role="status">Loading account…</p> : user ? <>
                 <p className="mt-4">{user.email}</p>
