@@ -12,6 +12,8 @@ if (!(process.env.AVIASALES_API_TOKEN || process.env.TRAVELPAYOUTS_TOKEN || proc
 for (const name of ['NEXT_PUBLIC_PEXELS_API_KEY', 'NEXT_PUBLIC_OPENAI_API_KEY', 'NEXT_PUBLIC_GEMINI_API_KEY', 'NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY']) {
   if (process.env[name]?.trim()) issues.push(`${name}: REMOVE public secret and rotate with its provider`);
 }
+const indexing = process.env.GTH_PUBLIC_INDEXING?.trim();
+if (indexing && !['true', 'false'].includes(indexing)) issues.push('GTH_PUBLIC_INDEXING: use only true or false');
 const publicKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 if (publicKey.startsWith('sb_secret_')) issues.push('NEXT_PUBLIC_SUPABASE_ANON_KEY: privileged key is forbidden');
 if (publicKey.split('.').length === 3) {
@@ -29,4 +31,4 @@ for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'UPSTASH_REDIS_REST_URL']) {
   } catch { issues.push(`${name}: invalid service URL`); }
 }
 if (issues.length) { for (const issue of issues) console.error(issue); process.exitCode = 1; }
-else console.log('Required environment names/formats: PASS. Provider connectivity and database policies still require verification.');
+else console.log('Required environment names/formats: PASS. Provider connectivity, database policies and release indexing still require verification.');
