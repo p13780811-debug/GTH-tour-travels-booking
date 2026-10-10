@@ -11,6 +11,7 @@ import PropertyImage from "./PropertyImage"
 import SavePropertyButton from "./SavePropertyButton"
 import RegistryDetails from "./RegistryDetails"
 import EnquiryForm from "./EnquiryForm"
+import OwnerProjectAds from "./OwnerProjectAds"
 import PropertyCardPro from "./PropertyCardPro"
 import styles from "./Listing.module.css"
 
@@ -85,6 +86,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
             <aside className={styles.enquiryPanel}>
                 <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><h2 className="text-2xl font-bold mt-4">Take the next step</h2><p className="opacity-70 leading-7 my-4">Request current project details, pricing or a visit. Submission sends an enquiry; it does not reserve a property.</p><EnquiryForm propertyId={property.id} /></section>
                 <section className="gth-glass rounded-3xl p-6 mt-5"><p className="gold-text text-xs uppercase tracking-widest">Listing assistant</p><p className="opacity-70 text-sm leading-7 my-4">Ask about recorded details. The assistant cannot confirm availability or investment outcomes.</p><button className={`gth-btn ${styles.action}`} aria-expanded={showAI} onClick={() => setShowAI(value => !value)}><MessageSquare size={16} aria-hidden="true" />{showAI ? "Close assistant" : "Ask about this listing"}</button>{showAI && <div className="h-[450px] mt-4 overflow-hidden rounded-2xl"><AIChat context={`Property: ${property.title}; Location: ${property.location}; Listed price: ${property.formatted_price}; Type: ${property.property_type}. Do not invent missing details.`} /></div>}</section>
+                <OwnerProjectAds />
             </aside>
         </div>
         <nav aria-label="Mobile listing actions" className={styles.mobileEnquiry}><div><span className="text-xs opacity-70">Listed price</span><p className="gold-text font-bold text-sm">{property.formatted_price || "Price on request"}</p></div><a href="#enquiry" className={`gth-btn-gold ${styles.action}`}>Enquire</a></nav>
