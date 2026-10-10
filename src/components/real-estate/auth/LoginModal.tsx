@@ -1,218 +1,51 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { Mail, X } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import {
-    Sparkles,
-    Mail,
-    ArrowRight,
-    ShieldCheck,
-    Crown,
-    Zap,
-    X,
-} from "lucide-react"
+import styles from "../Listing.module.css"
 
-export default function LoginModal({ onClose }: any) {
+export default function LoginModal({ onClose }: { onClose: () => void }) {
+    const dialog = useRef<HTMLDialogElement>(null)
     const [email, setEmail] = useState("")
-    const [loading, setLoading] = useState(false)
+    const [busy, setBusy] = useState(false)
     const [message, setMessage] = useState("")
     const [error, setError] = useState("")
 
-    const handleLogin = async () => {
-        if (!email) {
-            setError("Enter email first")
-            return
-        }
+    useEffect(() => {
+        const element = dialog.current
+        const previous = document.activeElement as HTMLElement | null
+        const overflow = document.body.style.overflow
+        element?.showModal()
+        document.body.style.overflow = "hidden"
+        return () => { element?.close(); document.body.style.overflow = overflow; previous?.focus() }
+    }, [])
 
-        try {
-            setLoading(true)
-            setError("")
-            setMessage("")
-
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/real-estate`,
-                },
-            })
-
-            if (error) throw error
-
-            setMessage("📩 Magic link sent! Check your email")
-
-        } catch (err: any) {
-            setError(err.message || "Login failed")
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4">
-
-            {/* ========================= */}
-            {/* MAIN MODAL */}
-            {/* ========================= */}
-
-            <div className="relative w-full max-w-md overflow-hidden rounded-[32px] border border-white/10 bg-[var(--card)] text-[var(--text)] shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
-
-                {/* ========================= */}
-                {/* BACKGROUND GLOW */}
-                {/* ========================= */}
-
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-
-                    <div className="absolute top-[-120px] right-[-80px] h-[260px] w-[260px] rounded-full bg-[#d4af37]/10 blur-3xl" />
-
-                    <div className="absolute bottom-[-120px] left-[-80px] h-[220px] w-[220px] rounded-full bg-cyan-500/10 blur-3xl" />
-
-                </div>
-
-                {/* ========================= */}
-                {/* HEADER */}
-                {/* ========================= */}
-
-                <div className="relative z-10 p-6 md:p-8 border-b border-white/10">
-
-                    <div className="flex items-start justify-between gap-4">
-
-                        <div className="flex items-center gap-4">
-
-                            <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#bf953f] via-[#fcf6ba] to-[#b38728] text-black shadow-[0_0_30px_rgba(212,175,55,0.35)]">
-                                <Crown size={24} />
-                            </div>
-
-                            <div>
-
-                                <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-none">
-                                    GTH{" "}
-
-                                    <span className="gold-text gold-text italic">
-                                        PRIME ACCESS
-                                    </span>
-                                </h2>
-
-                                <p className="mt-2 text-[10px] uppercase tracking-[0.35em] opacity-60 font-bold">
-                                    Luxury Real Estate Portal
-                                </p>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={onClose}
-                            className="h-10 w-10 rounded-xl border border-white/10 bg-white/[0.04] flex items-center justify-center transition-all duration-300 hover:bg-red-500 hover:border-red-500 hover:text-white"
-                        >
-                            <X size={18} />
-                        </button>
-                    </div>
-
-                    {/* FEATURES */}
-
-                    <div className="grid grid-cols-3 gap-3 mt-6">
-
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center">
-                            <ShieldCheck size={18} className="mx-auto mb-2 text-cyan-400" />
-                            <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">
-                                Secure
-                            </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center">
-                            <Zap size={18} className="mx-auto mb-2 text-yellow-400" />
-                            <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">
-                                Fast Access
-                            </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center">
-                            <Sparkles size={18} className="mx-auto mb-2 text-[#d4af37]" />
-                            <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">
-                                Premium Tools
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-
-                {/* ========================= */}
-                {/* BODY */}
-                {/* ========================= */}
-
-                <div className="relative z-10 p-6 md:p-8">
-
-                    {/* EMAIL FIELD */}
-
-                    <div className="mb-5">
-
-                        <label className="block mb-2 text-[11px] uppercase tracking-[0.25em] font-bold opacity-70">
-                            Email Address
-                        </label>
-
-                        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-4 transition-all duration-300 focus-within:border-[#d4af37]/40 focus-within:bg-[#d4af37]/[0.04]">
-
-                            <Mail size={18} className="opacity-60" />
-
-                            <input
-                                type="email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-transparent outline-none text-sm placeholder:text-slate-400"
-                            />
-                        </div>
-                    </div>
-
-                    {/* LOGIN BUTTON */}
-
-                    <button
-                        onClick={handleLogin}
-                        disabled={loading}
-                        className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r gth-btn-gold p-[1px] transition-all duration-500 hover:scale-[1.01] active:scale-95"
-                    >
-                        <div className="flex items-center justify-center gap-3 rounded-2xl px-5 py-4 font-black uppercase tracking-[0.22em] text-black gold-text">
-
-                            <span>
-                                {loading ? "Sending Magic Link..." : "Continue Securely"}
-                            </span>
-
-                            {!loading && (
-                                <ArrowRight
-                                    size={18}
-                                    className="transition-transform duration-300 group-hover:translate-x-1"
-                                />
-                            )}
-                        </div>
-                    </button>
-
-                    {/* SUCCESS */}
-
-                    {message && (
-                        <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-                            {message}
-                        </div>
-                    )}
-
-                    {/* ERROR */}
-
-                    {error && (
-                        <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* FOOTER */}
-
-                    <div className="mt-6 flex items-center justify-center gap-2 text-center">
-
-                        <div className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
-
-                        <p className="text-[10px] uppercase tracking-[0.25em] opacity-60 font-bold">
-                            Passwordless Luxury Authentication
-                        </p>
-
-                    </div>
-                </div>
-            </div>
+    return <dialog ref={dialog} aria-labelledby="estate-signin-title" aria-describedby="estate-signin-description" className={styles.authDialog} onCancel={event => { event.preventDefault(); onClose() }}>
+        <div className="p-6 md:p-8">
+            <div className="flex justify-between items-start gap-4"><div><Mail className="gold-text mb-4" size={28} aria-hidden="true" /><p className="gold-text text-xs uppercase tracking-widest">GTH PRO Real Estate</p><h2 id="estate-signin-title" className="text-2xl font-bold mt-3">Sign in to your account</h2></div><button type="button" className="gth-glass rounded-xl p-3" aria-label="Close sign-in" onClick={onClose}><X size={18} aria-hidden="true" /></button></div>
+            <p id="estate-signin-description" className="opacity-70 leading-7 mt-4">Use your email to request a sign-in link. No password is needed for your GTH PRO account.</p>
+            <form className="mt-6 space-y-4" onSubmit={async event => {
+                event.preventDefault()
+                if (busy) return
+                const value = email.trim()
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value.length > 254) { setError("Enter a valid email address."); return }
+                setBusy(true); setError(""); setMessage("")
+                try {
+                    const path = window.location.pathname.startsWith("/real-estate") ? window.location.pathname : "/real-estate/profile"
+                    const { error } = await supabase.auth.signInWithOtp({ email:value, options:{ emailRedirectTo:`${window.location.origin}${path}` } })
+                    if (error) throw error
+                    setMessage("Sign-in link requested. Check your email and spam folder. Open the link to finish signing in.")
+                } catch { setError("Unable to request a sign-in link. Please wait a moment and retry.") }
+                finally { setBusy(false) }
+            }}>
+                <label htmlFor="estate-signin-email" className="block font-medium">Email address</label>
+                <input id="estate-signin-email" name="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} aria-invalid={Boolean(error)} className="w-full gth-glass rounded-xl p-3" placeholder="you@example.com" />
+                <button type="submit" disabled={busy} className={`gth-btn-gold ${styles.action} w-full`}>{busy ? "Requesting link…" : "Email me a sign-in link"}</button>
+                {message && <p role="status" className="gth-glass rounded-xl p-4 text-sm leading-6">{message}</p>}
+                {error && <p role="alert" className="text-sm">{error}</p>}
+            </form>
+            <p className="text-sm opacity-70 mt-6">You can browse listings and save them on this device without signing in. Submitting a listing requires an account.</p>
         </div>
-    )
+    </dialog>
 }

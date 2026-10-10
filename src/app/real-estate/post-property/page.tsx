@@ -1,439 +1,54 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
+import JourneyNav from "@/components/real-estate/JourneyNav"
+import { supabase } from "@/lib/supabase"
+import { readApiJson } from "@/lib/api-response"
+import LoginModal from "@/components/real-estate/auth/LoginModal"
+import BottomNav from "@/components/mobile/BottomNav"
+import styles from "@/components/real-estate/Listing.module.css"
 
-import {
-    Upload,
-    IndianRupee,
-    MapPin,
-    Home,
-    FileText,
-    BedDouble,
-} from "lucide-react"
+const fields = [
+    { key:"title", label:"Project or property name", min:3, max:180, hint:"Use the actual name shown in the property documents." },
+    { key:"country", label:"Country", min:2, max:80, hint:"Country where the property is located." },
+    { key:"city", label:"City", min:2, max:80, hint:"Use the recorded city name." },
+    { key:"location", label:"Address or locality", min:2, max:250, hint:"Provide enough detail to identify the location accurately." },
+]
 
 export default function PostPropertyPage() {
-
-    const [loading, setLoading] = useState(false)
-
-    async function handleSubmit(
-        e: React.FormEvent<HTMLFormElement>
-    ) {
-
-        e.preventDefault()
-
-        setLoading(true)
-
-        await new Promise(resolve =>
-            setTimeout(resolve, 1500)
-        )
-
-        setLoading(false)
-
-        alert("Property Posted Successfully 🚀")
-    }
-
-    return (
-
-        <main
-            className="
-                min-h-screen
-                gth-container
-                px-4
-                py-24
-            "
-        >
-
-            <div
-                className="
-                    max-w-3xl
-                    mx-auto
-                    gth-glass-ultra
-                    rounded-[32px]
-                    p-5
-                    md:p-8
-                "
-            >
-
-                {/* HEADER */}
-
-                <div className="mb-8">
-
-                    <div
-                        className="
-                            gth-badge
-                            gth-badge-gold
-                            mb-4
-                        "
-                    >
-                        Post New Property
-                    </div>
-
-                    <h1 className="gth-title">
-                        List Your Property
-                    </h1>
-
-                    <p className="gth-sub mt-3">
-                        Reach premium buyers & tenants
-                        with the GTH luxury ecosystem.
-                    </p>
-
-                </div>
-
-                {/* FORM */}
-
-                <form
-                    onSubmit={handleSubmit}
-                    className="gth-stack"
-                >
-
-                    {/* TITLE */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Property Title
-                        </label>
-
-                        <div
-                            className="
-                                gth-glass
-                                flex
-                                items-center
-                                gap-3
-                                px-4
-                                py-3
-                            "
-                        >
-
-                            <Home
-                                size={18}
-                                opacity={0.7}
-                            />
-
-                            <input
-                                type="text"
-                                required
-                                placeholder="Luxury 3BHK Apartment..."
-                                className="
-                                    bg-transparent
-                                    outline-none
-                                    w-full
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* PRICE */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Price
-                        </label>
-
-                        <div
-                            className="
-                                gth-glass
-                                flex
-                                items-center
-                                gap-3
-                                px-4
-                                py-3
-                            "
-                        >
-
-                            <IndianRupee
-                                size={18}
-                                opacity={0.7}
-                            />
-
-                            <input
-                                type="number"
-                                required
-                                placeholder="8500000"
-                                className="
-                                    bg-transparent
-                                    outline-none
-                                    w-full
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* LOCATION */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Location
-                        </label>
-
-                        <div
-                            className="
-                                gth-glass
-                                flex
-                                items-center
-                                gap-3
-                                px-4
-                                py-3
-                            "
-                        >
-
-                            <MapPin
-                                size={18}
-                                opacity={0.7}
-                            />
-
-                            <input
-                                type="text"
-                                required
-                                placeholder="Mumbai"
-                                className="
-                                    bg-transparent
-                                    outline-none
-                                    w-full
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* GRID */}
-
-                    <div
-                        className="
-                            grid
-                            md:grid-cols-2
-                            gap-4
-                        "
-                    >
-
-                        {/* TYPE */}
-
-                        <div className="gth-stack">
-
-                            <label className="font-semibold">
-                                Property Type
-                            </label>
-
-                            <select
-                                className="
-                                    gth-input
-                                "
-                            >
-
-                                <option>
-                                    Apartment
-                                </option>
-
-                                <option>
-                                    Villa
-                                </option>
-
-                                <option>
-                                    Plot
-                                </option>
-
-                                <option>
-                                    Commercial
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                        {/* BHK */}
-
-                        <div className="gth-stack">
-
-                            <label className="font-semibold">
-                                BHK
-                            </label>
-
-                            <div
-                                className="
-                                    gth-glass
-                                    flex
-                                    items-center
-                                    gap-3
-                                    px-4
-                                    py-3
-                                "
-                            >
-
-                                <BedDouble
-                                    size={18}
-                                    opacity={0.7}
-                                />
-
-                                <input
-                                    type="text"
-                                    placeholder="3 BHK"
-                                    className="
-                                        bg-transparent
-                                        outline-none
-                                        w-full
-                                    "
-                                />
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {/* PURPOSE */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Listing Purpose
-                        </label>
-
-                        <div
-                            className="
-                                flex
-                                gap-3
-                            "
-                        >
-
-                            <button
-                                type="button"
-                                className="
-                                    gth-btn
-                                    flex-1
-                                "
-                            >
-                                Buy
-                            </button>
-
-                            <button
-                                type="button"
-                                className="
-                                    gth-glass
-                                    flex-1
-                                    py-3
-                                    font-semibold
-                                "
-                            >
-                                Rent
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                    {/* DESCRIPTION */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Description
-                        </label>
-
-                        <div
-                            className="
-                                gth-glass
-                                flex
-                                gap-3
-                                p-4
-                            "
-                        >
-
-                            <FileText
-                                size={18}
-                                opacity={0.7}
-                                className="mt-1"
-                            />
-
-                            <textarea
-                                rows={5}
-                                placeholder="Write property details..."
-                                className="
-                                    bg-transparent
-                                    outline-none
-                                    w-full
-                                    resize-none
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* IMAGE */}
-
-                    <div className="gth-stack">
-
-                        <label className="font-semibold">
-                            Upload Images
-                        </label>
-
-                        <label
-                            className="
-                                gth-glass
-                                rounded-[24px]
-                                p-8
-                                flex
-                                flex-col
-                                items-center
-                                justify-center
-                                text-center
-                                cursor-pointer
-                            "
-                        >
-
-                            <Upload
-                                size={34}
-                                opacity={0.75}
-                            />
-
-                            <p className="mt-3 font-semibold">
-                                Click to Upload
-                            </p>
-
-                            <span className="gth-sub">
-                                JPG, PNG supported
-                            </span>
-
-                            <input
-                                type="file"
-                                multiple
-                                hidden
-                            />
-
-                        </label>
-
-                    </div>
-
-                    {/* SUBMIT */}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="
-                            gth-btn-gold
-                            py-4
-                            text-base
-                            mt-3
-                        "
-                    >
-
-                        {loading
-                            ? "Posting..."
-                            : "Post Property"}
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </main>
-    )
+    const [busy, setBusy] = useState(false)
+    const [message, setMessage] = useState("")
+    const [error, setError] = useState("")
+    const [login, setLogin] = useState(false)
+    const [description, setDescription] = useState("")
+    return <main className="gth-container pt-10 pb-28 px-4">
+        <JourneyNav />
+        <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
+        <section className="gth-glass rounded-3xl p-6 mt-6"><h2 className="font-bold">Before you start</h2><p className="opacity-70 leading-7 mt-3">All fields are required. Use details you can substantiate. This form currently accepts project basics; pricing and media are not collected here.</p><button className={`gth-btn ${styles.action} mt-4`} onClick={() => setLogin(true)}>Sign in with email</button></section>
+        <form className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onSubmit={async event => {
+            event.preventDefault(); if (busy) return
+            const form = event.currentTarget
+            const payload = Object.fromEntries(new FormData(form))
+            setBusy(true); setMessage(""); setError("")
+            try {
+                const {data} = await supabase.auth.getSession()
+                if (!data.session) { setLogin(true); setError("Sign in, then submit your listing. Your current form remains open."); return }
+                await readApiJson(await fetch("/api/real-estate/submissions", { method:"POST", headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`}, body:JSON.stringify(payload) }))
+                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription("")
+            } catch (failure) { setError(failure instanceof Error ? failure.message : "Submission failed. Your entries have been kept.") }
+            finally { setBusy(false) }
+        }}>
+            <fieldset disabled={busy} className="grid gap-5"><legend className="font-bold text-xl mb-5">Property details</legend>
+                {fields.map(field => <div key={field.key}><label htmlFor={`listing-${field.key}`} className="block font-medium mb-2">{field.label}</label><input id={`listing-${field.key}`} name={field.key} required minLength={field.min} maxLength={field.max} aria-describedby={`listing-${field.key}-help`} className="gth-glass rounded-xl p-3 w-full" /><p id={`listing-${field.key}-help`} className="opacity-70 text-sm mt-2">{field.hint}</p></div>)}
+                <div><label htmlFor="listing-description" className="block font-medium mb-2">Property description</label><textarea id="listing-description" name="description" required minLength={20} maxLength={5000} rows={6} value={description} onChange={event => setDescription(event.target.value)} aria-describedby="listing-description-help" className="gth-glass rounded-xl p-3 w-full" /><p id="listing-description-help" className="opacity-70 text-sm mt-2">Describe recorded facts without unsupported guarantees. {description.length}/5000 characters; minimum 20.</p></div>
+                <div className="grid sm:grid-cols-2 gap-5"><label>Property type<select name="property_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2">{["Apartment","Villa","Penthouse","Commercial","Plot"].map(type => <option key={type}>{type}</option>)}</select></label><label>Listing purpose<select name="listing_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="buy">For sale</option><option value="rent">For rent</option></select></label></div>
+                <button className={`gth-btn-gold ${styles.action} justify-self-start`} type="submit">{busy ? "Submitting…" : "Submit for review"}</button>
+            </fieldset>
+            {message && <div className="mt-6" role="status"><p>{message}</p><Link href="/real-estate/profile" className="underline inline-block mt-3">View submission status</Link></div>}
+            {error && <p className="mt-6" role="alert">{error}</p>}
+        </form></div>
+        {login && <LoginModal onClose={() => setLogin(false)} />}
+        <BottomNav />
+    </main>
 }

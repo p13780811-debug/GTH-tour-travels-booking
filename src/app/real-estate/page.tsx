@@ -1,915 +1,133 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import dynamic from "next/dynamic"
+import type { User } from "@supabase/supabase-js"
+import { LayoutGrid, Map, SlidersHorizontal } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-
+import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
+import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
-
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
-import MapWrapper from "@/components/MapWrapper"
-import { PropertyService } from "@/lib/real-estate/propertyService"
-import AddPropertyModal from "@/components/real-estate/AddPropertyModal"
-import LeadsDashboard from "@/components/real-estate/LeadsDashboard"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
-import MapFullscreen from "@/components/mobile/MapFullscreen"
-import FiltersSheet from "@/components/mobile/FiltersSheet"
-import AIChatToggle from "@/components/AIChatToggle"
-// ============================
-// 🧠 MAIN APP
-// ============================
-export default function App() {
-    const [user, setUser] = useState<any>(null)
+import styles from "@/components/real-estate/Listing.module.css"
+
+const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
+const PAGE_SIZE = 24
+const categories = [{ label:"Buy", value:"buy" },{ label:"Rent", value:"rent" },{ label:"Apartments", value:"Apartment" },{ label:"Villas", value:"Villa" },{ label:"Commercial", value:"Commercial" },{ label:"Plots", value:"Plot" }]
+
+export default function RealEstatePage() {
+    const [user, setUser] = useState<User | null>(null)
     const [properties, setProperties] = useState<any[]>([])
-    const [filtered, setFiltered] = useState<any[]>([])
+    const [activeFilters, setActiveFilters] = useState<[string, string][]>([])
     const [query, setQuery] = useState("")
-    const [active, setActive] = useState<any>(null)
-
-    const [showAdd, setShowAdd] = useState(false)
-    const [showDashboard, setShowDashboard] = useState(false)
-
-    const [leads, setLeads] = useState<any[]>([])
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
     const [showLogin, setShowLogin] = useState(false)
-    const [showMap, setShowMap] = useState(false)
-    const [showFilters, setShowFilters] = useState(false)
+    const [view, setView] = useState<"list" | "map">("list")
+    const request = useRef(0)
 
-    const router = useRouter()
-
-    // 📱 Mobile Detection Logic
-    const [isMobile, setIsMobile] = useState(false)
-
-    const categories = [
-        {
-            title: "BUY PROPERTY",
-            desc: "Find your dream home",
-            icon: "🏠",
-            query: "buy property"
-        },
-        {
-            title: "RENT PROPERTY",
-            desc: "Explore rental homes",
-            icon: "🏢",
-            query: "rent property"
-        },
-        {
-            title: "COMMERCIAL",
-            desc: "Office, shops & spaces",
-            icon: "🏬",
-            query: "commercial property"
-        },
-        {
-            title: "LUXURY HOMES",
-            desc: "Premium & high-end living",
-            icon: "💎",
-            query: "luxury villa"
-        }
-    ]
-
-    useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth < 768)
-        check()
-        window.addEventListener("resize", check)
-        return () => window.removeEventListener("resize", check)
+    const load = useCallback(async (requestedPage?: number) => {
+        const current = ++request.current
+        const url = new URL(window.location.href)
+        const storedPage = Number(url.searchParams.get("page"))
+        const nextPage = requestedPage ?? (Number.isInteger(storedPage) && storedPage > 0 && storedPage <= 10000 ? storedPage : 1)
+        const params = url.searchParams
+        const text = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 80) || undefined
+        const bedrooms = Number(params.get("bedrooms"))
+        setActiveFilters([...params.entries()].filter(([key,value]) => ["query","country","city","type","listing","bedrooms"].includes(key) && Boolean(value)))
+        setLoading(true)
+        setError("")
+        setQuery((params.get("query") || "").slice(0, 120))
+        try {
+            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, sort: params.get("sort") === "ai" ? "ai" : "latest" })
+            if (current !== request.current) return
+            setProperties(data)
+            setPage(nextPage)
+            if (nextPage > 1) url.searchParams.set("page", String(nextPage))
+            else url.searchParams.delete("page")
+            window.history.replaceState(null, "", url)
+        } catch {
+            if (current === request.current) { setProperties([]); setError("Listings could not be loaded. Please retry.") }
+        } finally { if (current === request.current) setLoading(false) }
     }, [])
 
-    // ============================
-    // INIT
-    // ============================
     useEffect(() => {
-        const init = async () => {
-            const { data } = await supabase.auth.getUser()
-            const currentUser = data.user
-            setUser(currentUser)
+        let active = true
+        load()
+        supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) })
+        const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
+        const onHistory = () => { load() }
+        window.addEventListener("popstate", onHistory)
+        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).subscribe()
+        return () => { active = false; request.current += 1; auth.subscription.unsubscribe(); window.removeEventListener("popstate", onHistory); supabase.removeChannel(channel) }
+    }, [load])
 
-            await fetchProperties(currentUser)
-
-            if (currentUser) {
-                const { data: leadsData } = await supabase
-                    .from("leads")
-                    .select("*")
-                setLeads(leadsData || [])
-            }
-        }
-
-        init()
-
-        const channel = supabase
-            .channel('properties-changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'properties' },
-                async () => {
-                    const { data } = await supabase.auth.getUser()
-                    await fetchProperties(data.user)
-                }
-            )
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [showDashboard])
-
-
-    type UserType = {
-        email?: string
-        id?: string
+    const updateSearch = (term: string) => {
+        const url = new URL(window.location.href)
+        if (term.trim()) url.searchParams.set("query", term.trim().slice(0, 120))
+        else url.searchParams.delete("query")
+        url.searchParams.delete("page")
+        window.history.replaceState(null, "", url)
+        load(1)
+        document.getElementById("listing-results")?.scrollIntoView({ block:"start" })
     }
-
-    const fetchProperties = async (currentUser: UserType | null) => {
-        let queryBuilder = supabase.from("properties").select("*");
-
-        if (currentUser?.email && showDashboard) {
-            queryBuilder = queryBuilder.eq("created_by", currentUser.email);
-        }
-
-        const { data, error } = await queryBuilder;
-
-        if (error) {
-            console.error("Matrix Error:", error.message);
-            return;
-        }
-
-        const sorted = (data || []).sort((a, b) => {
-            const aBoost = a.is_featured ? 1 : 0;
-            const bBoost = b.is_featured ? 1 : 0;
-
-            if (bBoost !== aBoost) return bBoost - aBoost;
-
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-
-        setProperties(sorted);
-        setFiltered(sorted);
-    };
-
-    // ============================
-    // SEARCH (AI + LOCAL)
-    // ============================
-    const aiSearch = async () => {
-        if (!query) return
-
-        let filters: any = {}
-
-        try {
-            const res = await fetch("/api/ai-search", {
-                method: "POST",
-                body: JSON.stringify({ query }),
-            })
-            filters = await res.json()
-        } catch { }
-
-        if (!filters || Object.keys(filters).length === 0) {
-            const q = query.toLowerCase()
-
-            const cities = ["mumbai", "delhi", "kolkata", "bangalore", "pune"]
-            let city = cities.find(c => q.includes(c)) || ""
-
-            let minPrice = 0
-            let maxPrice = Infinity
-            let type = ""
-
-            const priceMatch = q.match(/(\d+)(k|lakh|lac|crore)?/)
-            if (priceMatch) {
-                let value = Number(priceMatch[1])
-                const unit = priceMatch[2]
-
-                if (unit === "k") value *= 1000
-                if (unit === "lakh" || unit === "lac") value *= 100000
-                if (unit === "crore") value *= 10000000
-
-                if (q.includes("under")) maxPrice = value
-                if (q.includes("above")) minPrice = value
-            }
-
-            if (q.includes("2bhk")) type = "2bhk"
-            if (q.includes("3bhk")) type = "3bhk"
-            if (q.includes("villa")) type = "villa"
-
-            filters = { city, minPrice, maxPrice, type }
-        }
-
-        const result = properties.filter((p) => {
-            const price = Number(p.price || 0)
-
-            return (
-                (!filters.city || p.location?.toLowerCase().includes(filters.city)) &&
-                (!filters.minPrice || price >= filters.minPrice) &&
-                (!filters.maxPrice || price <= filters.maxPrice) &&
-                (!filters.type || p.title?.toLowerCase().includes(filters.type))
-            )
-        })
-
-        setFiltered(result)
-
-        if (result[0]?.lat && result[0]?.lng) {
-            setActive({
-                id: result[0].id,
-                coords: [result[0].lat, result[0].lng],
-            })
-        }
+    const applyCategory = (value: string) => {
+        const url = new URL(window.location.href)
+        for (const key of ["query", "page", "type", "listing"]) url.searchParams.delete(key)
+        url.searchParams.set(value === "buy" || value === "rent" ? "listing" : "type", value)
+        window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters"))
+        load(1)
     }
-
-    // ============================
-    // AUTH
-    // ============================
-    const login = async () => {
-        const email = prompt("Enter email")
-        if (!email) return
-        await supabase.auth.signInWithOtp({ email })
-        alert("Check email")
+    const openFilters = () => {
+        const panel = document.getElementById("discovery-filters") as HTMLDetailsElement | null
+        if (panel) { panel.open = true; panel.scrollIntoView({ block:"start" }); panel.querySelector("summary")?.focus() }
     }
-
-    const logout = async () => {
-        await supabase.auth.signOut()
-        setUser(null)
+    const removeFilter = (key: string) => {
+        const url = new URL(window.location.href)
+        url.searchParams.delete(key); url.searchParams.delete("page")
+        window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
     }
-
-    // ============================
-    // PROPERTY
-    // ============================
-    const addProperty = async (form: any) => {
-        if (!user) {
-            alert("Please login first")
-            return
-        }
-        const payload = {
-            ...form,
-            slug: form.title?.toLowerCase().replace(/\s+/g, "-"),
-            is_featured: false,
-            boost_expiry: null,
-            created_by: user?.email || "guest"
-        }
-
-        await PropertyService.add(payload)
-        setShowAdd(false)
-        fetchProperties(user)
+    const reset = () => {
+        const url = new URL(window.location.href)
+        for (const key of ["query","page","country","city","type","listing","bedrooms","sort"]) url.searchParams.delete(key)
+        window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters"))
+        load(1)
     }
+    const coordinates = properties.filter(property => typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180)
 
-    const addLead = async (id: number) => {
-        const phone = prompt("Enter phone")
-        if (!phone) return
-        await PropertyService.addLead({ property_id: id, phone })
-        alert("Lead added")
-    }
-
-    const payForBoost = async (id: number) => {
-        alert("Demo: Payment system next step me connect hoga")
-
-        await supabase
-            .from("properties")
-            .update({
-                is_featured: true,
-                boost_expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-            })
-            .eq("id", id)
-
-        fetchProperties(user)
-    }
-
-    const totalLeads = leads.length
-    const boosted = properties.filter(p => p.is_featured).length
-
-    const getAIRecommendations = () => {
-        if (!properties.length) return []
-
-        return properties
-            .filter(p => p.is_featured || p.price < 50)
-            .slice(0, 6)
-    }
-
-    const aiRecommended = getAIRecommendations()
-
-    // ============================
-    // UI
-    // ============================
-    return (
-        <div className="min-h-screen relative overflow-hidden pb-24 md:pb-0">
-
-            {/* ====================================================== */}
-            {/* 🌌 PREMIUM BACKGROUND */}
-            {/* ====================================================== */}
-
-            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-
-                <div className="absolute top-[-120px] left-[-80px] w-[320px] h-[320px] rounded-full blur-3xl bg-blue-500/10" />
-
-                <div className="absolute top-[20%] right-[-120px] w-[360px] h-[360px] rounded-full blur-3xl bg-purple-500/10" />
-
-                <div className="absolute bottom-[-140px] left-[20%] w-[300px] h-[300px] rounded-full blur-3xl bg-amber-400/10" />
-
-            </div>
-
-            {/* ====================================================== */}
-            {/* 🏆 HERO */}
-            {/* ====================================================== */}
-
-            <RealEstateHero
-                query={query}
-                setQuery={setQuery}
-                onSearch={aiSearch}
-                properties={properties}
-                setFiltered={setFiltered}
-                setActive={setActive}
-            />
-
-            {/* ====================================================== */}
-            {/* ⚡ QUICK CATEGORY ENGINE */}
-            {/* ====================================================== */}
-
-            <section className="px-3 md:px-6 -mt-6 relative z-20">
-
-                <div className="gth-glass-ultra rounded-[30px] p-4 md:p-6 border border-white/10 shadow-2xl overflow-hidden">
-
-                    <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-
-                        <div className="min-w-0">
-
-                            <h2 className="text-lg md:text-2xl font-black gold-text uppercase tracking-wider">
-                                Explore Categories
-                            </h2>
-
-                            <p className="text-xs opacity-70 mt-1">
-                                AI-powered luxury property discovery
-                            </p>
-
-                        </div>
-
-                        {/* DESKTOP BADGES */}
-
-                        <div className="hidden lg:flex items-center gap-2 shrink-0">
-
-                            <div className="gth-badge">
-                                🔥 Trending
-                            </div>
-
-                            <div className="gth-badge">
-                                🤖 Smart AI
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {/* CATEGORY SCROLL FIX */}
-
-                    <div className="overflow-x-auto scrollbar-hide">
-
-                        <div className="flex gap-3 min-w-max pb-2">
-
-                            {[
-                                {
-                                    name: "Buy",
-                                    icon: "🏠",
-                                    q: "buy property",
-                                    glow: "from-blue-500/20 to-cyan-500/10"
-                                },
-                                {
-                                    name: "Rent",
-                                    icon: "🏢",
-                                    q: "rent property",
-                                    glow: "from-emerald-500/20 to-green-500/10"
-                                },
-                                {
-                                    name: "Luxury",
-                                    icon: "💎",
-                                    q: "luxury villa",
-                                    glow: "from-purple-500/20 to-indigo-500/10"
-                                },
-                                {
-                                    name: "Commercial",
-                                    icon: "🏬",
-                                    q: "commercial property",
-                                    glow: "from-orange-500/20 to-amber-500/10"
-                                },
-                                {
-                                    name: "Plots",
-                                    icon: "📍",
-                                    q: "plots",
-                                    glow: "from-pink-500/20 to-rose-500/10"
-                                },
-                            ].map((c, i) => (
-
-                                <button
-                                    key={i}
-                                    onClick={() => {
-                                        setQuery(c.q)
-                                        aiSearch()
-                                    }}
-                                    className="
-                  relative overflow-hidden
-                  min-w-[120px]
-                  md:min-w-[150px]
-                  rounded-2xl
-                  p-4
-                  text-left
-                  transition-all duration-300
-                  hover:scale-[1.03]
-                  gth-glass
-                  shrink-0
-                "
-                                >
-
-                                    <div className={`
-                  absolute inset-0 opacity-60
-                  bg-gradient-to-br ${c.glow}
-                `} />
-
-                                    <div className="relative z-10">
-
-                                        <div className="text-2xl mb-3">
-                                            {c.icon}
-                                        </div>
-
-                                        <h3 className="text-sm font-bold uppercase tracking-wide">
-                                            {c.name}
-                                        </h3>
-
-                                        <p className="text-[11px] opacity-70 mt-1">
-                                            AI Curated
-                                        </p>
-
-                                    </div>
-
-                                </button>
-
-                            ))}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+    return <main className="min-h-screen pb-28 md:pb-16">
+        <nav aria-label="Real estate navigation" className={`gth-container ${styles.localNav}`}>
+            <Link href="/real-estate" className="gold-text font-bold tracking-wide">GTH PRO / Real Estate</Link>
+            <div className="flex items-center gap-4 flex-wrap"><Link href="/real-estate/saved">Saved & compare</Link><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>List a property</Link>{user ? <Link href="/real-estate/profile">My account</Link> : <button className={`gth-btn ${styles.action}`} onClick={() => setShowLogin(true)}>Sign in</button>}</div>
+        </nav>
+        <div id="property-search" className="scroll-mt-24"><RealEstateHero query={query} setQuery={setQuery} onSearch={updateSearch} loading={loading} /></div>
+        <div className="gth-container">
+            <section aria-label="Browse property categories" className={styles.browseBar}>{categories.map(category => <button key={category.value} aria-pressed={activeFilters.some(([key,value]) => (key === "type" || key === "listing") && value === category.value)} className={`gth-btn ${styles.action}`} onClick={() => applyCategory(category.value)} disabled={loading}>{category.label}</button>)}</section>
+            <DiscoveryFilters onApply={() => { clearPropertyCache(); load(1) }} />
+            {activeFilters.length > 0 && <div className={styles.filterChips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)} <span aria-hidden="true">×</span></button>)}<button onClick={reset}>Clear all</button></div>}
+            <section id="listing-results" className="scroll-mt-24 mt-10" aria-busy={loading}>
+                <header className="flex items-center justify-between gap-5 flex-wrap mb-6">
+                    <div><p className="gold-text text-xs uppercase tracking-widest">Property discovery</p><h2 className="text-3xl font-bold mt-2">Explore properties</h2><p className="opacity-70 text-sm mt-2" role="status">{loading ? "Loading listings…" : error ? "Inventory temporarily unavailable" : `${properties.length} listings on page ${page}`}</p></div>
+                    <div className="flex gap-2 flex-wrap"><button className={`gth-btn ${styles.action}`} aria-pressed={view === "list"} onClick={() => setView("list")}><LayoutGrid size={16} aria-hidden="true" />Listings</button><button className={`gth-btn ${styles.action}`} aria-pressed={view === "map"} onClick={() => setView("map")}><Map size={16} aria-hidden="true" />Map</button><button className={`gth-btn ${styles.action}`} onClick={openFilters}><SlidersHorizontal size={16} aria-hidden="true" />Filters</button></div>
+                </header>
+                {loading && <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={`gth-glass ${styles.skeleton}`}><div className={styles.skeletonMedia} /><div className={styles.skeletonLine} /><div className={styles.skeletonLine} /></div>)}</div>}
+                {error && <div className="gth-glass rounded-3xl p-8" role="alert"><h3 className="font-bold">We could not load the inventory</h3><p className="opacity-70 mt-3">{error}</p><button className={`gth-btn-gold ${styles.action} mt-5`} onClick={() => load(page)}>Retry</button></div>}
+                {!loading && !error && properties.length === 0 && <div className="gth-glass rounded-3xl p-8"><h3 className="text-xl font-bold">{page > 1 ? "You have reached the end of these results" : "No listings match this search"}</h3><p className="opacity-70 mt-3">Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.action} mt-5`} onClick={reset}>Clear search and filters</button></div>}
+                {!loading && !error && view === "map" && <div className="gth-glass rounded-3xl p-5 mb-6"><p className="text-sm opacity-70 mb-4">{coordinates.length} listings on this page have stored coordinates. Map pins are not a measurement or location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-2xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to Listings to explore the available records.</p>}</div>}
+                {!loading && !error && view === "list" && <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">{properties.map(property => <PropertyCardPro key={property.id} p={property} />)}</div>}
+                <nav aria-label="Listing pages" className="flex items-center justify-center gap-4 mt-10 flex-wrap"><button className={`gth-btn ${styles.action}`} disabled={loading || page === 1} onClick={() => load(page - 1)}>Previous</button><span>Page {page}</span><button className={`gth-btn ${styles.action}`} disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => load(page + 1)}>Next</button></nav>
             </section>
-
-            {/* ====================================================== */}
-            {/* 📱 MOBILE QUICK UI */}
-            {/* ====================================================== */}
-
-            {isMobile && (
-
-                <div className="p-3 space-y-4 mt-2">
-
-                    {!user && (
-
-                        <div className="gth-glass-ultra rounded-2xl p-4">
-
-                            <h2 className="font-bold text-sm mb-2">
-                                Unlock Premium Features
-                            </h2>
-
-                            <p className="text-xs opacity-70 mb-4">
-                                Access dashboard, leads & boosted listings
-                            </p>
-
-                            <button
-                                onClick={() => setShowLogin(true)}
-                                className="w-full gth-btn"
-                            >
-                                LOGIN / REGISTER
-                            </button>
-
-                        </div>
-
-                    )}
-
-                    <div className="h-48 rounded-3xl overflow-hidden gth-glass-ultra">
-
-                        <MapWrapper
-                            data={filtered}
-                            active={active}
-                        />
-
-                    </div>
-
-                    <button
-                        onClick={() => setShowFilters(true)}
-                        className="w-full gth-btn-gold py-3"
-                    >
-                        ✨ OPEN SMART FILTERS
-                    </button>
-
-                </div>
-
-            )}
-
-            {/* ====================================================== */}
-            {/* 🏛️ MAIN DESKTOP LAYOUT */}
-            {/* ====================================================== */}
-
-            <div className="gth-container mt-6 px-3 md:px-4">
-
-                <div
-                    className={
-                        isMobile
-                            ? "block"
-                            : "grid grid-cols-[320px_minmax(0,1fr)] gap-7 items-start"
-                    }
-                >
-
-                    {/* ================================================= */}
-                    {/* 🧠 SIDEBAR */}
-                    {/* ================================================= */}
-
-                    {!isMobile && (
-
-                        <aside className="w-[320px] shrink-0 sticky top-24 space-y-5">
-
-                            {/* USER */}
-
-                            {!user ? (
-
-                                <div className="gth-glass-ultra p-5 rounded-3xl">
-
-                                    <h2 className="font-black text-lg mb-2">
-                                        Guest Access
-                                    </h2>
-
-                                    <p className="text-sm opacity-70 mb-4">
-                                        Login to unlock premium dashboard & AI tools
-                                    </p>
-
-                                    <button
-                                        onClick={() => setShowLogin(true)}
-                                        className="w-full gth-btn"
-                                    >
-                                        LOGIN / REGISTER
-                                    </button>
-
-                                </div>
-
-                            ) : (
-
-                                <div className="gth-glass-ultra p-5 rounded-3xl">
-
-                                    <div className="flex items-start justify-between mb-4">
-
-                                        <div className="min-w-0">
-
-                                            <h2 className="font-black">
-                                                Agent Dashboard
-                                            </h2>
-
-                                            <p className="text-xs opacity-70 truncate mt-1">
-                                                {user.email}
-                                            </p>
-
-                                        </div>
-
-                                        <div className="text-2xl shrink-0">
-                                            🏆
-                                        </div>
-
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 mb-4">
-
-                                        <div className="gth-glass rounded-2xl p-3">
-
-                                            <p className="text-[10px] opacity-60 uppercase">
-                                                Leads
-                                            </p>
-
-                                            <h2 className="text-xl font-black mt-1">
-                                                {totalLeads}
-                                            </h2>
-
-                                        </div>
-
-                                        <div className="gth-glass rounded-2xl p-3">
-
-                                            <p className="text-[10px] opacity-60 uppercase">
-                                                Boosted
-                                            </p>
-
-                                            <h2 className="text-xl font-black mt-1">
-                                                {boosted}
-                                            </h2>
-
-                                        </div>
-
-                                    </div>
-
-                                    <button
-                                        onClick={() => setShowDashboard(true)}
-                                        className="w-full gth-btn-gold mb-2"
-                                    >
-                                        OPEN DASHBOARD
-                                    </button>
-
-                                    <button
-                                        onClick={logout}
-                                        className="w-full gth-btn"
-                                    >
-                                        LOGOUT
-                                    </button>
-
-                                </div>
-
-                            )}
-
-                            {/* FILTERS */}
-
-                            <div className="gth-glass-ultra rounded-3xl p-5">
-
-                                <div className="flex items-center justify-between mb-4">
-
-                                    <h2 className="font-black gold-text uppercase tracking-wide text-sm">
-                                        Smart Filters
-                                    </h2>
-
-                                    <span className="text-xs opacity-60">
-                                        AI
-                                    </span>
-
-                                </div>
-
-                                <div className="space-y-3">
-
-                                    {[
-                                        "2BHK",
-                                        "3BHK",
-                                        "Villa",
-                                        "Near Metro",
-                                        "Luxury",
-                                        "Under 50L"
-                                    ].map((t, i) => (
-
-                                        <button
-                                            key={i}
-                                            onClick={() => {
-                                                setQuery(t)
-                                                aiSearch()
-                                            }}
-                                            className="
-                      w-full
-                      text-left
-                      gth-glass
-                      rounded-2xl
-                      px-4 py-3
-                      transition-all
-                      hover:scale-[1.02]
-                    "
-                                        >
-                                            {t}
-                                        </button>
-
-                                    ))}
-
-                                </div>
-
-                            </div>
-
-                            {/* MAP */}
-
-                            <div className="h-[320px] rounded-3xl overflow-hidden gth-glass-ultra">
-
-                                <MapWrapper
-                                    data={filtered}
-                                    active={active}
-                                />
-
-                            </div>
-
-                        </aside>
-
-                    )}
-
-                    {/* ================================================= */}
-                    {/* 🏠 MAIN CONTENT */}
-                    {/* ================================================= */}
-
-                    <div className="min-w-0 w-full">
-
-                        {/* TOP BAR */}
-
-                        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
-
-                            <div className="min-w-0">
-
-                                <h1 className="gth-title uppercase">
-                                    Properties
-                                </h1>
-
-                                <p className="opacity-70 text-sm mt-2">
-                                    {filtered.length} curated properties found
-                                </p>
-
-                            </div>
-
-                            {/* BUTTON FIX */}
-
-                            <button
-                                onClick={() => setShowAdd(true)}
-                                className="
-                shrink-0
-                gth-btn-gold
-                px-5 py-3
-                rounded-full
-                flex items-center
-                gap-2
-                whitespace-nowrap
-              "
-                            >
-                                <span className="text-lg">+</span>
-                                ADD PROPERTY
-                            </button>
-
-                        </div>
-
-                        {/* ================================================= */}
-                        {/* 🤖 AI RECOMMENDATIONS */}
-                        {/* ================================================= */}
-
-                        {aiRecommended.length > 0 && (
-
-                            <section className="mb-10">
-
-                                <div className="flex items-center justify-between mb-5">
-
-                                    <div>
-
-                                        <h2 className="text-2xl font-black gold-text">
-                                            🤖 AI Recommendations
-                                        </h2>
-
-                                        <p className="text-sm opacity-70 mt-1">
-                                            Personalized luxury picks
-                                        </p>
-
-                                    </div>
-
-                                    <div className="hidden lg:flex gth-badge">
-                                        Smart Match
-                                    </div>
-
-                                </div>
-
-                                {/* DESKTOP SCROLL FIX */}
-
-                                <div className="overflow-x-auto scrollbar-hide">
-
-                                    <div className="flex gap-5 min-w-max pb-2">
-
-                                        {aiRecommended.map((p) => (
-
-                                            <div
-                                                key={p.id}
-                                                className="
-                        min-w-[260px]
-                        md:min-w-[280px]
-                        lg:min-w-[300px]
-                        max-w-[300px]
-                        flex-shrink-0
-                      "
-                                            >
-
-                                                <PropertyCardPro
-                                                    p={p}
-                                                    user={user}
-                                                    onSelect={(prop: any) => {
-                                                        router.push(`/real-estate/${prop.slug}`)
-                                                    }}
-                                                    onLead={addLead}
-                                                    onBoost={payForBoost}
-                                                />
-
-                                            </div>
-
-                                        ))}
-
-                                    </div>
-
-                                </div>
-
-                            </section>
-
-                        )}
-
-                        {/* ================================================= */}
-                        {/* 🏠 PROPERTY GRID */}
-                        {/* ================================================= */}
-
-                        <section>
-
-                            <div
-                                className="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                xl:grid-cols-3
-                2xl:grid-cols-4
-                gap-5
-                md:gap-6
-              "
-                            >
-
-                                {filtered.map((p) => (
-
-                                    <div
-                                        key={p.id}
-                                        className="w-full min-w-0"
-                                    >
-
-                                        <PropertyCardPro
-                                            p={p}
-                                            user={user}
-                                            onSelect={(prop: any) => {
-
-                                                if (!prop?.lat || !prop?.lng) return
-
-                                                setActive({
-                                                    id: prop.id,
-                                                    coords: [prop.lat, prop.lng]
-                                                })
-                                            }}
-                                            onLead={addLead}
-                                            onBoost={payForBoost}
-                                        />
-
-                                    </div>
-
-                                ))}
-
-                            </div>
-
-                        </section>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* ====================================================== */}
-            {/* 🧩 MODALS */}
-            {/* ====================================================== */}
-
-            {showAdd && (
-
-                <AddPropertyModal
-                    onSave={addProperty}
-                    onClose={() => setShowAdd(false)}
-                />
-
-            )}
-
-            {showDashboard && (
-
-                <LeadsDashboard
-                    onClose={() => setShowDashboard(false)}
-                    properties={properties}
-                />
-
-            )}
-
-            {showLogin && (
-
-                <LoginModal
-                    onClose={() => setShowLogin(false)}
-                />
-
-            )}
-
-            <MapFullscreen
-                open={showMap}
-                onClose={() => setShowMap(false)}
-                data={filtered}
-                active={active}
-            />
-
-            <FiltersSheet
-                open={showFilters}
-                onClose={() => setShowFilters(false)}
-                setQuery={setQuery}
-            />
-
-            {/* ====================================================== */}
-            {/* 📱 MOBILE NAV */}
-            {/* ====================================================== */}
-
-            {isMobile && (
-
-                <BottomNav />
-
-            )}
-
-            {/* ====================================================== */}
-            {/* 🤖 AI CHAT */}
-            {/* ====================================================== */}
-
-            <div className="relative z-[999999]">
-
-                <AIChatToggle
-                    properties={properties}
-                    setFiltered={setFiltered}
-                    setActive={setActive}
-                />
-
-            </div>
-
+            <section className="mt-14" aria-labelledby="buyer-guide"><p className="gold-text text-xs uppercase tracking-widest">Before your next move</p><h2 id="buyer-guide" className="text-2xl font-bold mt-3">A clearer way to explore property</h2><div className={styles.guideGrid}>{[{title:"Review the records",text:"Check the registration reference, developer and recorded project details. Registration is not a guarantee of delivery."},{title:"Compare what matters",text:"Save listings and compare location, reported area and available specifications on this device."},{title:"Confirm before committing",text:"Ask for current pricing, legal documents and a site visit before making a payment or decision."}].map(item => <article key={item.title} className="gth-glass"><h3 className="font-bold">{item.title}</h3><p className="text-sm opacity-70 leading-7 mt-3">{item.text}</p></article>)}</div></section>
+            <section className="gth-glass rounded-3xl p-6 md:p-8 mt-14 flex items-center justify-between gap-6 flex-wrap"><div><h2 className="text-2xl font-bold">Have a property to share?</h2><p className="opacity-70 mt-3">Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>Submit your listing</Link></section>
         </div>
-    )
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+        <BottomNav user={user} />
+    </main>
 }

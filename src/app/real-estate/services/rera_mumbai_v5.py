@@ -13,6 +13,9 @@ import random
 import hashlib
 
 from dotenv import load_dotenv
+from rera_collection import collect_pages
+from rera_import import insert_registry_batch
+from rera_table import parse_table
 
 
 
@@ -23,6 +26,7 @@ from supabase import create_client, Client
 import undetected_chromedriver as uc
 
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 
 from selenium.webdriver.chrome.options import Options
 
@@ -314,85 +318,27 @@ def clean(x):
 
 
 def scrape_page(driver):
-
-    rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
-
-
-
-    data = []
-
-
-
-    for r in rows:
-
-        try:
-
-            c = r.find_elements(By.TAG_NAME, "td")
-
-
-
-            if len(c) < 4:
-
-                continue
-
-
-
-            title = clean(c[0])
-
-            dev = clean(c[1])
-
-            rera = clean(c[2])
-
-            loc = clean(c[3])
-
-
-
-            if not rera:
-
-                continue
-
-
-
-            data.append({
-
-                "title": title,
-
-                "developer": dev,
-
-                "rera_id": rera,
-
-                "location": loc,
-
-                "city": "Mumbai",
-
-                "slug": slugify(title, rera),
-
-                "price": None,
-
-                "lat": None,
-
-                "lng": None,
-
-                "is_featured": False,
-
-                "boost_expiry": None,
-
-                "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-
-            })
-
-
-
-        except:
-
+    # Select a table only if its headers identify registry project fields.
+    candidates = []
+    for table in driver.find_elements(By.TAG_NAME, "table"):
+        headers = [cell.text.strip() for cell in table.find_elements(By.CSS_SELECTOR, "thead th")]
+        if not headers:
+            headers = [cell.text.strip() for cell in table.find_elements(By.CSS_SELECTOR, "tr th")]
+        if not headers:
             continue
-
-
-
-    return data
-
-
-
+        try:
+            parse_table(headers, [])
+        except ValueError:
+            continue
+        rows = [
+            [cell.text.strip() for cell in row.find_elements(By.TAG_NAME, "td")]
+            for row in table.find_elements(By.CSS_SELECTOR, "tbody tr")
+            if row.find_elements(By.TAG_NAME, "td")
+        ]
+        candidates.append(parse_table(headers, rows))
+    if len(candidates) != 1:
+        raise RuntimeError("Expected one supported registry project table")
+    return candidates[0]
 
 
 # ======================================================
@@ -423,12 +369,14 @@ def next_page(driver, page):
 
 
 
-        if "disabled" in btn.get_attribute("class").lower():
+        if "disabled" in (btn.get_attribute("class") or "").lower():
 
             return False
 
 
 
+        previous_rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
+        previous_text = tuple(row.text for row in previous_rows)
         driver.execute_script("arguments[0].click();", btn)
 
 
@@ -437,7 +385,10 @@ def next_page(driver, page):
 
 
 
-        wait_table(driver)
+        WebDriverWait(driver, 40).until(
+            lambda current: bool(current.find_elements(By.CSS_SELECTOR, "table tbody tr"))
+            and tuple(row.text for row in current.find_elements(By.CSS_SELECTOR, "table tbody tr")) != previous_text
+        )
 
 
 
@@ -445,9 +396,10 @@ def next_page(driver, page):
 
 
 
-    except:
-
+    except NoSuchElementException:
         return False
+    except Exception:
+        raise RuntimeError("Registry pagination failed; no import performed") from None
 
 
 
@@ -487,14 +439,17 @@ def scrape_rera():
 
         # 4. Handle iframe & Trigger search (Aapka existing logic)
         handle_iframe(driver)
-        trigger_search(driver)
-
-        all_data = []
-        page = 1
-        # ... rest of your loop ...
+        if not trigger_search(driver) or not wait_table(driver):
+            raise RuntimeError("Registry search did not return a readable table")
+        all_data = collect_pages(
+            lambda: scrape_page(driver),
+            lambda page: next_page(driver, page),
+            max_pages=MAX_PAGES,
+        )
 
     except Exception as e:
-        logging.error(f"❌ Entrance Failed: {e}")
+        logging.error("Registry collection failed; database import skipped")
+        raise RuntimeError("Registry collection failed") from None
     finally:
         driver.quit()
 
@@ -517,17 +472,8 @@ async def push(batch):
 
 
 
-    supabase.table("properties").upsert(
-
-        batch,
-
-        on_conflict="rera_id"
-
-    ).execute()
-
-
-
-    logging.info(f"✅ inserted: {len(batch)}")
+    inserted = insert_registry_batch(supabase, batch)
+    logging.info("Registry batch: %s inserted, %s already present", inserted, len(batch) - inserted)
 
 
 

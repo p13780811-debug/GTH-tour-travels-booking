@@ -1,22 +1,11 @@
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase"; // ✅ Same yahan bhi
+import { cleanSlug } from "@/lib/security/validators"
+import { RequestError, requestError } from "@/lib/security/request"
+import { relatedProperties } from "@/lib/real-estate/related-properties"
 
 export async function GET(req: Request) {
     try {
-        const { searchParams } = new URL(req.url);
-        const slug = searchParams.get("slug");
-
-        const { data, error } = await supabase
-            .from("properties")
-            .select("*")
-            .neq("slug", slug) // Current property ko skip karo
-            .limit(10);
-
-        if (error) throw error;
-
-        return NextResponse.json(data || []);
-    } catch (err) {
-        console.error("Similar API Error:", err);
-        return NextResponse.json([], { status: 500 });
-    }
+        const slug = cleanSlug(new URL(req.url).searchParams.get("slug"))
+        if (!slug) throw new RequestError("Invalid property slug",400)
+        return Response.json(await relatedProperties(slug,10),{headers:{"Cache-Control":"no-store"}})
+    } catch (error) { return requestError(error) }
 }

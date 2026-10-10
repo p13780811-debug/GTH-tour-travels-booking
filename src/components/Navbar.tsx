@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 
 import Link from "next/link"
+import BrandVideo from "./brand/BrandVideo"
 import { usePathname } from "next/navigation"
 
 import {
@@ -292,20 +293,7 @@ export default function Navbar() {
 
                         <div className="gth-glass-ultra relative h-12 w-12 overflow-hidden rounded-full border border-[var(--gold)]/20">
 
-                            <img
-                                src="/images/gth-logo.png"
-                                alt="GTH"
-                                className="
-                                    h-full
-                                    w-full
-                                    object-cover
-                                    scale-110
-                                    transition-all
-                                    duration-700
-                                    group-hover:scale-125
-                                    group-hover:rotate-6
-                                "
-                            />
+                            <BrandVideo name="logo-motion" label="GTH PRO animated logo" className="h-full w-full object-cover" controls={false} />
 
                         </div>
 

@@ -1,59 +1,79 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { cleanString } from "@/lib/security/validators";
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// 🚀 PEXELS SE IMAGE LANe WALA FUNCTION (With Cache)
+  if (!url || !anonKey) return null;
+  return createClient(url, anonKey);
+}
+
 async function getPexelsImage(query: string) {
-    try {
-        const res = await fetch(
-            `https://api.pexels.com/v1/search?query=${query}&per_page=3&page=${Math.floor(Math.random() * 5) + 1}`,
-            {
-                headers: { Authorization: process.env.NEXT_PUBLIC_PEXELS_API_KEY! },
-                next: { revalidate: 3600 } // 🔥 1 ghante tak Pexels ko dobara hit nahi karega (Cache)
-            }
-        );
-        const data = await res.json();
-        return data.photos.src.large || "/placeholder.jpg";
-    } catch (e) {
-        return "/placeholder-hotel.jpg";
-    }
+  const apiKey = process.env.PEXELS_API_KEY;
+  if (!apiKey) return "/placeholder.jpg";
+
+  try {
+    const url = new URL("https://api.pexels.com/v1/search");
+    url.searchParams.set("query", query);
+    url.searchParams.set("per_page", "3");
+    url.searchParams.set("page", "1");
+
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: apiKey },
+      next: { revalidate: 3600 },
+    });
+
+    if (!res.ok) return "/placeholder.jpg";
+
+    const data = await res.json();
+    return data?.photos?.[0]?.src?.large || "/placeholder.jpg";
+  } catch {
+    return "/placeholder.jpg";
+  }
 }
 
 export async function GET(req: Request) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const city = searchParams.get("city") || "travel";
+  const supabase = getSupabase();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Hotel service is not configured" },
+      { status: 503 },
+    );
+  }
 
-        // 1. Supabase se hotels lao
-        const { data: hotels, error } = await supabase
-            .from('hotels')
-            .select('*')
-            .ilike('city', `%${city}%`)
-            .limit(10); // Limit kam rakho taaki Pexels hit kam ho
+  const { searchParams } = new URL(req.url);
+  const city = cleanString(searchParams.get("city") || "travel", {
+    min: 2,
+    max: 80,
+  });
 
-        if (error) return NextResponse.json({ error: "DB Error" }, { status: 500 });
+  if (!city) {
+    return NextResponse.json({ error: "Invalid city" }, { status: 400 });
+  }
 
-        // 2. Har city ke liye EK hi Pexels image fetch karo (API Hits bachane ke liye)
-        const cityImage = await getPexelsImage(`${city} hotel`);
+  const { data: hotels, error } = await supabase
+    .from("hotels")
+    .select("*")
+    .ilike("city", `%${city}%`)
+    .limit(10);
 
-        const formattedHotels = hotels.map((h: any) => ({
-            id: h.id,
-            name: h.name,
-            price: h.price,
-            stars: h.stars,
-            city: h.city,
-            // 🚀 AGAR DB mein image nahi hai, toh Pexels wali city image dikhao
-            image: h.image_url || cityImage,
-            affiliate_link: h.affiliate_link
-        }));
+  if (error) {
+    return NextResponse.json({ error: "Hotel data unavailable" }, { status: 500 });
+  }
 
-        return NextResponse.json(formattedHotels);
+  const cityImage = await getPexelsImage(`${city} hotel`);
 
-    } catch (err) {
-        return NextResponse.json({ error: "Server Error" }, { status: 500 });
-    }
+  const formattedHotels = (hotels || []).map((hotel: Record<string, unknown>) => ({
+    id: hotel.id,
+    name: hotel.name,
+    price: hotel.price,
+    stars: hotel.stars,
+    city: hotel.city,
+    image: hotel.image_url || cityImage,
+    affiliate_link: hotel.affiliate_link,
+  }));
+
+  return NextResponse.json(formattedHotels);
 }

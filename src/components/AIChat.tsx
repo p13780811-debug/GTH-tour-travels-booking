@@ -1,5 +1,7 @@
 "use client"
 
+import { readAIReply, readApiJson } from "@/lib/api-response"
+
 import { useState, useEffect } from "react"
 import { detectMode } from "@/lib/aiRouter"
 import { Mic } from "lucide-react"
@@ -87,7 +89,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
     // ============================
     const sendMessage = async () => {
 
-        if (!input) return
+        if (!input.trim() || loading) return
 
         const mode = detectMode(input) // 🔥 AI ROUTER
 
@@ -95,6 +97,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
         setMessages(prev => [...prev, userMsg])
         setLoading(true)
 
+        try {
         // ============================
         // 🏡 REAL ESTATE MODE
         // ============================
@@ -105,11 +108,12 @@ function AIChat({ properties, setFiltered, setActive }: any) {
             try {
                 const res = await fetch("/api/ai-search", {
                     method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ query: input }),
                 })
-                filters = await res.json()
+                filters = await readApiJson(res)
             } catch (err) {
-                console.error("AI Search Error", err)
+                filters = {}
             }
 
             if (!filters || Object.keys(filters).length === 0) {
@@ -211,11 +215,11 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 body: JSON.stringify({ message: input })
             })
 
-            const data = await res.json()
+            const reply = await readAIReply(res)
 
             setMessages(prev => [...prev, {
                 role: "bot",
-                text: data.reply
+                text: reply
             }])
 
             setLoading(false)
@@ -232,15 +236,18 @@ function AIChat({ properties, setFiltered, setActive }: any) {
             body: JSON.stringify({ message: input })
         })
 
-        const data = await res.json()
+        const reply = await readAIReply(res)
 
         setMessages(prev => [...prev, {
             role: "bot",
-            text: data.reply
+            text: reply
         }])
 
         setLoading(false)
         setInput("")
+        } catch (error) {
+            setMessages(prev => [...prev, { role: "bot", text: error instanceof Error ? error.message : "Unable to connect. Please try again." }])
+        } finally { setLoading(false) }
     }
     const startVoice = () => {
         const SpeechRecognition =

@@ -1,0 +1,45 @@
+name: GTH Production Check
+
+on:
+  push:
+    branches:
+      - gth-homepage-v1.3
+      - gth-production-hardening
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Security regression tests
+        run: npm run test:security
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Registry ingestion regression tests
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build

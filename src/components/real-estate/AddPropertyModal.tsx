@@ -1,5 +1,6 @@
 "use client"
 
+import { supabase } from "@/lib/supabase"
 import { useState } from "react"
 import {
     Upload,
@@ -122,11 +123,13 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
 
             const res = await fetch("/api/ai-search", {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     query: `${form.title || ""} ${form.location || ""}`,
                 }),
             })
 
+            if (!res.ok) throw new Error("AI service unavailable")
             const data = await res.json()
 
             setForm((prev: any) => ({
@@ -182,6 +185,8 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
             setLoading(true)
             setError("")
 
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) throw new Error("Sign in before adding a property")
             let imageUrls: string[] = []
 
             if (files.length > 0) {
@@ -195,11 +200,13 @@ export default function AddPropertyModal({ onSave, onClose }: any) {
 
                     const res = await fetch("/api/upload", {
                         method: "POST",
+                        headers: { Authorization: `Bearer ${session.access_token}` },
                         body,
                     })
 
                     const data = await res.json()
 
+                    if (!res.ok || typeof data.url !== "string") throw new Error(data.error || "Image upload failed")
                     imageUrls.push(data.url)
                 }
             }

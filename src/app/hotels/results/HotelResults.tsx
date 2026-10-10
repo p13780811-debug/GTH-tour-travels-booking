@@ -9,55 +9,28 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 
-const PEXELS_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+
 
 export default function HotelResults({ city }: { city: string }) {
     const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // 1. 🌍 GLOBAL CURRENCY LOGIC
-    const getCurrency = (cityName: string) => {
-        const c = cityName.toLowerCase();
-        if (c.includes("dubai") || c.includes("uae") || c.includes("sharjah"))
-            return { code: "AED", symbol: "د.إ", rate: 450 }; // Dirham
-        if (c.includes("paris") || c.includes("europe") || c.includes("berlin") || c.includes("italy"))
-            return { code: "EUR", symbol: "€", rate: 110 }; // Euro
-        if (c.includes("usa") || c.includes("york") || c.includes("vegas") || c.includes("london"))
-            return { code: "USD", symbol: "$", rate: 130 }; // Dollar
-        if (c.includes("thailand") || c.includes("bangkok"))
-            return { code: "THB", symbol: "฿", rate: 1200 }; // Baht
-
-        return { code: "INR", symbol: "₹", rate: 4500 }; // Default India
-    };
-
-    const currency = getCurrency(city);
-
     useEffect(() => {
         if (!city) return;
+        const controller = new AbortController();
         setLoading(true);
-
-        fetch(`https://api.pexels.com/v1/search?query=${city}+luxury+resort&per_page=10`, {
-            headers: { Authorization: PEXELS_KEY || "" }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.photos) {
-                    const processed = data.photos.map((photo: any, i: number) => ({
-                        id: photo.id,
-                        name: `${city} ${["Elite Resort", "Grand Plaza", "Royal Heritage", "Skyline", "Palm Stay", "The Retreat"][i % 6]}`,
-                        image: photo.src.large,
-                        // Dynamic Price based on country
-                        price: currency.rate + Math.floor(Math.random() * (currency.rate * 0.5)),
-                        rating: (Math.random() * (5 - 4.6) + 4.6).toFixed(1)
-                    }));
-                    setHotels(processed);
-                }
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
+        setHotels([]);
+        fetch(`/api/hotels?city=${encodeURIComponent(city)}`, { signal: controller.signal })
+            .then(res => { if (!res.ok) throw new Error("Hotel data unavailable"); return res.json(); })
+            .then(data => setHotels(Array.isArray(data) ? data : []))
+            .catch(() => setHotels([]))
+            .finally(() => setLoading(false));
+        return () => controller.abort();
     }, [city]);
 
     if (loading) return <div className="text-center py-20 text-sky-500 font-black tracking-[0.3em] animate-pulse">LOADING {city.toUpperCase()}...</div>;
+
+    if (!hotels.length) return <p className="text-center py-12">No hotel listings available for this city.</p>;
 
     return (
         <div className="w-full py-6">
@@ -88,12 +61,12 @@ export default function HotelResults({ city }: { city: string }) {
                                     {/* Rating Badge */}
                                     <div className="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5">
                                         <span className="text-yellow-500 text-[10px]">★</span>
-                                        <span className="text-white font-black text-[10px] tracking-tighter">{h.rating}</span>
+                                        <span className="text-white font-black text-[10px] tracking-tighter">{h.stars ? `${h.stars} stars` : "Hotel"}</span>
                                     </div>
 
                                     {/* Luxury Status */}
                                     <div className="bg-sky-500/90 backdrop-blur-sm text-white text-[8px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg">
-                                        Premium
+                                        Hotel
                                     </div>
                                 </div>
                                 {/* ------------------------------------ */}
@@ -107,14 +80,14 @@ export default function HotelResults({ city }: { city: string }) {
 
                                     <div className="flex justify-between items-center border-t border-white/10 pt-6">
                                         <div>
-                                            <p className="text-gray-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Starting At</p>
+                                            <p className="text-gray-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Price</p>
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-sky-400 font-bold text-[10px]">{currency.code}</span>
-                                                <span className="text-white text-2xl font-black italic">{currency.symbol}{h.price}</span>
+                                                <span className="text-sky-400 font-bold text-[10px]"></span>
+                                                <span className="text-white text-2xl font-black italic">See partner for current price</span>
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => window.open(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${city}&aid=IKb6eSUe`, "_blank")}
+                                            onClick={() => window.open(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${encodeURIComponent(city)}&aid=IKb6eSUe`, "_blank", "noopener,noreferrer")}
                                             className="gth-glass text-black hover:bg-sky-500 hover:text-white px-6 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-90"
                                         >
                                             View Deals
@@ -137,7 +110,7 @@ export default function HotelResults({ city }: { city: string }) {
 
             {/* Disclaimer for Professionalism */}
             <p className="w-full text-center text-pink-600 text-[10px] mt-12 uppercase tracking-widest font-medium">
-                *Prices shown are estimated base rates. Final pricing available on secure checkout.
+                Current prices and availability must be confirmed with the booking partner.
             </p>
         </div>
     );

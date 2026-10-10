@@ -2,167 +2,53 @@
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
-import { useEffect, useRef } from "react"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
+import { mapPriceLabel, validMapCoordinates } from "@/lib/real-estate/map-data"
+import styles from "./PropertyMap.module.css"
 
-// ==============================
-// 🔥 HEATMAP (SSR SAFE)
-// ==============================
-function HeatMap({ data }: any) {
+type MapProperty = { id?: number; slug?: string; title?: string; location?: string; lat?: number; lng?: number; formatted_price?: string; price?: number | string }
+
+function createIcon(label: string) {
+    // Leaflet accepts a DOM node. textContent prevents listing data becoming HTML.
+    const wrapper = document.createElement("span")
+    wrapper.className = styles.marker
+    const text = document.createElement("span")
+    text.className = styles.label
+    text.textContent = label
+    wrapper.appendChild(text)
+    return new L.DivIcon({html:wrapper,className:"",iconSize:[140,38],iconAnchor:[70,19],popupAnchor:[0,-22]})
+}
+
+function PositionMap({ data, active }: {data:MapProperty[]; active?: {coords?:unknown}}) {
     const map = useMap()
-    const layerRef = useRef<any>(null)
-
     useEffect(() => {
-        if (!map || typeof window === "undefined") return
-
-        let isMounted = true
-
-        const load = async () => {
-            await import("leaflet.heat")
-
-            const points = data
-                ?.filter((p: any) => p.lat && p.lng)
-                ?.map((p: any) => [p.lat, p.lng, 0.6])
-
-            if (!points || points.length === 0) return
-
-            // cleanup old layer
-            if (layerRef.current) {
-                map.removeLayer(layerRef.current)
-            }
-
-            // @ts-ignore
-            const heat = L.heatLayer(points, {
-                radius: 30,
-                blur: 20,
-                maxZoom: 12,
-            })
-
-            heat.addTo(map)
-            layerRef.current = heat
+        map.invalidateSize()
+        const coordinates = active?.coords
+        if (Array.isArray(coordinates) && coordinates.length === 2 && validMapCoordinates(coordinates[0],coordinates[1])) {
+            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            if (reduced) map.setView(coordinates as [number,number],14)
+            else map.flyTo(coordinates as [number,number],14,{duration:0.6})
+        } else if (data.length) {
+            map.fitBounds(data.map(item => [item.lat!,item.lng!] as [number,number]), {padding:[80,60],maxZoom:14,animate:false})
         }
-
-        load()
-
-        return () => {
-            if (layerRef.current) {
-                map.removeLayer(layerRef.current)
-            }
-        }
-    }, [data, map])
-
+    }, [data, active, map])
     return null
 }
 
-// ==============================
-// 📍 CUSTOM PRICE MARKER
-// ==============================
-const createIcon = (price: number) =>
-    new L.DivIcon({
-        html: `
-        <div style="
-            background:#0ea5e9;
-            color:white;
-            padding:6px 12px;
-            border-radius:20px;
-            font-size:12px;
-            font-weight:bold;
-            box-shadow:0 2px 8px rgba(0,0,0,0.3);
-        ">
-            ₹${price}
-        </div>
-        `,
-        className: "",
-    })
-
-// ==============================
-// 🎯 FLY TO ACTIVE
-// ==============================
-function FlyTo({ position }: any) {
-    const map = useMap()
-
-    useEffect(() => {
-        if (
-            Array.isArray(position) &&
-            position.length === 2 &&
-            typeof position[0] === "number" &&
-            typeof position[1] === "number"
-        ) {
-            map.flyTo(position as [number, number], 12, { duration: 1.5 })
-        }
-    }, [position, map])
-
-    return null
-}
-
-// ==============================
-// 📦 AUTO FIT BOUNDS
-// ==============================
-function FitBounds({ data }: any) {
-    const map = useMap()
-
-    useEffect(() => {
-        if (!Array.isArray(data) || data.length === 0) return
-
-        const bounds = data
-            .filter((d: any) =>
-                typeof d.lat === "number" &&
-                typeof d.lng === "number"
-            )
-            .map((d: any) => [d.lat, d.lng])
-
-        if (bounds.length > 0) {
-            map.fitBounds(bounds as [number, number][])
-        }
-    }, [data, map])
-
-    return null
-}
-
-// ==============================
-// 🔥 MAIN MAP
-// ==============================
-export default function MapView({ data = [], active }: any) {
-    return (
-        <MapContainer
-            center={[20.5937, 78.9629]}
-            zoom={5}
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-        >
-            {/* 🌍 MAP TILE */}
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* 🔥 FEATURES */}
-            <FlyTo position={active?.coords} />
-            <FitBounds data={data} />
-            <HeatMap data={data} />
-
-            {/* 📍 MARKERS */}
-            {Array.isArray(data) &&
-                data.map((item: any) => {
-                    if (
-                        typeof item.lat !== "number" ||
-                        typeof item.lng !== "number"
-                    ) return null
-
-                    return (
-                        <Marker
-                            key={item.id}
-                            position={[item.lat, item.lng]}
-                            icon={createIcon(item.price || 0)}
-                        >
-                            <Popup>
-                                <div>
-                                    <h3 className="font-bold">{item.title}</h3>
-                                    <p>{item.location}</p>
-                                    <p>₹ {item.price}</p>
-                                </div>
-                            </Popup>
-                        </Marker>
-                    )
-                })}
+export default function MapView({ data = [], active }: {data?:MapProperty[]; active?:{coords?:unknown}}) {
+    const [tileError, setTileError] = useState(false)
+    const mapped = useMemo(() => Array.isArray(data) ? data.filter(item => validMapCoordinates(item.lat,item.lng)) : [], [data])
+    const markers = useMemo(() => mapped.map(item => ({item,label:mapPriceLabel(item),icon:createIcon(mapPriceLabel(item))})),[mapped])
+    if (!mapped.length) return <div className="gth-glass flex h-full items-center justify-center p-6 text-center"><p>No project coordinates available. No approximate property pins are shown.</p></div>
+    return <div className={styles.root}>
+        <MapContainer center={[mapped[0].lat!,mapped[0].lng!]} zoom={10} scrollWheelZoom={false} style={{height:"100%",width:"100%"}}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' eventHandlers={{tileerror:()=>setTileError(true)}} />
+            <PositionMap data={mapped} active={active} />
+            {markers.map(({item,label,icon},index) => <Marker key={item.id ?? item.slug ?? index} position={[item.lat!,item.lng!]} icon={icon} title={`${item.title || "Property listing"}: ${label}`} alt={item.title || "Property listing"}>
+                <Popup><div><h3 className="font-bold">{item.title || "Property listing"}</h3><p>{item.location || "Address not provided"}</p><p className="font-bold my-2">{label}</p>{item.slug && <Link className="underline" href={`/real-estate/${encodeURIComponent(item.slug)}`}>View project details</Link>}<p className="text-xs mt-2">Stored coordinates; confirm the project address.</p></div></Popup>
+            </Marker>)}
         </MapContainer>
-    )
+        {tileError && <p role="status" className={styles.notice}>Some map tiles could not load. Listing details remain available; reload the map to retry.</p>}
+    </div>
 }

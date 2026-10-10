@@ -21,7 +21,6 @@ export default function GTHNetwork({
     const [canLeft, setCanLeft] = useState(false);
     const [canRight, setCanRight] = useState(true);
 
-    if (!partners || partners.length === 0) return null;
 
     const updateButtons = () => {
         if (!sliderRef.current) return;
@@ -79,7 +78,9 @@ export default function GTHNetwork({
                 updateButtons
             );
         };
-    }, []);
+    }, [partners.length]);
+
+    if (!partners || partners.length === 0) return null;
 
     return (
 

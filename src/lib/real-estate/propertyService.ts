@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,source_type,ingestion_source,last_verified_at"
 
 // ==========================================================
 // 🏛️ GTH PRO ESTATE — HYPER PROPERTY ENGINE V9
@@ -36,6 +37,8 @@ type SearchFilters = {
     city?: string
     country?: string
     type?: string
+    listing?: string
+    bedrooms?: number
     minPrice?: number
     maxPrice?: number
     featured?: boolean
@@ -47,15 +50,11 @@ type SearchFilters = {
 
 const CACHE = new Map<string, { data: any; expiry: number }>()
 
+export function clearPropertyCache() { CACHE.clear() }
+
 const CACHE_TTL = 1000 * 60 * 3
 
-const DEFAULT_AMENITIES = [
-    "Security",
-    "Parking",
-    "Power Backup",
-    "Lift",
-    "Clubhouse",
-]
+const DEFAULT_AMENITIES: string[] = []
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
     kolkata: { lat: 22.5726, lng: 88.3639 },
@@ -156,19 +155,12 @@ const calculateFraudScore = (p: any) => {
 }
 
 const generateDescription = (p: any) => {
-
-    const beds = safeNumber(p.beds, 3)
-
-    const sqft = safeNumber(p.sqft, 1800)
-
-    const city = normalizeText(p.city || p.location || "Prime City")
-
-    const type = normalizeText(p.property_type || "Luxury Property")
-
-    return `Premium ${beds} BHK ${type} in ${city} featuring ${sqft} sqft luxury living, smart architecture, modern amenities, investment potential and AI verified premium infrastructure.`
+    const title = normalizeText(p.title) || "Property listing"
+    const location = normalizeText(p.city || p.location)
+    return `${title}${location ? ` in ${location}` : ""}. Contact the listing agent to confirm availability and details.`
 }
 
-const transformProperty = (p: any) => {
+export const transformProperty = (p: any) => {
 
     const cityKey = normalizeText(
         p.city || p.location
@@ -176,15 +168,15 @@ const transformProperty = (p: any) => {
 
     const coords =
         CITY_COORDS[cityKey] ||
-        CITY_COORDS["kolkata"]
+        { lat: undefined, lng: undefined }
 
     const price = safeNumber(p.price)
 
     const aiScore =
-        p.ai_score || calculateAIScore(p)
+        safeNumber(p.ai_score ?? p.intelligence_score)
 
     const fraudScore =
-        p.fraud_score || calculateFraudScore(p)
+        safeNumber(p.fraud_score)
 
     const boosted = isBoostActive(p)
 
@@ -208,7 +200,7 @@ const transformProperty = (p: any) => {
 
         image:
             normalizeText(p.image) ||
-            "/images/property-fallback.jpg",
+            "/placeholder.jpg",
 
         gallery:
             Array.isArray(p.gallery)
@@ -217,23 +209,23 @@ const transformProperty = (p: any) => {
 
         location:
             normalizeText(p.location) ||
-            "Premium Location",
+            "Location not provided",
 
         city:
             normalizeText(p.city) ||
-            "Unknown",
+            "City not provided",
 
         country:
             normalizeText(p.country) ||
-            "India",
+            "Country not provided",
 
         property_type:
             normalizeText(p.property_type) ||
-            "Apartment",
+            "Type not provided",
 
         listing_type:
             normalizeText(p.listing_type) ||
-            "buy",
+            "Purpose not provided",
 
         amenities:
             Array.isArray(p.amenities)
@@ -242,17 +234,16 @@ const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price:
-            `₹ ${price.toLocaleString()} L`,
+        formatted_price: normalizeText(p.price) || "Price on request",
 
         beds:
-            safeNumber(p.beds, 3),
+            safeNumber(p.bedrooms ?? p.beds),
 
         baths:
-            safeNumber(p.baths, 2),
+            safeNumber(p.bathrooms ?? p.baths),
 
         sqft:
-            safeNumber(p.sqft, 1800),
+            safeNumber(p.area_sqft ?? p.sqft),
 
         views:
             safeNumber(p.views),
@@ -265,7 +256,7 @@ const transformProperty = (p: any) => {
         fraud_score: fraudScore,
 
         verified:
-            fraudScore <= 30,
+            p.status === "verified",
 
         featured_active: boosted,
 
@@ -288,12 +279,10 @@ const transformProperty = (p: any) => {
             safeNumber(p.views) * 0.01,
 
         lat:
-            safeNumber(p.lat) ||
-            coords.lat,
+            typeof p.lat === "number" && Number.isFinite(p.lat) && Math.abs(p.lat) <= 90 ? p.lat : undefined,
 
         lng:
-            safeNumber(p.lng) ||
-            coords.lng,
+            typeof p.lng === "number" && Number.isFinite(p.lng) && Math.abs(p.lng) <= 180 ? p.lng : undefined,
 
         seo_title:
             `${p.title} | GTH ProEstate`,
@@ -336,15 +325,20 @@ export const PropertyService = {
 
         if (cached) return cached
 
-        const limit = filters.limit || 24
+        const limit = Math.min(100, Math.max(1, Math.floor(filters.limit || 24)))
 
-        const page = filters.page || 1
+        const page = Math.max(1, Math.floor(filters.page || 1))
 
         const from = (page - 1) * limit
 
+        // The live schema stores price as text. Never compare/order it as a number.
+        if ((filters.minPrice ?? 0) > 0 || (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) || filters.sort === "price_high" || filters.sort === "price_low") {
+            throw new Error("Budget filtering requires normalized price data. Search by city or property type for now.")
+        }
+
         let query = supabase
             .from("properties")
-            .select("*")
+            .select(PUBLIC_PROPERTY_FIELDS)
             .range(from, from + limit - 1)
 
         if (filters.city) {
@@ -368,12 +362,23 @@ export const PropertyService = {
             )
         }
 
+        if (filters.listing) query = query.eq("listing_type", filters.listing)
+        if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms)
+
         if (filters.featured) {
             query = query.eq(
                 "is_featured",
                 true
             )
         }
+
+        if (filters.verified) query = query.eq("status", "verified")
+        if (filters.query) {
+            const term = filters.query.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120)
+            if (term) query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%,location.ilike.%${term}%`)
+        }
+        const orderColumn = filters.sort === "latest" ? "created_at" : "final_score"
+        query = query.order(orderColumn, { ascending: false, nullsFirst: false }).order("id", { ascending: false })
 
         const { data, error } =
             await query
@@ -385,30 +390,13 @@ export const PropertyService = {
                 error.message
             )
 
-            return []
+            throw new Error("Property inventory is temporarily unavailable. Please retry.")
         }
 
         let transformed =
             (data || []).map(
                 transformProperty
             )
-
-        if (filters.query) {
-
-            const q =
-                filters.query.toLowerCase()
-
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.title
-                            .toLowerCase()
-                            .includes(q) ||
-                        p.location
-                            .toLowerCase()
-                            .includes(q)
-                )
-        }
 
         if (filters.minPrice) {
             transformed =
@@ -436,20 +424,6 @@ export const PropertyService = {
         }
 
         switch (filters.sort) {
-
-            case "price_high":
-                transformed.sort(
-                    (a, b) =>
-                        b.price - a.price
-                )
-                break
-
-            case "price_low":
-                transformed.sort(
-                    (a, b) =>
-                        a.price - b.price
-                )
-                break
 
             case "latest":
                 transformed.sort(
@@ -488,7 +462,7 @@ export const PropertyService = {
         const { data, error } =
             await supabase
                 .from("properties")
-                .select("*")
+                .select(PUBLIC_PROPERTY_FIELDS)
                 .eq("slug", slug)
                 .limit(1)
 
@@ -539,7 +513,7 @@ export const PropertyService = {
             description: normalizeText(payload.description) || generateDescription(payload),
             created_at: nowISO(),
             updated_at: nowISO(),
-            status: payload.status || "verified",
+            status: "review",
             views: 0,
             leads: 0,
             saves: 0,
@@ -599,28 +573,14 @@ export const PropertyService = {
 
     async addLead(payload: any) {
 
-        const { data, error } =
-            await supabase
-                .from("leads")
-                .insert([{
-                    ...payload,
-                    created_at: nowISO(),
-                }])
+        const res = await fetch("/api/real-estate/enquiries", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ property_id: payload.property_id, phone: payload.phone }),
+        })
+        if (!res.ok) throw new Error(res.status === 429 ? "Too many enquiries. Please retry later." : "Enquiry could not be sent. Please retry later.")
+        return { success: true }
 
-        if (error) throw error
-
-        if (payload.property_id) {
-
-            await supabase.rpc(
-                "increment_property_leads",
-                {
-                    row_id:
-                        payload.property_id,
-                }
-            )
-        }
-
-        return data
     },
 
     // ======================================================
@@ -632,29 +592,8 @@ export const PropertyService = {
         hours = 24
     ) {
 
-        const expiry = new Date()
+        throw new Error("Paid boosts are unavailable until payment and administrative approval are enabled.")
 
-        expiry.setHours(
-            expiry.getHours() + hours
-        )
-
-        const { data, error } =
-            await supabase
-                .from("properties")
-                .update({
-                    is_featured: true,
-                    boost_expiry:
-                        expiry.toISOString(),
-                    updated_at: nowISO(),
-                })
-                .eq("id", id)
-                .select()
-
-        if (error) throw error
-
-        CACHE.clear()
-
-        return data?.[0]
     },
 
     // ======================================================
@@ -742,10 +681,7 @@ export const PropertyService = {
         return smartSort(
             all.filter((p: any) =>
                 p.slug !== slug &&
-                p.price >=
-                current.price * 0.7 &&
-                p.price <=
-                current.price * 1.4
+                (current.price > 0 ? (p.price >= current.price * 0.7 && p.price <= current.price * 1.4) : (p.city === current.city || p.property_type === current.property_type))
             )
         ).slice(0, 8)
     },
@@ -756,39 +692,8 @@ export const PropertyService = {
 
     async fraudScan(id: number) {
 
-        const property =
-            await supabase
-                .from("properties")
-                .select("*")
-                .eq("id", id)
-                .limit(1)
+        throw new Error("Verification requires an authorized moderation workflow.")
 
-        const row =
-            property.data?.[0]
-
-        if (!row) return null
-
-        const fraudScore =
-            calculateFraudScore(row)
-
-        const verified =
-            fraudScore <= 30
-
-        await supabase
-            .from("properties")
-            .update({
-                fraud_score: fraudScore,
-                status:
-                    verified
-                        ? "verified"
-                        : "review",
-            })
-            .eq("id", id)
-
-        return {
-            fraud_score: fraudScore,
-            verified,
-        }
     },
 
     // ======================================================

@@ -1,27 +1,13 @@
-import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase"; // ✅ Aapki existing file se call
+import { cleanSlug } from "@/lib/security/validators"
+import { readJson, RequestError, requestError } from "@/lib/security/request"
+import { relatedProperties } from "@/lib/real-estate/related-properties"
 
+// Compatibility endpoint; selects related records, not AI-generated claims.
 export async function POST(req: Request) {
     try {
-        const { slug, history } = await req.json();
-
-        // 🔥 GTH PRO Logic: Agar history hai toh milte-julte dikhao, 
-        // warna latest properties fetch karo.
-        let query = supabase.from("properties").select("*");
-
-        if (history && history.length > 0) {
-            query = query.in('slug', history).limit(6);
-        } else {
-            query = query.neq("slug", slug).limit(6);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        return NextResponse.json(data || []);
-    } catch (err) {
-        console.error("AI API Error:", err);
-        return NextResponse.json([], { status: 500 });
-    }
+        const body = await readJson(req,4096)
+        const slug = cleanSlug(body.slug)
+        if (!slug) throw new RequestError("Invalid property slug",400)
+        return Response.json(await relatedProperties(slug,6),{headers:{"Cache-Control":"no-store"}})
+    } catch (error) { return requestError(error) }
 }

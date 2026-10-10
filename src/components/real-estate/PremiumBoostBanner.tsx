@@ -4,23 +4,6 @@ import { Rocket, Crown, Sparkles, TrendingUp } from "lucide-react";
 
 export default function PremiumBoostBanner({ slug }: any) {
 
-    const handleBoost = async () => {
-        try {
-            const res = await fetch("/api/stripe/checkout", {
-                method: "POST",
-                body: JSON.stringify({ slug }),
-            });
-
-            const data = await res.json();
-
-            if (data.url) {
-                window.location.href = data.url;
-            }
-        } catch (err) {
-            alert("Payment failed");
-        }
-    };
-
     return (
         <div className="relative overflow-hidden rounded-[32px] border border-[#d4af37]/20 bg-[var(--card)] p-6 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.25)] backdrop-blur-2xl">
 
@@ -83,7 +66,7 @@ export default function PremiumBoostBanner({ slug }: any) {
 
                             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
                                 <TrendingUp size={14} className="text-cyan-400" />
-                                10x Reach
+                                Featured Placement
                             </div>
 
                             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
@@ -93,7 +76,7 @@ export default function PremiumBoostBanner({ slug }: any) {
 
                             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
                                 <Rocket size={14} className="gold-text" />
-                                Faster Leads
+                                Listing Promotion
                             </div>
                         </div>
                     </div>
@@ -106,24 +89,26 @@ export default function PremiumBoostBanner({ slug }: any) {
                     <div className="text-center md:text-right">
 
                         <p className="text-[10px] uppercase tracking-[0.3em] gold-text font-black mb-2">
-                            Premium Activation
+                            Premium Boost
                         </p>
 
                         <div className="flex items-end justify-center md:justify-end gap-1">
 
                             <span className="text-5xl font-black gold-text gold-text">
-                                ₹199
+                                Coming Soon
                             </span>
 
                             <span className="text-sm opacity-60 mb-2">
-                                / boost
+
                             </span>
                         </div>
                     </div>
 
                     {/* BUTTON */}
                     <button
-                        onClick={handleBoost}
+                        type="button"
+                        disabled
+                        title="Paid boosts are not available yet"
                         className="group relative overflow-hidden rounded-2xl border border-[#d4af37]/30 gth-btn-gold px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-black transition-all duration-500 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] active:scale-95"
                     >
 
@@ -134,13 +119,13 @@ export default function PremiumBoostBanner({ slug }: any) {
 
                             <Rocket size={18} />
 
-                            Boost Now
+                            Coming Soon
                         </div>
                     </button>
 
                     {/* TRUST TEXT */}
                     <p className="text-[11px] text-center md:text-right uppercase tracking-[0.2em] text-[var(--text)]/45 font-bold">
-                        AI Ranked • Priority Placement • Verified Visibility
+                        Paid boosts are not available yet
                     </p>
                 </div>
             </div>
