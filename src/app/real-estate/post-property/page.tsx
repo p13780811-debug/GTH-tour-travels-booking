@@ -1,17 +1,53 @@
 "use client"
+
 import { useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { readApiJson } from "@/lib/api-response"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
-export default function PostPropertyPage(){
- const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const [login,setLogin]=useState(false)
- return <main className="gth-container px-4 py-24"><section className="gth-glass rounded-3xl p-6 max-w-3xl mx-auto"><h1 className="gth-title">Submit a listing for review</h1><p className="gth-sub my-4">Submission does not publish a listing. An administrator reviews the details first. Prices and photos can be added only through a supported, reviewed workflow.</p>
- <form className="grid gap-4" onSubmit={async event=>{event.preventDefault();if(busy)return;const form=event.currentTarget;setBusy(true);setMessage("");try{const {data}=await supabase.auth.getSession();if(!data.session){setLogin(true);setMessage("Sign in before submitting.");return}await readApiJson(await fetch("/api/real-estate/submissions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify(Object.fromEntries(new FormData(form)))}));setMessage("Submission received for review. It is not published yet.");form.reset()}catch(error){setMessage(error instanceof Error?error.message:"Submission failed")}finally{setBusy(false)}}}>
- {[['title','Title',3,180],['country','Country',2,80],['city','City',2,80],['location','Location',2,250]].map(([key,label,min,max])=><label key={String(key)}>{label}<input name={String(key)} required minLength={Number(min)} maxLength={Number(max)} className="gth-glass rounded-xl p-3 w-full"/></label>)}
- <label>Description<textarea name="description" required minLength={20} maxLength={5000} rows={5} className="gth-glass rounded-xl p-3 w-full"/></label>
- <label>Property type<select name="property_type" className="gth-glass bg-[var(--card)] p-3 w-full">{['Apartment','Villa','Penthouse','Commercial','Plot'].map(type=><option key={type}>{type}</option>)}</select></label>
- <label>Purpose<select name="listing_type" className="gth-glass bg-[var(--card)] p-3 w-full"><option value="buy">For sale</option><option value="rent">For rent</option></select></label>
- <button disabled={busy} className="gth-btn-gold">{busy?"Submitting…":"Submit for review"}</button>
- </form>{message&&<p className="mt-4" role="status">{message}</p>}<Link className="gth-btn inline-block mt-4" href="/real-estate">Browse listings</Link></section>{login&&<LoginModal onClose={()=>setLogin(false)}/>}</main>
+import BottomNav from "@/components/mobile/BottomNav"
+import styles from "@/components/real-estate/Listing.module.css"
+
+const fields = [
+    { key:"title", label:"Project or property name", min:3, max:180, hint:"Use the actual name shown in the property documents." },
+    { key:"country", label:"Country", min:2, max:80, hint:"Country where the property is located." },
+    { key:"city", label:"City", min:2, max:80, hint:"Use the recorded city name." },
+    { key:"location", label:"Address or locality", min:2, max:250, hint:"Provide enough detail to identify the location accurately." },
+]
+
+export default function PostPropertyPage() {
+    const [busy, setBusy] = useState(false)
+    const [message, setMessage] = useState("")
+    const [error, setError] = useState("")
+    const [login, setLogin] = useState(false)
+    const [description, setDescription] = useState("")
+    return <main className="gth-container pt-10 pb-28 px-4">
+        <Link href="/real-estate" className="opacity-70">← Back to properties</Link>
+        <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
+        <section className="gth-glass rounded-3xl p-6 mt-6"><h2 className="font-bold">Before you start</h2><p className="opacity-70 leading-7 mt-3">All fields are required. Use details you can substantiate. This form currently accepts project basics; pricing and media are not collected here.</p><button className={`gth-btn ${styles.action} mt-4`} onClick={() => setLogin(true)}>Sign in with email</button></section>
+        <form className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onSubmit={async event => {
+            event.preventDefault(); if (busy) return
+            const form = event.currentTarget
+            const payload = Object.fromEntries(new FormData(form))
+            setBusy(true); setMessage(""); setError("")
+            try {
+                const {data} = await supabase.auth.getSession()
+                if (!data.session) { setLogin(true); setError("Sign in, then submit your listing. Your current form remains open."); return }
+                await readApiJson(await fetch("/api/real-estate/submissions", { method:"POST", headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`}, body:JSON.stringify(payload) }))
+                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription("")
+            } catch (failure) { setError(failure instanceof Error ? failure.message : "Submission failed. Your entries have been kept.") }
+            finally { setBusy(false) }
+        }}>
+            <fieldset disabled={busy} className="grid gap-5"><legend className="font-bold text-xl mb-5">Property details</legend>
+                {fields.map(field => <div key={field.key}><label htmlFor={`listing-${field.key}`} className="block font-medium mb-2">{field.label}</label><input id={`listing-${field.key}`} name={field.key} required minLength={field.min} maxLength={field.max} aria-describedby={`listing-${field.key}-help`} className="gth-glass rounded-xl p-3 w-full" /><p id={`listing-${field.key}-help`} className="opacity-70 text-sm mt-2">{field.hint}</p></div>)}
+                <div><label htmlFor="listing-description" className="block font-medium mb-2">Property description</label><textarea id="listing-description" name="description" required minLength={20} maxLength={5000} rows={6} value={description} onChange={event => setDescription(event.target.value)} aria-describedby="listing-description-help" className="gth-glass rounded-xl p-3 w-full" /><p id="listing-description-help" className="opacity-70 text-sm mt-2">Describe recorded facts without unsupported guarantees. {description.length}/5000 characters; minimum 20.</p></div>
+                <div className="grid sm:grid-cols-2 gap-5"><label>Property type<select name="property_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2">{["Apartment","Villa","Penthouse","Commercial","Plot"].map(type => <option key={type}>{type}</option>)}</select></label><label>Listing purpose<select name="listing_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="buy">For sale</option><option value="rent">For rent</option></select></label></div>
+                <button className={`gth-btn-gold ${styles.action} justify-self-start`} type="submit">{busy ? "Submitting…" : "Submit for review"}</button>
+            </fieldset>
+            {message && <div className="mt-6" role="status"><p>{message}</p><Link href="/real-estate/profile" className="underline inline-block mt-3">View submission status</Link></div>}
+            {error && <p className="mt-6" role="alert">{error}</p>}
+        </form></div>
+        {login && <LoginModal onClose={() => setLogin(false)} />}
+        <BottomNav />
+    </main>
 }

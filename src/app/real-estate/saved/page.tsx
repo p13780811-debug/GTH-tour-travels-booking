@@ -1,28 +1,53 @@
 "use client"
-import { useEffect, useState } from "react"
+
+import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import SavePropertyButton from "@/components/real-estate/SavePropertyButton"
+import PropertyImage from "@/components/real-estate/PropertyImage"
+import BottomNav from "@/components/mobile/BottomNav"
+import styles from "@/components/real-estate/Listing.module.css"
+
 export default function SavedPage() {
- const [items,setItems] = useState<any[]>([])
- const [selected,setSelected] = useState<string[]>([])
- const [loading,setLoading] = useState(true)
- const [error,setError] = useState("")
- useEffect(() => {
-  let active=true; let generation=0
-  const load = async () => { const current=++generation; setLoading(true); setError(""); try {
-   const slugs=normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY)||"[]"))
-   const rows=await Promise.all(slugs.map(slug=>PropertyService.getBySlug(slug)))
-   if(active && current===generation) setItems(rows.map((row,i)=>row||{slug:slugs[i],title:"Listing unavailable",unavailable:true}))
-  } catch { if(active && current===generation) setError("Saved listings could not be loaded. Check device storage and reload.") } finally { if(active && current===generation) setLoading(false) } }
-  load(); window.addEventListener("storage",load); window.addEventListener("gth-saved",load)
-  return ()=>{active=false; window.removeEventListener("storage",load); window.removeEventListener("gth-saved",load)}
- },[])
- const compared=items.filter(p=>selected.includes(p.slug)&&!p.unavailable)
- return <main className="gth-container px-4 py-24"><h1 className="gth-title">Saved & compare</h1><p className="gth-sub">Saved on this device. No account sync. Clearing browser storage removes this list.</p><Link className="gth-btn inline-block my-4" href="/real-estate">Browse properties</Link>
- {loading&&<p role="status">Loading saved listings…</p>}{error&&<p role="alert">{error}</p>}{!loading&&!error&&!items.length&&<p>No saved listings yet. Use a listing’s heart button.</p>}
- <div className="grid gap-4 md:grid-cols-3">{items.map(p=><article key={p.slug} className="gth-glass rounded-2xl p-5"><h2>{p.title}</h2>{!p.unavailable&&<><p>{p.formatted_price}</p><Link className="gold-text" href={`/real-estate/${p.slug}`}>View listing</Link><label className="block mt-4"><input type="checkbox" checked={selected.includes(p.slug)} disabled={!selected.includes(p.slug)&&selected.length>=4} onChange={e=>setSelected(prev=>e.target.checked?[...prev,p.slug]:prev.filter(s=>s!==p.slug))} /> Compare (maximum 4)</label></>}<SavePropertyButton slug={p.slug}/></article>)}</div>
- {compared.length>0&&<div className="overflow-x-auto mt-8"><table className="gth-glass w-full text-left"><caption className="text-left font-bold p-4">Recorded listing comparison</caption><thead><tr><th className="p-3">Detail</th>{compared.map(p=><th className="p-3" key={p.slug}>{p.title}</th>)}</tr></thead><tbody>{[["Price","formatted_price"],["City","city"],["Country","country"],["Type","property_type"],["Bedrooms","beds"],["Bathrooms","baths"],["Area (sq ft)","sqft"],["Registry reference","rera_id"]].map(([label,key])=><tr key={key}><th className="p-3">{label}</th>{compared.map(p=><td className="p-3" key={p.slug}>{p[key]||"Not provided"}</td>)}</tr>)}</tbody></table></div>}
- </main>
+    const [items, setItems] = useState<any[]>([])
+    const [selected, setSelected] = useState<string[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+    const generation = useRef(0)
+    const load = useCallback(async () => {
+        const current = ++generation.current
+        setLoading(true); setError("")
+        try {
+            const slugs = normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"))
+            const rows: any[] = []
+            // Bound concurrent reads instead of issuing fifty requests at once.
+            for (let i = 0; i < slugs.length; i += 5) {
+                if (current !== generation.current) return
+                rows.push(...await Promise.all(slugs.slice(i, i + 5).map(slug => PropertyService.getBySlug(slug))))
+            }
+            if (current !== generation.current) return
+            const next = rows.map((row, index) => row || { slug:slugs[index], title:"Listing temporarily unavailable", unavailable:true })
+            setItems(next)
+            setSelected(previous => previous.filter(slug => next.some(item => item.slug === slug && !item.unavailable)))
+        } catch { if (current === generation.current) { setItems([]); setSelected([]); setError("Saved listings could not be loaded. Check device storage and retry.") } }
+        finally { if (current === generation.current) setLoading(false) }
+    }, [])
+    useEffect(() => {
+        load()
+        const onStorage = (event: StorageEvent) => { if (!event.key || event.key === SAVED_KEY) load() }
+        window.addEventListener("storage", onStorage); window.addEventListener("gth-saved", load)
+        return () => { generation.current += 1; window.removeEventListener("storage", onStorage); window.removeEventListener("gth-saved", load) }
+    }, [load])
+    const compared = items.filter(item => selected.includes(item.slug) && !item.unavailable)
+    return <main className="gth-container pt-10 pb-28 px-4">
+        <Link href="/real-estate" className="opacity-70">← Back to properties</Link>
+        <header className="mt-8 mb-8"><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Your shortlist</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Saved & compare</h1><p className="opacity-70 leading-7 mt-4">Saved on this device. No account sync. Clearing browser storage removes this shortlist.</p></header>
+        <div className="flex justify-between gap-4 flex-wrap items-center mb-6"><p role="status">{loading ? "Loading saved listings…" : `${items.length} saved · ${compared.length} selected for comparison`}</p><button className={`gth-btn ${styles.action}`} disabled={loading} onClick={load}>Refresh listings</button></div>
+        {error && <p role="alert" className="gth-glass rounded-2xl p-5 mb-6">{error}</p>}
+        {!loading && !error && !items.length && <section className="gth-glass rounded-3xl p-8"><h2 className="text-2xl font-bold">Build your property shortlist</h2><p className="opacity-70 leading-7 mt-4">Use the heart button on a listing to save it here, then select up to four listings to compare recorded details.</p><Link href="/real-estate" className={`gth-btn-gold ${styles.action} mt-6`}>Explore listings</Link></section>}
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{items.map(item => <article key={item.slug} className="gth-glass rounded-3xl overflow-hidden"><div className="h-44"><PropertyImage slug={item.slug} src={item.image} alt={item.title} className="h-full w-full" /></div><div className="p-5"><h2 className="font-bold text-lg">{item.title}</h2>{!item.unavailable ? <><p className="gold-text mt-3">{item.formatted_price || "Price on request"}</p><Link className="underline inline-block mt-3" href={`/real-estate/${encodeURIComponent(item.slug)}`}>View listing</Link><label className="flex items-center gap-3 my-4 min-h-[44px]"><input type="checkbox" checked={selected.includes(item.slug)} disabled={loading || (!selected.includes(item.slug) && selected.length >= 4)} onChange={event => setSelected(previous => event.target.checked ? [...previous, item.slug] : previous.filter(slug => slug !== item.slug))} />Compare this listing</label></> : <p className="text-sm opacity-70 my-4">This record could not be loaded. Retry later or remove it from your shortlist.</p>}<SavePropertyButton slug={item.slug} className={`gth-btn ${styles.action}`} /></div></article>)}</div>
+        {compared.length > 0 && <section className="mt-10"><div className="flex justify-between gap-4 items-center flex-wrap mb-5"><h2 className="text-2xl font-bold">Compare your shortlist</h2><button className={`gth-btn ${styles.action}`} onClick={() => setSelected([])}>Clear comparison</button></div><p className="text-sm opacity-70 mb-4">Compare up to four listings. Measurements and prices require source confirmation. Scroll horizontally on smaller screens.</p><div className="overflow-x-auto gth-glass rounded-3xl" role="region" aria-label="Listing comparison" tabIndex={0}><table className="w-full text-left min-w-[600px]"><caption className="text-left font-bold p-4">Recorded listing details</caption><thead><tr><th scope="col" className="p-4">Detail</th>{compared.map(item => <th scope="col" className="p-4" key={item.slug}>{item.title}</th>)}</tr></thead><tbody>{[["Listed price","formatted_price"],["City","city"],["Country","country"],["Property type","property_type"],["Reported bedrooms","beds"],["Reported bathrooms","baths"],["Reported area (ft²)","sqft"],["Registration reference","rera_id"]].map(([label,key]) => <tr key={key} className="border-t border-[var(--border)]"><th scope="row" className="p-4">{label}</th>{compared.map(item => <td className="p-4" key={item.slug}>{item[key] || "Not provided"}</td>)}</tr>)}</tbody></table></div></section>}
+        <BottomNav />
+    </main>
 }
