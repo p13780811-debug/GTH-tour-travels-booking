@@ -25,7 +25,7 @@ export default function SavedPage() {
             // Bound concurrent reads instead of issuing fifty requests at once.
             for (let i = 0; i < slugs.length; i += 5) {
                 if (current !== generation.current) return
-                rows.push(...await Promise.all(slugs.slice(i, i + 5).map(slug => PropertyService.getBySlug(slug))))
+                rows.push(...await Promise.all(slugs.slice(i, i + 5).map(async slug => { try { return await PropertyService.getBySlug(slug) } catch { return null } })))
             }
             if (current !== generation.current) return
             const next = rows.map((row, index) => row || { slug:slugs[index], title:"Listing temporarily unavailable", unavailable:true })
