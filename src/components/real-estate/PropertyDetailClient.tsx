@@ -56,10 +56,10 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
 
     return <main className="gth-container pb-28 pt-6 md:pt-10">
         <JourneyNav />
-        <nav aria-label="Breadcrumb" className="flex items-center justify-between gap-4 mb-8 flex-wrap">
+        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <Link href="/real-estate" className="inline-flex items-center gap-2 opacity-70 hover:opacity-100"><ArrowLeft size={16} aria-hidden="true" />All properties</Link>
             <div className="flex gap-3 items-center"><SavePropertyButton slug={slug} className="gth-glass rounded-xl p-3" /><button onClick={share} className={`gth-btn ${styles.action}`}><Share2 size={16} aria-hidden="true" />Share</button></div>
-        </nav>
+        </div>
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
         <header className={styles.projectHeader}>
             <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{property.location || property.city || "Location not provided"}</p></div>
@@ -68,7 +68,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
         <div className={`${styles.detailLayout} mt-8`}>
             <div className="min-w-0">
                 <section aria-label="Property gallery" className="gth-glass rounded-3xl overflow-hidden">
-                    <div className={styles.gallery}><PropertyImage key={image || slug} slug={slug} src={image} alt={property.title} className="h-full w-full" /></div>
+                    <div className={images.length ? styles.gallery : styles.galleryEmpty}><PropertyImage key={image || slug} slug={slug} src={image} alt={property.title} className="h-full w-full" /></div>
                     {images.length > 1 && <div className="flex gap-3 overflow-x-auto p-4">{images.map((url, index) => <button key={url} aria-label={`View approved image ${index + 1}`} aria-pressed={image === url} onClick={() => setSelectedImage(url)} className="gth-glass rounded-xl p-2 shrink-0 w-24 h-20"><PropertyImage slug={slug} src={url} alt={`Property view ${index + 1}`} className="h-full w-full" /></button>)}</div>}
                     <p className="p-4 text-sm opacity-70">{images.length ? "Approved listing media. Architectural renders are labeled separately." : "No approved property photos are available for this listing yet."}</p>
                 </section>
