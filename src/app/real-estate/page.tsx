@@ -1,663 +1,118 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import dynamic from "next/dynamic"
+import type { User } from "@supabase/supabase-js"
+import { LayoutGrid, Map, SlidersHorizontal } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-
+import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
 import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
-
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
-import MapWrapper from "@/components/MapWrapper"
-import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
-import AIChatToggle from "@/components/AIChatToggle"
-// ============================
-// 🧠 MAIN APP
-// ============================
-export default function App() {
-    const [user, setUser] = useState<any>(null)
+import styles from "@/components/real-estate/Listing.module.css"
+
+const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
+const PAGE_SIZE = 24
+const categories = [{ label:"Buy", value:"buy" },{ label:"Rent", value:"rent" },{ label:"Apartments", value:"Apartment" },{ label:"Villas", value:"Villa" },{ label:"Commercial", value:"Commercial" },{ label:"Plots", value:"Plot" }]
+
+export default function RealEstatePage() {
+    const [user, setUser] = useState<User | null>(null)
     const [properties, setProperties] = useState<any[]>([])
-    const [filtered, setFiltered] = useState<any[]>([])
     const [query, setQuery] = useState("")
-    const [inventoryError, setInventoryError] = useState("")
-    const [inventoryLoading, setInventoryLoading] = useState(true)
-    const [inventoryPage, setInventoryPage] = useState(1)
-    const [active, setActive] = useState<any>(null)
-
-
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
     const [showLogin, setShowLogin] = useState(false)
+    const [view, setView] = useState<"list" | "map">("list")
+    const request = useRef(0)
 
-    const router = useRouter()
-    const inventoryRequest = useRef(0)
-
-    // 📱 Mobile Detection Logic
-    const [isMobile, setIsMobile] = useState(false)
-
-    useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth < 768)
-        check()
-        window.addEventListener("resize", check)
-        return () => window.removeEventListener("resize", check)
-    }, [])
-
-    // ============================
-    // INIT
-    // ============================
-    useEffect(() => {
-        const init = async () => {
-            const { data } = await supabase.auth.getUser()
-            const currentUser = data.user
-            setUser(currentUser)
-
-            await fetchProperties(currentUser)
-
-            // Privileged lead data must never be fetched directly in the browser.
-            // Keep disabled until a server-authorized endpoint + verified RLS policy is in place.
-        }
-
-        init()
-        const onHistoryChange = () => fetchProperties(null)
-        window.addEventListener("popstate", onHistoryChange)
-        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
-
-        const channel = supabase
-            .channel('properties-changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'properties' },
-                async () => {
-                    const { data } = await supabase.auth.getUser()
-                    clearPropertyCache()
-                    await fetchProperties(data.user)
-                }
-            )
-            .subscribe()
-
-        return () => {
-            inventoryRequest.current += 1
-            window.removeEventListener("popstate", onHistoryChange)
-            authListener.subscription.unsubscribe()
-            supabase.removeChannel(channel)
-        }
-    }, [])
-
-
-    type UserType = {
-        email?: string
-        id?: string
-    }
-
-    const fetchProperties = async (currentUser: UserType | null, page = 1) => {
-        const requestId = ++inventoryRequest.current
-        setInventoryLoading(true)
-        setInventoryError("")
+    const load = useCallback(async (requestedPage?: number) => {
+        const current = ++request.current
+        const url = new URL(window.location.href)
+        const storedPage = Number(url.searchParams.get("page"))
+        const nextPage = requestedPage ?? (Number.isInteger(storedPage) && storedPage > 0 && storedPage <= 10000 ? storedPage : 1)
+        const params = url.searchParams
+        const text = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 80) || undefined
+        const bedrooms = Number(params.get("bedrooms"))
+        setLoading(true)
+        setError("")
+        setQuery((params.get("query") || "").slice(0, 120))
         try {
-            const params = new URLSearchParams(window.location.search)
-            const safeText = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").slice(0,80) || undefined
-            const bedrooms = Number(params.get("bedrooms"))
-            const data = await PropertyService.getAll({ query: params.get("query")?.slice(0, 120) || undefined, limit: 100, page, sort: params.get("sort") === "ai" ? "ai" : "latest", country: safeText("country"), city: safeText("city"), type: safeText("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined })
-            if (requestId !== inventoryRequest.current) return
-            setQuery(params.get("query") || "")
+            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, sort: params.get("sort") === "ai" ? "ai" : "latest" })
+            if (current !== request.current) return
             setProperties(data)
-            setFiltered(data)
-            setInventoryPage(page)
+            setPage(nextPage)
+            if (nextPage > 1) url.searchParams.set("page", String(nextPage))
+            else url.searchParams.delete("page")
+            window.history.replaceState(null, "", url)
         } catch {
-            if (requestId === inventoryRequest.current) {
-                setProperties([])
-                setFiltered([])
-                setInventoryError("Property inventory could not be loaded. Please retry.")
-            }
-        } finally {
-            if (requestId === inventoryRequest.current) setInventoryLoading(false)
-        }
-    };
+            if (current === request.current) { setProperties([]); setError("Listings could not be loaded. Please retry.") }
+        } finally { if (current === request.current) setLoading(false) }
+    }, [])
 
-    // ============================
-    // INVENTORY SEARCH
-    // ============================
-    const searchInventory = async (searchQuery = query) => {
+    useEffect(() => {
+        let active = true
+        load()
+        supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) })
+        const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
+        const onHistory = () => { load() }
+        window.addEventListener("popstate", onHistory)
+        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).subscribe()
+        return () => { active = false; request.current += 1; auth.subscription.unsubscribe(); window.removeEventListener("popstate", onHistory); supabase.removeChannel(channel) }
+    }, [load])
+
+    const updateSearch = (term: string) => {
         const url = new URL(window.location.href)
-        const term = searchQuery.trim().slice(0, 120)
-        if (term) url.searchParams.set("query", term)
+        if (term.trim()) url.searchParams.set("query", term.trim().slice(0, 120))
         else url.searchParams.delete("query")
+        url.searchParams.delete("page")
         window.history.replaceState(null, "", url)
-        await fetchProperties(user)
+        load(1)
+        document.getElementById("listing-results")?.scrollIntoView({ block:"start" })
     }
-
-    const applyCategory = (category: string) => {
+    const applyCategory = (value: string) => {
         const url = new URL(window.location.href)
-        url.searchParams.delete("query")
-        url.searchParams.delete("type")
-        url.searchParams.delete("listing")
-        if (category === "buy" || category === "rent") url.searchParams.set("listing", category)
-        else url.searchParams.set("type", category)
+        for (const key of ["query", "page", "type", "listing"]) url.searchParams.delete(key)
+        url.searchParams.set(value === "buy" || value === "rent" ? "listing" : "type", value)
         window.history.replaceState(null, "", url)
         window.dispatchEvent(new Event("gth-discovery-filters"))
-        fetchProperties(user)
+        load(1)
     }
-
-    // ============================
-    // AUTH
-    // ============================
-    const logout = async () => {
-        await supabase.auth.signOut()
-        setUser(null)
+    const reset = () => {
+        const url = new URL(window.location.href)
+        for (const key of ["query","page","country","city","type","listing","bedrooms","sort"]) url.searchParams.delete(key)
+        window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters"))
+        load(1)
     }
+    const coordinates = properties.filter(property => typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180)
 
-    const getFeaturedListings = () => {
-        if (!properties.length) return []
-
-        return properties
-            .filter(p => p.is_featured)
-            .slice(0, 6)
-    }
-
-    const featuredListings = getFeaturedListings()
-
-    // ============================
-    // UI
-    // ============================
-    return (
-        <div className="min-h-screen relative overflow-hidden pb-24 md:pb-0">
-
-            {/* ====================================================== */}
-            {/* 🌌 PREMIUM BACKGROUND */}
-            {/* ====================================================== */}
-
-            {/* ====================================================== */}
-            {/* 🏆 HERO */}
-            {/* ====================================================== */}
-
-            <div id="property-search" />
-            <RealEstateHero
-                query={query}
-                setQuery={setQuery}
-                onSearch={searchInventory}
-                loading={inventoryLoading}
-                properties={properties}
-                setFiltered={setFiltered}
-                setActive={setActive}
-            />
-
-            {/* ====================================================== */}
-            {/* ⚡ QUICK CATEGORY ENGINE */}
-            {/* ====================================================== */}
-
-            <section className="px-3 md:px-6 -mt-6 relative z-20">
-
-                <div className="gth-glass-ultra rounded-[30px] p-4 md:p-6 border border-[var(--border)] shadow-2xl overflow-hidden">
-
-                    <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-
-                        <div className="min-w-0">
-
-                            <h2 className="text-lg md:text-2xl font-black gold-text uppercase tracking-wider">
-                                Explore Categories
-                            </h2>
-
-                            <p className="text-xs opacity-70 mt-1">
-                                Browse by listing purpose and property type
-                            </p>
-
-                        </div>
-
-                        {/* DESKTOP BADGES */}
-
-                        <div className="hidden lg:flex items-center gap-2 shrink-0">
-
-                            <div className="gth-badge">
-                                Buy or rent
-                            </div>
-
-                            <div className="gth-badge">
-                                Property types
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {/* CATEGORY SCROLL FIX */}
-
-                    <div className="overflow-x-auto scrollbar-hide">
-
-                        <div className="flex gap-3 min-w-max pb-2">
-
-                            {[
-                                {
-                                    name: "Buy",
-                                    icon: "🏠",
-                                    q: "buy",
-                                },
-                                {
-                                    name: "Rent",
-                                    icon: "🏢",
-                                    q: "rent",
-                                },
-                                {
-                                    name: "Villas",
-                                    icon: "💎",
-                                    q: "Villa",
-                                },
-                                {
-                                    name: "Commercial",
-                                    icon: "🏬",
-                                    q: "Commercial",
-                                },
-                                {
-                                    name: "Plots",
-                                    icon: "📍",
-                                    q: "Plot",
-                                },
-                            ].map((c, i) => (
-
-                                <button
-                                    key={i}
-                                    onClick={() => {
-                                        applyCategory(c.q)
-                                    }}
-                                    className="
-                  relative overflow-hidden
-                  min-w-[120px]
-                  md:min-w-[150px]
-                  rounded-2xl
-                  p-4
-                  text-left
-                  transition-all duration-300
-                  hover:scale-[1.03]
-                  gth-glass
-                  shrink-0
-                "
-                                >
-
-
-
-                                    <div className="relative z-10">
-
-                                        <div className="text-2xl mb-3">
-                                            {c.icon}
-                                        </div>
-
-                                        <h3 className="text-sm font-bold uppercase tracking-wide">
-                                            {c.name}
-                                        </h3>
-
-                                        <p className="text-[11px] opacity-70 mt-1">
-                                            Browse listings
-                                        </p>
-
-                                    </div>
-
-                                </button>
-
-                            ))}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+    return <main className="min-h-screen pb-28 md:pb-16">
+        <nav aria-label="Real estate navigation" className={`gth-container ${styles.localNav}`}>
+            <Link href="/real-estate" className="gold-text font-bold tracking-wide">GTH PRO / Real Estate</Link>
+            <div className="flex items-center gap-4 flex-wrap"><Link href="/real-estate/saved">Saved & compare</Link><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>List a property</Link>{user ? <Link href="/real-estate/profile">My account</Link> : <button className={`gth-btn ${styles.action}`} onClick={() => setShowLogin(true)}>Sign in</button>}</div>
+        </nav>
+        <div id="property-search" className="scroll-mt-24"><RealEstateHero query={query} setQuery={setQuery} onSearch={updateSearch} loading={loading} /></div>
+        <div className="gth-container">
+            <section aria-label="Browse property categories" className="flex gap-3 flex-wrap mb-8">{categories.map(category => <button key={category.value} className={`gth-btn ${styles.action}`} onClick={() => applyCategory(category.value)} disabled={loading}>{category.label}</button>)}</section>
+            <DiscoveryFilters onApply={() => { clearPropertyCache(); load(1) }} />
+            <section id="listing-results" className="scroll-mt-24 mt-10" aria-busy={loading}>
+                <header className="flex items-center justify-between gap-5 flex-wrap mb-6">
+                    <div><p className="gold-text text-xs uppercase tracking-widest">Explore the collection</p><h2 className="text-3xl font-bold mt-2">Available listings</h2><p className="opacity-70 text-sm mt-2" role="status">{loading ? "Loading listings…" : error ? "Inventory temporarily unavailable" : `${properties.length} listings on page ${page}`}</p></div>
+                    <div className="flex gap-2 flex-wrap"><button className={`gth-btn ${styles.action}`} aria-pressed={view === "list"} onClick={() => setView("list")}><LayoutGrid size={16} aria-hidden="true" />Listings</button><button className={`gth-btn ${styles.action}`} aria-pressed={view === "map"} onClick={() => setView("map")}><Map size={16} aria-hidden="true" />Map</button><button className={`gth-btn ${styles.action}`} onClick={() => document.getElementById("discovery-filters")?.scrollIntoView({ block:"start" })}><SlidersHorizontal size={16} aria-hidden="true" />Filters</button></div>
+                </header>
+                {error && <div className="gth-glass rounded-3xl p-8" role="alert"><h3 className="font-bold">We could not load the inventory</h3><p className="opacity-70 mt-3">{error}</p><button className={`gth-btn-gold ${styles.action} mt-5`} onClick={() => load(page)}>Retry</button></div>}
+                {!loading && !error && properties.length === 0 && <div className="gth-glass rounded-3xl p-8"><h3 className="text-xl font-bold">{page > 1 ? "You have reached the end of these results" : "No listings match this search"}</h3><p className="opacity-70 mt-3">Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.action} mt-5`} onClick={reset}>Clear search and filters</button></div>}
+                {!error && view === "map" && <div className="gth-glass rounded-3xl p-5 mb-6"><p className="text-sm opacity-70 mb-4">{coordinates.length} listings on this page have stored coordinates. Map pins are not a measurement or location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-2xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to Listings to explore the available records.</p>}</div>}
+                {!error && view === "list" && <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">{properties.map(property => <PropertyCardPro key={property.id} p={property} />)}</div>}
+                <nav aria-label="Listing pages" className="flex items-center justify-center gap-4 mt-10 flex-wrap"><button className={`gth-btn ${styles.action}`} disabled={loading || page === 1} onClick={() => load(page - 1)}>Previous</button><span>Page {page}</span><button className={`gth-btn ${styles.action}`} disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => load(page + 1)}>Next</button></nav>
             </section>
-
-            {/* ====================================================== */}
-            {/* 📱 MOBILE QUICK UI */}
-            {/* ====================================================== */}
-
-            {isMobile && (
-
-                <div className="p-3 space-y-4 mt-2">
-
-                    {!user && (
-
-                        <div className="gth-glass-ultra rounded-2xl p-4">
-
-                            <h2 className="font-bold text-sm mb-2">
-                                Your property account
-                            </h2>
-
-                            <p className="text-xs opacity-70 mb-4">
-                                Sign in to submit a property for review
-                            </p>
-
-                            <button
-                                onClick={() => setShowLogin(true)}
-                                className="w-full gth-btn"
-                            >
-                                LOGIN / REGISTER
-                            </button>
-
-                        </div>
-
-                    )}
-
-                    <div className="h-48 rounded-3xl overflow-hidden gth-glass-ultra">
-
-                        <MapWrapper
-                            data={filtered}
-                            active={active}
-                        />
-
-                    </div>
-
-                    <button
-                        onClick={() => document.getElementById("discovery-filters")?.scrollIntoView({ behavior: "smooth" })}
-                        className="w-full gth-btn-gold py-3"
-                    >
-                        OPEN PROPERTY FILTERS
-                    </button>
-
-                </div>
-
-            )}
-
-            {/* ====================================================== */}
-            {/* 🏛️ MAIN DESKTOP LAYOUT */}
-            {/* ====================================================== */}
-
-            <div className="gth-container mt-6 px-3 md:px-4">
-
-                <div
-                    className={
-                        isMobile
-                            ? "block"
-                            : "grid grid-cols-[320px_minmax(0,1fr)] gap-7 items-start"
-                    }
-                >
-
-                    {/* ================================================= */}
-                    {/* 🧠 SIDEBAR */}
-                    {/* ================================================= */}
-
-                    {!isMobile && (
-
-                        <aside className="w-[320px] shrink-0 sticky top-24 space-y-5">
-
-                            {/* USER */}
-
-                            {!user ? (
-
-                                <div className="gth-glass-ultra p-5 rounded-3xl">
-
-                                    <h2 className="font-black text-lg mb-2">
-                                        Guest Access
-                                    </h2>
-
-                                    <p className="text-sm opacity-70 mb-4">
-                                        Sign in to submit listings and view your account
-                                    </p>
-
-                                    <button
-                                        onClick={() => setShowLogin(true)}
-                                        className="w-full gth-btn"
-                                    >
-                                        LOGIN / REGISTER
-                                    </button>
-
-                                </div>
-
-                            ) : (
-
-                                <div className="gth-glass-ultra p-5 rounded-3xl">
-
-                                    <div className="flex items-start justify-between mb-4">
-
-                                        <div className="min-w-0">
-
-                                            <h2 className="font-black">
-                                                Your account
-                                            </h2>
-
-                                            <p className="text-xs opacity-70 truncate mt-1">
-                                                {user.email}
-                                            </p>
-
-                                        </div>
-
-                                        <div className="text-2xl shrink-0">
-                                            🏆
-                                        </div>
-
-                                    </div>
-
-                                    <button className="w-full gth-btn-gold mb-2" onClick={() => router.push("/real-estate/post-property")}>SUBMIT PROPERTY</button>
-                                    <button className="w-full gth-btn mb-2" onClick={() => router.push("/real-estate/profile")}>YOUR ACCOUNT</button>
-                                    <button className="w-full gth-btn mb-2" onClick={() => router.push("/real-estate/saved")}>SAVED & COMPARE</button>
-                                    <button
-                                        onClick={logout}
-                                        className="w-full gth-btn"
-                                    >
-                                        LOGOUT
-                                    </button>
-
-                                </div>
-
-                            )}
-
-                            {/* MAP */}
-
-                            <div className="h-[320px] rounded-3xl overflow-hidden gth-glass-ultra">
-
-                                <MapWrapper
-                                    data={filtered}
-                                    active={active}
-                                />
-
-                            </div>
-
-                        </aside>
-
-                    )}
-
-                    {/* ================================================= */}
-                    {/* 🏠 MAIN CONTENT */}
-                    {/* ================================================= */}
-
-                    <div className="min-w-0 w-full">
-
-                        <DiscoveryFilters onApply={() => { setQuery(""); clearPropertyCache(); fetchProperties(user) }} />
-                        {/* TOP BAR */}
-
-                        <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
-
-                            <div className="min-w-0">
-
-                                <h1 className="gth-title uppercase">
-                                    Properties
-                                </h1>
-
-                                <p className="opacity-70 text-sm mt-2">
-                                    {filtered.length} listings on this page
-                                </p>
-
-                            </div>
-
-                            {/* BUTTON FIX */}
-
-                            <button
-                                onClick={() => router.push("/real-estate/post-property")}
-                                className="
-                shrink-0
-                gth-btn-gold
-                px-5 py-3
-                rounded-full
-                flex items-center
-                gap-2
-                whitespace-nowrap
-              "
-                            >
-                                <span className="text-lg">+</span>
-                                ADD PROPERTY
-                            </button>
-
-                        </div>
-
-                        {/* ================================================= */}
-                        {/* 🤖 AI RECOMMENDATIONS */}
-                        {/* ================================================= */}
-
-                        {featuredListings.length > 0 && (
-
-                            <section className="mb-10">
-
-                                <div className="flex items-center justify-between mb-5">
-
-                                    <div>
-
-                                        <h2 className="text-2xl font-black gold-text">
-                                            Featured listings
-                                        </h2>
-
-                                        <p className="text-sm opacity-70 mt-1">
-                                            Listings marked as featured in the inventory
-                                        </p>
-
-                                    </div>
-
-                                    <div className="hidden lg:flex gth-badge">
-                                        Featured
-                                    </div>
-
-                                </div>
-
-                                {/* DESKTOP SCROLL FIX */}
-
-                                <div className="overflow-x-auto scrollbar-hide">
-
-                                    <div className="flex gap-5 min-w-max pb-2">
-
-                                        {featuredListings.map((p) => (
-
-                                            <div
-                                                key={p.id}
-                                                className="
-                        min-w-[260px]
-                        md:min-w-[280px]
-                        lg:min-w-[300px]
-                        max-w-[300px]
-                        flex-shrink-0
-                      "
-                                            >
-
-                                                <PropertyCardPro
-                                                    p={p}
-                                                    user={user}
-                                                    onSelect={(prop: any) => {
-                                                        router.push(`/real-estate/${prop.slug}`)
-                                                    }}
-                                                />
-
-                                            </div>
-
-                                        ))}
-
-                                    </div>
-
-                                </div>
-
-                            </section>
-
-                        )}
-
-                        {/* ================================================= */}
-                        {/* 🏠 PROPERTY GRID */}
-                        {/* ================================================= */}
-
-                        <section>
-
-                            <div
-                                className="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                xl:grid-cols-3
-                2xl:grid-cols-4
-                gap-5
-                md:gap-6
-              "
-                            >
-
-                                {inventoryLoading && <p role="status">Loading property inventory…</p>}
-                                {inventoryError && <div role="alert">{inventoryError} <button className="gth-btn" onClick={() => fetchProperties(user)}>Retry</button></div>}
-                                {!inventoryLoading && !inventoryError && filtered.length === 0 && <p>No properties match your search.</p>}
-                                {<nav aria-label="Property pages" className="flex gap-3 col-span-full">
-                                    <button className="gth-btn" disabled={inventoryLoading || inventoryPage === 1} onClick={() => fetchProperties(user, inventoryPage - 1)}>Previous</button>
-                                    <span>Page {inventoryPage}</span>
-                                    <button className="gth-btn" disabled={inventoryLoading || properties.length < 100} onClick={() => fetchProperties(user, inventoryPage + 1)}>Next</button>
-                                </nav>}
-                                {filtered.map((p) => (
-
-                                    <div
-                                        key={p.id}
-                                        className="w-full min-w-0"
-                                    >
-
-                                        <PropertyCardPro
-                                            p={p}
-                                            user={user}
-                                            onSelect={(prop: any) => {
-
-                                                if (!prop?.lat || !prop?.lng) return
-
-                                                setActive({
-                                                    id: prop.id,
-                                                    coords: [prop.lat, prop.lng]
-                                                })
-                                            }}
-                                        />
-
-                                    </div>
-
-                                ))}
-
-                            </div>
-
-                        </section>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* ====================================================== */}
-            {/* 🧩 MODALS */}
-            {/* ====================================================== */}
-
-            {showLogin && (
-
-                <LoginModal
-                    onClose={() => setShowLogin(false)}
-                />
-
-            )}
-
-            {/* ====================================================== */}
-            {/* 📱 MOBILE NAV */}
-            {/* ====================================================== */}
-
-            {isMobile && (
-
-                <BottomNav />
-
-            )}
-
-            {/* ====================================================== */}
-            {/* 🤖 AI CHAT */}
-            {/* ====================================================== */}
-
-            <div className="relative z-[999999]">
-
-                <AIChatToggle
-                    properties={properties}
-                    setFiltered={setFiltered}
-                    setActive={setActive}
-                />
-
-            </div>
-
+            <section className="gth-glass rounded-3xl p-6 md:p-8 mt-14 flex items-center justify-between gap-6 flex-wrap"><div><h2 className="text-2xl font-bold">Have a property to share?</h2><p className="opacity-70 mt-3">Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>Submit your listing</Link></section>
         </div>
-    )
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+        <BottomNav user={user} />
+    </main>
 }
