@@ -13,11 +13,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const title = property?.title || "Property unavailable"
     const description = property?.description?.slice(0, 180) || "Explore recorded project details on GTH PRO. Confirm current prices and availability with the listing contact."
     const image = approvedMedia(slug, property?.image)?.url || "/images/gth-logo.png"
+    const canonical = `https://gth-pro.vercel.app/real-estate/${encodeURIComponent(slug)}`
     return {
         title: `${title} | GTH PRO Real Estate`, description,
-        alternates: { canonical: `https://gth-pro.vercel.app/real-estate/${encodeURIComponent(slug)}` },
+        alternates: { canonical },
         robots: property ? { index: true, follow: true } : { index: false, follow: true },
-        openGraph: { title, description, type: "website", images: [image] },
+        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [image] },
         twitter: { card: "summary_large_image", title, description, images: [image] },
     }
 }
