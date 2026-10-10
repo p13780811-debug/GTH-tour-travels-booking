@@ -3,6 +3,7 @@ import { PropertyService, transformProperty } from "@/lib/real-estate/propertySe
 
 import { useEffect, useMemo, useState, useCallback } from "react"
 import dynamic from "next/dynamic"
+import RegistryDetails from "./RegistryDetails"
 import EnquiryForm from "./EnquiryForm"
 import PropertyImage from "./PropertyImage"
 import { useRouter } from "next/navigation"
@@ -638,6 +639,7 @@ export default function PropertyDetailClient({
 
                                 {showEnquiry && <EnquiryForm propertyId={property.id} />}
                                 {shareMessage && <p role="status">{shareMessage}</p>}
+                                <RegistryDetails property={property as unknown as Record<string, unknown>} />
                                 {/* TRUST BLOCK */}
 
                                 <div className="mt-8 space-y-4">

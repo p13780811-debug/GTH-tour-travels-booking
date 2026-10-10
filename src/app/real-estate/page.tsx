@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
+import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
 import RealEstateHero from "@/components/real-estate/RealEstateHero"
 
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
@@ -124,7 +125,10 @@ export default function App() {
         setInventoryLoading(true)
         setInventoryError("")
         try {
-            const data = await PropertyService.getAll({ limit: 100, page, sort: "latest" })
+            const params = new URLSearchParams(window.location.search)
+            const safeText = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").slice(0,80) || undefined
+            const bedrooms = Number(params.get("bedrooms"))
+            const data = await PropertyService.getAll({ limit: 100, page, sort: params.get("sort") === "ai" ? "ai" : "latest", country: safeText("country"), city: safeText("city"), type: safeText("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined })
             setProperties(data)
             setFiltered(data)
             setInventoryPage(page)
@@ -664,6 +668,7 @@ export default function App() {
 
                     <div className="min-w-0 w-full">
 
+                        <DiscoveryFilters onApply={() => { setQuery(""); clearPropertyCache(); fetchProperties(user) }} />
                         {/* TOP BAR */}
 
                         <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">

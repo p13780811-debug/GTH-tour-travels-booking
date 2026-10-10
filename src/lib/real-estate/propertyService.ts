@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,source_type,ingestion_source,last_verified_at"
 
 // ==========================================================
 // 🏛️ GTH PRO ESTATE — HYPER PROPERTY ENGINE V9
@@ -36,6 +37,8 @@ type SearchFilters = {
     city?: string
     country?: string
     type?: string
+    listing?: string
+    bedrooms?: number
     minPrice?: number
     maxPrice?: number
     featured?: boolean
@@ -206,23 +209,23 @@ export const transformProperty = (p: any) => {
 
         location:
             normalizeText(p.location) ||
-            "Premium Location",
+            "Location not provided",
 
         city:
             normalizeText(p.city) ||
-            "Unknown",
+            "City not provided",
 
         country:
             normalizeText(p.country) ||
-            "India",
+            "Country not provided",
 
         property_type:
             normalizeText(p.property_type) ||
-            "Apartment",
+            "Type not provided",
 
         listing_type:
             normalizeText(p.listing_type) ||
-            "buy",
+            "Purpose not provided",
 
         amenities:
             Array.isArray(p.amenities)
@@ -335,7 +338,7 @@ export const PropertyService = {
 
         let query = supabase
             .from("properties")
-            .select("*")
+            .select(PUBLIC_PROPERTY_FIELDS)
             .range(from, from + limit - 1)
 
         if (filters.city) {
@@ -358,6 +361,9 @@ export const PropertyService = {
                 filters.type
             )
         }
+
+        if (filters.listing) query = query.eq("listing_type", filters.listing)
+        if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms)
 
         if (filters.featured) {
             query = query.eq(
@@ -456,7 +462,7 @@ export const PropertyService = {
         const { data, error } =
             await supabase
                 .from("properties")
-                .select("*")
+                .select(PUBLIC_PROPERTY_FIELDS)
                 .eq("slug", slug)
                 .limit(1)
 

@@ -24,3 +24,13 @@ test('stored text prices retain their units and empty prices are not advertised 
 test('text price cannot be compared lexicographically as a numeric budget', async () => {
   await assert.rejects(exports.PropertyService.getAll({ minPrice: 50 }), /Budget filtering requires normalized price data/);
 });
+test('public projection excludes raw ingestion payload and owner email', () => {
+ assert.equal(exports.PUBLIC_PROPERTY_FIELDS.split(',').includes('raw_json'), false);
+ assert.equal(exports.PUBLIC_PROPERTY_FIELDS.split(',').includes('created_by'), false);
+ assert.ok(exports.PUBLIC_PROPERTY_FIELDS.split(',').includes('rera_id'));
+});
+test('unknown geography and purpose are not invented', () => {
+ const p = exports.transformProperty({ title: 'Registry project' });
+ assert.equal(p.country, 'Country not provided');
+ assert.equal(p.listing_type, 'Purpose not provided');
+});

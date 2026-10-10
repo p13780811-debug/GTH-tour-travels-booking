@@ -363,21 +363,29 @@ def scrape_page(driver):
 
                 "location": loc,
 
-                "city": "Mumbai",
+
+
+                "country": "India",
+
+                "state": "Maharashtra",
+
+                "source_type": "registry",
+
+                "ingestion_source": "MahaRERA",
 
                 "slug": slugify(title, rera),
 
-                "price": None,
 
-                "lat": None,
 
-                "lng": None,
 
-                "is_featured": False,
 
-                "boost_expiry": None,
 
-                "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+
+
+
+
+
+
 
             })
 

@@ -85,3 +85,10 @@ No image approvals have been established. Existing database media remain untouch
 ## Estate actions
 
 Detail enquiries/visit requests connect to the validated enquiry endpoint, display actual HTTP outcome and never confirm appointments. Share uses native share or clipboard fallback. No saved_properties backend exists in supplied schema, so saved actions are disabled rather than simulating success. Unconditional detail/card verification labels removed; stored status drives listing label. Missing rank no longer defaults to #1. Browse pagination supports bounded 100-row pages; search still returns at most 100 matches. Mobile search navigation points to the real listing search anchor. No-price recommendations use city/type instead of zero-price comparisons. These changes do not verify live inserts or RLS.
+
+
+## Ingestion-ready discovery
+
+Added country/city, type, purpose, bedrooms and stored-rank/latest filters with URL persistence; these reflect available rows, not claimed worldwide inventory. Source details render supplied developer/registration/geography/dates without converting registry data into GTH verification. Public service projection excludes raw_json, created_by and unrelated internal ingestion fields. Realtime refresh invalidates cache; without a enabled realtime publication, reload reads new rows after cache expiry. No import was executed.
+
+Legacy rera_mumbai_v5 importer now omits unknown city and missing price/coordinates/promotional fields from re-import payload, preserving existing values on updates. It uses registry source metadata. Its browser automation and old portal endpoints still need validation against current official portal before use; no CAPTCHA bypass or harvesting run was performed. Conflict target rera_id requires an actual unique constraint, not merely the column's existence. Owner submission/saved workflows, database rules and live access remain completion gates.
