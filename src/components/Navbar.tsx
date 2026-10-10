@@ -31,6 +31,7 @@ import {
 
 import SearchBox from "@/components/SearchBox"
 import ThemeToggle from "@/components/ThemeToggle"
+import EstateHeader from "@/components/real-estate/EstateHeader"
 
 export default function Navbar() {
 
@@ -142,6 +143,8 @@ export default function Navbar() {
         },
 
     ], [])
+
+    if (pathname?.startsWith("/real-estate")) return <EstateHeader />
 
     return (
 

@@ -1,6 +1,5 @@
 import { Cinzel, Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
 import type { Metadata } from "next";
-import Script from "next/script";
 
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -27,24 +26,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://gth-ecosystem.vercel.app"),
+  metadataBase: new URL("https://gth-pro.vercel.app"),
 
-  title: "GTH Luxury Travel | International Premium Travel Ecosystem",
+  title: {
+    default: "GTH PRO | Global Real Estate, Travel & Tenders Ecosystem",
+    template: "%s | GTH PRO",
+  },
   description:
-    "GTH Luxury Travel offers premium destinations and luxury hotels worldwide.",
+    "Explore GTH PRO, a global ecosystem for real estate discovery, travel experiences and tender opportunities.",
 
-  // ❌ INDEX OFF (construction mode)
+  // Preserve noindex until production inventory, access policies and release gates are verified.
   robots: {
     index: false,
     follow: false,
     nocache: true,
   },
 
-  keywords: ["Luxury Travel", "Premium Hotels"],
+  keywords: ["GTH PRO", "Global Real Estate", "Travel", "Tender Opportunities"],
 
   openGraph: {
-    title: "GTH Luxury Travel",
-    description: "Premium global destinations.",
+    title: "GTH PRO | Global Ecosystem",
+    description: "Real estate, travel and tender opportunities in one global ecosystem.",
     type: "website",
   },
 };
@@ -65,21 +67,6 @@ export default function RootLayout({
           bg-transparent
         `}
       >
-        {/* ✅ SAFE Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"
-          strategy="afterInteractive"
-        />
-
-        <Script id="gtag-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-XXXXXXX');
-          `}
-        </Script>
-
         {/* ✅ GLOBAL NAVBAR (same for all pages) */}
         <Navbar />
 
