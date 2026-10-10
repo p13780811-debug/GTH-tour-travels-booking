@@ -130,8 +130,7 @@ export async function generateMetadata({
         },
 
         alternates: {
-            canonical:
-                `https://gth-tour-travels-booking.vercel.app/real-estate/${slug}`,
+            canonical:\n                `${process.env.NEXT_PUBLIC_SITE_URL || "https://gth-pro.vercel.app"}/real-estate/${slug}`,
         },
     }
 }
