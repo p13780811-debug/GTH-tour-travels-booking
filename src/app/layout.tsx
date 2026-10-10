@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { publicIndexingEnabled } from "@/lib/release";
 import { cn } from "@/lib/utils";
 
 const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
@@ -35,11 +36,11 @@ export const metadata: Metadata = {
   description:
     "Explore GTH PRO, a global ecosystem for real estate discovery, travel experiences and tender opportunities.",
 
-  // Preserve noindex until production inventory, access policies and release gates are verified.
+  // Keep the entire site out of search until production release gates are verified.
   robots: {
-    index: false,
-    follow: false,
-    nocache: true,
+    index: publicIndexingEnabled,
+    follow: true,
+    nocache: !publicIndexingEnabled,
   },
 
   keywords: ["GTH PRO", "Global Real Estate", "Travel", "Tender Opportunities"],
@@ -67,15 +68,11 @@ export default function RootLayout({
           bg-transparent
         `}
       >
-        {/* ✅ GLOBAL NAVBAR (same for all pages) */}
         <Navbar />
 
-        {/* ✅ ALL CONDITIONAL UI handled here */}
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
-
-
       </body>
     </html>
   );
