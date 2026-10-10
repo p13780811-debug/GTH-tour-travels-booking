@@ -149,3 +149,14 @@ Similar and legacy ai-recommend endpoints now share bounded related-record queri
 - Only finite numeric coordinates within geographic bounds are mapped, including zero and negative coordinates. Viewport fits actual available coordinates; wheel zoom does not capture page scrolling.
 - Stored price text keeps its supplied currency. Missing prices show Price on request; numeric values do not imply INR. Tile failures display a recoverable notice.
 - Validation: TypeScript, ESLint, all 39 security tests, and production build passed with placeholder build-only Supabase configuration. Protected preview browser verification and live data checks remain pending.
+
+
+### Consolidated real-estate presentation and journey pass
+
+Reviewed discovery, project detail, saved/compare, submission, account and existing admin review flows together. Reworked discovery around property search instead of a marketing journey sidebar. Added compact expandable filters, visible/removable URL filter chips, selected-category state and loading skeletons that prevent stale results being shown during a new search. Filter application/reset clears pagination.
+
+Cards now use a consistent property-first hierarchy: available type/purpose, title, location, supplied price, reported specifications and detail/enquiry actions. Reduced nested glass boxes and kept approved-photo gating. No stock photos, global coverage totals or inferred verification claims were introduced. Detail verification guidance now asks for source-document confirmation.
+
+Added shared workspace navigation across detail, saved, submission and account routes, plus a real-estate route layout with metadata and a theme-token footer linking existing policies and the ecosystem home. Changed the outer layout wrapper to a div so individual page main landmarks are not nested. New layout styling uses existing global colors/buttons and responsive CSS modules.
+
+Release gates still outstanding: protected-preview day/night desktop/mobile visual inspection; authentic inventory/media population and approval; live Supabase policy/role audit; real email login, enquiry, moderation and rate-limit flow verification; current MahaRERA portal adapter validation. These cannot be certified by a local build with placeholder Supabase environment values. No live enquiry, import or moderation action was performed in this pass. This is a consolidated code/design pass, not certification that the entire international product is finished.

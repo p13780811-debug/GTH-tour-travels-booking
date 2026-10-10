@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import JourneyNav from "@/components/real-estate/JourneyNav"
 import { supabase } from "@/lib/supabase"
 import { readApiJson } from "@/lib/api-response"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
@@ -22,7 +23,7 @@ export default function PostPropertyPage() {
     const [login, setLogin] = useState(false)
     const [description, setDescription] = useState("")
     return <main className="gth-container pt-10 pb-28 px-4">
-        <Link href="/real-estate" className="opacity-70">← Back to properties</Link>
+        <JourneyNav />
         <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
         <section className="gth-glass rounded-3xl p-6 mt-6"><h2 className="font-bold">Before you start</h2><p className="opacity-70 leading-7 mt-3">All fields are required. Use details you can substantiate. This form currently accepts project basics; pricing and media are not collected here.</p><button className={`gth-btn ${styles.action} mt-4`} onClick={() => setLogin(true)}>Sign in with email</button></section>
         <form className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onSubmit={async event => {

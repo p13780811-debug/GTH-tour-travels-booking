@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import JourneyNav from "@/components/real-estate/JourneyNav"
 import type { User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { readApiJson } from "@/lib/api-response"
@@ -48,7 +49,7 @@ export default function ProfilePage() {
     }, [user?.id, loadHistory])
 
     return <main className="gth-container min-h-screen pt-10 pb-28 px-4">
-        <Link href="/real-estate" className="opacity-70">← Back to properties</Link>
+        <JourneyNav />
         <header className="mt-8 mb-8"><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Account</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Your property workspace</h1><p className="opacity-70 mt-4">Manage your submissions and continue exploring listings.</p></header>
         {loading ? <p role="status">Loading account…</p> : <section className="gth-glass rounded-3xl p-6 flex justify-between gap-5 flex-wrap items-center">{user ? <><div><h2 className="font-bold">Signed in</h2><p className="opacity-70 mt-2 break-all">{user.email}</p></div><button disabled={signingOut} className={`gth-btn ${styles.action}`} onClick={async () => { setSigningOut(true); setError(""); try { const {error} = await supabase.auth.signOut(); if (error) throw error } catch { setError("Sign out failed. Please retry.") } finally { setSigningOut(false) } }}>{signingOut ? "Signing out…" : "Sign out"}</button></> : <><div><h2 className="font-bold">Sign in to view your submissions</h2><p className="opacity-70 mt-2">Device-saved listings remain available without an account.</p></div><button className={`gth-btn-gold ${styles.action}`} onClick={() => setLogin(true)}>Sign in</button></>}</section>}
         {error && <p role="alert" className="my-4">{error}</p>}

@@ -18,9 +18,9 @@ export default function LayoutWrapper({
     return (
         <>
             {/* ✅ CONTENT */}
-            <main className={`min-h-screen ${isRealEstate ? 'pb-0' : 'pb-24 md:pb-0'}`}>
+            <div className={`min-h-screen ${isRealEstate ? 'pb-0' : 'pb-24 md:pb-0'}`}>
                 {children}
-            </main>
+            </div>
 
             {/* ❌ REAL ESTATE → NO global UI */}
             {!isRealEstate && (

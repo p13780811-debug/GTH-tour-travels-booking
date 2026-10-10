@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
+import JourneyNav from "./JourneyNav"
 import { MapPin, Share2, ArrowLeft, Building2, MessageSquare } from "lucide-react"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
@@ -43,7 +44,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
         ["Reported bedrooms", property.beds || "Not provided"],
         ["Reported bathrooms", property.baths || "Not provided"],
         ["Reported area", property.sqft ? `${property.sqft} ft²` : "Not provided"],
-        ["Listing verification", property.verified ? "Verified listing" : "Not verified"],
+        ["Listing verification", "Confirm with source documents"],
     ]
     const share = async () => {
         setShareMessage("")
@@ -54,6 +55,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
     }
 
     return <main className="gth-container pb-28 pt-6 md:pt-10">
+        <JourneyNav />
         <nav aria-label="Breadcrumb" className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <Link href="/real-estate" className="inline-flex items-center gap-2 opacity-70 hover:opacity-100"><ArrowLeft size={16} aria-hidden="true" />All properties</Link>
             <div className="flex gap-3 items-center"><SavePropertyButton slug={slug} className="gth-glass rounded-xl p-3" /><button onClick={share} className={`gth-btn ${styles.action}`}><Share2 size={16} aria-hidden="true" />Share</button></div>

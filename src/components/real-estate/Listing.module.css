@@ -125,3 +125,36 @@
 @media (prefers-reduced-motion: reduce) {
   .action.action { transition: none; }
 }
+
+/* Real-estate layout; all colors remain owned by the global theme. */
+.searchHero { padding: 56px 0 40px; border-bottom: 1px solid var(--border); }
+.searchTitle { max-width: 900px; margin-top: 20px; font-size: clamp(2.1rem, 4.4vw, 4rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.12; }
+.searchIntro { max-width: 660px; margin-top: 20px; line-height: 1.8; opacity: .75; }
+.searchBar { display: flex; align-items: center; gap: 20px; padding: 18px 22px; margin-top: 28px; border-radius: 20px; max-width: 980px; }
+.searchField { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.searchField input { width: 100%; min-height: 40px; background: transparent; color: var(--text); border: 0; font-size: 16px; }
+.heroLinks { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 22px; font-size: 14px; }
+.heroLinks a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.heroLinks a:hover { text-decoration: underline; }
+.browseBar { display: flex; flex-wrap: wrap; gap: 10px; padding: 24px 0; }
+.action[aria-pressed="true"] { outline: 2px solid var(--primary); outline-offset: 2px; }
+.filterPanel { border-radius: 20px; padding: 20px; }
+.filterPanel summary { cursor: pointer; min-height: 44px; font-weight: 700; }
+.filterForm { display: grid; gap: 18px; margin-top: 18px; }
+.filterForm label { display: grid; gap: 8px; font-size: 14px; }
+.filterForm input, .filterForm select { width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+.filterChips { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.filterChips button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 13px; }
+.card { display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; }
+.cardBody { display: flex; flex-direction: column; flex: 1; padding: 22px; }
+.cardTitle { font-size: 19px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+.cardFacts { display: flex; flex-wrap: wrap; gap: 14px; padding: 18px 0; margin-top: 14px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.cardFacts div { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.cardFooter { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 18px; margin-top: auto; }
+.skeleton { min-height: 390px; border-radius: 20px; padding: 22px; }
+.skeletonMedia { height: 200px; border-radius: 12px; background: var(--border); opacity: .5; }
+.skeletonLine { height: 16px; margin-top: 20px; border-radius: 8px; background: var(--border); opacity: .5; }
+.guideGrid { display: grid; gap: 20px; margin-top: 20px; }
+.guideGrid article { padding: 24px; border-radius: 20px; }
+@media (min-width: 768px) { .filterForm { grid-template-columns: repeat(3,minmax(0,1fr)); } .guideGrid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 600px) { .searchHero { padding: 32px 0; } .searchBar { flex-wrap: wrap; padding: 16px; gap: 12px; } .searchBar > button { width: 100%; } .searchBar > svg { width: 18px; } .localNav { gap: 14px; } .cardBody { padding: 18px; } }
