@@ -688,7 +688,7 @@ export default function App() {
                             {/* BUTTON FIX */}
 
                             <button
-                                onClick={() => setShowAdd(true)}
+                                onClick={() => router.push("/real-estate/post-property")}
                                 className="
                 shrink-0
                 gth-btn-gold

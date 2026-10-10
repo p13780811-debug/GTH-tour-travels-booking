@@ -89,7 +89,7 @@ export default function BottomNav({
             return
         }
 
-        setShowPostModal(true)
+        window.location.href = "/real-estate/post-property"
     }
 
     // =========================
