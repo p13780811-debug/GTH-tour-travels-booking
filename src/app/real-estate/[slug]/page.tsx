@@ -31,5 +31,30 @@ export default async function PropertyPage({ params }: PageProps) {
         try { related = (await PropertyService.getAll({ city: property.city, limit: 7, sort: "latest" })).filter((item: any) => item.slug !== slug).slice(0, 6) }
         catch { /* Related inventory must not block the current listing. */ }
     }
-    return <PropertyDetailClient slug={slug} initialData={property} related={related} />
+    const canonical = `https://gth-pro.vercel.app/real-estate/${encodeURIComponent(slug)}`
+    const structuredData = property ? {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "@id": `${canonical}#page`,
+                url: canonical,
+                name: property.title,
+                ...(property.description ? { description: property.description } : {}),
+                breadcrumb: { "@id": `${canonical}#breadcrumb` },
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": `${canonical}#breadcrumb`,
+                itemListElement: [
+                    { "@type": "ListItem", position: 1, name: "GTH PRO Real Estate", item: "https://gth-pro.vercel.app/real-estate" },
+                    { "@type": "ListItem", position: 2, name: property.title, item: canonical },
+                ],
+            },
+        ],
+    } : null
+    return <>
+        {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
+        <PropertyDetailClient slug={slug} initialData={property} related={related} />
+    </>
 }
