@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
@@ -10,12 +10,8 @@ import RealEstateHero from "@/components/real-estate/RealEstateHero"
 import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
 import MapWrapper from "@/components/MapWrapper"
 import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
-import AddPropertyModal from "@/components/real-estate/AddPropertyModal"
-import LeadsDashboard from "@/components/real-estate/LeadsDashboard"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
-import MapFullscreen from "@/components/mobile/MapFullscreen"
-import FiltersSheet from "@/components/mobile/FiltersSheet"
 import AIChatToggle from "@/components/AIChatToggle"
 // ============================
 // 🧠 MAIN APP
@@ -30,45 +26,14 @@ export default function App() {
     const [inventoryPage, setInventoryPage] = useState(1)
     const [active, setActive] = useState<any>(null)
 
-    const [showAdd, setShowAdd] = useState(false)
-    const [showDashboard, setShowDashboard] = useState(false)
 
-    const [leads, setLeads] = useState<any[]>([])
     const [showLogin, setShowLogin] = useState(false)
-    const [showMap, setShowMap] = useState(false)
-    const [showFilters, setShowFilters] = useState(false)
 
     const router = useRouter()
+    const inventoryRequest = useRef(0)
 
     // 📱 Mobile Detection Logic
     const [isMobile, setIsMobile] = useState(false)
-
-    const categories = [
-        {
-            title: "BUY PROPERTY",
-            desc: "Find your dream home",
-            icon: "🏠",
-            query: "buy property"
-        },
-        {
-            title: "RENT PROPERTY",
-            desc: "Explore rental homes",
-            icon: "🏢",
-            query: "rent property"
-        },
-        {
-            title: "COMMERCIAL",
-            desc: "Office, shops & spaces",
-            icon: "🏬",
-            query: "commercial property"
-        },
-        {
-            title: "LUXURY HOMES",
-            desc: "Premium & high-end living",
-            icon: "💎",
-            query: "luxury villa"
-        }
-    ]
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768)
@@ -90,10 +55,11 @@ export default function App() {
 
             // Privileged lead data must never be fetched directly in the browser.
             // Keep disabled until a server-authorized endpoint + verified RLS policy is in place.
-            setLeads([])
         }
 
         init()
+        const onHistoryChange = () => fetchProperties(null)
+        window.addEventListener("popstate", onHistoryChange)
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
 
         const channel = supabase
@@ -110,10 +76,12 @@ export default function App() {
             .subscribe()
 
         return () => {
+            inventoryRequest.current += 1
+            window.removeEventListener("popstate", onHistoryChange)
             authListener.subscription.unsubscribe()
             supabase.removeChannel(channel)
         }
-    }, [showDashboard])
+    }, [])
 
 
     type UserType = {
@@ -122,146 +90,71 @@ export default function App() {
     }
 
     const fetchProperties = async (currentUser: UserType | null, page = 1) => {
+        const requestId = ++inventoryRequest.current
         setInventoryLoading(true)
         setInventoryError("")
         try {
             const params = new URLSearchParams(window.location.search)
             const safeText = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").slice(0,80) || undefined
             const bedrooms = Number(params.get("bedrooms"))
-            const data = await PropertyService.getAll({ limit: 100, page, sort: params.get("sort") === "ai" ? "ai" : "latest", country: safeText("country"), city: safeText("city"), type: safeText("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined })
+            const data = await PropertyService.getAll({ query: params.get("query")?.slice(0, 120) || undefined, limit: 100, page, sort: params.get("sort") === "ai" ? "ai" : "latest", country: safeText("country"), city: safeText("city"), type: safeText("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined })
+            if (requestId !== inventoryRequest.current) return
+            setQuery(params.get("query") || "")
             setProperties(data)
             setFiltered(data)
             setInventoryPage(page)
         } catch {
-            setInventoryError("Property inventory could not be loaded. Please retry.")
+            if (requestId === inventoryRequest.current) {
+                setProperties([])
+                setFiltered([])
+                setInventoryError("Property inventory could not be loaded. Please retry.")
+            }
         } finally {
-            setInventoryLoading(false)
+            if (requestId === inventoryRequest.current) setInventoryLoading(false)
         }
     };
 
     // ============================
-    // SEARCH (AI + LOCAL)
+    // INVENTORY SEARCH
     // ============================
-    const aiSearch = async (searchQuery = query) => {
-        if (!searchQuery) { setFiltered(properties); return }
+    const searchInventory = async (searchQuery = query) => {
+        const url = new URL(window.location.href)
+        const term = searchQuery.trim().slice(0, 120)
+        if (term) url.searchParams.set("query", term)
+        else url.searchParams.delete("query")
+        window.history.replaceState(null, "", url)
+        await fetchProperties(user)
+    }
 
-        let filters: any = {}
-
-        try {
-            const res = await fetch("/api/ai-search", {
-                method: "POST",
-                body: JSON.stringify({ query: searchQuery }),
-                headers: { "Content-Type": "application/json" },
-            })
-            if (res.ok) filters = await res.json()
-        } catch { }
-
-        if (!filters || Object.keys(filters).length === 0) {
-            const q = searchQuery.toLowerCase()
-
-            const cities = ["mumbai", "delhi", "kolkata", "bangalore", "pune"]
-            let city = cities.find(c => q.includes(c)) || ""
-
-            let minPrice = 0
-            let maxPrice = Infinity
-            let type = ""
-
-            const priceMatch = q.match(/(\d+)(k|lakh|lac|crore)?/)
-            if (priceMatch) {
-                let value = Number(priceMatch[1])
-                const unit = priceMatch[2]
-
-                if (unit === "k") value *= 1000
-                if (unit === "lakh" || unit === "lac") value *= 100000
-                if (unit === "crore") value *= 10000000
-
-                if (q.includes("under")) maxPrice = value
-                if (q.includes("above")) minPrice = value
-            }
-
-            if (q.includes("2bhk")) type = "2bhk"
-            if (q.includes("3bhk")) type = "3bhk"
-            if (q.includes("villa")) type = "villa"
-
-            filters = { city, minPrice, maxPrice, type }
-        }
-
-        let result: any[] = []
-        setInventoryLoading(true)
-        setInventoryError("")
-        try {
-            result = await PropertyService.getAll({
-                city: typeof filters.city === "string" ? filters.city : undefined,
-                minPrice: typeof filters.minPrice === "number" ? filters.minPrice : undefined,
-                maxPrice: typeof filters.maxPrice === "number" && Number.isFinite(filters.maxPrice) ? filters.maxPrice : undefined,
-                query: !filters.city && !filters.type && !filters.minPrice && !Number.isFinite(filters.maxPrice) ? searchQuery : undefined,
-                limit: 100,
-            })
-            if (filters.type) result = result.filter(p => `${p.property_type} ${p.title}`.toLowerCase().includes(String(filters.type).toLowerCase()))
-        } catch {
-            setInventoryError("Search unavailable. Budget filters require normalized price data; try a city or property name.")
-        } finally {
-            setInventoryLoading(false)
-        }
-
-        setFiltered(result)
-
-        if (result[0]?.lat && result[0]?.lng) {
-            setActive({
-                id: result[0].id,
-                coords: [result[0].lat, result[0].lng],
-            })
-        }
+    const applyCategory = (category: string) => {
+        const url = new URL(window.location.href)
+        url.searchParams.delete("query")
+        url.searchParams.delete("type")
+        url.searchParams.delete("listing")
+        if (category === "buy" || category === "rent") url.searchParams.set("listing", category)
+        else url.searchParams.set("type", category)
+        window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters"))
+        fetchProperties(user)
     }
 
     // ============================
     // AUTH
     // ============================
-    const login = async () => {
-        const email = prompt("Enter email")
-        if (!email) return
-        await supabase.auth.signInWithOtp({ email })
-        alert("Check email")
-    }
-
     const logout = async () => {
         await supabase.auth.signOut()
         setUser(null)
     }
 
-    // ============================
-    // PROPERTY
-    // ============================
-    const addProperty = async (_form: any) => {
-        alert("Property publishing is temporarily disabled until server-side authorization and RLS are verified.")
-        setShowAdd(false)
-    }
-
-    const addLead = async (id: number) => {
-        const phone = prompt("Enter phone")
-        if (!phone) return
-        try {
-            await PropertyService.addLead({ property_id: id, phone })
-            alert("Enquiry sent")
-        } catch { alert("Enquiry could not be sent. Please retry later.") }
-    }
-
-    const payForBoost = async (_id: number) => {
-        alert("Premium boost is temporarily disabled until payment verification and server-side authorization are connected.")
-    }
-
-    const totalLeads = leads.length
-    const boosted = properties.filter(p => p.is_featured).length
-
-    const getAIRecommendations = () => {
+    const getFeaturedListings = () => {
         if (!properties.length) return []
 
         return properties
-            .filter(p => p.is_featured || p.price < 50)
+            .filter(p => p.is_featured)
             .slice(0, 6)
     }
 
-    const aiRecommended = getAIRecommendations()
+    const featuredListings = getFeaturedListings()
 
     // ============================
     // UI
@@ -273,16 +166,6 @@ export default function App() {
             {/* 🌌 PREMIUM BACKGROUND */}
             {/* ====================================================== */}
 
-            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-
-                <div className="absolute top-[-120px] left-[-80px] w-[320px] h-[320px] rounded-full blur-3xl bg-blue-500/10" />
-
-                <div className="absolute top-[20%] right-[-120px] w-[360px] h-[360px] rounded-full blur-3xl bg-purple-500/10" />
-
-                <div className="absolute bottom-[-140px] left-[20%] w-[300px] h-[300px] rounded-full blur-3xl bg-amber-400/10" />
-
-            </div>
-
             {/* ====================================================== */}
             {/* 🏆 HERO */}
             {/* ====================================================== */}
@@ -291,7 +174,8 @@ export default function App() {
             <RealEstateHero
                 query={query}
                 setQuery={setQuery}
-                onSearch={() => aiSearch()}
+                onSearch={searchInventory}
+                loading={inventoryLoading}
                 properties={properties}
                 setFiltered={setFiltered}
                 setActive={setActive}
@@ -303,7 +187,7 @@ export default function App() {
 
             <section className="px-3 md:px-6 -mt-6 relative z-20">
 
-                <div className="gth-glass-ultra rounded-[30px] p-4 md:p-6 border border-white/10 shadow-2xl overflow-hidden">
+                <div className="gth-glass-ultra rounded-[30px] p-4 md:p-6 border border-[var(--border)] shadow-2xl overflow-hidden">
 
                     <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
 
@@ -314,7 +198,7 @@ export default function App() {
                             </h2>
 
                             <p className="text-xs opacity-70 mt-1">
-                                AI-powered luxury property discovery
+                                Browse by listing purpose and property type
                             </p>
 
                         </div>
@@ -324,11 +208,11 @@ export default function App() {
                         <div className="hidden lg:flex items-center gap-2 shrink-0">
 
                             <div className="gth-badge">
-                                🔥 Trending
+                                Buy or rent
                             </div>
 
                             <div className="gth-badge">
-                                🤖 Smart AI
+                                Property types
                             </div>
 
                         </div>
@@ -345,40 +229,34 @@ export default function App() {
                                 {
                                     name: "Buy",
                                     icon: "🏠",
-                                    q: "buy property",
-                                    glow: "from-blue-500/20 to-cyan-500/10"
+                                    q: "buy",
                                 },
                                 {
                                     name: "Rent",
                                     icon: "🏢",
-                                    q: "rent property",
-                                    glow: "from-emerald-500/20 to-green-500/10"
+                                    q: "rent",
                                 },
                                 {
-                                    name: "Luxury",
+                                    name: "Villas",
                                     icon: "💎",
-                                    q: "luxury villa",
-                                    glow: "from-purple-500/20 to-indigo-500/10"
+                                    q: "Villa",
                                 },
                                 {
                                     name: "Commercial",
                                     icon: "🏬",
-                                    q: "commercial property",
-                                    glow: "from-orange-500/20 to-amber-500/10"
+                                    q: "Commercial",
                                 },
                                 {
                                     name: "Plots",
                                     icon: "📍",
-                                    q: "plots",
-                                    glow: "from-pink-500/20 to-rose-500/10"
+                                    q: "Plot",
                                 },
                             ].map((c, i) => (
 
                                 <button
                                     key={i}
                                     onClick={() => {
-                                        setQuery(c.q)
-                                        aiSearch(c.q)
+                                        applyCategory(c.q)
                                     }}
                                     className="
                   relative overflow-hidden
@@ -394,10 +272,7 @@ export default function App() {
                 "
                                 >
 
-                                    <div className={`
-                  absolute inset-0 opacity-60
-                  bg-gradient-to-br ${c.glow}
-                `} />
+
 
                                     <div className="relative z-10">
 
@@ -410,7 +285,7 @@ export default function App() {
                                         </h3>
 
                                         <p className="text-[11px] opacity-70 mt-1">
-                                            AI Curated
+                                            Browse listings
                                         </p>
 
                                     </div>
@@ -440,11 +315,11 @@ export default function App() {
                         <div className="gth-glass-ultra rounded-2xl p-4">
 
                             <h2 className="font-bold text-sm mb-2">
-                                Unlock Premium Features
+                                Your property account
                             </h2>
 
                             <p className="text-xs opacity-70 mb-4">
-                                Access dashboard, leads & boosted listings
+                                Sign in to submit a property for review
                             </p>
 
                             <button
@@ -468,10 +343,10 @@ export default function App() {
                     </div>
 
                     <button
-                        onClick={() => setShowFilters(true)}
+                        onClick={() => document.getElementById("discovery-filters")?.scrollIntoView({ behavior: "smooth" })}
                         className="w-full gth-btn-gold py-3"
                     >
-                        ✨ OPEN SMART FILTERS
+                        OPEN PROPERTY FILTERS
                     </button>
 
                 </div>
@@ -511,7 +386,7 @@ export default function App() {
                                     </h2>
 
                                     <p className="text-sm opacity-70 mb-4">
-                                        Login to unlock premium dashboard & AI tools
+                                        Sign in to submit listings and view your account
                                     </p>
 
                                     <button
@@ -532,7 +407,7 @@ export default function App() {
                                         <div className="min-w-0">
 
                                             <h2 className="font-black">
-                                                Agent Dashboard
+                                                Your account
                                             </h2>
 
                                             <p className="text-xs opacity-70 truncate mt-1">
@@ -547,43 +422,9 @@ export default function App() {
 
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3 mb-4">
-
-                                        <div className="gth-glass rounded-2xl p-3">
-
-                                            <p className="text-[10px] opacity-60 uppercase">
-                                                Leads
-                                            </p>
-
-                                            <h2 className="text-xl font-black mt-1">
-                                                {totalLeads}
-                                            </h2>
-
-                                        </div>
-
-                                        <div className="gth-glass rounded-2xl p-3">
-
-                                            <p className="text-[10px] opacity-60 uppercase">
-                                                Boosted
-                                            </p>
-
-                                            <h2 className="text-xl font-black mt-1">
-                                                {boosted}
-                                            </h2>
-
-                                        </div>
-
-                                    </div>
-
-                                    <button
-                                        onClick={() =>
-                                            alert("Lead dashboard is disabled until server-side authorization and verified RLS are connected.")
-                                        }
-                                        className="w-full gth-btn-gold mb-2"
-                                    >
-                                        DASHBOARD LOCKED
-                                    </button>
-
+                                    <button className="w-full gth-btn-gold mb-2" onClick={() => router.push("/real-estate/post-property")}>SUBMIT PROPERTY</button>
+                                    <button className="w-full gth-btn mb-2" onClick={() => router.push("/real-estate/profile")}>YOUR ACCOUNT</button>
+                                    <button className="w-full gth-btn mb-2" onClick={() => router.push("/real-estate/saved")}>SAVED & COMPARE</button>
                                     <button
                                         onClick={logout}
                                         className="w-full gth-btn"
@@ -594,58 +435,6 @@ export default function App() {
                                 </div>
 
                             )}
-
-                            {/* FILTERS */}
-
-                            <div className="gth-glass-ultra rounded-3xl p-5">
-
-                                <div className="flex items-center justify-between mb-4">
-
-                                    <h2 className="font-black gold-text uppercase tracking-wide text-sm">
-                                        Smart Filters
-                                    </h2>
-
-                                    <span className="text-xs opacity-60">
-                                        AI
-                                    </span>
-
-                                </div>
-
-                                <div className="space-y-3">
-
-                                    {[
-                                        "2BHK",
-                                        "3BHK",
-                                        "Villa",
-                                        "Near Metro",
-                                        "Luxury",
-                                        "Under 50L"
-                                    ].map((t, i) => (
-
-                                        <button
-                                            key={i}
-                                            onClick={() => {
-                                                setQuery(t)
-                                                aiSearch(t)
-                                            }}
-                                            className="
-                      w-full
-                      text-left
-                      gth-glass
-                      rounded-2xl
-                      px-4 py-3
-                      transition-all
-                      hover:scale-[1.02]
-                    "
-                                        >
-                                            {t}
-                                        </button>
-
-                                    ))}
-
-                                </div>
-
-                            </div>
 
                             {/* MAP */}
 
@@ -680,7 +469,7 @@ export default function App() {
                                 </h1>
 
                                 <p className="opacity-70 text-sm mt-2">
-                                    {filtered.length} curated properties found
+                                    {filtered.length} listings on this page
                                 </p>
 
                             </div>
@@ -709,7 +498,7 @@ export default function App() {
                         {/* 🤖 AI RECOMMENDATIONS */}
                         {/* ================================================= */}
 
-                        {aiRecommended.length > 0 && (
+                        {featuredListings.length > 0 && (
 
                             <section className="mb-10">
 
@@ -718,17 +507,17 @@ export default function App() {
                                     <div>
 
                                         <h2 className="text-2xl font-black gold-text">
-                                            🤖 AI Recommendations
+                                            Featured listings
                                         </h2>
 
                                         <p className="text-sm opacity-70 mt-1">
-                                            Personalized luxury picks
+                                            Listings marked as featured in the inventory
                                         </p>
 
                                     </div>
 
                                     <div className="hidden lg:flex gth-badge">
-                                        Smart Match
+                                        Featured
                                     </div>
 
                                 </div>
@@ -739,7 +528,7 @@ export default function App() {
 
                                     <div className="flex gap-5 min-w-max pb-2">
 
-                                        {aiRecommended.map((p) => (
+                                        {featuredListings.map((p) => (
 
                                             <div
                                                 key={p.id}
@@ -758,8 +547,6 @@ export default function App() {
                                                     onSelect={(prop: any) => {
                                                         router.push(`/real-estate/${prop.slug}`)
                                                     }}
-                                                    onLead={addLead}
-                                                    onBoost={payForBoost}
                                                 />
 
                                             </div>
@@ -795,7 +582,7 @@ export default function App() {
                                 {inventoryLoading && <p role="status">Loading property inventory…</p>}
                                 {inventoryError && <div role="alert">{inventoryError} <button className="gth-btn" onClick={() => fetchProperties(user)}>Retry</button></div>}
                                 {!inventoryLoading && !inventoryError && filtered.length === 0 && <p>No properties match your search.</p>}
-                                {!query && <nav aria-label="Property pages" className="flex gap-3 col-span-full">
+                                {<nav aria-label="Property pages" className="flex gap-3 col-span-full">
                                     <button className="gth-btn" disabled={inventoryLoading || inventoryPage === 1} onClick={() => fetchProperties(user, inventoryPage - 1)}>Previous</button>
                                     <span>Page {inventoryPage}</span>
                                     <button className="gth-btn" disabled={inventoryLoading || properties.length < 100} onClick={() => fetchProperties(user, inventoryPage + 1)}>Next</button>
@@ -819,8 +606,6 @@ export default function App() {
                                                     coords: [prop.lat, prop.lng]
                                                 })
                                             }}
-                                            onLead={addLead}
-                                            onBoost={payForBoost}
                                         />
 
                                     </div>
@@ -841,24 +626,6 @@ export default function App() {
             {/* 🧩 MODALS */}
             {/* ====================================================== */}
 
-            {showAdd && (
-
-                <AddPropertyModal
-                    onSave={addProperty}
-                    onClose={() => setShowAdd(false)}
-                />
-
-            )}
-
-            {showDashboard && (
-
-                <LeadsDashboard
-                    onClose={() => setShowDashboard(false)}
-                    properties={properties}
-                />
-
-            )}
-
             {showLogin && (
 
                 <LoginModal
@@ -866,19 +633,6 @@ export default function App() {
                 />
 
             )}
-
-            <MapFullscreen
-                open={showMap}
-                onClose={() => setShowMap(false)}
-                data={filtered}
-                active={active}
-            />
-
-            <FiltersSheet
-                open={showFilters}
-                onClose={() => setShowFilters(false)}
-                setQuery={setQuery}
-            />
 
             {/* ====================================================== */}
             {/* 📱 MOBILE NAV */}
