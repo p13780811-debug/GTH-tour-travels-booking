@@ -9,7 +9,7 @@ import styles from "./Listing.module.css"
 export default function PropertyCardPro({ p }: any) {
  const detailUrl = `/real-estate/${encodeURIComponent(p.slug)}`
  return <article className={`gth-glass ${styles.card}`}>
-  <div className={`${styles.media} h-52 md:h-60`}><Link href={detailUrl} aria-label={`View ${p.title || "property listing"}`} className="block h-full"><PropertyImage slug={p.slug} src={p.image} alt={p.title || "Property"} className="h-full w-full" /></Link>{p.is_featured && <span className="gth-badge absolute top-4 left-4">Featured</span>}<SavePropertyButton slug={p.slug} className={`${styles.save} gth-glass p-3 rounded-xl`} /></div>
+  <div className={`${styles.media} h-52 md:h-60`}><Link href={detailUrl} aria-label={`View ${p.title || "property listing"}`} className="block h-full"><PropertyImage slug={p.slug} src={p.image} alt={p.title || "Property"} className="h-full w-full" /></Link><SavePropertyButton slug={p.slug} className={`${styles.save} gth-glass p-3 rounded-xl`} /></div>
   <div className={styles.cardBody}>
    <p className="text-xs opacity-70 mb-3">{[p.property_type, p.listing_type === "buy" ? "For sale" : p.listing_type === "rent" ? "For rent" : ""].filter(Boolean).join(" · ") || "Property listing"}</p>
    <h2 className={styles.cardTitle}><Link href={detailUrl} className="hover:underline">{p.title || "Property listing"}</Link></h2>
