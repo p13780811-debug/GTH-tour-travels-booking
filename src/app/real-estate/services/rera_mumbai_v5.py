@@ -14,6 +14,7 @@ import hashlib
 
 from dotenv import load_dotenv
 from rera_collection import collect_pages
+from rera_import import insert_registry_batch
 
 
 
@@ -536,17 +537,8 @@ async def push(batch):
 
 
 
-    supabase.table("properties").upsert(
-
-        batch,
-
-        on_conflict="rera_id"
-
-    ).execute()
-
-
-
-    logging.info(f"✅ inserted: {len(batch)}")
+    inserted = insert_registry_batch(supabase, batch)
+    logging.info("Registry batch: %s inserted, %s already present", inserted, len(batch) - inserted)
 
 
 

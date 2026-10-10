@@ -33,6 +33,12 @@ jobs:
         run: npx tsc --noEmit
       - name: Security regression tests
         run: npm run test:security
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Registry ingestion regression tests
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
       - name: Lint
         run: npm run lint
       - name: Production build
