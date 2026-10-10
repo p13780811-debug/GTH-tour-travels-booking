@@ -17,6 +17,6 @@ export default function DiscoveryFilters({ onApply }: { onApply: () => void }) {
    <button className={`gth-btn-gold ${styles.action}`}>Apply filters</button>
    <button type="button" className={`gth-btn ${styles.action}`} onClick={() => { const url = new URL(window.location.href); for (const key of [...Object.keys(filters), "query", "page"]) url.searchParams.delete(key); window.history.replaceState(null,"",url); window.dispatchEvent(new Event("gth-discovery-filters")); onApply() }}>Reset filters</button>
   </div>
-  <p className="text-sm opacity-70 col-span-full">Coverage follows available inventory. Prices and availability require confirmation.</p>
+  <p className="text-sm opacity-70 col-span-full">Budget filters will be available when listings have a normalized price and currency. Current prices are shown as supplied.</p>
  </form></details>
 }

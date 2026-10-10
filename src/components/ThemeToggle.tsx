@@ -45,6 +45,8 @@ export default function ThemeToggle() {
 
         <button
             onClick={toggleTheme}
+            aria-label={dark ? "Switch to day theme" : "Switch to night theme"}
+            type="button"
             className="
             gth-glass
             flex items-center justify-center

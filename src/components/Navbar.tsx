@@ -31,8 +31,14 @@ import {
 
 import SearchBox from "@/components/SearchBox"
 import ThemeToggle from "@/components/ThemeToggle"
+import EstateHeader from "@/components/real-estate/EstateHeader"
 
 export default function Navbar() {
+    const pathname = usePathname()
+    return pathname === "/real-estate" || pathname?.startsWith("/real-estate/") ? <EstateHeader /> : <EcosystemNavbar />
+}
+
+function EcosystemNavbar() {
 
     const pathname = usePathname()
 
