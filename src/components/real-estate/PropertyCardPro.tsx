@@ -33,7 +33,7 @@ export default function PropertyCardPro({ p }: { p: PropertyCardRecord }) {
  return <article className={`gth-glass ${styles.card} ${styles.editorialCard}`}>
   <div className={`${styles.media} ${styles.editorialMedia}`}>
    <Link href={detailUrl} aria-label={`View ${name}`} className="block h-full">
-    <PropertyImage slug={p.slug} src={p.image} alt={name} className="h-full w-full" />
+    <PropertyImage slug={p.slug} src={p.image ?? undefined} alt={name} className="h-full w-full" />
    </Link>
    <div className={styles.cardMediaTop}>
     <span className={styles.cardIntent}>{intent}</span>
