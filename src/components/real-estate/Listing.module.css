@@ -132,7 +132,7 @@
 @media (min-width: 1024px) {
   .projectHeader { grid-template-columns: minmax(0, 1fr) 340px; }
   .detailLayout { grid-template-columns: minmax(0, 1fr) 360px; }
-  .enquiryPanel { position: sticky; top: 100px; }
+  .enquiryPanel { align-self: start; }
   .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .discoveryHeader { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
 }
@@ -235,3 +235,5 @@
 .adProjects { display: grid; gap: 20px; margin: 20px 0 8px; }
 .adProjects article { padding-top: 20px; border-top: 1px solid var(--border); min-width: 0; overflow-wrap: anywhere; }
 .adProjects .action { margin-top: 12px; }
+
+.galleryEmpty { min-height: 160px; display: grid; }
