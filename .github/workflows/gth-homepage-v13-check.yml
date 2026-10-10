@@ -5,9 +5,12 @@ on:
     branches:
       - gth-homepage-v1.3
       - gth-production-hardening
+      - gth-global-ecosystem-ui
+      - gth-real-estate-production
   pull_request:
     branches:
       - main
+      - gth-production-hardening
 
 permissions:
   contents: read
@@ -19,6 +22,7 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+      GTH_PUBLIC_INDEXING: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
