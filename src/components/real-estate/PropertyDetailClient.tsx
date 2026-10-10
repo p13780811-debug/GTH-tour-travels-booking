@@ -44,7 +44,6 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
         ["Reported bedrooms", property.beds || "Not provided"],
         ["Reported bathrooms", property.baths || "Not provided"],
         ["Reported area", property.sqft ? `${property.sqft} ft²` : "Not provided"],
-        ["Listing verification", "Confirm with source documents"],
     ]
     const share = async () => {
         setShareMessage("")
@@ -62,7 +61,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
         </nav>
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
         <header className={styles.projectHeader}>
-            <div><p className="gold-text text-xs font-bold uppercase tracking-widest mb-4">GTH PRO / Property collection</p><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{property.location || property.city || "Location not provided"}</p></div>
+            <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{property.location || property.city || "Location not provided"}</p></div>
             <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Listed price</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{property.formatted_price || "Price on request"}</p><p className="text-sm opacity-70 mt-3">Confirm current pricing and availability.</p></div>
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
@@ -74,14 +73,14 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
                 </section>
                 <nav aria-label="Project sections" className={styles.sectionNav}><a href="#overview">Overview</a><a href="#recorded-details">Project records</a><a href="#location">Location</a><a href="#enquiry">Enquire</a></nav>
                 <section id="overview" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24">
-                    <p className="gold-text text-xs uppercase tracking-widest">01 / The listing</p><h2 className="text-2xl md:text-3xl font-bold mt-3">Project overview</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold">Property overview</h2>
                     <p className="opacity-70 leading-8 mt-5 whitespace-pre-line">{property.description || "A detailed project description has not been provided."}</p>
                     <dl className={`${styles.facts} mt-6`}>{facts.map(([label, value]) => <div key={String(label)} className="gth-glass rounded-2xl p-4"><dt className="text-xs opacity-70">{label}</dt><dd className="font-bold mt-2">{value || "Not provided"}</dd></div>)}</dl>
                     <p className="text-sm opacity-70 mt-4">Measurements reflect stored listing data; confirm them against project documents.</p>
-                    {Array.isArray(property.amenities) && property.amenities.length > 0 && <div className="mt-6"><h3 className="font-bold">Reported amenities</h3><ul className="flex gap-3 flex-wrap mt-3">{property.amenities.filter((item: unknown) => typeof item === "string").map((item: string, index: number) => <li className="gth-badge" key={`${item}-${index}`}>{item}</li>)}</ul></div>}
+                    {Array.isArray(property.amenities) && property.amenities.length > 0 && <div className="mt-6"><h3 className="font-bold">Reported amenities</h3><ul className="grid gap-3 sm:grid-cols-2 mt-3 list-disc pl-5">{property.amenities.filter((item: unknown) => typeof item === "string").map((item: string, index: number) => <li className="text-sm leading-6" key={`${item}-${index}`}>{item}</li>)}</ul></div>}
                 </section>
                 <div id="recorded-details" className="scroll-mt-24"><RegistryDetails property={property} /></div>
-                <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><p className="gold-text text-xs uppercase tracking-widest">02 / The location</p><h2 className="text-2xl font-bold mt-3">Find the project</h2><p className="opacity-70 mt-3">{property.location || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
+                <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><h2 className="text-2xl font-bold">Location</h2><p className="opacity-70 mt-3">{property.location || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
             </div>
             <aside className={styles.enquiryPanel}>
                 <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><h2 className="text-2xl font-bold mt-4">Take the next step</h2><p className="opacity-70 leading-7 my-4">Request current project details, pricing or a visit. Submission sends an enquiry; it does not reserve a property.</p><EnquiryForm propertyId={property.id} /></section>
@@ -89,6 +88,6 @@ export default function PropertyDetailClient({ slug, initialData, related = [] }
             </aside>
         </div>
         <nav aria-label="Mobile listing actions" className={styles.mobileEnquiry}><div><span className="text-xs opacity-70">Listed price</span><p className="gold-text font-bold text-sm">{property.formatted_price || "Price on request"}</p></div><a href="#enquiry" className={`gth-btn-gold ${styles.action}`}>Enquire</a></nav>
-        {related.length > 0 && <section className="mt-16"><p className="gold-text text-xs uppercase tracking-widest">03 / Keep exploring</p><h2 className="text-3xl font-bold mt-3">More in this city</h2><p className="opacity-70 mt-3">Related inventory based on the recorded city.</p><div className="grid gap-5 mt-8 sm:grid-cols-2 xl:grid-cols-3">{related.filter(item => item.slug !== slug).slice(0, 6).map(item => <PropertyCardPro key={item.id} p={item} />)}</div></section>}
+        {related.length > 0 && <section className="mt-16"><h2 className="text-2xl md:text-3xl font-bold">More in this city</h2><p className="opacity-70 mt-3">Related inventory based on the recorded city.</p><div className="grid gap-5 mt-8 sm:grid-cols-2 xl:grid-cols-3">{related.filter(item => item.slug !== slug).slice(0, 6).map(item => <PropertyCardPro key={item.id} p={item} />)}</div></section>}
     </main>
 }
