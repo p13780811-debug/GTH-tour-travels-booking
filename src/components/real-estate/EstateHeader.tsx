@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { Building2, ChevronDown, Globe2, Heart, Menu, UserRound, X } from "lucide-react"
 import ThemeToggle from "@/components/ThemeToggle"
@@ -17,6 +18,9 @@ const links = [
 
 export default function EstateHeader() {
  const [open, setOpen] = useState(false)
+ const pathname = usePathname()
+ useEffect(() => { setOpen(false) }, [pathname])
+ useEffect(() => { if (!open) return; const dismiss = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false) }; window.addEventListener("keydown", dismiss); return () => window.removeEventListener("keydown", dismiss) }, [open])
  return <header className="sticky top-0 z-[120] border-b border-[var(--border)] bg-[var(--card-strong)] backdrop-blur-xl">
   <div className="gth-container flex min-h-[76px] items-center justify-between gap-3">
    <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="GTH PRO ecosystem home">
@@ -24,7 +28,7 @@ export default function EstateHeader() {
     <span className="flex flex-col leading-tight"><strong className="text-lg tracking-tight">GTH <span className="gold-text">PRO</span></strong><small className="text-[10px] tracking-[.16em] text-[var(--muted)] uppercase">Real Estate</small></span>
    </Link>
    <nav aria-label="Real estate primary navigation" className="hidden xl:flex items-center gap-1">
-    {links.map(link => <Link key={link.href} href={link.href} className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)]">{link.icon && <link.icon size={15} aria-hidden="true" />}{link.label}</Link>)}
+    {links.map(link => <Link key={link.href} href={link.href} className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]">{link.icon && <link.icon size={15} aria-hidden="true" />}{link.label}</Link>)}
    </nav>
    <div className="flex items-center gap-2">
     <Link href="/" className="hidden items-center gap-1.5 text-xs text-[var(--muted)] lg:flex"><Globe2 size={15} aria-hidden="true" /> Ecosystem <ChevronDown size={12} aria-hidden="true" /></Link>
