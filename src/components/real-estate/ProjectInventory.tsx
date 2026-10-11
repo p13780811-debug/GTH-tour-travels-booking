@@ -25,7 +25,7 @@ export default function ProjectInventory({ items = [] }: { items?: any[] }) {
               ["Beds", item.bedrooms ?? "—"],
               ["Baths", item.bathrooms ?? "—"],
               ["Area", item.area_sqft ? `${item.area_sqft} ft²` : "—"],
-              ["Submitted by", item.submitter_role || "Not stated"],
+              ["Stated role", item.submitter_role || "Not stated"],
             ].map(([label,value]) => <div key={String(label)}><dt className="text-xs opacity-70">{label}</dt><dd className="font-medium mt-1">{String(value)}</dd></div>)}
           </dl>
           {item.description && <p className="text-sm opacity-70 leading-7 mt-4">{item.description}</p>}
