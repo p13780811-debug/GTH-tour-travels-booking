@@ -62,7 +62,7 @@ export default function RealEstatePage() {
         const onHistory = () => { load() }
         window.addEventListener("popstate", onHistory)
         window.addEventListener("gth-search-load", onHistory)
-        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).subscribe()
+        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, () => { clearPropertyCache(); load() }).subscribe()
         return () => { active = false; request.current += 1; auth.subscription.unsubscribe(); window.removeEventListener("popstate", onHistory); window.removeEventListener("gth-search-load", onHistory); supabase.removeChannel(channel) }
     }, [load])
 
