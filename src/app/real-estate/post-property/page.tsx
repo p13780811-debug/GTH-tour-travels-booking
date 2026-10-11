@@ -22,6 +22,8 @@ export default function PostPropertyPage() {
     const [error, setError] = useState("")
     const [login, setLogin] = useState(false)
     const [description, setDescription] = useState("")
+    const [files, setFiles] = useState<File[]>([])
+    const [uploading, setUploading] = useState(false)
     return <main className="gth-container pt-10 pb-28 px-4">
         <JourneyNav />
         <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
@@ -29,15 +31,29 @@ export default function PostPropertyPage() {
         <form className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onSubmit={async event => {
             event.preventDefault(); if (busy) return
             const form = event.currentTarget
-            const payload = Object.fromEntries(new FormData(form))
+            const payload: Record<string, unknown> = Object.fromEntries(new FormData(form))
             setBusy(true); setMessage(""); setError("")
             try {
                 const {data} = await supabase.auth.getSession()
                 if (!data.session) { setLogin(true); setError("Sign in, then submit your listing. Your current form remains open."); return }
+                if (files.length > 8) throw new Error("Upload up to 8 property photos.")
+                const mediaUrls: string[] = []
+                if (files.length) {
+                    setUploading(true)
+                    for (const file of files) {
+                        const body = new FormData()
+                        body.append("file", file)
+                        const upload = await readApiJson(await fetch("/api/upload", { method:"POST", headers:{Authorization:`Bearer ${data.session.access_token}`}, body }))
+                        if (!upload || typeof upload.url !== "string") throw new Error("Image upload failed.")
+                        mediaUrls.push(upload.url)
+                    }
+                    setUploading(false)
+                }
+                payload.media_urls = mediaUrls
                 await readApiJson(await fetch("/api/real-estate/submissions", { method:"POST", headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`}, body:JSON.stringify(payload) }))
-                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription("")
+                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription(""); setFiles([])
             } catch (failure) { setError(failure instanceof Error ? failure.message : "Submission failed. Your entries have been kept.") }
-            finally { setBusy(false) }
+            finally { setUploading(false); setBusy(false) }
         }}>
             <fieldset disabled={busy} className="grid gap-5"><legend className="font-bold text-xl mb-5">Property details</legend>
                 <div>
@@ -57,8 +73,17 @@ export default function PostPropertyPage() {
                     <label>Bathrooms<input name="bathrooms" type="number" min="0" max="20" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
                     <label>Area (sq ft)<input name="area_sqft" type="number" min="1" max="1000000" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
                 </div>
+                <div>
+                    <label htmlFor="listing-media" className="block font-medium mb-2">Property photos <span className="opacity-60">(optional, max 8)</span></label>
+                    <input id="listing-media" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={event => {
+                        const selected = Array.from(event.target.files || []).slice(0, 8)
+                        setFiles(selected)
+                        if ((event.target.files?.length || 0) > 8) setError("Only the first 8 photos will be used.")
+                    }} className="gth-glass rounded-xl p-3 w-full" />
+                    <p className="text-sm opacity-70 mt-2">{files.length ? `${files.length} photo${files.length === 1 ? "" : "s"} selected. Photos remain subject to administrator review.` : "Uploaded photos are stored under your account path and are not treated as approved listing media until review."}</p>
+                </div>
                 <p className="text-sm opacity-70">Submitting these fields does not make them verified. GTH PRO publishes inventory only after administrator review.</p>
-                <button className={`gth-btn-gold ${styles.action} justify-self-start`} type="submit">{busy ? "Submitting…" : "Submit for review"}</button>
+                <button className={`gth-btn-gold ${styles.action} justify-self-start`} type="submit">{uploading ? "Uploading photos…" : busy ? "Submitting…" : "Submit for review"}</button>
             </fieldset>
             {message && <div className="mt-6" role="status"><p>{message}</p><Link href="/real-estate/profile" className="underline inline-block mt-3">View submission status</Link></div>}
             {error && <p className="mt-6" role="alert">{error}</p>}
