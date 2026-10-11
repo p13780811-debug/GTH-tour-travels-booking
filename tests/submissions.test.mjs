@@ -79,3 +79,29 @@ test('unknown registry reference is rejected without creating a duplicate submis
  assert.equal(response.status, 400);
  assert.equal(inserted, false);
 });
+
+
+test('global submission preserves currency and normalizes square metres to square feet', async () => {
+ let inserted;
+ const submissionsQuery = { async insert(payload) { inserted = payload; return { error: null } } };
+ const route = load('src/app/api/real-estate/submissions/route.ts', {
+  '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: () => submissionsQuery } }) },
+  '@/lib/security/request': request,
+  '@/lib/security/validators': validators,
+  '@/lib/security/rate-limit': { enforceRateLimit: async () => {} },
+ });
+ const response = await route.POST(new Request('http://localhost/api/real-estate/submissions', {
+  method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+   title: 'Dubai Residence', country: 'United Arab Emirates', city: 'Dubai', location: 'Dubai Marina',
+   description: 'Reviewed inventory submission with global currency and metric area.',
+   property_type: 'Apartment', listing_type: 'buy', submitter_role: 'developer',
+   currency: 'AED', price_amount: '2500000', bedrooms: '2', bathrooms: '2',
+   area_value: '100', area_unit: 'sqm',
+  }),
+ }));
+ assert.equal(response.status, 201);
+ assert.equal(inserted.currency, 'AED');
+ assert.equal(inserted.price_amount, 2500000);
+ assert.equal(inserted.area_sqft, 1076);
+});
