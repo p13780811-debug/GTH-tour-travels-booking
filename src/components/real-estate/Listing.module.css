@@ -237,3 +237,152 @@
 .adProjects .action { margin-top: 12px; }
 
 .galleryEmpty { min-height: 160px; display: grid; }
+
+
+/* Global real-estate discovery */
+.globalMarkets,
+.trustSection {
+  margin-top: 56px;
+}
+
+.sectionEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.marketGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.marketCard {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: var(--shadow);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.marketCard:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+  box-shadow: var(--shadow-hover);
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.trustGrid article {
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.registryPlaceholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 40%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card) 92%, transparent), var(--bg));
+}
+
+.registryPlaceholder::before,
+.registryPlaceholder::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.registryPlaceholder::before {
+  width: 220px;
+  height: 220px;
+}
+
+.registryPlaceholder::after {
+  width: 320px;
+  height: 320px;
+  opacity: .45;
+}
+
+.registryPlaceholderContent {
+  position: relative;
+  z-index: 1;
+  max-width: 240px;
+  text-align: center;
+  padding: 28px;
+}
+
+.registryPlaceholderMark {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+.trustPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.trustPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1023px) {
+  .marketGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .globalMarkets,
+  .trustSection { margin-top: 42px; }
+  .sectionHeadingRow { align-items: start; flex-direction: column; }
+  .marketGrid,
+  .trustGrid { grid-template-columns: 1fr; }
+  .marketCard { min-height: 160px; }
+}
