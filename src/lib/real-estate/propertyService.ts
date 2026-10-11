@@ -44,6 +44,7 @@ type SearchFilters = {
     featured?: boolean
     verified?: boolean
     sort?: "latest" | "price_high" | "price_low" | "ai"
+    currency?: string
     limit?: number
     page?: number
 }
@@ -214,7 +215,15 @@ export const transformProperty = (p: any) => {
     const inventoryMinPrice = safeNumber(p.inventory_min_price)
     const inventoryMaxPrice = safeNumber(p.inventory_max_price)
     const inventoryCount = safeNumber(p.active_inventory_count)
+    const inventoryCurrency = normalizeText(p.inventory_currency).toUpperCase()
     const price = inventoryMinPrice || safeNumber(p.price)
+    const formatMoney = (amount: number, currency: string) => {
+        try {
+            return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount)
+        } catch {
+            return `${currency} ${new Intl.NumberFormat("en").format(amount)}`
+        }
+    }
 
     const aiScore =
         safeNumber(p.ai_score ?? p.intelligence_score)
@@ -287,7 +296,7 @@ export const transformProperty = (p: any) => {
         price,
 
         formatted_price: inventoryMinPrice
-            ? `From ₹${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(inventoryMinPrice)}`
+            ? `From ${formatMoney(inventoryMinPrice, inventoryCurrency || "INR")}`
             : registryOnly && !normalizeText(p.price)
                 ? "Not published in registry"
                 : normalizeText(p.price) || "Price on request",
@@ -295,7 +304,7 @@ export const transformProperty = (p: any) => {
         active_inventory_count: inventoryCount,
         inventory_min_price: inventoryMinPrice || null,
         inventory_max_price: inventoryMaxPrice || null,
-        inventory_currency: normalizeText(p.inventory_currency) || null,
+        inventory_currency: inventoryCurrency || null,
         inventory_min_bedrooms: safeNumber(p.inventory_min_bedrooms) || null,
         inventory_max_bedrooms: safeNumber(p.inventory_max_bedrooms) || null,
         inventory_min_bathrooms: safeNumber(p.inventory_min_bathrooms) || null,
@@ -417,8 +426,10 @@ export const PropertyService = {
         const urlMinPrice = Number(browserParams?.get("minPrice"))
         const urlMaxPrice = Number(browserParams?.get("maxPrice"))
         const urlSort = browserParams?.get("sort")
+        const urlCurrency = (browserParams?.get("currency") || "").toUpperCase()
         const minPrice = filters.minPrice || (Number.isFinite(urlMinPrice) && urlMinPrice > 0 ? urlMinPrice : undefined)
         const maxPrice = filters.maxPrice || (Number.isFinite(urlMaxPrice) && urlMaxPrice > 0 ? urlMaxPrice : undefined)
+        const currency = (filters.currency || urlCurrency || "").toUpperCase()
         const sortMode = ["latest","ai","price_low","price_high"].includes(urlSort || "")
             ? urlSort as "latest" | "ai" | "price_low" | "price_high"
             : filters.sort || "latest"
@@ -430,6 +441,7 @@ export const PropertyService = {
             search_type: filters.type || null,
             search_listing: filters.listing || null,
             search_bedrooms: filters.bedrooms || null,
+            search_currency: currency || null,
             min_price: minPrice || null,
             max_price: maxPrice || null,
             sort_mode: sortMode,
