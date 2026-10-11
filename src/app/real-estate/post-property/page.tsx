@@ -57,7 +57,7 @@ export default function PostPropertyPage() {
         }}>
             <fieldset disabled={busy} className="grid gap-5"><legend className="font-bold text-xl mb-5">Property details</legend>
                 <div>
-                    <label htmlFor="listing-rera" className="block font-medium mb-2">MahaRERA registration number <span className="opacity-60">(optional)</span></label>
+                    <label htmlFor="listing-rera" className="block font-medium mb-2">MahaRERA registration number <span className="opacity-60">(India · optional)</span></label>
                     <input id="listing-rera" name="registry_reference" maxLength={12} pattern="P[0-9]{11}" placeholder="P51800000000" aria-describedby="listing-rera-help" className="gth-glass rounded-xl p-3 w-full uppercase" />
                     <p id="listing-rera-help" className="opacity-70 text-sm mt-2">When this matches a GTH PRO registry project, the reviewed inventory will attach to that project instead of creating a duplicate project.</p>
                 </div>
@@ -69,10 +69,11 @@ export default function PostPropertyPage() {
                     <label>Currency<select name="currency" defaultValue="INR" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2">{["INR","AED","USD","GBP","EUR","SGD"].map(value => <option key={value}>{value}</option>)}</select></label>
                     <label>Current asking price<input name="price_amount" type="number" min="1" step="0.01" inputMode="decimal" placeholder="17500000" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
                 </div>
-                <div className="grid sm:grid-cols-3 gap-5">
+                <div className="grid sm:grid-cols-4 gap-5">
                     <label>Bedrooms<input name="bedrooms" type="number" min="0" max="20" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
                     <label>Bathrooms<input name="bathrooms" type="number" min="0" max="20" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
-                    <label>Area (sq ft)<input name="area_sqft" type="number" min="1" max="1000000" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
+                    <label>Area<input name="area_value" type="number" min="1" max="1000000" step="0.01" inputMode="decimal" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
+                    <label>Area unit<select name="area_unit" defaultValue="sqft" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="sqft">ft²</option><option value="sqm">m²</option></select></label>
                 </div>
                 <div>
                     <label htmlFor="listing-media" className="block font-medium mb-2">Property photos <span className="opacity-60">(optional, max 8)</span></label>
