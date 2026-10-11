@@ -41,3 +41,75 @@ left join lateral (
   where i.project_id = p.id
     and i.status = 'published'
 ) s on true;
+
+
+revoke all on table public.marketplace_public_projects from public;
+grant select on table public.marketplace_public_projects to anon, authenticated, service_role;
+
+create or replace function public.search_marketplace_projects(
+  search_query text default null,
+  search_country text default null,
+  search_city text default null,
+  search_type text default null,
+  search_listing text default null,
+  search_bedrooms integer default null,
+  min_price numeric default null,
+  max_price numeric default null,
+  sort_mode text default 'latest',
+  page_limit integer default 24,
+  page_offset integer default 0
+)
+returns setof public.marketplace_public_projects
+language sql
+stable
+security invoker
+set search_path = ''
+as $function$
+  select v.*
+  from public.marketplace_public_projects v
+  where
+    (search_query is null or btrim(search_query) = '' or
+      v.title ilike '%' || search_query || '%' or
+      v.city ilike '%' || search_query || '%' or
+      v.location ilike '%' || search_query || '%' or
+      coalesce(v.developer,'') ilike '%' || search_query || '%' or
+      coalesce(v.rera_id,'') ilike '%' || search_query || '%')
+    and (search_country is null or btrim(search_country) = '' or v.country ilike '%' || search_country || '%')
+    and (search_city is null or btrim(search_city) = '' or v.city ilike '%' || search_city || '%')
+    and (
+      (
+        search_type is null and search_listing is null and search_bedrooms is null
+        and min_price is null and max_price is null
+      )
+      or exists (
+        select 1 from public.property_inventory i
+        where i.project_id = v.id
+          and i.status = 'published'
+          and (search_type is null or i.property_type = search_type)
+          and (search_listing is null or i.listing_type = search_listing)
+          and (search_bedrooms is null or i.bedrooms = search_bedrooms)
+          and (min_price is null or i.price_amount >= min_price)
+          and (max_price is null or i.price_amount <= max_price)
+      )
+      or (
+        v.active_inventory_count = 0
+        and v.source_type is distinct from 'registry'
+        and min_price is null and max_price is null
+        and (search_type is null or v.property_type = search_type)
+        and (search_listing is null or lower(v.listing_type) = lower(search_listing))
+        and (search_bedrooms is null or v.bedrooms = search_bedrooms)
+      )
+    )
+  order by
+    case when sort_mode = 'price_low' then v.inventory_min_price end asc nulls last,
+    case when sort_mode = 'price_high' then v.inventory_max_price end desc nulls last,
+    case when sort_mode = 'ai' then v.final_score end desc nulls last,
+    case when sort_mode = 'latest' then coalesce(v.inventory_latest_at, v.created_at) end desc nulls last,
+    v.id desc
+  limit least(greatest(coalesce(page_limit,24),1),100)
+  offset least(greatest(coalesce(page_offset,0),0),100000);
+$function$;
+
+revoke all on function public.search_marketplace_projects(text,text,text,text,text,integer,numeric,numeric,text,integer,integer) from public;
+grant execute on function public.search_marketplace_projects(text,text,text,text,text,integer,numeric,numeric,text,integer,integer)
+  to anon, authenticated, service_role;
