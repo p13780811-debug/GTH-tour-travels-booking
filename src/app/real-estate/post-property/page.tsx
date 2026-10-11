@@ -43,7 +43,7 @@ export default function PostPropertyPage() {
                     for (const file of files) {
                         const body = new FormData()
                         body.append("file", file)
-                        const upload = await readApiJson(await fetch("/api/upload", { method:"POST", headers:{Authorization:`Bearer ${data.session.access_token}`}, body }))
+                        const upload = await readApiJson<{ url: string }>(await fetch("/api/upload", { method:"POST", headers:{Authorization:`Bearer ${data.session.access_token}`}, body }))
                         if (!upload || typeof upload.url !== "string") throw new Error("Image upload failed.")
                         mediaUrls.push(upload.url)
                     }
