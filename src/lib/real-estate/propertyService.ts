@@ -396,6 +396,15 @@ export const PropertyService = {
         const page = Math.max(1, Math.floor(filters.page || 1))
         const offset = (page - 1) * limit
         const term = filters.query?.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120) || null
+        const browserParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
+        const urlMinPrice = Number(browserParams?.get("minPrice"))
+        const urlMaxPrice = Number(browserParams?.get("maxPrice"))
+        const urlSort = browserParams?.get("sort")
+        const minPrice = filters.minPrice || (Number.isFinite(urlMinPrice) && urlMinPrice > 0 ? urlMinPrice : undefined)
+        const maxPrice = filters.maxPrice || (Number.isFinite(urlMaxPrice) && urlMaxPrice > 0 ? urlMaxPrice : undefined)
+        const sortMode = ["latest","ai","price_low","price_high"].includes(urlSort || "")
+            ? urlSort as "latest" | "ai" | "price_low" | "price_high"
+            : filters.sort || "latest"
 
         const { data, error } = await supabase.rpc("search_marketplace_projects", {
             search_query: term,
@@ -404,9 +413,9 @@ export const PropertyService = {
             search_type: filters.type || null,
             search_listing: filters.listing || null,
             search_bedrooms: filters.bedrooms || null,
-            min_price: filters.minPrice || null,
-            max_price: filters.maxPrice || null,
-            sort_mode: filters.sort || "latest",
+            min_price: minPrice || null,
+            max_price: maxPrice || null,
+            sort_mode: sortMode,
             page_limit: limit,
             page_offset: offset,
         })
