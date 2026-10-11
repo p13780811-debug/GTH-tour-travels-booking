@@ -95,7 +95,7 @@ export default function RealEstatePage() {
     }
     const reset = () => {
         const url = new URL(window.location.href)
-        for (const key of ["query","page","country","city","type","listing","bedrooms","sort"]) url.searchParams.delete(key)
+        for (const key of ["query","page","country","city","type","listing","bedrooms","minPrice","maxPrice","sort"]) url.searchParams.delete(key)
         window.history.replaceState(null, "", url)
         window.dispatchEvent(new Event("gth-discovery-filters"))
         load(1)
