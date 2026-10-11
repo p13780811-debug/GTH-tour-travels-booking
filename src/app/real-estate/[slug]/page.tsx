@@ -2,6 +2,7 @@ import { cache } from "react"
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { PropertyService } from "@/lib/real-estate/propertyService"
+import { supabase } from "@/lib/supabase"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
 
 const readProperty = cache((slug: string) => PropertyService.getBySlug(slug))
@@ -27,6 +28,19 @@ export default async function PropertyPage({ params }: PageProps) {
     const { slug } = await params
     const property = await readProperty(slug)
     let related: any[] = []
+    let inventory: any[] = []
+    if (property?.id) {
+        try {
+            const { data, error } = await supabase
+                .from("property_inventory")
+                .select("id,listing_type,property_type,bedrooms,bathrooms,area_sqft,price_amount,currency,description,submitter_role,verified,published_at")
+                .eq("project_id", property.id)
+                .eq("status", "published")
+                .order("published_at", { ascending: false })
+                .limit(50)
+            if (!error && Array.isArray(data)) inventory = data
+        } catch { /* Inventory must not block the project page. */ }
+    }
     if (property?.city && property.city !== "City not provided") {
         try { related = (await PropertyService.getAll({ city: property.city, limit: 7, sort: "latest" })).filter((item: any) => item.slug !== slug).slice(0, 6) }
         catch { /* Related inventory must not block the current listing. */ }
@@ -55,6 +69,6 @@ export default async function PropertyPage({ params }: PageProps) {
     } : null
     return <>
         {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
-        <PropertyDetailClient slug={slug} initialData={property} related={related} />
+        <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} />
     </>
 }
