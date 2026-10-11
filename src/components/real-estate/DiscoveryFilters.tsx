@@ -22,6 +22,10 @@ export default function DiscoveryFilters({ onApply }: { onApply: () => void }) {
   <summary>Refine your search <span className="text-sm font-normal opacity-70">· Location, type, bedrooms & budget</span></summary>
   <form className={styles.filterForm} onSubmit={event => {
    event.preventDefault()
+   if ((filters.minPrice || filters.maxPrice) && !filters.currency) {
+    setFilters(current => ({...current, currency:"INR"}))
+    return
+   }
    const url = new URL(window.location.href)
    for (const [key,value] of Object.entries(filters)) {
     if (value && !(key === "sort" && value === "latest")) url.searchParams.set(key,value)
@@ -40,7 +44,7 @@ export default function DiscoveryFilters({ onApply }: { onApply: () => void }) {
     <button className={`gth-btn-gold ${styles.action}`}>Apply filters</button>
     <button type="button" className={`gth-btn ${styles.action}`} onClick={() => { const url = new URL(window.location.href); for (const key of [...Object.keys(initial), "query", "page"]) url.searchParams.delete(key); window.history.replaceState(null,"",url); window.dispatchEvent(new Event("gth-discovery-filters")); onApply() }}>Reset filters</button>
    </div>
-   <p className="text-sm opacity-70 col-span-full">Budget filters compare only published inventory in the selected currency; GTH PRO does not apply hidden FX conversion. Registry-only projects without matching inventory are not presented as priced listings.</p>
+   <p className="text-sm opacity-70 col-span-full">{(filters.minPrice || filters.maxPrice) && !filters.currency ? "Choose a currency before applying a budget. INR has been selected for you; review it, then apply again." : "Budget filters compare only published inventory in the selected currency; GTH PRO does not apply hidden FX conversion. Registry-only projects without matching inventory are not presented as priced listings."}</p>
   </form>
  </details>
 }
