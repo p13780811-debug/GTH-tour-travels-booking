@@ -14,7 +14,7 @@ export default function EnquiryForm({ propertyId, mode = "listing" }: { property
  return <form aria-busy={busy} className="gth-glass rounded-2xl p-4 space-y-3" onSubmit={async event => {
   event.preventDefault(); if (busy) return; setBusy(true); setMessage(""); setFailed(false)
   try {
-   await readApiJson(await fetch("/api/real-estate/enquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property_id: propertyId, phone }) }))
+   await readApiJson(await fetch("/api/real-estate/enquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ property_id: propertyId, phone, source: registry ? "registry_project_interest" : "property_enquiry" }) }))
    setMessage(registry ? "Request received. GTH PRO will use this interest to source current project information when available." : "Enquiry received. A visit is confirmed only after the listing contact responds.")
    setPhone("")
   } catch (error) { setFailed(true); setMessage(error instanceof Error ? error.message : "Enquiry could not be sent.") }
