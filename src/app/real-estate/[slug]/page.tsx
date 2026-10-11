@@ -33,7 +33,7 @@ export default async function PropertyPage({ params }: PageProps) {
         try {
             const { data, error } = await supabase
                 .from("property_inventory")
-                .select("id,listing_type,property_type,bedrooms,bathrooms,area_sqft,price_amount,currency,description,submitter_role,verified,published_at,media_urls")
+                .select("id,project_id,listing_type,property_type,bedrooms,bathrooms,area_sqft,price_amount,currency,description,submitter_role,verified,published_at,media_urls")
                 .eq("project_id", property.id)
                 .eq("status", "published")
                 .order("published_at", { ascending: false })
