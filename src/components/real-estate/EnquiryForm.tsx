@@ -3,7 +3,7 @@ import { useId, useState } from "react"
 import { readApiJson } from "@/lib/api-response"
 import styles from "./Listing.module.css"
 
-export default function EnquiryForm({ propertyId, mode = "listing" }: { propertyId: number; mode?: "listing" | "registry" }) {
+export default function EnquiryForm({ propertyId, inventoryId, mode = "listing" }: { propertyId: number; inventoryId?: string; mode?: "listing" | "registry" | "inventory" }) {
  const formId = useId()
  const [phone, setPhone] = useState("")
  const [busy, setBusy] = useState(false)
