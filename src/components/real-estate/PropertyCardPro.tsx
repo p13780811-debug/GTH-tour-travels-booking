@@ -21,7 +21,8 @@ export default function PropertyCardPro({ p }: any) {
     <p className="gold-text text-2xl font-bold mt-5">{p.formatted_price || "Price on request"}</p>
     <dl className={styles.cardFacts}>{[{label:"Beds",value:p.beds || "—",Icon:BedDouble},{label:"Baths",value:p.baths || "—",Icon:Bath},{label:"Reported area",value:p.sqft ? `${p.sqft} ft²` : "—",Icon:Maximize}].map(({label,value,Icon}) => <div key={label}><Icon size={16} className="gold-text" aria-hidden="true" /><dt className="sr-only">{label}</dt><dd>{value} {label === "Beds" ? "beds" : label === "Baths" ? "baths" : ""}</dd></div>)}</dl>
    </>}
-   <div className={styles.cardFooter}><Link href={detailUrl} className="text-sm underline">{registryOnly ? "View registry record" : "View details"}</Link>{registryOnly ? (officialSource ? <a href={officialSource} target="_blank" rel="noopener noreferrer" className={`gth-btn ${styles.action}`}>Official MahaRERA</a> : null) : <Link href={`${detailUrl}#enquiry`} className={`gth-btn-gold ${styles.action}`}>Enquire</Link>}</div>
+   <div className={styles.cardFooter}><Link href={detailUrl} className="text-sm underline">{registryOnly ? "View registry record" : "View details"}</Link>{registryOnly ? <Link href={`${detailUrl}#enquiry`} className={`gth-btn-gold ${styles.action}`}>Request details</Link> : <Link href={`${detailUrl}#enquiry`} className={`gth-btn-gold ${styles.action}`}>Enquire</Link>}</div>
+   {registryOnly && officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className="text-xs underline opacity-70 mt-3 self-start">Official MahaRERA source</a>}
   </div>
  </article>
 }
