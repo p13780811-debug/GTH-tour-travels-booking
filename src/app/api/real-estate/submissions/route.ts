@@ -6,6 +6,7 @@ import { enforceRateLimit } from "@/lib/security/rate-limit";
 const PROPERTY_TYPES = ["Apartment", "Villa", "Penthouse", "Commercial", "Plot"] as const;
 const LISTING_TYPES = ["buy", "rent"] as const;
 const SUBMITTER_ROLES = ["owner", "agent", "developer", "other"] as const;
+const CURRENCIES = ["INR", "AED", "USD", "GBP", "EUR", "SGD"] as const;
 
 function optionalInteger(value: unknown, options: { min: number; max: number }) {
   if (value === undefined || value === null || value === "") return null;
@@ -86,6 +87,11 @@ export async function POST(req: Request) {
       throw new RequestError("Select your relationship to the property", 400);
     }
 
+    const currency = String(body.currency || "INR").toUpperCase();
+    if (!CURRENCIES.includes(currency as (typeof CURRENCIES)[number])) {
+      throw new RequestError("Unsupported listing currency", 400);
+    }
+
     const registryReference = typeof body.registry_reference === "string"
       ? body.registry_reference.trim().toUpperCase()
       : "";
@@ -122,7 +128,7 @@ export async function POST(req: Request) {
       target_project_id: targetProjectId,
       registry_reference: registryReference || null,
       price_amount: optionalMoney(body.price_amount),
-      currency: "INR",
+      currency,
       bedrooms: optionalInteger(body.bedrooms, { min: 0, max: 20 }),
       bathrooms: optionalInteger(body.bathrooms, { min: 0, max: 20 }),
       area_sqft: optionalInteger(body.area_sqft, { min: 1, max: 1000000 }),
