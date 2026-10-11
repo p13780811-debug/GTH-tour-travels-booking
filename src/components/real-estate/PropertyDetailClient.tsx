@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import JourneyNav from "./JourneyNav"
-import { MapPin, Share2, ArrowLeft, Building2, MessageSquare } from "lucide-react"
+import { MapPin, Share2, ArrowLeft, Building2, MessageSquare, BadgeCheck, FileCheck2 } from "lucide-react"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
 import PropertyImage from "./PropertyImage"
@@ -53,7 +53,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         ["Listing purpose", property.listing_type === "buy" ? "For sale" : property.listing_type === "rent" ? "For rent" : "Not provided"],
         ["Reported bedrooms", property.beds || "Not provided"],
         ["Reported bathrooms", property.baths || "Not provided"],
-        ["Reported area", property.sqft ? `${property.sqft} ft²` : "Not provided"],
+        ["Reported area", property.sqft ? `${property.sqft} ft² · ${Math.round(Number(property.sqft) * 0.092903)} m²` : "Not provided"],
     ]
     const share = async () => {
         setShareMessage("")
@@ -71,7 +71,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         </div>
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
         <header className={styles.projectHeader}>
-            <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{property.location || property.city || "Location not provided"}</p></div>
+            <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{[property.location || property.city, property.country && property.country !== "Country not provided" ? property.country : ""].filter(Boolean).join(" · ") || "Location not provided"}</p><div className={styles.trustPills}>{isRegistryProject && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Registry record</span>}{hasInventory && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Reviewed inventory</span>}{property.verified && <span className={styles.trustPill}><BadgeCheck size={14} aria-hidden="true" />GTH Verified</span>}</div></div>
             {isRegistryProject ? <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Project status</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{hasInventory ? `${inventory.length} active ${inventory.length === 1 ? "listing" : "listings"}` : "Registry only"}</p><p className="text-sm opacity-70 mt-3">{hasInventory ? "Published inventory below is separate from the official MahaRERA registry record." : "No active unit inventory, current price or listing contact has been supplied to GTH PRO."}</p></div> : <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Listed price</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{property.formatted_price || "Price on request"}</p><p className="text-sm opacity-70 mt-3">Confirm current pricing and availability.</p></div>}
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
@@ -79,7 +79,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
                 <section aria-label="Property gallery" className="gth-glass rounded-3xl overflow-hidden">
                     <div className={images.length ? styles.gallery : styles.galleryEmpty}><PropertyImage key={image || slug} slug={slug} src={image} alt={property.title} className="h-full w-full" /></div>
                     {images.length > 1 && <div className="flex gap-3 overflow-x-auto p-4">{images.map((url, index) => <button key={url} aria-label={`View approved image ${index + 1}`} aria-pressed={image === url} onClick={() => setSelectedImage(url)} className="gth-glass rounded-xl p-2 shrink-0 w-24 h-20"><PropertyImage slug={slug} src={url} alt={`Property view ${index + 1}`} className="h-full w-full" /></button>)}</div>}
-                    <p className="p-4 text-sm opacity-70">{images.length ? "Approved listing media. Architectural renders are labeled separately." : "No approved property photos are available for this listing yet."}</p>
+                    <p className="p-4 text-sm opacity-70">{images.length ? "Approved listing media. Architectural renders are labeled separately." : "No approved listing media is available yet. A neutral project cover is shown instead of unrelated imagery."}</p>
                 </section>
                 <nav aria-label="Project sections" className={styles.sectionNav}><a href="#overview">Overview</a>{hasInventory && <a href="#inventory">Active inventory</a>}<a href="#recorded-details">Project records</a><a href="#location">Location</a><a href="#enquiry">{isRegistryProject ? "Request details" : "Enquire"}</a></nav>
                 <section id="overview" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24">
@@ -91,7 +91,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
                 </section>
                 <ProjectInventory items={inventory} />
                 <div id="recorded-details" className="scroll-mt-24"><RegistryDetails property={property} /></div>
-                <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><h2 className="text-2xl font-bold">Location</h2><p className="opacity-70 mt-3">{property.location || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
+                <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><h2 className="text-2xl font-bold">Location</h2><p className="opacity-70 mt-3">{[property.location || property.city, property.state, property.country].filter((value:any) => value && !/not provided/i.test(String(value))).join(" · ") || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
             </div>
             <aside className={styles.enquiryPanel}>
                 {isRegistryProject ? <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><p className="gold-text text-xs uppercase tracking-widest mt-4">{hasInventory ? "Inventory interest" : "Project interest"}</p><h2 className="text-2xl font-bold mt-3">{hasInventory ? "Request current availability" : "Request current project details"}</h2><p className="opacity-70 leading-7 my-4">{hasInventory ? "Tell GTH PRO you want current availability or contact information for the published inventory on this registry project." : "This is a public registry profile, not an active seller listing. Tell GTH PRO you want current pricing, inventory or contact information and we can use that demand signal to source updated project data."}</p><EnquiryForm propertyId={property.id} mode="registry" />{officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className={`gth-btn ${styles.action} mt-4`}>Open official MahaRERA</a>}</section> : <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><h2 className="text-2xl font-bold mt-4">Take the next step</h2><p className="opacity-70 leading-7 my-4">Request current project details, pricing or a visit. Submission sends an enquiry; it does not reserve a property.</p><EnquiryForm propertyId={property.id} /></section>}
