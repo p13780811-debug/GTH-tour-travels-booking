@@ -191,7 +191,11 @@ const calculateFraudScore = (p: any) => {
 const generateDescription = (p: any) => {
     const title = normalizeText(p.title) || "Property listing"
     const location = normalizeText(p.city || p.location)
+    const inventoryCount = safeNumber(p.active_inventory_count)
     if (isRegistryOnly(p)) {
+        if (inventoryCount > 0) {
+            return `${title}${location ? ` in ${location}` : ""}. Public MahaRERA project with reviewed marketplace inventory published separately by GTH PRO.`
+        }
         return `${title}${location ? ` in ${location}` : ""}. Public MahaRERA registry record; current pricing, availability and listing inventory have not been supplied to GTH PRO.`
     }
     return `${title}${location ? ` in ${location}` : ""}. Contact the listing agent to confirm availability and details.`
