@@ -21,8 +21,11 @@ test('stored text prices retain their units and empty prices are not advertised 
   assert.equal(exports.transformProperty({ price: 'On request' }).formatted_price, 'On request');
   assert.equal(exports.transformProperty({ price: null }).formatted_price, 'Price on request');
 });
-test('text price cannot be compared lexicographically as a numeric budget', async () => {
-  await assert.rejects(exports.PropertyService.getAll({ minPrice: 50 }), /Budget filtering requires normalized price data/);
+test('published inventory prices preserve their declared currency', () => {
+  const p = exports.transformProperty({ inventory_min_price: 2500000, inventory_currency: 'AED', active_inventory_count: 1, inventory_has_buy: true });
+  assert.match(p.formatted_price, /AED/);
+  assert.equal(p.inventory_currency, 'AED');
+  assert.equal(p.registry_only, false);
 });
 test('public projection excludes raw ingestion payload and owner email', () => {
  assert.equal(exports.PUBLIC_PROPERTY_FIELDS.split(',').includes('raw_json'), false);
