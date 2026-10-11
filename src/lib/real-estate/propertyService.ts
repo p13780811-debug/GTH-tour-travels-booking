@@ -240,8 +240,9 @@ export const transformProperty = (p: any) => {
             generateDescription(p),
 
         image:
-            normalizeText(p.image) ||
-            "/placeholder.jpg",
+            inventoryCount > 0 && normalizeText(p.inventory_image)
+                ? normalizeText(p.inventory_image)
+                : normalizeText(p.image) || "/placeholder.jpg",
 
         gallery:
             Array.isArray(p.gallery)
