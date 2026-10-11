@@ -219,7 +219,7 @@ export const transformProperty = (p: any) => {
         safeNumber(p.fraud_score)
 
     const boosted = isBoostActive(p)
-    const registryOnly = isRegistryOnly(p)
+    const registryOnly = isRegistryOnly(p) && inventoryCount === 0
 
     return {
 
@@ -261,12 +261,18 @@ export const transformProperty = (p: any) => {
             "Country not provided",
 
         property_type:
-            normalizeText(p.property_type) ||
-            "Type not provided",
+            inventoryCount > 0 && Array.isArray(p.inventory_property_types) && p.inventory_property_types.length === 1
+                ? normalizeText(p.inventory_property_types[0])
+                : normalizeText(p.property_type) || "Type not provided",
 
         listing_type:
-            normalizeText(p.listing_type) ||
-            "Purpose not provided",
+            inventoryCount > 0
+                ? p.inventory_has_buy && !p.inventory_has_rent
+                    ? "buy"
+                    : p.inventory_has_rent && !p.inventory_has_buy
+                        ? "rent"
+                        : "Purpose varies"
+                : normalizeText(p.listing_type) || "Purpose not provided",
 
         amenities:
             Array.isArray(p.amenities)
@@ -297,13 +303,19 @@ export const transformProperty = (p: any) => {
         inventory_image: normalizeText(p.inventory_image) || "",
 
         beds:
-            safeNumber(p.bedrooms ?? p.beds),
+            inventoryCount > 0
+                ? safeNumber(p.inventory_min_bedrooms)
+                : safeNumber(p.bedrooms ?? p.beds),
 
         baths:
-            safeNumber(p.bathrooms ?? p.baths),
+            inventoryCount > 0
+                ? safeNumber(p.inventory_min_bathrooms)
+                : safeNumber(p.bathrooms ?? p.baths),
 
         sqft:
-            safeNumber(p.area_sqft ?? p.sqft),
+            inventoryCount > 0
+                ? safeNumber(p.inventory_min_area_sqft)
+                : safeNumber(p.area_sqft ?? p.sqft),
 
         views:
             safeNumber(p.views),
