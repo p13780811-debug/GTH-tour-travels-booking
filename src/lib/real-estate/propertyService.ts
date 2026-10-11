@@ -207,7 +207,10 @@ export const transformProperty = (p: any) => {
         CITY_COORDS[cityKey] ||
         { lat: undefined, lng: undefined }
 
-    const price = safeNumber(p.price)
+    const inventoryMinPrice = safeNumber(p.inventory_min_price)
+    const inventoryMaxPrice = safeNumber(p.inventory_max_price)
+    const inventoryCount = safeNumber(p.active_inventory_count)
+    const price = inventoryMinPrice || safeNumber(p.price)
 
     const aiScore =
         safeNumber(p.ai_score ?? p.intelligence_score)
@@ -272,9 +275,26 @@ export const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price: registryOnly && !normalizeText(p.price)
-            ? "Not published in registry"
-            : normalizeText(p.price) || "Price on request",
+        formatted_price: inventoryMinPrice
+            ? `From ₹${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(inventoryMinPrice)}`
+            : registryOnly && !normalizeText(p.price)
+                ? "Not published in registry"
+                : normalizeText(p.price) || "Price on request",
+
+        active_inventory_count: inventoryCount,
+        inventory_min_price: inventoryMinPrice || null,
+        inventory_max_price: inventoryMaxPrice || null,
+        inventory_currency: normalizeText(p.inventory_currency) || null,
+        inventory_min_bedrooms: safeNumber(p.inventory_min_bedrooms) || null,
+        inventory_max_bedrooms: safeNumber(p.inventory_max_bedrooms) || null,
+        inventory_min_bathrooms: safeNumber(p.inventory_min_bathrooms) || null,
+        inventory_max_bathrooms: safeNumber(p.inventory_max_bathrooms) || null,
+        inventory_min_area_sqft: safeNumber(p.inventory_min_area_sqft) || null,
+        inventory_max_area_sqft: safeNumber(p.inventory_max_area_sqft) || null,
+        inventory_has_buy: p.inventory_has_buy === true,
+        inventory_has_rent: p.inventory_has_rent === true,
+        inventory_property_types: Array.isArray(p.inventory_property_types) ? p.inventory_property_types : [],
+        inventory_image: normalizeText(p.inventory_image) || "",
 
         beds:
             safeNumber(p.bedrooms ?? p.beds),
@@ -368,132 +388,40 @@ export const PropertyService = {
 
     async getAll(filters: SearchFilters = {}) {
 
-        const cacheKey =
-            `all-${JSON.stringify(filters)}`
-
+        const cacheKey = `all-${JSON.stringify(filters)}`
         const cached = getCache(cacheKey)
-
         if (cached) return cached
 
         const limit = Math.min(100, Math.max(1, Math.floor(filters.limit || 24)))
-
         const page = Math.max(1, Math.floor(filters.page || 1))
+        const offset = (page - 1) * limit
+        const term = filters.query?.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120) || null
 
-        const from = (page - 1) * limit
-
-        // The live schema stores price as text. Never compare/order it as a number.
-        if ((filters.minPrice ?? 0) > 0 || (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) || filters.sort === "price_high" || filters.sort === "price_low") {
-            throw new Error("Budget filtering requires normalized price data. Search by city or property type for now.")
-        }
-
-        let query = supabase
-            .from("properties")
-            .select(PUBLIC_PROPERTY_FIELDS)
-            .range(from, from + limit - 1)
-
-        if (filters.city) {
-            query = query.ilike(
-                "city",
-                `%${filters.city}%`
-            )
-        }
-
-        if (filters.country) {
-            query = query.ilike(
-                "country",
-                `%${filters.country}%`
-            )
-        }
-
-        if (filters.type) {
-            query = query.eq(
-                "property_type",
-                filters.type
-            )
-        }
-
-        if (filters.listing) query = query.eq("listing_type", filters.listing)
-        if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms)
-
-        if (filters.featured) {
-            query = query.eq(
-                "is_featured",
-                true
-            )
-        }
-
-        if (filters.verified) query = query.eq("status", "verified")
-        if (filters.query) {
-            const term = filters.query.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120)
-            if (term) query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%,location.ilike.%${term}%`)
-        }
-        const orderColumn = filters.sort === "latest" ? "created_at" : "final_score"
-        query = query.order(orderColumn, { ascending: false, nullsFirst: false }).order("id", { ascending: false })
-
-        const { data, error } =
-            await query
+        const { data, error } = await supabase.rpc("search_marketplace_projects", {
+            search_query: term,
+            search_country: filters.country || null,
+            search_city: filters.city || null,
+            search_type: filters.type || null,
+            search_listing: filters.listing || null,
+            search_bedrooms: filters.bedrooms || null,
+            min_price: filters.minPrice || null,
+            max_price: filters.maxPrice || null,
+            sort_mode: filters.sort || "latest",
+            page_limit: limit,
+            page_offset: offset,
+        })
 
         if (error) {
-
-            console.error(
-                "❌ GET ALL FAILED:",
-                error.message
-            )
-
+            console.error("❌ MARKETPLACE SEARCH FAILED:", error.message)
             throw new Error("Property inventory is temporarily unavailable. Please retry.")
         }
 
-        let transformed =
-            (data || []).map(
-                transformProperty
-            )
+        let transformed = (data || []).map(transformProperty)
 
-        if (filters.minPrice) {
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.price >=
-                        filters.minPrice!
-                )
-        }
-
-        if (filters.maxPrice) {
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.price <=
-                        filters.maxPrice!
-                )
-        }
-
-        if (filters.verified) {
-            transformed =
-                transformed.filter(
-                    (p) => p.verified
-                )
-        }
-
-        switch (filters.sort) {
-
-            case "latest":
-                transformed.sort(
-                    (a, b) =>
-                        new Date(
-                            b.created_at
-                        ).getTime() -
-                        new Date(
-                            a.created_at
-                        ).getTime()
-                )
-                break
-
-            default:
-                transformed =
-                    smartSort(transformed)
-        }
+        if (filters.featured) transformed = transformed.filter((p:any) => p.is_featured)
+        if (filters.verified) transformed = transformed.filter((p:any) => p.verified)
 
         setCache(cacheKey, transformed)
-
         return transformed
     },
 
