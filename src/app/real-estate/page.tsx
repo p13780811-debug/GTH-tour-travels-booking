@@ -109,11 +109,10 @@ export default function RealEstatePage() {
         <div id="property-search" className="scroll-mt-24"><RealEstateHero query={query} setQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyCategory} /></div>
         <div className="gth-container">
             <section aria-label="Browse property categories" className={styles.browseBar}>{categories.map(category => <button key={category.value} aria-pressed={activeFilters.some(([key,value]) => (key === "type" || key === "listing") && value === category.value)} className={`gth-btn ${styles.action}`} onClick={() => applyCategory(category.value)} disabled={loading}>{category.label}</button>)}</section>
-            <GlobalMarkets />
-            <TrustStandard />
-            <SavedSearches />
             <DiscoveryFilters onApply={() => { clearPropertyCache(); load(1) }} />
+            <SavedSearches />
             {activeFilters.length > 0 && <div className={styles.filterChips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)} <span aria-hidden="true">×</span></button>)}<button onClick={reset}>Clear all</button></div>}
+            <GlobalMarkets />
             <section id="listing-results" className="scroll-mt-24 mt-10" aria-busy={loading}>
                 <header className="flex items-center justify-between gap-5 flex-wrap mb-6">
                     <div><p className="gold-text text-xs uppercase tracking-widest">Global property discovery</p><h2 className="text-3xl font-bold mt-2">Explore projects and listings</h2><p className="opacity-70 text-sm mt-2" role="status">{loading ? "Loading property records…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
@@ -126,6 +125,7 @@ export default function RealEstatePage() {
                 {!loading && !error && view === "list" && <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">{properties.map(property => <PropertyCardPro key={property.id} p={property} />)}</div>}
                 <nav aria-label="Property result pages" className="flex items-center justify-center gap-4 mt-10 flex-wrap"><button className={`gth-btn ${styles.action}`} disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button className={`gth-btn ${styles.action}`} disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
             </section>
+            <TrustStandard />
             <section className="mt-14" aria-labelledby="buyer-guide"><p className="gold-text text-xs uppercase tracking-widest">Before your next move</p><h2 id="buyer-guide" className="text-2xl font-bold mt-3">A clearer way to explore property</h2><div className={styles.guideGrid}>{[{title:"Review the records",text:"Check the registration reference, developer and recorded project details. Registration is not a guarantee of delivery."},{title:"Compare what matters",text:"Save listings and compare location, reported area and available specifications on this device."},{title:"Confirm before committing",text:"Ask for current pricing, legal documents and a site visit before making a payment or decision."}].map(item => <article key={item.title} className="gth-glass"><h3 className="font-bold">{item.title}</h3><p className="text-sm opacity-70 leading-7 mt-3">{item.text}</p></article>)}</div></section>
             <section className="gth-glass rounded-3xl p-6 md:p-8 mt-14 flex items-center justify-between gap-6 flex-wrap"><div><h2 className="text-2xl font-bold">Have a property to share?</h2><p className="opacity-70 mt-3">Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>Submit your listing</Link></section>
         </div>
