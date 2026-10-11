@@ -23,9 +23,38 @@ test('enquiry inserts only known columns and returns no customer data', async ()
  const client = { from(table) { if (table === 'properties') return { select(columns) { assert.equal(columns,'id'); return { eq(key,id) { assert.equal(id,8); return { limit: async () => ({ data: [{id:8}], error: null }) }; } }; } }; return { insert: async body => { inserted=body; return {error:null}; } }; } };
  const api = route(client, async (_req, scope) => assert.equal(scope,'enquiries'));
  const res = await api.POST(req({ property_id:8, phone:'+91 9876543210', status:'approved', extra:'ignored' }));
- assert.equal(res.status,201); assert.deepEqual(inserted,{ property_id:8, phone:'+91 9876543210' }); assert.deepEqual(await res.json(),{success:true});
+ assert.equal(res.status,201); assert.deepEqual(inserted,{ property_id:8, inventory_id:null, phone:'+91 9876543210', source:'property_enquiry' }); assert.deepEqual(await res.json(),{success:true});
 });
 test('request protection failure prevents database writes', async () => {
  const api = route({ from() { throw new Error('must not run'); } }, async () => { throw new request.RequestError('Request protection unavailable',503); });
  assert.equal((await api.POST(req({ property_id:8, phone:'+91 9876543210' }))).status,503);
+});
+
+
+test('inventory enquiry validates published inventory belongs to the project', async () => {
+ let inserted;
+ const inventoryId='11111111-1111-4111-8111-111111111111';
+ const client = { from(table) {
+  if (table === 'properties') return { select() { return { eq(_key,id) { return { limit: async () => ({ data: [{id}], error:null }) } } } } };
+  if (table === 'property_inventory') {
+   const query = { select(){return query}, eq(){return query}, limit: async()=>({data:[{id:inventoryId}],error:null}) };
+   return query;
+  }
+  if (table === 'leads') return { insert: async body => { inserted=body; return {error:null} } };
+  throw new Error(table);
+ } };
+ const api=route(client);
+ const res=await api.POST(req({property_id:8,inventory_id:inventoryId,phone:'+91 9876543210',source:'inventory_enquiry'}));
+ assert.equal(res.status,201);
+ assert.deepEqual(inserted,{property_id:8,inventory_id:inventoryId,phone:'+91 9876543210',source:'inventory_enquiry'});
+});
+
+test('inventory enquiry rejects missing inventory id', async () => {
+ const client = { from(table) {
+  if (table === 'properties') return { select() { return { eq(_key,id) { return { limit: async () => ({ data: [{id}], error:null }) } } } } };
+  throw new Error('must not query inventory without a valid id');
+ } };
+ const api=route(client);
+ const res=await api.POST(req({property_id:8,phone:'+91 9876543210',source:'inventory_enquiry'}));
+ assert.equal(res.status,400);
 });
