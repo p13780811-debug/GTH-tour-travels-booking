@@ -39,7 +39,7 @@ export default function RealEstatePage() {
         const params = url.searchParams
         const text = (key: string) => (params.get(key) || "").replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 80) || undefined
         const bedrooms = Number(params.get("bedrooms"))
-        setActiveFilters([...params.entries()].filter(([key,value]) => ["query","country","city","type","listing","bedrooms","minPrice","maxPrice","sort"].includes(key) && Boolean(value)))
+        setActiveFilters([...params.entries()].filter(([key,value]) => ["query","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort"].includes(key) && Boolean(value)))
         setLoading(true)
         setError("")
         setQuery((params.get("query") || "").slice(0, 120))
@@ -97,7 +97,7 @@ export default function RealEstatePage() {
     }
     const reset = () => {
         const url = new URL(window.location.href)
-        for (const key of ["query","page","country","city","type","listing","bedrooms","minPrice","maxPrice","sort"]) url.searchParams.delete(key)
+        for (const key of ["query","page","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort"]) url.searchParams.delete(key)
         window.history.replaceState(null, "", url)
         window.dispatchEvent(new Event("gth-discovery-filters"))
         load(1)
