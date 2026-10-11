@@ -24,6 +24,23 @@ function optionalMoney(value: unknown) {
   return amount;
 }
 
+function optionalAreaSqft(body: Record<string, unknown>) {
+  const legacy = optionalInteger(body.area_sqft, { min: 1, max: 1000000 });
+  if (legacy !== null) return legacy;
+
+  if (body.area_value === undefined || body.area_value === null || body.area_value === "") return null;
+  const raw = String(body.area_value).trim();
+  if (!/^\d{1,9}(?:\.\d{1,2})?$/.test(raw)) throw new RequestError("Invalid property area", 400);
+
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) throw new RequestError("Invalid property area", 400);
+
+  const unit = String(body.area_unit || "sqft");
+  const sqft = unit === "sqm" ? Math.round(value * 10.7639104167) : unit === "sqft" ? Math.round(value) : NaN;
+  if (!Number.isFinite(sqft) || sqft < 1 || sqft > 1000000) throw new RequestError("Invalid property area", 400);
+  return sqft;
+}
+
 function cleanMediaUrls(value: unknown, userId: string) {
   const projectHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "https://invalid.local").hostname;
   const prefix = `/storage/v1/object/public/property-images/properties/${userId}/`;
@@ -131,7 +148,7 @@ export async function POST(req: Request) {
       currency,
       bedrooms: optionalInteger(body.bedrooms, { min: 0, max: 20 }),
       bathrooms: optionalInteger(body.bathrooms, { min: 0, max: 20 }),
-      area_sqft: optionalInteger(body.area_sqft, { min: 1, max: 1000000 }),
+      area_sqft: optionalAreaSqft(body as Record<string, unknown>),
       media_urls: cleanMediaUrls(body.media_urls, user.id),
     };
 
