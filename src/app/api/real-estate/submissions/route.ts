@@ -1,6 +1,6 @@
 import { authenticatedStorage } from "@/lib/security/auth";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
-import { cleanPositiveInteger, cleanString } from "@/lib/security/validators";
+import { cleanPositiveInteger, cleanString, cleanStringArray } from "@/lib/security/validators";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "Penthouse", "Commercial", "Plot"] as const;
@@ -21,6 +21,22 @@ function optionalMoney(value: unknown) {
   const amount = Number(raw);
   if (!Number.isFinite(amount) || amount <= 0) throw new RequestError("Invalid price", 400);
   return amount;
+}
+
+function cleanMediaUrls(value: unknown, userId: string) {
+  const projectHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "https://invalid.local").hostname;
+  const prefix = `/storage/v1/object/public/property-images/properties/${userId}/`;
+  return cleanStringArray(value, { maxItems: 8, maxLength: 800 }).map(raw => {
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== "https:" || url.hostname !== projectHost || !url.pathname.startsWith(prefix) || !url.pathname.endsWith(".webp")) {
+        throw new Error("invalid");
+      }
+      return url.toString();
+    } catch {
+      throw new RequestError("Invalid property media reference", 400);
+    }
+  });
 }
 
 export async function GET(req: Request) {
@@ -110,6 +126,7 @@ export async function POST(req: Request) {
       bedrooms: optionalInteger(body.bedrooms, { min: 0, max: 20 }),
       bathrooms: optionalInteger(body.bathrooms, { min: 0, max: 20 }),
       area_sqft: optionalInteger(body.area_sqft, { min: 1, max: 1000000 }),
+      media_urls: cleanMediaUrls(body.media_urls, user.id),
     };
 
     await enforceRateLimit(req, "submissions", user.id);
