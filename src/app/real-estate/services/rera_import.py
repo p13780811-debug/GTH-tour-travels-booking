@@ -2,12 +2,30 @@
 
 import hashlib
 import re
+from urllib.parse import urlparse
+
+MAHARERA_SEARCH_URL = "https://maharera.maharashtra.gov.in/projects-search-result"
+_ALLOWED_SOURCE_HOSTS = {"maharera.maharashtra.gov.in", "www.maharera.maharashtra.gov.in"}
+
+
+def _validate_source_url(value):
+    parsed = urlparse(value)
+    if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_SOURCE_HOSTS:
+        raise ValueError("Invalid registry source URL")
+    return value
 
 
 def registry_payload(record):
     if not isinstance(record, dict):
         raise ValueError("Registry record must be an object")
-    fields = {"title": 180, "rera_id": 100, "developer": 250, "location": 500}
+    fields = {
+        "title": 180,
+        "rera_id": 100,
+        "developer": 250,
+        "location": 500,
+        "city": 120,
+        "district": 120,
+    }
     payload = {}
     for name, maximum in fields.items():
         value = record.get(name)
@@ -19,11 +37,27 @@ def registry_payload(record):
             payload[name] = value.strip()
     if not payload.get("title") or not payload.get("rera_id"):
         raise ValueError("Registry title and RERA ID are required")
+
+    supplied_state = record.get("state")
+    if supplied_state is not None:
+        if not isinstance(supplied_state, str) or supplied_state.strip().lower() != "maharashtra":
+            raise ValueError("Registry state must be Maharashtra")
+
+    source_url = record.get("official_source_url") or MAHARERA_SEARCH_URL
+    if not isinstance(source_url, str):
+        raise ValueError("Invalid registry source URL")
+    payload["official_source_url"] = _validate_source_url(source_url.strip())
+    payload["official_source_reference"] = payload["rera_id"]
+
     base = re.sub(r"[^a-z0-9]+", "-", payload["title"].lower()).strip("-")[:120] or "project"
     suffix = hashlib.sha256(payload["rera_id"].encode()).hexdigest()[:16]
     payload.update(
-        slug=f"{base}-{suffix}", country="India", state="Maharashtra",
-        source_type="registry", ingestion_source="MahaRERA", verified=False,
+        slug=f"{base}-{suffix}",
+        country="India",
+        state="Maharashtra",
+        source_type="registry",
+        ingestion_source="MahaRERA official export",
+        verified=False,
     )
     return payload
 
