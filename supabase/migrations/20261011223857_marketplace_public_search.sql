@@ -53,6 +53,7 @@ create or replace function public.search_marketplace_projects(
   search_type text default null,
   search_listing text default null,
   search_bedrooms integer default null,
+  search_currency text default null,
   min_price numeric default null,
   max_price numeric default null,
   sort_mode text default 'latest',
@@ -79,7 +80,7 @@ as $function$
     and (
       (
         search_type is null and search_listing is null and search_bedrooms is null
-        and min_price is null and max_price is null
+        and search_currency is null and min_price is null and max_price is null
       )
       or exists (
         select 1 from public.property_inventory i
@@ -88,13 +89,14 @@ as $function$
           and (search_type is null or i.property_type = search_type)
           and (search_listing is null or i.listing_type = search_listing)
           and (search_bedrooms is null or i.bedrooms = search_bedrooms)
+          and (search_currency is null or i.currency = upper(search_currency))
           and (min_price is null or i.price_amount >= min_price)
           and (max_price is null or i.price_amount <= max_price)
       )
       or (
         v.active_inventory_count = 0
         and v.source_type is distinct from 'registry'
-        and min_price is null and max_price is null
+        and search_currency is null and min_price is null and max_price is null
         and (search_type is null or v.property_type = search_type)
         and (search_listing is null or lower(v.listing_type) = lower(search_listing))
         and (search_bedrooms is null or v.bedrooms = search_bedrooms)
@@ -110,6 +112,6 @@ as $function$
   offset least(greatest(coalesce(page_offset,0),0),100000);
 $function$;
 
-revoke all on function public.search_marketplace_projects(text,text,text,text,text,integer,numeric,numeric,text,integer,integer) from public;
-grant execute on function public.search_marketplace_projects(text,text,text,text,text,integer,numeric,numeric,text,integer,integer)
+revoke all on function public.search_marketplace_projects(text,text,text,text,text,integer,text,numeric,numeric,text,integer,integer) from public;
+grant execute on function public.search_marketplace_projects(text,text,text,text,text,integer,text,numeric,numeric,text,integer,integer)
   to anon, authenticated, service_role;
