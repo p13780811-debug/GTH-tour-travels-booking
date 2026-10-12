@@ -33,7 +33,7 @@ export async function GET(req: Request) {
   const city = cleanString(searchParams.get("city"), {
     min: 2,
     max: 80,
-    pattern: /^[\\p{L}\\p{M}\\s.'-]+$/u,
+    pattern: /^[\p{L}\p{M}\s.'-]+$/u,
   });
 
   if (!city) {
@@ -51,7 +51,8 @@ export async function GET(req: Request) {
     const supabase = createClient(url, key);
     const { data, error } = await supabase
       .from("hotels")
-      .select("id,name,city,stars,image_url,affiliate_link")
+      .select("id,name,city,image_url,affiliate_link,is_public")
+      .eq("is_public", true)
       .ilike("city", `%${city}%`)
       .limit(24);
 
@@ -65,7 +66,7 @@ export async function GET(req: Request) {
         id: hotel.id,
         name: hotel.name,
         city: hotel.city,
-        stars: typeof hotel.stars === "number" && hotel.stars >= 1 && hotel.stars <= 5 ? hotel.stars : null,
+        stars: null,
         image: safeImage(hotel.image_url),
         affiliate_link: safePartnerLink(hotel.affiliate_link),
       }));
