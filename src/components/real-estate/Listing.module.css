@@ -831,3 +831,44 @@
     width: 100%;
   }
 }
+
+
+.houseAdFallback {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 42%),
+    var(--bg-soft);
+}
+
+.houseAdSwitcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.houseAdSwitcher button {
+  min-height: 38px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.houseAdSwitcher button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  color: var(--primary);
+}
+
+:global(html.dark) .houseAdSwitcher button {
+  background: rgba(48,36,27,.76);
+  border-color: rgba(236,201,132,.14);
+}
