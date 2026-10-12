@@ -76,13 +76,16 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                                     {item.city || item.city_slug}
                                 </p>
 
-                                <p className="text-yellow-400 text-xs-right mt-1">
-                                    ⭐ {item.rating ?? "4.5"}
-                                </p>
+                                {typeof item.rating === "number" && item.rating > 0 && (
+                                    <p className="text-yellow-400 text-xs-right mt-1">
+                                        Rating: {item.rating}
+                                    </p>
+                                )}
 
                                 <p className="text-yellow-400 font-bold mt-2">
-                                    {(symbolMap[item.currency] || "₹")}
-                                    {item.price_numeric ?? 0}
+                                    {Number(item.price_numeric) > 0
+                                        ? `${symbolMap[item.currency] ?? ""}${Number(item.price_numeric).toLocaleString()} (listed)`
+                                        : "Check price with partner"}
                                 </p>
 
                             </div>
