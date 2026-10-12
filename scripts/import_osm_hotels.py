@@ -63,7 +63,7 @@ def convert(feature):
     # OSM identifiers must contain type and numeric id to avoid cross-type collisions.
     if not identifier or not __import__("re").fullmatch(r"(?:node|way|relation)/[0-9]+", identifier):
         return None
-    city = text_value(props.get("addr:city"), 100)
+    city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place"), 100)
     country = text_value(props.get("addr:country"), 2)
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
     return {
