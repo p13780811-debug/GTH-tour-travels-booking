@@ -133,7 +133,8 @@ export default function FlightHero() {
             return;
         }
 
-        const today = new Date().toLocaleDateString("en-CA");
+        const now = new Date();
+        const today = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
         if (checkIn < today) {
             alert("Departure date cannot be in the past.");
             return;
