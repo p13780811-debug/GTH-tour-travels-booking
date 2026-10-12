@@ -2,78 +2,76 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const PARTNER_HOSTS = ["klook.com", "trip.com", "booking.com", "hotellook.com", "tp.media", "tpo.lv"];
 
-  if (!url || !anonKey) return null;
-  return createClient(url, anonKey);
+function safePartnerLink(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 2048) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    const host = url.hostname.toLowerCase();
+    return PARTNER_HOSTS.some((domain) => host === domain || host.endsWith(`.${domain}`))
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
 }
 
-async function getPexelsImage(query: string) {
-  const apiKey = process.env.PEXELS_API_KEY;
-  if (!apiKey) return "/placeholder.jpg";
-
+function safeImage(value: unknown): string {
+  if (typeof value !== "string") return "/placeholder.jpg";
+  if (value.startsWith("/") && !value.startsWith("//")) return value;
   try {
-    const url = new URL("https://api.pexels.com/v1/search");
-    url.searchParams.set("query", query);
-    url.searchParams.set("per_page", "3");
-    url.searchParams.set("page", "1");
-
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: apiKey },
-      next: { revalidate: 3600 },
-    });
-
-    if (!res.ok) return "/placeholder.jpg";
-
-    const data = await res.json();
-    return data?.photos?.[0]?.src?.large || "/placeholder.jpg";
+    return new URL(value).protocol === "https:" ? value : "/placeholder.jpg";
   } catch {
     return "/placeholder.jpg";
   }
 }
 
 export async function GET(req: Request) {
-  const supabase = getSupabase();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Hotel service is not configured" },
-      { status: 503 },
-    );
-  }
-
   const { searchParams } = new URL(req.url);
-  const city = cleanString(searchParams.get("city") || "travel", {
+  const city = cleanString(searchParams.get("city"), {
     min: 2,
     max: 80,
+    pattern: /^[\\p{L}\\p{M}\\s.'-]+$/u,
   });
 
   if (!city) {
-    return NextResponse.json({ error: "Invalid city" }, { status: 400 });
+    return NextResponse.json({ error: "Enter a valid destination" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
-  const { data: hotels, error } = await supabase
-    .from("hotels")
-    .select("*")
-    .ilike("city", `%${city}%`)
-    .limit(10);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (error) {
-    return NextResponse.json({ error: "Hotel data unavailable" }, { status: 500 });
+  if (!url || !key) {
+    return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 
-  const cityImage = await getPexelsImage(`${city} hotel`);
+  try {
+    const supabase = createClient(url, key);
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("id,name,city,stars,image_url,affiliate_link")
+      .ilike("city", `%${city}%`)
+      .limit(24);
 
-  const formattedHotels = (hotels || []).map((hotel: Record<string, unknown>) => ({
-    id: hotel.id,
-    name: hotel.name,
-    price: hotel.price,
-    stars: hotel.stars,
-    city: hotel.city,
-    image: hotel.image_url || cityImage,
-    affiliate_link: hotel.affiliate_link,
-  }));
+    if (error) {
+      return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    }
 
-  return NextResponse.json(formattedHotels);
+    const listings = (data || [])
+      .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() && typeof hotel.city === "string")
+      .map((hotel) => ({
+        id: hotel.id,
+        name: hotel.name,
+        city: hotel.city,
+        stars: typeof hotel.stars === "number" && hotel.stars >= 1 && hotel.stars <= 5 ? hotel.stars : null,
+        image: safeImage(hotel.image_url),
+        affiliate_link: safePartnerLink(hotel.affiliate_link),
+      }));
+
+    return NextResponse.json(listings, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
+  }
 }
