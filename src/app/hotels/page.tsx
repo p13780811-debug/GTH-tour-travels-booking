@@ -80,6 +80,9 @@ function HotelsContent() {
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     useEffect(() => {
         setSearch(initialCity);
@@ -93,10 +96,12 @@ function HotelsContent() {
         setLoading(true);
         setError("");
         setSelectedStars([]);
+        setPage(1);
+        setHasMore(false);
 
         async function loadHotels() {
             try {
-                const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}`, {
+                const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}&page=1`, {
                     cache: "no-store",
                     signal: controller.signal,
                 });
@@ -106,6 +111,7 @@ function HotelsContent() {
                 if (!controller.signal.aborted) {
                     setHotels(data as HotelListing[]);
                     setFilteredHotels(data as HotelListing[]);
+                    setHasMore(response.headers.get("X-GTH-Has-More") === "true");
                 }
             } catch {
                 if (!controller.signal.aborted) setError("Hotel search is currently unavailable. Please try again later.");
@@ -117,6 +123,31 @@ function HotelsContent() {
         void loadHotels();
         return () => controller.abort();
     }, [requestedCity]);
+
+    async function loadMoreHotels() {
+        if (loadingMore || loading || !hasMore) return;
+        setLoadingMore(true);
+        const nextPage = page + 1;
+        try {
+            const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}&page=${nextPage}`, { cache: "no-store" });
+            if (!response.ok) throw new Error("Hotel page unavailable");
+            const incoming: unknown = await response.json();
+            if (!Array.isArray(incoming)) throw new Error("Unexpected hotel response");
+            const merged = [...hotels, ...(incoming as HotelListing[])].filter(
+                (hotel, index, all) => all.findIndex((entry) => String(entry.id) === String(hotel.id)) === index
+            );
+            setHotels(merged);
+            setFilteredHotels(merged.filter((hotel) => selectedStars.length === 0 ||
+                (hotel.stars !== null && selectedStars.includes(hotel.stars))));
+            setPage(nextPage);
+            setHasMore(response.headers.get("X-GTH-Has-More") === "true" && incoming.length > 0);
+            setError("");
+        } catch {
+            setError("More hotel listings could not be loaded. Please retry.");
+        } finally {
+            setLoadingMore(false);
+        }
+    }
 
     const applyFilters = (_currentSearch = search, currentStars = selectedStars) => {
         setFilteredHotels(hotels.filter((hotel) =>
@@ -439,7 +470,7 @@ function HotelsContent() {
                             <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or remove star filters.</p>
                         )}
                         <div className="space-y-5">
-                            {filteredHotels.slice(0, 30).map((hotel) => (
+                            {filteredHotels.map((hotel) => (
                                 <div
                                     key={hotel.id}
                                     className="group gth-glass border border-[var(--border)] rounded-3xl overflow-hidden hover:scale-[1.01] transition-all"
@@ -584,6 +615,12 @@ function HotelsContent() {
                                 </div>
                             ))}
                         </div>
+                        {hasMore && !loading && (
+                            <button type="button" disabled={loadingMore} onClick={() => void loadMoreHotels()}
+                                className="gth-btn-gold mt-6 rounded-xl px-6 py-3 text-sm font-semibold disabled:opacity-60">
+                                {loadingMore ? "Loading more hotels..." : "Load more hotel listings"}
+                            </button>
+                        )}
                     </main>
                 </div>
             </section>
