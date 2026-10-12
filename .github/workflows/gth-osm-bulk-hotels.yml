@@ -1,5 +1,11 @@
 name: GTH Travel Bulk Hotels
 on:
+  # Scheduled workflows execute from GitHub's default branch only.
+  # In this Travel feature branch, schedule remains inactive until an approved final merge.
+  schedule:
+    - cron: '17 1 * * *'
+    - cron: '17 9 * * *'
+    - cron: '17 17 * * *'
   workflow_dispatch:
     inputs:
       region:
@@ -18,7 +24,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: osm-hotel-bulk-${{ inputs.region }}
+  group: osm-hotel-bulk-${{ inputs.region || 'asia/india' }}
   cancel-in-progress: false
 jobs:
   bulk:
@@ -26,9 +32,9 @@ jobs:
     timeout-minutes: 90
     environment: ${{ inputs.mode == 'import' && 'hotel-ingestion' || 'hotel-ingestion-preview' }}
     env:
-      REGION: ${{ inputs.region }}
-      MODE: ${{ inputs.mode }}
-      MAX_RECORDS: ${{ inputs.max_records }}
+      REGION: ${{ inputs.region || 'asia/india' }}
+      MODE: ${{ inputs.mode || 'dry-run' }}
+      MAX_RECORDS: ${{ inputs.max_records || '5000' }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.GTH_SUPABASE_URL }}
       SUPABASE_INGESTION_KEY: ${{ secrets.GTH_SUPABASE_INGESTION_KEY }}
       GTH_INGESTION_ENABLED: ${{ inputs.mode == 'import' && 'true' || 'false' }}
