@@ -124,3 +124,35 @@ $function$;
 revoke all on function public.search_marketplace_projects(text,text,text,text,text,integer,text,numeric,numeric,text,integer,integer) from public;
 grant execute on function public.search_marketplace_projects(text,text,text,text,text,integer,text,numeric,numeric,text,integer,integer)
   to anon, authenticated, service_role;
+
+
+create or replace function public.marketplace_market_counts()
+returns table(city text, country text, result_count bigint)
+language sql
+stable
+security invoker
+set search_path = ''
+as $function$
+  select
+    v.city,
+    v.country,
+    count(*)::bigint as result_count
+  from public.marketplace_public_projects v
+  where
+    coalesce(btrim(v.city),'') <> ''
+    and coalesce(btrim(v.country),'') <> ''
+    and not (
+      v.source_type in ('rera','manual')
+      and v.active_inventory_count = 0
+      and v.price is null
+      and coalesce(v.bedrooms, v.beds) = 1
+      and coalesce(v.area_sqft, v.sqft) = 650
+      and v.verified is true
+      and coalesce(lower(v.status),'') <> 'verified'
+    )
+  group by v.city, v.country
+  order by count(*) desc, v.city asc;
+$function$;
+
+revoke all on function public.marketplace_market_counts() from public;
+grant execute on function public.marketplace_market_counts() to anon, authenticated, service_role;
