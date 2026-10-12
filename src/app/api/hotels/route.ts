@@ -56,11 +56,9 @@ export async function GET(req: Request) {
       .ilike("city", `%${city}%`)
       .limit(24);
 
-    if (error) {
-      return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
-    }
-
-    const listings = (data || [])
+    // The OSM discovery catalog is independent of supplier inventory.
+    // A legacy supplier failure must not hide otherwise valid OSM records.
+    const listings = (error ? [] : (data || []))
       .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() && typeof hotel.city === "string")
       .map((hotel) => ({
         id: hotel.id,
@@ -80,9 +78,8 @@ export async function GET(req: Request) {
       .order("name")
       .limit(24);
 
-    if (catalogError && listings.length === 0) {
-      // A missing migration should not break the legacy hotel route.
-      return NextResponse.json(listings, { headers: { "Cache-Control": "no-store" } });
+    if (error && catalogError) {
+      return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
 
     const existingNames = new Set(listings.map((hotel) => hotel.name.trim().toLowerCase()));
