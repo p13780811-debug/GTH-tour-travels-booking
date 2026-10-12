@@ -37,3 +37,24 @@ test('unknown geography and purpose are not invented', () => {
  assert.equal(p.country, 'Country not provided');
  assert.equal(p.listing_type, 'Purpose not provided');
 });
+
+
+test('legacy placeholder records do not surface invented listing facts', () => {
+  const p = exports.transformProperty({
+    id: 21055,
+    title: 'SHUBHKALYAN HEIGHTS',
+    source_type: 'manual',
+    status: 'New',
+    verified: true,
+    price: null,
+    bedrooms: 1,
+    area_sqft: 650,
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa',
+  });
+  assert.equal(p.data_quality_limited, true);
+  assert.equal(p.verified, false);
+  assert.equal(p.beds, 0);
+  assert.equal(p.sqft, 0);
+  assert.equal(p.formatted_price, 'Price not verified');
+  assert.equal(p.image, '');
+});
