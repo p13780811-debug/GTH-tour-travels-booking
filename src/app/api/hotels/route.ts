@@ -70,7 +70,37 @@ export async function GET(req: Request) {
         affiliate_link: safePartnerLink(hotel.affiliate_link),
       }));
 
-    return NextResponse.json(listings, { headers: { "Cache-Control": "no-store" } });
+    // Catalog additions are source-attributed OSM places, not bookable room inventory.
+    // Preserve all existing supplier-backed hotel listings before supplementing them.
+    const { data: catalog, error: catalogError } = await supabase
+      .from("hotel_catalog")
+      .select("source_id,name,city,category")
+      .ilike("city", `%${city}%`)
+      .order("name")
+      .limit(24);
+
+    if (catalogError && listings.length === 0) {
+      // A missing migration should not break the legacy hotel route.
+      return NextResponse.json(listings, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    const existingNames = new Set(listings.map((hotel) => hotel.name.trim().toLowerCase()));
+    const osm = (catalog || [])
+      .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() &&
+        !existingNames.has(hotel.name.trim().toLowerCase()))
+      .slice(0, Math.max(0, 24 - listings.length))
+      .map((hotel) => ({
+        id: `osm:${hotel.source_id}`,
+        name: hotel.name,
+        city: hotel.city || city,
+        stars: null,
+        image: "/placeholder.jpg",
+        affiliate_link: null,
+        source: "OpenStreetMap",
+        source_license: "ODbL-1.0",
+      }));
+
+    return NextResponse.json([...listings, ...osm], { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
