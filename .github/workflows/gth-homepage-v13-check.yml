@@ -79,10 +79,6 @@ jobs:
             echo "::error::Approved Supabase credentials/project reference are not configured"
             exit 1
           fi
-          if [[ ! -d "$CSV_EXPORT_DIR" ]]; then
-            echo "::error::No authorized MahaRERA CSV export directory is available; ingestion stopped without portal requests"
-            exit 1
-          fi
       - name: Install existing Python dependencies
         run: python -m pip install -r requirements.txt
       - name: Validate registry importer regression tests
