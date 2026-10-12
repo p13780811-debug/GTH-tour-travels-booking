@@ -31,6 +31,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // This endpoint accepts a request, not a confirmed hotel reservation.
+    const today = new Date().toISOString().slice(0, 10);
+    if (checkin < today) {
+      return NextResponse.json({ error: "Check-in cannot be in the past" }, { status: 400 });
+    }
+
+    const nights = (Date.parse(`${checkout}T00:00:00Z`) - Date.parse(`${checkin}T00:00:00Z`)) / 86_400_000;
+    if (nights > 90) {
+      return NextResponse.json({ error: "Stay exceeds the 90-night request limit" }, { status: 400 });
+    }
+
     await enforceRateLimit(req, "bookings");
     const { error } = await supabase
       .from("bookings")
@@ -49,9 +60,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Booking could not be created" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    return NextResponse.json({ success: true, status: "request_received", message: "Booking request received; reservation is not confirmed." }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof RequestError) return requestError(error);
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json({ error: "Booking service temporarily unavailable" }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 }
