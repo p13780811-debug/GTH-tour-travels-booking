@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import RealEstateFooter from "@/components/real-estate/RealEstateFooter"
 
 import {
     ShieldCheck,
@@ -538,7 +539,7 @@ export default function PrivacyPolicy() {
                                 </Link>
 
                                 <Link
-                                    href="/"
+                                    href="/real-estate"
                                     className="gth-btn-gold rounded-2xl px-6 py-3"
                                 >
                                     Return Home
@@ -554,6 +555,7 @@ export default function PrivacyPolicy() {
 
             </section>
 
+            <RealEstateFooter />
         </div>
 
     )
