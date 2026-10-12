@@ -1,6 +1,10 @@
 name: GTH Production Check
 
 on:
+  schedule:
+    # 02:30 IST daily (21:00 UTC previous day); GitHub schedules may be delayed.
+    - cron: '0 21 * * *'
+  workflow_dispatch:
   push:
     branches:
       - gth-homepage-v1.3
@@ -43,3 +47,51 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+
+  maharera-authorized-daily-ingestion:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: maharera-authorized-daily
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_INGESTION_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      GTH_INGESTION_ENABLED: 'true'
+      CSV_EXPORT_DIR: data/maharera/authorized
+    steps:
+      - name: Checkout existing importer
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source and secure configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$NEXT_PUBLIC_SUPABASE_URL" || -z "$SUPABASE_INGESTION_KEY" || -z "$SUPABASE_PROJECT_REF" ]]; then
+            echo "::error::Approved Supabase credentials/project reference are not configured"
+            exit 1
+          fi
+          if [[ ! -d "$CSV_EXPORT_DIR" ]]; then
+            echo "::error::No authorized MahaRERA CSV export directory is available; ingestion stopped without portal requests"
+            exit 1
+          fi
+      - name: Install existing Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate registry importer regression tests
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
+      - name: Dry-run daily district batch
+        run: python src/app/real-estate/services/rera_csv_import.py --daily-dir "$CSV_EXPORT_DIR"
+      - name: Commit bounded district batch to approved Supabase project
+        run: |
+          python src/app/real-estate/services/rera_csv_import.py \
+            --daily-dir "$CSV_EXPORT_DIR" \
+            --batch-size 50 \
+            --commit \
+            --expected-project-ref "$SUPABASE_PROJECT_REF"
