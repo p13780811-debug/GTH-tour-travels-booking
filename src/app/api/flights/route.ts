@@ -34,9 +34,10 @@ export async function GET(req: Request) {
     if (departDate) apiUrl.searchParams.set("departure_at", departDate);
     apiUrl.searchParams.set("currency", "inr");
     apiUrl.searchParams.set("unique", "true");
-    apiUrl.searchParams.set("token", token);
+    // Keep provider credentials out of URLs, logs and cache keys.
 
     const res = await fetch(apiUrl.toString(), {
+      headers: { "X-Access-Token": token },
       next: { revalidate: 1800 },
       signal: AbortSignal.timeout(10_000),
     });
