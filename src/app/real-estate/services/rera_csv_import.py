@@ -2,7 +2,8 @@
 
 import argparse
 import csv
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import json
 import time
 import sys
@@ -19,6 +20,8 @@ MAX_REJECTION_DETAILS = 50
 MAX_RERA_SAMPLE = 20
 DAILY_LIMIT = 100
 MIN_BATCH_DELAY_SECONDS = 10
+MAX_DAILY_EXPORT_AGE = timedelta(hours=36)
+IST = ZoneInfo('Asia/Kolkata')
 DAILY_DISTRICTS = ("Mumbai Suburban", "Mumbai City", "Thane", "Pune")
 
 SENSITIVE_HEADER_TOKENS = {
@@ -56,6 +59,8 @@ def _matches_expected_city(record, expected_city):
 
 def load_registry_csv(path, expected_city):
     csv_path = Path(path)
+    if csv_path.is_symlink():
+        raise ValueError('Symlink CSV input not permitted')
     if not csv_path.is_file():
         raise ValueError("CSV file does not exist")
     if csv_path.stat().st_size > MAX_FILE_BYTES:
@@ -155,19 +160,26 @@ def select_daily_records(export_dir, district=None):
 
     This deliberately does not bypass a website session, CAPTCHA or export controls.
     """
-    day = datetime.now(timezone.utc).date()
+    day = datetime.now(IST).date()
     chosen = district or DAILY_DISTRICTS[(day.toordinal() - 1) % len(DAILY_DISTRICTS)]
     if chosen not in DAILY_DISTRICTS:
         raise ValueError("Unsupported district")
     directory = Path(export_dir).resolve()
-    if not directory.is_dir():
+    if directory.is_symlink() or not directory.is_dir():
         raise ValueError("Authorized export directory not found")
     filename = chosen.lower().replace(" ", "-") + ".csv"
     export_path = directory / filename
-    if not export_path.is_file():
+    if export_path.is_symlink() or not export_path.is_file():
         raise ValueError("Authorized district CSV unavailable; no write performed")
+    modified_at = datetime.fromtimestamp(export_path.stat().st_mtime, tz=timezone.utc)
+    age = datetime.now(timezone.utc) - modified_at
+    if age < timedelta(0) or age > MAX_DAILY_EXPORT_AGE:
+        raise ValueError("District export stale or has invalid timestamp; no write performed")
     records, rejected, sensitive = load_registry_csv(export_path, "")
-    selected = [r for r in records if r.get("district", "").strip().casefold() == chosen.casefold()][:DAILY_LIMIT]
+    matching = [r for r in records if r.get("district", "").strip().casefold() == chosen.casefold()]
+    window_count = max(1, (len(matching) + DAILY_LIMIT - 1) // DAILY_LIMIT)
+    window = ((day.toordinal() - 1) // len(DAILY_DISTRICTS)) % window_count
+    selected = matching[window * DAILY_LIMIT:(window + 1) * DAILY_LIMIT]
     if not selected:
         raise ValueError("No valid rows for selected district; no write performed")
     return chosen, selected, rejected, sensitive
@@ -184,6 +196,8 @@ def main(argv=None):
     parser.add_argument("--expected-project-ref")
     args = parser.parse_args(argv)
 
+    if args.district and not args.daily_dir:
+        parser.error('--district requires --daily-dir')
     if args.daily_dir:
         if args.csv_path or args.expected_city:
             parser.error("--daily-dir cannot be combined with csv_path or --expected-city")
