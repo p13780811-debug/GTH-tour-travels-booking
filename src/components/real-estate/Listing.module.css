@@ -499,75 +499,89 @@
 
 /* Dark-mode depth pass — real estate only */
 :global(html.dark) .estateScope {
-  --border: rgba(255,255,255,.13);
+  --bg: #18130f;
+  --bg-soft: #211a14;
+  --card: rgba(35, 27, 21, .82);
+  --card-strong: rgba(43, 32, 24, .92);
+  --border: rgba(236, 201, 132, .15);
   --shadow:
-    0 18px 44px rgba(0,0,0,.50),
-    0 1px 0 rgba(255,255,255,.035) inset,
-    0 0 0 1px rgba(212,175,55,.025);
+    0 14px 34px rgba(28, 18, 11, .26),
+    0 1px 0 rgba(255, 239, 208, .035) inset;
   --shadow-hover:
-    0 28px 70px rgba(0,0,0,.68),
-    0 0 34px rgba(212,175,55,.075),
-    0 1px 0 rgba(255,255,255,.05) inset;
+    0 22px 48px rgba(28, 18, 11, .34),
+    0 0 24px rgba(212, 175, 55, .055),
+    0 1px 0 rgba(255, 239, 208, .05) inset;
+
+  background:
+    radial-gradient(circle at 78% 4%, rgba(212,175,55,.055), transparent 30%),
+    linear-gradient(180deg, #1b1510 0%, #17120f 46%, #13100d 100%);
 }
 
 :global(html.dark) .searchHero {
   background:
-    radial-gradient(circle at 82% 24%, rgba(212,175,55,.075), transparent 34%),
-    radial-gradient(circle at 8% 0%, rgba(59,130,246,.075), transparent 28%);
-  border-bottom-color: rgba(255,255,255,.11);
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,.025);
+    radial-gradient(circle at 82% 22%, rgba(212,175,55,.08), transparent 34%),
+    linear-gradient(180deg, rgba(38,28,20,.24), rgba(24,18,14,.16));
+  border-bottom-color: rgba(236,201,132,.13);
+  box-shadow: inset 0 -1px 0 rgba(255,235,195,.025);
 }
 
 :global(html.dark) .heroBackgroundVideo {
-  opacity: .42;
-  filter: saturate(.95) contrast(1.08) brightness(.72);
+  opacity: .62;
+  filter: saturate(1.02) contrast(1.06) brightness(.92);
 }
 
 :global(html.dark) .heroVideoShade {
   background:
     linear-gradient(90deg,
-      #060b12 0%,
-      rgba(6,11,18,.97) 34%,
-      rgba(6,11,18,.78) 61%,
-      rgba(6,11,18,.40) 100%),
-    linear-gradient(180deg, rgba(6,11,18,.12), rgba(6,11,18,.72));
+      rgba(27,20,15,.94) 0%,
+      rgba(27,20,15,.84) 32%,
+      rgba(27,20,15,.56) 58%,
+      rgba(27,20,15,.22) 82%,
+      rgba(27,20,15,.12) 100%),
+    linear-gradient(180deg,
+      rgba(27,20,15,.08),
+      rgba(27,20,15,.30));
 }
 
 :global(html.dark) .estateScope :global(.gth-glass) {
   background:
     linear-gradient(145deg,
-      rgba(25,36,56,.78) 0%,
-      rgba(10,17,30,.88) 58%,
-      rgba(5,10,18,.92) 100%);
-  border-color: rgba(255,255,255,.105);
+      rgba(53,40,30,.76) 0%,
+      rgba(37,28,22,.82) 52%,
+      rgba(27,21,17,.88) 100%);
+  border-color: rgba(236,201,132,.14);
   box-shadow: var(--shadow);
 }
 
 :global(html.dark) .estateScope :global(.gth-glass)::before {
   background:
     linear-gradient(135deg,
-      rgba(255,255,255,.095),
-      rgba(212,175,55,.025) 48%,
-      rgba(255,255,255,.012));
+      rgba(255,242,218,.07),
+      rgba(212,175,55,.022) 50%,
+      rgba(255,255,255,.008));
 }
 
 :global(html.dark) .card,
 :global(html.dark) .marketCard,
 :global(html.dark) .trustGrid article {
-  border-color: rgba(255,255,255,.105);
+  background:
+    linear-gradient(145deg,
+      rgba(43,33,26,.82),
+      rgba(29,23,19,.90));
+  border-color: rgba(236,201,132,.14);
   box-shadow:
-    0 18px 46px rgba(0,0,0,.46),
-    inset 0 1px 0 rgba(255,255,255,.035);
+    0 14px 34px rgba(30,19,11,.23),
+    inset 0 1px 0 rgba(255,238,205,.035);
 }
 
 :global(html.dark) .card:hover,
 :global(html.dark) .marketCard:hover,
 :global(html.dark) .trustGrid article:hover {
-  border-color: rgba(212,175,55,.22);
+  border-color: rgba(224,184,101,.28);
   box-shadow:
-    0 28px 72px rgba(0,0,0,.66),
-    0 0 30px rgba(212,175,55,.055),
-    inset 0 1px 0 rgba(255,255,255,.05);
+    0 20px 46px rgba(30,19,11,.31),
+    0 0 22px rgba(212,175,55,.05),
+    inset 0 1px 0 rgba(255,241,214,.05);
 }
 
 :global(html.dark) .filterForm input,
@@ -575,60 +589,60 @@
 :global(html.dark) .toolInputs input,
 :global(html.dark) .toolInputs select {
   background:
-    linear-gradient(180deg, rgba(20,31,49,.92), rgba(8,15,27,.94));
-  border-color: rgba(255,255,255,.12);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+    linear-gradient(180deg, rgba(49,37,28,.88), rgba(31,24,19,.92));
+  border-color: rgba(236,201,132,.14);
+  box-shadow: inset 0 1px 0 rgba(255,240,210,.025);
 }
 
 :global(html.dark) .filterForm input:focus,
 :global(html.dark) .filterForm select:focus,
 :global(html.dark) .toolInputs input:focus,
 :global(html.dark) .toolInputs select:focus {
-  border-color: rgba(212,175,55,.42);
+  border-color: rgba(212,175,55,.45);
   box-shadow:
-    0 0 0 3px rgba(212,175,55,.08),
-    inset 0 1px 0 rgba(255,255,255,.035);
+    0 0 0 3px rgba(212,175,55,.07),
+    inset 0 1px 0 rgba(255,244,220,.035);
 }
 
 :global(html.dark) .trustPill,
 :global(html.dark) .filterChips button {
-  background: rgba(17,27,44,.78);
-  border-color: rgba(255,255,255,.12);
-  box-shadow: 0 8px 20px rgba(0,0,0,.24);
+  background: rgba(48,36,27,.76);
+  border-color: rgba(236,201,132,.14);
+  box-shadow: 0 7px 16px rgba(30,19,11,.16);
 }
 
 :global(html.dark) .registryPlaceholder {
   background:
-    radial-gradient(circle at 50% 18%, rgba(212,175,55,.08), transparent 34%),
-    radial-gradient(circle at 12% 70%, rgba(59,130,246,.06), transparent 28%),
-    linear-gradient(145deg, #111b2b, #080e18 58%, #050910);
+    radial-gradient(circle at 50% 18%, rgba(212,175,55,.10), transparent 34%),
+    radial-gradient(circle at 12% 72%, rgba(143,97,53,.08), transparent 30%),
+    linear-gradient(145deg, #2a2018, #1d1712 58%, #17120f);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.035),
-    0 18px 42px rgba(0,0,0,.38);
+    inset 0 1px 0 rgba(255,242,218,.035),
+    0 14px 32px rgba(30,19,11,.20);
 }
 
 :global(html.dark) .registryPlaceholderMark {
-  background: rgba(9,16,28,.82);
-  border-color: rgba(212,175,55,.16);
-  box-shadow: 0 12px 30px rgba(0,0,0,.34);
+  background: rgba(46,34,25,.78);
+  border-color: rgba(212,175,55,.19);
+  box-shadow: 0 9px 22px rgba(30,19,11,.20);
 }
 
 :global(html.dark) .estateHeader {
-  background: rgba(7,13,23,.86);
-  border-bottom-color: rgba(255,255,255,.10);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 10px 32px rgba(0,0,0,.28);
+  background: rgba(27,21,17,.88);
+  border-bottom-color: rgba(236,201,132,.13);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  box-shadow: 0 8px 24px rgba(30,19,11,.18);
 }
 
 :global(html.dark) .estateFooter {
-  border-top-color: rgba(255,255,255,.10);
+  border-top-color: rgba(236,201,132,.12);
   background:
-    linear-gradient(180deg, rgba(8,14,24,.18), rgba(3,7,13,.42));
+    linear-gradient(180deg, rgba(35,27,21,.30), rgba(23,18,15,.48));
 }
 
 :global(html.dark) .action {
-  filter: saturate(1.05);
+  filter: saturate(1.03);
 }
 
 @media (max-width: 767px) {
@@ -644,12 +658,13 @@
   .heroVideoShade {
     background:
       linear-gradient(180deg,
-        color-mix(in srgb, var(--bg) 75%, transparent),
-        var(--bg) 88%);
+        color-mix(in srgb, var(--bg) 58%, transparent),
+        color-mix(in srgb, var(--bg) 80%, transparent));
   }
 
   :global(html.dark) .heroBackgroundVideo {
-    opacity: .22;
+    opacity: .34;
+    filter: saturate(1) contrast(1.04) brightness(.90);
   }
 }
 
