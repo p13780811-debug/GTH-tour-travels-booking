@@ -67,40 +67,34 @@ export default function SearchSection({ city }: { city?: string }) {
         };
     }, []);
 
+    const [searchError, setSearchError] = useState("");
+
     const handleSearch = (searchQuery?: string) => {
-        const query = searchQuery || inputValue;
-
-        if (!query.trim()) return;
-
-        if (tab === "hotels") {
-            const klookUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
-                `https://www.klook.com/en-IN/hotels/searchresult/?city_name=${query}`
-            )}`;
-
-            window.open(klookUrl, "_blank");
-        }
-
-        else if (tab === "flights") {
-            const code = getIata(query || "Delhi");
-
-            router.push(
-                `/flights?origin=DEL&destination=${code}&depart_date=${checkIn}`
-            );
-        }
-
-        else if (tab === "tours") {
-            const toursUrl = `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
-                `https://www.klook.com/en-IN/search/result/?query=${query}`
-            )}`;
-
-            window.open(toursUrl, "_blank");
-        }
-
-        else {
-            router.push(`/search?q=${encodeURIComponent(query)}`);
-        }
-
+        const query = (searchQuery || inputValue).trim().slice(0, 80);
         setIsOpen(false);
+        setSearchError("");
+
+        if (tab === "flights") {
+            if (!query) { router.push("/flights"); return; }
+            const code = getIata(query);
+            if (!/^[A-Z]{3}$/.test(code)) {
+                // Do not invent an airport code. Let travelers use the full autocomplete.
+                router.push("/flights");
+                return;
+            }
+            const params = new URLSearchParams({ origin: "DEL", destination: code });
+            if (checkIn) params.set("depart_date", checkIn);
+            if (checkOut && checkIn && checkOut >= checkIn) params.set("return_date", checkOut);
+            router.push(`/flights?${params}`);
+            return;
+        }
+
+        if (!query) { setSearchError("Enter a destination to continue."); return; }
+        if (tab === "hotels") {
+            router.push(`/hotels?city=${encodeURIComponent(query)}`);
+        } else if (tab === "tours") {
+            router.push(`/tours?city=${encodeURIComponent(query.toLowerCase().replace(/\s+/g, "-"))}`);
+        }
     };
 
     return (
@@ -213,6 +207,7 @@ export default function SearchSection({ city }: { city?: string }) {
                     </button>
 
                 </div>
+                {searchError && <p role="alert" className="mt-2 text-sm text-[var(--text)]">{searchError}</p>}
 
             </div>
 
