@@ -164,13 +164,20 @@ def select_daily_records(export_dir, district=None):
     chosen = district or DAILY_DISTRICTS[(day.toordinal() - 1) % len(DAILY_DISTRICTS)]
     if chosen not in DAILY_DISTRICTS:
         raise ValueError("Unsupported district")
-    directory = Path(export_dir).resolve()
-    if directory.is_symlink() or not directory.is_dir():
-        raise ValueError("Authorized export directory not found")
+    # Configurable primary source plus existing local authorized fallback paths.
+    # No HTTP calls: never bypass government access controls.
+    candidates = [Path(export_dir), Path("data/seeds"), Path("data/maharera/authorized")]
     filename = chosen.lower().replace(" ", "-") + ".csv"
-    export_path = directory / filename
-    if export_path.is_symlink() or not export_path.is_file():
-        raise ValueError("Authorized district CSV unavailable; no write performed")
+    export_path = None
+    for candidate in candidates:
+        if candidate.is_symlink() or not candidate.is_dir():
+            continue
+        candidate_file = candidate / filename
+        if candidate_file.is_file() and not candidate_file.is_symlink():
+            export_path = candidate_file
+            break
+    if export_path is None:
+        raise ValueError("No authorized district CSV in configured/fallback paths; no write performed")
     modified_at = datetime.fromtimestamp(export_path.stat().st_mtime, tz=timezone.utc)
     age = datetime.now(timezone.utc) - modified_at
     if age < timedelta(0) or age > MAX_DAILY_EXPORT_AGE:
