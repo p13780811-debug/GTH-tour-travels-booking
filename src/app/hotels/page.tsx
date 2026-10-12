@@ -54,82 +54,16 @@ export const dynamic = "force-dynamic";
 // DATA ENGINE
 // ============================================================================
 
-const cities = [
-    "Mumbai",
-    "Dubai",
-    "London",
-    "Singapore",
-    "Tokyo",
-    "New York",
-    "Paris",
-    "Goa",
-    "Maldives",
-    "Bangkok",
-    "Barcelona",
-    "Amsterdam",
-    "Sydney",
-    "Bali",
-    "Rome",
-    "Zurich",
-    "Seoul",
-    "Istanbul",
-];
-
-const prefixes = [
-    "Royal",
-    "Imperial",
-    "Velvet",
-    "Aurora",
-    "Majestic",
-    "Elite",
-    "Zenith",
-    "Grand",
-    "Skyline",
-    "Regency",
-];
-
-const types = [
-    "Suites",
-    "Resort",
-    "Palace",
-    "Retreat",
-    "Collection",
-    "Club",
-    "Skyhotel",
-];
-
-const pexelsIds = [
-    338504,
-    261102,
-    189296,
-    271624,
-    2034335,
-    258154,
-    1134176,
-    1838554,
-    3201763,
-    3771110,
-    5379213,
-];
-
-const generateHotels = () => {
-    return Array.from({ length: 3000 }, (_, i) => {
-        const city = cities[i % cities.length];
-
-        return {
-            id: i + 1,
-            name: `${prefixes[i % prefixes.length]} ${city} ${types[i % types.length]
-                }`,
-            city,
-            image: `https://images.pexels.com/photos/${pexelsIds[i % pexelsIds.length]
-                }/pexels-photo-${pexelsIds[i % pexelsIds.length]
-                }.jpeg?auto=compress&cs=tinysrgb&w=1200`,
-            price: Math.floor(Math.random() * 40000) + 8000,
-            rating: (Math.random() * 1.5 + 8.2).toFixed(1),
-            reviews: Math.floor(Math.random() * 4000) + 200,
-        };
-    });
+type HotelListing = {
+    id: string | number;
+    name: string;
+    city: string;
+    image: string;
+    stars: number | null;
+    affiliate_link: string | null;
 };
+
+// Only results returned by the hotel's public listing API are displayed here.
 
 // ============================================================================
 // PAGE
@@ -138,60 +72,68 @@ const generateHotels = () => {
 function HotelsContent() {
     const params = useSearchParams();
 
-    const initialCity = params.get("city") || "";
-
+    const initialCity = params.get("city")?.trim() || "Mumbai";
     const [search, setSearch] = useState(initialCity);
-    const [hotels, setHotels] = useState<any[]>([]);
-    const [filteredHotels, setFilteredHotels] = useState<any[]>([]);
+    const [requestedCity, setRequestedCity] = useState(initialCity);
+    const [hotels, setHotels] = useState<HotelListing[]>([]);
+    const [filteredHotels, setFilteredHotels] = useState<HotelListing[]>([]);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        const data = generateHotels();
-
-        setHotels(data);
-
-        if (initialCity) {
-            const filtered = data.filter((h) =>
-                h.city.toLowerCase().includes(initialCity.toLowerCase())
-            );
-
-            setFilteredHotels(filtered);
-        } else {
-            setFilteredHotels(data);
-        }
+        setSearch(initialCity);
+        setRequestedCity(initialCity);
     }, [initialCity]);
 
-    const applyFilters = (
-        currentSearch = search,
-        currentStars = selectedStars
-    ) => {
-        let results = hotels;
+    useEffect(() => {
+        const controller = new AbortController();
+        setHotels([]);
+        setFilteredHotels([]);
+        setLoading(true);
+        setError("");
+        setSelectedStars([]);
 
-        if (currentSearch) {
-            results = results.filter(
-                (h) =>
-                    h.city.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                    h.name.toLowerCase().includes(currentSearch.toLowerCase())
-            );
+        async function loadHotels() {
+            try {
+                const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}`, {
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+                if (!response.ok) throw new Error("Hotel listings unavailable");
+                const data: unknown = await response.json();
+                if (!Array.isArray(data)) throw new Error("Unexpected hotel response");
+                if (!controller.signal.aborted) {
+                    setHotels(data as HotelListing[]);
+                    setFilteredHotels(data as HotelListing[]);
+                }
+            } catch {
+                if (!controller.signal.aborted) setError("Unable to load hotel listings. Try another destination.");
+            } finally {
+                if (!controller.signal.aborted) setLoading(false);
+            }
         }
 
-        if (currentStars.length > 0) {
-            results = results.filter((h) =>
-                currentStars.includes(Math.floor(Number(h.rating)))
-            );
-        }
+        void loadHotels();
+        return () => controller.abort();
+    }, [requestedCity]);
 
-        setFilteredHotels(results);
+    const applyFilters = (_currentSearch = search, currentStars = selectedStars) => {
+        setFilteredHotels(hotels.filter((hotel) =>
+            currentStars.length === 0 || (hotel.stars !== null && currentStars.includes(hotel.stars))
+        ));
+    };
+
+    const runSearch = () => {
+        const city = search.trim();
+        if (city && city.length <= 80) setRequestedCity(city);
     };
 
     const categories = [
-        { icon: Hotel, label: "Hotels", active: true },
-        { icon: Plane, label: "Flights" },
-        { icon: Car, label: "Car Rentals" },
-        { icon: Building2, label: "Real Estate" },
-        { icon: Mountain, label: "Adventures" },
-        { icon: Utensils, label: "Food Tours" },
-        { icon: Trees, label: "Nature" },
+        { icon: Hotel, label: "Hotels", href: "/hotels", active: true },
+        { icon: Plane, label: "Flights", href: "/flights", active: false },
+        { icon: Mountain, label: "Tours & Activities", href: "/tours", active: false },
+        { icon: Building2, label: "Real Estate", href: "/real-estate", active: false },
     ];
 
     return (
@@ -213,7 +155,7 @@ function HotelsContent() {
                     {/* TOP NAV */}
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                         {categories.map((item, index) => (
-                            <button
+                            <a href={item.href}
                                 key={index}
                                 className={`shrink-0 flex items-center gap-2 px-4 py-3 rounded-full border transition-all ${item.active
                                     ? "bg-[var(--card)] border-[var(--border)] text-[var(--text)]"
@@ -224,7 +166,7 @@ function HotelsContent() {
                                 <span className="text-xs font-semibold whitespace-nowrap">
                                     {item.label}
                                 </span>
-                            </button>
+                            </a>
                         ))}
                     </div>
 
@@ -242,8 +184,8 @@ function HotelsContent() {
                         </h1>
 
                         <p className="mt-4 text-sm text-white md:text-lg text-[var(--text-soft)] max-w-2xl">
-                            AI-powered hotel discovery engine with real-time pricing,
-                            premium stays, real-estate integration and global experiences.
+                            Explore available hotel listings worldwide, then confirm
+                            prices, room details and availability with the booking partner.
                         </p>
                     </div>
 
@@ -260,9 +202,9 @@ function HotelsContent() {
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) =>
-                                        e.key === "Enter" && applyFilters()
+                                        e.key === "Enter" && runSearch()
                                     }
-                                    placeholder="Search destination or hotel..."
+                                    placeholder="Search destination..."
                                     className="bg-transparent outline-none text-sm w-full min-w-0"
                                 />
                             </div>
@@ -274,7 +216,7 @@ function HotelsContent() {
                                 />
 
                                 <span className="text-sm truncate">
-                                    Check-in — Check-out
+                                    Choose dates with partner
                                 </span>
                             </div>
 
@@ -285,12 +227,12 @@ function HotelsContent() {
                                 />
 
                                 <span className="text-sm truncate">
-                                    2 Guests · 1 Room
+                                    Choose guests with partner
                                 </span>
                             </div>
 
                             <button
-                                onClick={() => applyFilters()}
+                                onClick={runSearch}
                                 className="gth-btn-gold rounded-2xl px-6 py-4 text-sm font-bold flex items-center justify-center gap-2"
                             >
                                 <Search size={18} />
