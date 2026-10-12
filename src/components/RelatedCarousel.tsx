@@ -50,14 +50,15 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                     related.map((item: any) => (
                         <Link
                             key={item.id}
-                            href={`/tours/${item.city_slug}`}
+                            href={`/tours/${encodeURIComponent(String(item.id ?? item.city_slug))}`}
                             className="min-w-[300px] snap-start group rounded-2xl overflow-hidden gth-glass/5 backdrop-blur-md border border-white/10 hover:scale-[1.03] transition"
                         >
 
                             {/* IMAGE FIX */}
                             <div className="relative h-48 w-full overflow-hidden">
                                 <img
-                                    src={item.image_url}
+                                    src={typeof item.image_url === "string" && (item.image_url.startsWith("/") && !item.image_url.startsWith("//") || item.image_url.startsWith("https://")) ? item.image_url : "/placeholder.jpg"}
+                                    alt={item.title || "Tour experience"}
                                     className="w-full h-full object-cover object-center brightness-110 contrast-110"
                                 />
 
