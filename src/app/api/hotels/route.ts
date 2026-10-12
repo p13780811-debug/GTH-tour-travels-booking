@@ -40,6 +40,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Enter a valid destination" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
+  const rawPage = searchParams.get("page") ?? "1";
+  if (!/^[1-9][0-9]{0,3}$/.test(rawPage) || Number(rawPage) > 100) {
+    return NextResponse.json({ error: "Invalid page" }, { status: 400 });
+  }
+  const page = Number(rawPage);
+  const PAGE_SIZE = 24;
+  const offset = (page - 1) * PAGE_SIZE;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -54,7 +61,8 @@ export async function GET(req: Request) {
       .select("id,name,city,image_url,affiliate_link,is_public")
       .eq("is_public", true)
       .ilike("city", `%${city}%`)
-      .limit(24);
+      .order("name")
+      .range(offset, offset + PAGE_SIZE - 1);
 
     // The OSM discovery catalog is independent of supplier inventory.
     // A legacy supplier failure must not hide otherwise valid OSM records.
@@ -76,7 +84,7 @@ export async function GET(req: Request) {
       .select("source_id,name,city,category")
       .ilike("city", `%${city}%`)
       .order("name")
-      .limit(24);
+      .range(offset, offset + PAGE_SIZE - 1);
 
     if (error && catalogError) {
       return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
@@ -86,7 +94,7 @@ export async function GET(req: Request) {
     const osm = (catalog || [])
       .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() &&
         !existingNames.has(hotel.name.trim().toLowerCase()))
-      .slice(0, Math.max(0, 24 - listings.length))
+      .slice(0, Math.max(0, PAGE_SIZE - listings.length))
       .map((hotel) => ({
         id: `osm:${hotel.source_id}`,
         name: hotel.name,
@@ -98,7 +106,15 @@ export async function GET(req: Request) {
         source_license: "ODbL-1.0",
       }));
 
-    return NextResponse.json([...listings, ...osm], { headers: { "Cache-Control": "no-store" } });
+    const results = [...listings, ...osm];
+    return NextResponse.json(results, {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-GTH-Page": String(page),
+        "X-GTH-Page-Size": String(PAGE_SIZE),
+        "X-GTH-Has-More": String((data?.length ?? 0) === PAGE_SIZE || (catalog?.length ?? 0) === PAGE_SIZE),
+      },
+    });
   } catch {
     return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
