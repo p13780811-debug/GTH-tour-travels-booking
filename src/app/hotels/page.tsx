@@ -368,19 +368,19 @@ function HotelsContent() {
                                 </div>
 
                                 <h4 className="mt-4 text-xl font-black leading-tight">
-                                    Best Time To Book Dubai Hotels:
+                                    How hotel partner rates work
                                 </h4>
 
                                 <div className="mt-4 flex items-center gap-2 text-emerald-400">
                                     <TrendingUp size={16} />
                                     <span className="text-sm">
-                                        Prices dropping by 18%
+                                        Rates may change until confirmed by the partner
                                     </span>
                                 </div>
 
-                                <button className="mt-5 w-full gth-btn-gold rounded-2xl py-3 text-sm font-bold">
-                                    Activate AI Saver
-                                </button>
+                                <p className="mt-5 text-xs text-[var(--text-soft)]">
+                                    Compare room types, cancellation conditions, taxes and final prices on the partner site.
+                                </p>
                             </div>
                         </div>
                     </aside>
@@ -395,6 +395,15 @@ function HotelsContent() {
                             {[5, 4, 3, 2, 1].map((star) => (
                                 <button
                                     key={star}
+                                    type="button"
+                                    aria-pressed={selectedStars.includes(star)}
+                                    onClick={() => {
+                                        const updated = selectedStars.includes(star)
+                                            ? selectedStars.filter((value) => value !== star)
+                                            : [...selectedStars, star];
+                                        setSelectedStars(updated);
+                                        applyFilters(search, updated);
+                                    }}
                                     className="shrink-0 px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs"
                                 >
                                     {star} Stars
@@ -406,24 +415,29 @@ function HotelsContent() {
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-xl md:text-2xl font-black">
-                                    {filteredHotels.length.toLocaleString()} Premium
-                                    Properties
+                                    {filteredHotels.length.toLocaleString()} Hotel
+                                    Listings
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    AI-ranked luxury inventory across global cities
+                                    Available listings for {requestedCity}
                                 </p>
                             </div>
 
                             <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3">
                                 <Radar size={16} />
                                 <span className="text-xs">
-                                    Live Dynamic Pricing
+                                    Final rates on partner site
                                 </span>
                             </div>
                         </div>
 
                         {/* HOTEL CARDS */}
+                        {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
+                        {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
+                        {!loading && !error && filteredHotels.length === 0 && (
+                            <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or remove star filters.</p>
+                        )}
                         <div className="space-y-5">
                             {filteredHotels.slice(0, 30).map((hotel) => (
                                 <div
@@ -442,12 +456,12 @@ function HotelsContent() {
                                             <div className="absolute top-4 left-4 flex gap-2">
                                                 <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
                                                     <Diamond size={12} />
-                                                    Luxury
+                                                    Hotel
                                                 </div>
 
                                                 <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
                                                     <Clock3 size={12} />
-                                                    Instant Book
+                                                    Partner booking
                                                 </div>
                                             </div>
                                         </div>
@@ -463,7 +477,7 @@ function HotelsContent() {
                                                         </h3>
 
                                                         <div className="flex items-center gap-1 text-amber-400">
-                                                            {Array.from({ length: 5 }).map(
+                                                            {Array.from({ length: hotel.stars ?? 0 }).map(
                                                                 (_, i) => (
                                                                     <Star
                                                                         key={i}
@@ -483,40 +497,24 @@ function HotelsContent() {
 
                                                         <div className="flex items-center gap-1">
                                                             <ShieldCheck size={14} />
-                                                            Verified Property
+                                                            Confirm details with partner
                                                         </div>
 
                                                         <div className="flex items-center gap-1">
                                                             <Globe2 size={14} />
-                                                            International Standard
+                                                            Partner policies apply
                                                         </div>
                                                     </div>
 
-                                                    {/* FEATURES */}
-                                                    <div className="mt-5 flex flex-wrap gap-2">
-                                                        {[
-                                                            "Infinity Pool",
-                                                            "Spa",
-                                                            "Ocean View",
-                                                            "Fine Dining",
-                                                            "Smart Rooms",
-                                                        ].map((feature) => (
-                                                            <div
-                                                                key={feature}
-                                                                className="px-3 py-2 rounded-full bg-[var(--card)] text-xs border border-[var(--border)]"
-                                                            >
-                                                                {feature}
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                    <p className="mt-5 text-sm text-[var(--text-soft)]">
+                                                        Room features and amenities should be checked with the partner before booking.
+                                                    </p>
 
                                                     {/* DESCRIPTION */}
                                                     <p className="mt-5 text-sm leading-7 text-[var(--text-soft)] max-w-2xl">
-                                                        Experience elite hospitality with
-                                                        AI-curated comfort, panoramic luxury
-                                                        suites, premium wellness infrastructure
-                                                        and world-class international service
-                                                        standards.
+                                                        This hotel listing is provided for discovery. Check
+                                                        room types, location, cancellation conditions and
+                                                        up-to-date availability before placing a booking.
                                                     </p>
                                                 </div>
 
@@ -527,11 +525,11 @@ function HotelsContent() {
                                                             <div className="flex items-center justify-between">
                                                                 <div>
                                                                     <div className="text-3xl font-black">
-                                                                        {hotel.rating}
+                                                                        {hotel.stars ?? "—"}
                                                                     </div>
 
                                                                     <div className="text-xs text-[var(--text-soft)]">
-                                                                        Exceptional
+                                                                        Hotel stars
                                                                     </div>
                                                                 </div>
 
@@ -541,36 +539,42 @@ function HotelsContent() {
                                                                     </div>
 
                                                                     <div className="font-bold">
-                                                                        {hotel.reviews}
+                                                                        Not available
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             <div className="mt-6">
                                                                 <div className="text-xs text-[var(--text-soft)]">
-                                                                    Starting From
+                                                                    Price
                                                                 </div>
 
-                                                                <div className="mt-1 text-4xl font-black">
-                                                                    ₹
-                                                                    {hotel.price.toLocaleString()}
+                                                                <div className="mt-1 text-base font-bold">
+                                                                    Check price with partner
                                                                 </div>
 
                                                                 <div className="text-xs text-[var(--text-soft)] mt-1">
-                                                                    Includes taxes & fees
+                                                                    Taxes and fees confirmed by partner
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <div className="mt-6 space-y-3">
-                                                            <button className="w-full gth-btn-gold rounded-2xl py-4 text-sm font-bold flex items-center justify-center gap-2">
-                                                                View Availability
-                                                                <ChevronRight size={16} />
-                                                            </button>
-
-                                                            <button className="w-full gth-btn rounded-2xl py-4 text-sm font-semibold">
-                                                                Save Property
-                                                            </button>
+                                                            {hotel.affiliate_link ? (
+                                                                <a
+                                                                    href={hotel.affiliate_link}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer sponsored"
+                                                                    className="w-full gth-btn-gold rounded-2xl py-4 text-sm font-bold flex items-center justify-center gap-2"
+                                                                >
+                                                                    Continue to partner
+                                                                    <ChevronRight size={16} />
+                                                                </a>
+                                                            ) : (
+                                                                <p className="text-xs text-[var(--text-soft)]">
+                                                                    Partner booking link not available for this listing.
+                                                                </p>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
