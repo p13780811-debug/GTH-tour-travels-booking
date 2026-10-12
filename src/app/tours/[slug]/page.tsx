@@ -1,229 +1,158 @@
-import { createClient } from "@supabase/supabase-js"
-import Link from "next/link"
-import RelatedCarousel from "@/components/RelatedCarousel"
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+import { ArrowLeft, ArrowUpRight, Compass, ShieldCheck } from "lucide-react";
+import RelatedCarousel from "@/components/RelatedCarousel";
 
+export const dynamic = "force-dynamic";
+type Props = { params: Promise<{ slug: string }> };
+const fields = "id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link";
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function publicPartnerLink(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 2048) return null;
+  try {
+    const url = new URL(value);
+    const domains = ["klook.com", "trip.com", "booking.com", "hotellook.com", "viator.com",
+      "getyourguide.com", "expedia.com", "tp.media", "tpo.lv"];
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    const host = url.hostname.toLowerCase();
+    return domains.some((domain) => host === domain || host.endsWith(`.${domain}`))
+      ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
-export const dynamic = "force-dynamic"
+function imageUrl(value: unknown): string {
+  if (typeof value !== "string") return "/placeholder.jpg";
+  if (value.startsWith("/") && !value.startsWith("//")) return value;
+  try { return new URL(value).protocol === "https:" ? value : "/placeholder.jpg"; }
+  catch { return "/placeholder.jpg"; }
+}
 
-export default async function Page({ params }: any) {
+function quote(price: unknown, currency: unknown): string {
+  if (typeof price !== "number" || !Number.isFinite(price) || price <= 0 ||
+      typeof currency !== "string" || !/^[A-Z]{3}$/.test(currency)) return "Confirm current price with partner";
+  try {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(price) + " • listed";
+  } catch {
+    return "Confirm current price with partner";
+  }
+}
 
-    const { slug } = await params
+async function getTour(slug: string) {
+  if (!/^[a-zA-Z0-9-]{1,100}$/.test(slug)) return null;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  const client = createClient(url, key);
+  const isId = /^\d+$/.test(slug) || /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(slug);
+  const query = client.from("tours").select(fields).limit(1);
+  const { data, error } = isId
+    ? await query.eq("id", slug).maybeSingle()
+    : await query.eq("city_slug", slug).maybeSingle();
+  if (error || !data) return null;
+  return data;
+}
 
-    const symbolMap: any = {
-        INR: "₹",
-        USD: "$",
-        EUR: "€"
-    };
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const tour = await getTour(slug);
+  if (!tour) return { title: "Tour not found | GTH PRO" };
+  return {
+    title: `${tour.title} | GTH PRO Tours`,
+    description: `Explore ${tour.title}. Review the itinerary, final price, availability and cancellation terms with the booking partner.`,
+  };
+}
 
-    // 🔥 MAIN TOUR
-    const { data: tour } = await supabase
-        .from("tours")
-        .select("id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link")
-        .eq("city_slug", slug)
-        .single()
+export default async function TourDetailPage({ params }: Props) {
+  const { slug } = await params;
+  const tour = await getTour(slug);
+  if (!tour) notFound();
 
-    if (!tour) {
-        return <div className="text-white p-10">Tour not found</div>
+  const partner = publicPartnerLink(tour.affiliate_link);
+  const shownPrice = quote(tour.price_numeric, tour.currency);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let related: Record<string, unknown>[] = [];
+  if (url && key && typeof tour.country === "string" && tour.country.trim()) {
+    try {
+      const client = createClient(url, key);
+      const response = await client.from("tours").select(fields)
+        .eq("country", tour.country).neq("id", tour.id).limit(8);
+      if (!response.error) related = (response.data || []) as Record<string, unknown>[];
+    } catch {
+      // A missing recommendations feed must not break the actual experience page.
     }
+  }
 
-    // 🔥 SMART AI-LIKE RELATED SYSTEM
-
-    // normalize price range
-    const basePrice = tour.price_numeric || 0;
-    const minPrice = basePrice * 0.7;
-    const maxPrice = basePrice * 1.3;
-
-    // 🔥 1. SAME CITY (BEST MATCH)
-    let { data: related } = await supabase
-        .from("tours")
-        .select("id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link")
-        .neq("id", tour.id)
-        .eq("city_slug", slug)
-        .limit(12)
-
-    // 🔥 2. SAME COUNTRY + PRICE RANGE
-    if (!related || related.length < 2) {
-        const { data: fallback1 } = await supabase
-            .from("tours")
-            .select("id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link")
-            .neq("id", tour.id)
-            .eq("country", tour.country)
-            .gte("price_numeric", minPrice)
-            .lte("price_numeric", maxPrice)
-            .limit(4)
-
-        related = [...(related || []), ...(fallback1 || [])]
-    }
-
-    // 🔥 3. TITLE KEYWORD MATCH (AI FEEL 😈)
-    if (!related || related.length < 3) {
-        const keyword = tour.title.split(" ")[0] // simple keyword
-
-        const { data: fallback2 } = await supabase
-            .from("tours")
-            .select("id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link")
-            .ilike("title", `%${keyword}%`)
-            .neq("id", tour.id)
-            .limit(4)
-
-        related = [...(related || []), ...(fallback2 || [])]
-    }
-
-    // 🔥 4. FINAL RANDOM FILL (NEVER EMPTY)
-    if (!related || related.length < 4) {
-        const { data: fallback3 } = await supabase
-            .from("tours")
-            .select("id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link")
-            .neq("id", tour.id)
-            .limit(6)
-
-        related = [...(related || []), ...(fallback3 || [])]
-    }
-
-    // 🔥 REMOVE DUPLICATES + LIMIT
-    const uniqueMap = new Map()
-    related?.forEach((item: any) => {
-        if (!uniqueMap.has(item.id)) {
-            uniqueMap.set(item.id, item)
-        }
-    })
-
-    const LIMIT = 12
-    related = Array.from(uniqueMap.values()).slice(0, LIMIT)
-
-    // Only known travel partner destinations may be used for external checkout.
-    const allowedHosts = ["klook.com", "trip.com", "booking.com", "hotellook.com", "tp.media", "tpo.lv"];
-    let affiliate: string | null = null;
-    if (typeof tour.affiliate_link === "string" && tour.affiliate_link.length <= 2048) {
-        try {
-            const url = new URL(tour.affiliate_link);
-            const host = url.hostname.toLowerCase();
-            if (url.protocol === "https:" && !url.username && !url.password &&
-                allowedHosts.some((domain) => host === domain || host.endsWith(`.${domain}`))) {
-                affiliate = url.toString();
-            }
-        } catch {
-            affiliate = null;
-        }
-    }
-
-    const listedPrice = Number(tour.price_numeric) > 0
-        ? `${symbolMap[tour.currency] ?? ""}${Number(tour.price_numeric).toLocaleString()}`
-        : "Confirm price with partner";
-
-    return (
-        <div className="min-h-screen bg-black text-white">
-
-            {/* 🔥 HERO */}
-            <div className="relative h-[420px] w-full flex items-center justify-center">
-
-                <img
-                    src={tour.image_url}
-                    className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-
-                <div className="absolute inset-0 bg-naviblue"></div>
-
-                <div className="relative z-10 text-center px-4">
-
-                    <h1 className="text-4xl md:text-6xl font-black">
-                        {tour.title}
-                    </h1>
-
-                    <p className="text-yellow-500 text-2xl mt-2 font-bold">
-                        {listedPrice}
-                    </p>
-
-                    {affiliate ? (
-                        <a
-                            href={affiliate}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                            className="inline-block mt-6 gth-btn-gold text-black px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition"
-                        >
-                            Check with booking partner →
-                        </a>
-                    ) : (
-                        <p className="mt-6 text-sm text-gray-300">Partner booking link is not available for this tour.</p>
-                    )}
-
-                    <p className="text-sm text-gray-400 mt-3">
-                        Prices, availability and booking conditions must be confirmed with the partner.
-                    </p>
-
-                </div>
-            </div>
-
-            {/* 🔥 MAIN CONTENT */}
-            <div className="max-w-6xl mx-auto p-6 grid md:grid-cols-3 gap-8">
-
-                {/* LEFT */}
-                <div className="md:col-span-2">
-
-                    {/* DESCRIPTION */}
-                    <div className="bg-naviblue p-6 rounded-xl border border-white/5">
-                        <h2 className="text-xl font-bold mb-3">About this tour</h2>
-                        <p className="text-gray-400">
-                            Explore {tour.title}. Confirm itinerary, inclusions and tour conditions with the provider before booking.
-                        </p>
-                    </div>
-
-                    {/* 🔥 HIGHLIGHTS */}
-                    <div className="mt-6 bg-naviblue p-6 rounded-xl border border-white/5">
-                        <h2 className="text-xl font-bold mb-3">Highlights</h2>
-
-                        <ul className="space-y-2 text-gray-300">
-                            <li>Check itinerary and meeting point with the provider</li>
-                            <li>Confirm cancellation and refund terms</li>
-                            <li>Verify any taxes, extras and availability</li>
-                        </ul>
-                    </div>
-
-                </div>
-
-                {/* 🔥 RIGHT SIDEBAR (CONVERSION BOX) */}
-                <div className="space-y-6">
-
-                    <div className="bg-naviblue p-6 rounded-xl border border-white/5 sticky top-6">
-
-                        <p className="text-2xl font-black text-yellow-500">
-                            {listedPrice}
-                        </p>
-
-                        {affiliate ? (
-                            <a
-                                href={affiliate}
-                                target="_blank"
-                                rel="noopener noreferrer sponsored"
-                                className="block mt-6 gth-btn-gold hover:bg-yellow-400 text-black py-4 text-center rounded-xl font-black text-lg transition-all"
-                            >
-                                Continue to booking partner →
-                            </a>
-                        ) : (
-                            <p className="mt-6 text-sm text-gray-300">Online partner booking unavailable.</p>
-                        )}
-
-                        <p className="text-xs text-gray-400 mt-3">
-                            Booking, payment and confirmation take place on the partner website.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <RelatedCarousel related={related} symbolMap={symbolMap} />
-
-
-
+  const symbolMap: Record<string, string> = { INR: "₹", USD: "$", EUR: "€" };
+  return (
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <img src={imageUrl(tour.image_url)} alt="" className="h-full w-full object-cover opacity-40" />
+          <div className="absolute inset-0 bg-[var(--bg)]/75" />
         </div>
+        <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+          <Link href="/tours" className="inline-flex items-center gap-2 text-sm underline"><ArrowLeft size={16} /> All tours</Link>
+          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[var(--text-soft)]">
+            {tour.city || tour.city_slug} {tour.country ? `• ${tour.country}` : ""}
+          </p>
+          <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight md:text-6xl">{tour.title}</h1>
+          <p className="mt-4 text-2xl font-bold">{shownPrice}</p>
+          <p className="mt-2 max-w-3xl text-sm text-[var(--text-soft)]">
+            Listing price, if available, is not a live date-specific quote. Confirm all costs and conditions on the partner site.
+          </p>
+          {partner ? (
+            <a href={partner} target="_blank" rel="noopener noreferrer sponsored"
+              className="gth-btn-gold mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold">
+              Continue to booking partner <ArrowUpRight size={17} />
+            </a>
+          ) : (
+            <p role="status" className="mt-6 text-sm">Online partner booking link is unavailable for this listing.</p>
+          )}
+        </div>
+      </section>
 
-    )
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-12 md:grid-cols-[minmax(0,1fr)_300px] md:px-6">
+        <div className="gth-glass rounded-2xl border border-[var(--border)] p-6">
+          <h2 className="text-xl font-semibold">Before booking this experience</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
+            Explore {tour.title}. Detailed itinerary, operating dates, accessibility,
+            traveler requirements, pickup arrangements and inclusions should be confirmed with the actual provider.
+          </p>
+          <ul className="mt-5 list-inside list-disc space-y-2 text-sm text-[var(--text-soft)]">
+            <li>Confirm meeting point, timings and duration.</li>
+            <li>Review total prices, taxes, fees and optional extras.</li>
+            <li>Check date-specific availability and cancellation terms.</li>
+            <li>Review safety and age requirements for your group.</li>
+          </ul>
+        </div>
+        <aside className="gth-glass self-start rounded-2xl border border-[var(--border)] p-6">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <h2 className="mt-3 font-semibold">Booking transparency</h2>
+          <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
+            GTH PRO lists experiences. Payment, confirmation, cancellations and traveler support are handled by the booking provider.
+          </p>
+          <Link href="/hotels" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold underline">
+            Find hotels for your trip <Compass size={16} />
+          </Link>
+        </aside>
+      </section>
+
+      {related.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-12 md:px-6">
+          <RelatedCarousel related={related} symbolMap={symbolMap} />
+        </section>
+      )}
+      <nav aria-label="Continue travel planning" className="mx-auto flex max-w-7xl flex-wrap gap-4 px-4 pb-12 text-sm md:px-6">
+        <Link href="/flights" className="underline">Flights</Link>
+        <Link href="/hotels" className="underline">Hotels</Link>
+        <Link href="/guides" className="underline">Travel guides</Link>
+        <Link href="/destinations" className="underline">Destinations</Link>
+      </nav>
+    </main>
+  );
 }
