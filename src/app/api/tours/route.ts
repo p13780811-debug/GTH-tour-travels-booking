@@ -1,23 +1,22 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { searchTours } from "@/lib/tours";
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export async function GET() {
-    const { data, error } = await supabase
-        .from("tours")
-        .select("*").limit(100);
-
-    if (error) {
-        return NextResponse.json({ error: "Data unavailable" }, { status: 500 });
-    }
-
-    return NextResponse.json(data, {
-        headers: {
-            "Cache-Control": "s-maxage=60, stale-while-revalidate",
-        },
+export async function GET(req: Request) {
+  const params = new URL(req.url).searchParams;
+  const result = await searchTours({
+    city: params.get("city"),
+    category: params.get("category"),
+    minPrice: params.get("minPrice"),
+    maxPrice: params.get("maxPrice"),
+  });
+  if (result.error) {
+    return NextResponse.json({ error: result.error }, {
+      status: result.status,
+      headers: { "Cache-Control": "no-store" },
     });
+  }
+
+  return NextResponse.json({ items: result.items, totalShown: result.items.length, source: "GTH PRO tour listings" }, {
+    headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
+  });
 }
