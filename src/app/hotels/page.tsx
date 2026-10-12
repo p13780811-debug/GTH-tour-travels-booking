@@ -108,7 +108,7 @@ function HotelsContent() {
                     setFilteredHotels(data as HotelListing[]);
                 }
             } catch {
-                if (!controller.signal.aborted) setError("Unable to load hotel listings. Try another destination.");
+                if (!controller.signal.aborted) setError("Hotel search is currently unavailable. Please try again later.");
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
@@ -420,7 +420,7 @@ function HotelsContent() {
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    Available listings for {requestedCity}
+                                    Source-backed listings for {requestedCity}
                                 </p>
                             </div>
 
