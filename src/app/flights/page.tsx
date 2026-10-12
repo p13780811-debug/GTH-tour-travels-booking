@@ -7,6 +7,14 @@ import PopularDestinations from "@/components/flights/PopularDestinations";
 import { flightDestinations } from "@/data/flight/destinations";
 
 
+type FlightResult = {
+    origin?: string;
+    destination?: string;
+    airline?: string;
+    departure_at?: string;
+    price: number;
+};
+
 const getAirlineLogo = (name?: string) => {
     if (!name) return null;
 
@@ -28,33 +36,61 @@ const getAirlineLogo = (name?: string) => {
 function FlightsContent() {
     const params = useSearchParams();
 
-    const origin = params.get("origin") || "DEL";
+    const origin = params.get("origin") || "CCU";
     const destination = params.get("destination") || "BOM";
     const departDate = params.get("depart_date") || "";
 
-    const [flights, setFlights] = useState<any[]>([]);
-    const [filteredFlights, setFilteredFlights] = useState<any[]>([]);
+    const [flights, setFlights] = useState<FlightResult[]>([]);
+    const [filteredFlights, setFilteredFlights] = useState<FlightResult[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const [airlineFilter, setAirlineFilter] = useState("");
     const [sortType, setSortType] = useState("cheapest");
 
-    // ✅ FETCH
+    // Fare data is cached by the provider; it does not confirm booking availability.
     useEffect(() => {
-        const fetchFlights = async () => {
-            setLoading(true);
+        const controller = new AbortController();
+        setFlights([]);
+        setFilteredFlights([]);
+        setError("");
 
-            const res = await fetch(
-                `/api/flights/search?origin=${origin}&destination=${destination}&depart_date=${departDate}`
-            );
-
-            const data = await res.json();
-            console.log("FLIGHT DATA 👉", data); // ✅ यहीं डाल
-            setFlights(data);
-            setFilteredFlights(data);
+        if (!departDate) {
             setLoading(false);
-        };
+            return () => controller.abort();
+        }
 
-        fetchFlights();
+        if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination) || origin === destination ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(departDate)) {
+            setError("Please choose valid airports and a departure date.");
+            setLoading(false);
+            return () => controller.abort();
+        }
+
+        setLoading(true);
+        async function fetchFlights() {
+            try {
+                const query = new URLSearchParams({ origin, destination, depart_date: departDate });
+                const response = await fetch(`/api/flights/search?${query}`, {
+                    signal: controller.signal,
+                    cache: "no-store",
+                });
+                if (!response.ok) throw new Error("Flight search failed");
+                const data: unknown = await response.json();
+                if (!Array.isArray(data)) throw new Error("Unexpected flight response");
+                const valid = data.filter((flight): flight is FlightResult =>
+                    flight !== null && typeof flight === "object" &&
+                    typeof flight.price === "number" && Number.isFinite(flight.price) && flight.price > 0
+                );
+                if (!controller.signal.aborted) setFlights(valid);
+            } catch {
+                if (!controller.signal.aborted) setError("Flight fares are temporarily unavailable. Please try again.");
+            } finally {
+                if (!controller.signal.aborted) setLoading(false);
+            }
+        }
+
+        void fetchFlights();
+        return () => controller.abort();
     }, [origin, destination, departDate]);
 
     // ✅ FILTER + SORT
@@ -79,13 +115,13 @@ function FlightsContent() {
     // ✅ CHEAPEST
     const cheapest =
         flights.length > 0
-            ? Math.min(...flights.map((f) => f.price || Infinity))
+            ? Math.min(...flights.map((f) => f.price))
             : Infinity;
 
-    const groupedByDate: any = {};
+    const groupedByDate: Record<string, number> = {};
 
     flights.forEach((f) => {
-        if (!f.departure_at) return;
+        if (!f.departure_at || typeof f.departure_at !== "string") return;
 
         const [date] = f.departure_at.split("T");
 
@@ -148,7 +184,7 @@ function FlightsContent() {
 
             {/* CALENDAR */}
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
-                {Object.entries(groupedByDate).map(([date, price]: any) => (
+                {Object.entries(groupedByDate).map(([date, price]) => (
                     <div
                         key={date}
                         className="bg-black/40 border border-white/10 rounded-xl p-3 text-center text-xs hover:border-yellow-500 transition"
@@ -160,10 +196,15 @@ function FlightsContent() {
             </div>
 
             {/* LIST */}
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                filteredFlights.map((f, i) => {
+            {loading && <p role="status">Loading available fare data...</p>}
+            {error && <p role="alert">{error}</p>}
+            {!loading && !error && !departDate && (
+                <p role="status">Select a departure date above to view available fare data.</p>
+            )}
+            {!loading && !error && departDate && filteredFlights.length === 0 && (
+                <p role="status">No displayed fares found for this route and date. Try a different date or route.</p>
+            )}
+            {!loading && !error && filteredFlights.map((f, i) => {
                     const isBest = f.price === cheapest;
                     const logo = getAirlineLogo(f.airline);
 
@@ -189,7 +230,7 @@ function FlightsContent() {
                                 </p>
                                 {isBest && (
                                     <span className="text-[10px] px-2 py-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black shadow-md rounded font-bold">
-                                        BEST DEAL
+                                        Lowest displayed fare
                                     </span>
                                 )}
                             </div>
@@ -217,27 +258,20 @@ function FlightsContent() {
                                     ₹{f.price?.toLocaleString()}
                                 </div>
 
-                                <button
-                                    onClick={() => {
-                                        const formattedDate = departDate.replaceAll("-", "");
-
-                                        const searchUrl = `https://www.aviasales.com/search/${origin}${destination}${formattedDate}`;
-
-                                        window.open(
-                                            `https://jet-tickets.com/?marker=417668&u=${encodeURIComponent(searchUrl)}`,
-                                            "_blank"
-                                        );
-                                    }}
-                                    className="bg-gradient-to-r from-yellow-500 to-yellow-300 text-black px-5 py-2 rounded-full text-xs font-bold tracking-widest hover:scale-105 transition-all duration-300 shadow-lg"
+                                <a
+                                    href={`https://www.aviasales.com/search?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&depart_date=${encodeURIComponent(departDate)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer sponsored"
+                                    className="gth-btn-gold text-black px-5 py-2 rounded-full text-xs font-bold tracking-widest hover:scale-105 transition-all duration-300 shadow-lg"
                                 >
-                                    check availability
-                                </button>
+                                    Check with booking partner
+                                </a>
                             </div>
                         </div>
                     );
                 })
 
-            )}
+            }
         </div>
 
     )

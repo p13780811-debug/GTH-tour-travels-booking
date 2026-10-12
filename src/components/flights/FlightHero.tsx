@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
     Plane,
     Calendar,
@@ -18,12 +19,13 @@ type Place = {
 };
 
 export default function FlightHero() {
+    const router = useRouter();
     const [tab, setTab] = useState("flights");
 
     const [origin, setOrigin] = useState("Kolkata (CCU)");
     const [destination, setDestination] = useState("");
 
-    const [originCode, setOriginCode] = useState("");
+    const [originCode, setOriginCode] = useState("CCU");
     const [destCode, setDestCode] = useState("");
 
     const [checkIn, setCheckIn] = useState("");
@@ -96,64 +98,63 @@ export default function FlightHero() {
         setDestCode(tempCode);
     };
 
-    // 🔥 fallback API
-    const fetchIata = async (city: string) => {
-        const res = await fetch(`/api/places?term=${city}`);
-        const data = await res.json();
-        return data[0]?.code || null;
+    const fetchIata = async (city: string): Promise<string | null> => {
+        const match = city.toUpperCase().match(/\\(([A-Z]{3})\\)\\s*$/);
+        if (match) return match[1];
+        if (/^[A-Z]{3}$/.test(city.trim().toUpperCase())) return city.trim().toUpperCase();
+
+        try {
+            const response = await fetch(`/api/places?term=${encodeURIComponent(city)}`);
+            if (!response.ok) return null;
+            const data: unknown = await response.json();
+            if (!Array.isArray(data)) return null;
+            const code = data[0]?.code;
+            return typeof code === "string" && /^[A-Za-z]{3}$/.test(code) ? code.toUpperCase() : null;
+        } catch {
+            return null;
+        }
     };
 
-
-
-    // 🚀 SEARCH
     const handleSearch = async () => {
+        const destinationName = destination.replace(/\\s*\\([A-Za-z]{3}\\)\\s*$/, "").trim();
+
         if (tab === "hotels") {
-            window.open(
-                `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
-                    `https://www.klook.com/en-IN/hotels/searchresult/?city_name=${destination}`
-                )}`,
-                "_blank"
-            );
+            router.push(destinationName ? `/hotels?city=${encodeURIComponent(destinationName)}` : "/hotels");
             return;
         }
 
         if (tab === "tours") {
-            window.open(
-                `https://klook.tpo.lv/IKb6eSUe?u=${encodeURIComponent(
-                    `https://www.klook.com/en-IN/search/result/?query=${destination}`
-                )}`,
-                "_blank"
-            );
+            router.push(destinationName ? `/tours?city=${encodeURIComponent(destinationName)}` : "/tours");
             return;
         }
 
-        // ✈️ flights (UNCHANGED LOGIC)
-        let finalOriginCode = originCode;
-        let finalDestCode = destCode;
-
-        if (!finalOriginCode && origin) {
-            finalOriginCode = await fetchIata(origin);
-        }
-
-        if (!finalDestCode && destination) {
-            finalDestCode = await fetchIata(destination);
-        }
-
-        if (!finalOriginCode || !finalDestCode) {
-            alert("Invalid city");
+        if (!checkIn || !/^\\d{4}-\\d{2}-\\d{2}$/.test(checkIn)) {
+            alert("Choose a departure date.");
             return;
         }
 
-        if (!checkIn) {
-            alert("Select date");
+        const now = new Date();
+        const today = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+        if (checkIn < today) {
+            alert("Departure date cannot be in the past.");
             return;
         }
 
-        const date = new Date(checkIn).toISOString().split("T")[0];
+        const finalOriginCode = originCode || await fetchIata(origin);
+        const finalDestCode = destCode || await fetchIata(destination);
 
-        const url = `https://www.aviasales.com/search?origin=${finalOriginCode}&destination=${finalDestCode}&depart_date=${date}&with_request=true`;
+        if (!finalOriginCode || !finalDestCode || finalOriginCode === finalDestCode) {
+            alert("Choose two different valid airports.");
+            return;
+        }
 
-        window.open(url, "_blank");
+        const query = new URLSearchParams({
+            origin: finalOriginCode,
+            destination: finalDestCode,
+            depart_date: checkIn,
+        });
+
+        router.push(`/flights?${query.toString()}`);
     };
 
     return (
