@@ -9,6 +9,7 @@ interface Blog {
     title: string
     image?: string
     excerpt?: string
+    description?: string
 }
 
 interface BlogSectionProps {
@@ -61,10 +62,9 @@ export default function BlogSection({
 
                         <p className="mt-6 max-w-2xl text-base leading-relaxed text-[var(--text-soft)] md:text-lg">
 
-                            Discover cinematic destination narratives,
-                            elite travel intelligence, premium itineraries,
-                            hidden luxury escapes and global lifestyle
-                            inspiration curated by the GTH ecosystem.
+                            Explore practical travel-planning articles about flights,
+                            hotels, experiences and booking safety. Always confirm
+                            current information with the relevant provider.
 
                         </p>
 
@@ -128,8 +128,7 @@ export default function BlogSection({
 
                                     <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/80 md:text-base">
 
-                                        {blogs[0].excerpt ||
-                                            "Curated travel intelligence, luxury destination insights and editorial storytelling from the world's most premium experiences."}
+                                        {blogs[0].description || blogs[0].excerpt || "Read this travel guide for practical planning information."}
 
                                     </p>
 
@@ -137,7 +136,7 @@ export default function BlogSection({
 
                                         <span className="text-xs font-bold uppercase tracking-[0.24em] text-white/70">
 
-                                            Global Luxury Journal
+                                            Travel resource guide
 
                                         </span>
 
@@ -210,8 +209,7 @@ export default function BlogSection({
 
                                             <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[var(--text-soft)]">
 
-                                                {blog.excerpt ||
-                                                    "Elite destination discoveries, luxury experiences and modern travel inspiration from the GTH ecosystem."}
+                                                {blog.description || blog.excerpt || "Explore a practical travel-planning guide."}
 
                                             </p>
 
@@ -221,7 +219,7 @@ export default function BlogSection({
 
                                             <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--text-soft)]">
 
-                                                Premium Story
+                                                Travel guide
 
                                             </span>
 
