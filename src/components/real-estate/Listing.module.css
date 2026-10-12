@@ -673,3 +673,84 @@
     display: none;
   }
 }
+
+
+/* Property result cards: mobile-first vertical layout */
+.propertyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.propertyGrid > * {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .propertyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .propertyGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .propertyGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .propertyGrid .card {
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+
+  .propertyGrid .media {
+    width: 100%;
+    min-height: 210px;
+  }
+
+  .propertyGrid .cardBody {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .propertyGrid .recordPreview div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .propertyGrid .cardFacts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .propertyGrid .cardFooter {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .propertyGrid .cardFooter > * {
+    width: 100%;
+  }
+
+  .propertyGrid .cardFooter > a:first-child {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .propertyGrid .action.action {
+    width: 100%;
+  }
+}
