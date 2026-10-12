@@ -47,7 +47,7 @@ const categories = [
     { name: "Flights", link: "/flights", description: "Compare & book flights worldwide", image: "/images/mega/flights.jpg" },
     { name: "Hotels", link: "/hotels", description: "Luxury stays & deals", image: "/images/mega/hotels.jpg" },
     { name: "Tours & Activities", link: "/tours", description: "Explore curated experiences", image: "/images/mega/tours.jpg" },
-    { name: "Transfers & Rentals", link: "/cars", description: "Airport & local transport", image: "/images/mega/transfers.jpg" },
+    { name: "Airport Transfers", link: "/transfers", description: "Plan pickups through external providers", image: "/images/mega/transfers.jpg" },
     { name: "Insurance", link: "/insurance", description: "Travel safely with coverage", image: "/images/mega/insurance.jpg" },
 ];
 
