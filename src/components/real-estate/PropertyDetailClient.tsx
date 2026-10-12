@@ -40,12 +40,12 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
     const images = Array.from(new Set<string>([property.image, ...(Array.isArray(property.gallery) ? property.gallery : [])].filter((url): url is string => typeof url === "string" && Boolean(approvedMedia(slug, url)))))
     const image = images.includes(selectedImage) ? selectedImage : images[0]
     const hasCoordinates = typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180
-    const isRegistryProject = Boolean(property.registry_only || property.source_type === "registry")
+    const isRegistryProject = Boolean(property.registry_only || property.source_type === "registry" || property.data_quality_limited)
     const hasInventory = Array.isArray(inventory) && inventory.length > 0
     const registryOnly = isRegistryProject && !hasInventory
     const officialSource = typeof property.official_source_url === "string" ? property.official_source_url : ""
     const facts = isRegistryProject ? [
-        ["Project status", hasInventory ? "Active inventory available" : "Registry only"],
+        ["Project status", hasInventory ? "Active inventory available" : property.data_quality_limited ? "Project record · details pending review" : "Registry only"],
         ["Published inventory", hasInventory ? String(inventory.length) : "Not yet supplied to GTH PRO"],
         ["Registry reference", property.rera_id || "Not provided"],
     ] : [
@@ -72,7 +72,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
         <header className={styles.projectHeader}>
             <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{[property.location || property.city, property.country && property.country !== "Country not provided" ? property.country : ""].filter(Boolean).join(" · ") || "Location not provided"}</p><div className={styles.trustPills}>{isRegistryProject && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Registry record</span>}{hasInventory && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Reviewed inventory</span>}{property.verified && <span className={styles.trustPill}><BadgeCheck size={14} aria-hidden="true" />GTH Verified</span>}</div></div>
-            {isRegistryProject ? <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Project status</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{hasInventory ? `${inventory.length} active ${inventory.length === 1 ? "listing" : "listings"}` : "Registry only"}</p><p className="text-sm opacity-70 mt-3">{hasInventory ? "Published inventory below is separate from the official MahaRERA registry record." : "No active unit inventory, current price or listing contact has been supplied to GTH PRO."}</p></div> : <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Listed price</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{property.formatted_price || "Price on request"}</p><p className="text-sm opacity-70 mt-3">Confirm current pricing and availability.</p></div>}
+            {isRegistryProject ? <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Project status</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{hasInventory ? `${inventory.length} active ${inventory.length === 1 ? "listing" : "listings"}` : property.data_quality_limited ? "Details pending review" : "Registry only"}</p><p className="text-sm opacity-70 mt-3">{hasInventory ? "Published inventory below is separate from the official MahaRERA registry record." : "No active unit inventory, current price or listing contact has been supplied to GTH PRO."}</p></div> : <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Listed price</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{property.formatted_price || "Price on request"}</p><p className="text-sm opacity-70 mt-3">Confirm current pricing and availability.</p></div>}
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
             <div className="min-w-0">
