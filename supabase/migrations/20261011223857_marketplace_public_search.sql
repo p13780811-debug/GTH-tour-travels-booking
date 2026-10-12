@@ -69,7 +69,16 @@ as $function$
   select v.*
   from public.marketplace_public_projects v
   where
-    (search_query is null or btrim(search_query) = '' or
+    not (
+      v.source_type in ('rera','manual')
+      and v.active_inventory_count = 0
+      and v.price is null
+      and coalesce(v.bedrooms, v.beds) = 1
+      and coalesce(v.area_sqft, v.sqft) = 650
+      and v.verified is true
+      and coalesce(lower(v.status),'') <> 'verified'
+    )
+    and (search_query is null or btrim(search_query) = '' or
       v.title ilike '%' || search_query || '%' or
       v.city ilike '%' || search_query || '%' or
       v.location ilike '%' || search_query || '%' or
