@@ -11,9 +11,14 @@ type Props = { query: string; setQuery: (value: string) => void; onSearch: (valu
 export default function RealEstateHero({ query, setQuery, onSearch, loading, intent, onIntent }: Props) {
  return <section className={styles.searchHero}>
   <div className="gth-container">
-   <p className="gold-text text-xs font-bold uppercase tracking-widest">GTH PRO / Global Real Estate</p>
-   <h1 className={styles.searchTitle}>Discover property with <span className="gold-text">confidence.</span></h1>
-   <p className={styles.searchIntro}>Explore project records, reviewed inventory and property opportunities across important global markets — with source transparency built into every step.</p>
+   <div className={styles.heroTop}>
+    <div className={styles.heroCopy}>
+     <p className="gold-text text-xs font-bold uppercase tracking-widest">GTH PRO / Global Real Estate</p>
+     <h1 className={styles.searchTitle}>Discover property with <span className="gold-text">confidence.</span></h1>
+     <p className={styles.searchIntro}>Explore project records, reviewed inventory and property opportunities across important global markets — with source transparency built into every step.</p>
+    </div>
+    <BrandVideo name="logo-motion" className={styles.heroLogoMotion} label="GTH PRO brand motion" controls={false} />
+   </div>
    {onIntent && <div className={styles.intentTabs} aria-label="Property search purpose">{[{label:"Buy",value:"buy"},{label:"Rent",value:"rent"}].map(item => <button type="button" key={item.value} aria-pressed={intent === item.value} disabled={loading} onClick={() => onIntent(item.value)} className={`gth-btn ${styles.action}`}>{item.label}</button>)}</div>}
    <form className={`gth-glass ${styles.searchBar}`} onSubmit={event => { event.preventDefault(); onSearch(query.trim()) }}>
     <Search size={24} className="gold-text" aria-hidden="true" />
