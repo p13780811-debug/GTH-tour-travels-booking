@@ -180,7 +180,7 @@ function HotelsContent() {
                         </div>
 
                         <h1 className="mt-5 text-2xl text-white sm:text-4xl md:text-6xl font-black leading-tight max-w-4xl">
-                            Discover Your Perfect Luxury Stay Worldwide
+                            Discover Hotels Around the World
                         </h1>
 
                         <p className="mt-4 text-sm text-white md:text-lg text-[var(--text-soft)] max-w-2xl">
@@ -260,7 +260,7 @@ function HotelsContent() {
                                 <div className="flex items-center gap-2 mb-5">
                                     <Filter size={18} />
                                     <h3 className="font-bold text-lg">
-                                        Smart Filters
+                                        Hotel Filters
                                     </h3>
                                 </div>
 
@@ -307,7 +307,7 @@ function HotelsContent() {
                                                     </div>
 
                                                     <span className="text-xs text-[var(--text-soft)]">
-                                                        Premium
+                                                        Star category
                                                     </span>
                                                 </button>
                                             ))}
@@ -317,7 +317,7 @@ function HotelsContent() {
                                     {/* FEATURES */}
                                     <div>
                                         <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-soft)] mb-3">
-                                            Amenities
+                                            Amenities to confirm
                                         </p>
 
                                         <div className="space-y-2">
@@ -363,7 +363,7 @@ function HotelsContent() {
                                 <div className="flex items-center gap-2">
                                     <Brain size={18} />
                                     <span className="text-sm font-bold">
-                                        GTH AI Recommendation
+                                        Booking Partner Checklist
                                     </span>
                                 </div>
 
