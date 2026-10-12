@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     });
   }
 
-  return NextResponse.json({ items: result.items, totalShown: result.items.length, source: "GTH PRO tour listings" }, {
+  return NextResponse.json(result.items, {
     headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
   });
 }
