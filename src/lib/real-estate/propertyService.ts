@@ -215,6 +215,14 @@ export const transformProperty = (p: any) => {
     const inventoryMinPrice = safeNumber(p.inventory_min_price)
     const inventoryMaxPrice = safeNumber(p.inventory_max_price)
     const inventoryCount = safeNumber(p.active_inventory_count)
+    const legacyPlaceholderRecord =
+        ["rera", "manual"].includes(normalizeText(p.source_type).toLowerCase()) &&
+        inventoryCount === 0 &&
+        !safeNumber(p.price) &&
+        safeNumber(p.bedrooms ?? p.beds) === 1 &&
+        safeNumber(p.area_sqft ?? p.sqft) === 650 &&
+        p.verified === true &&
+        normalizeText(p.status).toLowerCase() !== "verified"
     const inventoryCurrency = normalizeText(p.inventory_currency).toUpperCase()
     const price = inventoryMinPrice || safeNumber(p.price)
     const formatMoney = (amount: number, currency: string) => {
@@ -253,9 +261,11 @@ export const transformProperty = (p: any) => {
             generateDescription(p),
 
         image:
-            inventoryCount > 0 && normalizeText(p.inventory_image)
-                ? normalizeText(p.inventory_image)
-                : normalizeText(p.image) || "/placeholder.jpg",
+            legacyPlaceholderRecord
+                ? ""
+                : inventoryCount > 0 && normalizeText(p.inventory_image)
+                    ? normalizeText(p.inventory_image)
+                    : normalizeText(p.image) || "/placeholder.jpg",
 
         gallery:
             Array.isArray(p.gallery)
@@ -295,11 +305,13 @@ export const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price: inventoryMinPrice
-            ? `From ${formatMoney(inventoryMinPrice, inventoryCurrency || "INR")}`
-            : registryOnly && !normalizeText(p.price)
-                ? "Not published in registry"
-                : normalizeText(p.price) || "Price on request",
+        formatted_price: legacyPlaceholderRecord
+            ? "Price not verified"
+            : inventoryMinPrice
+                ? `From ${formatMoney(inventoryMinPrice, inventoryCurrency || "INR")}`
+                : registryOnly && !normalizeText(p.price)
+                    ? "Not published in registry"
+                    : normalizeText(p.price) || "Price on request",
 
         active_inventory_count: inventoryCount,
         inventory_min_price: inventoryMinPrice || null,
@@ -317,19 +329,25 @@ export const transformProperty = (p: any) => {
         inventory_image: normalizeText(p.inventory_image) || "",
 
         beds:
-            inventoryCount > 0
-                ? safeNumber(p.inventory_min_bedrooms)
-                : safeNumber(p.bedrooms ?? p.beds),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_bedrooms)
+                    : safeNumber(p.bedrooms ?? p.beds),
 
         baths:
-            inventoryCount > 0
-                ? safeNumber(p.inventory_min_bathrooms)
-                : safeNumber(p.bathrooms ?? p.baths),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_bathrooms)
+                    : safeNumber(p.bathrooms ?? p.baths),
 
         sqft:
-            inventoryCount > 0
-                ? safeNumber(p.inventory_min_area_sqft)
-                : safeNumber(p.area_sqft ?? p.sqft),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_area_sqft)
+                    : safeNumber(p.area_sqft ?? p.sqft),
 
         views:
             safeNumber(p.views),
@@ -342,9 +360,10 @@ export const transformProperty = (p: any) => {
         fraud_score: fraudScore,
 
         verified:
-            p.status === "verified" || p.verified === true,
+            !legacyPlaceholderRecord && (p.status === "verified" || p.verified === true),
 
         registry_only: registryOnly,
+        data_quality_limited: legacyPlaceholderRecord,
 
         official_source_url:
             safeOfficialSourceUrl(p.official_source_url),
