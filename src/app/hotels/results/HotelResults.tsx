@@ -15,6 +15,7 @@ type HotelListing = {
   stars: number | null;
   image: string;
   affiliate_link: string | null;
+  source?: string;
 };
 
 export default function HotelResults({ city }: { city: string }) {
@@ -98,6 +99,7 @@ export default function HotelResults({ city }: { city: string }) {
                   <div>
                     <h2 className="line-clamp-2 text-xl font-bold">{hotel.name}</h2>
                     <p className="mt-1 text-xs opacity-80">{hotel.city}</p>
+                    {hotel.source === "OpenStreetMap" && <p className="mt-1 text-xs opacity-80">OpenStreetMap contributor data • Not verified or bookable here</p>}
                   </div>
                   <div className="border-t border-white/20 pt-4">
                     <p className="mb-3 text-xs">Check current rates, taxes and availability with the booking partner.</p>
@@ -123,7 +125,7 @@ export default function HotelResults({ city }: { city: string }) {
         ))}
       </Swiper>
       <p className="mt-4 text-center text-xs text-[var(--muted)]">
-        GTH PRO displays listing information; booking, payment, current prices and confirmation are handled by the partner.
+        GTH PRO displays listing information; booking, payment, current prices and confirmation are handled by the partner. Hotel discovery data may include <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors (ODbL)</a>.
       </p>
     </div>
   );
