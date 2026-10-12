@@ -3,6 +3,8 @@ import styles from "./Listing.module.css"
 
 const portfolioUrl = "https://gth-pro-portfolio.pages.dev/"
 
+// Single source of truth for real-estate footer navigation.
+
 export default function RealEstateFooter() {
   return <footer className={`${styles.estateFooter} border-t border-[var(--border)] pt-10 pb-28 md:pb-10`}>
     <div className="gth-container">
