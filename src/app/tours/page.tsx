@@ -30,7 +30,7 @@ export default async function Page({
         USD: "$",
         EUR: "€"
     };
-    const sorted = [...tours].sort((a, b) => a.price - b.price)
+    const sorted = [...tours].sort((a, b) => Number(a.price_numeric || Infinity) - Number(b.price_numeric || Infinity))
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col">
@@ -53,7 +53,7 @@ export default async function Page({
 
                     {/* 🔥 TABS (UI ONLY – NO BREAK) */}
                     <div className="flex gap-6 mb-6 text-sm font-semibold uppercase">
-                        <a href="/" className="text-yellow-500 border-b-2 border-yellow-500 pb-1">
+                        <a href="/tours" className="text-yellow-500 border-b-2 border-yellow-500 pb-1">
                             Tours
                         </a>
                         <a href="/flights" className="text-gray-400 hover:text-white">
@@ -186,11 +186,7 @@ export default async function Page({
                                         className="w-full h-full object-cover group-hover:scale-110 transition"
                                     />
 
-                                    {i === 0 && (
-                                        <span className="absolute top-2 left-2 gth-btn-gold text-black text-xs px-2 py-1 rounded">
-                                            BEST DEAL 🔥
-                                        </span>
-                                    )}
+
                                 </div>
 
                                 <h3 className="mt-4 font-bold">
@@ -198,7 +194,9 @@ export default async function Page({
                                 </h3>
 
                                 <p className="text-yellow-500 font-bold text-lg">
-                                    {symbolMap[tour.currency] || "₹"}{tour.price_numeric ?? 0}
+                                    {Number(tour.price_numeric) > 0
+                                        ? `${symbolMap[tour.currency] ?? ""}${Number(tour.price_numeric).toLocaleString()} (listed)`
+                                        : "Price with partner"}
                                 </p>
 
                                 <a
