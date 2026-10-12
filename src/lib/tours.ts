@@ -35,6 +35,9 @@ function image(value: unknown): string {
 }
 
 export async function searchTours(filters: TourFilters): Promise<{ items: PublicTour[]; error: string | null; status: number }> {
+  if (Object.values(filters).some((value) => value !== undefined && value !== null && typeof value !== "string")) {
+    return { items: [], error: "Invalid tour filters", status: 400 };
+  }
   const city = filters.city?.trim().toLowerCase().replace(/\s+/g, "-") || "";
   const category = filters.category?.trim().toLowerCase() || "";
   const min = validAmount(filters.minPrice);
