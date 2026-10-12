@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Compass, Hotel, Plane, ShieldCheck } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, ArrowUpRight, BookOpen, Bus, Car, Compass, Hotel, Plane, ShieldCheck, Train } from "lucide-react";
 
 type Partner = { name: string; url: string; description: string };
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
   whatToCheck: string[];
   partners?: Partner[];
   noLiveDataNotice?: string;
+  children?: ReactNode;
 };
 
 export default function TravelServicePage({
@@ -21,12 +23,16 @@ export default function TravelServicePage({
   whatToCheck,
   partners = [],
   noLiveDataNotice,
+  children,
 }: Props) {
   const travelLinks = [
     { name: "Flights", href: "/flights", Icon: Plane },
     { name: "Hotels", href: "/hotels", Icon: Hotel },
     { name: "Tours & Activities", href: "/activities", Icon: Compass },
     { name: "Travel guides", href: "/guides", Icon: BookOpen },
+    { name: "Bus", href: "/bus", Icon: Bus },
+    { name: "Train", href: "/train", Icon: Train },
+    { name: "Airport transfers", href: "/transfers", Icon: Car },
   ];
 
   return (
@@ -48,6 +54,7 @@ export default function TravelServicePage({
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]">
         <section>
+          {children}
           <h2 className="text-2xl font-bold">What to check before booking</h2>
           <ul className="mt-5 space-y-3">
             {whatToCheck.map((item) => (
