@@ -5,6 +5,7 @@ import { MapPin, Globe2, Sparkles, ArrowRight, Stars, Compass, Plane } from "luc
 
 import LuxuryCard from "@/components/cards/LuxuryCard"
 import { supabase } from "@/lib/supabase"
+import { destinations as curatedDestinations } from "@/data/destinations"
 
 export const revalidate = 60
 
@@ -81,30 +82,43 @@ const premiumFallbacks = [
 
 export default async function DestinationsPage() {
 
-    let destinations: Destination[] = []
+    // Curated destinations are inspiration content, not hotel or ticket inventory.
+    let destinations: Destination[] = curatedDestinations.map((item) => ({
+        slug: item.slug,
+        title: item.name,
+        image: item.image_url,
+        description: item.description,
+        location: "Travel inspiration",
+    }));
 
     try {
-
         const { data, error } = await supabase
             .from("destinations")
-            .select("*")
-            .order("created_at", {
-                ascending: false,
-            })
-            .limit(7)
+            .select("name,slug,description,image_url")
+            .order("name", { ascending: true })
+            .limit(40);
 
-        if (error) {
-            throw error
+        if (!error && data) {
+            const merged = new Map(destinations.map((item) => [item.slug, item]));
+            for (const item of data) {
+                if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) ||
+                    typeof item.name !== "string" || !item.name.trim()) continue;
+                const existing = merged.get(item.slug);
+                // Only use approved local images for predictable safe rendering.
+                merged.set(item.slug, {
+                    slug: item.slug,
+                    title: item.name.trim().slice(0, 120),
+                    location: "Destination guide",
+                    image: existing?.image || "/images/default-city.jpg",
+                    description: typeof item.description === "string" && item.description.trim()
+                        ? item.description.slice(0, 300)
+                        : existing?.description || "Explore this destination and verify current visitor information with official sources.",
+                });
+            }
+            destinations = [...merged.values()];
         }
-
-        destinations = data || []
-
-    } catch (error) {
-
-        console.error(
-            "DESTINATION_FETCH_ERROR",
-            error
-        )
+    } catch {
+        // Keep source-independent destination guides available during API outages.
     }
 
     return (
@@ -167,7 +181,7 @@ export default async function DestinationsPage() {
                                 />
 
                                 <span className="text-[10px] tracking-[0.22em] text-[var(--text-soft)]">
-                                    AI POWERED ROUTING
+                                    TRAVEL PLANNING
                                 </span>
 
                             </div>
@@ -205,11 +219,10 @@ export default async function DestinationsPage() {
 
                                 <p className="mt-7 max-w-[60ch] text-[15px] leading-8 text-[var(--text-soft)]">
 
-                                    Explore elite travel ecosystems,
-                                    private stays, global experiences,
-                                    cinematic journeys, and AI-powered
-                                    destination discovery designed for
-                                    modern luxury travellers.
+                                    Explore destinations, compare available hotel listings,
+                                    find activities and build a trip around practical
+                                    planning guides. Booking prices and availability
+                                    must be confirmed with the actual provider.
 
                                 </p>
 
@@ -414,7 +427,7 @@ export default async function DestinationsPage() {
 
                                         <MapPin size={12} />
 
-                                        Trending Escape
+                                        Featured destination
 
                                     </div>
 
@@ -446,15 +459,14 @@ export default async function DestinationsPage() {
                         </p>
 
                         <h2 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
-                            Luxury Destination Collection
+                            Global Destination Collection
                         </h2>
 
                         <p className="mt-6 max-w-3xl text-[15px] leading-8 text-[var(--text-soft)]">
 
-                            Discover curated destinations,
-                            cinematic landscapes, luxury stays,
-                            premium experiences, and intelligent
-                            travel discovery within the GTH ecosystem.
+                            Discover inspiring cities and places with useful links
+                            to accommodation, experiences, flights and practical guides.
+                            Photos and destination descriptions are editorial material, not live booking offers.
 
                         </p>
 
@@ -522,7 +534,7 @@ export default async function DestinationsPage() {
                                                     <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
 
                                                         {destination.description ||
-                                                            "Experience curated luxury escapes and cinematic travel discovery."}
+                                                            "Explore this destination and confirm current travel details with the provider."}
 
                                                     </p>
 
