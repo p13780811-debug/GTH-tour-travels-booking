@@ -13,3 +13,8 @@ test("Hotel catalog uses attribution without invented prices", () => {
   assert.match(api, /source_license: "ODbL-1\.0"/);
   assert.match(api, /affiliate_link: null/);
 });
+
+test("Independent OSM catalog survives a legacy hotel-provider query error", () => {
+  assert.match(api, /const listings = \(error \? \[\] : \(data \|\| \[\]\)\)/);
+  assert.match(api, /if \(error && catalogError\)/);
+});
