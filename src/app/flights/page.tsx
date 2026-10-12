@@ -36,7 +36,7 @@ const getAirlineLogo = (name?: string) => {
 function FlightsContent() {
     const params = useSearchParams();
 
-    const origin = params.get("origin") || "DEL";
+    const origin = params.get("origin") || "CCU";
     const destination = params.get("destination") || "BOM";
     const departDate = params.get("depart_date") || "";
 
