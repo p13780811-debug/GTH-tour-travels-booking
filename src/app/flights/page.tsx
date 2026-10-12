@@ -312,7 +312,7 @@ function FlightsContent() {
           </div>
         </section>
 
-        <PopularDestinations destinations={flightDestinations} />
+        <PopularDestinations destinations={flightDestinations} origin={origin || "CCU"} />
         <section className="mt-12 rounded-2xl border border-[var(--border)] p-5 text-xs leading-6 text-[var(--text-soft)]">
           <h2 className="mb-2 text-base font-semibold text-[var(--text)]">How GTH flight discovery works</h2>
           <p>
