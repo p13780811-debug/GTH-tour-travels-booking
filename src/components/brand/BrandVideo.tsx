@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 
-type Props = { name: "property-story" | "travel-story" | "security-story" | "logo-motion"; className?: string; label: string; controls?: boolean }
+type Props = { name: "property-story" | "travel-story" | "security-story" | "logo-motion"; className?: string; label: string; controls?: boolean; loop?: boolean }
 
-export default function BrandVideo({ name, className = "", label, controls = true }: Props) {
+export default function BrandVideo({ name, className = "", label, controls = true, loop = controls }: Props) {
  const video = useRef<HTMLVideoElement>(null)
  const [failed, setFailed] = useState(false)
  useEffect(() => {
@@ -23,5 +23,5 @@ export default function BrandVideo({ name, className = "", label, controls = tru
   return () => { observer.disconnect(); preference.removeEventListener("change",sync); document.removeEventListener("visibilitychange",sync); element.pause() }
  }, [name, failed])
  if (failed) return <img src={`/brand/${name}.jpg`} alt={label} className={className} />
- return <video ref={video} className={className} src={`/brand/${name}.mp4`} poster={`/brand/${name}.jpg`} muted loop={controls} playsInline controls={controls} preload="none" aria-label={label} onTimeUpdate={() => { if (!controls && video.current && video.current.currentTime >= 5) video.current.pause() }} onError={() => setFailed(true)} />
+ return <video ref={video} className={className} src={`/brand/${name}.mp4`} poster={`/brand/${name}.jpg`} muted loop={loop} playsInline controls={controls} preload="metadata" aria-label={label} onTimeUpdate={() => { if (!controls && !loop && video.current && video.current.currentTime >= 5) video.current.pause() }} onError={() => setFailed(true)} />
 }
