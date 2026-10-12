@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+from datetime import datetime, timezone
 import json
 import sys
 from pathlib import Path
@@ -15,6 +16,8 @@ MAX_ROWS = 100_000
 MAX_BATCH_SIZE = 200
 MAX_REJECTION_DETAILS = 50
 MAX_RERA_SAMPLE = 20
+DAILY_LIMIT = 100
+DAILY_DISTRICTS = ("Mumbai Suburban", "Mumbai City", "Thane", "Pune")
 
 SENSITIVE_HEADER_TOKENS = {
     "pan",
@@ -138,19 +141,54 @@ def commit_batches(records, batch_size, expected_project_ref):
     return inserted
 
 
+def select_daily_records(export_dir, district=None):
+    """Select up to 100 records from an authorized refreshed CSV export.
+
+    This deliberately does not bypass a website session, CAPTCHA or export controls.
+    """
+    day = datetime.now(timezone.utc).date()
+    chosen = district or DAILY_DISTRICTS[(day.toordinal() - 1) % len(DAILY_DISTRICTS)]
+    if chosen not in DAILY_DISTRICTS:
+        raise ValueError("Unsupported district")
+    directory = Path(export_dir).resolve()
+    if not directory.is_dir():
+        raise ValueError("Authorized export directory not found")
+    filename = chosen.lower().replace(" ", "-") + ".csv"
+    export_path = directory / filename
+    if not export_path.is_file():
+        raise ValueError("Authorized district CSV unavailable; no write performed")
+    records, rejected, sensitive = load_registry_csv(export_path, "")
+    selected = [r for r in records if r.get("district", "").strip().casefold() == chosen.casefold()][:DAILY_LIMIT]
+    if not selected:
+        raise ValueError("No valid rows for selected district; no write performed")
+    return chosen, selected, rejected, sensitive
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Import an authorized MahaRERA CSV export safely")
-    parser.add_argument("csv_path")
-    parser.add_argument("--expected-city", required=True)
+    parser.add_argument("csv_path", nargs="?")
+    parser.add_argument("--daily-dir", help="Authorized CSV export directory")
+    parser.add_argument("--district", choices=DAILY_DISTRICTS)
+    parser.add_argument("--expected-city", default="")
     parser.add_argument("--batch-size", type=int, default=50)
     parser.add_argument("--commit", action="store_true")
     parser.add_argument("--expected-project-ref")
     args = parser.parse_args(argv)
 
-    records, rejected, sensitive = load_registry_csv(args.csv_path, args.expected_city)
+    if args.daily_dir:
+        if args.csv_path or args.expected_city:
+            parser.error("--daily-dir cannot be combined with csv_path or --expected-city")
+        chosen_district, records, rejected, sensitive = select_daily_records(args.daily_dir, args.district)
+    else:
+        if not args.csv_path or not args.expected_city:
+            parser.error("csv_path and --expected-city are required for normal CSV imports")
+        chosen_district = None
+        records, rejected, sensitive = load_registry_csv(args.csv_path, args.expected_city)
 
     summary = {
         "mode": "commit" if args.commit else "dry-run",
+        "district": chosen_district,
+        "source": "authorized_csv_export",
         "accepted": len(records),
         "rejected": len(rejected),
         "sensitive_columns_discarded": sensitive,
