@@ -1,0 +1,30 @@
+name: GTH Editorial Production Verification
+
+on:
+  push:
+    branches: [gth-travel-editorial-v1]
+  pull_request:
+    branches: [gth-travel-tours-v1]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - run: npm run test:security
+      - run: npm run lint
+      - name: Production build (no deployment)
+        run: npm run build
