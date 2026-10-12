@@ -5,17 +5,6 @@ import styles from "./Listing.module.css"
 
 const houseAds = [
   {
-    id: "thali-treats",
-    shortLabel: "Thali",
-    eyebrow: "Food brand · Social campaign",
-    title: "Thali Treats Palava",
-    description: "Cinematic local-business campaign created for Thali Treats Palava.",
-    video: "https://gth-pro-portfolio.pages.dev/assets/thali-treats-palava-ad.mp4",
-    href: "https://thali-treats-palava.lovable.app/",
-    cta: "Visit Thali Treats",
-    fit: "contain",
-  },
-  {
     id: "gth-travel",
     shortLabel: "Travel",
     eyebrow: "Travel · GTH PRO",
@@ -24,30 +13,16 @@ const houseAds = [
     video: "/brand/travel-story.mp4",
     href: "https://gth-tour-travels-booking.vercel.app/",
     cta: "Explore GTH PRO Travel",
-    fit: "cover",
-  },
-  {
-    id: "gth-portfolio",
-    shortLabel: "GTH PRO",
-    eyebrow: "Technology · Creative portfolio",
-    title: "GTH PRO Portfolio",
-    description: "AI, automation, web products and cinematic campaign work from GTH PRO.",
-    video: "https://gth-pro-portfolio.pages.dev/assets/gth-pro-capabilities-ad.mp4",
-    href: "https://gth-pro-portfolio.pages.dev/",
-    cta: "Open GTH PRO Portfolio",
-    fit: "contain",
   },
 ] as const
 
 function HouseAdVideo({
   src,
   title,
-  fit,
   onEnded,
 }: {
   src:string
   title:string
-  fit:"cover"|"contain"
   onEnded:() => void
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
@@ -88,23 +63,21 @@ function HouseAdVideo({
     preload="metadata"
     onEnded={onEnded}
     onError={() => setFailed(true)}
-    style={{ objectFit:fit }}
   />
 }
 
 export default function OwnerProjectAds() {
   const [active,setActive] = useState(0)
   const ad = houseAds[active]
-
   const next = () => setActive(index => (index + 1) % houseAds.length)
 
-  return <aside aria-label="Advertisement: GTH PRO house campaigns" className={`gth-glass ${styles.ownerAds}`}>
+  return <aside aria-label="Advertisement: GTH PRO house campaigns" className={styles.ownerAds}>
     <div className={styles.houseAdHeader}>
       <div>
-        <p className={styles.adDisclosure}>Advertisement · GTH PRO house campaigns</p>
-        <h2 className="text-xl font-bold mt-2">Featured from our network</h2>
+        <p className={styles.adDisclosure}>Advertisement · GTH PRO house campaign</p>
+        <h2 className="text-lg font-bold mt-2">Featured from our network</h2>
       </div>
-      <span className={styles.houseAdLabel}>House ad</span>
+      <span className={styles.houseAdLabel}>Ad</span>
     </div>
 
     <article className={styles.houseAdCard}>
@@ -113,7 +86,6 @@ export default function OwnerProjectAds() {
           key={ad.id}
           src={ad.video}
           title={`${ad.title} advertisement`}
-          fit={ad.fit}
           onEnded={next}
         />
       </div>
@@ -127,7 +99,7 @@ export default function OwnerProjectAds() {
       </div>
     </article>
 
-    <div className={styles.houseAdSwitcher} aria-label="Choose a GTH PRO house advertisement">
+    {houseAds.length > 1 && <div className={styles.houseAdSwitcher} aria-label="Choose a GTH PRO house advertisement">
       {houseAds.map((item,index) => <button
         key={item.id}
         type="button"
@@ -136,10 +108,6 @@ export default function OwnerProjectAds() {
       >
         {item.shortLabel}
       </button>)}
-    </div>
-
-    <a href="https://gth-pro-portfolio.pages.dev/" target="_blank" rel="noopener noreferrer" className="text-sm underline inline-flex items-center min-h-11 mt-3">
-      View full GTH PRO portfolio<span className="sr-only"> (opens in a new tab)</span>
-    </a>
+    </div>}
   </aside>
 }
