@@ -4,6 +4,7 @@ import argparse
 import csv
 from datetime import datetime, timezone
 import json
+import time
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -17,6 +18,7 @@ MAX_BATCH_SIZE = 200
 MAX_REJECTION_DETAILS = 50
 MAX_RERA_SAMPLE = 20
 DAILY_LIMIT = 100
+MIN_BATCH_DELAY_SECONDS = 10
 DAILY_DISTRICTS = ("Mumbai Suburban", "Mumbai City", "Thane", "Pune")
 
 SENSITIVE_HEADER_TOKENS = {
@@ -136,7 +138,14 @@ def commit_batches(records, batch_size, expected_project_ref):
     inserted = 0
 
     for start in range(0, len(records), batch_size):
-        inserted += insert_registry_batch(client, records[start:start + batch_size])
+        if start:
+            # Fixed conservative pacing, not a bot-disguise mechanism.
+            time.sleep(MIN_BATCH_DELAY_SECONDS)
+        try:
+            inserted += insert_registry_batch(client, records[start:start + batch_size])
+        except Exception as exc:
+            # Fail closed: never retry writes blindly or continue after rate limiting.
+            raise RuntimeError("Supabase batch failed; ingestion stopped safely") from exc
 
     return inserted
 
