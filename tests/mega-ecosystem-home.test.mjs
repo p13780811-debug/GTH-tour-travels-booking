@@ -31,7 +31,9 @@ test("all internal three-pillar entry points lead to existing routes",()=>{
  }
  for(const href of new Set(links)){
    const page="src/app"+(href==="/"?"/page.tsx":href+"/page.tsx");
-   assert.equal(existsSync(new URL(page,root)),true,href+" must point to a real route");
+   const parts=href.split("/").filter(Boolean);
+   const dynamicRoute="src/app/"+parts.map((part,i)=>i===parts.length-1?"[slug]":part).join("/")+"/page.tsx";
+   assert.equal(existsSync(new URL(page,root)) || existsSync(new URL(dynamicRoute,root)),true,href+" must point to a real route");
  }
  assert.match(footer,/heading: "Tenders & Intelligence"/);
  assert.match(nav,/href: "\/mega-aggregator"/);

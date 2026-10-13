@@ -20,7 +20,7 @@ test("main Travel links target the hub while Real Estate keeps its own page", ()
  assert.match(home,/href: "\/real-estate"/);
  assert.match(navbar,/name: "Travel",\s*href: "\/travel"/);
  assert.match(navbar,/name: "Real Estate",\s*href: "\/real-estate"/);
- assert.match(mobile,/href="\/flights"/);
- assert.match(mobile,/href="\/transfers"/);
+ assert.match(mobile,/href="\/travel"/);
+ assert.match(mobile,/href="\/tender"/);
  assert.match(read("src/app/mega-aggregator/page.tsx"),/href="\/travel"/);
 });
