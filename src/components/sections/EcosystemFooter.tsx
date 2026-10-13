@@ -19,6 +19,8 @@ const columns = [
     ["Contact","/contact"], ["Travel Insurance","/insurance"],
     ["Privacy Policy","/privacy-policy"], ["Terms & Conditions","/terms-and-conditions"],
     ["Refund Policy","/refund-policy"],
+    ["Business Partners","/partners"],
+    ["Partner & Developer Applications","/partners/apply"],
   ] },
 ] as const;
 

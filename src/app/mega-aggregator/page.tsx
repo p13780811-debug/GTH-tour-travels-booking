@@ -11,7 +11,6 @@ import GTHNetwork from "@/components/sections/GTHNetwork";
 import dynamic from "next/dynamic"
 import HeroSlider from "@/components/HeroSlider";
 import EcosystemPillars from "@/components/sections/EcosystemPillars";
-import EcosystemFooter from "@/components/sections/EcosystemFooter";
 
 
 const supabase = createClient(
@@ -625,7 +624,7 @@ export default async function MegaAggregator() {
 
 
 
-            <EcosystemFooter />
+
         </div>
     );
 }

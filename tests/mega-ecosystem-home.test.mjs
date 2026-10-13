@@ -14,7 +14,7 @@ const tender=load("src/app/tender/page.tsx");
 test("ecosystem homepage retains the exact hero slider component and introduces 3 pillars",()=>{
   assert.match(mega, /<HeroSlider \/>/);
   assert.match(mega, /<EcosystemPillars \/>/);
-  assert.match(mega, /<EcosystemFooter \/>/);
+  assert.doesNotMatch(mega, /<EcosystemFooter \/>/);
   assert.match(mega, /canonical: "\/mega-aggregator"/);
   for(const name of ["Tours & Travels","Real Estate","Tenders"])assert.ok(pillars.includes(name));
   assert.doesNotMatch(mega, /href="\/(partners|studios|about|careers|cookies|security)"/);
@@ -45,7 +45,8 @@ test("all internal three-pillar entry points lead to existing routes",()=>{
 
 test("approved Real Estate route and slider design remain independent",()=>{
  const source=load("src/components/LayoutWrapper.tsx");
- assert.match(source,/pathname !== "\/mega-aggregator" && <Footer \/>/);
+ assert.match(source,/<EcosystemFooter \/>/);
+ assert.doesNotMatch(source, /pathname !== "\/mega-aggregator"/);
  assert.match(source,/const isRealEstate = pathname\?\.startsWith\("\/real-estate"\)/);
  assert.match(nav,/EstateHeader/);
  assert.match(tender,/searchPublicTenders/);
