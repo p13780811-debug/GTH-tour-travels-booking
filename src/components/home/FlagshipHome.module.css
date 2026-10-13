@@ -38,7 +38,7 @@
   position: absolute;
   inset: 0;
   content: "";
-  background-image: url("/images/gth-flagship/global-earth.jpg"), url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=2000&q=85");
+  background-image: url("/images/gth-flagship/global-earth.jpg");
   background-position: left center, left center;
   background-size: cover, cover;
   background-repeat: no-repeat;
@@ -303,7 +303,7 @@
   position:absolute;
   inset:0;
   z-index:-2;
-  background-image:url("/images/gth-flagship/global-city.jpg"),url("/images/cities/dubai.jpg");
+  background-image:url("/images/gth-flagship/global-city.jpg");
   background-position:center bottom,center bottom;
   background-size:cover,cover;
   background-repeat:no-repeat;
