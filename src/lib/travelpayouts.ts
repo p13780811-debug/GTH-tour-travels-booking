@@ -5,7 +5,7 @@
  */
 export async function getHotels(cityCode: string): Promise<unknown> {
   const query = typeof cityCode === "string" ? cityCode.trim() : "";
-  if (!/^[\\p{L}\\p{M}\\s.'-]{2,80}$/u.test(query)) {
+  if (!/^[\p{L}\p{M}\s.'-]{2,80}$/u.test(query)) {
     throw new Error("Invalid hotel lookup destination");
   }
 
