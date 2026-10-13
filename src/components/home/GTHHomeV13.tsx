@@ -39,7 +39,7 @@ const portals = [
     status: "DEVELOPMENT BUILD",
     description:
       "Flights, hotels, tours and destination discovery connected through one expanding travel experience.",
-    href: "/mega-aggregator",
+    href: "/travel",
     cta: "Explore Travel",
     icon: Plane,
     image: "/maldives-bg.jpg",
@@ -96,7 +96,7 @@ export default function GTHHomeV13() {
         <nav className={styles.desktopNav} aria-label="Main navigation">
           <a href="#ecosystem">Ecosystem</a>
           <Link href="/real-estate">Real Estate</Link>
-          <Link href="/mega-aggregator">Travel</Link>
+          <Link href="/travel">Travel</Link>
           <a href="#roadmap">Tender</a>
           <Link href="/contact">Contact</Link>
         </nav>
@@ -127,7 +127,7 @@ export default function GTHHomeV13() {
           <nav className={styles.mobileNav} aria-label="Mobile navigation">
             <a href="#ecosystem" onClick={() => setMenuOpen(false)}>Ecosystem</a>
             <Link href="/real-estate" onClick={() => setMenuOpen(false)}>Real Estate</Link>
-            <Link href="/mega-aggregator" onClick={() => setMenuOpen(false)}>Travel</Link>
+            <Link href="/travel" onClick={() => setMenuOpen(false)}>Travel</Link>
             <a href="#roadmap" onClick={() => setMenuOpen(false)}>Tender</a>
             <Link href="/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
           </nav>
@@ -271,7 +271,7 @@ export default function GTHHomeV13() {
         </div>
         <div className={styles.footerLinks}>
           <Link href="/real-estate">Real Estate</Link>
-          <Link href="/mega-aggregator">Travel</Link>
+          <Link href="/travel">Travel</Link>
           <a href="#roadmap">Tender</a>
           <Link href="/privacy-policy">Privacy</Link>
           <Link href="/contact">Contact</Link>

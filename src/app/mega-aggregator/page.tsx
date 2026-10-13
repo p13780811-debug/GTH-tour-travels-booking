@@ -76,6 +76,10 @@ export default async function MegaAggregator() {
 
     return (
         <div className="w-full bg-[var(--bg)] transition-colors duration-300">
+            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+                <p className="text-sm text-[var(--text-soft)]">GTH PRO Travel marketplace · Discover every updated Travel service from one homepage</p>
+                <Link href="/travel" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore all Travel services →</Link>
+            </div>
             <div className="relative z-0">
                 <HeroSlider />
             </div>
