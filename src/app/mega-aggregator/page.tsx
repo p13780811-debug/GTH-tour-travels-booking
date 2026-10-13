@@ -70,8 +70,8 @@ export default async function MegaAggregator() {
     )
 
     return (
-        <div className="w-full bg-[var(--bg)] transition-colors duration-300">
-            <div className="border-b border-[var(--border)] bg-[var(--card)]/70">
+        <div className="gth-master-home w-full bg-[var(--bg)] transition-colors duration-300">
+            <div className="gth-master-intro border-b border-[var(--border)] bg-[var(--card)]/70">
                 <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
                     <p className="text-xs font-semibold uppercase tracking-[0.13em] text-[var(--text-soft)]">
                         GTH PRO <span className="mx-2 text-[var(--gold)]">•</span> Global Technical Hub
