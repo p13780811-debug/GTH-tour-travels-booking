@@ -36,6 +36,10 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
           ["Deadline (UTC)",formatted(tender.deadline_at)],
         ].map(([label,value])=><div key={label}><dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">{label}</dt><dd className="mt-2 break-words text-sm font-semibold">{value}</dd></div>)}
       </div>
+      <Link href={`/tender/assistant?tenderId=${encodeURIComponent(tender.id)}`}
+        className="gth-btn-gold mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
+        Check eligibility & prepare draft <ArrowUpRight size={17}/>
+      </Link>
       {tender.summary&&<section className="mt-9"><h2 className="text-xl font-semibold">Notice summary</h2><p className="mt-4 whitespace-pre-line text-sm leading-8 text-[var(--text-soft)]">{tender.summary}</p></section>}
       <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
         <p className="inline-flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={17}/> Original documents take precedence</p>

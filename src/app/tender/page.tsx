@@ -64,6 +64,14 @@ export default async function TenderPage({searchParams}: Props) {
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
           <ShieldCheck size={16} aria-hidden="true"/> Only verified-source notices approved for public display appear here
         </div>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Link href="/tender/assistant" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
+            <ClipboardCheck size={17} aria-hidden="true"/> Start Guided Tender Assistant <ArrowRight size={17} aria-hidden="true"/>
+          </Link>
+          <Link href="/tender/assistant#eligibility" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-semibold">
+            Check My Eligibility
+          </Link>
+        </div>
       </div>
     </section>
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14" aria-labelledby="tender-find">
@@ -108,9 +116,14 @@ export default async function TenderPage({searchParams}: Props) {
                 <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--text-soft)]">{tender.summary || "Open the notice to review source, eligibility and deadlines."}</p>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
                   <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><CalendarDays size={15}/> Deadline {formatted(tender.deadline_at)} UTC</span>
-                  <Link href={`/tender/${tender.id}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
-                    View notice <ArrowRight size={16}/>
-                  </Link>
+                  <div className="flex flex-wrap gap-3">
+                    <Link href={`/tender/${tender.id}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
+                      View notice <ArrowRight size={16}/>
+                    </Link>
+                    <Link href={`/tender/assistant?tenderId=${encodeURIComponent(tender.id)}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
+                      Check eligibility <ClipboardCheck size={16}/>
+                    </Link>
+                  </div>
                 </div>
               </article>
             ))}
