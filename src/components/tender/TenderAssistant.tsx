@@ -15,7 +15,9 @@ import {safeTenderSource} from "@/lib/tender/catalog";
 
 type Notice={id:string;title:string;buyer:string;source_reference:string;source_url:string;
   eligibility_requirements:TenderRequirements;requirements_verified:boolean};
-type Saved={id:string;tender_id:string|null;tender_title:string;bidder_profile:BidderProfile;
+type Saved={id:string;tender_id:string|null;tender_title:string;
+  notice_details?:{title:string;buyer:string;source_reference:string;source_url:string};
+  bidder_profile:BidderProfile;
   requirement_answers:TenderRequirements;draft_text:string;updated_at:string};
 const steps=["Tender notice","Business profile","Eligibility conditions","Eligibility result","Documents","Prepare application"] as const;
 const textList=(s:string)=>s.split(/[\n,;]/).map(v=>v.trim()).filter(Boolean);
@@ -117,6 +119,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         "Content-Type":"application/json","Authorization":`Bearer ${token}`
       },body:JSON.stringify({
         id:savedId,title:notice.title,tenderId:UUID.test(notice.id)?notice.id:null,
+        notice:{title:notice.title,buyer:notice.buyer,source_reference:notice.source_reference,source_url:notice.source_url},
         profile,requirements:req,draft
       })});
       const body=await r.json();if(!r.ok)throw new Error(body.error||"Could not save draft");
@@ -137,7 +140,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   function openSaved(row:Saved){
     setSavedId(row.id);setProfile({...EMPTY_PROFILE,...row.bidder_profile});
     setReq({...EMPTY_REQUIREMENTS,...row.requirement_answers});setCriteriaVerified(false);
-    setNotice(prev=>({...prev,title:row.tender_title||prev.title,id:row.tender_id||""}));
+    setNotice(prev=>({...prev,...(row.notice_details||{}),title:row.tender_title||prev.title,id:row.tender_id||""}));
     setDraft(row.draft_text||"");setStep(5);setChecklist([]);
     setNoticeMessage("Private draft restored. Eligibility must be rechecked against the latest official notice.");
   }

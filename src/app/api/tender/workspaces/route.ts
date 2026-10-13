@@ -2,6 +2,7 @@ import { authenticatedStorage } from "@/lib/security/auth";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import type { BidderProfile, TenderRequirements } from "@/lib/tender/eligibility";
+import { safeTenderSource } from "@/lib/tender/catalog";
 export const dynamic = "force-dynamic";
 const idPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const noStore={"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"};
@@ -50,7 +51,7 @@ export async function GET(req:Request) {
   try {
     const {client,user}=await authenticatedStorage(req);
     const {data,error}=await client.from("tender_bid_workspaces")
-      .select("id,tender_id,tender_title,bidder_profile,requirement_answers,draft_text,status,created_at,updated_at")
+      .select("id,tender_id,tender_title,notice_details,bidder_profile,requirement_answers,draft_text,status,created_at,updated_at")
       .eq("owner_id",user.id).order("updated_at",{ascending:false}).limit(25);
     if(error)throw new RequestError("Workspace unavailable",503);
     return Response.json({items:data||[]},{headers:noStore});
@@ -63,6 +64,21 @@ export async function POST(req:Request) {
     const profile=sanitizeProfile(body.profile);
     const requirements=sanitizeRequirements(body.requirements);
     const title=body.title??"",draft=body.draft??"",tenderId=body.tenderId??null,id=body.id??null;
+    const notice = body.notice??{};
+    if(!notice||typeof notice!=="object"||Array.isArray(notice)||
+      Object.keys(notice).some(k=>!["title","buyer","source_reference","source_url"].includes(k)))
+      throw new RequestError("Invalid notice details",400);
+    const ni=notice as Record<string,unknown>;
+    const lengths:Record<string,number>={title:240,buyer:180,source_reference:160,source_url:2048};
+    const noticeDetails:Record<string,string>={};
+    for(const [key,max] of Object.entries(lengths)){
+      const val=ni[key]??"";
+      if(typeof val!=="string"||val.length>max||/[\u0000-\u001f]/.test(val))
+        throw new RequestError("Invalid notice details",400);
+      noticeDetails[key]=val.trim();
+    }
+    if(noticeDetails.source_url && !safeTenderSource(noticeDetails.source_url))
+      throw new RequestError("Invalid official source URL",400);
     if(typeof title!=="string"||title.length>240||typeof draft!=="string"||draft.length>12000)
       throw new RequestError("Invalid workspace length",400);
     if(tenderId!==null&&(typeof tenderId!=="string"||!idPattern.test(tenderId)))
@@ -72,7 +88,7 @@ export async function POST(req:Request) {
     await enforceRateLimit(req,"submissions",user.id);
     const data={
       owner_id:user.id,tender_title:title.trim(),tender_id:tenderId,
-      bidder_profile:profile,requirement_answers:requirements,draft_text:draft,status:"draft" as const,
+      notice_details:noticeDetails,bidder_profile:profile,requirement_answers:requirements,draft_text:draft,status:"draft" as const,
       updated_at:new Date().toISOString()
     };
     const query=id

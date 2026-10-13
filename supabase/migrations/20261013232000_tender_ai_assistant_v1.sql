@@ -11,6 +11,7 @@ create table if not exists public.tender_bid_workspaces (
  owner_id uuid not null references auth.users(id) on delete cascade,
  tender_id uuid references public.tenders(id) on delete set null,
  tender_title text not null default '' check(length(tender_title) <= 240),
+ notice_details jsonb not null default '{}'::jsonb check(jsonb_typeof(notice_details) = 'object'),
  bidder_profile jsonb not null default '{}'::jsonb check(jsonb_typeof(bidder_profile) = 'object'),
  requirement_answers jsonb not null default '{}'::jsonb check(jsonb_typeof(requirement_answers) = 'object'),
  draft_text text not null default '' check(length(draft_text) <= 12000),
