@@ -1,7 +1,14 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import DestinationPage, { generateMetadata as destinationMetadata } from "../[slug]/page";
 
-// The legacy Digha campaign contained illustrative hotel names, prices and
-// unverified badges. Use the live-source destination guide instead.
+// Keep the legacy Digha URL, but render the same connected destination guide.
+// No unverified prices, fake hotels, video placeholders or "verified" badges.
+const params = Promise.resolve({ slug: "digha" });
+
+export async function generateMetadata(): Promise<Metadata> {
+  return destinationMetadata({ params });
+}
+
 export default function DighaPage() {
-  redirect("/destinations/digha");
+  return <DestinationPage params={params} />;
 }
