@@ -15,6 +15,7 @@ import {
     Globe,
     Building2,
     Compass,
+    BookOpen,
     Plane,
     ShieldCheck,
     BadgeCheck,
@@ -35,6 +36,7 @@ import EstateHeader from "@/components/real-estate/EstateHeader"
 
 export default function Navbar() {
     const pathname = usePathname()
+    if (pathname === "/") return null;
     return pathname === "/real-estate" || pathname?.startsWith("/real-estate/") ? <EstateHeader /> : <EcosystemNavbar />
 }
 
@@ -99,55 +101,13 @@ function EcosystemNavbar() {
     // =====================================================
 
     const navItems = useMemo(() => [
-
-        {
-            name: "Travel",
-            href: "/travel",
-            icon: Plane,
-            mega: false,
-        },
-
-        {
-            name: "Hotels",
-            href: "/hotels",
-            icon: Hotel,
-            mega: false,
-        },
-
-        {
-            name: "Tours",
-            href: "/tours",
-            icon: Compass,
-            mega: false,
-        },
-
-        {
-            name: "Real Estate",
-            href: "/real-estate",
-            icon: Building2,
-            mega: true,
-            featured: [
-                "Luxury Villas",
-                "Commercial",
-                "Penthouses",
-                "Smart Homes",
-            ],
-        },
-
-        {
-            name: "Tender",
-            href: "/tender",
-            icon: ShieldCheck,
-            mega: false,
-        },
-
-        {
-            name: "Guides",
-            href: "/guides",
-            icon: Compass,
-            mega: false,
-        },
-
+        { name: "Ecosystem", href: "/mega-aggregator", icon: Globe, mega: false },
+        { name: "Travel", href: "/travel", icon: Plane, mega: false },
+        { name: "Real Estate", href: "/real-estate", icon: Building2, mega: false },
+        { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
+        { name: "Destinations", href: "/destinations", icon: MapPinned, mega: false },
+        { name: "Guides", href: "/guides", icon: Compass, mega: false },
+        { name: "Blog", href: "/blog", icon: BookOpen, mega: false },
     ], [])
 
     return (
@@ -200,7 +160,7 @@ function EcosystemNavbar() {
                             />
 
                             <span className="gth-nav-mini">
-                                Verified
+                                Travel Discovery
                             </span>
 
                         </div>
@@ -232,7 +192,7 @@ function EcosystemNavbar() {
                             />
 
                             <span className="gth-nav-mini">
-                                Live Intelligence
+                                Global Insights
                             </span>
 
                         </div>
