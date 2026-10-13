@@ -1,0 +1,60 @@
+name: GTH Travel-Only Release Verification
+on:
+  push:
+    branches: [gth-travel-global-release-v1]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m py_compile scripts/import_osm_hotels.py
+      - run: python3 -m unittest discover -s tests -p "test_hotel_import.py"
+      - run: npm ci --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - name: Travel-only regression suite
+        run: node --test tests/destination-marketplace.test.mjs tests/flight-marketplace.test.mjs tests/hotel-api-schema.test.mjs tests/hotel-lookup-validation.test.mjs tests/hotel-marketplace.test.mjs tests/tours-marketplace.test.mjs tests/transport-marketplace.test.mjs tests/travel-editorial.test.mjs tests/travel-global-release.test.mjs tests/travel-phase-b.test.mjs
+      - run: npm run lint
+      - name: Production build (no deployment)
+        run: npm run build
+
+  catalog-source-smoke:
+    name: Licensed OSM extract parsing (dry run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install osmium
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download small, licensed Monaco extract
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --proto '=https' --max-time 180 -o monaco.osm.pbf https://download.geofabrik.de/europe/monaco-latest.osm.pbf
+          test -s monaco.osm.pbf
+      - name: Extract accommodation and dry-run official importer
+        run: |
+          set -euo pipefail
+          osmium tags-filter monaco.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
+          osmium export --add-unique-id=type_id --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
+          python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.lstrip(chr(30))) for line in Path("hotels.geojsonseq").read_text().splitlines() if line.strip()][:3]; print("OSM source sample structure:", [(x.get("id"), sorted((x.get("properties") or {}).keys())[:12], (x.get("properties") or {}).get("tourism")) for x in rows])'
+          python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit 1000 --dry-run | tee hotel-dry-run.json
+          python3 -c 'import json; x=json.load(open("hotel-dry-run.json")); assert x["accepted"] > 0, "No valid accommodation points extracted"'
+      - name: Licensed source attribution
+        if: always()
+        run: |
+          echo "OpenStreetMap contributors (ODbL 1.0). Dry run only: no database writes or availability claims." >> "$GITHUB_STEP_SUMMARY"

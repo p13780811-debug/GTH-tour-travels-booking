@@ -1,117 +1,132 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
 
-// Swiper Styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
+import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-coverflow";
 
-
+type HotelListing = {
+  id: string | number;
+  name: string;
+  city: string;
+  stars: number | null;
+  image: string;
+  affiliate_link: string | null;
+  source?: string;
+};
 
 export default function HotelResults({ city }: { city: string }) {
-    const [hotels, setHotels] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+  const [hotels, setHotels] = useState<HotelListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    useEffect(() => {
-        if (!city) return;
-        const controller = new AbortController();
-        setLoading(true);
-        setHotels([]);
-        fetch(`/api/hotels?city=${encodeURIComponent(city)}`, { signal: controller.signal })
-            .then(res => { if (!res.ok) throw new Error("Hotel data unavailable"); return res.json(); })
-            .then(data => setHotels(Array.isArray(data) ? data : []))
-            .catch(() => setHotels([]))
-            .finally(() => setLoading(false));
-        return () => controller.abort();
-    }, [city]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    setHotels([]);
 
-    if (loading) return <div className="text-center py-20 text-sky-500 font-black tracking-[0.3em] animate-pulse">LOADING {city.toUpperCase()}...</div>;
+    async function load() {
+      try {
+        const response = await fetch(`/api/hotels?city=${encodeURIComponent(city)}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Hotel listings unavailable");
+        const data: unknown = await response.json();
+        if (!Array.isArray(data)) throw new Error("Unexpected hotel response");
+        if (!controller.signal.aborted) setHotels(data as HotelListing[]);
+      } catch {
+        if (!controller.signal.aborted) setError("Hotel listings could not be loaded. Please try again.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
 
-    if (!hotels.length) return <p className="text-center py-12">No hotel listings available for this city.</p>;
+    void load();
+    return () => controller.abort();
+  }, [city]);
 
-    return (
-        <div className="w-full py-6">
-            <Swiper
-                modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
-                effect={'coverflow'}
-                grabCursor={true}
-                centeredSlides={false}
-                loop={true}
-                slidesPerView={'auto'}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
-                coverflowEffect={{ rotate: 0, stretch: 0, depth: 100, modifier: 2.5, slideShadows: false }}
-                className="mySwiper !pb-12"
-                breakpoints={{
-                    320: { slidesPerView: 1.2, spaceBetween: 20 },
-                    1024: { slidesPerView: 3.2, spaceBetween: 40 }
-                }}
-            >
-                {hotels.map((h) => (
-                    <SwiperSlide key={h.id} className="max-w-[380px]">
-                        <div className="group relative bg-[#0f0f0f] border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-sky-500/30 transition-all duration-500 shadow-2xl">
+  if (loading) {
+    return <p role="status" className="py-16 text-center text-[var(--muted)]">Searching hotel listings for {city}...</p>;
+  }
 
-                            <div className="relative h-[450px]">
-                                <img src={h.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt="hotel" />
+  if (error) {
+    return <p role="alert" className="py-12 text-center text-[var(--text)]">{error}</p>;
+  }
 
-                                {/* --- TOP SECTION (Rating & Badge) --- */}
-                                <div className="absolute top-6 left-0 w-full px-6 flex justify-between items-center z-10">
-                                    {/* Rating Badge */}
-                                    <div className="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                        <span className="text-yellow-500 text-[10px]">★</span>
-                                        <span className="text-white font-black text-[10px] tracking-tighter">{h.stars ? `${h.stars} stars` : "Hotel"}</span>
-                                    </div>
+  if (!hotels.length) {
+    return <p role="status" className="py-12 text-center text-[var(--muted)]">No hotel listings found for {city}. Try another destination.</p>;
+  }
 
-                                    {/* Luxury Status */}
-                                    <div className="bg-sky-500/90 backdrop-blur-sm text-white text-[8px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg">
-                                        Hotel
-                                    </div>
-                                </div>
-                                {/* ------------------------------------ */}
-
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-
-                                <div className="absolute bottom-0 left-0 w-full p-8 text-left">
-                                    <h3 className="text-white font-black text-2xl uppercase tracking-tighter mb-5 italic line-clamp-1">
-                                        {h.name}
-                                    </h3>
-
-                                    <div className="flex justify-between items-center border-t border-white/10 pt-6">
-                                        <div>
-                                            <p className="text-gray-500 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Price</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-sky-400 font-bold text-[10px]"></span>
-                                                <span className="text-white text-2xl font-black italic">See partner for current price</span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => window.open(`https://www.klook.com/en-IN/hotels/searchresult/?city_name=${encodeURIComponent(city)}&aid=IKb6eSUe`, "_blank", "noopener,noreferrer")}
-                                            className="gth-glass text-black hover:bg-sky-500 hover:text-white px-6 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-90"
-                                        >
-                                            View Deals
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
-
-            <style jsx global>{`
-                .swiper-pagination-bullet { background: #0ea5e9 !important; opacity: 0.3; }
-                .swiper-pagination-bullet-active { opacity: 1; transform: scale(1.2); }
-            `}</style>
-
-
-
-
-            {/* Disclaimer for Professionalism */}
-            <p className="w-full text-center text-pink-600 text-[10px] mt-12 uppercase tracking-widest font-medium">
-                Current prices and availability must be confirmed with the booking partner.
-            </p>
-        </div>
-    );
+  return (
+    <div className="w-full py-6">
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
+        effect="coverflow"
+        grabCursor
+        centeredSlides={false}
+        loop={false}
+        navigation={hotels.length > 1}
+        pagination={hotels.length > 1 ? { clickable: true } : false}
+        autoplay={hotels.length > 1 ? { delay: 5000, disableOnInteraction: true, pauseOnMouseEnter: true } : false}
+        coverflowEffect={{ rotate: 0, stretch: 0, depth: 100, modifier: 2.5, slideShadows: false }}
+        className="mySwiper !pb-12"
+        breakpoints={{
+          320: { slidesPerView: 1.1, spaceBetween: 16 },
+          768: { slidesPerView: 2, spaceBetween: 20 },
+          1024: { slidesPerView: 3, spaceBetween: 24 },
+        }}
+      >
+        {hotels.map((hotel) => (
+          <SwiperSlide key={String(hotel.id)} className="max-w-[380px]">
+            <article className="group relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-lg">
+              <div className="relative h-[420px]">
+                <img
+                  src={hotel.image}
+                  alt={`Hotel listing: ${hotel.name}`}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-black/60 px-3 py-2 text-xs text-white">
+                  {hotel.stars ? `${hotel.stars}-star hotel` : "Hotel listing"}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 space-y-4 p-6 text-white">
+                  <div>
+                    <h2 className="line-clamp-2 text-xl font-bold">{hotel.name}</h2>
+                    <p className="mt-1 text-xs opacity-80">{hotel.city}</p>
+                    {hotel.source === "OpenStreetMap" && <p className="mt-1 text-xs opacity-80">OpenStreetMap contributor data • Not verified or bookable here</p>}
+                  </div>
+                  <div className="border-t border-white/20 pt-4">
+                    <p className="mb-3 text-xs">Check current rates, taxes and availability with the booking partner.</p>
+                    {hotel.affiliate_link ? (
+                      <a
+                        href={hotel.affiliate_link}
+                        target="_blank"
+                        rel="noopener noreferrer sponsored"
+                        className="gth-btn-gold inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold"
+                      >
+                        Continue to booking partner
+                      </a>
+                    ) : (
+                      <p className="rounded-xl border border-white/20 px-4 py-3 text-center text-xs">
+                        Partner booking link not available for this listing
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </article>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+      <p className="mt-4 text-center text-xs text-[var(--muted)]">
+        GTH PRO displays listing information; booking, payment, current prices and confirmation are handled by the partner. Hotel discovery data may include <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors (ODbL)</a>.
+      </p>
+    </div>
+  );
 }

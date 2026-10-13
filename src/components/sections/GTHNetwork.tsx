@@ -13,8 +13,10 @@ type Partner = {
 
 export default function GTHNetwork({
     partners = [],
+    discoveryOnly = false,
 }: {
     partners?: Partner[];
+    discoveryOnly?: boolean;
 }) {
     const sliderRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,18 +111,15 @@ export default function GTHNetwork({
 
                     <h2 className="text-3xl font-black tracking-tight text-[var(--text)] md:text-5xl">
 
-                        Verified Global
-                        Partner Ecosystem
+                        {discoveryOnly ? "Explore International Travel Providers" : "Verified Global Partner Ecosystem"}
 
                     </h2>
 
                     <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--text-soft)] md:text-base">
 
-                        Discover premium hospitality,
-                        travel, luxury lifestyle and
-                        verified international ecosystem
-                        partnerships connected through
-                        the GTH network.
+                        {discoveryOnly
+                            ? "Discover independent travel providers and check current availability, fares, coverage and booking conditions on their own websites. A listing here is not a supplier verification or booking guarantee."
+                            : "Discover premium hospitality, travel, luxury lifestyle and verified international ecosystem partnerships connected through the GTH network."}
 
                     </p>
 
@@ -187,6 +186,7 @@ export default function GTHNetwork({
                             key={`${partner.name}-${index}`}
                             href={partner.link || "#"}
                             target="_blank"
+                            rel="noopener noreferrer sponsored"
                             className="group relative min-w-[240px] snap-start md:min-w-[300px] xl:min-w-[340px]"
                         >
 
@@ -227,7 +227,7 @@ export default function GTHNetwork({
 
                                                     <span className="text-[9px] font-black uppercase tracking-[0.24em] text-[var(--text-soft)]">
 
-                                                        Verified Access
+                                                        {discoveryOnly ? "External Travel Website" : "Verified Access"}
 
                                                     </span>
 
@@ -235,16 +235,15 @@ export default function GTHNetwork({
 
                                                 <h3 className="line-clamp-2 text-lg font-black uppercase tracking-tight text-[var(--text)] md:text-xl">
 
-                                                    GTH {partner.name}
+                                                    {discoveryOnly ? partner.name : "GTH " + partner.name}
 
                                                 </h3>
 
                                                 <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--text-soft)]">
 
-                                                    Connected premium
-                                                    ecosystem partner
-                                                    with verified
-                                                    global reach.
+                                                    {discoveryOnly
+                                                        ? "Browse provider information directly. Confirm costs, refunds and booking availability before paying."
+                                                        : "Connected premium ecosystem partner with verified global reach."}
 
                                                 </p>
 
@@ -256,7 +255,7 @@ export default function GTHNetwork({
 
                                             <div className="gth-btn flex h-11 w-full items-center justify-center rounded-full text-[10px] font-black uppercase tracking-[0.24em]">
 
-                                                View Partner Access
+                                                {discoveryOnly ? "Explore provider" : "View Partner Access"}
 
                                             </div>
 

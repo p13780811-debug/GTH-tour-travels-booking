@@ -101,22 +101,23 @@ function EcosystemNavbar() {
     const navItems = useMemo(() => [
 
         {
-            name: "Destinations",
-            href: "/destinations",
-            icon: Globe,
-            mega: true,
-            featured: [
-                "Dubai",
-                "Bali",
-                "Maldives",
-                "Goa",
-            ],
+            name: "Travel",
+            href: "/travel",
+            icon: Plane,
+            mega: false,
         },
 
         {
             name: "Hotels",
             href: "/hotels",
             icon: Hotel,
+            mega: false,
+        },
+
+        {
+            name: "Tours",
+            href: "/tours",
+            icon: Compass,
             mega: false,
         },
 
