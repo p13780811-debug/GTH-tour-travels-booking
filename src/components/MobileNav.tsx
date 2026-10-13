@@ -14,9 +14,9 @@ const MobileNav = () => {
             <div className="bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl px-2 py-2 flex justify-between items-center shadow-2xl">
 
                 {/* Home */}
-                <Link href="/mega-aggregator"
+                <Link href="/"
                     className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/mega-aggregator') ? 'text-white' : 'text-white/50'}`}
+                    ${isActive('/') || isActive('/mega-aggregator') ? 'text-white' : 'text-white/50'}`}
                 >
                     <Home size={18} />
                     <span className="text-[9px] uppercase">Home</span>
