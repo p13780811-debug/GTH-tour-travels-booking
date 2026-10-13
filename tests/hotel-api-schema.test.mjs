@@ -3,18 +3,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const api = readFileSync(new URL("../src/app/api/hotels/route.ts", import.meta.url), "utf8");
-test("Hotel API does not ask for missing stars column", () => {
+
+test("public supplier projections do not assume a stars column", () => {
   assert.doesNotMatch(api, /\.select\([^)]*\bstars\b/);
-});
-test("Unpublished legacy hotels are never returned", () => {
   assert.match(api, /\.eq\("is_public", true\)/);
+  assert.doesNotMatch(api, /select\("\*"\)/);
 });
-test("Hotel catalog uses attribution without invented prices", () => {
+test("OSM discovery remains separate from bookable supplier inventory", () => {
   assert.match(api, /source_license: "ODbL-1\.0"/);
   assert.match(api, /affiliate_link: null/);
+  assert.match(api, /supplierFailed && catalogFailed/);
+  assert.match(api, /hotelPageWindow\(page, supplierVisible, catalogCount, PAGE_SIZE\)/);
 });
-
-test("Independent OSM catalog survives a legacy hotel-provider query error", () => {
-  assert.match(api, /const listings = \(error \? \[\] : \(data \|\| \[\]\)\)/);
-  assert.match(api, /if \(error && catalogError\)/);
+test("hotel API validates page and protects partner redirects", () => {
+  assert.match(api, /safePartnerLink/);
+  assert.match(api, /Cache-Control/);
+  assert.match(api, /count: "exact"/);
 });
