@@ -14,16 +14,17 @@ export default function LayoutWrapper({
 
     // ✅ Real estate detection
     const isRealEstate = pathname?.startsWith("/real-estate");
+    const isFlagship = pathname === "/";
 
     return (
         <>
             {/* ✅ CONTENT */}
-            <div className={`min-h-screen ${isRealEstate ? 'pb-0' : 'pb-24 md:pb-0'}`}>
+            <div className={`min-h-screen ${isRealEstate || isFlagship ? 'pb-0' : 'pb-24 md:pb-0'}`}>
                 {children}
             </div>
 
             {/* ❌ REAL ESTATE → NO global UI */}
-            {!isRealEstate && (
+            {!isRealEstate && !isFlagship && (
                 <>
                     <MobileNav />
                     <ChatBot />
