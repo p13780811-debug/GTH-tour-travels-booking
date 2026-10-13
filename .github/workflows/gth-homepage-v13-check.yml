@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
+      - gth-maharera-csv-import
       - gth-homepage-v1.3
       - gth-production-hardening
   pull_request:
@@ -61,7 +63,7 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_INGESTION_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      SUPABASE_PROJECT_REF: dqprqjmhxjnrllczqyhz
       GTH_INGESTION_ENABLED: 'true'
       CSV_EXPORT_DIR: data/maharera/authorized
     steps:
@@ -79,7 +81,7 @@ jobs:
             echo "::error::Approved Supabase credentials/project reference are not configured"
             exit 1
           fi
-      - name: Install existing Python dependencies
+      - name: Install Python dependencies
         run: python -m pip install -r requirements.txt
       - name: Validate registry importer regression tests
         run: python -m unittest discover -s tests -p 'test_rera_*.py'
@@ -90,5 +92,6 @@ jobs:
           python src/app/real-estate/services/rera_csv_import.py \
             --daily-dir "$CSV_EXPORT_DIR" \
             --batch-size 50 \
+            --daily-limit 100 \
             --commit \
             --expected-project-ref "$SUPABASE_PROJECT_REF"
