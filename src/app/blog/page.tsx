@@ -75,8 +75,8 @@ export default async function BlogList({ searchParams }: Props) {
               </Link>
             </div>
           </div>
-          <Link href={"/blog/" + lead.slug} className="group relative flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl border border-[#eac671]/35 bg-[#071d34] p-6 shadow-[0_15px_40px_rgba(0,0,0,.35)] sm:min-h-[300px]">
-            <Image src={lead.image} alt={lead.title} fill sizes="(max-width: 1024px) 100vw, 44vw" className="absolute -z-10 object-cover transition-transform duration-700 group-hover:scale-105" />
+          <Link href={"/blog/" + lead.slug} className="group relative isolate flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl border border-[#eac671]/35 bg-[#071d34] p-6 shadow-[0_15px_40px_rgba(0,0,0,.35)] sm:min-h-[300px]">
+            <Image src={lead.image} alt={lead.title} fill sizes="(max-width: 1024px) 100vw, 44vw" className="absolute inset-0 -z-10 object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#020b1d]/95 via-[#041224]/60 to-[#031327]/15" />
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#f6d687]">Featured Research</p>
             <h2 className="mt-3 max-w-sm text-2xl font-semibold leading-tight text-white sm:text-3xl">{lead.title}</h2>
