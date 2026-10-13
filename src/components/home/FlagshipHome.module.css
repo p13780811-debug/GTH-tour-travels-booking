@@ -38,7 +38,7 @@
   position: absolute;
   inset: 0;
   content: "";
-  background-image: url("/images/gth-flagship/global-earth.jpg");
+  background-image: url("/images/global-earth.jpg");
   background-position: left center, left center;
   background-size: cover, cover;
   background-repeat: no-repeat;
@@ -303,7 +303,7 @@
   position:absolute;
   inset:0;
   z-index:-2;
-  background-image:url("/images/gth-flagship/global-city.jpg");
+  background-image:url("/images/global-city.jpg");
   background-position:center bottom,center bottom;
   background-size:cover,cover;
   background-repeat:no-repeat;
@@ -387,13 +387,13 @@
 /* FLAGSHIP REFINEMENT — original photography only, no generic fallbacks.
    Motion is a gentle entrance and real hover/focus response, not a static poster. */
 .earth::before {
-  background-image: url("/images/gth-flagship/global-earth.jpg");
+  background-image: url("/images/global-earth.jpg");
   background-position: left center;
   background-size: cover;
   animation: flagshipEarthReveal 1400ms ease-out both;
 }
 .cityFooter::before {
-  background-image: url("/images/gth-flagship/global-city.jpg");
+  background-image: url("/images/global-city.jpg");
   background-position: center bottom;
   background-size: cover;
 }
