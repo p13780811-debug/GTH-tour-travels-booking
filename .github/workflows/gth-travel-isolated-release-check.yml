@@ -1,0 +1,33 @@
+name: GTH Travel-Only Release Verification
+on:
+  push:
+    branches: [gth-travel-global-release-v1]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m py_compile scripts/import_osm_hotels.py
+      - run: python3 -m unittest discover -s tests -p "test_hotel_import.py"
+      - run: npm ci --legacy-peer-deps
+      - run: npx tsc --noEmit
+      - run: npm run test:security
+      - run: npm run lint
+      - name: Production build (no deployment)
+        run: npm run build
