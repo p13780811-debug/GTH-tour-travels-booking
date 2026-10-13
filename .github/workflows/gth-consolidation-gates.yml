@@ -45,10 +45,12 @@ jobs:
             | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui
           sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx > /tmp/gth-candidate-root-ui
           diff -u /tmp/gth-approved-root-ui /tmp/gth-candidate-root-ui
-      - name: Guard approved GTH PRO root gateway mapping
+      - name: Guard approved GTH PRO flagship and legacy ecosystem split
         run: |
-          grep -Fq 'import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page";' src/app/page.tsx
-          grep -Fq 'return <MegaAggregator />;' src/app/page.tsx
+          grep -Fq 'import FlagshipHome from "@/components/home/FlagshipHome";' src/app/page.tsx
+          grep -Fq 'return <FlagshipHome />;' src/app/page.tsx
+          grep -Fq '<HeroSlider />' src/app/mega-aggregator/page.tsx
+          grep -Fq 'href="/mega-aggregator"' src/components/home/FlagshipHome.tsx
           if grep -Fq 'GTHHomeV13' src/app/page.tsx; then
             echo 'The retired V13 homepage must not render at root.'
             exit 1
