@@ -38,7 +38,10 @@
   position: absolute;
   inset: 0;
   content: "";
-  background: url("/images/gth-flagship/global-earth.jpg") left center / cover no-repeat;
+  background-image: url("/images/gth-flagship/global-earth.jpg"), url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=2000&q=85");
+  background-position: left center, left center;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
 }
 .topbar {
   position: relative;
@@ -300,7 +303,10 @@
   position:absolute;
   inset:0;
   z-index:-2;
-  background:url("/images/gth-flagship/global-city.jpg") center bottom / cover no-repeat;
+  background-image:url("/images/gth-flagship/global-city.jpg"),url("/images/cities/dubai.jpg");
+  background-position:center bottom,center bottom;
+  background-size:cover,cover;
+  background-repeat:no-repeat;
 }
 .cityOverlay {position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,#031123 0%,rgba(1,11,25,.44) 54%,rgba(1,7,19,.55) 100%);}
 .footerContent {max-width:1000px;margin:auto;text-align:center;}
