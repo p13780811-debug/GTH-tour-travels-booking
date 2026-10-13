@@ -1,4 +1,5 @@
 import FlagshipImage from "./FlagshipImage";
+import BrandVideo from "@/components/brand/BrandVideo";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
@@ -99,7 +100,15 @@ export default function FlagshipHome() {
       <section className={styles.hero} aria-labelledby="flagship-heading">
         <div className={styles.earth} aria-hidden="true" />
         <header className={styles.topbar}>
-          <Link href="/" aria-label="GTH PRO homepage" className={styles.headerBrand}>GLOBAL <span>TECHNICAL HUB</span></Link>
+          <Link href="/" aria-label="GTH PRO homepage" className={styles.headerBrand}>
+            <span className={styles.headerVideo}>
+              <BrandVideo name="logo-motion" label="GTH PRO animated official logo" className={styles.headerVideoMedia} controls={false} loop={true} />
+            </span>
+            <span className={styles.headerBrandLabel}>
+              <span className={styles.headerBrandName}>GTH <strong>PRO</strong></span>
+              <span className={styles.headerBrandSubtitle}>GLOBAL TECHNICAL HUB</span>
+            </span>
+          </Link>
           <nav className={styles.topNav} aria-label="GTH PRO platforms">
             <Link href="/mega-aggregator" className={styles.ecosystemLink}>Ecosystem <ArrowUpRight size={15}/></Link>
             <Link href="/real-estate">Real Estate</Link>
