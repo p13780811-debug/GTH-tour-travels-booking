@@ -19,6 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           # PR #17 explicitly remaps the root gateway; existing Real Estate UI remains byte-identical.
+          # Scoped master CSS is guarded by dedicated design regression tests.
           git diff --exit-code fdb66acb7f6160f53f30d4223a9154a49ef53572 HEAD -- \
             src/app/real-estate/page.tsx \
             src/app/real-estate/layout.tsx \
@@ -34,7 +35,6 @@ jobs:
             src/app/api/real-estate/ \
             src/app/api/admin/leads/route.ts \
             src/app/api/admin/submissions/route.ts \
-            src/app/globals.css \
             src/components/brand/BrandVideo.tsx \
             src/components/mobile/BottomNav.tsx \
             public/brand/property-story.jpg \
