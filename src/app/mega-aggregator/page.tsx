@@ -21,7 +21,7 @@ export const revalidate = 60
 export const metadata = {
     title: "GTH PRO | Global Travel, Real Estate & Tender Ecosystem",
     description: "GTH PRO connects international travel discovery, real estate intelligence and tender opportunity research in one three-pillar global ecosystem.",
-    alternates: { canonical: "/" },
+    alternates: { canonical: "/mega-aggregator" },
     keywords: ["GTH PRO", "global travel", "flights", "hotels", "tours", "real estate", "tender intelligence"],
     openGraph: {
         title: "GTH PRO — One Ecosystem. Three Global Pillars.",
