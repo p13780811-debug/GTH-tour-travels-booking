@@ -75,9 +75,9 @@ class CsvImportTests(unittest.TestCase):
     def test_daily_batch_bounded_and_rotates_without_portal_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             export = Path(tmp) / "thane.csv"
-            header = "Project_Name,Promoter,RERA_Number,District,State\\n"
+            header = "Project_Name,Promoter,RERA_Number,District,State\n"
             rows = "".join(
-                f"Registered Project {i},Builder {i},P518{i:08d},Thane,Maharashtra\\n"
+                f"Registered Project {i},Builder {i},P518{i:08d},Thane,Maharashtra\n"
                 for i in range(1, 5)
             )
             export.write_text(header + rows, encoding="utf-8")
