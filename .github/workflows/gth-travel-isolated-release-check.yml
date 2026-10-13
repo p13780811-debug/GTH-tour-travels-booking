@@ -55,4 +55,5 @@ jobs:
           python3 -c 'import json; x=json.load(open("hotel-dry-run.json")); assert x["accepted"] > 0, "No valid accommodation points extracted"'
       - name: Licensed source attribution
         if: always()
-        run: echo "OpenStreetMap contributors (ODbL 1.0). Dry run only: no database writes or availability claims." >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "OpenStreetMap contributors (ODbL 1.0). Dry run only: no database writes or availability claims." >> "$GITHUB_STEP_SUMMARY"
