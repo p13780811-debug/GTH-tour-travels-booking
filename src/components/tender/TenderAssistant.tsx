@@ -45,6 +45,9 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   const [question,setQuestion]=useState("");
   const [language,setLanguage]=useState<"en"|"hi-Latn">("hi-Latn");
   const [aiConsent,setAiConsent]=useState(false);
+  const [clauses,setClauses]=useState("");
+  const [extractBusy,setExtractBusy]=useState(false);
+  const [extractMessage,setExtractMessage]=useState("");
   const [aiBusy,setAiBusy]=useState(false);
   const [aiReply,setAiReply]=useState("");
   const [noticeMessage,setNoticeMessage]=useState("");
@@ -91,6 +94,20 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
       setAiReply(data.reply||"No guidance returned.");
     }catch(e){setAiReply(e instanceof Error?e.message:"AI coach unavailable.");}
     finally{setAiBusy(false);}
+  }
+  async function extractClauses(){
+    if(!aiConsent){setExtractMessage("Please consent before sending pasted conditions to the AI provider.");return;}
+    setExtractBusy(true);setExtractMessage("");
+    try{
+      const r=await fetch("/api/tender/extract",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({clauses})});
+      const data=await r.json();
+      if(!r.ok)throw new Error(data.error||"Could not extract requirements.");
+      setReq({...EMPTY_REQUIREMENTS,...data.requirements});
+      setCriteriaVerified(false);
+      setExtractMessage("Draft conditions extracted. Review each threshold, attachment and exception below against the official document. No eligibility decision has been made.");
+    }catch(e){setExtractMessage(e instanceof Error?e.message:"AI extraction unavailable.");}
+    finally{setExtractBusy(false);}
   }
   async function saveDraft(){
     setSaveBusy(true);setAuthMessage("");
@@ -213,6 +230,21 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           </div>}
           {step===2&&<div className="mt-6 space-y-4">
             <p className="text-sm leading-7 text-[var(--text-soft)]">Only official tender conditions can establish eligibility. Enter the actual requirements from its latest published documents; do not guess thresholds.</p>
+            <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4">
+              <p className="text-sm font-semibold">Optional: extract requirements from tender text with AI</p>
+              <p className="text-xs leading-6 text-[var(--text-soft)]">Paste the eligibility section copied from an official document. Do not paste identity proofs, personal identifiers, bank details, passwords or confidential pricing. Extraction may miss clauses.</p>
+              <label className={fieldLabel}>Official eligibility clauses (text only)
+                <textarea rows={5} className={textInput} maxLength={10000} value={clauses} onChange={e=>setClauses(e.target.value)} placeholder="Paste official eligibility paragraphs here..."/></label>
+              <label className="flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-amber-600" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/>
+                I agree to send my pasted eligibility text to the Gemini AI provider. This does not verify it.
+              </label>
+              <button type="button" disabled={!aiConsent||extractBusy||clauses.trim().length<60} onClick={extractClauses}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-40">
+                <Sparkles size={16}/> {extractBusy?"Extracting…":"Extract draft requirements"}
+              </button>
+              {extractMessage&&<p role="status" className="text-xs leading-6 text-[var(--text-soft)]">{extractMessage}</p>}
+            </div>
             <div className={`rounded-xl border p-4 text-sm ${criteriaVerified?"border-[var(--gold)]":"border-[var(--border)]"}`}>
               {criteriaVerified?"These conditions were marked reviewed in the tender catalog. Editing them changes the comparison to unverified manual criteria.":"Manual or unverified conditions: any result will require independent review."}
             </div>
