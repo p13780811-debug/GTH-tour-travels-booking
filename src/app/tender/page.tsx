@@ -68,7 +68,7 @@ export default async function TenderPage({searchParams}: Props) {
           <Link href="/tender/assistant" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
             <ClipboardCheck size={17} aria-hidden="true"/> Start Guided Tender Assistant <ArrowRight size={17} aria-hidden="true"/>
           </Link>
-          <Link href="/tender/assistant#eligibility" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-semibold">
+          <Link href="/tender/assistant" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-semibold">
             Check My Eligibility
           </Link>
         </div>
