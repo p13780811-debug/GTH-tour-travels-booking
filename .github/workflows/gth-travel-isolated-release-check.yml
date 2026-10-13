@@ -32,3 +32,27 @@ jobs:
       - run: npm run lint
       - name: Production build (no deployment)
         run: npm run build
+
+  catalog-source-smoke:
+    name: Licensed OSM extract parsing (dry run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install osmium
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download small, licensed Monaco extract
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --proto '=https' --max-time 180 -o monaco.osm.pbf https://download.geofabrik.de/europe/monaco-latest.osm.pbf
+          test -s monaco.osm.pbf
+      - name: Extract accommodation and dry-run official importer
+        run: |
+          set -euo pipefail
+          osmium tags-filter monaco.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
+          osmium export --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
+          python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit 1000 --dry-run | tee hotel-dry-run.json
+          python3 -c 'import json; x=json.load(open("hotel-dry-run.json")); assert x["accepted"] > 0, "No valid accommodation points extracted"'
+      - name: Licensed source attribution
+        if: always()
+        run: echo "OpenStreetMap contributors (ODbL 1.0). Dry run only: no database writes or availability claims." >> "$GITHUB_STEP_SUMMARY"
