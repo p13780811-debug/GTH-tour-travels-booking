@@ -84,3 +84,16 @@ test("phone-only compact three-pillar swipe leaves desktop hero and footer intac
   assert.match(section, /grid-template-columns: repeat\(4, minmax\(0,1fr\)\)/);
   assert.doesNotMatch(section, /\.hero\s*\{|\.cityFooter\s*\{/);
 });
+
+
+test("feature label contrast defeats global navigation color, without changing shared design", () => {
+  const globalStyles = source("src/app/globals.css");
+  assert.match(globalStyles, /nav span,[\s\S]*?nav a\s*\{\s*color:\s*var\(--text\)/);
+  assert.match(css, /--text:\s*#f8f9fe/);
+  assert.match(css, /\.site \.feature,\s*\.site \.feature span\s*\{[\s\S]*?color:\s*#f8fbff/);
+  assert.match(css, /\.site \.feature span\s*\{[\s\S]*?word-break:\s*normal/);
+  assert.match(css, /\.site \.feature span\s*\{[\s\S]*?hyphens:\s*none/);
+  assert.doesNotMatch(css, /overflow-wrap:\s*anywhere/);
+  assert.match(css, /grid-auto-flow:\s*column/);
+  assert.match(css, /scroll-snap-type:\s*x mandatory/);
+});
