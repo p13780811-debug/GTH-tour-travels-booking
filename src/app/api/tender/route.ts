@@ -1,28 +1,18 @@
 import { NextResponse } from "next/server";
-import { cleanString } from "@/lib/security/validators";
+import { parseTenderFilters, searchPublicTenders } from "@/lib/tender/catalog";
+export const dynamic = "force-dynamic";
+const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const tenderId = cleanString(body?.tenderId, {
-      min: 1,
-      max: 50,
-      pattern: /^[A-Za-z0-9._/-]+$/,
-    });
+export async function GET(request: Request) {
+  const valid = parseTenderFilters(new URL(request.url).searchParams);
+  if (!valid.ok) return NextResponse.json({ error: valid.error }, { status: 400, headers });
+  const result = await searchPublicTenders(valid.filters);
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers });
+  return NextResponse.json({ items: result.items, total: result.total, page: result.page, pageSize: result.size }, { headers });
+}
 
-    if (!tenderId) {
-      return NextResponse.json({ error: "Invalid tender ID" }, { status: 400 });
-    }
-
-    return NextResponse.json(
-      {
-        status: "In Development",
-        tenderId,
-        message: "Tender Intelligence is not live yet.",
-      },
-      { status: 501 },
-    );
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+// Import/publication is privileged and NEVER accepted through a public API.
+export async function POST() {
+  return NextResponse.json({ error: "Public tender submission is not supported" },
+    { status: 405, headers: { ...headers, Allow: "GET" } });
 }
