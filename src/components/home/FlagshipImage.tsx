@@ -1,27 +1,23 @@
-"use client";
-
 import Image from "next/image";
-import { useState } from "react";
 
 type Props = {
-  primary: string;
-  fallback: string;
+  src: string;
   alt: string;
   className: string;
   priority?: boolean;
 };
 
-export default function FlagshipImage({ primary, fallback, alt, className, priority = false }: Props) {
-  const [src, setSrc] = useState(primary);
+// Use the exact supplied flagship image. Never silently replace it with
+// generic travel/property stock imagery: that changes the approved design.
+export default function FlagshipImage({ src, alt, className, priority = false }: Props) {
   return (
     <Image
       src={src}
       alt={alt}
       fill
       priority={priority}
-      sizes="(max-width: 680px) 100vw, 34vw"
+      sizes="(max-width: 680px) 100vw, (max-width: 980px) 50vw, 34vw"
       className={className}
-      onError={() => setSrc(current => current === fallback ? current : fallback)}
     />
   );
 }
