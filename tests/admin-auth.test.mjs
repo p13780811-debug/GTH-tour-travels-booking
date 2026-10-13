@@ -56,7 +56,7 @@ test('admin leads never trust user_metadata or read data for ordinary users', as
 
 test('trusted admin leads are bounded, projected and never cached', async () => {
   const query = {
-    select: fields => { assert.equal(fields, 'id,property_id,phone,created_at'); return query; },
+    select: fields => { assert.equal(fields, 'id,property_id,inventory_id,phone,source,status,created_at'); return query; },
     order: () => query,
     limit: async n => { assert.equal(n, 100); return { data: [], error: null }; },
   };

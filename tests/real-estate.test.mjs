@@ -21,8 +21,11 @@ test('stored text prices retain their units and empty prices are not advertised 
   assert.equal(exports.transformProperty({ price: 'On request' }).formatted_price, 'On request');
   assert.equal(exports.transformProperty({ price: null }).formatted_price, 'Price on request');
 });
-test('text price cannot be compared lexicographically as a numeric budget', async () => {
-  await assert.rejects(exports.PropertyService.getAll({ minPrice: 50 }), /Budget filtering requires normalized price data/);
+test('published inventory prices preserve their declared currency', () => {
+  const p = exports.transformProperty({ inventory_min_price: 2500000, inventory_currency: 'AED', active_inventory_count: 1, inventory_has_buy: true });
+  assert.match(p.formatted_price, /AED/);
+  assert.equal(p.inventory_currency, 'AED');
+  assert.equal(p.registry_only, false);
 });
 test('public projection excludes raw ingestion payload and owner email', () => {
  assert.equal(exports.PUBLIC_PROPERTY_FIELDS.split(',').includes('raw_json'), false);
@@ -33,4 +36,25 @@ test('unknown geography and purpose are not invented', () => {
  const p = exports.transformProperty({ title: 'Registry project' });
  assert.equal(p.country, 'Country not provided');
  assert.equal(p.listing_type, 'Purpose not provided');
+});
+
+
+test('legacy placeholder records do not surface invented listing facts', () => {
+  const p = exports.transformProperty({
+    id: 21055,
+    title: 'SHUBHKALYAN HEIGHTS',
+    source_type: 'manual',
+    status: 'New',
+    verified: true,
+    price: null,
+    bedrooms: 1,
+    area_sqft: 650,
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa',
+  });
+  assert.equal(p.data_quality_limited, true);
+  assert.equal(p.verified, false);
+  assert.equal(p.beds, 0);
+  assert.equal(p.sqft, 0);
+  assert.equal(p.formatted_price, 'Price not verified');
+  assert.equal(p.image, '');
 });

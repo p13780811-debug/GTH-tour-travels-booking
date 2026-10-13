@@ -195,8 +195,9 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                                             </h3>
 
                                             <p className="text-sm opacity-60 mt-1">
-                                                Interested in Property #{l.property_id}
+                                                {l.source === "inventory_enquiry" ? `Inventory enquiry · Project #${l.property_id}` : l.source === "registry_project_interest" ? `Project interest · Project #${l.property_id}` : `Listing enquiry · Property #${l.property_id}`}
                                             </p>
+                                            {l.inventory_id && <p className="text-xs opacity-50 mt-1">Inventory ref: {l.inventory_id}</p>}
                                         </div>
                                     </div>
 
@@ -211,7 +212,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                                         </div>
 
                                         <span className="mt-3 text-[10px] uppercase tracking-[0.25em] text-[#d4af37] font-bold">
-                                            ACTIVE LEAD
+                                            {String(l.status || "new").toUpperCase()}
                                         </span>
                                     </div>
                                 </div>

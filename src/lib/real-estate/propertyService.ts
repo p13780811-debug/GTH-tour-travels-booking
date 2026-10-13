@@ -44,6 +44,7 @@ type SearchFilters = {
     featured?: boolean
     verified?: boolean
     sort?: "latest" | "price_high" | "price_low" | "ai"
+    currency?: string
     limit?: number
     page?: number
 }
@@ -191,7 +192,11 @@ const calculateFraudScore = (p: any) => {
 const generateDescription = (p: any) => {
     const title = normalizeText(p.title) || "Property listing"
     const location = normalizeText(p.city || p.location)
+    const inventoryCount = safeNumber(p.active_inventory_count)
     if (isRegistryOnly(p)) {
+        if (inventoryCount > 0) {
+            return `${title}${location ? ` in ${location}` : ""}. Public MahaRERA project with reviewed marketplace inventory published separately by GTH PRO.`
+        }
         return `${title}${location ? ` in ${location}` : ""}. Public MahaRERA registry record; current pricing, availability and listing inventory have not been supplied to GTH PRO.`
     }
     return `${title}${location ? ` in ${location}` : ""}. Contact the listing agent to confirm availability and details.`
@@ -207,7 +212,26 @@ export const transformProperty = (p: any) => {
         CITY_COORDS[cityKey] ||
         { lat: undefined, lng: undefined }
 
-    const price = safeNumber(p.price)
+    const inventoryMinPrice = safeNumber(p.inventory_min_price)
+    const inventoryMaxPrice = safeNumber(p.inventory_max_price)
+    const inventoryCount = safeNumber(p.active_inventory_count)
+    const legacyPlaceholderRecord =
+        ["rera", "manual"].includes(normalizeText(p.source_type).toLowerCase()) &&
+        inventoryCount === 0 &&
+        !safeNumber(p.price) &&
+        safeNumber(p.bedrooms ?? p.beds) === 1 &&
+        safeNumber(p.area_sqft ?? p.sqft) === 650 &&
+        p.verified === true &&
+        normalizeText(p.status).toLowerCase() !== "verified"
+    const inventoryCurrency = normalizeText(p.inventory_currency).toUpperCase()
+    const price = inventoryMinPrice || safeNumber(p.price)
+    const formatMoney = (amount: number, currency: string) => {
+        try {
+            return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount)
+        } catch {
+            return `${currency} ${new Intl.NumberFormat("en").format(amount)}`
+        }
+    }
 
     const aiScore =
         safeNumber(p.ai_score ?? p.intelligence_score)
@@ -216,7 +240,7 @@ export const transformProperty = (p: any) => {
         safeNumber(p.fraud_score)
 
     const boosted = isBoostActive(p)
-    const registryOnly = isRegistryOnly(p)
+    const registryOnly = isRegistryOnly(p) && inventoryCount === 0
 
     return {
 
@@ -237,8 +261,11 @@ export const transformProperty = (p: any) => {
             generateDescription(p),
 
         image:
-            normalizeText(p.image) ||
-            "/placeholder.jpg",
+            legacyPlaceholderRecord
+                ? ""
+                : inventoryCount > 0 && normalizeText(p.inventory_image)
+                    ? normalizeText(p.inventory_image)
+                    : normalizeText(p.image) || "/placeholder.jpg",
 
         gallery:
             Array.isArray(p.gallery)
@@ -258,12 +285,18 @@ export const transformProperty = (p: any) => {
             "Country not provided",
 
         property_type:
-            normalizeText(p.property_type) ||
-            "Type not provided",
+            inventoryCount > 0 && Array.isArray(p.inventory_property_types) && p.inventory_property_types.length === 1
+                ? normalizeText(p.inventory_property_types[0])
+                : normalizeText(p.property_type) || "Type not provided",
 
         listing_type:
-            normalizeText(p.listing_type) ||
-            "Purpose not provided",
+            inventoryCount > 0
+                ? p.inventory_has_buy && !p.inventory_has_rent
+                    ? "buy"
+                    : p.inventory_has_rent && !p.inventory_has_buy
+                        ? "rent"
+                        : "Purpose varies"
+                : normalizeText(p.listing_type) || "Purpose not provided",
 
         amenities:
             Array.isArray(p.amenities)
@@ -272,18 +305,49 @@ export const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price: registryOnly && !normalizeText(p.price)
-            ? "Not published in registry"
-            : normalizeText(p.price) || "Price on request",
+        formatted_price: legacyPlaceholderRecord
+            ? "Price not verified"
+            : inventoryMinPrice
+                ? `From ${formatMoney(inventoryMinPrice, inventoryCurrency || "INR")}`
+                : registryOnly && !normalizeText(p.price)
+                    ? "Not published in registry"
+                    : normalizeText(p.price) || "Price on request",
+
+        active_inventory_count: inventoryCount,
+        inventory_min_price: inventoryMinPrice || null,
+        inventory_max_price: inventoryMaxPrice || null,
+        inventory_currency: inventoryCurrency || null,
+        inventory_min_bedrooms: safeNumber(p.inventory_min_bedrooms) || null,
+        inventory_max_bedrooms: safeNumber(p.inventory_max_bedrooms) || null,
+        inventory_min_bathrooms: safeNumber(p.inventory_min_bathrooms) || null,
+        inventory_max_bathrooms: safeNumber(p.inventory_max_bathrooms) || null,
+        inventory_min_area_sqft: safeNumber(p.inventory_min_area_sqft) || null,
+        inventory_max_area_sqft: safeNumber(p.inventory_max_area_sqft) || null,
+        inventory_has_buy: p.inventory_has_buy === true,
+        inventory_has_rent: p.inventory_has_rent === true,
+        inventory_property_types: Array.isArray(p.inventory_property_types) ? p.inventory_property_types : [],
+        inventory_image: normalizeText(p.inventory_image) || "",
 
         beds:
-            safeNumber(p.bedrooms ?? p.beds),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_bedrooms)
+                    : safeNumber(p.bedrooms ?? p.beds),
 
         baths:
-            safeNumber(p.bathrooms ?? p.baths),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_bathrooms)
+                    : safeNumber(p.bathrooms ?? p.baths),
 
         sqft:
-            safeNumber(p.area_sqft ?? p.sqft),
+            legacyPlaceholderRecord
+                ? 0
+                : inventoryCount > 0
+                    ? safeNumber(p.inventory_min_area_sqft)
+                    : safeNumber(p.area_sqft ?? p.sqft),
 
         views:
             safeNumber(p.views),
@@ -296,9 +360,10 @@ export const transformProperty = (p: any) => {
         fraud_score: fraudScore,
 
         verified:
-            p.status === "verified" || p.verified === true,
+            !legacyPlaceholderRecord && (p.status === "verified" || p.verified === true),
 
         registry_only: registryOnly,
+        data_quality_limited: legacyPlaceholderRecord,
 
         official_source_url:
             safeOfficialSourceUrl(p.official_source_url),
@@ -368,132 +433,52 @@ export const PropertyService = {
 
     async getAll(filters: SearchFilters = {}) {
 
-        const cacheKey =
-            `all-${JSON.stringify(filters)}`
-
+        const cacheKey = `all-${JSON.stringify(filters)}`
         const cached = getCache(cacheKey)
-
         if (cached) return cached
 
         const limit = Math.min(100, Math.max(1, Math.floor(filters.limit || 24)))
-
         const page = Math.max(1, Math.floor(filters.page || 1))
+        const offset = (page - 1) * limit
+        const term = filters.query?.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120) || null
+        const browserParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
+        const urlMinPrice = Number(browserParams?.get("minPrice"))
+        const urlMaxPrice = Number(browserParams?.get("maxPrice"))
+        const urlSort = browserParams?.get("sort")
+        const urlCurrency = (browserParams?.get("currency") || "").toUpperCase()
+        const minPrice = filters.minPrice || (Number.isFinite(urlMinPrice) && urlMinPrice > 0 ? urlMinPrice : undefined)
+        const maxPrice = filters.maxPrice || (Number.isFinite(urlMaxPrice) && urlMaxPrice > 0 ? urlMaxPrice : undefined)
+        const currency = (filters.currency || urlCurrency || "").toUpperCase()
+        const sortMode = ["latest","ai","price_low","price_high"].includes(urlSort || "")
+            ? urlSort as "latest" | "ai" | "price_low" | "price_high"
+            : filters.sort || "latest"
 
-        const from = (page - 1) * limit
-
-        // The live schema stores price as text. Never compare/order it as a number.
-        if ((filters.minPrice ?? 0) > 0 || (filters.maxPrice !== undefined && Number.isFinite(filters.maxPrice)) || filters.sort === "price_high" || filters.sort === "price_low") {
-            throw new Error("Budget filtering requires normalized price data. Search by city or property type for now.")
-        }
-
-        let query = supabase
-            .from("properties")
-            .select(PUBLIC_PROPERTY_FIELDS)
-            .range(from, from + limit - 1)
-
-        if (filters.city) {
-            query = query.ilike(
-                "city",
-                `%${filters.city}%`
-            )
-        }
-
-        if (filters.country) {
-            query = query.ilike(
-                "country",
-                `%${filters.country}%`
-            )
-        }
-
-        if (filters.type) {
-            query = query.eq(
-                "property_type",
-                filters.type
-            )
-        }
-
-        if (filters.listing) query = query.eq("listing_type", filters.listing)
-        if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms)
-
-        if (filters.featured) {
-            query = query.eq(
-                "is_featured",
-                true
-            )
-        }
-
-        if (filters.verified) query = query.eq("status", "verified")
-        if (filters.query) {
-            const term = filters.query.replace(/[^\p{L}\p{N}\s-]/gu, "").trim().slice(0, 120)
-            if (term) query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%,location.ilike.%${term}%`)
-        }
-        const orderColumn = filters.sort === "latest" ? "created_at" : "final_score"
-        query = query.order(orderColumn, { ascending: false, nullsFirst: false }).order("id", { ascending: false })
-
-        const { data, error } =
-            await query
+        const { data, error } = await supabase.rpc("search_marketplace_projects", {
+            search_query: term,
+            search_country: filters.country || null,
+            search_city: filters.city || null,
+            search_type: filters.type || null,
+            search_listing: filters.listing || null,
+            search_bedrooms: filters.bedrooms || null,
+            search_currency: currency || null,
+            min_price: minPrice || null,
+            max_price: maxPrice || null,
+            sort_mode: sortMode,
+            page_limit: limit,
+            page_offset: offset,
+        })
 
         if (error) {
-
-            console.error(
-                "❌ GET ALL FAILED:",
-                error.message
-            )
-
+            console.error("❌ MARKETPLACE SEARCH FAILED:", error.message)
             throw new Error("Property inventory is temporarily unavailable. Please retry.")
         }
 
-        let transformed =
-            (data || []).map(
-                transformProperty
-            )
+        let transformed = (data || []).map(transformProperty)
 
-        if (filters.minPrice) {
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.price >=
-                        filters.minPrice!
-                )
-        }
-
-        if (filters.maxPrice) {
-            transformed =
-                transformed.filter(
-                    (p) =>
-                        p.price <=
-                        filters.maxPrice!
-                )
-        }
-
-        if (filters.verified) {
-            transformed =
-                transformed.filter(
-                    (p) => p.verified
-                )
-        }
-
-        switch (filters.sort) {
-
-            case "latest":
-                transformed.sort(
-                    (a, b) =>
-                        new Date(
-                            b.created_at
-                        ).getTime() -
-                        new Date(
-                            a.created_at
-                        ).getTime()
-                )
-                break
-
-            default:
-                transformed =
-                    smartSort(transformed)
-        }
+        if (filters.featured) transformed = transformed.filter((p:any) => p.is_featured)
+        if (filters.verified) transformed = transformed.filter((p:any) => p.verified)
 
         setCache(cacheKey, transformed)
-
         return transformed
     },
 
