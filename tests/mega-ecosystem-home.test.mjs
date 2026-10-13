@@ -56,10 +56,10 @@ test("approved Real Estate route and slider design remain independent",()=>{
 });
 
 test("root renders approved mega-aggregator instead of retired V13 homepage",()=>{
-  assert.match(homepage,/import MegaAggregator, \\{ metadata as megaMetadata \\} from "\\.\\/mega-aggregator\\/page"/);
-  assert.match(homepage,/return <MegaAggregator \\/>/);
-  assert.match(homepage,/canonical: "\\/"/);
-  assert.doesNotMatch(homepage,/GTHHomeV13/);
-  assert.match(mobile,/href="\\/"/);
-  assert.match(footer,/href="\\/"/);
+  assert.ok(homepage.includes('import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page"'));
+  assert.ok(homepage.includes('return <MegaAggregator />;'));
+  assert.ok(homepage.includes('canonical: "/"'));
+  assert.ok(!homepage.includes("GTHHomeV13"));
+  assert.ok(mobile.includes('href="/"'));
+  assert.ok(footer.includes('href="/"'));
 });
