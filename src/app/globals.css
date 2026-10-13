@@ -85,12 +85,7 @@
   --bg-soft: #fffaf2;
 
   --text: #111827;
-  --btn-bg: linear-gradient(135deg, #2563eb, #3b82f6);
-
-  /* Professional Blue */
-  --btn-text: #ffffff;
-  --gold-gradient: linear-gradient(135deg, #1e293b, #334155);
-  /* Day mode mein professional dark gray/blue */
+  /* Day theme button colors follow below; duplicate defaults removed. */
 
   /* ✨ FIXED GLASS */
   --card: oklch(1 0 0);
@@ -1259,4 +1254,94 @@ html.dark ::-webkit-scrollbar-thumb {
 
   }
 
+}
+/* ===========================================================
+   GTH PRO MASTER DESIGN V1 | APPROVED NAVY-GOLD HOME
+   Opt-in stylesheet: no changes to the original buttons,
+   gold gradients, glass, shadows or Real Estate component CSS.
+   =========================================================== */
+.gth-master-home {
+  --gth-navy: #061426;
+  --gth-navy-deep: #020d1f;
+  --gth-gold: #eac671;
+  --gth-silver: #e9edf4;
+  --gth-soft-text: #bdc9da;
+  --gth-container: 80rem;
+  --gth-section-spacing: clamp(3.25rem, 6vw, 5.5rem);
+  --bg: var(--gth-navy);
+  --bg-soft: #0d1d31;
+  --card: rgba(10, 26, 45, 0.78);
+  --card-strong: rgba(5, 18, 34, 0.94);
+  --text: #f5f8fc;
+  --text-soft: var(--gth-soft-text);
+  --text-muted: #9eacc1;
+  --border: rgba(234, 198, 113, 0.2);
+  --gold: var(--gth-gold);
+  position: relative;
+  isolation: isolate;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 65% 34% at 75% 2%, rgba(203, 158, 75, 0.11), transparent 75%),
+    radial-gradient(ellipse 72% 45% at 6% 15%, rgba(42, 90, 136, 0.18), transparent 74%),
+    var(--gth-navy-deep);
+  font-family: var(--font-geist-sans, "Geist", Arial, sans-serif);
+}
+.gth-master-home .gth-master-intro {
+  border-color: var(--border);
+  background: rgba(3, 15, 31, 0.78);
+}
+.gth-master-home .gth-master-intro p {
+  color: var(--gth-soft-text);
+  letter-spacing: 0.12em;
+}
+.gth-master-home .gth-master-hero-shell {
+  border-color: rgba(234, 198, 113, 0.22);
+}
+.gth-master-home .gth-master-hero-title {
+  max-width: 12ch;
+  font-size: clamp(2.75rem, 4.8vw, 4.35rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.gth-master-home .gth-master-heading {
+  max-width: 24ch;
+  font-size: clamp(2rem, 3.4vw, 3.15rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.gth-master-home .gth-master-pillar {
+  border-color: rgba(234, 198, 113, 0.23);
+  background-color: #071527;
+}
+.gth-master-home .gth-master-pillar img {
+  filter: saturate(0.92) contrast(1.03);
+}
+.gth-master-home .gth-master-pillar h2 {
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+.gth-master-home :is(a, button, input, select):focus-visible {
+  outline: 2px solid var(--gth-gold);
+  outline-offset: 3px;
+}
+@media (max-width: 639px) {
+  .gth-master-home .gth-master-hero-title {
+    max-width: 11ch;
+    font-size: clamp(2.2rem, 10vw, 2.9rem);
+    line-height: 1.06;
+  }
+  .gth-master-home .gth-master-heading {
+    font-size: clamp(1.8rem, 7vw, 2.35rem);
+  }
+  .gth-master-home .gth-master-pillar {
+    min-height: 345px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gth-master-home .gth-master-pillar img {
+    transition-duration: 0.01ms;
+  }
 }
