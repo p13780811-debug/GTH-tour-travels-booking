@@ -25,3 +25,17 @@ export const destinations: DestinationOverview[] = [
   { slug: "jaipur", name: "Jaipur", image_url: "/images/cities/jaipur.jpg", description: "Prepare a Jaipur itinerary around heritage attractions, local travel times and independently verified opening hours." },
   { slug: "digha", name: "Digha", image_url: "/images/cities/digha.jpg", description: "Research coastal stays and short trips around Digha with attention to local transport and seasonal conditions." },
 ];
+
+
+/** Local photos verified against the repository's public/images/cities assets.
+ * Only return an existing image; never fabricate city-specific photography.
+ */
+const availableCityImages = new Set<string>(["agra","ahmedabad","ajanta-ellora","alleppey","amritsar","amsterdam","andaman","athens","bali","bangkok","barcelona","beijing","bengaluru","budapest","cape-town","chennai","chicago","colombo","coorg","copenhagen","dalhousie","darjeeling","default","delhi","digha","dubai","dublin","edinburgh","geneva","goa","gulmarg","hampi","hanoi","helsinki","ho-chi-minh","hong-kong","hotel","hyderabad","jaipur","jakarta","jim-corbett","jodhpur","kanha","kanyakumari","kasol","kathmandu","khajuraho","kochi","kolkata","konark","kovalam","krakow","kuala-lumpur","ladakh","lakshadweep","las-vegas","lisbon","london","los-angeles","macau","madurai","maldives","manali","manila","miami","mumbai","munnar","mussoorie","mysore","nainital","new-york","ooty","orlando","oslo","paris","phuket","pondicherry","prague","pune","puri","pushkar","ranthambore","rishikesh","rome","san-francisco","seoul","shanghai","shimla","shirdi","singapore","srinagar","stockholm","taipei","tirupati","tokyo","toronto","udaipur","vancouver","varanasi","vienna","warsaw","zurich"]);
+
+export function destinationImageForSlug(slug: string): string {
+  const curated = destinations.find((item) => item.slug === slug);
+  if (curated) return curated.image_url;
+  return availableCityImages.has(slug)
+    ? "/images/cities/" + slug + ".jpg"
+    : "/images/default-city.jpg";
+}
