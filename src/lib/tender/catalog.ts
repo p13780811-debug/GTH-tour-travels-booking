@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import type { TenderRequirements } from "@/lib/tender/eligibility";
 
 export const TENDER_SECTORS = ["works", "goods", "services", "consultancy", "other"] as const;
 export type TenderSector = typeof TENDER_SECTORS[number];
-const PUBLIC_COLUMNS = "id,title,buyer,country_code,region,sector,summary,deadline_at,published_at,estimated_value,currency,source_name,source_reference,source_url";
+const PUBLIC_COLUMNS = "id,title,buyer,country_code,region,sector,summary,deadline_at,published_at,estimated_value,currency,source_name,source_reference,source_url,eligibility_requirements,requirements_verified";
 const PAGE_SIZE = 12;
 
 export type PublicTender = {
@@ -10,6 +11,7 @@ export type PublicTender = {
   sector: TenderSector; summary: string | null; deadline_at: string; published_at: string | null;
   estimated_value: number | null; currency: string | null; source_name: string;
   source_reference: string; source_url: string;
+  eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
 export type TenderFilters = { q: string; country: string; sector: string; page: number };
 export type TenderResult =
