@@ -1,4 +1,4 @@
-import Image from "next/image";
+import FlagshipImage from "./FlagshipImage";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
@@ -8,6 +8,7 @@ const pillars = [
     id: "estate",
     title: "Real Estate",
     image: "/dubai.jpg",
+    approvedImage: "/images/gth-flagship/real-estate.jpg",
     alt: "Luxury property architecture at sunset",
     href: "/real-estate",
     eyebrow: "Buy · Sell · Discover",
@@ -24,6 +25,7 @@ const pillars = [
     id: "travel",
     title: "Travel",
     image: "/images/mega/tours.jpg",
+    approvedImage: "/images/gth-flagship/travel.jpg",
     alt: "Cinematic international travel destination",
     href: "/travel",
     eyebrow: "Flights · Hotels · Tours",
@@ -40,6 +42,7 @@ const pillars = [
     id: "tender",
     title: "Tender",
     image: "/images/cities/dubai.jpg",
+    approvedImage: "/images/gth-flagship/tender.jpg",
     alt: "Global skyline representing public procurement and infrastructure",
     href: "/tender",
     eyebrow: "Research · Readiness · Sources",
@@ -124,9 +127,9 @@ export default function FlagshipHome() {
       </section>
 
       <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel and Tender platforms">
-        {pillars.map(({id,title,image,alt,href,eyebrow,description,Icon,links})=>(
+        {pillars.map(({id,title,image,approvedImage,alt,href,eyebrow,description,Icon,links})=>(
           <article key={id} className={styles.pillar}>
-            <Image src={image} alt={alt} fill priority={id==="travel"} sizes="(max-width: 680px) 100vw, 34vw" className={styles.pillarImage} />
+            <FlagshipImage primary={approvedImage} fallback={image} alt={alt} priority={id==="travel"} className={styles.pillarImage} />
             <div className={styles.pillarShade} aria-hidden="true"/>
             <div className={styles.pillarTitle}>
               <Icon className={styles.pillarIcon} strokeWidth={1.4}/>
