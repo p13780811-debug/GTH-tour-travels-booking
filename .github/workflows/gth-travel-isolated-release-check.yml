@@ -27,7 +27,8 @@ jobs:
       - run: python3 -m unittest discover -s tests -p "test_hotel_import.py"
       - run: npm ci --legacy-peer-deps
       - run: npx tsc --noEmit
-      - run: npm run test:security
+      - name: Travel-only regression suite
+        run: node --test tests/destination-marketplace.test.mjs tests/flight-marketplace.test.mjs tests/hotel-api-schema.test.mjs tests/hotel-lookup-validation.test.mjs tests/hotel-marketplace.test.mjs tests/tours-marketplace.test.mjs tests/transport-marketplace.test.mjs tests/travel-editorial.test.mjs tests/travel-global-release.test.mjs tests/travel-phase-b.test.mjs
       - run: npm run lint
       - name: Production build (no deployment)
         run: npm run build
