@@ -48,5 +48,7 @@ test("approved Real Estate route and slider design remain independent",()=>{
  assert.match(source,/pathname !== "\/mega-aggregator" && <Footer \/>/);
  assert.match(source,/const isRealEstate = pathname\?\.startsWith\("\/real-estate"\)/);
  assert.match(nav,/EstateHeader/);
- assert.match(tender,/Platform in development/);
+ assert.match(tender,/searchPublicTenders/);
+ assert.match(tender,/No published tenders match your search/);
+ assert.match(tender,/Official procurement source|official procurement source/i);
 });
