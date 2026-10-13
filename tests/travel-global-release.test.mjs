@@ -30,4 +30,8 @@ test("landing page removes fake live fares and broken travel guide routes", () =
   assert.match(mega, /link: "\/insurance"/);
   assert.match(policy, /does not underwrite, sell or issue insurance policies/);
   assert.match(mega, /link: "https:\/\/www\.trip\.com\/"/);
+  assert.match(mega, /GTHNetwork partners=\{partners\} discoveryOnly/);
+  const network = readFileSync(new URL("../src/components/sections/GTHNetwork.tsx", import.meta.url), "utf8");
+  assert.match(network, /discoveryOnly \? "Explore International Travel Providers"/);
+  assert.match(network, /rel="noopener noreferrer sponsored"/);
 });

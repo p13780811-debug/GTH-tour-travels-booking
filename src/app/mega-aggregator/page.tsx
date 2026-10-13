@@ -329,7 +329,7 @@ export default async function MegaAggregator() {
                 {/* Paris ka Cinematic Section */}
                 <HotelQuadSection {...parisData} />
 
-                <GTHNetwork partners={partners} />
+                <GTHNetwork partners={partners} discoveryOnly />
 
 
 
