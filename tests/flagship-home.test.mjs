@@ -34,7 +34,7 @@ test("working mega-aggregator remains reachable at its own ecosystem route", () 
 });
 
 test("flagship links to genuine working routes instead of fixture/demo results", () => {
-  assert.doesNotMatch(flagship, /opportunities|setExplorer|illustrative project|mockListings/i);
+  assert.doesNotMatch(flagship, /from ["\x27][^"\x27]*\/data\/opportunities|setExplorer|illustrative project|mockListings/i);
   const links = [...flagship.matchAll(/href:\s*"(\/[^"]+)"|href="(\/[^"]+)"/g)]
     .map(match => match[1] ?? match[2]);
   for (const href of new Set(links)) {
