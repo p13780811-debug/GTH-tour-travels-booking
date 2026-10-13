@@ -116,7 +116,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-xs font-medium text-[#d2dceb]">
               <span className="flex items-center gap-2"><Compass size={16} className="text-[#eac671]" /> Curated guides</span>
               <span className="flex items-center gap-2"><Hotel size={16} className="text-[#eac671]" /> Hotel discovery</span>
-              <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#eac671]" /> Verified booking handoff</span>
+              <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#eac671]" /> Partner booking handoff</span>
             </div>
           </div>
           <div className="grid h-[250px] grid-cols-2 gap-3 sm:h-[325px] lg:h-[385px]">
