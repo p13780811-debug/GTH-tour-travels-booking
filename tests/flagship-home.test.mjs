@@ -115,3 +115,52 @@ test("hero has one clear platform navigation and borderless tabs", () => {
   assert.doesNotMatch(css, /transform:\s*rotate\(-9deg\)/);
   assert.match(flagship, /href="\/mega-aggregator"/);
 });
+
+
+test("new flagship floating master search routes every platform through existing /search", () => {
+  const search = source("src/app/search/page.tsx");
+  assert.match(flagship, /role="search" aria-label="GTH PRO Master Search"/);
+  assert.match(flagship, /action="\/search" method="get"/);
+  assert.match(flagship, /name="q" required maxLength=\{100\}/);
+  assert.match(flagship, /name="category" defaultValue="all"/);
+  for (const cat of ["property", "hotel", "flight", "tour", "destination", "tender", "blog"]) {
+    assert.ok(flagship.includes('value="' + cat + '"'), "Missing searchable category: " + cat);
+  }
+  assert.match(css, /\.masterSearch\s*\{/);
+  assert.match(css, /\.masterSearchField\s*\{/);
+  assert.match(css, /\.masterSearchSubmit\s*\{/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*?\.masterSearch\s*\{/);
+  assert.match(search, /export default async function MasterSearchResults/);
+  assert.match(search, /const params = await searchParams/);
+  assert.match(search, /redirect\(targetFor\(intent, query\)\)/);
+  assert.match(search, /robots: \{ index: false, follow: true \}/);
+});
+
+test("master search targets existing filtered pages without placeholder destinations or prices", () => {
+  const search = source("src/app/search/page.tsx");
+  for (const route of ["/real-estate", "/hotels", "/flights", "/tours", "/destinations", "/tender", "/blog"]) {
+    assert.ok(search.includes('"' + route + '"'), "Missing real search route " + route);
+    assert.ok(existsSync(new URL("../src/app" + route + "/page.tsx", import.meta.url)), "Route not found: " + route);
+  }
+  assert.match(search, /new URLSearchParams/);
+  assert.match(search, /if \(category === "hotel"\) return withParam\("\/hotels", "city", cleanPlace\(q\)\)/);
+  assert.match(search, /if \(category === "tender"\)/);
+  assert.match(search, /if \(category === "property"\)/);
+  assert.match(search, /if \(category === "flight"\)/);
+  assert.match(search, /destinations\.filter/);
+  assert.match(search, /blogs\.filter/);
+  assert.doesNotMatch(search, /getCleanCity|split\(" "\)\[0\]|images\.unsplash\.com|const rawQuery = .*"dubai"/);
+  assert.doesNotMatch(search, /guaranteed fares|mock price|demo records/i);
+});
+
+test("search enhancement leaves approved hero photography, three pillars and global styles intact", () => {
+  assert.match(flagship, /BrandVideo name="logo-motion"/);
+  assert.match(flagship, /FlagshipImage src=\{image\}/);
+  assert.match(flagship, /className=\{styles\.cityFooter\}/);
+  assert.match(css, /\.earth::before[\s\S]*?global-earth\.jpg/);
+  assert.match(css, /\.cityFooter::before[\s\S]*?global-city\.jpg/);
+  assert.match(css, /grid-auto-flow: column/);
+  const shared = source("src/app/globals.css");
+  assert.ok(shared.includes(".gth-btn-gold"));
+  assert.ok(shared.includes(".gth-glass-strong"));
+});

@@ -122,6 +122,28 @@ export default function FlagshipHome() {
             <span className={styles.brandPro}><span className={styles.brandGold}>PR</span><BrandGlobe /></span>
           </h1>
           <p className={styles.ecosystemTitle}>Global Intelligence Ecosystem</p>
+          <form action="/search" method="get" role="search" aria-label="GTH PRO Master Search" className={styles.masterSearch}>
+            <div className={styles.masterSearchField}>
+              <Search size={21} strokeWidth={1.8} aria-hidden="true" />
+              <label htmlFor="gth-master-query" className="sr-only">Search across the GTH PRO ecosystem</label>
+              <input id="gth-master-query" type="search" name="q" required maxLength={100}
+                autoComplete="off" placeholder="Search cities, hotels, villas, tenders, guides..." />
+            </div>
+            <label htmlFor="gth-master-category" className="sr-only">Choose a GTH PRO platform</label>
+            <select id="gth-master-category" name="category" defaultValue="all">
+              <option value="all">All GTH PRO</option>
+              <option value="property">Real Estate</option>
+              <option value="hotel">Hotels</option>
+              <option value="flight">Flights</option>
+              <option value="tour">Tours</option>
+              <option value="destination">Destinations</option>
+              <option value="tender">Tenders</option>
+              <option value="blog">Travel Guides</option>
+            </select>
+            <button type="submit" className={`gth-btn-gold ${styles.masterSearchSubmit}`}>
+              <span>Search</span><ArrowUpRight size={18} aria-hidden="true" />
+            </button>
+          </form>
         </div>
         <div className={styles.motto} aria-hidden="true"><span>IDEAS TO IMPACT</span><small>POWERED BY TECHNOLOGY</small></div>
         <a className={styles.scrollCue} href="#pillars" aria-label="Explore our three connected platforms">Explore three platforms <span aria-hidden="true">↓</span></a>
