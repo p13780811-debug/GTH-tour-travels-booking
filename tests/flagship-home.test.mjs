@@ -61,3 +61,26 @@ test("flagship can ship only with all five exact approved ZIP photographs", () =
   assert.match(css, /@keyframes flagshipEarthReveal/);
   assert.match(css, /\.scrollCue \{/);
 });
+
+test("official animated logo is wired from the existing approved brand footage", () => {
+  const brand = source("src/components/brand/BrandVideo.tsx");
+  assert.match(flagship, /import BrandVideo from "@\/components\/brand\/BrandVideo"/);
+  assert.match(flagship, /name="logo-motion"/);
+  assert.match(flagship, /controls=\{false\} loop=\{true\}/);
+  assert.match(css, /\.headerVideoMedia\s*\{/);
+  assert.match(brand, /\/brand\/\$\{name\}\.mp4/);
+  for (const filename of ["logo-motion.mp4", "logo-motion.jpg"]) {
+    assert.ok(existsSync(new URL("../public/brand/" + filename, import.meta.url)), filename + " must exist");
+  }
+});
+
+test("phone-only compact three-pillar swipe leaves desktop hero and footer intact", () => {
+  const section = css.slice(css.indexOf("/* OFFICIAL GTH PRO MOTION LOGO"));
+  assert.match(section, /@media \(max-width: 680px\)/);
+  assert.match(section, /grid-auto-flow: column/);
+  assert.match(section, /grid-auto-columns: minmax\(0, 83vw\)/);
+  assert.match(section, /scroll-snap-type: x mandatory/);
+  assert.match(section, /height: clamp\(350px, 97vw, 405px\)/);
+  assert.match(section, /grid-template-columns: repeat\(4, minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(section, /\.hero\s*\{|\.cityFooter\s*\{/);
+});
