@@ -3,6 +3,8 @@
   --flag-edge: rgba(238, 195, 98, .56);
   --flag-navy: #020e22;
   --flag-silver: #e4e6e4;
+  /* Global nav spans inherit --text; keep white labels on this dark flagship only. */
+  --text: #f8f9fe;
   position: relative;
   isolation: isolate;
   min-width: 0;
@@ -284,6 +286,29 @@
   line-height:1.2;
 }
 .feature svg { width:clamp(22px,2.6vw,39px); height:clamp(22px,2.6vw,39px); flex:none; color:var(--flag-gold); }
+/* Explicitly override global nav span { color: var(--text) } without
+   modifying shared globals.css; keep label words legible and intact. */
+.site .feature,
+.site .feature span {
+  color: #f8fbff;
+}
+.site .feature span {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-weight: 650;
+  line-height: 1.24;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+}
+.site .feature:where(:hover,:focus-visible) span {
+  color: #fff4cf;
+}
+
 .feature:hover { background:rgba(255,216,131,.14); color:#fff4cf; }
 .capabilities { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border-top:1px solid #bc8e38; border-bottom:1px solid rgba(255,226,117,.3); background:linear-gradient(#040b17,#061123); }
 .capability { position:relative; display:flex; min-width:0; align-items:center; justify-content:center; gap:clamp(7px,1.1vw,18px); padding:22px 10px; }
@@ -708,7 +733,7 @@
     padding: 4px 2px;
     font-size: clamp(8px, 2.25vw, 10px);
     line-height: 1.13;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
   .feature svg {
     width: 22px;
