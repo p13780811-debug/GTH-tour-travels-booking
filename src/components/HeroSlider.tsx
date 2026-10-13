@@ -118,7 +118,7 @@ export default function HeroUltra() {
 
         <section className="relative px-3 pt-3 md:px-5 md:pt-5">
 
-            <div className="relative mx-auto overflow-hidden rounded-[34px] border border-[var(--border)] bg-[var(--card)] min-h-[930px] xl:min-h-[680px] xl:max-w-[1700px]">
+            <div className="gth-master-hero-shell relative mx-auto overflow-hidden rounded-[34px] border border-[var(--border)] bg-[var(--card)] min-h-[930px] xl:min-h-[680px] xl:max-w-[1700px]">
 
                 {/* BG IMAGES */}
                 <div className="absolute inset-0">
@@ -236,7 +236,7 @@ export default function HeroUltra() {
 
                             </div>
 
-                            <h1 className="max-w-[8ch] text-[78px] font-light leading-[0.84] tracking-[-0.08em] text-[var(--text)]">
+                            <h1 className="gth-master-hero-title max-w-[8ch] text-[78px] font-light leading-[0.84] tracking-[-0.08em] text-[var(--text)]">
 
                                 {slides[current].title}
 
@@ -333,7 +333,7 @@ export default function HeroUltra() {
 
                         </div>
 
-                        <h1 className="mt-5 max-w-[8ch] text-[52px] font-light leading-[0.9] tracking-[-0.07em] text-[var(--text)]">
+                        <h1 className="gth-master-hero-title mt-5 max-w-[8ch] text-[52px] font-light leading-[0.9] tracking-[-0.07em] text-[var(--text)]">
 
                             {slides[current].title}
 
