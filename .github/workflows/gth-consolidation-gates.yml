@@ -33,7 +33,7 @@ jobs:
             src/app/api/real-estate/ \
             src/app/api/admin/leads/route.ts \
             src/app/api/admin/submissions/route.ts \
-            src/app/page.tsx \
+            # Homepage mapping is deliberately changed in PR #17; the approved global layout stays protected.
             src/app/globals.css \
             src/components/brand/BrandVideo.tsx \
             src/components/mobile/BottomNav.tsx \
@@ -45,6 +45,15 @@ jobs:
             | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui
           sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx > /tmp/gth-candidate-root-ui
           diff -u /tmp/gth-approved-root-ui /tmp/gth-candidate-root-ui
+      - name: Guard approved GTH PRO root gateway mapping
+        run: |
+          grep -Fq 'import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page";' src/app/page.tsx
+          grep -Fq 'return <MegaAggregator />;' src/app/page.tsx
+          if grep -Fq 'GTHHomeV13' src/app/page.tsx; then
+            echo 'The retired V13 homepage must not render at root.'
+            exit 1
+          fi
+
   build-travel-and-platform:
     runs-on: ubuntu-latest
     timeout-minutes: 40
