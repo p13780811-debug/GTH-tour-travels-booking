@@ -15,6 +15,7 @@ import {
     Globe,
     Building2,
     Compass,
+    BookOpen,
     Plane,
     ShieldCheck,
     BadgeCheck,
@@ -106,6 +107,7 @@ function EcosystemNavbar() {
         { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
         { name: "Destinations", href: "/destinations", icon: MapPinned, mega: false },
         { name: "Guides", href: "/guides", icon: Compass, mega: false },
+        { name: "Blog", href: "/blog", icon: BookOpen, mega: false },
     ], [])
 
     return (

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { destinations } from "@/data/destinations";
+import { blogs } from "@/data/blogs";
 const base = "https://gth-pro.vercel.app";
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
@@ -15,5 +16,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
   ];
 }

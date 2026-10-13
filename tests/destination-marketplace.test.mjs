@@ -33,7 +33,28 @@ test("destination page integrates real hotel and tour inventory without fake pri
 test("destination detail offers connected planning articles", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
   assert.match(page, /href="\/flights"/);
-  assert.match(page, /\/blog\/\$\{article\.slug\}/);
+  assert.match(page, /"\/blog\/" \+ article\.slug/);
   assert.match(page, /\/hotels\?city=/);
   assert.match(page, /\/tours\?city=/);
+});
+
+
+test("destination marketplace has real GET search, bounded pagination and bundled city imagery", () => {
+  const list = read("src/app/destinations/page.tsx");
+  const data = read("src/data/destinations.ts");
+  assert.match(list, /action="\/destinations" method="get"/);
+  assert.match(list, /name="search"/);
+  assert.match(list, /const perPage = 18/);
+  assert.match(list, /filtered\.slice\(/);
+  assert.match(list, /pageLink\(search, page \+ 1\)/);
+  assert.match(list, /destinationImageForSlug\(item\.slug\)/);
+  assert.match(data, /availableCityImages/);
+  assert.match(data, /\/images\/default-city\.jpg/);
+});
+
+test("legacy Digha route reuses source-aware guide, never mock room prices", () => {
+  const legacy = read("src/app/destinations/digha/page.tsx");
+  assert.match(legacy, /DestinationPage params=\{params\}/);
+  assert.doesNotMatch(legacy, /Digha Elite Coast|Marine Azure Resort|GTH Verified|\$450/);
+  assert.doesNotMatch(legacy, /redirect\("\/destinations\/digha"\)/);
 });

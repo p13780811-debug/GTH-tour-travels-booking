@@ -26,7 +26,8 @@ test("blog category links actually filter article list", () => {
   const page = read("src/app/blog/page.tsx");
   assert.match(page, /searchParams/);
   assert.match(page, /blogs\.filter/);
-  assert.match(page, /encodeURIComponent\(category\)/);
+  assert.match(page, /new URLSearchParams\(\)/);
+  assert.match(page, /params\.set\("category", category\)/);
   assert.match(page, /href="\/flights"/);
   assert.match(page, /href="\/hotels"/);
 });
@@ -43,4 +44,26 @@ test("destination articles and guide cards use actual editorial summaries", () =
   const scroll = read("src/components/sections/GuidesScroll.tsx");
   assert.match(section, /blogs\[0\]\.description/);
   assert.match(scroll, /\/blog\/\$\{blog\.slug\}/);
+});
+
+
+test("editorial search and category filters link to complete real articles", () => {
+  const listing = read("src/app/blog/page.tsx");
+  const reader = read("src/app/blog/[slug]/page.tsx");
+  const sitemap = read("src/app/sitemap.ts");
+  assert.match(listing, /action="\/blog" method="get"/);
+  assert.match(listing, /name="search"/);
+  assert.match(listing, /articles = blogs\.filter/);
+  assert.match(listing, /filterLink\(category, search\)/);
+  assert.match(reader, /"\/blog\/" \+ item\.slug/);
+  assert.match(reader, /ReactMarkdown/);
+  assert.match(sitemap, /if \(!publicLaunch\) return \[\]/);
+  assert.match(sitemap, /\.\.\.blogs\.map/);
+});
+
+test("global navigation keeps approved flagship isolated and links to Blog", () => {
+  const nav = read("src/components/Navbar.tsx");
+  assert.match(nav, /if \(pathname === "\/"\) return null/);
+  assert.match(nav, /name: "Blog", href: "\/blog"/);
+  assert.match(nav, /name: "Destinations", href: "\/destinations"/);
 });
