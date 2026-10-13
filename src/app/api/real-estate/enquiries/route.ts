@@ -10,12 +10,14 @@ export async function POST(req: Request) {
     const propertyId = cleanPositiveInteger(body.property_id);
     const phone = cleanString(body.phone, { min: 8, max: 24, pattern: /^\+?[\d ()-]+$/ });
     const digits = phone?.replace(/\D/g, "") ?? "";
+    const requestedSource = cleanString(body.source, { min: 1, max: 40 });
+    const source = requestedSource === "registry_project_interest" ? requestedSource : "property_enquiry";
     if (!propertyId || !phone || digits.length < 8 || digits.length > 15) throw new RequestError("Invalid enquiry", 400);
     await enforceRateLimit(req, "enquiries");
     const { data, error: lookupError } = await supabase.from("properties").select("id").eq("id", propertyId).limit(1);
     if (lookupError) throw new RequestError("Enquiries temporarily unavailable", 503);
     if (!data?.length) throw new RequestError("Property unavailable", 404);
-    const { error } = await supabase.from("leads").insert({ property_id: propertyId, phone });
+    const { error } = await supabase.from("leads").insert({ property_id: propertyId, phone, source });
     if (error) throw new RequestError("Enquiry could not be sent", 503);
     return NextResponse.json({ success: true }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

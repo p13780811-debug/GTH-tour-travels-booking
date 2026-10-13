@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase"
-export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,source_type,ingestion_source,last_verified_at"
+export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,verified,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,source_type,ingestion_source,last_verified_at,official_source_url,official_source_reference"
 
 // ==========================================================
 // 🏛️ GTH PRO ESTATE — HYPER PROPERTY ENGINE V9
@@ -80,6 +80,40 @@ const normalizeText = (v: any) => {
         .replace(/onclick|onerror|onmouseover|onload/gi, "");
 }
 
+const safeOfficialSourceUrl = (value: unknown) => {
+    const raw = normalizeText(value)
+    if (!raw) return ""
+
+    try {
+        const url = new URL(raw)
+        const hostname = url.hostname.toLowerCase()
+        if (url.protocol !== "https:" || !["maharera.maharashtra.gov.in", "www.maharera.maharashtra.gov.in"].includes(hostname)) return ""
+        return url.toString()
+    } catch {
+        return ""
+    }
+}
+
+const isRegistryOnly = (p: any) => {
+    const isMahaReraRegistry =
+        normalizeText(p.source_type).toLowerCase() === "registry" &&
+        normalizeText(p.ingestion_source).toLowerCase().includes("maharera")
+
+    if (!isMahaReraRegistry) return false
+
+    const hasMarketplaceInventory = Boolean(
+        safeNumber(p.price) ||
+        safeNumber(p.bedrooms ?? p.beds) ||
+        safeNumber(p.bathrooms ?? p.baths) ||
+        safeNumber(p.area_sqft ?? p.sqft) ||
+        normalizeText(p.listing_type) ||
+        normalizeText(p.image) ||
+        (Array.isArray(p.gallery) && p.gallery.length > 0)
+    )
+
+    return !hasMarketplaceInventory
+}
+
 const createSlug = (text: string) =>
     text
         .toLowerCase()
@@ -157,6 +191,9 @@ const calculateFraudScore = (p: any) => {
 const generateDescription = (p: any) => {
     const title = normalizeText(p.title) || "Property listing"
     const location = normalizeText(p.city || p.location)
+    if (isRegistryOnly(p)) {
+        return `${title}${location ? ` in ${location}` : ""}. Public MahaRERA registry record; current pricing, availability and listing inventory have not been supplied to GTH PRO.`
+    }
     return `${title}${location ? ` in ${location}` : ""}. Contact the listing agent to confirm availability and details.`
 }
 
@@ -179,6 +216,7 @@ export const transformProperty = (p: any) => {
         safeNumber(p.fraud_score)
 
     const boosted = isBoostActive(p)
+    const registryOnly = isRegistryOnly(p)
 
     return {
 
@@ -234,7 +272,9 @@ export const transformProperty = (p: any) => {
 
         price,
 
-        formatted_price: normalizeText(p.price) || "Price on request",
+        formatted_price: registryOnly && !normalizeText(p.price)
+            ? "Not published in registry"
+            : normalizeText(p.price) || "Price on request",
 
         beds:
             safeNumber(p.bedrooms ?? p.beds),
@@ -256,7 +296,15 @@ export const transformProperty = (p: any) => {
         fraud_score: fraudScore,
 
         verified:
-            p.status === "verified",
+            p.status === "verified" || p.verified === true,
+
+        registry_only: registryOnly,
+
+        official_source_url:
+            safeOfficialSourceUrl(p.official_source_url),
+
+        official_source_reference:
+            normalizeText(p.official_source_reference),
 
         featured_active: boosted,
 
@@ -291,11 +339,13 @@ export const transformProperty = (p: any) => {
             generateDescription(p),
 
         card_variant:
-            boosted
-                ? "boosted"
-                : price >= 500
-                    ? "ultra"
-                    : "standard",
+            registryOnly
+                ? "registry"
+                : boosted
+                    ? "boosted"
+                    : price >= 500
+                        ? "ultra"
+                        : "standard",
     }
 }
 
