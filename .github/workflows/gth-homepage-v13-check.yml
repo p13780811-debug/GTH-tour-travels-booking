@@ -1,8 +1,14 @@
 name: GTH Production Check
 
 on:
+  schedule:
+    # 02:30 IST daily (21:00 UTC previous day); GitHub schedules may be delayed.
+    - cron: '0 21 * * *'
+  workflow_dispatch:
   push:
     branches:
+      - main
+      - gth-maharera-csv-import
       - gth-homepage-v1.3
       - gth-production-hardening
   pull_request:
@@ -14,6 +20,7 @@ permissions:
 
 jobs:
   verify:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -43,3 +50,68 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+
+  maharera-authorized-daily-ingestion:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: maharera-authorized-daily
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_INGESTION_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_PROJECT_REF: dqprqjmhxjnrllczqyhz
+      GTH_INGESTION_ENABLED: 'true'
+      CSV_EXPORT_DIR: data/maharera/authorized
+    steps:
+      - name: Checkout existing importer
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate registry importer regression tests
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
+      - name: Find authorized CSV source
+        id: exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          available=false
+          for dir in "$CSV_EXPORT_DIR" data/seeds; do
+            if [[ -d "$dir" ]] && find "$dir" -maxdepth 1 -type f -name '*.csv' -print -quit | grep -q .; then
+              available=true
+              break
+            fi
+          done
+          echo "available=$available" >> "$GITHUB_OUTPUT"
+          if [[ "$available" == false ]]; then
+            echo "::notice::No authorized MahaRERA CSV present: imported 0 records; portal was not contacted."
+          fi
+      - name: Check secure configuration
+        if: steps.exports.outputs.available == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$NEXT_PUBLIC_SUPABASE_URL" || -z "$SUPABASE_INGESTION_KEY" || -z "$SUPABASE_PROJECT_REF" ]]; then
+            echo "::error::Approved Supabase credentials/project reference are not configured"
+            exit 1
+          fi
+      - name: Install Python dependencies
+        if: steps.exports.outputs.available == 'true'
+        run: python -m pip install -r requirements.txt
+      - name: Dry-run daily district batch
+        if: steps.exports.outputs.available == 'true'
+        run: python src/app/real-estate/services/rera_csv_import.py --daily-dir "$CSV_EXPORT_DIR"
+      - name: Commit bounded district batch to approved Supabase project
+        if: steps.exports.outputs.available == 'true'
+        run: |
+          python src/app/real-estate/services/rera_csv_import.py \
+            --daily-dir "$CSV_EXPORT_DIR" \
+            --batch-size 50 \
+            --daily-limit 100 \
+            --commit \
+            --expected-project-ref "$SUPABASE_PROJECT_REF"

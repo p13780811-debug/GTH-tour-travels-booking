@@ -51,3 +51,7 @@ The candidate is **not production-ready solely because TypeScript or build succe
 Observed data on connected Supabase project during audit: `hotels=331`, `tours=110`, `hotel_catalog=0`, all 331+110 records `is_public=false` (no verified live inventory). DO NOT change their publish flags merely to populate the marketplace.
 
 **Do not merge into main or promote to production without explicit release validation and authorization.** Preserve old branches and historic commits.
+
+## Consolidating latest main branch safely
+
+The current main commit `09270c81e4d993bd974562d031703bf6b00791a9` introduces newer MahaRERA source/importer workflow updates compared with the approved Real Estate deployment. This candidate explicitly includes the main-branch `.github/workflows/gth-homepage-v13-check.yml`, main importer and its corrected test fixture, **without copying current main Real Estate UI**. The latest main history is recorded as a second parent of the candidate integration commit, while the *first parent stays on the approved-UI candidate*. This is an integration-history resolution, not a merge to production.
