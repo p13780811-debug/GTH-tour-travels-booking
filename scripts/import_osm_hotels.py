@@ -60,10 +60,16 @@ def convert(feature):
     if not isinstance(identifier, (str, int)) or not text_value(str(identifier), 100):
         return None
     identifier = text_value(str(identifier), 100)
+    # Osmium `--add-unique-id=type_id` exports n123 / w123, not node/123.
+    # Map only identity-preserving node/way IDs; never use export counters.
+    if __import__("re").fullmatch(r"n[0-9]+", identifier):
+        identifier = "node/" + identifier[1:]
+    elif __import__("re").fullmatch(r"w[0-9]+", identifier):
+        identifier = "way/" + identifier[1:]
     # OSM identifiers must contain type and numeric id to avoid cross-type collisions.
     if not identifier or not __import__("re").fullmatch(r"(?:node|way|relation)/[0-9]+", identifier):
         return None
-    city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place"), 100)
+    city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place") or props.get("city"), 100)
     country = text_value(props.get("addr:country"), 2)
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
     return {

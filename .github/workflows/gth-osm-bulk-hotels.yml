@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           osmium tags-filter region.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
-          osmium export -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
+          osmium export --add-unique-id=type_id --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
       - name: Guarded batch import
         run: |
           set -euo pipefail

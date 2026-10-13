@@ -10,7 +10,7 @@
 1. Obtain an up-to-date regional `.osm.pbf` extract from a legitimate OSM extract publisher, e.g. [Geofabrik](https://download.geofabrik.de/). The original file is typically large; **do not commit extracts to the repository**.
 2. Install the `osmium-tool` CLI locally. Convert to newline-delimited GeoJSON:
    ```bash
-   osmium export --geometry-types=point -f geojsonseq region.osm.pbf -o hotels.geojsonseq
+   osmium export --add-unique-id=type_id --geometry-types=point -f geojsonseq region.osm.pbf -o hotels.geojsonseq
    python3 scripts/import_osm_hotels.py hotels.geojsonseq --dry-run
    ```
    Conversion format and field naming should be checked with one sample before a full import. The importer requires a stable OSM identifier such as `node/123`, either at feature `id` or properties `@id`.

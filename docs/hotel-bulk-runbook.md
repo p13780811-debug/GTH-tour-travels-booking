@@ -8,7 +8,7 @@ The existing **PR #14** adds a source-attributed OpenStreetMap hotel catalog and
 
 ```bash
 osmium tags-filter region.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
-osmium export -f geojsonseq -o hotels.geojsonseq --overwrite accommodation.osm.pbf
+osmium export --add-unique-id=type_id -f geojsonseq -o hotels.geojsonseq --overwrite accommodation.osm.pbf
 python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit 5000 --dry-run
 ```
 

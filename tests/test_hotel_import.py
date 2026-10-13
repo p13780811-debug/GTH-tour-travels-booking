@@ -33,6 +33,22 @@ class HotelImportTests(unittest.TestCase):
             "geometry": {"type": "Point", "coordinates": [72, 19]},
             "properties": {"tourism": "restaurant", "name": "Example"}}))
 
+
+    def test_osmium_unique_type_ids_are_source_stable(self):
+        for raw_id, normalized in [("n123", "node/123"), ("w987", "way/987")]:
+            record = module.convert({
+                "type": "Feature", "id": raw_id,
+                "geometry": {"type": "Point", "coordinates": [7.42, 43.73]},
+                "properties": {"tourism": "hotel", "name": "Sample Property", "city": "Monaco"},
+            })
+            self.assertEqual(record["source_id"], normalized)
+            self.assertEqual(record["city"], "Monaco")
+        self.assertIsNone(module.convert({
+            "type": "Feature", "id": "1",
+            "geometry": {"type": "Point", "coordinates": [7.42, 43.73]},
+            "properties": {"tourism": "hotel", "name": "Unstable ID"},
+        }))
+
     def test_only_safe_https_websites(self):
         self.assertIsNone(module.https_url("javascript:alert(1)"))
         self.assertIsNone(module.https_url("https://user:pass@example.com"))
