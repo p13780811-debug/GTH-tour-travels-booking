@@ -51,6 +51,7 @@ jobs:
           set -euo pipefail
           osmium tags-filter monaco.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
           osmium export --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
+          python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.lstrip(chr(30))) for line in Path("hotels.geojsonseq").read_text().splitlines() if line.strip()][:3]; print("OSM source sample structure:", [(x.get("id"), sorted((x.get("properties") or {}).keys())[:12], (x.get("properties") or {}).get("tourism")) for x in rows])'
           python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit 1000 --dry-run | tee hotel-dry-run.json
           python3 -c 'import json; x=json.load(open("hotel-dry-run.json")); assert x["accepted"] > 0, "No valid accommodation points extracted"'
       - name: Licensed source attribution
