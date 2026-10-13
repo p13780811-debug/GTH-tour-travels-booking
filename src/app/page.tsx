@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import GTHHomeV13 from "@/components/home/GTHHomeV13";
+import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page";
 
+// The approved mega-aggregator is the GTH PRO homepage. Keep one source of UI truth.
+export const revalidate = 60;
 export const metadata: Metadata = {
-  title: "GTH PRO | Global Technical Hub",
-  description:
-    "GTH PRO is a development-stage technology ecosystem for Real Estate, Travel and Tender Intelligence.",
+  ...megaMetadata,
+  alternates: { canonical: "/" },
 };
 
 export default function Home() {
-  return <GTHHomeV13 />;
+  return <MegaAggregator />;
 }

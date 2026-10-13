@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 const root=new URL("../",import.meta.url);
 const load=p=>readFileSync(new URL(p,root),"utf8");
 const mega=load("src/app/mega-aggregator/page.tsx");
+const homepage=load("src/app/page.tsx");
 const hero=load("src/components/HeroSlider.tsx");
 const nav=load("src/components/Navbar.tsx");
 const mobile=load("src/components/MobileNav.tsx");
@@ -15,7 +16,7 @@ test("ecosystem homepage retains the exact hero slider component and introduces 
   assert.match(mega, /<HeroSlider \/>/);
   assert.match(mega, /<EcosystemPillars \/>/);
   assert.doesNotMatch(mega, /<EcosystemFooter \/>/);
-  assert.match(mega, /canonical: "\/mega-aggregator"/);
+  assert.match(mega, /canonical: "\/"/);
   for(const name of ["Tours & Travels","Real Estate","Tenders"])assert.ok(pillars.includes(name));
   assert.doesNotMatch(mega, /href="\/(partners|studios|about|careers|cookies|security)"/);
   assert.doesNotMatch(mega, /Exclusive Mega Deals/);
@@ -36,7 +37,7 @@ test("all internal three-pillar entry points lead to existing routes",()=>{
    assert.equal(existsSync(new URL(page,root)) || existsSync(new URL(dynamicRoute,root)),true,href+" must point to a real route");
  }
  assert.match(footer,/heading: "Tenders & Intelligence"/);
- assert.match(nav,/href: "\/mega-aggregator"/);
+ assert.match(nav,/href: "\/"/);
  assert.match(hero,/href: "\/train"/);
  assert.match(hero,/href: "\/ai-trip"/);
  assert.doesNotMatch(hero,/href: "\/rail"/);
@@ -52,4 +53,13 @@ test("approved Real Estate route and slider design remain independent",()=>{
  assert.match(tender,/searchPublicTenders/);
  assert.match(tender,/No published tenders match your search/);
  assert.match(tender,/Official procurement source|official procurement source/i);
+});
+
+test("root renders approved mega-aggregator instead of retired V13 homepage",()=>{
+  assert.ok(homepage.includes('import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page"'));
+  assert.ok(homepage.includes('return <MegaAggregator />;'));
+  assert.ok(homepage.includes('canonical: "/"'));
+  assert.ok(!homepage.includes("GTHHomeV13"));
+  assert.ok(mobile.includes('href="/"'));
+  assert.ok(footer.includes('href="/"'));
 });
