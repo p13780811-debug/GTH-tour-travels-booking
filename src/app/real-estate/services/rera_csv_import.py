@@ -2,7 +2,7 @@
 
 import argparse
 import csv
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
 import time
@@ -20,7 +20,6 @@ MAX_REJECTION_DETAILS = 50
 MAX_RERA_SAMPLE = 20
 DAILY_LIMIT = 100
 MIN_BATCH_DELAY_SECONDS = 10
-MAX_DAILY_EXPORT_AGE = timedelta(hours=36)
 IST = ZoneInfo('Asia/Kolkata')
 DAILY_DISTRICTS = ("Mumbai Suburban", "Mumbai City", "Thane", "Pune")
 
@@ -155,18 +154,24 @@ def commit_batches(records, batch_size, expected_project_ref):
     return inserted
 
 
-def select_daily_records(export_dir, district=None):
+def select_daily_records(export_dir, district=None, limit=DAILY_LIMIT, run_date=None):
     """Select up to 100 records from an authorized refreshed CSV export.
 
     This deliberately does not bypass a website session, CAPTCHA or export controls.
     """
-    day = datetime.now(IST).date()
+    if not isinstance(limit, int) or not 1 <= limit <= DAILY_LIMIT:
+        raise ValueError("Daily limit must be between 1 and 100")
+    day = run_date or datetime.now(IST).date()
     chosen = district or DAILY_DISTRICTS[(day.toordinal() - 1) % len(DAILY_DISTRICTS)]
     if chosen not in DAILY_DISTRICTS:
         raise ValueError("Unsupported district")
     # Configurable primary source plus existing local authorized fallback paths.
     # No HTTP calls: never bypass government access controls.
-    candidates = [Path(export_dir), Path("data/seeds"), Path("data/maharera/authorized")]
+    repo_root = Path(__file__).resolve().parents[4]
+    primary = Path(export_dir).expanduser()
+    if not primary.is_absolute():
+        primary = repo_root / primary
+    candidates = [primary, repo_root / "data/seeds", repo_root / "data/maharera/authorized"]
     filename = chosen.lower().replace(" ", "-") + ".csv"
     export_path = None
     for candidate in candidates:
@@ -178,15 +183,13 @@ def select_daily_records(export_dir, district=None):
             break
     if export_path is None:
         raise ValueError("No authorized district CSV in configured/fallback paths; no write performed")
-    modified_at = datetime.fromtimestamp(export_path.stat().st_mtime, tz=timezone.utc)
-    age = datetime.now(timezone.utc) - modified_at
-    if age < timedelta(0) or age > MAX_DAILY_EXPORT_AGE:
-        raise ValueError("District export stale or has invalid timestamp; no write performed")
+    # Repository checkout refreshes mtimes even when source records are old.
+    # Do not mistake filesystem mtime for a verified publication date.
     records, rejected, sensitive = load_registry_csv(export_path, "")
     matching = [r for r in records if r.get("district", "").strip().casefold() == chosen.casefold()]
-    window_count = max(1, (len(matching) + DAILY_LIMIT - 1) // DAILY_LIMIT)
+    window_count = max(1, (len(matching) + limit - 1) // limit)
     window = ((day.toordinal() - 1) // len(DAILY_DISTRICTS)) % window_count
-    selected = matching[window * DAILY_LIMIT:(window + 1) * DAILY_LIMIT]
+    selected = matching[window * limit:(window + 1) * limit]
     if not selected:
         raise ValueError("No valid rows for selected district; no write performed")
     return chosen, selected, rejected, sensitive
@@ -199,16 +202,19 @@ def main(argv=None):
     parser.add_argument("--district", choices=DAILY_DISTRICTS)
     parser.add_argument("--expected-city", default="")
     parser.add_argument("--batch-size", type=int, default=50)
+    parser.add_argument("--daily-limit", type=int, default=DAILY_LIMIT)
     parser.add_argument("--commit", action="store_true")
     parser.add_argument("--expected-project-ref")
     args = parser.parse_args(argv)
 
+    if not 1 <= args.daily_limit <= DAILY_LIMIT:
+        parser.error('--daily-limit must be between 1 and 100')
     if args.district and not args.daily_dir:
         parser.error('--district requires --daily-dir')
     if args.daily_dir:
         if args.csv_path or args.expected_city:
             parser.error("--daily-dir cannot be combined with csv_path or --expected-city")
-        chosen_district, records, rejected, sensitive = select_daily_records(args.daily_dir, args.district)
+        chosen_district, records, rejected, sensitive = select_daily_records(args.daily_dir, args.district, args.daily_limit)
     else:
         if not args.csv_path or not args.expected_city:
             parser.error("csv_path and --expected-city are required for normal CSV imports")
@@ -219,6 +225,7 @@ def main(argv=None):
         "mode": "commit" if args.commit else "dry-run",
         "district": chosen_district,
         "source": "authorized_csv_export",
+        "freshness": "not-asserted; file modified time is not provenance",
         "accepted": len(records),
         "rejected": len(rejected),
         "sensitive_columns_discarded": sensitive,
