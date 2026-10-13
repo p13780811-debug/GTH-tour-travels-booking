@@ -97,3 +97,21 @@ test("feature label contrast defeats global navigation color, without changing s
   assert.match(css, /grid-auto-flow:\s*column/);
   assert.match(css, /scroll-snap-type:\s*x mandatory/);
 });
+
+
+test("hero has one clear platform navigation and borderless tabs", () => {
+  const hero = flagship.slice(flagship.indexOf("<section className={styles.hero}"), flagship.indexOf("<section className={styles.pillars}"));
+  assert.doesNotMatch(hero, /styles\.sectorNav/);
+  assert.doesNotMatch(css, /\.sectorNav/);
+  for (const href of ["/real-estate", "/travel", "/tender"]) {
+    assert.equal(hero.split('href="' + href + '"').length - 1, 1, href + " appears once in the hero navigation");
+  }
+  assert.match(css, /\.topNav a\s*\{[^}]*border:\s*0;/);
+  assert.match(css, /\.topNav a\s*\{[^}]*box-shadow:\s*none;/);
+  assert.match(css, /\.topNav a\s*\{[^}]*background:\s*transparent;/);
+  assert.match(hero, /IDEAS TO IMPACT/);
+  assert.doesNotMatch(hero, /<span>Ideas<\/span><span>Technology<\/span>/);
+  assert.match(css, /\.motto\s*\{[^}]*font-style:\s*normal;/);
+  assert.doesNotMatch(css, /transform:\s*rotate\(-9deg\)/);
+  assert.match(flagship, /href="\/mega-aggregator"/);
+});

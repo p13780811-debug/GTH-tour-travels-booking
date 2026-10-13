@@ -122,13 +122,8 @@ export default function FlagshipHome() {
             <span className={styles.brandPro}><span className={styles.brandGold}>PR</span><BrandGlobe /></span>
           </h1>
           <p className={styles.ecosystemTitle}>Global Intelligence Ecosystem</p>
-          <nav className={styles.sectorNav} aria-label="Explore the three GTH PRO pillars">
-            <Link href="/real-estate">Real Estate</Link>
-            <Link href="/travel">Travel</Link>
-            <Link href="/tender">Tender</Link>
-          </nav>
         </div>
-        <div className={styles.motto} aria-hidden="true"><span>Ideas</span><span>Technology</span><span>Solutions</span><span>Global Impact</span></div>
+        <div className={styles.motto} aria-hidden="true"><span>IDEAS TO IMPACT</span><small>POWERED BY TECHNOLOGY</small></div>
         <a className={styles.scrollCue} href="#pillars" aria-label="Explore our three connected platforms">Explore three platforms <span aria-hidden="true">↓</span></a>
         <p className={styles.tagline}><span>From opportunities to real results</span></p>
       </section>
