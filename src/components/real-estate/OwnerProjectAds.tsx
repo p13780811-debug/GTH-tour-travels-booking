@@ -44,11 +44,13 @@ function HouseAdVideo({
   title,
   fit,
   onEnded,
+  onFailed,
 }: {
   src:string
   title:string
   fit:"cover"|"contain"
   onEnded:() => void
+  onFailed:() => void
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
   const [failed,setFailed] = useState(false)
@@ -75,7 +77,7 @@ function HouseAdVideo({
     return () => observer.disconnect()
   }, [src])
 
-  if (failed) return <div className={styles.houseAdFallback}><p className="font-bold">Campaign preview unavailable</p><p className="text-xs opacity-70 mt-2">Use the campaign link below to continue.</p></div>
+  if (failed) return <div className={styles.houseAdFallback}><p className="font-bold">Loading next house ad…</p><p className="text-xs opacity-70 mt-2">This campaign asset is temporarily unavailable.</p></div>
 
   return <video
     ref={ref}
@@ -84,10 +86,11 @@ function HouseAdVideo({
     aria-label={title}
     muted
     playsInline
+    autoPlay
     controls
     preload="metadata"
     onEnded={onEnded}
-    onError={() => setFailed(true)}
+    onError={() => { setFailed(true); window.setTimeout(onFailed, 700) }}
     style={{ objectFit:fit }}
   />
 }
@@ -115,6 +118,7 @@ export default function OwnerProjectAds() {
           title={`${ad.title} advertisement`}
           fit={ad.fit}
           onEnded={next}
+          onFailed={next}
         />
       </div>
       <div className={styles.houseAdBody}>
