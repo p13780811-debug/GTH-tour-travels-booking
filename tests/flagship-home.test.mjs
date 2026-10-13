@@ -51,10 +51,10 @@ test("original buttons and approved Real Estate scope remain unchanged", () => {
 });
 
 test("flagship can ship only with all five exact approved ZIP photographs", () => {
-  const folder = new URL("public/images/gth-flagship/", new URL("../", import.meta.url));
+  const folder = new URL("public/images/", new URL("../", import.meta.url));
   for (const file of ["global-earth.jpg", "global-city.jpg", "real-estate.jpg", "travel.jpg", "tender.jpg"]) {
     assert.ok(existsSync(new URL(file, folder)),
-      "Approved homepage asset missing: public/images/gth-flagship/" + file);
+      "Approved homepage asset missing: public/images/" + file);
   }
   assert.doesNotMatch(flagship, /fallback=|approvedImage|images\/mega\/tours\.jpg|\/dubai\.jpg/);
   assert.doesNotMatch(css, /images\.unsplash\.com|images\/cities\/dubai\.jpg/);
