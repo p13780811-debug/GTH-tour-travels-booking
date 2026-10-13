@@ -7,8 +7,7 @@ const pillars = [
   {
     id: "estate",
     title: "Real Estate",
-    image: "/dubai.jpg",
-    approvedImage: "/images/gth-flagship/real-estate.jpg",
+    image: "/images/gth-flagship/real-estate.jpg",
     alt: "Luxury property architecture at sunset",
     href: "/real-estate",
     eyebrow: "Buy · Sell · Discover",
@@ -24,8 +23,7 @@ const pillars = [
   {
     id: "travel",
     title: "Travel",
-    image: "/images/mega/tours.jpg",
-    approvedImage: "/images/gth-flagship/travel.jpg",
+    image: "/images/gth-flagship/travel.jpg",
     alt: "Cinematic international travel destination",
     href: "/travel",
     eyebrow: "Flights · Hotels · Tours",
@@ -41,8 +39,7 @@ const pillars = [
   {
     id: "tender",
     title: "Tender",
-    image: "/images/cities/dubai.jpg",
-    approvedImage: "/images/gth-flagship/tender.jpg",
+    image: "/images/gth-flagship/tender.jpg",
     alt: "Global skyline representing public procurement and infrastructure",
     href: "/tender",
     eyebrow: "Research · Readiness · Sources",
@@ -102,7 +99,7 @@ export default function FlagshipHome() {
       <section className={styles.hero} aria-labelledby="flagship-heading">
         <div className={styles.earth} aria-hidden="true" />
         <header className={styles.topbar}>
-          <Link href="/" aria-label="GTH PRO homepage" className={styles.headerBrand}>GTH <span>PRO</span></Link>
+          <Link href="/" aria-label="GTH PRO homepage" className={styles.headerBrand}>GLOBAL <span>TECHNICAL HUB</span></Link>
           <nav className={styles.topNav} aria-label="GTH PRO platforms">
             <Link href="/mega-aggregator" className={styles.ecosystemLink}>Ecosystem <ArrowUpRight size={15}/></Link>
             <Link href="/real-estate">Real Estate</Link>
@@ -123,13 +120,14 @@ export default function FlagshipHome() {
           </nav>
         </div>
         <div className={styles.motto} aria-hidden="true"><span>Ideas</span><span>Technology</span><span>Solutions</span><span>Global Impact</span></div>
+        <a className={styles.scrollCue} href="#pillars" aria-label="Explore our three connected platforms">Explore three platforms <span aria-hidden="true">↓</span></a>
         <p className={styles.tagline}><span>From opportunities to real results</span></p>
       </section>
 
       <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel and Tender platforms">
-        {pillars.map(({id,title,image,approvedImage,alt,href,eyebrow,description,Icon,links})=>(
+        {pillars.map(({id,title,image,alt,href,eyebrow,description,Icon,links})=>(
           <article key={id} className={styles.pillar}>
-            <FlagshipImage primary={approvedImage} fallback={image} alt={alt} priority={id==="travel"} className={styles.pillarImage} />
+            <FlagshipImage src={image} alt={alt} priority={id==="travel"} className={styles.pillarImage} />
             <div className={styles.pillarShade} aria-hidden="true"/>
             <div className={styles.pillarTitle}>
               <Icon className={styles.pillarIcon} strokeWidth={1.4}/>
