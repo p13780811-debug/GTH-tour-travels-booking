@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import MegaAggregator, { metadata as megaMetadata } from "./mega-aggregator/page";
+import FlagshipHome from "@/components/home/FlagshipHome";
 
-// The approved mega-aggregator is the GTH PRO homepage. Keep one source of UI truth.
-export const revalidate = 60;
 export const metadata: Metadata = {
-  ...megaMetadata,
+  title: "GTH PRO | Global Intelligence Ecosystem",
+  description: "One connected global ecosystem for Real Estate, Travel, and Tender Intelligence.",
   alternates: { canonical: "/" },
 };
 
 export default function Home() {
-  return <MegaAggregator />;
+  return <FlagshipHome />;
 }
