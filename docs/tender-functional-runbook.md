@@ -95,3 +95,23 @@ means insufficient information, manually entered criteria mean needs review,
 missing user answers mean unknown, documented mismatches are flagged, and even
 a matching profile must be verified against official procurement documents.
 Tender source constraints and amendments always take precedence.
+
+## Extract official eligibility text with AI (optional)
+
+The Guided Tender Assistant now supports pasting the **eligibility clauses** from a
+notice into the browser and selecting *Extract draft requirements*. This sends
+the pasted text to Gemini **only after the user ticks consent** and
+`GEMINI_API_KEY` / the existing Upstash abuse protection are configured.
+The endpoint is `POST /api/tender/extract`. The response contains only
+a bounded, structured `TenderRequirements` object and `verified:false`.
+AI must not be treated as a legal validator or as a source of missing clauses.
+All extracted criteria remain manually reviewable and changing any field
+invalidates the verified-criteria flag. Never paste bank account data,
+government personal IDs, passwords, confidential price schedules or scans.
+
+**Operating boundaries:** the workflow can guide a person step by step,
+check user-declared eligibility against available verified conditions, assemble
+a preliminary bid packet and preserve private drafts. It **cannot** submit a
+tender, pay EMD, upload documents or sign on an external government portal
+without a separately authorised provider integration, user identity and explicit
+final submission approval. No such external integration is installed.
