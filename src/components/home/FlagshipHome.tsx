@@ -7,7 +7,7 @@ const pillars = [
   {
     id: "estate",
     title: "Real Estate",
-    image: "/images/gth-flagship/real-estate.jpg",
+    image: "/images/real-estate.jpg",
     alt: "Luxury property architecture at sunset",
     href: "/real-estate",
     eyebrow: "Buy · Sell · Discover",
@@ -23,7 +23,7 @@ const pillars = [
   {
     id: "travel",
     title: "Travel",
-    image: "/images/gth-flagship/travel.jpg",
+    image: "/images/travel.jpg",
     alt: "Cinematic international travel destination",
     href: "/travel",
     eyebrow: "Flights · Hotels · Tours",
@@ -39,7 +39,7 @@ const pillars = [
   {
     id: "tender",
     title: "Tender",
-    image: "/images/gth-flagship/tender.jpg",
+    image: "/images/tender.jpg",
     alt: "Global skyline representing public procurement and infrastructure",
     href: "/tender",
     eyebrow: "Research · Readiness · Sources",
