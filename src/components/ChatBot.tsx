@@ -2,15 +2,18 @@
 
 import { readAIReply } from "@/lib/api-response"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 export default function ChatBot() {
-
+    const pathname = usePathname()
+    const isTender = pathname?.startsWith("/tender")
     const [open, setOpen] = useState(false)
 
     const [messages, setMessages] = useState([
         {
             role: "bot",
-            text: "Hello 👋 I am your AI travel assistant. Ask me about destinations, hotels, or trips."
+            text: "Hello! I'm the GTH PRO AI assistant. I can help with travel discovery or explain how to start a tender application. Please verify official details and prices with the provider."
         }
     ])
 
@@ -47,6 +50,11 @@ export default function ChatBot() {
 
                 <div className="w-80 h-[420px] bg-black text-white rounded-xl p-4 shadow-xl border border-yellow-500 flex flex-col">
 
+                    <div className="mb-3 border-b border-white/20 pb-3">
+                        <p className="text-sm font-semibold">GTH PRO · AI Guidance</p>
+                        <p className="mt-1 text-xs leading-5 text-white/70">Answers are informational; not confirmed bookings or approved tender submissions.</p>
+                        {isTender && <Link href="/tender/assistant" className="mt-2 inline-flex min-h-8 items-center text-xs font-semibold text-amber-200">Open step-by-step Tender Assistant →</Link>}
+                    </div>
                     <div className="flex-1 overflow-y-auto space-y-2 mb-2">
 
                         {messages.map((m, i) => (
@@ -78,7 +86,7 @@ export default function ChatBot() {
                             maxLength={4000}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask about travel..."
+                            placeholder={isTender ? "Ask about tender preparation..." : "Ask about GTH PRO services..."}
                         />
 
                         <button

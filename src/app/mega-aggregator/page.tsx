@@ -86,6 +86,21 @@ export default async function MegaAggregator() {
             </div>
 
             <EcosystemPillars />
+            <section aria-label="Join GTH PRO business ecosystem" className="border-y border-[var(--border)] bg-[var(--card)]/60 py-10">
+              <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--gold)]">Business onboarding</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-[var(--text)]">Have properties, inventory or a distribution programme?</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
+                    Property developers, agents and travel partners can introduce genuine projects and services for review.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/real-estate/post-property" className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] px-5 text-sm font-semibold text-[var(--text)]">Submit a property</Link>
+                  <Link href="/partners/apply" className="gth-btn-gold inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold">Become a partner →</Link>
+                </div>
+              </div>
+            </section>
 
 
 
