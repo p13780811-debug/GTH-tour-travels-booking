@@ -10,8 +10,8 @@ const hero = load("src/components/HeroSlider.tsx");
 const pillars = load("src/components/sections/EcosystemPillars.tsx");
 const realEstateLayout = load("src/app/real-estate/layout.tsx");
 
-test("master design remains opt-in to the approved ecosystem gateway", () => {
-  assert.match(home, /return <MegaAggregator \/>/);
+test("master design remains scoped to the preserved mega-aggregator ecosystem route", () => {
+  assert.match(home, /return <FlagshipHome \/>/);
   assert.match(mega, /className="gth-master-home /);
   assert.match(css, /\.gth-master-home \{/);
   assert.doesNotMatch(css, /(?:^|\n)\s*(?:html|body|:root)\s*\{[^}]*--gth-navy:/m);
