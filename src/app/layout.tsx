@@ -26,26 +26,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Public search visibility is opt-in: preview and unreleased production stay noindex.
+const publicLaunch = process.env.VERCEL_ENV === "production" &&
+  process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://gth-ecosystem.vercel.app"),
-
-  title: "GTH Luxury Travel | International Premium Travel Ecosystem",
-  description:
-    "GTH Luxury Travel offers premium destinations and luxury hotels worldwide.",
-
-  // ❌ INDEX OFF (construction mode)
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-  },
-
-  keywords: ["Luxury Travel", "Premium Hotels"],
-
+  metadataBase: new URL("https://gth-pro.vercel.app"),
+  title: { default: "GTH PRO | Global Technical Hub", template: "%s | GTH PRO" },
+  description: "GTH PRO unites Tours & Travels, Real Estate and Tender Intelligence with source-aware discovery and business onboarding.",
+  keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence"],
+  robots: publicLaunch
+    ? { index: true, follow: true }
+    : { index: false, follow: false, nocache: true },
   openGraph: {
-    title: "GTH Luxury Travel",
-    description: "Premium global destinations.",
+    title: "GTH PRO — One Global Ecosystem. Three Pillars.",
+    description: "Global Technical Hub for travel, real estate and tender intelligence.",
     type: "website",
+    siteName: "GTH PRO",
+    url: "/",
   },
 };
 
