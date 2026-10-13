@@ -30,7 +30,7 @@ export default function EcosystemFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-18">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
           <div className="max-w-sm">
-            <Link href="/mega-aggregator" className="inline-flex items-center gap-3 text-2xl font-bold tracking-[0.13em] text-[var(--text)]">
+            <Link href="/" className="inline-flex items-center gap-3 text-2xl font-bold tracking-[0.13em] text-[var(--text)]">
               <Globe2 size={27} className="text-[var(--gold)]" aria-hidden="true" /> GTH <span className="gold-text">PRO</span>
             </Link>
             <p className="mt-5 text-sm leading-7 text-[var(--text-soft)]">
