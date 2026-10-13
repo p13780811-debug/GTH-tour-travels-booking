@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, MapPin, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { destinations as curatedDestinations } from "@/data/destinations";
+import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -57,7 +57,7 @@ async function loadDestinations(): Promise<Destination[]> {
       all.set(item.slug, {
         slug: item.slug,
         title: item.name.trim().slice(0, 120),
-        image: previous?.image || "/images/default-city.jpg",
+        image: previous?.image || destinationImageForSlug(item.slug),
         location: "Global destination guide",
         description: typeof item.description === "string" && item.description.trim()
           ? item.description.trim().slice(0, 280)
