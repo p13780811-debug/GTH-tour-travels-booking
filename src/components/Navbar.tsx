@@ -35,6 +35,7 @@ import EstateHeader from "@/components/real-estate/EstateHeader"
 
 export default function Navbar() {
     const pathname = usePathname()
+    if (pathname === "/") return null;
     return pathname === "/real-estate" || pathname?.startsWith("/real-estate/") ? <EstateHeader /> : <EcosystemNavbar />
 }
 
@@ -99,7 +100,7 @@ function EcosystemNavbar() {
     // =====================================================
 
     const navItems = useMemo(() => [
-        { name: "Ecosystem", href: "/", icon: Globe, mega: false },
+        { name: "Ecosystem", href: "/mega-aggregator", icon: Globe, mega: false },
         { name: "Travel", href: "/travel", icon: Plane, mega: false },
         { name: "Real Estate", href: "/real-estate", icon: Building2, mega: false },
         { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
