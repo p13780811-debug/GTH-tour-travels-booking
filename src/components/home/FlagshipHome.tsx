@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, Landmark, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
+import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
 
 const pillars = [
