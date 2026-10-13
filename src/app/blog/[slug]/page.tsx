@@ -1,130 +1,115 @@
-// src/app/blog/[slug]/page.tsx
-
-import { blogs } from "@/data/blogs";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { ArrowLeft, ArrowRight, BookOpen, Compass, Hotel, Plane, ShieldCheck } from "lucide-react";
+import { blogs } from "@/data/blogs";
 
-import Image from "next/image"; // Next.js Optimized Image zaroori hai
-import { Metadata } from "next";
+type Props = { params: Promise<{ slug: string }> };
 
-export async function generateStaticParams() {
-    return blogs.map((blog) => ({
-        slug: blog.slug
-    }))
+export function generateStaticParams() {
+  return blogs.map((blog) => ({ slug: blog.slug }));
 }
 
-
-// 1. DYNAMIC SEO - Google Search ke liye Title aur Photo fix
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-    const { slug } = await params;
-    const blog = blogs.find((b) => b.slug === slug);
-    if (!blog) return { title: "Not Found" };
-
-    return {
-        title: `${blog.title} | GTH Pro Elite Guide`,
-        description: blog.description,
-        openGraph: {
-            title: blog.title,
-            description: blog.description,
-            images: [{ url: blog.image }], // WhatsApp share ke liye dynamic image link
-        },
-    };
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const blog = blogs.find((article) => article.slug === slug);
+  if (!blog) return { title: "Guide not found | GTH PRO", robots: { index: false } };
+  return {
+    title: `${blog.title} | GTH PRO Travel Guides`,
+    description: blog.description,
+    openGraph: {
+      title: blog.title,
+      description: blog.description,
+      images: [{ url: blog.image, alt: blog.title }],
+      type: "article",
+    },
+    alternates: { canonical: `/blog/${blog.slug}` },
+  };
 }
 
-export default async function BlogPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params;
-    const blog = blogs.find((b) => b.slug === slug);
+export default async function BlogPage({ params }: Props) {
+  const { slug } = await params;
+  const blog = blogs.find((article) => article.slug === slug);
+  if (!blog) notFound();
 
-    if (!blog) notFound();
+  const related = blogs.filter((item) => item.slug !== blog.slug &&
+    item.category === blog.category).slice(0, 3);
+  const more = related.length ? related : blogs.filter((item) => item.slug !== blog.slug).slice(0, 3);
 
-    // 2. SCHEMA - Google Robots ko dynamic data batana
-    const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": blog.title,
-        "image": blog.image,
-        "description": blog.description,
-        "author": { "@type": "Organization", "name": "GTH Pro" }
-    };
+  return (
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <header className="relative isolate overflow-hidden border-b border-[var(--border)]">
+        <div className="absolute inset-0 -z-10">
+          <Image src={blog.image} alt="" fill sizes="100vw" priority className="object-cover opacity-25" />
+          <div className="absolute inset-0 bg-[var(--bg)]/80" />
+        </div>
+        <div className="mx-auto max-w-7xl px-4 py-14 md:px-6 md:py-24">
+          <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-semibold underline">
+            <ArrowLeft size={16} aria-hidden="true" /> All travel guides
+          </Link>
+          <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">
+            GTH PRO Travel Guides • {blog.category}
+          </p>
+          <h1 className="mt-4 max-w-4xl text-3xl font-bold leading-tight md:text-6xl">{blog.title}</h1>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-lg">{blog.description}</p>
+        </div>
+      </header>
 
-    return (
-        <main className="bg-[#050505] text-white min-h-screen">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <article aria-label={blog.title} className="gth-glass min-w-0 rounded-2xl border border-[var(--border)] p-5 md:p-10">
+          <div className="prose prose-base max-w-none text-[var(--text)] prose-headings:text-[var(--text)] prose-p:text-[var(--text-soft)] prose-li:text-[var(--text-soft)] prose-strong:text-[var(--text)] prose-a:gold-text prose-a:underline dark:prose-invert">
+            <ReactMarkdown
+              components={{
+                a: ({ href, children }) =>
+                  href?.startsWith("/") && !href.startsWith("//")
+                    ? <Link href={href} className="gold-text underline">{children}</Link>
+                    : <span>{children}</span>,
+              }}
+            >
+              {blog.content}
+            </ReactMarkdown>
+          </div>
+          <div className="mt-10 rounded-xl border border-[var(--border)] p-5 text-sm leading-6 text-[var(--text-soft)]">
+            <p className="flex items-center gap-2 font-semibold text-[var(--text)]"><ShieldCheck size={18} /> Important information</p>
+            <p className="mt-2">
+              Travel prices, availability, entry rules, cancellation conditions and safety guidance can change.
+              Verify current details with the relevant official authority, airline or booking provider.
+            </p>
+          </div>
+        </article>
+        <aside className="space-y-5 self-start lg:sticky lg:top-24">
+          <div className="gth-glass rounded-2xl border border-[var(--border)] p-5">
+            <h2 className="flex items-center gap-2 font-semibold"><BookOpen size={18} /> Keep researching</h2>
+            <nav aria-label="Related travel services" className="mt-4 space-y-4 text-sm">
+              <Link href="/flights" className="flex items-center gap-3 underline"><Plane size={16} /> Compare flight fares</Link>
+              <Link href="/hotels" className="flex items-center gap-3 underline"><Hotel size={16} /> Explore hotel listings</Link>
+              <Link href="/activities" className="flex items-center gap-3 underline"><Compass size={16} /> Browse activities</Link>
+              <Link href="/destinations" className="flex items-center gap-3 underline"><Compass size={16} /> Discover destinations</Link>
+            </nav>
+          </div>
+          <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 text-xs leading-6 text-[var(--text-soft)]">
+            <h2 className="mb-2 text-sm font-semibold text-[var(--text)]">About these guides</h2>
+            Practical editorial checklists prepared for travel planning. We do not promise real-time updates,
+            independent verification of any supplier, or guaranteed savings.
+          </div>
+        </aside>
+      </div>
 
-
-            {/* --- HERO SECTION: Dynamic Image Implemented --- */}
-            <div className="relative h-[75vh] flex items-center overflow-hidden pt-24 border-b border-[#1a1a1a]">
-                {/* NO RED LINE FIX: Use optional chaining (?.) and fallback image
-                  'blog.image' is now dynamic and distinct for each post
-                */}
-                <Image
-                    src={blog.image}
-                    alt={blog.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
-                    priority
-                    quality={90} // HD quality settings for Premium feel
-                />
-
-                {/* Luxury Gradient Overlay - Corrected to focus on text area */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/30 to-transparent z-0"></div>
-
-                <div className="relative z-10 w-full px-6 max-w-6xl mx-auto text-center md:text-left mt-10">
-                    <span className="text-[#d4af37] font-bold tracking-[0.4em] text-[10px] md:text-xs uppercase mb-4 block animate-pulse">
-                        GTH Premium Travel Guide
-                    </span>
-                    <h1 className="text-4xl sm:text-6xl md:text-8xl font-black gold-text mb-6 leading-tight md:leading-none">
-                        {blog.title}
-                    </h1>
-                    <p className="text-gray-300 text-lg md:text-2xl max-w-2xl font-light leading-relaxed px-4 md:px-0 mx-auto md:mx-0">
-                        {blog.description}
-                    </p>
-                </div>
-            </div>
-
-            {/* --- CONTENT AREA: Optimized for Luxury Look --- */}
-            <div className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-3 gap-16">
-
-                {/* Main Article Body */}
-                <div className="lg:col-span-2">
-                    <div className="glass-card p-6 md:p-10 rounded-2xl border border-[#d4af37]/10 luxury-card hover:border-[#d4af37]/30 transition-all duration-500">
-
-                        {/* 3. DYNAMIC BODY - Asli AI Content with Fallback */}
-                        <div
-                            className="prose prose-invert prose-gold max-w-none text-gray-300 leading-relaxed text-base md:text-lg space-y-6 font-light"
-                            dangerouslySetInnerHTML={{ __html: (blog as any).content || `<p className="italic text-gray-500">Luxury guide for ${blog.title} is being curated by our AI engine...</p>` || "" }}
-                        />
-
-                        {/* CTA Button */}
-                        <div className="mt-12 text-center md:text-left">
-                            <Link
-                                href="/destinations"
-                                className="inline-block gold-gradient text-black px-12 py-4 rounded-full font-black uppercase tracking-tighter hover:scale-105 transition-all shadow-[0_0_30px_rgba(212,175,55,0.2)]"
-                            >
-                                Explore Destinations →
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sidebar Utility - Sticky */}
-                <aside className="space-y-8 relative">
-                    <div className="p-6 border border-[#222] rounded-xl bg-[#0a0a0a] sticky top-28">
-                        <h3 className="text-[#d4af37] font-bold mb-4 uppercase text-xs tracking-widest text-glow">GTH Authority</h3>
-                        <p className="text-gray-500 text-sm mb-6 leading-relaxed">Expertly curated by the GTH Pro AI Engine. Privacy is our priority.</p>
-                        <div className="space-y-4">
-                            <p className="text-xs text-[#d4af37] font-bold uppercase tracking-wide">Insider Updates</p>
-                            <div className="h-[1px] bg-[#222] w-full"></div>
-                            <p className="text-gray-400 text-xs italic">"Bespoke is not a product, it's a standard."</p>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-
-
-        </main>
-    );
+      <section className="mx-auto max-w-7xl px-4 pb-14 md:px-6">
+        <h2 className="text-2xl font-bold">More travel guides</h2>
+        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {more.map((item) => (
+            <Link key={item.slug} href={`/blog/${item.slug}`}
+              className="gth-glass flex flex-col gap-3 rounded-2xl border border-[var(--border)] p-5">
+              <span className="text-xs text-[var(--text-soft)]">{item.category}</span>
+              <span className="font-semibold">{item.title}</span>
+              <span className="mt-auto flex items-center gap-2 text-sm">Read guide <ArrowRight size={16} /></span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
 }

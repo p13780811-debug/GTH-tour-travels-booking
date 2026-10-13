@@ -1,4 +1,5 @@
 import sys
+from datetime import date, timedelta
 import tempfile
 import unittest
 from pathlib import Path
@@ -69,6 +70,39 @@ class CsvImportTests(unittest.TestCase):
         self.assertEqual(records[0]["rera_id"], "P51800006437")
         self.assertEqual(len(rejected), 1)
         self.assertEqual(set(sensitive), {"PAN", "Email"})
+
+
+    def test_daily_batch_bounded_and_rotates_without_portal_network(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            export = Path(tmp) / "thane.csv"
+            header = "Project_Name,Promoter,RERA_Number,District,State\\n"
+            rows = "".join(
+                f"Registered Project {i},Builder {i},P518{i:08d},Thane,Maharashtra\\n"
+                for i in range(1, 5)
+            )
+            export.write_text(header + rows, encoding="utf-8")
+            day = date(2026, 10, 13)
+            district, first, _, _ = rera_csv_import.select_daily_records(
+                tmp, "Thane", limit=2, run_date=day
+            )
+            _, second, _, _ = rera_csv_import.select_daily_records(
+                tmp, "Thane", limit=2, run_date=day + timedelta(days=4)
+            )
+            self.assertEqual(district, "Thane")
+            self.assertEqual(len(first), 2)
+            self.assertEqual(len(second), 2)
+            self.assertTrue({r["rera_id"] for r in first}.isdisjoint(
+                {r["rera_id"] for r in second}
+            ))
+
+    def test_daily_limit_rejects_unbounded_batch(self):
+        with self.assertRaises(ValueError):
+            rera_csv_import.select_daily_records("/nonexistent", "Thane", limit=101)
+
+    def test_missing_authorized_source_fails_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                rera_csv_import.select_daily_records(tmp, "Thane", run_date=date(2026, 10, 13))
 
 
 if __name__ == "__main__":

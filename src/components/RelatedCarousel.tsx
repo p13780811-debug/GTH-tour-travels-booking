@@ -50,14 +50,15 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                     related.map((item: any) => (
                         <Link
                             key={item.id}
-                            href={`/tours/${item.city_slug}`}
+                            href={`/tours/${encodeURIComponent(String(item.id ?? item.city_slug))}`}
                             className="min-w-[300px] snap-start group rounded-2xl overflow-hidden gth-glass/5 backdrop-blur-md border border-white/10 hover:scale-[1.03] transition"
                         >
 
                             {/* IMAGE FIX */}
                             <div className="relative h-48 w-full overflow-hidden">
                                 <img
-                                    src={item.image_url}
+                                    src={typeof item.image_url === "string" && (item.image_url.startsWith("/") && !item.image_url.startsWith("//") || item.image_url.startsWith("https://")) ? item.image_url : "/placeholder.jpg"}
+                                    alt={item.title || "Tour experience"}
                                     className="w-full h-full object-cover object-center brightness-110 contrast-110"
                                 />
 
@@ -76,13 +77,16 @@ export default function RelatedCarousel({ related, symbolMap }: any) {
                                     {item.city || item.city_slug}
                                 </p>
 
-                                <p className="text-yellow-400 text-xs-right mt-1">
-                                    ⭐ {item.rating ?? "4.5"}
-                                </p>
+                                {typeof item.rating === "number" && item.rating > 0 && (
+                                    <p className="text-yellow-400 text-xs-right mt-1">
+                                        Rating: {item.rating}
+                                    </p>
+                                )}
 
                                 <p className="text-yellow-400 font-bold mt-2">
-                                    {(symbolMap[item.currency] || "₹")}
-                                    {item.price_numeric ?? 0}
+                                    {Number(item.price_numeric) > 0
+                                        ? `${symbolMap[item.currency] ?? ""}${Number(item.price_numeric).toLocaleString()} (listed)`
+                                        : "Check price with partner"}
                                 </p>
 
                             </div>

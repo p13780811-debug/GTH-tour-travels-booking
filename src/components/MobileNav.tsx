@@ -23,7 +23,7 @@ const MobileNav = () => {
                 </Link>
 
                 {/* Flights */}
-                <Link href="https://aviasales.tpo.lv/KkWURb6L" target="_blank"
+                <Link href="/flights"
                     className="flex flex-col items-center gap-[2px] text-white/50 active:scale-90"
                 >
                     <Plane size={18} />
@@ -38,12 +38,12 @@ const MobileNav = () => {
                 </Link>
 
                 {/* Rentals */}
-                <Link href="/rentals"
+                <Link href="/transfers"
                     className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/rentals') ? 'text-white' : 'text-white/50'}`}
+                    ${isActive('/transfers') ? 'text-white' : 'text-white/50'}`}
                 >
                     <CarFront size={18} />
-                    <span className="text-[9px] uppercase">Rentals</span>
+                    <span className="text-[9px] uppercase">Transfers</span>
                 </Link>
 
                 {/* Hotels */}

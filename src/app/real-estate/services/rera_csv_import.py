@@ -2,7 +2,10 @@
 
 import argparse
 import csv
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import json
+import time
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -15,6 +18,10 @@ MAX_ROWS = 100_000
 MAX_BATCH_SIZE = 200
 MAX_REJECTION_DETAILS = 50
 MAX_RERA_SAMPLE = 20
+DAILY_LIMIT = 100
+MIN_BATCH_DELAY_SECONDS = 10
+IST = ZoneInfo('Asia/Kolkata')
+DAILY_DISTRICTS = ("Mumbai Suburban", "Mumbai City", "Thane", "Pune")
 
 SENSITIVE_HEADER_TOKENS = {
     "pan",
@@ -51,6 +58,8 @@ def _matches_expected_city(record, expected_city):
 
 def load_registry_csv(path, expected_city):
     csv_path = Path(path)
+    if csv_path.is_symlink():
+        raise ValueError('Symlink CSV input not permitted')
     if not csv_path.is_file():
         raise ValueError("CSV file does not exist")
     if csv_path.stat().st_size > MAX_FILE_BYTES:
@@ -133,24 +142,90 @@ def commit_batches(records, batch_size, expected_project_ref):
     inserted = 0
 
     for start in range(0, len(records), batch_size):
-        inserted += insert_registry_batch(client, records[start:start + batch_size])
+        if start:
+            # Fixed conservative pacing, not a bot-disguise mechanism.
+            time.sleep(MIN_BATCH_DELAY_SECONDS)
+        try:
+            inserted += insert_registry_batch(client, records[start:start + batch_size])
+        except Exception as exc:
+            # Fail closed: never retry writes blindly or continue after rate limiting.
+            raise RuntimeError("Supabase batch failed; ingestion stopped safely") from exc
 
     return inserted
 
 
+def select_daily_records(export_dir, district=None, limit=DAILY_LIMIT, run_date=None):
+    """Select up to 100 records from an authorized refreshed CSV export.
+
+    This deliberately does not bypass a website session, CAPTCHA or export controls.
+    """
+    if not isinstance(limit, int) or not 1 <= limit <= DAILY_LIMIT:
+        raise ValueError("Daily limit must be between 1 and 100")
+    day = run_date or datetime.now(IST).date()
+    chosen = district or DAILY_DISTRICTS[(day.toordinal() - 1) % len(DAILY_DISTRICTS)]
+    if chosen not in DAILY_DISTRICTS:
+        raise ValueError("Unsupported district")
+    # Configurable primary source plus existing local authorized fallback paths.
+    # No HTTP calls: never bypass government access controls.
+    repo_root = Path(__file__).resolve().parents[4]
+    primary = Path(export_dir).expanduser()
+    if not primary.is_absolute():
+        primary = repo_root / primary
+    candidates = [primary, repo_root / "data/seeds", repo_root / "data/maharera/authorized"]
+    filename = chosen.lower().replace(" ", "-") + ".csv"
+    export_path = None
+    for candidate in candidates:
+        if candidate.is_symlink() or not candidate.is_dir():
+            continue
+        candidate_file = candidate / filename
+        if candidate_file.is_file() and not candidate_file.is_symlink():
+            export_path = candidate_file
+            break
+    if export_path is None:
+        raise ValueError("No authorized district CSV in configured/fallback paths; no write performed")
+    # Repository checkout refreshes mtimes even when source records are old.
+    # Do not mistake filesystem mtime for a verified publication date.
+    records, rejected, sensitive = load_registry_csv(export_path, "")
+    matching = [r for r in records if r.get("district", "").strip().casefold() == chosen.casefold()]
+    window_count = max(1, (len(matching) + limit - 1) // limit)
+    window = ((day.toordinal() - 1) // len(DAILY_DISTRICTS)) % window_count
+    selected = matching[window * limit:(window + 1) * limit]
+    if not selected:
+        raise ValueError("No valid rows for selected district; no write performed")
+    return chosen, selected, rejected, sensitive
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Import an authorized MahaRERA CSV export safely")
-    parser.add_argument("csv_path")
-    parser.add_argument("--expected-city", required=True)
+    parser.add_argument("csv_path", nargs="?")
+    parser.add_argument("--daily-dir", help="Authorized CSV export directory")
+    parser.add_argument("--district", choices=DAILY_DISTRICTS)
+    parser.add_argument("--expected-city", default="")
     parser.add_argument("--batch-size", type=int, default=50)
+    parser.add_argument("--daily-limit", type=int, default=DAILY_LIMIT)
     parser.add_argument("--commit", action="store_true")
     parser.add_argument("--expected-project-ref")
     args = parser.parse_args(argv)
 
-    records, rejected, sensitive = load_registry_csv(args.csv_path, args.expected_city)
+    if not 1 <= args.daily_limit <= DAILY_LIMIT:
+        parser.error('--daily-limit must be between 1 and 100')
+    if args.district and not args.daily_dir:
+        parser.error('--district requires --daily-dir')
+    if args.daily_dir:
+        if args.csv_path or args.expected_city:
+            parser.error("--daily-dir cannot be combined with csv_path or --expected-city")
+        chosen_district, records, rejected, sensitive = select_daily_records(args.daily_dir, args.district, args.daily_limit)
+    else:
+        if not args.csv_path or not args.expected_city:
+            parser.error("csv_path and --expected-city are required for normal CSV imports")
+        chosen_district = None
+        records, rejected, sensitive = load_registry_csv(args.csv_path, args.expected_city)
 
     summary = {
         "mode": "commit" if args.commit else "dry-run",
+        "district": chosen_district,
+        "source": "authorized_csv_export",
+        "freshness": "not-asserted; file modified time is not provenance",
         "accepted": len(records),
         "rejected": len(rejected),
         "sensitive_columns_discarded": sensitive,
