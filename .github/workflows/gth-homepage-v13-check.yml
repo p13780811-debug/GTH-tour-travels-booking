@@ -73,7 +73,26 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check source and secure configuration
+      - name: Validate registry importer regression tests
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
+      - name: Find authorized CSV source
+        id: exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          available=false
+          for dir in "$CSV_EXPORT_DIR" data/seeds; do
+            if [[ -d "$dir" ]] && find "$dir" -maxdepth 1 -type f -name '*.csv' -print -quit | grep -q .; then
+              available=true
+              break
+            fi
+          done
+          echo "available=$available" >> "$GITHUB_OUTPUT"
+          if [[ "$available" == false ]]; then
+            echo "::notice::No authorized MahaRERA CSV present: imported 0 records; portal was not contacted."
+          fi
+      - name: Check secure configuration
+        if: steps.exports.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -82,12 +101,13 @@ jobs:
             exit 1
           fi
       - name: Install Python dependencies
+        if: steps.exports.outputs.available == 'true'
         run: python -m pip install -r requirements.txt
-      - name: Validate registry importer regression tests
-        run: python -m unittest discover -s tests -p 'test_rera_*.py'
       - name: Dry-run daily district batch
+        if: steps.exports.outputs.available == 'true'
         run: python src/app/real-estate/services/rera_csv_import.py --daily-dir "$CSV_EXPORT_DIR"
       - name: Commit bounded district batch to approved Supabase project
+        if: steps.exports.outputs.available == 'true'
         run: |
           python src/app/real-estate/services/rera_csv_import.py \
             --daily-dir "$CSV_EXPORT_DIR" \
