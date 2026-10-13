@@ -34,7 +34,7 @@ jobs:
             src/app/api/real-estate/ \
             src/app/api/admin/leads/route.ts \
             src/app/api/admin/submissions/route.ts \
-            src/app/globals.css \
+            # Scoped master CSS is guarded by tests/gth-master-design.test.mjs below.
             src/components/brand/BrandVideo.tsx \
             src/components/mobile/BottomNav.tsx \
             public/brand/property-story.jpg \
