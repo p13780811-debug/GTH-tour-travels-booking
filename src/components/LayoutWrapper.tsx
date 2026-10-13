@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import MobileNav from "./MobileNav";
 import ChatBot from "./ChatBot";
-import Footer from "./Footer";
+import EcosystemFooter from "./sections/EcosystemFooter";
 
 export default function LayoutWrapper({
     children,
@@ -27,7 +27,7 @@ export default function LayoutWrapper({
                 <>
                     <MobileNav />
                     <ChatBot />
-                    <Footer />
+                    <EcosystemFooter />
                 </>
             )}
         </>

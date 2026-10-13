@@ -1,0 +1,20 @@
+name: GTH PRO Daily Route Availability
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+permissions:
+  contents: read
+jobs:
+  read-only-route-monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check production public routes without modification
+        env:
+          GTH_PRO_MONITOR_URL: ${{ vars.GTH_PRO_MONITOR_URL }}
+        run: node scripts/monitor-ecosystem.mjs

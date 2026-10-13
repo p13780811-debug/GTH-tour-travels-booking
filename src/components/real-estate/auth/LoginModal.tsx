@@ -36,7 +36,12 @@ export default function LoginModal({ onClose }: { onClose: () => void }) {
                     const { error } = await supabase.auth.signInWithOtp({ email:value, options:{ emailRedirectTo:`${window.location.origin}${path}` } })
                     if (error) throw error
                     setMessage("Sign-in link requested. Check your email and spam folder. Open the link to finish signing in.")
-                } catch { setError("Unable to request a sign-in link. Please wait a moment and retry.") }
+                } catch (failure: any) {
+                    const rateLimited = failure?.status === 429 || failure?.code === "over_email_send_rate_limit"
+                    setError(rateLimited
+                        ? "Email sign-in limit reached. Please wait before requesting another link."
+                        : "Unable to request a sign-in link. Please wait a moment and retry.")
+                }
                 finally { setBusy(false) }
             }}>
                 <label htmlFor="estate-signin-email" className="block font-medium">Email address</label>

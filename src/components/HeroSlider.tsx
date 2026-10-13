@@ -68,7 +68,7 @@ const tabs = [
     },
     {
         name: "Rail",
-        href: "/rail",
+        href: "/train",
         icon: Train
     },
     {
@@ -83,7 +83,7 @@ const tabs = [
     },
     {
         name: "AI Trips",
-        href: "/ai-trips",
+        href: "/ai-trip",
         icon: Sparkles
     },
     {

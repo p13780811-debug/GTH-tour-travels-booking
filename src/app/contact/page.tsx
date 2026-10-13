@@ -1,38 +1,33 @@
-export default function ContactPage() {
-    return (
-        <div className="min-h-screen bg-[#050505] text-white pt-32 px-10">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-5xl font-bold text-[#00FF41] mb-10 tracking-tighter text-center">
-                    Contact Us
-                </h1>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Contact Form */}
-                    <div className="p-8 gth-glass/5 backdrop-blur-md rounded-2xl border border-white/10">
-                        <h2 className="text-2xl font-semibold mb-6">Send a Message</h2>
-                        <form className="space-y-4">
-                            <input type="text" placeholder="Your Name" className="w-full p-3 bg-black/50 border border-white/10 rounded-lg focus:border-[#00FF41] outline-none" />
-                            <input type="email" placeholder="Your Email" className="w-full p-3 bg-black/50 border border-white/10 rounded-lg focus:border-[#00FF41] outline-none" />
-                            <textarea placeholder="How can we help?" rows={4} className="w-full p-3 bg-black/50 border border-white/10 rounded-lg focus:border-[#00FF41] outline-none"></textarea>
-                            <button className="w-full py-3 bg-[#00FF41] text-black font-bold rounded-lg hover:bg-[#00cc33] transition-all">
-                                Send Inquiry
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Contact Details */}
-                    <div className="space-y-8">
-                        <div className="p-6 gth-glass/5 rounded-2xl border border-white/10">
-                            <h3 className="text-[#00FF41] font-bold mb-2 uppercase tracking-widest text-xs">Global Support</h3>
-                            <p className="text-xl font-medium">support@gthpro.com</p>
-                        </div>
-                        <div className="p-6 gth-glass/5 rounded-2xl border border-white/10">
-                            <h3 className="text-[#00FF41] font-bold mb-2 uppercase tracking-widest text-xs">Business Hours</h3>
-                            <p className="text-lg">24/7 International Assistance</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+import type {Metadata} from "next";
+import Link from "next/link";
+import {ArrowRight, Globe2, Mail} from "lucide-react";
+import PartnerApplicationForm from "@/components/partners/PartnerApplicationForm";
+export const metadata:Metadata={
+ title:"Contact & Business Enquiries | GTH PRO",
+ description:"Contact GTH PRO about ecosystem collaboration, real estate onboarding, global travel integrations and platform support.",
+ alternates:{canonical:"/contact"}
+};
+export default function ContactPage(){
+  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
+      <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)]"><Globe2 size={16}/> Contact the ecosystem</p>
+      <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Let's connect.</h1>
+      <p className="mt-5 max-w-2xl text-sm leading-8 text-[var(--text-soft)]">Reach out for genuine partnership discussions or questions about the GTH PRO platform. We review enquiries individually; availability and response times may vary.</p>
+      <div className="mt-9 grid gap-7 lg:grid-cols-[1.5fr_1fr]">
+        <PartnerApplicationForm defaultType="general"/>
+        <aside className="space-y-5">
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <Mail className="text-[var(--gold)]" size={24}/>
+            <h2 className="mt-4 text-lg font-semibold">Business enquiries</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Use the secure form for business enquiries. Do not share sensitive credentials, payment details or identity-document scans.</p>
+          </div>
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold">Developer or agent?</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">We provide separate review paths for real-estate projects, suppliers and affiliate programme introductions.</p>
+            <Link href="/partners" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">Explore partnerships <ArrowRight size={16}/></Link>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>;
 }

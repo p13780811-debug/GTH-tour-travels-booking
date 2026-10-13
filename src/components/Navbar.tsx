@@ -99,54 +99,12 @@ function EcosystemNavbar() {
     // =====================================================
 
     const navItems = useMemo(() => [
-
-        {
-            name: "Destinations",
-            href: "/destinations",
-            icon: Globe,
-            mega: true,
-            featured: [
-                "Dubai",
-                "Bali",
-                "Maldives",
-                "Goa",
-            ],
-        },
-
-        {
-            name: "Hotels",
-            href: "/hotels",
-            icon: Hotel,
-            mega: false,
-        },
-
-        {
-            name: "Real Estate",
-            href: "/real-estate",
-            icon: Building2,
-            mega: true,
-            featured: [
-                "Luxury Villas",
-                "Commercial",
-                "Penthouses",
-                "Smart Homes",
-            ],
-        },
-
-        {
-            name: "Tender",
-            href: "/tender",
-            icon: ShieldCheck,
-            mega: false,
-        },
-
-        {
-            name: "Guides",
-            href: "/guides",
-            icon: Compass,
-            mega: false,
-        },
-
+        { name: "Ecosystem", href: "/mega-aggregator", icon: Globe, mega: false },
+        { name: "Travel", href: "/travel", icon: Plane, mega: false },
+        { name: "Real Estate", href: "/real-estate", icon: Building2, mega: false },
+        { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
+        { name: "Destinations", href: "/destinations", icon: MapPinned, mega: false },
+        { name: "Guides", href: "/guides", icon: Compass, mega: false },
     ], [])
 
     return (
@@ -199,7 +157,7 @@ function EcosystemNavbar() {
                             />
 
                             <span className="gth-nav-mini">
-                                Verified
+                                Travel Discovery
                             </span>
 
                         </div>
@@ -231,7 +189,7 @@ function EcosystemNavbar() {
                             />
 
                             <span className="gth-nav-mini">
-                                Live Intelligence
+                                Global Insights
                             </span>
 
                         </div>
@@ -287,7 +245,7 @@ function EcosystemNavbar() {
                     {/* ================================================= */}
 
                     <Link
-                        href="/"
+                        href="/mega-aggregator"
                         className="group relative flex shrink-0 items-center gap-3"
                     >
 

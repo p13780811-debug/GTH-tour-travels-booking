@@ -237,3 +237,520 @@
 .adProjects .action { margin-top: 12px; }
 
 .galleryEmpty { min-height: 160px; display: grid; }
+
+
+/* Global real-estate discovery */
+.globalMarkets,
+.trustSection {
+  margin-top: 56px;
+}
+
+.sectionEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.marketGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.marketCard {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: var(--shadow);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.marketCard:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+  box-shadow: var(--shadow-hover);
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.trustGrid article {
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.registryPlaceholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 40%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card) 92%, transparent), var(--bg));
+}
+
+.registryPlaceholder::before,
+.registryPlaceholder::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.registryPlaceholder::before {
+  width: 220px;
+  height: 220px;
+}
+
+.registryPlaceholder::after {
+  width: 320px;
+  height: 320px;
+  opacity: .45;
+}
+
+.registryPlaceholderContent {
+  position: relative;
+  z-index: 1;
+  max-width: 240px;
+  text-align: center;
+  padding: 28px;
+}
+
+.registryPlaceholderMark {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+.trustPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.trustPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1023px) {
+  .marketGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .globalMarkets,
+  .trustSection { margin-top: 42px; }
+  .sectionHeadingRow { align-items: start; flex-direction: column; }
+  .marketGrid,
+  .trustGrid { grid-template-columns: 1fr; }
+  .marketCard { min-height: 160px; }
+}
+
+
+.estateFooter nav {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.estateFooter nav a {
+  color: inherit;
+}
+
+.heroTop {
+  display: grid;
+  gap: 28px;
+  align-items: center;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.heroLogoMotion {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .heroTop {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .heroLogoMotion {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 28px;
+    opacity: .86;
+    filter: saturate(.9) contrast(1.02);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+}
+
+
+/* Cinematic property-film hero */
+.searchHero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.heroBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.heroBackgroundVideo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(62vw, 920px);
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: .34;
+  filter: saturate(.88) contrast(1.04);
+}
+
+.heroVideoShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 96%, transparent) 38%,
+      color-mix(in srgb, var(--bg) 72%, transparent) 63%,
+      color-mix(in srgb, var(--bg) 38%, transparent) 100%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg) 18%, transparent),
+      color-mix(in srgb, var(--bg) 55%, transparent));
+}
+
+.heroTop {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 220px;
+}
+
+.heroCopy {
+  max-width: 780px;
+}
+
+.heroFilmNote {
+  margin-top: 18px;
+  font-size: 12px;
+  letter-spacing: .02em;
+  opacity: .62;
+}
+
+.heroLogoMotion {
+  display: none !important;
+}
+
+/* Dark-mode depth pass — real estate only */
+:global(html.dark) .estateScope {
+  --bg: #18130f;
+  --bg-soft: #211a14;
+  --card: rgba(35, 27, 21, .82);
+  --card-strong: rgba(43, 32, 24, .92);
+  --border: rgba(236, 201, 132, .15);
+  --shadow:
+    0 14px 34px rgba(28, 18, 11, .26),
+    0 1px 0 rgba(255, 239, 208, .035) inset;
+  --shadow-hover:
+    0 22px 48px rgba(28, 18, 11, .34),
+    0 0 24px rgba(212, 175, 55, .055),
+    0 1px 0 rgba(255, 239, 208, .05) inset;
+
+  background:
+    radial-gradient(circle at 78% 4%, rgba(212,175,55,.055), transparent 30%),
+    linear-gradient(180deg, #1b1510 0%, #17120f 46%, #13100d 100%);
+}
+
+:global(html.dark) .searchHero {
+  background:
+    radial-gradient(circle at 82% 22%, rgba(212,175,55,.08), transparent 34%),
+    linear-gradient(180deg, rgba(38,28,20,.24), rgba(24,18,14,.16));
+  border-bottom-color: rgba(236,201,132,.13);
+  box-shadow: inset 0 -1px 0 rgba(255,235,195,.025);
+}
+
+:global(html.dark) .heroBackgroundVideo {
+  opacity: .62;
+  filter: saturate(1.02) contrast(1.06) brightness(.92);
+}
+
+:global(html.dark) .heroVideoShade {
+  background:
+    linear-gradient(90deg,
+      rgba(27,20,15,.94) 0%,
+      rgba(27,20,15,.84) 32%,
+      rgba(27,20,15,.56) 58%,
+      rgba(27,20,15,.22) 82%,
+      rgba(27,20,15,.12) 100%),
+    linear-gradient(180deg,
+      rgba(27,20,15,.08),
+      rgba(27,20,15,.30));
+}
+
+:global(html.dark) .estateScope :global(.gth-glass) {
+  background:
+    linear-gradient(145deg,
+      rgba(53,40,30,.76) 0%,
+      rgba(37,28,22,.82) 52%,
+      rgba(27,21,17,.88) 100%);
+  border-color: rgba(236,201,132,.14);
+  box-shadow: var(--shadow);
+}
+
+:global(html.dark) .estateScope :global(.gth-glass)::before {
+  background:
+    linear-gradient(135deg,
+      rgba(255,242,218,.07),
+      rgba(212,175,55,.022) 50%,
+      rgba(255,255,255,.008));
+}
+
+:global(html.dark) .card,
+:global(html.dark) .marketCard,
+:global(html.dark) .trustGrid article {
+  background:
+    linear-gradient(145deg,
+      rgba(43,33,26,.82),
+      rgba(29,23,19,.90));
+  border-color: rgba(236,201,132,.14);
+  box-shadow:
+    0 14px 34px rgba(30,19,11,.23),
+    inset 0 1px 0 rgba(255,238,205,.035);
+}
+
+:global(html.dark) .card:hover,
+:global(html.dark) .marketCard:hover,
+:global(html.dark) .trustGrid article:hover {
+  border-color: rgba(224,184,101,.28);
+  box-shadow:
+    0 20px 46px rgba(30,19,11,.31),
+    0 0 22px rgba(212,175,55,.05),
+    inset 0 1px 0 rgba(255,241,214,.05);
+}
+
+:global(html.dark) .filterForm input,
+:global(html.dark) .filterForm select,
+:global(html.dark) .toolInputs input,
+:global(html.dark) .toolInputs select {
+  background:
+    linear-gradient(180deg, rgba(49,37,28,.88), rgba(31,24,19,.92));
+  border-color: rgba(236,201,132,.14);
+  box-shadow: inset 0 1px 0 rgba(255,240,210,.025);
+}
+
+:global(html.dark) .filterForm input:focus,
+:global(html.dark) .filterForm select:focus,
+:global(html.dark) .toolInputs input:focus,
+:global(html.dark) .toolInputs select:focus {
+  border-color: rgba(212,175,55,.45);
+  box-shadow:
+    0 0 0 3px rgba(212,175,55,.07),
+    inset 0 1px 0 rgba(255,244,220,.035);
+}
+
+:global(html.dark) .trustPill,
+:global(html.dark) .filterChips button {
+  background: rgba(48,36,27,.76);
+  border-color: rgba(236,201,132,.14);
+  box-shadow: 0 7px 16px rgba(30,19,11,.16);
+}
+
+:global(html.dark) .registryPlaceholder {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(212,175,55,.10), transparent 34%),
+    radial-gradient(circle at 12% 72%, rgba(143,97,53,.08), transparent 30%),
+    linear-gradient(145deg, #2a2018, #1d1712 58%, #17120f);
+  box-shadow:
+    inset 0 1px 0 rgba(255,242,218,.035),
+    0 14px 32px rgba(30,19,11,.20);
+}
+
+:global(html.dark) .registryPlaceholderMark {
+  background: rgba(46,34,25,.78);
+  border-color: rgba(212,175,55,.19);
+  box-shadow: 0 9px 22px rgba(30,19,11,.20);
+}
+
+:global(html.dark) .estateHeader {
+  background: rgba(27,21,17,.88);
+  border-bottom-color: rgba(236,201,132,.13);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  box-shadow: 0 8px 24px rgba(30,19,11,.18);
+}
+
+:global(html.dark) .estateFooter {
+  border-top-color: rgba(236,201,132,.12);
+  background:
+    linear-gradient(180deg, rgba(35,27,21,.30), rgba(23,18,15,.48));
+}
+
+:global(html.dark) .action {
+  filter: saturate(1.03);
+}
+
+@media (max-width: 767px) {
+  .heroTop {
+    min-height: auto;
+  }
+
+  .heroBackgroundVideo {
+    width: 100%;
+    opacity: .18;
+  }
+
+  .heroVideoShade {
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--bg) 58%, transparent),
+        color-mix(in srgb, var(--bg) 80%, transparent));
+  }
+
+  :global(html.dark) .heroBackgroundVideo {
+    opacity: .34;
+    filter: saturate(1) contrast(1.04) brightness(.90);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroBackgroundVideo {
+    display: none;
+  }
+}
+
+
+/* Property result cards: mobile-first vertical layout */
+.propertyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.propertyGrid > * {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .propertyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .propertyGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .propertyGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .propertyGrid .card {
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+
+  .propertyGrid .media {
+    width: 100%;
+    min-height: 210px;
+  }
+
+  .propertyGrid .cardBody {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .propertyGrid .recordPreview div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .propertyGrid .cardFacts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .propertyGrid .cardFooter {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .propertyGrid .cardFooter > * {
+    width: 100%;
+  }
+
+  .propertyGrid .cardFooter > a:first-child {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .propertyGrid .action.action {
+    width: 100%;
+  }
+}

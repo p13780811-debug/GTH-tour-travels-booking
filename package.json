@@ -15,7 +15,9 @@
     "engine:rank": "tsx src/data/generate-ranking-search.ts",
     "engine:full": "npm run engine:intelligence && npm run engine:rank",
     "test:security": "node --test tests/*.test.mjs",
-    "check:production-env": "node scripts/check-production-env.mjs"
+    "check:production-env": "node scripts/check-production-env.mjs",
+    "check:ecosystem-release": "node scripts/audit-ecosystem-readiness.mjs",
+    "monitor:ecosystem": "node scripts/monitor-ecosystem.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
