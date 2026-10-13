@@ -27,7 +27,7 @@ export default function LayoutWrapper({
                 <>
                     <MobileNav />
                     <ChatBot />
-                    <Footer />
+                    {pathname !== "/mega-aggregator" && <Footer />}
                 </>
             )}
         </>

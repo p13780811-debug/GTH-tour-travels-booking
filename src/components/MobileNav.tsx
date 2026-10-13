@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import { Home, Plane, Building2, CarFront, Hotel } from 'lucide-react'
+import { Home, Plane, Building2, BriefcaseBusiness, Hotel } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const MobileNav = () => {
@@ -14,20 +14,20 @@ const MobileNav = () => {
             <div className="bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl px-2 py-2 flex justify-between items-center shadow-2xl">
 
                 {/* Home */}
-                <Link href="/"
+                <Link href="/mega-aggregator"
                     className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/') ? 'text-white' : 'text-white/50'}`}
+                    ${isActive('/mega-aggregator') ? 'text-white' : 'text-white/50'}`}
                 >
                     <Home size={18} />
                     <span className="text-[9px] uppercase">Home</span>
                 </Link>
 
                 {/* Flights */}
-                <Link href="/flights"
+                <Link href="/travel"
                     className="flex flex-col items-center gap-[2px] text-white/50 active:scale-90"
                 >
                     <Plane size={18} />
-                    <span className="text-[9px] uppercase">Flights</span>
+                    <span className="text-[9px] uppercase">Travel</span>
                 </Link>
 
                 {/* Center REAL ESTATE (MAIN CTA) */}
@@ -38,12 +38,12 @@ const MobileNav = () => {
                 </Link>
 
                 {/* Rentals */}
-                <Link href="/transfers"
+                <Link href="/tender"
                     className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/transfers') ? 'text-white' : 'text-white/50'}`}
+                    ${isActive('/tender') ? 'text-white' : 'text-white/50'}`}
                 >
-                    <CarFront size={18} />
-                    <span className="text-[9px] uppercase">Transfers</span>
+                    <BriefcaseBusiness size={18} />
+                    <span className="text-[9px] uppercase">Tenders</span>
                 </Link>
 
                 {/* Hotels */}

@@ -10,6 +10,8 @@ import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSl
 import GTHNetwork from "@/components/sections/GTHNetwork";
 import dynamic from "next/dynamic"
 import HeroSlider from "@/components/HeroSlider";
+import EcosystemPillars from "@/components/sections/EcosystemPillars";
+import EcosystemFooter from "@/components/sections/EcosystemFooter";
 
 
 const supabase = createClient(
@@ -18,23 +20,17 @@ const supabase = createClient(
 )
 export const revalidate = 60
 export const metadata = {
-    title: "Luxury Flights, Hotels & Tours Marketplace | Flights Hotels Tours | GTH",
-    description:
-        "Compare flights, luxury hotels, tours and travel services worldwide with GTH Travel marketplace.",
-    keywords: [
-        "luxury travel",
-        "flight comparison",
-        "hotel booking",
-        "travel marketplace"
-    ],
+    title: "GTH PRO | Global Travel, Real Estate & Tender Ecosystem",
+    description: "GTH PRO connects international travel discovery, real estate intelligence and tender opportunity research in one three-pillar global ecosystem.",
+    alternates: { canonical: "/mega-aggregator" },
+    keywords: ["GTH PRO", "global travel", "flights", "hotels", "tours", "real estate", "tender intelligence"],
     openGraph: {
-        title: "GTH Luxury Travel Marketplace",
-        description: "Compare travel services globally",
+        title: "GTH PRO — One Ecosystem. Three Global Pillars.",
+        description: "Explore travel, real estate and tender intelligence through one connected global gateway.",
         images: ["/images/og/gth-travel.jpg"],
     },
-
-
 };
+
 const partners = [
     { name: "Global Bookings", original: "Trip.com", reward: "", description: "Verify live rates and terms on the provider website", image: "/images/mega/tripcom.jpg", link: "https://www.trip.com/" },
     { name: "Experience Hub", original: "Klook", reward: "", description: "Curated local adventures", image: "/images/mega/klook.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
@@ -76,13 +72,21 @@ export default async function MegaAggregator() {
 
     return (
         <div className="w-full bg-[var(--bg)] transition-colors duration-300">
-            <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-                <p className="text-sm text-[var(--text-soft)]">GTH PRO Travel marketplace · Discover every updated Travel service from one homepage</p>
-                <Link href="/travel" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore all Travel services →</Link>
+            <div className="border-b border-[var(--border)] bg-[var(--card)]/70">
+                <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.13em] text-[var(--text-soft)]">
+                        GTH PRO <span className="mx-2 text-[var(--gold)]">•</span> Global Technical Hub
+                    </p>
+                    <Link href="#ecosystem-pillars" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--border)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+                        Explore the three pillars <span aria-hidden="true">↓</span>
+                    </Link>
+                </div>
             </div>
             <div className="relative z-0">
                 <HeroSlider />
             </div>
+
+            <EcosystemPillars />
 
 
 
@@ -338,62 +342,61 @@ export default async function MegaAggregator() {
 
 
 
-                {/* Categories Section - FULL IMAGE MODERN LOOK */}
-                <section className="py-20 px-8 max-w-7xl mx-auto">
-                    <h2 className="md:text-4xl font-black text-center gold-text uppercase leading-tight tracking-widest italic text-yellow-900">
-                        Premium Services
-                    </h2>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-
-                        {categories.map((c, idx) => (
-
-                            <Link
-                                key={idx}
-                                href={c.link}
-                                className="group relative h-[350px] rounded-[2.5rem] overflow-hidden shadow-2xl cursor-pointer block"
-                            >
-
-                                {/* IMAGE */}
-                                <Image
-                                    src={c.image}
-                                    alt={c.name}
-                                    fill
-                                    className="object-cover group-hover:scale-125 transition-transform duration-1000 ease-in-out"
-                                    unoptimized
-                                />
-
-                                {/* OVERLAY */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent flex flex-col justify-end p-6 text-center">
-
-                                    <h3 className="text-white font-black text-2xl uppercase tracking-tighter mb-2 group-hover:text-sky-400 transition-colors">
-                                        {c.name}
-                                    </h3>
-
-                                    <div className="h-0 group-hover:h-12 opacity-0 group-hover:opacity-100 transition-all duration-500 overflow-hidden">
-                                        <p className="text-gray-300 text-xs font-medium">
-                                            {c.description}
-                                        </p>
-                                    </div>
-
-                                    <div className="w-12 h-1 bg-sky-500 mx-auto mt-4 group-hover:w-full transition-all duration-500 rounded-full" />
-                                </div>
-
+                {/* Connected Travel Services */}
+                <section id="travel-services" aria-labelledby="travel-services-heading" className="border-y border-[var(--border)] bg-[var(--card)]/35 py-14 md:py-20">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                        <div className="mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--gold)]">Pillar 01 · Tours & Travels</p>
+                                <h2 id="travel-services-heading" className="mt-3 text-3xl font-semibold tracking-tight text-[var(--text)] md:text-4xl">
+                                    Travel services, clearly connected.
+                                </h2>
+                                <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
+                                    From search to discovery, choose a service and verify booking details with its provider.
+                                </p>
+                            </div>
+                            <Link href="/travel" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border)] px-5 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+                                All Travel Services <span className="ml-2" aria-hidden="true">↗</span>
                             </Link>
-
-                        ))}
-
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                            {categories.map((category) => (
+                                <Link key={category.link} href={category.link}
+                                    className="group relative flex min-h-[245px] flex-col justify-end overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-5 text-white shadow-sm transition-transform duration-300 hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:min-h-[295px]">
+                                    <Image src={category.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" aria-hidden="true" />
+                                    <div className="relative z-10">
+                                        <h3 className="text-xl font-semibold tracking-tight">{category.name}</h3>
+                                        <p className="mt-2 text-sm leading-6 text-white/80">{category.description}</p>
+                                        <span className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-amber-200">
+                                            Explore <span aria-hidden="true">↗</span>
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        <nav aria-label="Additional travel services" className="mt-7 flex flex-wrap gap-2">
+                            {[
+                                {name:"Destinations",href:"/destinations"},
+                                {name:"Flights",href:"/flights"},
+                                {name:"Hotels",href:"/hotels"},
+                                {name:"Guides",href:"/guides"},
+                                {name:"Articles",href:"/blog"},
+                                {name:"Bus",href:"/bus"},
+                                {name:"Rail",href:"/train"},
+                                {name:"Airport Transfers",href:"/transfers"},
+                            ].map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">{item.name} <span className="ml-2" aria-hidden="true">↗</span></Link>)}
+                        </nav>
                     </div>
                 </section>
 
-
-
                 {/* Travel Guides - Cocktail Version (Airbnb Style + Gemini Clean Look) */}
-                <section className="py-20 bg-black text-white">
-                    <div className="max-w-7xl mx-auto px-8">
+                <section id="insights" className="bg-black py-14 text-white md:py-20">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6">
                         <div className="flex flex-col items-center mb-12">
                             <h2 className="text-4xl font-bold tracking-tight mb-4">
-                                Popular Travel Guides
+                                Travel intelligence & practical guides
                             </h2>
                             <div className="h-1 w-20 bg-blue-600 rounded-full"></div>
                         </div>
@@ -466,7 +469,7 @@ export default async function MegaAggregator() {
 
                 {/* ========================= MEGA DEALS ========================= */}
 
-                <section className="relative overflow-hidden py-12 md:py-16 bg-[var(--bg)]">
+                <section id="providers" className="relative overflow-hidden bg-[var(--bg)] py-14 md:py-20">
 
                     <div className="mx-auto max-w-7xl px-4 md:px-6">
 
@@ -487,7 +490,7 @@ export default async function MegaAggregator() {
                                 </div>
 
                                 <h2 className="text-2xl font-black tracking-tight text-[var(--text)] md:text-4xl">
-                                    Exclusive Mega Deals
+                                    Independent Travel Providers
                                 </h2>
 
                                 <p className="mt-3 text-sm leading-relaxed text-[var(--text-soft)] md:max-w-xl">
@@ -497,7 +500,7 @@ export default async function MegaAggregator() {
                             </div>
 
                             <Link
-                                href="/partners"
+                                href="/travel"
                                 className="gth-btn hidden h-11 items-center justify-center rounded-full px-6 text-[11px] font-black uppercase tracking-[0.18em] md:inline-flex"
                             >
                                 Explore All
@@ -572,7 +575,7 @@ export default async function MegaAggregator() {
                                                 </h3>
 
                                                 <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-soft)]">
-                                                    Global Access
+                                                    External Website
                                                 </p>
 
                                             </div>
@@ -622,289 +625,7 @@ export default async function MegaAggregator() {
 
 
 
-            {/* ========================= FOOTER ========================= */}
-
-            <footer className="border-t border-[var(--border)] bg-[var(--bg)] transition-all duration-500">
-
-                <div className="mx-auto max-w-[1600px] px-4 py-14 md:px-6 xl:px-10">
-
-                    {/* TOP LAYER */}
-
-                    <div className="grid gap-12 xl:grid-cols-[1.15fr_2fr]">
-
-                        {/* ===================================================== */}
-                        {/* BRAND SIDE */}
-                        {/* ===================================================== */}
-
-                        <div className="max-w-xl">
-
-                            <Link
-                                href="/"
-                                className="group inline-flex items-center gap-4"
-                            >
-
-                                {/* LOGO */}
-
-                                <div className="gth-glass relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] transition-all duration-500 group-hover:-translate-y-1 group-hover:border-[var(--gold)]">
-
-                                    <Image
-                                        src="/images/gth-logo.png"
-                                        alt="GTH PRO"
-                                        width={58}
-                                        height={58}
-                                        priority
-                                        className="h-[82%] w-[82%] object-contain transition-transform duration-700 group-hover:scale-105"
-                                    />
-
-                                </div>
-
-                                {/* TEXT */}
-
-                                <div>
-
-                                    <h3 className="text-xl md:text-2xl font-black tracking-[0.22em] text-[var(--text)]">
-                                        GTH <span className="gold-text">PRO</span>
-                                    </h3>
-
-                                    <p className="mt-1 text-[10px] uppercase tracking-[0.28em] text-[var(--text-soft)]">
-                                        AI Powered Luxury Ecosystem
-                                    </p>
-
-                                </div>
-
-                            </Link>
-
-                            {/* DESCRIPTION */}
-
-                            <p className="mt-7 max-w-md text-sm leading-relaxed text-[var(--text-soft)]">
-                                Premium global ecosystem for luxury travel, verified stays,
-                                real estate intelligence, elite partnerships and AI-powered
-                                experiences built for the next generation.
-                            </p>
-
-                            {/* LIVE STATUS */}
-
-                            <div className="mt-8 flex flex-wrap items-center gap-3">
-
-                                <div className="gth-glass inline-flex items-center gap-3 rounded-full px-4 py-2">
-
-                                    <div className="h-2 w-2 rounded-full bg-[var(--gold)] animate-pulse" />
-
-                                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                                        Global Network Active
-                                    </span>
-
-                                </div>
-
-                                <div className="gth-glass inline-flex items-center rounded-full px-4 py-2">
-
-                                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                                        Provider Booking Handoff
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                            {/* ORIGINAL BRAND LOGOS */}
-
-                            <div className="mt-8 flex flex-wrap items-center gap-3">
-
-                                {[
-                                    {
-                                        name: "Booking",
-                                        href: "https://booking.com",
-                                        svg: (
-                                            <svg viewBox="0 0 24 24" className="w-7 h-7 fill-[#003580]">
-                                                <path d="M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12zm-13.5 3.5c0 .828.672 1.5 1.5 1.5s1.5-.672 1.5-1.5-.672-1.5-1.5-1.5-1.5.672-1.5 1.5zm.25-6.25c0 .69.56 1.25 1.25 1.25s1.25-.56 1.25-1.25S12.69 8 12 8s-1.25.56-1.25 1.25zM4 12c0 4.418 3.582 8 8 8s8-3.582 8-8-3.582-8-8-8-8 3.582-8 8z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: "Airbnb",
-                                        href: "https://airbnb.com",
-                                        svg: (
-                                            <svg viewBox="0 0 32 32" className="w-7 h-7 fill-[#FF5A5F]">
-                                                <path d="M16 1c-2.008 0-3.69 1.443-4.254 3.398C10.156 9.453 6.063 17.5 4.344 20.895A5.98 5.98 0 0 0 3 24c0 3.309 2.691 6 6 6c1.691 0 3.23-.703 4.344-1.832c.563-.574 1.254-1.637 1.832-2.586c.398-.656.777-1.309.824-1.34c.047.031.426.684.824 1.34c.578.949 1.27 2.012 1.832 2.586c1.113 1.129 2.652 1.832 4.344 1.832c3.309 0 6-2.691 6-6c0-1.125-.313-2.195-1.344-3.105c-1.719-3.395-5.813-11.441-7.402-16.496A4.31 4.31 0 0 0 16 1zm0 3c.715 0 1.332.484 1.5 1.156c1.555 4.965 5.598 12.895 7.281 16.219c.602.531.719.98.719 1.625c0 1.656-1.344 3-3 3c-1.074 0-2.039-.574-2.594-1.469c-.645-1.055-1.371-2.266-1.906-3.156c-.848-1.422-2-1.422-2.848 0c-.535.891-1.262 2.102-1.906 3.156c-.555.895-1.52 1.469-2.594 1.469c-1.656 0-3-1.344-3-3c0-.645.117-1.094.719-1.625c1.684-3.324 5.727-11.254 7.281-16.219A1.51 1.51 0 0 0 16 4zm0 10c-1.656 0-3 1.344-3 3s1.344 3 3 3s3-1.344 3-3s-1.344-3-3-3zm0 2c.555 0 1 .445 1 1s-.445 1-1 1s-1-.445-1-1s.445-1 1-1z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: "Agoda",
-                                        href: "https://agoda.com",
-                                        svg: (
-                                            <svg viewBox="0 0 24 24" className="w-7 h-7 fill-[#0092A9]">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 12 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: "Emirates",
-                                        href: "https://emirates.com",
-                                        svg: (
-                                            <svg viewBox="0 0 24 24" className="w-7 h-7 fill-[#D71921]">
-                                                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S17.373 0 12 0zm1 17h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: "Marriott",
-                                        href: "https://marriott.com",
-                                        svg: (
-                                            <svg viewBox="0 0 24 24" className="w-7 h-7 fill-[#b00020]">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 12 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                                            </svg>
-                                        )
-                                    },
-                                ].map((brand, idx) => (
-
-                                    <Link
-                                        key={idx}
-                                        href={brand.href}
-                                        target="_blank"
-                                        rel="nofollow sponsored noopener noreferrer"
-                                        className="group"
-                                    >
-                                        {/* Pure White Background wrapper so icons look high-contrast and sharp */}
-                                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white transition-transform duration-300 hover:scale-110 hover:border-[var(--gold)] shadow-sm">
-                                            {brand.svg} {/* ✅ Absolute Fix: No external image files needed! */}
-                                        </div>
-                                    </Link>
-                                ))}
-
-                            </div>
-
-                        </div>
-
-                        {/* ===================================================== */}
-                        {/* LINKS SIDE (Perfect 4-Column Grid) */}
-                        {/* ===================================================== */}
-
-                        <div className="grid grid-cols-2 gap-10 md:grid-cols-4 xl:gap-14 w-full">
-
-                            {/* 1. ECOSYSTEM */}
-                            <div>
-                                <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--gold)]">
-                                    Ecosystem
-                                </h4>
-                                <div className="flex flex-col gap-4">
-                                    <Link href="/destinations" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Destinations
-                                    </Link>
-                                    <Link href="/hotels" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Hotels
-                                    </Link>
-                                    <Link href="/tours" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Tours
-                                    </Link>
-                                    <Link href="/flights" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Flights
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* 2. BUSINESS */}
-                            <div>
-                                <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--gold)]">
-                                    Business
-                                </h4>
-                                <div className="flex flex-col gap-4">
-                                    <Link href="/real-estate" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Real Estate
-                                    </Link>
-                                    <Link href="/tender" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Tenders
-                                    </Link>
-                                    <Link href="/studios" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Studios
-                                    </Link>
-                                    <Link href="/partners" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Partnerships
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* 3. COMPANY */}
-                            <div>
-                                <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--gold)]">
-                                    Company
-                                </h4>
-                                <div className="flex flex-col gap-4">
-                                    <Link href="/about" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        About
-                                    </Link>
-                                    <Link href="/contact" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Contact
-                                    </Link>
-                                    <Link href="/blog" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Editorial
-                                    </Link>
-                                    <Link href="/careers" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Careers
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* 4. LEGAL (Restored & Upgraded) */}
-                            <div>
-                                <h4 className="mb-6 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--gold)]">
-                                    Legal
-                                </h4>
-                                <div className="flex flex-col gap-4">
-                                    <Link href="/privacy-policy" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Privacy Policy
-                                    </Link>
-                                    <Link href="/terms-and-conditions" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Terms of Service
-                                    </Link>
-                                    <Link href="/cookies" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Cookie Policy
-                                    </Link>
-                                    <Link href="/security" className="text-sm text-[var(--text-soft)] transition-all duration-300 hover:translate-x-1 hover:text-[var(--text)]">
-                                        Security & Trust
-                                    </Link>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {/* ===================================================== */}
-                    {/* BOTTOM */}
-                    {/* ===================================================== */}
-
-                    <div className="mt-14 flex flex-col gap-5 border-t border-[var(--border)] pt-7 md:flex-row md:items-center md:justify-between">
-
-                        <p className="text-xs tracking-[0.08em] text-[var(--text-soft)]">
-                            © 2026 GTH PRO — Global Luxury Ecosystem. All rights reserved.
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-3">
-
-                            <div className="gth-glass rounded-full px-4 py-2">
-
-                                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                                    Travel Information & Discovery
-                                </span>
-
-                            </div>
-
-                            <div className="gth-glass rounded-full px-4 py-2">
-
-                                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-soft)]">
-                                    Global Premium Access
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </footer>
+            <EcosystemFooter />
         </div>
     );
 }
