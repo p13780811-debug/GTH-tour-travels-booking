@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane, ShieldCheck, Sparkles } from "lucide-react";
-import { destinations, type DestinationOverview } from "@/data/destinations";
+import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
 import HotelResults from "@/app/hotels/results/HotelResults";
@@ -36,7 +36,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
     return {
       slug,
       name,
-      image_url: editorial?.image_url || "/images/default-city.jpg",
+      image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
         ? data.description.slice(0, 5000)
         : editorial?.description || "Explore destination information and confirm planning details with providers.",
