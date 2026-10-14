@@ -8,7 +8,7 @@ const pages = [
   "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers",
   "/insurance", "/real-estate", "/real-estate/tools", "/tender",
-  "/partners", "/partners/apply", "/contact",
+  "/partners", "/partners/apply", "/contact", "/about", "/affiliate-disclosure",
 ];
 export default function sitemap(): MetadataRoute.Sitemap {
   // Preview builds must not advertise unlaunched or unverified services for indexing.

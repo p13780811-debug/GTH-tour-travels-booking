@@ -48,6 +48,7 @@ export default function PartnersPage(){
           depend on independent supplier agreements, working APIs and actual inventory. GTH PRO is not claiming an active partnership with IRCTC,
           airlines, hotel chains or other providers unless separately confirmed in writing.
         </p>
+        <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">Learn more about <Link href="/about" className="font-semibold text-[var(--gold)] underline">GTH PRO</Link> and read our <Link href="/affiliate-disclosure" className="font-semibold text-[var(--gold)] underline">affiliate disclosure</Link> before evaluating a commercial relationship.</p>
         <p className="mt-4 inline-flex items-start gap-2 text-sm leading-7 text-[var(--text-soft)]"><ShieldCheck className="mt-1 shrink-0" size={17}/> All submissions and marketing claims remain subject to identity, licence and inventory verification and administrator approval.</p>
       </div>
     </section>

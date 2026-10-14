@@ -65,7 +65,7 @@ export default function PartnerApplicationForm({defaultType="developer"}:{defaul
         <input className="sr-only" name="website_check" tabIndex={-1} autoComplete="off" aria-hidden="true"/>
         <label className="flex items-start gap-3 text-sm leading-6 text-[var(--text-soft)] sm:col-span-2">
           <input className="mt-1 h-4 w-4 accent-amber-600" name="consent_to_contact" type="checkbox" value="yes" required/>
-          I agree to be contacted about this enquiry, and I confirm I have permission to share the supplied business information.
+          I agree to be contacted about this enquiry, and I confirm I have permission to share the supplied business information. See our <Link href="/privacy-policy" className="font-semibold text-[var(--gold)] underline">Privacy Policy</Link>.
         </label>
         {error&&<p role="alert" className="rounded-xl border border-[var(--border)] p-3 text-sm sm:col-span-2">{error}</p>}
         <button className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold disabled:opacity-50 sm:col-span-2" disabled={busy} type="submit">

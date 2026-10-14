@@ -16,9 +16,9 @@ const columns = [
     ["Travel Guides","/guides"], ["Editorial","/blog"],
   ] },
   { heading: "Company & Support", links: [
-    ["Contact","/contact"], ["Travel Insurance","/insurance"],
+    ["About GTH PRO","/about"], ["Contact","/contact"], ["Travel Insurance","/insurance"],
     ["Privacy Policy","/privacy-policy"], ["Terms & Conditions","/terms-and-conditions"],
-    ["Refund Policy","/refund-policy"],
+    ["Refund Policy","/refund-policy"], ["Affiliate Disclosure","/affiliate-disclosure"],
     ["Business Partners","/partners"],
     ["Partner & Developer Applications","/partners/apply"],
   ] },

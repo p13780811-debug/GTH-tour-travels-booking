@@ -19,14 +19,14 @@ export default function ContactPage(){
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
             <Mail className="text-[var(--gold)]" size={24}/>
             <h2 className="mt-4 text-lg font-semibold">Business enquiries</h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Use the secure form for business enquiries. Do not share sensitive credentials, payment details or identity-document scans.</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Send business enquiries using the form. Submissions are stored privately for review. Do not share sensitive credentials, payment details or identity-document scans. See our privacy policy for data handling.</p>
           </div>
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold">Developer or agent?</h2>
             <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">We provide separate review paths for real-estate projects, suppliers and affiliate programme introductions.</p>
             <Link href="/partners" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">Explore partnerships <ArrowRight size={16}/></Link>
           </div>
-        </aside>
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6"><h2 className="text-lg font-semibold">Company & transparency</h2><p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Learn about the operator and commercial relationships before enquiring.</p><div className="mt-4 flex flex-wrap gap-4 text-sm"><Link href="/about" className="font-semibold text-[var(--gold)]">About GTH PRO</Link><Link href="/affiliate-disclosure" className="font-semibold text-[var(--gold)]">Affiliate disclosure</Link></div></div></aside>
       </div>
     </section>
   </main>;

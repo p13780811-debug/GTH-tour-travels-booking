@@ -129,7 +129,7 @@ export default function Terms() {
 
                             <div className="gth-glass rounded-full px-4 py-2">
                                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-soft)]">
-                                    AI Verified Platform
+                                    Platform Information
                                 </span>
                             </div>
 

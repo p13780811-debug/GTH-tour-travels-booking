@@ -98,19 +98,19 @@ export default function PrivacyPolicy() {
 
                             <div className="gth-glass rounded-full px-4 py-2">
                                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-soft)]">
-                                    GDPR Ready
+                                    Privacy & Data Handling
                                 </span>
                             </div>
 
                             <div className="gth-glass rounded-full px-4 py-2">
                                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-soft)]">
-                                    AI Protected
+                                    Information Security
                                 </span>
                             </div>
 
                             <div className="gth-glass rounded-full px-4 py-2">
                                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-soft)]">
-                                    Global Compliance
+                                    Policy Transparency
                                 </span>
                             </div>
 
