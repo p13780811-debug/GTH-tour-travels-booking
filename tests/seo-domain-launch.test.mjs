@@ -66,7 +66,7 @@ test("business policies expose their own canonical metadata without changing cli
  }
  assert.match(source("src/app/success/layout.tsx"),/index: false/);
  const article=source("src/app/blog/[slug]/page.tsx");
- assert.match(article,/JsonLd data=\\{articleData\\}/);
+ assert.ok(article.includes("<JsonLd data={articleData} />"));
  assert.doesNotMatch(article,/dangerouslySetInnerHTML/);
  assert.match(source("src/components/seo/JsonLd.tsx"),/safeStructuredData/);
 });
