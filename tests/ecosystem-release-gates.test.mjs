@@ -47,7 +47,9 @@ test("preview indexing is gated, public sitemap and robots honour release switch
    assert.match(s,/GTH_PUBLIC_LAUNCH_ENABLED/);
    assert.match(s,/VERCEL_ENV/);
  }
- assert.match(robots,/disallow: "\/"/);
+ assert.match(robots,/allow: "\/"/);
+ assert.match(robots,/disallow: privateRoutes/);
+ assert.match(robots,/if \(!publicLaunch\)/);
  assert.match(sitemap,/if \(!publicLaunch\) return \[\]/);
 });
 
@@ -85,4 +87,27 @@ test("public partner inbox stays private, and launch indexing remains gated",()=
  assert.match(robots,/if \(!publicLaunch\)/);
  assert.match(sitemap,/if \(!publicLaunch\) return \[\]/);
  assert.match(source("src/app/about/page.tsx"),/mailto:official\.gthpro@gmail\.com/);
+});
+
+
+test("publisher review profile uses existing routes and honest business identification",()=>{
+ const partners=source("src/app/partners/page.tsx");
+ const about=source("src/app/about/page.tsx");
+ const site=source("src/app/layout.tsx");
+ const robots=source("src/app/robots.ts");
+ const siteMap=source("src/app/sitemap.ts");
+ assert.match(partners,/GTH PRO business and website profile/);
+ assert.match(partners,/mailto:official\.gthpro@gmail\.com/);
+ assert.match(partners,/https:\/\/gth-pro-portfolio\.pages\.dev\//);
+ assert.match(partners,/\/affiliate-disclosure/);
+ for (const route of ["/","/travel","/hotels","/blog","/about","/contact",
+   "/privacy-policy","/terms-and-conditions","/affiliate-disclosure"]) {
+   const p="src/app"+(route==="/" ? "/page.tsx" : route+"/page.tsx");
+   assert.ok(existsSync(new URL("../"+p,import.meta.url)),p);
+ }
+ assert.match(partners,/no registration number or traffic claim has been invented/i);
+ assert.match(site,/index: false, follow: false/);
+ assert.match(robots,/allow: "\/"/);
+ assert.match(robots,/privateRoutes/);
+ assert.match(siteMap,/if \(!publicLaunch\) return \[\]/);
 });

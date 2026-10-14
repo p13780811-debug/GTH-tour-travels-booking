@@ -52,5 +52,49 @@ export default function PartnersPage(){
         <p className="mt-4 inline-flex items-start gap-2 text-sm leading-7 text-[var(--text-soft)]"><ShieldCheck className="mt-1 shrink-0" size={17}/> All submissions and marketing claims remain subject to identity, licence and inventory verification and administrator approval.</p>
       </div>
     </section>
+
+    <section aria-labelledby="publisher-profile" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">Publisher verification</p>
+      <h2 id="publisher-profile" className="mt-3 text-3xl font-semibold">GTH PRO business and website profile</h2>
+      <p className="mt-4 max-w-4xl text-sm leading-8 text-[var(--text-soft)]">
+        Information for commercial partners evaluating the GTH PRO website. This describes the platform's actual
+        publishing and discovery activity, not an approved affiliation with any named supplier.
+      </p>
+      <dl className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+          <dt className="text-sm font-semibold">Public platform name</dt>
+          <dd className="mt-2 text-sm leading-7 text-[var(--text-soft)]">GTH PRO — Global Technical Hub</dd>
+        </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+          <dt className="text-sm font-semibold">Official business contact</dt>
+          <dd className="mt-2 text-sm leading-7"><a className="break-all font-semibold text-[var(--gold)] underline" href="mailto:official.gthpro@gmail.com">official.gthpro@gmail.com</a></dd>
+        </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+          <dt className="text-sm font-semibold">Business model</dt>
+          <dd className="mt-2 text-sm leading-7 text-[var(--text-soft)]">Independent discovery, original editorial content and referral to separately authorised suppliers where available. GTH PRO does not issue train or bus tickets or collect supplier booking payments on their behalf.</dd>
+        </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+          <dt className="text-sm font-semibold">Published digital portfolio</dt>
+          <dd className="mt-2 text-sm leading-7"><a href="https://gth-pro-portfolio.pages.dev/" target="_blank" rel="noopener noreferrer" className="break-all font-semibold text-[var(--gold)] underline">GTH PRO Portfolio (external website)</a></dd>
+        </div>
+      </dl>
+      <h3 className="mt-10 text-xl font-semibold">Pages for website review</h3>
+      <nav aria-label="Publisher verification resources" className="mt-5 flex flex-wrap gap-3 text-sm">
+        <Link href="/" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Homepage</Link>
+        <Link href="/travel" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Travel discovery</Link>
+        <Link href="/hotels" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Hotels</Link>
+        <Link href="/blog" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Editorial guides</Link>
+        <Link href="/about" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">About</Link>
+        <Link href="/contact" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Contact</Link>
+        <Link href="/privacy-policy" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Privacy</Link>
+        <Link href="/terms-and-conditions" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Terms</Link>
+        <Link href="/affiliate-disclosure" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Affiliate disclosure</Link>
+      </nav>
+      <p className="mt-7 text-sm leading-7 text-[var(--text-soft)]">
+        Legal identity, beneficial-owner details, registration documents, tax particulars, API credentials and traffic evidence,
+        if required by a prospective partner, must be supplied through that partner's authorised and secure onboarding process.
+        These details are not published here and no registration number or traffic claim has been invented.
+      </p>
+    </section>
   </main>;
 }
