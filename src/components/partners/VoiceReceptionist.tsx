@@ -166,8 +166,8 @@ export default function VoiceReceptionist() {
       if (invocation !== runRef.current) return;
       const reply = obj.reply.trim().slice(0, 4000);
       setMessages(prev => [...prev.slice(-11), { role: "assistant", text: reply }]);
-      historyRef.current = [...historyRef.current, { role: "user", parts: [{ text: message.slice(0, 1000) }] },
-        { role: "model", parts: [{ text: reply }] }].slice(-12);
+      historyRef.current = [...historyRef.current, { role: "user" as const, parts: [{ text: message.slice(0, 1000) }] },
+        { role: "model" as const, parts: [{ text: reply }] }].slice(-12);
       if (useVoice) speak(reply, invocation);
       else {
         busyRef.current = false;
