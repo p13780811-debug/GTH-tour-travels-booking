@@ -59,10 +59,11 @@ async function getTour(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tour = await getTour(slug);
-  if (!tour) return { title: "Tour not found | GTH PRO" };
+  if (!tour) return { title: "Tour not found | GTH PRO", robots: { index: false } };
   return {
     title: `${tour.title} | GTH PRO Tours`,
     description: `Explore ${tour.title}. Review the itinerary, final price, availability and cancellation terms with the booking partner.`,
+    alternates: { canonical: `/tours/${encodeURIComponent(slug)}` },
   };
 }
 

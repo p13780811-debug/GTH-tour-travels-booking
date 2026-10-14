@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import RealEstateFooter from "@/components/real-estate/RealEstateFooter"
 import styles from "@/components/real-estate/Listing.module.css"
+import { siteOrigin } from "@/lib/seo/site"
 
-const isProduction = process.env.VERCEL_ENV === "production"
+const isProduction = process.env.VERCEL_ENV === "production" &&
+  process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true"
 
 export const metadata: Metadata = {
- metadataBase: new URL("https://gth-pro.vercel.app"),
+ metadataBase: new URL(siteOrigin()),
  title: { default: "Global property discovery | GTH PRO Real Estate", template: "%s" },
  description: "Explore global property markets, official project records and reviewed real-estate inventory with transparent source and verification status on GTH PRO.",
  keywords: [

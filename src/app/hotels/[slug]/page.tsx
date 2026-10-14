@@ -33,10 +33,12 @@ function cityFromSlug(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const parsed = cityFromSlug(slug);
-  if (!parsed) return { title: "Hotel listings | GTH PRO" };
+  if (!parsed) return { title: "Hotel listings | GTH PRO", robots: { index: false } };
   return {
     title: `Hotels in ${parsed.city} | GTH PRO Travel`,
-    description: `Explore hotel listings in ${parsed.city} and continue to trusted booking partners to confirm availability, current total cost, policies and cancellation terms.`,
+    description: `Explore hotel listings in ${parsed.city} and continue to booking partners to confirm availability, current total cost, policies and cancellation terms.`,
+    alternates: { canonical: `/hotels/${parsed.citySlug}` },
+    ...(cityPhotos[parsed.citySlug] ? {} : { robots: { index: false } }),
   };
 }
 

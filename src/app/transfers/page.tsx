@@ -3,6 +3,7 @@ import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/transfers" },
   title: "Airport Transfers and Pickup Planning | GTH PRO",
   description: "Plan airport arrivals and departures, and confirm vehicle options, prices and availability with an external transfer provider.",
 };

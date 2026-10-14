@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/flights" },
   title: "Compare Flight Fare Observations | GTH PRO Travel",
   description:
     "Explore previously observed flight fares with transparent filters, then check current availability and booking terms directly with the travel partner.",

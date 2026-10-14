@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/hotels" },
   title: "Explore Hotels & Stays | GTH PRO Travel",
   description: "Browse actual hotel listings and continue to booking partners for room availability, inclusive prices, taxes, fees and cancellation rules.",
   openGraph: {

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Hotel, Plane, ShieldCheck } from "lucide-react";
 import { blogs } from "@/data/blogs";
+import { siteUrl, safeStructuredData } from "@/lib/seo/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -39,6 +40,16 @@ export default async function BlogPage({ params }: Props) {
     item.category === blog.category).slice(0, 3);
   const more = related.length ? related : blogs.filter((item) => item.slug !== blog.slug).slice(0, 3);
 
+  const articleData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: blog.title,
+    description: blog.description,
+    image: siteUrl(blog.image),
+    mainEntityOfPage: siteUrl(`/blog/${blog.slug}`),
+    publisher: { "@id": siteUrl("/") + "#organization" },
+    inLanguage: "en",
+  };
   const minutes = Math.max(2, Math.ceil(blog.content.trim().split(/\s+/).length / 190));
   const palette = {
     "--bg": "#061426",
@@ -51,6 +62,7 @@ export default async function BlogPage({ params }: Props) {
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeStructuredData(articleData) }} />
       <header className="relative isolate overflow-hidden border-b border-[#eac671]/25">
         <Image src={blog.image} alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#031021]/98 via-[#061426]/92 to-[#07172c]/75" />

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Hotel Search Results | GTH PRO", robots: { index: false, follow: true } };
 import HotelResults from "./HotelResults";
 
 type PageProps = {

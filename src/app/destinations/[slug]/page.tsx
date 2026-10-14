@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane,
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
+import { siteUrl, safeStructuredData } from "@/lib/seo/site";
 import HotelResults from "@/app/hotels/results/HotelResults";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -71,6 +72,14 @@ export default async function DestinationPage({ params }: Props) {
   const destination = await getDestination(slug);
   if (!destination) notFound();
 
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Destinations", item: siteUrl("/destinations") },
+      { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}`) },
+    ],
+  };
   const availableTours = (await getTours({ city: slug })).slice(0, 6);
   const morePlaces = destinations.filter((item) => item.slug !== slug).slice(0, 6);
   const suggestedGuides = blogs.filter((blog) => blog.category === "Planning" || blog.category === "Safety").slice(0, 3);
@@ -86,6 +95,7 @@ export default async function DestinationPage({ params }: Props) {
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeStructuredData(breadcrumbData) }} />
       <section className="relative isolate overflow-hidden border-b border-[#eac671]/25">
         <Image src={destination.image_url} alt={destination.name} fill priority sizes="100vw"
           className="absolute -z-20 object-cover object-center" />

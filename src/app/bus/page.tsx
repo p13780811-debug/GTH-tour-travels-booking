@@ -3,6 +3,7 @@ import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/bus" },
   title: "Bus Travel Planning and Partner Booking | GTH PRO",
   description: "Plan a bus journey and compare current departures and final ticket prices directly with independent operators.",
 };

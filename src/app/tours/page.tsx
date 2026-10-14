@@ -6,6 +6,7 @@ import { searchTours, type TourFilters } from "@/lib/tours";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
+  alternates: { canonical: "/tours" },
   title: "Tours & Activities | GTH PRO Travel",
   description: "Explore source-backed tours and destination experiences. Check itinerary, available dates, final total and cancellation terms with the booking partner.",
 };

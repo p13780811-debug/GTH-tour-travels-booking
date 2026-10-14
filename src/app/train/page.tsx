@@ -3,6 +3,7 @@ import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/train" },
   title: "Indian Rail Journey Planning | GTH PRO",
   description: "Prepare a rail route and continue to official Indian Railways services for train schedules, ticketing and status checks.",
 };

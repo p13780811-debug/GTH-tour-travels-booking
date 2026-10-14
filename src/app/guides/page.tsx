@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, Compass, Hotel, Plane } from "lucide-react";
 import { blogs } from "@/data/blogs";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/guides" },
   title: "Travel Planning Guides | GTH PRO",
   description: "Travel-planning resources covering flights, accommodation, activities, booking security and destination research.",
 };

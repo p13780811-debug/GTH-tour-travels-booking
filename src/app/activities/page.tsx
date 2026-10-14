@@ -3,6 +3,7 @@ import ToursPage from "../tours/page";
 import type { TourFilters } from "@/lib/tours";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/tours" },
   title: "Activities & Experiences | GTH PRO Travel",
   description: "Explore destination experiences and activities. Verify current availability and final prices with each booking provider.",
 };

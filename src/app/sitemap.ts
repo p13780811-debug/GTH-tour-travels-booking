@@ -1,14 +1,17 @@
 import type { MetadataRoute } from "next";
 import { destinations } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
-const base = "https://gth-pro.vercel.app";
+import { siteOrigin } from "@/lib/seo/site";
+const base = siteOrigin();
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers",
   "/insurance", "/real-estate", "/real-estate/tools", "/tender",
-  "/partners", "/partners/apply", "/contact", "/about", "/affiliate-disclosure",
+  "/partners", "/contact", "/about", "/affiliate-disclosure",
+  "/privacy-policy", "/terms-and-conditions", "/refund-policy",
+  
 ];
 export default function sitemap(): MetadataRoute.Sitemap {
   // Preview builds must not advertise unlaunched or unverified services for indexing.

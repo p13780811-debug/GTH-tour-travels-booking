@@ -6,6 +6,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { cn } from "@/lib/utils";
+import { siteOrigin } from "@/lib/seo/site";
 
 const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
 
@@ -35,8 +36,9 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://gth-pro.vercel.app"),
-  title: { default: "GTH PRO | Global Technical Hub", template: "%s | GTH PRO" },
+  metadataBase: new URL(siteOrigin()),
+  applicationName: "GTH PRO",
+  title: { default: "GTH PRO | Global Technical Hub", template: "%s" },
   description: "GTH PRO unites Tours & Travels, Real Estate and Tender Intelligence with source-aware discovery and business onboarding.",
   keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence"],
   robots: publicLaunch
@@ -45,9 +47,16 @@ export const metadata: Metadata = {
   openGraph: {
     title: "GTH PRO — One Global Ecosystem. Three Pillars.",
     description: "Global Technical Hub for travel, real estate and tender intelligence.",
+    images: [{ url: "/images/global-earth.jpg", alt: "GTH PRO — Global Technical Hub" }],
     type: "website",
     siteName: "GTH PRO",
     url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GTH PRO — Global Technical Hub",
+    description: "Discover travel, property markets and tender intelligence.",
+    images: ["/images/global-earth.jpg"],
   },
 };
 
