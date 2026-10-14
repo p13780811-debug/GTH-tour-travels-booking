@@ -111,3 +111,33 @@ test("publisher review profile uses existing routes and honest business identifi
  assert.match(robots,/privateRoutes/);
  assert.match(siteMap,/if \(!publicLaunch\) return \[\]/);
 });
+
+
+test("AI voice receptionist stays inside the existing Contact journey without CSS modifications",()=>{
+  const contact=source("src/app/contact/page.tsx");
+  const footer=source("src/components/sections/EcosystemFooter.tsx");
+  const receptionist=source("src/components/partners/VoiceReceptionist.tsx");
+  const chat=source("src/app/api/chat/route.ts");
+  assert.match(contact,/import VoiceReceptionist from/);
+  assert.match(contact,/<VoiceReceptionist \/>/);
+  assert.match(footer,/href="\/contact#ai-voice-team"/);
+  assert.match(footer,/Talk to our team/);
+  assert.match(receptionist,/id="ai-voice-team"/);
+  assert.match(receptionist,/SpeechRecognition/);
+  assert.match(receptionist,/webkitSpeechRecognition/);
+  assert.match(receptionist,/window\.speechSynthesis/);
+  assert.match(receptionist,/hi-IN/);
+  assert.match(receptionist,/en-IN/);
+  assert.match(receptionist,/fetch\("\/api\/chat"/);
+  assert.match(receptionist,/historyRef\.current\.slice\(-12\)/);
+  assert.match(receptionist,/recognized question text|recognised question text/);
+  assert.match(receptionist,/AI assistant,[\s\S]*not a human operator/);
+  assert.match(receptionist,/official\.gthpro@gmail\.com/);
+  assert.match(receptionist,/Start voice conversation/);
+  assert.match(receptionist,/End voice conversation/);
+  assert.doesNotMatch(receptionist,/NEXT_PUBLIC_GEMINI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|callRecording|audioBlob/);
+  assert.match(chat,/systemInstruction/);
+  assert.match(chat,/not a human staff member/);
+  assert.match(chat,/enforceRateLimit\(req, "ai"\)/);
+  assert.match(chat,/Do not invent company registration/);
+});

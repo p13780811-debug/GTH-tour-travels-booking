@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowRight, Globe2, Mail} from "lucide-react";
 import PartnerApplicationForm from "@/components/partners/PartnerApplicationForm";
+import VoiceReceptionist from "@/components/partners/VoiceReceptionist";
 export const metadata:Metadata={
  title:"Contact & Business Enquiries | GTH PRO",
  description:"Contact GTH PRO about ecosystem collaboration, real estate onboarding, global travel integrations and platform support.",
@@ -13,6 +14,7 @@ export default function ContactPage(){
       <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)]"><Globe2 size={16}/> Contact the ecosystem</p>
       <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Let's connect.</h1>
       <p className="mt-5 max-w-2xl text-sm leading-8 text-[var(--text-soft)]">Reach out for genuine partnership discussions or questions about the GTH PRO platform. We review enquiries individually; availability and response times may vary.</p>
+      <div className="mt-9"><VoiceReceptionist /></div>
       <div className="mt-9 grid gap-7 lg:grid-cols-[1.5fr_1fr]">
         <PartnerApplicationForm defaultType="general"/>
         <aside className="space-y-5">

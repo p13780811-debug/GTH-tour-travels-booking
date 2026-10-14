@@ -62,7 +62,7 @@ export default function EcosystemFooter() {
         </div>
         <div className="mt-12 flex flex-col gap-4 border-t border-[var(--border)] pt-6 text-xs text-[var(--text-soft)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} GTH PRO · Global Technical Hub</p>
-          <a href="mailto:official.gthpro@gmail.com" className="break-all font-semibold text-[var(--text)] underline">official.gthpro@gmail.com</a><Link href="/contact" className="inline-flex items-center gap-2 font-semibold text-[var(--text)]">Talk to our team <ArrowUpRight size={14} aria-hidden="true" /></Link>
+          <a href="mailto:official.gthpro@gmail.com" className="break-all font-semibold text-[var(--text)] underline">official.gthpro@gmail.com</a><Link href="/contact#ai-voice-team" className="inline-flex items-center gap-2 font-semibold text-[var(--text)]">Talk to our team <ArrowUpRight size={14} aria-hidden="true" /></Link>
         </div>
       </div>
     </footer>
