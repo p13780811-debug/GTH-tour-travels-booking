@@ -72,9 +72,11 @@ type HotelListing = {
 function HotelsContent() {
     const params = useSearchParams();
 
-    const initialCity = params.get("city")?.trim() || "Mumbai";
+    const initialName = (params.get("name") || "").trim().slice(0, 80);
+    const initialCity = params.get("city")?.trim() || (initialName ? "" : "Mumbai");
     const [search, setSearch] = useState(initialCity);
     const [requestedCity, setRequestedCity] = useState(initialCity);
+    const [nameFilter, setNameFilter] = useState(initialName);
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [filteredHotels, setFilteredHotels] = useState<HotelListing[]>([]);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
@@ -87,7 +89,8 @@ function HotelsContent() {
     useEffect(() => {
         setSearch(initialCity);
         setRequestedCity(initialCity);
-    }, [initialCity]);
+        setNameFilter(initialName);
+    }, [initialCity, initialName]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -101,7 +104,10 @@ function HotelsContent() {
 
         async function loadHotels() {
             try {
-                const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}&page=1`, {
+                const hotelParams = new URLSearchParams({ page: "1" });
+                if (requestedCity) hotelParams.set("city", requestedCity);
+                if (nameFilter) hotelParams.set("name", nameFilter);
+                const response = await fetch(`/api/hotels?${hotelParams}`, {
                     cache: "no-store",
                     signal: controller.signal,
                 });
@@ -122,14 +128,17 @@ function HotelsContent() {
 
         void loadHotels();
         return () => controller.abort();
-    }, [requestedCity]);
+    }, [requestedCity, nameFilter]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
         setLoadingMore(true);
         const nextPage = page + 1;
         try {
-            const response = await fetch(`/api/hotels?city=${encodeURIComponent(requestedCity)}&page=${nextPage}`, { cache: "no-store" });
+            const hotelParams = new URLSearchParams({ page: String(nextPage) });
+            if (requestedCity) hotelParams.set("city", requestedCity);
+            if (nameFilter) hotelParams.set("name", nameFilter);
+            const response = await fetch(`/api/hotels?${hotelParams}`, { cache: "no-store" });
             if (!response.ok) throw new Error("Hotel page unavailable");
             const incoming: unknown = await response.json();
             if (!Array.isArray(incoming)) throw new Error("Unexpected hotel response");
@@ -157,7 +166,10 @@ function HotelsContent() {
 
     const runSearch = () => {
         const city = search.trim();
-        if (city && city.length <= 80) setRequestedCity(city);
+        if (city && city.length <= 80) {
+            setNameFilter("");
+            setRequestedCity(city);
+        }
     };
 
     const categories = [
@@ -273,6 +285,13 @@ function HotelsContent() {
                     </div>
                 </div>
             </section>
+
+            {nameFilter && (
+                <div role="status" className="mx-auto mt-5 max-w-7xl px-5 text-sm font-semibold text-[var(--text)]">
+                    Matching hotel names: <span className="gold-text">{nameFilter}</span>
+                    <span className="ml-2 text-[var(--text-soft)]">— source listings only; booking availability depends on partners.</span>
+                </div>
+            )}
 
             {/* ========================================================================= */}
             {/* MAIN GRID */}

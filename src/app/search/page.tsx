@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+import { searchPublicTenders } from "@/lib/tender/catalog";
 import {
   ArrowRight, BookOpen, Building2, Compass, FileSearch, Globe2,
   Hotel, MapPin, Plane, Search, ShieldCheck, Sparkles,
@@ -11,6 +13,7 @@ import { destinations } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
 
 // Do not index infinite query-result combinations, including after public launch.
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Master Search | GTH PRO Global Ecosystem",
   description: "Search the GTH PRO ecosystem and continue to real property, hotel, tender, tour, destination and editorial results.",
@@ -60,7 +63,13 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     const subject = q.replace(/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|find|search|for|in)\b/gi, " ").replace(/\s+/g, " ").trim();
     return withParam("/tender", "q", subject || q, "#tender-find");
   }
-  if (category === "hotel") return withParam("/hotels", "city", cleanPlace(q));
+  if (category === "hotel") {
+    const cityPhrase = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
+    if (cityPhrase) return withParam("/hotels", "city", cleanPlace(cityPhrase[1]));
+    const hotelName = cleanPlace(q);
+    const knownCity = destinations.some((place) => place.name.toLowerCase() === hotelName.toLowerCase());
+    return withParam("/hotels", knownCity ? "city" : "name", hotelName);
+  }
   if (category === "tour") return withParam("/tours", "city", cleanPlace(q));
   if (category === "destination") {
     const place = q.replace(/^(?:find|discover|destinations?|travel to|visit|places? to visit|cities in)\s+/i, "").trim();
@@ -108,10 +117,63 @@ export default async function MasterSearchResults({ searchParams }: Props) {
   const selected: SearchCategory = categoryIds.includes(requested as SearchCategory) ? requested as SearchCategory : "all";
   if (query) {
     const intent = selected !== "all" ? selected : inferredCategory(query);
+    if (intent === "tender") {
+      const subject = query.replace(/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|find|search|for|in)\b/gi, " ").replace(/\s+/g, " ").trim();
+      const results = await searchPublicTenders({ q: subject || query, country: "", sector: "", page: 1 });
+      if (results.ok && results.total === 1 &&
+        results.items[0].title.trim().toLowerCase() === (subject || query).toLowerCase()) {
+        redirect("/tender/" + results.items[0].id);
+      }
+      redirect(targetFor(intent, query));
+    }
     if (intent !== "all") redirect(targetFor(intent, query));
   }
   if (!query && selected !== "all") redirect(targetFor(selected, ""));
 
+  // A true master query checks public records by title/name, not just menu labels.
+  // These are read-only anon/RLS queries; no service-role key on this page.
+  type HotelMatch = { id: string; name: string; city: string; source: string };
+  let hotelMatches: HotelMatch[] = [];
+  let propertyMatches: { slug: string; title: string; city: string }[] = [];
+  let tenderMatches: { id: string; title: string; buyer: string; country_code: string }[] = [];
+  if (query.length >= 2) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (url && key) {
+      try {
+        const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+        const escaped = "%" + query.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
+        const [suppliers, catalog, properties] = await Promise.all([
+          db.from("hotels").select("id,name,city").eq("is_public", true)
+            .ilike("name", escaped).order("name").limit(6),
+          db.from("hotel_catalog").select("source_id,name,city").ilike("name", escaped)
+            .order("name").limit(6),
+          db.from("properties").select("title,slug,city").ilike("title", escaped)
+            .order("title").limit(6),
+        ]);
+        hotelMatches = [
+          ...(suppliers.error ? [] : (suppliers.data || []).map(item => ({
+            id: String(item.id), name: item.name as string, city: item.city as string, source: "Partner listing",
+          }))),
+          ...(catalog.error ? [] : (catalog.data || []).map(item => ({
+            id: "osm:" + item.source_id, name: item.name as string,
+            city: (item.city as string | null) || "", source: "Public hotel catalog",
+          }))),
+        ].filter(item => typeof item.name === "string" && item.name.trim());
+        propertyMatches = (properties.error ? [] : (properties.data || [])).filter(item =>
+          typeof item.title === "string" && typeof item.slug === "string" &&
+          /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)
+        ).map(item => ({
+          title: item.title as string, slug: item.slug as string,
+          city: typeof item.city === "string" ? item.city : "",
+        }));
+      } catch { /* Hotel catalog availability must not break the master results page. */ }
+    }
+    const notices = await searchPublicTenders({ q: query, country: "", sector: "", page: 1 });
+    if (notices.ok) tenderMatches = notices.items.slice(0, 6).map(item => ({
+      id: item.id, title: item.title, buyer: item.buyer, country_code: item.country_code,
+    }));
+  }
   const term = query.toLowerCase();
   const places = query ? destinations.filter(item =>
     [item.name, item.slug, item.description].some(value => value.toLowerCase().includes(term))).slice(0, 6) : [];
@@ -165,7 +227,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.15em] text-[#eac671]">
           <Sparkles size={17} /> {query ? "Search across the platforms" : "Choose a platform"}
         </p>
-        <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">Explore verified platform routes</h2>
+        <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">Explore connected platforms</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[#c3cfdf]">
           These cards open each platform's actual search or discovery page; they do not claim a shared live inventory or guaranteed results.
         </p>
@@ -184,12 +246,50 @@ export default async function MasterSearchResults({ searchParams }: Props) {
         </div>
       </section>
 
-      {(places.length > 0 || articles.length > 0) && (
+      {(places.length > 0 || articles.length > 0 || hotelMatches.length > 0 || propertyMatches.length > 0 || tenderMatches.length > 0) && (
         <section className="border-t border-[#eac671]/20 bg-[#07182b]">
           <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 md:py-16">
-            <h2 className="text-2xl font-semibold sm:text-3xl">Matching published guides</h2>
-            <p className="mt-3 text-sm text-[#c5d2e2]">Existing editorial matches only—live hotel, property and tender results stay on their individual platforms.</p>
+            <h2 className="text-2xl font-semibold sm:text-3xl">Matching public records and guides</h2>
+            <p className="mt-3 text-sm text-[#c5d2e2]">Real public catalog matches only. Open each match for its source-aware details or filtered results.</p>
             <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {hotelMatches.map(item => (
+                <Link key={"hotel-" + item.id} href={"/hotels?" + new URLSearchParams({
+                  name: item.name, ...(item.city ? { city: item.city } : {}),
+                }).toString()}
+                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
+                  <Hotel size={25} className="text-[#f2d48d]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">{item.source}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{item.name}</h3>
+                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.city || "Location not specified"}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                    View matching hotel listing <ArrowRight size={16} />
+                  </span>
+                </Link>
+              ))}
+              {propertyMatches.map(item => (
+                <Link key={"property-" + item.slug} href={"/real-estate/" + item.slug}
+                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
+                  <Building2 size={25} className="text-[#f2d48d]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">Public property record</p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.city || "Location not specified"}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                    View property record <ArrowRight size={16} />
+                  </span>
+                </Link>
+              ))}
+              {tenderMatches.map(item => (
+                <Link key={"tender-" + item.id} href={"/tender/" + item.id}
+                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
+                  <FileSearch size={25} className="text-[#f2d48d]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">Published tender · {item.country_code}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.buyer}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                    View tender notice <ArrowRight size={16} />
+                  </span>
+                </Link>
+              ))}
               {places.map(place => (
                 <Link key={"destination-" + place.slug} href={"/destinations/" + place.slug}
                   className="group overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0d233b]">
@@ -218,6 +318,15 @@ export default async function MasterSearchResults({ searchParams }: Props) {
               ))}
             </div>
           </div>
+        </section>
+      )}
+      {query && !hotelMatches.length && !propertyMatches.length && !tenderMatches.length && !places.length && !articles.length && (
+        <section className="mx-auto max-w-[1200px] px-5 pb-10 sm:px-8">
+          <p role="status" className="rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-6 text-sm leading-7 text-[#d4dfea]">
+            No matching published record found for “{query}” in the currently connected catalogs.
+            This is not confirmation that a hotel, property or tender does not exist.
+            Choose a platform above to broaden your search.
+          </p>
         </section>
       )}
       <div className="mx-auto flex max-w-[1200px] items-start gap-3 px-5 py-9 text-xs leading-6 text-[#aebed2] sm:px-8">

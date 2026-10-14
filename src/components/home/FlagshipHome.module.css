@@ -831,3 +831,110 @@
 @media (prefers-reduced-motion: reduce) {
   .masterSearch, .masterSearchSubmit { transition: none !important; }
 }
+
+
+/* Responsive correction: never render three compressed posters on a phone
+   or tablet. This breakpoint also covers Android browsers using a wider
+   virtual viewport; desktop >1199px keeps its approved 3-pillar grid. */
+@media (max-width: 1199px) {
+  .pillars {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px clamp(12px, 3vw, 24px) 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 14px;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .pillars::-webkit-scrollbar { display: none; }
+  .pillar {
+    flex: 0 0 min(86vw, 680px);
+    width: min(86vw, 680px);
+    max-width: 680px;
+    height: clamp(365px, 45vw, 475px);
+    min-height: 0;
+    max-height: 475px;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    border: 1px solid rgba(255, 224, 122, .48);
+    border-radius: 17px;
+    overflow: hidden;
+  }
+  .pillarTitle {
+    top: 17px;
+    left: 17px;
+    right: 13px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 11px;
+  }
+  .pillarIcon { width: 42px; height: 42px; }
+  .pillarTitle h2 {
+    font-size: clamp(21px, 2.7vw, 29px);
+    line-height: 1.08;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .pillarTitle p { font-size: clamp(10px, 1.1vw, 12px); line-height: 1.34; }
+  .panelEntry {
+    bottom: 121px;
+    right: 15px;
+    min-height: 37px;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .featureTray {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    left: 11px;
+    right: 11px;
+    bottom: 12px;
+    gap: 2px;
+    height: 99px;
+    min-height: 0;
+    padding: 9px 4px;
+  }
+  .feature { gap: 5px; padding: 5px 2px; font-size: 11px; line-height: 1.2; }
+  .feature svg { width: 24px; height: 24px; }
+  .site .feature span {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    color: #fff;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+    font-size: inherit;
+    line-height: 1.22;
+  }
+}
+@media (max-width: 680px) {
+  .pillars { gap: 10px; padding: 10px 12px 17px; }
+  .pillar {
+    flex: 0 0 calc(100vw - 48px);
+    width: calc(100vw - 48px);
+    min-width: min(280px, calc(100vw - 48px));
+    max-width: none;
+    height: clamp(360px, 105vw, 420px);
+    max-height: 420px;
+    min-height: 0;
+    scroll-snap-align: start;
+  }
+  .pillarTitle { top: 15px; left: 12px; right: 11px; gap: 9px; }
+  .pillarIcon { width: 34px; height: 34px; }
+  .pillarTitle h2 { font-size: clamp(19px, 5vw, 25px); }
+  .pillarTitle p { font-size: clamp(9px, 2.5vw, 11px); }
+  .featureTray { left: 8px; right: 8px; bottom: 9px; height: 89px; padding: 7px 3px; }
+  .feature { font-size: 10px; gap: 4px; }
+  .feature svg { width: 20px; height: 20px; }
+  .panelEntry { bottom: 111px; right: 12px; min-height: 34px; padding: 7px 11px; font-size: 11px; }
+}

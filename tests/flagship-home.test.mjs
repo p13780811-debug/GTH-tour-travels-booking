@@ -143,7 +143,11 @@ test("master search targets existing filtered pages without placeholder destinat
     assert.ok(existsSync(new URL("../src/app" + route + "/page.tsx", import.meta.url)), "Route not found: " + route);
   }
   assert.match(search, /new URLSearchParams/);
-  assert.match(search, /if \(category === "hotel"\) return withParam\("\/hotels", "city", cleanPlace\(q\)\)/);
+  assert.match(search, /if \(category === "hotel"\) \{/);
+  assert.match(search, /knownCity \? "city" : "name"/);
+  assert.match(search, /hotelMatches\.map/);
+  assert.match(search, /tenderMatches\.map/);
+  assert.match(search, /searchPublicTenders/);
   assert.match(search, /if \(category === "tender"\)/);
   assert.match(search, /if \(category === "property"\)/);
   assert.match(search, /if \(category === "flight"\)/);
@@ -163,4 +167,39 @@ test("search enhancement leaves approved hero photography, three pillars and glo
   const shared = source("src/app/globals.css");
   assert.ok(shared.includes(".gth-btn-gold"));
   assert.ok(shared.includes(".gth-glass-strong"));
+});
+
+
+test("phone or virtual tablet viewport cannot squeeze three pillar columns", () => {
+  const layout = source("src/app/layout.tsx");
+  assert.match(layout, /export const viewport: Viewport = \{ width: "device-width", initialScale: 1 \}/);
+  assert.match(css, /@media \(max-width: 1199px\)/);
+  const mobile = css.slice(css.indexOf("Responsive correction: never render three compressed posters"));
+  assert.match(mobile, /\.pillars\s*\{[\s\S]*?display: flex/);
+  assert.match(mobile, /flex-flow: row nowrap/);
+  assert.match(mobile, /scroll-snap-type: x mandatory/);
+  assert.match(mobile, /\.pillar\s*\{[\s\S]*?flex: 0 0 min\(86vw, 680px\)/);
+  assert.match(mobile, /@media \(max-width: 680px\)/);
+  assert.match(mobile, /flex: 0 0 calc\(100vw - 48px\)/);
+  assert.match(mobile, /\.featureTray\s*\{[^\n]*height: 89px/);
+  assert.match(mobile, /word-break: normal/);
+});
+
+test("entity master search returns real hotel name matches and verified-source tender details", () => {
+  const search = source("src/app/search/page.tsx");
+  const hotelApi = source("src/app/api/hotels/route.ts");
+  const hotelPage = source("src/app/hotels/page.tsx");
+  assert.match(search, /const knownCity = destinations\.some/);
+  assert.match(search, /knownCity \? "city" : "name"/);
+  assert.match(search, /db\.from\("hotels"\)/);
+  assert.match(search, /db\.from\("hotel_catalog"\)/);
+  assert.match(search, /db\.from\("properties"\)/);
+  assert.match(search, /propertyMatches\.map/);
+  assert.match(search, /searchPublicTenders\(\{ q: query/);
+  assert.match(search, /href=\{"\/tender\/" \+ item\.id\}/);
+  assert.match(hotelApi, /if \(name\) supplierQuery = supplierQuery\.ilike\("name", nameLike\)/);
+  assert.match(hotelApi, /if \(name\) catalogQuery = catalogQuery\.ilike\("name", nameLike\)/);
+  assert.match(hotelPage, /hotelParams\.set\("name", nameFilter\)/);
+  assert.match(search, /No matching published record found/);
+  assert.doesNotMatch(search, /invented listings|mock results|fake hotel inventory/);
 });

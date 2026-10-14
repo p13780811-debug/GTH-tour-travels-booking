@@ -1,5 +1,5 @@
 import { Cinzel, Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
 import "./globals.css";
@@ -25,6 +25,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// Explicit physical-device viewport; prevents narrow Android screens falling
+// back to a virtual desktop canvas with three unreadable tiny pillar cards.
+export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
 // Public search visibility is opt-in: preview and unreleased production stay noindex.
 const publicLaunch = process.env.VERCEL_ENV === "production" &&

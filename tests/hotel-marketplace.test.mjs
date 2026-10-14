@@ -7,7 +7,9 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("hotel landing never fabricates nightly rates or ratings", () => {
   const page = read("src/app/hotels/page.tsx");
   assert.doesNotMatch(page, /Math\.random|generateHotels\(/);
-  assert.match(page, /\/api\/hotels\?city=/);
+  assert.match(page, /new URLSearchParams\(\{ page: "1" \}\)/);
+  assert.match(page, /hotelParams\.set\("city", requestedCity\)/);
+  assert.match(page, /hotelParams\.set\("name", nameFilter\)/);
   assert.match(page, /Check price with partner/);
 });
 
