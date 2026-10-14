@@ -53,3 +53,20 @@ test("structured data tells the truth, never fake names, ratings or partner appr
  for(const value of [company,legacy])assert.doesNotMatch(value,/Sanjay Basak|200 OK verified live|gthpro\.com|aggregateRating|priceRange/);
  assert.ok(existsSync(new URL("../docs/GTH-PRO-SEO-LAUNCH.md",import.meta.url)));
 });
+
+
+test("business policies expose their own canonical metadata without changing client page visuals",()=>{
+ for(const [name,path] of [
+  ["privacy-policy","/privacy-policy"],
+  ["terms-and-conditions","/terms-and-conditions"],
+  ["refund-policy","/refund-policy"]]){
+  const layout=source("src/app/"+name+"/layout.tsx");
+  assert.match(layout,/export const metadata/);
+  assert.ok(layout.includes('canonical: "'+path+'"'));
+ }
+ assert.match(source("src/app/success/layout.tsx"),/index: false/);
+ const article=source("src/app/blog/[slug]/page.tsx");
+ assert.match(article,/JsonLd data=\\{articleData\\}/);
+ assert.doesNotMatch(article,/dangerouslySetInnerHTML/);
+ assert.match(source("src/components/seo/JsonLd.tsx"),/safeStructuredData/);
+});

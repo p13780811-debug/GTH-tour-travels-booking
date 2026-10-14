@@ -8,7 +8,8 @@ import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane,
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
-import { siteUrl, safeStructuredData } from "@/lib/seo/site";
+import { siteUrl } from "@/lib/seo/site";
+import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -95,7 +96,7 @@ export default async function DestinationPage({ params }: Props) {
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeStructuredData(breadcrumbData) }} />
+      <JsonLd data={breadcrumbData} />
       <section className="relative isolate overflow-hidden border-b border-[#eac671]/25">
         <Image src={destination.image_url} alt={destination.name} fill priority sizes="100vw"
           className="absolute -z-20 object-cover object-center" />
