@@ -19,11 +19,11 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   advertise: true,
  },
  {
-  id: "gth-travel",
-  title: "GTH PRO Travel",
-  category: "Travel website",
-  description: "Explore the GTH PRO travel hub and partner links.",
-  href: "/mega-aggregator",
+  id: "gth-pro-portfolio",
+  title: "GTH PRO Portfolio",
+  category: "Our digital portfolio",
+  description: "Discover GTH PRO creative work, digital projects and portfolio.",
+  href: "https://gth-pro-portfolio.pages.dev/",
   advertise: true,
  },
  {

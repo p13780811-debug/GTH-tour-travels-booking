@@ -1,5 +1,6 @@
 import FlagshipImage from "./FlagshipImage";
 import BrandVideo from "@/components/brand/BrandVideo";
+import HousePromotions from "@/components/sections/HousePromotions";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
@@ -178,13 +179,14 @@ export default function FlagshipHome() {
           </div>
         ))}
       </section>
+      <HousePromotions flagship />
       <footer className={styles.cityFooter}>
         <div className={styles.cityOverlay}/>
         <div className={styles.footerContent}>
           <p className={styles.footerEyebrow}>One global vision. Three connected platforms.</p>
           <Link href="/mega-aggregator" className={styles.portalLink}><Globe2 aria-hidden="true" size={28}/><span>Enter the GTH PRO Ecosystem</span><ArrowUpRight aria-hidden="true" size={25}/></Link>
           <p className={styles.footerCategory}>Real Estate <span>·</span> Travel <span>·</span> Tenders</p>
-          <div className={styles.footerSmall}><span>© {new Date().getFullYear()} GTH PRO · Global Technical Hub</span><span className="inline-flex flex-wrap justify-center gap-x-4 gap-y-2"><Link href="/about">About</Link><Link href="/affiliate-disclosure">Affiliate Disclosure</Link><Link href="/contact">Contact & Partnerships</Link></span></div>
+          <div className={styles.footerSmall}><span>© {new Date().getFullYear()} GTH PRO · Global Technical Hub</span><span className="inline-flex flex-wrap justify-center gap-x-4 gap-y-2"><Link href="/about">About</Link><Link href="/affiliate-disclosure">Affiliate Disclosure</Link><Link href="/contact">Contact & Partnerships</Link><a href="mailto:official.gthpro@gmail.com">official.gthpro@gmail.com</a></span></div>
         </div>
       </footer>
     </main>
