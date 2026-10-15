@@ -102,9 +102,13 @@ function notice(row: unknown, source: string): JsonRecord {
   } catch {
     throw new Error("Missing official URL");
   }
-  if (parsed.protocol !== "https:" || parsed.hostname !== expected.host ||
-      parsed.username || parsed.password || parsed.port || parsed.search ||
-      parsed.hash || !expected.path.test(parsed.pathname)) {
+  const approvedOfficial = parsed.hostname === expected.host && expected.path.test(parsed.pathname);
+  const canadianGovernmentFeedLink = source === "CanadaBuys Open Data" &&
+    parsed.hostname === "www.merx.com" &&
+    /^\/public\/solicitations\/[0-9]{6,15}\/abstract$/.test(parsed.pathname);
+  if (parsed.protocol !== "https:" || parsed.username || parsed.password ||
+      parsed.port || parsed.search || parsed.hash ||
+      !(approvedOfficial || canadianGovernmentFeedLink)) {
     throw new Error("Invalid official source link");
   }
   const deadline_at = timestamp(row.deadline_at, true)!;
