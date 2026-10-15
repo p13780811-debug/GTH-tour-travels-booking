@@ -13,6 +13,8 @@ APPROVED_SOURCE_HOST = {
     "World Bank": "projects.worldbank.org",
     "TED EU": "ted.europa.eu",
     "UK Find a Tender": "www.find-tender.service.gov.uk",
+    "UK Contracts Finder": "www.contractsfinder.service.gov.uk",
+    "Ukraine Prozorro": "prozorro.gov.ua",
     "Brazil PNCP": "pncp.gov.br",
     "US SAM.gov": "sam.gov",
 }
