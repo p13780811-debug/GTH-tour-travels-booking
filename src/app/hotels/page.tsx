@@ -100,10 +100,10 @@ function HotelsContent() {
         destination:requestedDestination,city:requestedCity,name:nameFilter,
         country:requestedCountry,category
     },pageNumber);
-    const selectedType = {
+    const selectedType = (({
         hotel:"Hotels",hostel:"Hostels",guest_house:"Guest houses",
         motel:"Motels",apartment:"Apartments",resort:"Resorts"
-    }[category] ?? "Accommodation";
+    } as Record<string,string>)[category] ?? "Accommodations");
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
