@@ -140,7 +140,7 @@ export async function GET(req: Request) {
       }));
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
-        id: "osm:" + hotel.source_id, name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
+        id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
         country: hotel.country_code, category:hotel.category, stars: null, image: safeImage(null), affiliate_link: null,
         source_url:hotel.source_url, hotel_website:hotel.website, address:hotel.address,
         latitude:hotel.latitude, longitude:hotel.longitude, updated_at:hotel.updated_at,
