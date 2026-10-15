@@ -25,7 +25,11 @@ def probe_one(name, url, host):
                 raise ValueError("Redirected away from official origin")
             body = response.read(300001)
             if len(body) > 300000:
-                print(json.dumps({"source": name, "available": True, "truncated": True}))
+                if name == "canada":
+                    header = body.split(b"\n", 1)[0].decode("utf-8-sig", "replace")
+                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000]}))
+                else:
+                    print(json.dumps({"source": name, "available": True, "truncated": True}))
                 return
             if name == "canada":
                 rows = csv.DictReader(io.StringIO(body.decode("utf-8-sig")))
