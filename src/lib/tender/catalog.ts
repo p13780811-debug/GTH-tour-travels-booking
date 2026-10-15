@@ -13,7 +13,7 @@ export type PublicTender = {
   source_reference: string; source_url: string;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; page: number };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore: string; page: number };
 export type TenderResult =
  | { ok: true; items: PublicTender[]; total: number; page: number; size: number }
  | { ok: false; status: number; error: string };
@@ -24,13 +24,19 @@ export function parseTenderFilters(params: URLSearchParams):
   const q = (params.get("q") ?? "").trim();
   const country = (params.get("country") ?? "").trim().toUpperCase();
   const sector = (params.get("sector") ?? "").trim().toLowerCase();
+  const closingBefore = (params.get("closingBefore") ?? "").trim();
   const rawPage = params.get("page") ?? "1";
   if (q.length > 100 || /[\u0000-\u001f]/.test(q)) return { ok: false, error: "Invalid search" };
   if (country && !/^[A-Z]{2}$/.test(country)) return { ok: false, error: "Country must be a two-letter ISO code" };
   if (sector && !TENDER_SECTORS.includes(sector as TenderSector)) return { ok: false, error: "Invalid sector" };
+  if (closingBefore) {
+    const parsed = new Date(closingBefore);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(closingBefore) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== closingBefore)
+      return { ok: false, error: "Invalid closing date" };
+  }
   if (!/^[1-9]\d{0,2}$/.test(rawPage) || Number(rawPage) > 100)
     return { ok: false, error: "Invalid page" };
-  return { ok: true, filters: { q, country, sector, page: Number(rawPage) } };
+  return { ok: true, filters: { q, country, sector, closingBefore, page: Number(rawPage) } };
 }
 
 export function safeTenderSource(value: unknown): string | null {
@@ -62,6 +68,7 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       .gt("deadline_at", new Date().toISOString());
     if (filters.country) query = query.eq("country_code", filters.country);
     if (filters.sector) query = query.eq("sector", filters.sector);
+    if (filters.closingBefore) query = query.lte("deadline_at", filters.closingBefore + "T23:59:59.999Z");
     if (filters.q) {
       // Escape PostgREST ILIKE wildcard characters, so user text remains literal.
       const escaped = filters.q.replace(/[\\%_]/g, (c) => "\\" + c);
