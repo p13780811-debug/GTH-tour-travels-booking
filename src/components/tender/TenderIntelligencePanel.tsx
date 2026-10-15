@@ -1,9 +1,10 @@
 "use client";
 
 import {useMemo,useState} from "react";
+import {buildTenderDeadlineCalendar} from "@/lib/tender/calendar";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BadgeCheck, BookCheck, BriefcaseBusiness,
+  ArrowRight, ArrowUpRight, BadgeCheck, BookCheck, BriefcaseBusiness, CalendarClock,
   CheckCircle2, ClipboardCheck, FileCheck2, FileSearch, FileUp,
   HelpCircle, Layers3, ShieldAlert
 } from "lucide-react";
@@ -98,6 +99,22 @@ export default function TenderIntelligencePanel({notice,sourceUrl,language="en",
       </div>:null}
     </div>;
   }
+  function saveDeadlineReminder(){
+    const ics=buildTenderDeadlineCalendar({
+      id:tenderId,title:notice.title,deadline_at:notice.deadline_at,
+      source_name:notice.source_name,source_url:sourceUrl??""
+    });
+    if(!ics)return;
+    const file=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+    const objectUrl=URL.createObjectURL(file);
+    const anchor=document.createElement("a");
+    anchor.href=objectUrl;
+    anchor.download="gth-tender-"+tenderId.replace(/[^a-z0-9-]/gi,"").slice(0,50)+"-deadline.ics";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
   function stage(title:string,items:ReviewStage[]){
     return <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -157,6 +174,10 @@ export default function TenderIntelligencePanel({notice,sourceUrl,language="en",
     {stage(t.attendance,intelligence.attendance)}
     {stage(t.checks,intelligence.bidSteps)}
     <div className="flex flex-wrap gap-3">
+      {intelligence.noticeStatus==="accepting-notices"?<button type="button" onClick={saveDeadlineReminder}
+        className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">
+        <CalendarClock size={17} aria-hidden="true"/> Save deadline reminder (.ics)
+      </button>:null}
       <Link href={"/tender/assistant?tenderId="+encodeURIComponent(tenderId)}
         className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
         <BookCheck size={17} aria-hidden="true"/>{t.launch} <ArrowRight size={16} aria-hidden="true"/>
