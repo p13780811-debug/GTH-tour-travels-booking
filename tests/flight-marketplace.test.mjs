@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { normalizeFares } from "../src/lib/flights/fare-search.ts";
+import { normalizeFares, fullFlightPartnerSearchUrl } from "../src/lib/flights/fare-search.ts";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const search = { origin: "CCU", destination: "DXB", departDate: "2026-11-15", returnDate: null };
@@ -67,4 +67,51 @@ test("flight page keeps travel sections connected without invented prices", () =
   assert.match(page, /url:\s*"\/guides"/);
   assert.doesNotMatch(destinations, /price:\s*["'$]/);
   assert.match(page, /aria-label="Filter flight observations"/);
+});
+
+test("all 200 supplier observations are preserved without invented fares", () => {
+  const sample = Array.from({ length: 200 }, (_, i) => ({
+    ...base, flight_number: String(1000 + i), price: 12000 + i,
+  }));
+  const result = normalizeFares({ data: sample }, search);
+  assert.equal(result.length, 200);
+  assert.equal(new Set(result.map((fare) => fare.id)).size, 200);
+});
+
+test("route search handoff uses exact airports, departure date and INR currency preference", () => {
+  assert.equal(
+    fullFlightPartnerSearchUrl("CCU", "GOI", "2026-11-15"),
+    "https://www.aviasales.com/search/CCU1511GOI1?currency=inr",
+  );
+  assert.throws(() => fullFlightPartnerSearchUrl("CCU", "//evil.test", "2026-11-15"));
+  assert.throws(() => fullFlightPartnerSearchUrl("CCU", "CCU", "2026-11-15"));
+});
+
+test("provider flight-specific deeplink is preserved only for Aviasales search paths", () => {
+  const result = normalizeFares({ data: [{ ...base, link: "/CCU1511DXB1?t=source-offer" }] }, search);
+  assert.equal(result.length, 1);
+  assert.match(result[0].partnerUrl, /^https:\/\/www\.aviasales\.com\/CCU1511DXB1\?/);
+});
+
+test("popular image routes go directly to dated results and keep selected calendar dates", () => {
+  const cards = read("src/components/flights/PopularDestinations.tsx");
+  const hero = read("src/components/flights/FlightHero.tsx");
+  const ui = read("src/app/flights/page.tsx");
+  assert.match(cards, /depart_date: chosenDate/);
+  assert.match(cards, /#flight-results/);
+  assert.match(cards, /Tomorrow \(default\)/);
+  assert.match(hero, /onDatesChange\?/);
+  assert.match(ui, /departDate=\{draftDepartDate\} returnDate=\{draftReturnDate\}/);
+  assert.match(ui, /Compare all available flights on Aviasales/);
+  assert.match(ui, /currency to INR in its regional settings/);
+});
+
+test("backend pages all cached results but never claims full flight schedules", () => {
+  const api = read("src/app/api/flights/route.ts");
+  const ui = read("src/app/flights/page.tsx");
+  assert.match(api, /url\.searchParams\.set\("limit", "200"\)/);
+  assert.match(api, /url\.searchParams\.set\("page", String\(page\)\)/);
+  assert.match(api, /providerRows >= 200/);
+  assert.match(ui, /Load more recorded fares/);
+  assert.match(ui, /observed fares, not every operating flight/);
 });
