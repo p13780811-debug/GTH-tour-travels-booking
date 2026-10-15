@@ -45,7 +45,7 @@ test("Region source can be used for large destination regions only when original
 test("OSM hotel identifiers are path-safe and hotel details resolve stable OSM IDs",()=>{
  const api=read("src/app/api/hotels/route.ts");
  const page=read("src/app/hotels/stay/[id]/page.tsx");
- assert.match(api,/hotel\.source_id\.replace\("\/","-"\)/);
+ assert.match(api,/hotel\.source_id\.replace\("\/",\s*"-"\)/);
  assert.match(page,/sourceId=id\.slice\(4\)\.replace\("-","\/"\)/);
 });
 test("Priority India six-zone coverage and global scheduled licensed extracts are bounded",()=>{
