@@ -57,7 +57,7 @@ export default async function TenderPage({searchParams}: Props) {
   const language=audience.language;
   const t=tenderText(language);
   const localCountry=homeCountry?countryLabel(homeCountry,language):"";
-  const result = parsed.ok ? await searchPublicTenders({...filters,country:homeCountry,
+  const result = parsed.ok ? await searchPublicTenders({...filters,country:filters.scope==="world"?filters.country:homeCountry,
     nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]}) : null;
   const countries=Array.from(COUNTRY_CODES).sort((a,b)=>countryLabel(a,language).localeCompare(countryLabel(b,language),language));
   const error = !parsed.ok ? parsed.error : result && !result.ok ? result.error : null;
