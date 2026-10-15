@@ -6,12 +6,21 @@ import type { FlightDestination } from "@/data/flight/destinations";
 export default function PopularDestinations({
   destinations = [],
   origin = "CCU",
+  departDate = "",
+  returnDate = "",
 }: {
   destinations?: FlightDestination[];
   origin?: string;
+  departDate?: string;
+  returnDate?: string;
 }) {
   if (!destinations.length) return null;
   const originCode = /^[A-Z]{3}$/.test(origin) ? origin : "CCU";
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const localISO = (date: Date) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
+  const chosenDate = /^\d{4}-\d{2}-\d{2}$/.test(departDate) && departDate >= localISO(now) ? departDate : localISO(tomorrow);
+  const chosenReturn = /^\d{4}-\d{2}-\d{2}$/.test(returnDate) && returnDate >= chosenDate ? returnDate : "";
 
   return (
     <section aria-label="Explore flight destinations" className="mt-14">
@@ -24,12 +33,14 @@ export default function PopularDestinations({
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         {destinations.map((destination) => {
-          const query = new URLSearchParams({ origin: originCode, destination: destination.destination });
+          if (originCode === destination.destination) return null;
+          const query = new URLSearchParams({ origin: originCode, destination: destination.destination, depart_date: chosenDate });
+          if (chosenReturn) query.set("return_date", chosenReturn);
           return (
             <Link
               key={destination.destination}
-              href={`/flights?${query.toString()}`}
-              aria-label={`Search flights from ${originCode} to ${destination.name}`}
+              href={`/flights?${query.toString()}#flight-results`}
+              aria-label={`View flight results from ${originCode} to ${destination.name} on ${chosenDate}`}
               className="gth-glass group min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
@@ -42,12 +53,13 @@ export default function PopularDestinations({
                 </p>
                 <p className="mt-1 text-xs text-[var(--text-soft)]">{destination.description}</p>
                 <p className="mt-2 text-xs text-[var(--text-soft)]">{originCode} → {destination.destination}</p>
+                <p className="mt-1 text-xs text-[var(--text-soft)]">{departDate ? "Departure" : "Tomorrow (default)"} · {chosenDate}</p>
               </div>
             </Link>
           );
         })}
       </div>
-      <p className="mt-3 text-xs text-[var(--text-soft)]">These are inspiration links, not priced offers.</p>
+      <p className="mt-3 text-xs text-[var(--text-soft)]">Routes open their results for the shown date; change the date in the search form. These are not priced offers.</p>
     </section>
   );
 }
