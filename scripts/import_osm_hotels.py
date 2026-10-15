@@ -72,10 +72,12 @@ def convert(feature):
     city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place") or props.get("city"), 100)
     country = text_value(props.get("addr:country"), 2)
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
+    image = https_url(props.get("image") or props.get("contact:image"))
     return {
         "source": "osm", "source_id": identifier, "name": name,
         "city": city, "country_code": country.upper() if country else None,
         "address": street or None, "latitude": position[0], "longitude": position[1],
+        "image_url": image, "image_source": "osm_tag" if image else None,
         "website": https_url(props.get("website") or props.get("contact:website")),
         "phone": text_value(props.get("phone") or props.get("contact:phone"), 100),
         "category": category, "source_license": "ODbL-1.0",
