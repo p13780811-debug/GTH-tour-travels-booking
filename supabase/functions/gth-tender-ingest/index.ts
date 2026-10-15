@@ -28,6 +28,18 @@ const SOURCES: Record<string, { host: string; path: RegExp }> = {
     host: "www.find-tender.service.gov.uk",
     path: /^\/Notice\/\d{6}-20\d{2}$/,
   },
+  "UK Contracts Finder": {
+    host: "www.contractsfinder.service.gov.uk",
+    path: /^\/Published\/Notice\/releases\/[a-fA-F0-9-]{36}-[0-9]{1,10}\.json$/,
+  },
+  "Ukraine Prozorro": {
+    host: "prozorro.gov.ua",
+    path: /^\/tender\/UA-20\d{2}-\d{2}-\d{2}-\d{6}-[a-z]$/i,
+  },
+  "CanadaBuys Open Data": {
+    host: "canadabuys.canada.ca",
+    path: /^\/en\/tender-opportunities\/tender-notice\/[A-Za-z0-9._%-]{3,170}$/,
+  },
   "Brazil PNCP": {
     host: "pncp.gov.br",
     path: /^\/app\/editais\/\d{14}\/20\d{2}\/\d+$/,
@@ -90,9 +102,13 @@ function notice(row: unknown, source: string): JsonRecord {
   } catch {
     throw new Error("Missing official URL");
   }
-  if (parsed.protocol !== "https:" || parsed.hostname !== expected.host ||
-      parsed.username || parsed.password || parsed.port || parsed.search ||
-      parsed.hash || !expected.path.test(parsed.pathname)) {
+  const approvedOfficial = parsed.hostname === expected.host && expected.path.test(parsed.pathname);
+  const canadianGovernmentFeedLink = source === "CanadaBuys Open Data" &&
+    parsed.hostname === "www.merx.com" &&
+    /^\/public\/solicitations\/[0-9]{6,15}\/abstract$/.test(parsed.pathname);
+  if (parsed.protocol !== "https:" || parsed.username || parsed.password ||
+      parsed.port || parsed.search || parsed.hash ||
+      !(approvedOfficial || canadianGovernmentFeedLink)) {
     throw new Error("Invalid official source link");
   }
   const deadline_at = timestamp(row.deadline_at, true)!;

@@ -13,6 +13,9 @@ APPROVED_SOURCE_HOST = {
     "World Bank": "projects.worldbank.org",
     "TED EU": "ted.europa.eu",
     "UK Find a Tender": "www.find-tender.service.gov.uk",
+    "UK Contracts Finder": "www.contractsfinder.service.gov.uk",
+    "Ukraine Prozorro": "prozorro.gov.ua",
+    "CanadaBuys Open Data": "canadabuys.canada.ca",
     "Brazil PNCP": "pncp.gov.br",
     "US SAM.gov": "sam.gov",
 }
@@ -29,7 +32,8 @@ def submit_official(records, project_ref):
         host = APPROVED_SOURCE_HOST.get(record.get("source_name"))
         if not host or not record.get("source_reference"):
             raise ValueError("Not an approved official feed")
-        valid_source(record.get("source_url"), {host})
+        approved_hosts = {host, "www.merx.com"} if record.get("source_name") == "CanadaBuys Open Data" else {host}
+        valid_source(record.get("source_url"), approved_hosts)
         if record.get("status") != "published" or record.get("source_verified") is not True or record.get("is_public") is not True:
             raise ValueError("Publication flags failed validation")
         if any(field in record for field in ("owner_id", "bidder_profile", "pointOfContact")):
