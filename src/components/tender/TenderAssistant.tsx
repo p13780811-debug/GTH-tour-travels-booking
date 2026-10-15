@@ -12,11 +12,14 @@ import {
   type BidderProfile, type TenderRequirements
 } from "@/lib/tender/eligibility";
 import {safeTenderSource} from "@/lib/tender/catalog";
+import {EMPTY_PREPARATION,PREBID_CHECKS,parsePreparation,deriveReadiness} from "@/lib/tender/workflow-state";
 
 type Notice={id:string;title:string;buyer:string;source_reference:string;source_url:string;
   eligibility_requirements:TenderRequirements;requirements_verified:boolean};
 type Saved={id:string;tender_id:string|null;tender_title:string;
-  notice_details?:{title:string;buyer:string;source_reference:string;source_url:string};
+  notice_details?:{title:string;buyer:string;source_reference:string;source_url:string;preparation?:unknown};
+  readiness?:{status:string;soon:boolean;expired:boolean;blockers:string[]};
+  official_notice_changed?:boolean;current_deadline?:string|null;source_accessible_in_catalog?:boolean;
   bidder_profile:BidderProfile;
   requirement_answers:TenderRequirements;draft_text:string;updated_at:string};
 const steps=["Tender notice","Business profile","Eligibility conditions","Eligibility result","Documents","Pre-bid & site attendance","Prepare application"] as const;
@@ -47,12 +50,11 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   const [documentNames,setDocumentNames]=useState<{name:string,size:number}[]>([]);
   const [documentWarning,setDocumentWarning]=useState("");
   const [prebidReviewed,setPrebidReviewed]=useState<string[]>([]);
-  const prebidQuestions=[
-    "Check whether pre-bid attendance is mandatory and record the date",
-    "Check if a site visit, physical inspection or attendance certificate is required",
-    "Review question/clarification cut-off and any published corrigenda",
-    "Confirm mandatory forms, bid security and portal signing rules",
-  ];
+  const [officialReviewedAt,setOfficialReviewedAt]=useState<string|null>(null);
+  const [selfReportedSubmissionAt,setSelfReportedSubmissionAt]=useState<string|null>(null);
+  const [currentDeadline,setCurrentDeadline]=useState<string|null>(null);
+  const [sourceChanged,setSourceChanged]=useState(false);
+  const prebidQuestions=PREBID_CHECKS;
   function stageLocalFiles(selected:FileList|null){
     const incoming=Array.from(selected??[]).slice(0,10);
     const safe=incoming.filter(f=>/\.(pdf|docx|xlsx|png|jpe?g)$/i.test(f.name)&&f.size>0&&f.size<=10*1024*1024);
@@ -78,9 +80,19 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   const report=useMemo(()=>evaluateEligibility(profile,req,criteriaVerified),[profile,req,criteriaVerified]);
   const requiredDocs=req.required_documents?.length?req.required_documents:genericDocs;
   const sourceUrl=safeTenderSource(notice.source_url);
+  const preparation={
+    ...EMPTY_PREPARATION,
+    checked_documents:checklist,
+    checked_prebid:prebidReviewed,
+    notice_reviewed_at:officialReviewedAt,
+    external_submission:selfReportedSubmissionAt?"user_reported" as const:"not_reported" as const,
+    external_submission_recorded_at:selfReportedSubmissionAt,
+  };
+  const readiness=deriveReadiness(preparation,criteriaVerified,currentDeadline);
   function updateProfile(key:keyof BidderProfile,value:string){setProfile(p=>({...p,[key]:value}));}
   function updateReq(next:Partial<TenderRequirements>){
     setReq(prev=>({...prev,...next}));setCriteriaVerified(false);
+    setChecklist([]);setSelfReportedSubmissionAt(null);
   }
   async function getToken(){
     const {data,error}=await supabase.auth.getSession();
@@ -136,11 +148,12 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         "Content-Type":"application/json","Authorization":`Bearer ${token}`
       },body:JSON.stringify({
         id:savedId,title:notice.title,tenderId:UUID.test(notice.id)?notice.id:null,
-        notice:{title:notice.title,buyer:notice.buyer,source_reference:notice.source_reference,source_url:notice.source_url},
+        notice:{title:notice.title,buyer:notice.buyer,source_reference:notice.source_reference,source_url:notice.source_url,preparation},
         profile,requirements:req,draft
       })});
       const body=await r.json();if(!r.ok)throw new Error(body.error||"Could not save draft");
-      setSavedId(body.id);setAuthMessage("Saved to your private signed-in workspace. No tender was submitted.");
+      setSavedId(body.id);
+      setAuthMessage("Preparation progress, document checks and attendance review saved privately. No government bid was submitted.");
     }catch(e){setAuthMessage(e instanceof Error?e.message:"Unable to save.");}
     finally{setSaveBusy(false);}
   }
@@ -158,8 +171,17 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     setSavedId(row.id);setProfile({...EMPTY_PROFILE,...row.bidder_profile});
     setReq({...EMPTY_REQUIREMENTS,...row.requirement_answers});setCriteriaVerified(false);
     setNotice(prev=>({...prev,...(row.notice_details||{}),title:row.tender_title||prev.title,id:row.tender_id||""}));
-    setDraft(row.draft_text||"");setStep(6);setChecklist([]);setDocumentNames([]);setPrebidReviewed([]);
-    setNoticeMessage("Private draft restored. Eligibility must be rechecked against the latest official notice.");
+    setDraft(row.draft_text||"");setStep(6);setDocumentNames([]);
+    let state=EMPTY_PREPARATION;
+    try{state=parsePreparation(row.notice_details?.preparation??EMPTY_PREPARATION)}catch{}
+    setChecklist(state.checked_documents);setPrebidReviewed(state.checked_prebid);
+    setOfficialReviewedAt(state.notice_reviewed_at);
+    setSelfReportedSubmissionAt(state.external_submission==="user_reported"?state.external_submission_recorded_at:null);
+    setCurrentDeadline(row.current_deadline??state.deadline_snapshot);
+    setSourceChanged(Boolean(row.official_notice_changed));
+    setNoticeMessage(row.official_notice_changed
+      ?"Official catalog notice has changed since this preparation was saved. Recheck the deadline and every amendment."
+      :"Private preparation restored. Verify all current official conditions before bidding.");
   }
   async function requestOtp(){
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){setAuthMessage("Enter a valid email address.");return;}
@@ -226,6 +248,16 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               {initialTender?"This record comes from the public tender catalog. Confirm the latest amendments.":"You entered these details manually; GTH PRO has not verified the notice."}
             </p>
             {sourceUrl&&<a href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">Open original notice <ArrowRight size={16}/></a>}
+            <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm">
+              <input type="checkbox" checked={Boolean(officialReviewedAt)}
+                onChange={e=>setOfficialReviewedAt(e.target.checked?new Date().toISOString():null)}
+                className="size-4 accent-amber-600"/>
+              I personally checked the current official notice and corrigenda (self-declaration, not GTH verification).
+            </label>
+            {sourceChanged?<p role="alert" className="rounded-xl border border-[var(--gold)] p-4 text-sm font-semibold">
+              Official tender data was updated since your saved preparation. Review the new deadline, amendments and eligibility again.
+            </p>:null}
+            {currentDeadline?<p className="text-xs text-[var(--text-soft)]">Current catalog deadline (UTC): {new Date(currentDeadline).toLocaleString("en-GB",{timeZone:"UTC"})}</p>:null}
           </div>}
           {step===1&&<div className="mt-6">
             <p className="mb-5 text-sm leading-7 text-[var(--text-soft)]">Enter only general business facts. Use verifiable figures and exact names of registrations.</p>
@@ -330,11 +362,11 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               Meeting attendance, site visit, EMD and clarifications are tender-specific.
               None is treated as mandatory unless the latest official tender states so. Mark checks only after reviewing that notice.
             </p>
-            {prebidQuestions.map(question=><label key={question} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+            {prebidQuestions.map(question=><label key={question.id} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
               <input type="checkbox" className="mt-1 size-4 accent-amber-600"
-                checked={prebidReviewed.includes(question)}
-                onChange={e=>setPrebidReviewed(a=>e.target.checked?[...a,question]:a.filter(item=>item!==question))}/>
-              <span className="text-sm leading-6">{question}</span>
+                checked={prebidReviewed.includes(question.id)}
+                onChange={e=>setPrebidReviewed(a=>e.target.checked?[...a,question.id]:a.filter(item=>item!==question.id))}/>
+              <span className="text-sm leading-6">{question.label}</span>
             </label>)}
             <p role="status" className="text-xs text-[var(--text-soft)]">{prebidReviewed.length} of {prebidQuestions.length} checked locally.
               Attendance has not been verified or submitted to the issuing authority.</p>
@@ -361,7 +393,21 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
             <p className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-xs leading-6 text-[var(--text-soft)]">
               No submission, fee payment or document upload is performed here. Final entry and submission on the official portal require your review and explicit action.
             </p>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+              <p className="font-semibold">Live preparation readiness — {readiness.status.replaceAll("-"," ")}</p>
+              {readiness.blockers.length>0?<ul className="mt-3 list-inside list-disc space-y-1 text-sm text-[var(--text-soft)]">
+                {readiness.blockers.map(item=><li key={item}>{item}</li>)}
+              </ul>:<p className="mt-2 text-xs text-[var(--text-soft)]">Checklist prepared for your final independent authority review.</p>}
+              <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm">
+                <input type="checkbox" className="mt-1 size-4 accent-amber-600" checked={Boolean(selfReportedSubmissionAt)}
+                  onChange={e=>setSelfReportedSubmissionAt(e.target.checked?new Date().toISOString():null)}/>
+                I personally submitted this bid at the official portal. Save as my own report, NOT a GTH-confirmed submission.
+              </label>
+            </div>
           </div>}
+          {readiness.soon&&!readiness.expired?<p role="alert" className="mt-4 rounded-xl border border-[var(--gold)] p-4 text-sm">
+            Deadline is approaching within 72 hours. Recheck the official portal immediately; the countdown may not include corrigenda.
+          </p>:null}
           {noticeMessage&&<p role="status" className="mt-5 rounded-xl border border-[var(--border)] p-3 text-sm">{noticeMessage}</p>}
           <div className="mt-7 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
             <button type="button" disabled={step===0} onClick={()=>{setStep(Math.max(0,step-1));setNoticeMessage("");}} className="min-h-11 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-30">Back</button>
