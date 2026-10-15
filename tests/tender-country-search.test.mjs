@@ -18,7 +18,7 @@ const client={from(table){
   assert.equal(table,"tenders");
   calls++;
   const eq={},membership={};
-  let gt,lt,like;
+  let gt,lt,like,limitValue=1000;
   const query={
     select(){return query},
     eq(k,v){eq[k]=v;return query},
@@ -27,8 +27,8 @@ const client={from(table){
     lte(k,v){lt=[k,v];return query},
     ilike(k,v){like=[k,v];return query},
     order(){return query},
-    then(onFulfilled,onRejected){return Promise.resolve(result(0,1000)).then(onFulfilled,onRejected)},
-    limit(n){return Promise.resolve(result(0,n))},
+    then(onFulfilled,onRejected){return Promise.resolve(result(0,limitValue)).then(onFulfilled,onRejected)},
+    limit(n){limitValue=n;return query},
     range(start,end){return Promise.resolve(result(start,end-start+1))}
   };
   function result(offset,n){
