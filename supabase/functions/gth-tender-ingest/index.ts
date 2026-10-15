@@ -181,12 +181,19 @@ Deno.serve(async (req) => {
     }
     const unique = new Set<string>();
     const records: JsonRecord[] = [];
+    let rejected = 0;
     for (const item of raw) {
-      const verified = notice(item, source);
-      const ref = String(verified.source_reference);
-      if (unique.has(ref)) continue;
-      unique.add(ref);
-      records.push(verified);
+      try {
+        const verified = notice(item, source);
+        const ref = String(verified.source_reference);
+        if (unique.has(ref)) continue;
+        unique.add(ref);
+        records.push(verified);
+      } catch {
+        // Real official releases may contain incomplete buyer/deadline information
+        // or unsupported text. Reject that notice without losing valid records.
+        rejected++;
+      }
     }
     const url = Deno.env.get("SUPABASE_URL");
     const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -212,7 +219,7 @@ Deno.serve(async (req) => {
         return Response.json({ error: "Database ingestion failed" }, { status: 502, headers: RESPONSE_HEADERS });
       }
     }
-    return Response.json({ accepted: records.length, source, mode: "official_source_import", published_count: null }, { headers: RESPONSE_HEADERS });
+    return Response.json({ accepted: records.length, rejected, source, mode: "official_source_import", published_count: null }, { headers: RESPONSE_HEADERS });
   } catch {
     return Response.json({ error: "Invalid or unavailable source records" }, { status: 400, headers: RESPONSE_HEADERS });
   }
