@@ -34,6 +34,11 @@ export async function GET(req: Request) {
         { status: 400, headers: { "Cache-Control": "no-store" } });
     }
 
+    const rawPage = params.get("page") ?? "1";
+    if (!/^[1-9][0-9]?$/.test(rawPage) || Number(rawPage) > 10)
+      return NextResponse.json({ error: "Invalid flight results page" }, { status: 400, headers: { "Cache-Control": "no-store" } });
+    const page = Number(rawPage);
+
     const token = process.env.AVIASALES_API_TOKEN ||
       process.env.TRAVELPAYOUTS_TOKEN || process.env.TRAVELPAYOUTS_API_TOKEN;
     if (!token) return unavailable(503);
@@ -48,8 +53,10 @@ export async function GET(req: Request) {
     url.searchParams.set("one_way", returnDate ? "false" : "true");
     url.searchParams.set("currency", "inr");
     url.searchParams.set("sorting", "price");
+    url.searchParams.set("direct", "false");
+    url.searchParams.set("page", String(page));
     url.searchParams.set("unique", "false");
-    url.searchParams.set("limit", "40");
+    url.searchParams.set("limit", "200");
 
     const response = await fetch(url, {
       headers: { "X-Access-Token": token, Accept: "application/json" },
@@ -64,12 +71,15 @@ export async function GET(req: Request) {
     if (record.success !== true || (typeof record.currency === "string" &&
         record.currency.toLowerCase() !== "inr")) return unavailable();
 
+    const providerRows = Array.isArray(record.data) ? record.data.length : 0;
     const results = normalizeFares(payload, { origin, destination, departDate, returnDate });
     return NextResponse.json({
       source: "Aviasales Data API",
       dataType: "cached_observations",
       currency: "INR",
       results,
+      page,
+      hasMore: providerRows >= 200 && page < 10,
       checkedAt: new Date().toISOString(),
       notice: "Previously observed fares are not live prices or guaranteed availability. Verify total price, baggage and conditions on the booking partner's site.",
     }, { headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
