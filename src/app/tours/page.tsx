@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tours" },
   title: "Tours & Activities | GTH PRO Travel",
   description: "Explore source-backed tours and destination experiences. Check itinerary, available dates, final total and cancellation terms with the booking partner.",
+  openGraph: { title: "GTH PRO Tours & Activities", description: "Explore international tours and experiences, with provider-verified bookings.", url: "/tours", type: "website", images: ["/images/mega/tours.jpg"] },
+  twitter: { card: "summary_large_image", title: "GTH PRO Tours & Activities", images: ["/images/mega/tours.jpg"] },
 };
 
 type Props = { searchParams: Promise<TourFilters> };

@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   title: "Global Destinations & Travel Discovery | GTH PRO",
   description: "Explore curated destinations, city guides, stays and travel experiences with GTH PRO. Confirm live inventory and prices with each booking provider.",
   alternates: { canonical: "/destinations" },
-  openGraph: { title: "Global Destinations | GTH PRO", description: "A premium destination discovery gateway connecting travel inspiration to source-backed hotel and tour discovery.", type: "website" },
+  openGraph: { title: "Global Destinations | GTH PRO", description: "Explore destinations with travel guides and source-backed hotel and tour discovery.", type: "website", url: "/destinations", images: ["/images/global-city.jpg"] },
+  twitter: { card: "summary_large_image", title: "Global Destinations | GTH PRO", images: ["/images/global-city.jpg"] },
 };
 
 type Destination = { slug: string; title: string; image: string; description: string; location: string; country: string | null; region: string | null };

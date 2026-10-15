@@ -70,3 +70,24 @@ test("business policies expose their own canonical metadata without changing cli
  assert.doesNotMatch(article,/dangerouslySetInnerHTML/);
  assert.match(source("src/components/seo/JsonLd.tsx"),/safeStructuredData/);
 });
+
+
+test("destination, hotel and tour social metadata and factual breadcrumbs use selected domain",()=>{
+ const destinations=source("src/app/destinations/page.tsx");
+ const tours=source("src/app/tours/page.tsx");
+ const detail=source("src/app/tours/[slug]/page.tsx");
+ const hotels=source("src/app/hotels/[slug]/page.tsx");
+ for(const content of [destinations,tours]) {
+   assert.match(content,/openGraph:/);
+   assert.match(content,/twitter:/);
+   assert.doesNotMatch(content,/gthpro\.com/);
+ }
+ for(const content of [detail,hotels]){
+   assert.match(content,/JsonLd data=\{breadcrumbData\}/);
+   assert.match(content,/"@type": "BreadcrumbList"/);
+   assert.match(content,/siteUrl\(/);
+   assert.doesNotMatch(content,/aggregateRating|fakeReviews|lowPriceGuarantee/);
+ }
+ assert.match(detail,/rel="noopener noreferrer sponsored"/);
+ assert.match(hotels,/canonical: `\/hotels\/\$\{parsed\.citySlug\}`/);
+});

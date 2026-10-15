@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowUpRight, Compass, ShieldCheck } from "lucide-react";
 import RelatedCarousel from "@/components/RelatedCarousel";
+import JsonLd from "@/components/seo/JsonLd";
+import { siteUrl } from "@/lib/seo/site";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -64,6 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${tour.title} | GTH PRO Tours`,
     description: `Explore ${tour.title}. Review the itinerary, final price, availability and cancellation terms with the booking partner.`,
     alternates: { canonical: `/tours/${encodeURIComponent(slug)}` },
+    openGraph: { title: tour.title, description: `Explore ${tour.title}. Confirm current prices, tour details and availability with the provider.`, url: `/tours/${encodeURIComponent(slug)}`, type: "website" },
   };
 }
 
@@ -88,9 +91,18 @@ export default async function TourDetailPage({ params }: Props) {
     }
   }
 
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Tours and Activities", item: siteUrl("/tours") },
+      { "@type": "ListItem", position: 2, name: tour.title, item: siteUrl(`/tours/${encodeURIComponent(slug)}`) },
+    ],
+  };
   const symbolMap: Record<string, string> = { INR: "₹", USD: "$", EUR: "€" };
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <JsonLd data={breadcrumbData} />
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <img src={imageUrl(tour.image_url)} alt="" className="h-full w-full object-cover opacity-40" />

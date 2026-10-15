@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, BedDouble, BookOpen, Compass, Plane, ShieldCheck } from "lucide-react";
 import HotelResults from "../results/HotelResults";
+import JsonLd from "@/components/seo/JsonLd";
+import { siteUrl } from "@/lib/seo/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -38,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Hotels in ${parsed.city} | GTH PRO Travel`,
     description: `Explore hotel listings in ${parsed.city} and continue to booking partners to confirm availability, current total cost, policies and cancellation terms.`,
     alternates: { canonical: `/hotels/${parsed.citySlug}` },
+    openGraph: { title: `Hotels in ${parsed.city} | GTH PRO`, description: `Explore hotels in ${parsed.city} and verify current rates with booking partners.`, url: `/hotels/${parsed.citySlug}`, type: "website", ...(cityPhotos[parsed.citySlug] ? { images: [cityPhotos[parsed.citySlug]] } : {}) },
     ...(cityPhotos[parsed.citySlug] ? {} : { robots: { index: false } }),
   };
 }
@@ -48,6 +51,14 @@ export default async function HotelCityPage({ params }: Props) {
   if (!parsed) notFound();
 
   const image = cityPhotos[parsed.citySlug] || "/images/cities/default.jpg";
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Hotels", item: siteUrl("/hotels") },
+      { "@type": "ListItem", position: 2, name: `Hotels in ${parsed.city}`, item: siteUrl(`/hotels/${parsed.citySlug}`) },
+    ],
+  };
   const links = [
     { href: "/flights", label: "Find flights", Icon: Plane },
     { href: "/tours", label: "Tours & activities", Icon: Compass },
@@ -56,6 +67,7 @@ export default async function HotelCityPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <JsonLd data={breadcrumbData} />
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <Image src={image} fill priority alt={`Travel destination: ${parsed.city}`} sizes="100vw" className="object-cover" />
