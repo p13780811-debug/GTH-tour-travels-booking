@@ -76,7 +76,7 @@ def convert(feature):
         "source": "osm", "source_id": identifier, "name": name,
         "city": city, "country_code": country.upper() if country else None,
         "address": street or None, "latitude": position[0], "longitude": position[1],
-        "website": https_url(props.get("website") or props.get("contact:website")),
+        "image_url": image, "image_source": "osm_tag" if image else None,\n        "website": https_url(props.get("website") or props.get("contact:website")),
         "phone": text_value(props.get("phone") or props.get("contact:phone"), 100),
         "category": category, "source_license": "ODbL-1.0",
         "source_url": "https://www.openstreetmap.org/" + identifier,
