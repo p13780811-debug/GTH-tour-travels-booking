@@ -73,11 +73,13 @@ type HotelListing = {
 function HotelsContent() {
     const params = useSearchParams();
 
+    const initialDestination = (params.get("destination")||"").trim().slice(0,80);
     const initialName = (params.get("name") || "").trim().slice(0, 80);
-    const initialCity = params.get("city")?.trim() || "";
+    const initialCity = params.get("city")?.trim() || (initialDestination ? initialDestination.replaceAll("-", " ") : "");
     const [search, setSearch] = useState(initialCity);
     const [requestedCity, setRequestedCity] = useState(initialCity);
     const [nameFilter, setNameFilter] = useState(initialName);
+    const [requestedDestination,setRequestedDestination]=useState(initialDestination);
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
@@ -94,7 +96,8 @@ function HotelsContent() {
         setSearch(initialCity);
         setRequestedCity(initialCity);
         setNameFilter(initialName);
-    }, [initialCity, initialName]);
+        setRequestedDestination(initialDestination);
+    }, [initialCity, initialName,initialDestination]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -109,10 +112,9 @@ function HotelsContent() {
         async function loadHotels() {
             try {
                 const hotelParams = new URLSearchParams({ page: "1" });
-                if (requestedCity) hotelParams.set("city", requestedCity);
+                if(requestedDestination) hotelParams.set("destination",requestedDestination);
+                else if (requestedCity) hotelParams.set("city", requestedCity);
                 if (nameFilter) hotelParams.set("name", nameFilter);
-            if (requestedCountry) hotelParams.set("country",requestedCountry);
-            if (category) hotelParams.set("category",category);
                 if (requestedCountry) hotelParams.set("country",requestedCountry);
                 if (category) hotelParams.set("category",category);
                 const response = await fetch(`/api/hotels?${hotelParams}`, {
@@ -136,7 +138,7 @@ function HotelsContent() {
 
         void loadHotels();
         return () => controller.abort();
-    }, [requestedCity, nameFilter, requestedCountry, category]);
+    }, [requestedCity, nameFilter, requestedCountry, category, requestedDestination]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
@@ -144,7 +146,8 @@ function HotelsContent() {
         const nextPage = page + 1;
         try {
             const hotelParams = new URLSearchParams({ page: String(nextPage) });
-            if (requestedCity) hotelParams.set("city", requestedCity);
+            if (requestedDestination) hotelParams.set("destination", requestedDestination);
+            else if (requestedCity) hotelParams.set("city", requestedCity);
             if (nameFilter) hotelParams.set("name", nameFilter);
             const response = await fetch(`/api/hotels?${hotelParams}`, { cache: "no-store" });
             if (!response.ok) throw new Error("Hotel page unavailable");
@@ -170,6 +173,7 @@ function HotelsContent() {
         if(city.length>80 || (city.length>0&&city.length<2))return;
         if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
         setNameFilter("");
+        setRequestedDestination("");
         setRequestedCity(city);
         setRequestedCountry(city?"":selectedCountry);
     };
@@ -417,7 +421,7 @@ function HotelsContent() {
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    Source-backed listings for {requestedCity || requestedCountry || "your country"}
+                                    Source-backed listings for {requestedCity || requestedCountry || "worldwide"}
                                 </p>
                             </div>
 
