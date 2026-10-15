@@ -1,132 +1,68 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/effect-coverflow";
-
-type HotelListing = {
-  id: string | number;
-  name: string;
-  city: string;
-  stars: number | null;
-  image: string;
-  affiliate_link: string | null;
-  source?: string;
-};
-
-export default function HotelResults({ city }: { city: string }) {
-  const [hotels, setHotels] = useState<HotelListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-    setHotels([]);
-
-    async function load() {
-      try {
-        const response = await fetch(`/api/hotels?city=${encodeURIComponent(city)}`, {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error("Hotel listings unavailable");
-        const data: unknown = await response.json();
-        if (!Array.isArray(data)) throw new Error("Unexpected hotel response");
-        if (!controller.signal.aborted) setHotels(data as HotelListing[]);
-      } catch {
-        if (!controller.signal.aborted) setError("Hotel listings could not be loaded. Please try again.");
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }
-
-    void load();
-    return () => controller.abort();
-  }, [city]);
-
-  if (loading) {
-    return <p role="status" className="py-16 text-center text-[var(--muted)]">Searching hotel listings for {city}...</p>;
-  }
-
-  if (error) {
-    return <p role="alert" className="py-12 text-center text-[var(--text)]">{error}</p>;
-  }
-
-  if (!hotels.length) {
-    return <p role="status" className="py-12 text-center text-[var(--muted)]">No hotel listings found for {city}. Try another destination.</p>;
-  }
-
-  return (
-    <div className="w-full py-6">
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
-        effect="coverflow"
-        grabCursor
-        centeredSlides={false}
-        loop={false}
-        navigation={hotels.length > 1}
-        pagination={hotels.length > 1 ? { clickable: true } : false}
-        autoplay={hotels.length > 1 ? { delay: 5000, disableOnInteraction: true, pauseOnMouseEnter: true } : false}
-        coverflowEffect={{ rotate: 0, stretch: 0, depth: 100, modifier: 2.5, slideShadows: false }}
-        className="mySwiper !pb-12"
-        breakpoints={{
-          320: { slidesPerView: 1.1, spaceBetween: 16 },
-          768: { slidesPerView: 2, spaceBetween: 20 },
-          1024: { slidesPerView: 3, spaceBetween: 24 },
-        }}
-      >
-        {hotels.map((hotel) => (
-          <SwiperSlide key={String(hotel.id)} className="max-w-[380px]">
-            <article className="group relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-lg">
-              <div className="relative h-[420px]">
-                <img
-                  src={hotel.image}
-                  alt={`Hotel listing: ${hotel.name}`}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-black/60 px-3 py-2 text-xs text-white">
-                  {hotel.stars ? `${hotel.stars}-star hotel` : "Hotel listing"}
-                </div>
-                <div className="absolute inset-x-0 bottom-0 space-y-4 p-6 text-white">
-                  <div>
-                    <h2 className="line-clamp-2 text-xl font-bold">{hotel.name}</h2>
-                    <p className="mt-1 text-xs opacity-80">{hotel.city}</p>
-                    {hotel.source === "OpenStreetMap" && <p className="mt-1 text-xs opacity-80">OpenStreetMap contributor data • Not verified or bookable here</p>}
-                  </div>
-                  <div className="border-t border-white/20 pt-4">
-                    <p className="mb-3 text-xs">Check current rates, taxes and availability with the booking partner.</p>
-                    {hotel.affiliate_link ? (
-                      <a
-                        href={hotel.affiliate_link}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored"
-                        className="gth-btn-gold inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold"
-                      >
-                        Continue to booking partner
-                      </a>
-                    ) : (
-                      <p className="rounded-xl border border-white/20 px-4 py-3 text-center text-xs">
-                        Partner booking link not available for this listing
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </article>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-      <p className="mt-4 text-center text-xs text-[var(--muted)]">
-        GTH PRO displays listing information; booking, payment, current prices and confirmation are handled by the partner. Hotel discovery data may include <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors (ODbL)</a>.
-      </p>
+import {useEffect,useState} from "react";
+import Link from "next/link";
+import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
+type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
+ affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
+export default function HotelResults({city,destination}:{city:string;destination?:string}){
+ const [items,setItems]=useState<Stay[]>([]);
+ const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
+ const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
+ const query=(n:number)=>{const p=new URLSearchParams({page:String(n)});
+   if(destination)p.set("destination",destination);else p.set("city",city);return "/api/hotels?"+p;};
+ useEffect(()=>{
+  const controller=new AbortController();
+  setItems([]);setLoading(true);setError("");setPage(1);setTotal(0);setMore(false);
+  fetch(query(1),{signal:controller.signal,cache:"no-store"}).then(async r=>{
+   if(!r.ok)throw Error("Hotel catalog unavailable");const v:unknown=await r.json();
+   if(!Array.isArray(v))throw Error("Invalid hotel data");
+   if(!controller.signal.aborted){setItems(v as Stay[]);setTotal(Number(r.headers.get("X-GTH-Total"))||v.length);
+     setMore(r.headers.get("X-GTH-Has-More")==="true");}
+  }).catch(()=>{if(!controller.signal.aborted)setError("Hotel listings could not be loaded. Please retry.");})
+   .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
+  return ()=>controller.abort();
+ },[city,destination]);
+ async function loadMore(){
+  if(!more||loading||loadingMore)return;setLoadingMore(true);
+  try{
+   const r=await fetch(query(page+1),{cache:"no-store"});
+   if(!r.ok)throw Error("Hotel page unavailable");
+   const data:unknown=await r.json();if(!Array.isArray(data))throw Error("Invalid data");
+   const next=data as Stay[];
+   setItems(old=>{const map=new Map(old.map(x=>[String(x.id),x]));for(const x of next)map.set(String(x.id),x);return [...map.values()];});
+   setPage(p=>p+1);setMore(next.length>0&&r.headers.get("X-GTH-Has-More")==="true");setError("");
+  }catch{setError("More hotels could not be loaded; retry.");}finally{setLoadingMore(false);}
+ }
+ if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {city}…</p>;
+ if(error&&!items.length)return <p role="alert" className="gth-glass rounded-2xl p-6 text-sm">{error}</p>;
+ if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
+  <h3 className="text-lg font-semibold">Hotel records for {city} are not imported yet</h3>
+  <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
+  <Link href={"/hotels?city="+encodeURIComponent(city)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
+ </div>;
+ return <section aria-label={"Hotels in "+city} className="space-y-5">
+  <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {city} · Prices, stars and room availability unverified</p>
+  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+   {items.map(hotel=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
+    <div className="relative h-44 bg-[var(--bg-soft)]">
+     {hotel.image&&hotel.image!=="/placeholder.jpg"?
+       <img src={hotel.image} alt={"Hotel property: "+hotel.name} loading="lazy" className="h-full w-full object-cover"/>:
+       <div className="flex h-full flex-col items-center justify-center gap-2 text-[var(--text-soft)]"><Hotel size={30}/><span className="text-xs">No verified property photo</span></div>}
+     <span className="absolute left-3 top-3 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold capitalize">{(hotel.category||"hotel").replaceAll("_"," ")}</span>
     </div>
-  );
+    <div className="flex flex-1 flex-col p-5">
+     <h3 className="line-clamp-2 text-lg font-semibold">{hotel.name}</h3>
+     <p className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={15}/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
+     <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
+     <div className="mt-auto space-y-3 pt-5">
+      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
+      {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
+       <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>Partner booking link not available for this listing; official source and hotel website are in details.</p>}
+     </div>
+    </div>
+   </article>)}
+  </div>
+  {more?<button type="button" disabled={loadingMore} onClick={()=>void loadMore()} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-60">{loadingMore?"Loading…":"Load more hotels (page "+(page+1)+")"} <BedDouble size={16}/></button>:null}
+  {error?<p role="alert" className="text-sm text-[var(--text-soft)]">{error}</p>:null}
+ </section>;
 }
