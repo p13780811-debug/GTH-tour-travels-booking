@@ -249,7 +249,7 @@ function HotelsContent() {
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && runSearch()
                                     }
-                                    placeholder="Search destination..."
+                                    placeholder="City (blank for visitor-country hotels)"
                                     className="bg-transparent outline-none text-sm w-full min-w-0"
                                 />
                             </div>
@@ -288,6 +288,17 @@ function HotelsContent() {
                 </div>
             </section>
 
+            <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
+              <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
+                <span className="font-semibold">Country ISO code</span>
+                <input aria-label="Country code" maxLength={2} placeholder="Auto"
+                  className="w-16 bg-transparent uppercase text-[var(--text)] outline-none"
+                  value={selectedCountry} onChange={e=>setSelectedCountry(e.target.value.toUpperCase())}/>
+              </label>
+              <p className="mt-2 text-xs text-[var(--text-soft)]">Leave city empty and select a country; or search a city worldwide. Country detection is approximate, not GPS.</p>
+            </section>
+            <HotelCatalogPulse country={requestedCountry} category={category} onCategory={setCategory}/>
+
             {nameFilter && (
                 <div role="status" className="mx-auto mt-5 max-w-7xl px-5 text-sm font-semibold text-[var(--text)]">
                     Matching hotel names: <span className="gold-text">{nameFilter}</span>
@@ -317,55 +328,10 @@ function HotelsContent() {
                                 </div>
 
                                 <div className="space-y-6">
-                                    {/* STAR FILTER */}
                                     <div>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-soft)] mb-3">
-                                            Star Rating
-                                        </p>
-
-                                        <div className="space-y-2">
-                                            {[5, 4, 3, 2, 1].map((star) => (
-                                                <button
-                                                    key={star}
-                                                    onClick={() => {
-                                                        let updated = [...selectedStars];
-
-                                                        if (updated.includes(star)) {
-                                                            updated = updated.filter(
-                                                                (s) => s !== star
-                                                            );
-                                                        } else {
-                                                            updated.push(star);
-                                                        }
-
-                                                        setSelectedStars(updated);
-                                                        applyFilters(search, updated);
-                                                    }}
-                                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border transition-all ${selectedStars.includes(star)
-                                                        ? "border-[var(--border)] bg-[var(--card)]"
-                                                        : "border-transparent hover:bg-[var(--card)]"
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        {Array.from({ length: star }).map(
-                                                            (_, i) => (
-                                                                <Star
-                                                                    key={i}
-                                                                    size={14}
-                                                                    fill="currentColor"
-                                                                />
-                                                            )
-                                                        )}
-                                                    </div>
-
-                                                    <span className="text-xs text-[var(--text-soft)]">
-                                                        Star category
-                                                    </span>
-                                                </button>
-                                            ))}
-                                        </div>
+                                      <p className="text-xs font-semibold text-[var(--text-soft)]">Real property categories</p>
+                                      <p className="mt-2 text-sm text-[var(--text-soft)]">Select source-attributed accommodation types above. Unverified hotel star ratings are intentionally not presented as filters.</p>
                                     </div>
-
                                     {/* FEATURES */}
                                     <div>
                                         <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-soft)] mb-3">
@@ -442,27 +408,6 @@ function HotelsContent() {
                     {/* ========================================================================= */}
 
                     <main className="min-w-0">
-                        {/* MOBILE FILTERS */}
-                        <div className="xl:hidden flex gap-2 overflow-x-auto no-scrollbar mb-5">
-                            {[5, 4, 3, 2, 1].map((star) => (
-                                <button
-                                    key={star}
-                                    type="button"
-                                    aria-pressed={selectedStars.includes(star)}
-                                    onClick={() => {
-                                        const updated = selectedStars.includes(star)
-                                            ? selectedStars.filter((value) => value !== star)
-                                            : [...selectedStars, star];
-                                        setSelectedStars(updated);
-                                        applyFilters(search, updated);
-                                    }}
-                                    className="shrink-0 px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs"
-                                >
-                                    {star} Stars
-                                </button>
-                            ))}
-                        </div>
-
                         {/* TOP STATS */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>
@@ -472,7 +417,7 @@ function HotelsContent() {
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    Source-backed listings for {requestedCity}
+                                    Source-backed listings for {requestedCity || requestedCountry || "your country"}
                                 </p>
                             </div>
 
@@ -488,7 +433,7 @@ function HotelsContent() {
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
                         {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
                         {!loading && !error && filteredHotels.length === 0 && (
-                            <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or remove star filters.</p>
+                            <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
                         )}
                         <div className="space-y-5">
                             {filteredHotels.map((hotel) => (
@@ -549,12 +494,12 @@ function HotelsContent() {
 
                                                         <div className="flex items-center gap-1">
                                                             <ShieldCheck size={14} />
-                                                            Confirm details with partner
+                                                            Verify details with source
                                                         </div>
 
                                                         <div className="flex items-center gap-1">
                                                             <Globe2 size={14} />
-                                                            Partner policies apply
+                                                            {hotel.source||"Reviewed provider"}
                                                         </div>
                                                     </div>
 
@@ -581,7 +526,7 @@ function HotelsContent() {
                                                                     </div>
 
                                                                     <div className="text-xs text-[var(--text-soft)]">
-                                                                        Hotel stars
+                                                                        Star grade not verified
                                                                     </div>
                                                                 </div>
 
@@ -612,6 +557,10 @@ function HotelsContent() {
                                                         </div>
 
                                                         <div className="mt-6 space-y-3">
+                                                            <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
+                                                              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
+                                                              View hotel details <ChevronRight size={16}/>
+                                                            </a>
                                                             {hotel.affiliate_link ? (
                                                                 <a
                                                                     href={hotel.affiliate_link}
@@ -624,7 +573,7 @@ function HotelsContent() {
                                                                 </a>
                                                             ) : (
                                                                 <p className="text-xs text-[var(--text-soft)]">
-                                                                    Partner booking link not available for this listing.
+                                                                    Partner booking link not available for this listing. View source-backed hotel details.
                                                                 </p>
                                                             )}
                                                         </div>
