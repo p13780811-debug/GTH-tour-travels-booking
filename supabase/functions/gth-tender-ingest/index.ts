@@ -28,6 +28,14 @@ const SOURCES: Record<string, { host: string; path: RegExp }> = {
     host: "www.find-tender.service.gov.uk",
     path: /^\/Notice\/\d{6}-20\d{2}$/,
   },
+  "UK Contracts Finder": {
+    host: "www.contractsfinder.service.gov.uk",
+    path: /^\/Published\/Notice\/releases\/[a-fA-F0-9-]{36}\.json$/,
+  },
+  "Ukraine Prozorro": {
+    host: "prozorro.gov.ua",
+    path: /^\/tender\/UA-20\d{2}-\d{2}-\d{2}-\d{6}-[a-z]$/i,
+  },
   "Brazil PNCP": {
     host: "pncp.gov.br",
     path: /^\/app\/editais\/\d{14}\/20\d{2}\/\d+$/,
