@@ -1,63 +1,36 @@
-"use client"
-import Link from 'next/link'
-import { Home, Plane, Building2, BriefcaseBusiness, Hotel } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+"use client";
 
-const MobileNav = () => {
-    const pathname = usePathname()
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BriefcaseBusiness, Building2, Home, Hotel, Plane } from "lucide-react";
 
-    const isActive = (path: string) => pathname === path
+/** One reusable five-tab app bar, scoped to small screens. Real Estate keeps its approved own navigation. */
+const items = [
+  { href: "/app", name: "Home", Icon: Home, matches: ["/app", "/", "/mega-aggregator"] },
+  { href: "/flights", name: "Flights", Icon: Plane, matches: ["/flights"] },
+  { href: "/hotels", name: "Hotels", Icon: Hotel, matches: ["/hotels"] },
+  { href: "/real-estate", name: "Property", Icon: Building2, matches: ["/real-estate"] },
+  { href: "/tender", name: "Tenders", Icon: BriefcaseBusiness, matches: ["/tender"] },
+];
 
-    return (
-        <div className="md:hidden fixed bottom-2 left-1/2 -translate-x-1/2 w-[96%] z-50">
-
-            <div className="bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl px-2 py-2 flex justify-between items-center shadow-2xl">
-
-                {/* Home */}
-                <Link href="/"
-                    className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/') || isActive('/mega-aggregator') ? 'text-white' : 'text-white/50'}`}
-                >
-                    <Home size={18} />
-                    <span className="text-[9px] uppercase">Home</span>
-                </Link>
-
-                {/* Flights */}
-                <Link href="/travel"
-                    className="flex flex-col items-center gap-[2px] text-white/50 active:scale-90"
-                >
-                    <Plane size={18} />
-                    <span className="text-[9px] uppercase">Travel</span>
-                </Link>
-
-                {/* Center REAL ESTATE (MAIN CTA) */}
-                <Link href="/real-estate"
-                    className="relative -mt-6 gth-glass p-3 rounded-2xl border-4 border-black shadow-xl active:scale-95 transition"
-                >
-                    <Building2 size={22} className="text-black" />
-                </Link>
-
-                {/* Rentals */}
-                <Link href="/tender"
-                    className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/tender') ? 'text-white' : 'text-white/50'}`}
-                >
-                    <BriefcaseBusiness size={18} />
-                    <span className="text-[9px] uppercase">Tenders</span>
-                </Link>
-
-                {/* Hotels */}
-                <Link href="/hotels"
-                    className={`flex flex-col items-center gap-[2px] transition active:scale-90
-                    ${isActive('/hotels') ? 'text-white' : 'text-white/50'}`}
-                >
-                    <Hotel size={18} />
-                    <span className="text-[9px] uppercase">Hotels</span>
-                </Link>
-
-            </div>
-        </div>
-    )
+export default function MobileNav() {
+  const pathname = usePathname() || "/";
+  return (
+    <nav aria-label="GTH PRO mobile app navigation"
+      className="fixed inset-x-0 bottom-0 z-[180] border-t border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] backdrop-blur-xl md:hidden"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="mx-auto grid max-w-lg grid-cols-5 px-1">
+        {items.map(({href,name,Icon,matches}) => {
+          const active = matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
+          return (
+            <Link key={href} href={href} aria-current={active ? "page" : undefined}
+              className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
+              <Icon size={21} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
+              <span className="truncate">{name}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
 }
-
-export default MobileNav
