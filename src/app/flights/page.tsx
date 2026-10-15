@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpRight, Clock3, Compass, Filter, Plane, RotateCcw, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import FlightHero from "@/components/flights/FlightHero";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import { flightDestinations } from "@/data/flight/destinations";
+import { fullFlightPartnerSearchUrl } from "@/lib/flights/fare-search";
 import type { FareOption } from "@/lib/flights/fare-search";
 
 type FlightSearchResponse = {
@@ -15,6 +16,8 @@ type FlightSearchResponse = {
   notice: string;
   dataType: "cached_observations";
   currency: "INR";
+  page: number;
+  hasMore: boolean;
 };
 type Sort = "price-asc" | "price-desc" | "duration" | "departure";
 type Stops = "all" | "direct" | "one-stop";
@@ -42,6 +45,14 @@ function FlightsContent() {
     origin !== destination && /^\d{4}-\d{2}-\d{2}$/.test(departDate) &&
     departDate >= localDate() && (!returnDate || (/^\d{4}-\d{2}-\d{2}$/.test(returnDate) && returnDate >= departDate));
   const [results, setResults] = useState<FareOption[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [draftDepartDate, setDraftDepartDate] = useState(departDate);
+  const [draftReturnDate, setDraftReturnDate] = useState(returnDate);
+  const searchKey = [origin, destination, departDate, returnDate].join("|");
+  const activeSearchRef = useRef(searchKey);
+  activeSearchRef.current = searchKey;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [checkedAt, setCheckedAt] = useState("");
@@ -52,6 +63,11 @@ function FlightsContent() {
   useEffect(() => {
     const controller = new AbortController();
     setResults([]);
+    setPage(1);
+    setHasMore(false);
+    setLoadingMore(false);
+    setDraftDepartDate(departDate);
+    setDraftReturnDate(returnDate);
     setError("");
     setCheckedAt("");
     setAirline("all");
@@ -65,7 +81,7 @@ function FlightsContent() {
     setLoading(true);
     async function load() {
       try {
-        const query = new URLSearchParams({ origin, destination, depart_date: departDate });
+        const query = new URLSearchParams({ origin, destination, depart_date: departDate, page: "1" });
         if (returnDate) query.set("return_date", returnDate);
         const response = await fetch(`/api/flights/search?${query}`, {
           signal: controller.signal,
@@ -77,6 +93,7 @@ function FlightsContent() {
             data.currency !== "INR") throw new Error();
         if (!controller.signal.aborted) {
           setResults(data.results);
+          setHasMore(data.hasMore === true);
           setCheckedAt(data.checkedAt);
         }
       } catch {
@@ -91,6 +108,35 @@ function FlightsContent() {
     return () => controller.abort();
   }, [origin, destination, departDate, returnDate, validSearch]);
 
+  async function loadMore() {
+    if (loading || loadingMore || !hasMore) return;
+    const startedFor = searchKey;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    try {
+      const query = new URLSearchParams({ origin, destination, depart_date: departDate, page: String(nextPage) });
+      if (returnDate) query.set("return_date", returnDate);
+      const response = await fetch(`/api/flights/search?${query}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Additional fares unavailable");
+      const data: FlightSearchResponse = await response.json();
+      if (data.dataType !== "cached_observations" || data.currency !== "INR" || !Array.isArray(data.results)) throw new Error("Invalid fare data");
+      if (activeSearchRef.current !== startedFor) return;
+      setResults(existing => {
+        const indexed = new Map(existing.map(item => [item.id, item]));
+        for (const fare of data.results) indexed.set(fare.id, fare);
+        return [...indexed.values()];
+      });
+      setPage(nextPage);
+      setHasMore(data.hasMore === true && data.results.length > 0);
+      setError("");
+    } catch {
+      if (activeSearchRef.current === startedFor) setError("Additional observed fares could not be loaded. Try again.");
+    } finally {
+      if (activeSearchRef.current === startedFor) setLoadingMore(false);
+    }
+  }
+
+  const fullPartnerUrl = validSearch ? fullFlightPartnerSearchUrl(origin, destination, departDate, returnDate || null) : null;
   const airlines = useMemo(() =>
     [...new Set(results.map((item) => item.airlineCode).filter((code): code is string => Boolean(code)))].sort(),
     [results],
@@ -115,10 +161,10 @@ function FlightsContent() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]">
-      <FlightHero initial={{ origin, destination, departDate, returnDate }} />
+      <FlightHero initial={{ origin, destination, departDate, returnDate }} onDatesChange={(departure, ret) => { setDraftDepartDate(departure); setDraftReturnDate(ret); }} />
 
       <div className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
-        <section aria-label="Flight fare results" className="space-y-6">
+        <section id="flight-results" aria-label="Flight fare results" className="scroll-mt-24 space-y-6">
           {!hasSearch && (
             <div className="gth-glass rounded-3xl border border-[var(--border)] p-6 md:p-8">
               <h2 className="text-xl font-bold">Find an airfare for your journey</h2>
@@ -149,6 +195,16 @@ function FlightsContent() {
                   <ShieldCheck size={15} className="mr-2 inline" aria-hidden="true" />
                   Prices are indicative, not live availability
                 </div>
+              </div>
+              <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 text-sm">
+                <p className="font-semibold">Browse all current flight times with the provider</p>
+                <p className="mt-2 leading-6 text-[var(--text-soft)]">
+                  GTH PRO shows observed fares, not every operating flight. Use the partner search for live departure choices, arrival times and final seat prices for these exact dates. GTH PRO prices appear in ₹ INR. If Aviasales displays USD, change currency to INR in its regional settings; the booking seller controls the final checkout currency.
+                </p>
+                {fullPartnerUrl && <a href={fullPartnerUrl} target="_blank" rel="noopener noreferrer sponsored"
+                  className="gth-btn-gold mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 font-semibold">
+                  Compare all available flights on Aviasales <ArrowUpRight size={16} />
+                </a>}
               </div>
               {loading && (
                 <div role="status" aria-live="polite" className="gth-glass rounded-2xl border border-[var(--border)] p-8">
@@ -181,7 +237,7 @@ function FlightsContent() {
                     <div className="gth-glass rounded-2xl border border-[var(--border)] p-5">
                       <p className="text-xs text-[var(--text-soft)]">Observed options for this search</p>
                       <p className="mt-2 text-2xl font-bold">{results.length}</p>
-                      <p className="mt-1 text-xs text-[var(--text-soft)]">A limited fare cache, not all airlines or seats</p>
+                      <p className="mt-1 text-xs text-[var(--text-soft)]">Cached observations, not a complete operating timetable</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
@@ -282,6 +338,10 @@ function FlightsContent() {
                   </div>
                 </>
               )}
+              {hasMore && results.length > 0 && !loading && <button type="button" onClick={() => void loadMore()} disabled={loadingMore}
+                className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold disabled:opacity-60">
+                {loadingMore ? "Loading additional fares…" : "Load more recorded fares"}
+              </button>}
               {checkedAt && (
                 <p className="text-xs leading-6 text-[var(--text-soft)]">
                   Data request checked: {new Date(checkedAt).toLocaleString("en-IN")}. Aviasales Data API uses historic fare observations, not real-time inventory.
@@ -312,7 +372,7 @@ function FlightsContent() {
           </div>
         </section>
 
-        <PopularDestinations destinations={flightDestinations} origin={origin || "CCU"} />
+        <PopularDestinations destinations={flightDestinations} origin={origin || "CCU"} departDate={draftDepartDate} returnDate={draftReturnDate} />
         <section className="mt-12 rounded-2xl border border-[var(--border)] p-5 text-xs leading-6 text-[var(--text-soft)]">
           <h2 className="mb-2 text-base font-semibold text-[var(--text)]">How GTH flight discovery works</h2>
           <p>
