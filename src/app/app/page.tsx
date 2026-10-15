@@ -81,7 +81,7 @@ export default function MobileAppHome() {
         <div className="flex flex-wrap gap-4 pb-5 text-xs text-[var(--text-soft)]">
           <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link>
           <Link href="/privacy-policy" className="underline">Privacy</Link>
-          <Link href="/terms" className="underline">Terms</Link>
+          <Link href="/terms-and-conditions" className="underline">Terms</Link>
           <Link href="/mega-aggregator" className="underline">Full website</Link>
           <span><Compass size={12} className="mr-1 inline"/>GTH PRO</span>
         </div>
