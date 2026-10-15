@@ -30,14 +30,14 @@ jobs:
   bulk:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    environment: ${{ inputs.mode == 'import' && 'hotel-ingestion' || 'hotel-ingestion-preview' }}
+    environment: ${{ github.event_name == 'schedule' || inputs.mode == 'import' && 'hotel-ingestion' || 'hotel-ingestion-preview' }}
     env:
       REGION: ${{ inputs.region || 'asia/india/western-zone' }}
-      MODE: ${{ inputs.mode || 'dry-run' }}
+      MODE: ${{ github.event_name == 'schedule' && 'import' || inputs.mode || 'dry-run' }}
       MAX_RECORDS: ${{ inputs.max_records || '5000' }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.GTH_SUPABASE_URL }}
       SUPABASE_INGESTION_KEY: ${{ secrets.GTH_SUPABASE_INGESTION_KEY }}
-      GTH_INGESTION_ENABLED: ${{ inputs.mode == 'import' && 'true' || 'false' }}
+      GTH_INGESTION_ENABLED: ${{ github.event_name == 'schedule' || inputs.mode == 'import' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - name: Validate allowlist and hard cap
@@ -62,7 +62,7 @@ jobs:
       - name: Export accommodation OSM points
         run: |
           set -euo pipefail
-          osmium tags-filter region.osm.pbf n/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
+          osmium tags-filter region.osm.pbf nwr/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
           osmium export --add-unique-id=type_id --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
       - name: Guarded batch import
         run: |
