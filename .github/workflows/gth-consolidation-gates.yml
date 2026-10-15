@@ -76,10 +76,17 @@ jobs:
       - run: python3 -m unittest discover -s tests -p "test_tender_import.py"
       - run: python3 -m unittest discover -s tests -p "test_open_tenders.py"
       - run: python3 -m unittest discover -s tests -p "test_global_tenders.py"
+      - run: python3 -m unittest discover -s tests -p "test_tender_oidc.py"
       - name: Inspect public source schemas (no sensitive fields)
         run: python3 scripts/tenders/schema_probe.py
       - name: Live official source smoke (no database writes)
         run: python3 scripts/tenders/global_ingestion.py --source all --limit 5
+      - name: Setup Deno for secure tender gateway validation
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck Supabase GitHub OIDC gateway
+        run: deno check supabase/functions/gth-tender-ingest/index.ts
       - run: npm ci --legacy-peer-deps
       - run: npx tsc --noEmit
       - run: npm run test:security
