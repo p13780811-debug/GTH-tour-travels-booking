@@ -70,7 +70,9 @@ def convert(feature):
     if not identifier or not __import__("re").fullmatch(r"(?:node|way|relation)/[0-9]+", identifier):
         return None
     city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place") or props.get("city"), 100)
-    country = text_value(props.get("addr:country"), 2)
+    country = text_value(props.get("addr:country") or props.get("is_in:country_code") or props.get("ISO3166-1:alpha2"), 2)
+    if country and not __import__("re").fullmatch(r"[A-Za-z]{2}",country):
+        country = None
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
     image = https_url(props.get("image") or props.get("contact:image"))
     return {
