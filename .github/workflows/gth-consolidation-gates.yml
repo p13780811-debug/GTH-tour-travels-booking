@@ -76,6 +76,7 @@ jobs:
       - run: python3 -m unittest discover -s tests -p "test_tender_import.py"
       - run: python3 -m unittest discover -s tests -p "test_open_tenders.py"
       - run: python3 -m unittest discover -s tests -p "test_global_tenders.py"
+      - run: python3 -m unittest discover -s tests -p "test_additional_tenders.py"
       - run: python3 -m unittest discover -s tests -p "test_tender_oidc.py"
       - name: Inspect public source schemas (no sensitive fields)
         run: python3 scripts/tenders/schema_probe.py
