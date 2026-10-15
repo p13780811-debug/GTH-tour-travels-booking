@@ -81,8 +81,8 @@
     0.45s var(--ease-premium);
 
   /* ☀️ DAY MODE */
-  --bg: #f6f1e8;
-  --bg-soft: #fffaf2;
+  --bg: #f7f8fb;
+  --bg-soft: #f2f5fa;
 
   --text: #111827;
   /* Day theme button colors follow below; duplicate defaults removed. */
@@ -119,9 +119,9 @@
   /* 🌤️ BG */
   --bg-gradient:
     radial-gradient(circle at top,
-      #fffdf8 0%,
-      #f8f4ec 40%,
-      #f2ede3 100%);
+      #ffffff 0%,
+      #f7f8fb 44%,
+      #eef2f7 100%);
 
   /* ========================================================= */
   /* 🧠 ENTERPRISE SEMANTIC TOKENS */
@@ -133,9 +133,9 @@
   --surface-4: rgba(255, 255, 255, 0.18);
 
   /* TEXT */
-  --text-soft: rgba(17, 24, 39, 0.72);
-  --text-muted: rgba(17, 24, 39, 0.58);
-  --text-faint: rgba(17, 24, 39, 0.42);
+  --text-soft: rgba(17, 24, 39, 0.83);
+  --text-muted: rgba(17, 24, 39, 0.72);
+  --text-faint: rgba(17, 24, 39, 0.60);
 
   /* ELEVATION */
   --elevation-1:
@@ -168,7 +168,7 @@
   --blur-md: 16px;
   --blur-lg: 24px;
   --blur-xl: 36px;
-  --background: oklch(1 0 0);
+  --background: #f7f8fb;
   --foreground: oklch(0.147 0.004 49.3);
   --card-foreground: oklch(0.147 0.004 49.3);
   --popover: oklch(1 0 0);
