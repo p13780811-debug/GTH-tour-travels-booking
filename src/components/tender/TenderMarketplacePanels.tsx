@@ -21,9 +21,9 @@ const categories = [
 ] as const;
 
 export function TenderMarketOverview({
-  filters,language,stats
+  filters,language,stats,view
 }:{
-  filters:TenderFilters;language:TenderLocale;stats:TenderDiscoveryStats | null
+  filters:TenderFilters;language:TenderLocale;stats:TenderDiscoveryStats | null;view:"status"|"categories"
 }){
   const m=marketplaceText(language);
   if(!stats) return null;
@@ -33,7 +33,7 @@ export function TenderMarketOverview({
     ?new Intl.DateTimeFormat(language,{dateStyle:"medium",timeStyle:"short",timeZone:"UTC"}).format(importDate)+" UTC":null;
   const base={...filters,closingWithin:undefined as "7"|undefined};
   return <>
-    <section aria-label={m("live")} className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 md:pt-10">
+    {view==="status"?<section aria-label={m("live")} className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 md:pt-10">
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
@@ -74,8 +74,8 @@ export function TenderMarketOverview({
         </div>
         <p className="border-t border-[var(--border)] px-5 py-3 text-xs leading-6 text-[var(--text-soft)] sm:px-7">{m("schedule")}</p>
       </div>
-    </section>
-    <section aria-labelledby="tender-category-title" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12">
+    </section>:null}
+    {view==="categories"?<section aria-labelledby="tender-category-title" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">{m("notice")}</p>
@@ -111,7 +111,7 @@ export function TenderMarketOverview({
         <span className="inline-flex items-center gap-3 text-sm font-semibold"><Timer size={19} className="text-[var(--gold)]" aria-hidden="true"/>{m("soon")}</span>
         <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
       </Link>
-    </section>
+    </section>:null}
   </>;
 }
 
