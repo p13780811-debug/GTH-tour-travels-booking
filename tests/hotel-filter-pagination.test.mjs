@@ -5,7 +5,7 @@ import {hotelSearchParams} from "../src/lib/travel/hotel-search-params.ts";
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const base={destination:"",city:"",name:"",country:"IN",category:"guest_house"};
 test("Every page retains selected real accommodation category and geographical scope",()=>{
- for(const page of [1,2,3,55]){
+ for(const page of [1,2,3,55,101,109,10000]){
   const p=hotelSearchParams(base,page);
   assert.equal(p.get("country"),"IN");
   assert.equal(p.get("category"),"guest_house");
@@ -27,7 +27,7 @@ test("Destination, hotel name and page remain identical across initial and more 
  }
 });
 test("Page ranges are bounded and no other query changes",()=>{
- for(const page of [-1,0,101,1.5,NaN])assert.throws(()=>hotelSearchParams(base,page),RangeError);
+ for(const page of [-1,0,10001,1.5,NaN])assert.throws(()=>hotelSearchParams(base,page),RangeError);
  assert.deepEqual([...hotelSearchParams({destination:"",city:"Mumbai",name:"",country:"",category:""},1)],[
   ["page","1"],["city","Mumbai"]
  ]);
@@ -52,4 +52,17 @@ test("No repeated stock property image and no generic partner label on unbookabl
  assert.match(api,/if \(category\) catalogCountQuery = catalogCountQuery\.eq\("category",category\)/);
  assert.match(api,/if \(category\) catalogQuery = catalogQuery\.eq\("category",category\)/);
  assert.match(api,/X-GTH-Total/);
+});
+
+test("All-stays catalog stays pageable past page 100 and honors exact country scope",()=>{
+ for(const n of [100,101,109,10000]){
+  const p=hotelSearchParams({...base,category:""},n);
+  assert.equal(p.get("page"),String(n));
+  assert.equal(p.get("country"),"IN");
+ }
+ const api=read("src/app/api/hotels/route.ts");
+ assert.match(api,/Number\(rawPage\) > 10000/);
+ assert.doesNotMatch(api,/x-vercel-ip-country/);
+ assert.doesNotMatch(read("src/app/api/hotels/stats/route.ts"),/x-vercel-ip-country/);
+ assert.match(read("src/app/hotels/page.tsx"),/setRequestedCountry\(selectedCountry\)/);
 });

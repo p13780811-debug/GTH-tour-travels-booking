@@ -193,7 +193,7 @@ function HotelsContent() {
         setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
-        setRequestedCountry(city?"":selectedCountry);
+        setRequestedCountry(selectedCountry);
     };
 
     const categories = [
@@ -313,11 +313,11 @@ function HotelsContent() {
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
               <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
                 <span className="font-semibold">Country ISO code</span>
-                <input aria-label="Country code" maxLength={2} placeholder="Auto"
+                <input aria-label="Country code" maxLength={2} placeholder="All"
                   className="w-16 bg-transparent uppercase text-[var(--text)] outline-none"
                   value={selectedCountry} onChange={e=>setSelectedCountry(e.target.value.toUpperCase())}/>
               </label>
-              <p className="mt-2 text-xs text-[var(--text-soft)]">Leave city empty and select a country; or search a city worldwide. Country detection is approximate, not GPS.</p>
+              <p className="mt-2 text-xs text-[var(--text-soft)]">Worldwide by default. Enter a two-letter country code to narrow results; city and country can be combined.</p>
             </section>
             <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
                 activeQueryRef.current = "";

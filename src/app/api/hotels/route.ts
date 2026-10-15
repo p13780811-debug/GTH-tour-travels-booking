@@ -35,8 +35,8 @@ export async function GET(req: Request) {
   if (destination && !/^[a-z]+(?:-[a-z]+)*$/.test(destination)) return NextResponse.json({error:"Invalid destination"},{status:400,headers:safeHeaders});
   const rawName = searchParams.get("name");
   const rawCountry = searchParams.get("country");
-  const detected = req.headers.get("x-vercel-ip-country") ?? "";
-  const country = rawCountry ? rawCountry.trim().toUpperCase() : (!rawCity && !rawName && /^[A-Z]{2}$/.test(detected) ? detected : "");
+  // The full worldwide catalog is the default; country filtering is always explicit.
+  const country = rawCountry ? rawCountry.trim().toUpperCase() : "";
   const category = searchParams.get("category") ?? "";
   if ((rawCountry && !/^[A-Z]{2}$/.test(rawCountry.toUpperCase())) ||
       (category && !["hotel","motel","hostel","guest_house","apartment","resort"].includes(category)))
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
   if ((rawCity && !city) || (rawName && !name))
     return NextResponse.json({ error: "Enter a valid hotel name or destination" }, { status: 400, headers: safeHeaders });
   const rawPage = searchParams.get("page") ?? "1";
-  if (!/^[1-9][0-9]{0,2}$/.test(rawPage) || Number(rawPage) > 100) {
+  if (!/^[1-9][0-9]{0,4}$/.test(rawPage) || Number(rawPage) > 10000) {
     return NextResponse.json({ error: "Invalid page" }, { status: 400, headers: safeHeaders });
   }
   const page = Number(rawPage);

@@ -9,8 +9,8 @@ export async function GET(req:Request){
  if(!url||!key)return NextResponse.json({error:"Catalog unavailable"},{status:503,headers:HEADERS});
  const params=new URL(req.url).searchParams;
  const input=params.get("country")?.trim().toUpperCase();
- const detected=req.headers.get("x-vercel-ip-country")??"";
- const country=input || (/^[A-Z]{2}$/.test(detected)?detected:"");
+ // Counts and results use the same worldwide default, not implicit visitor geolocation.
+ const country=input || "";
  if(input&&!/^[A-Z]{2}$/.test(input))return NextResponse.json({error:"Invalid country"},{status:400,headers:HEADERS});
  const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  try{

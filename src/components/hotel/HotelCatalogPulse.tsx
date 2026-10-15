@@ -31,8 +31,8 @@ export default function HotelCatalogPulse({country,category,onCategory}:{
   <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:grid-cols-3">
    <div><p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><Layers3 size={15}/> Source-attributed catalog</p>
     <p className="mt-3 text-3xl font-bold tabular-nums">{stats?stats.total.toLocaleString():error?"Unavailable":"—"}</p></div>
-   <div><p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><Globe2 size={15}/> Visitor country</p>
-    <p className="mt-3 text-lg font-semibold">{stats?.country||country||"Select destination"}</p></div>
+   <div><p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><Globe2 size={15}/> Country filter</p>
+    <p className="mt-3 text-lg font-semibold">{stats?.country||country||"Worldwide"}</p></div>
    <div><p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><Clock3 size={15}/> Latest catalog addition</p>
     <p className="mt-3 text-sm font-semibold">{stats?.latest_imported_at?
       new Date(stats.latest_imported_at).toLocaleString():"No import recorded for this area"}</p></div>

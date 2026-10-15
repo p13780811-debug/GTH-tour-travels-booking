@@ -9,7 +9,7 @@ export type HotelSearchScope = {
   category: string;
 };
 export function hotelSearchParams(scope: HotelSearchScope, page: number): URLSearchParams {
-  if(!Number.isSafeInteger(page) || page < 1 || page > 100) {
+  if(!Number.isSafeInteger(page) || page < 1 || page > 10000) {
     throw new RangeError("Invalid hotel page");
   }
   const params = new URLSearchParams({page:String(page)});
