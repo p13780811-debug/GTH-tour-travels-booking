@@ -15,6 +15,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
+import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
     Search,
@@ -95,15 +96,10 @@ function HotelsContent() {
     const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category]);
     const activeQueryRef = useRef(queryKey);
     // Every API page MUST carry the identical search scope and filters.
-    const hotelParamsFor = (pageNumber: number) => {
-        const next = new URLSearchParams({page:String(pageNumber)});
-        if(requestedDestination)next.set("destination",requestedDestination);
-        else if(requestedCity)next.set("city",requestedCity);
-        if(nameFilter)next.set("name",nameFilter);
-        if(requestedCountry)next.set("country",requestedCountry);
-        if(category)next.set("category",category);
-        return next;
-    };
+    const hotelParamsFor = (pageNumber: number) => hotelSearchParams({
+        destination:requestedDestination,city:requestedCity,name:nameFilter,
+        country:requestedCountry,category
+    },pageNumber);
     const selectedType = {
         hotel:"Hotels",hostel:"Hostels",guest_house:"Guest houses",
         motel:"Motels",apartment:"Apartments",resort:"Resorts"
@@ -127,6 +123,7 @@ function HotelsContent() {
         setHotels([]);
         activeQueryRef.current = queryKey;
         setTotal(0);
+        setLoadingMore(false);
         setLoading(true);
         setError("");
 
@@ -182,7 +179,7 @@ function HotelsContent() {
             setHasMore(response.headers.get("X-GTH-Has-More") === "true" && incoming.length > 0);
             setError("");
         } catch {
-            setError("More hotel listings could not be loaded. Please retry.");
+            if(activeQueryRef.current === startedFor)setError("More hotel listings could not be loaded. Please retry.");
         } finally {
             if(activeQueryRef.current === startedFor)setLoadingMore(false);
         }
@@ -326,6 +323,7 @@ function HotelsContent() {
                 activeQueryRef.current = "";
                 setLoadingMore(false);
                 setCategory(next);
+                document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
             }}/>
 
             {nameFilter && (
@@ -410,23 +408,23 @@ function HotelsContent() {
                                 <div className="flex items-center gap-2">
                                     <Brain size={18} />
                                     <span className="text-sm font-bold">
-                                        Booking Partner Checklist
+                                        GTH PRO Hotel Explorer
                                     </span>
                                 </div>
 
                                 <h4 className="mt-4 text-xl font-black leading-tight">
-                                    How hotel partner rates work
+                                    Independent stay discovery
                                 </h4>
 
                                 <div className="mt-4 flex items-center gap-2 text-emerald-400">
                                     <TrendingUp size={16} />
                                     <span className="text-sm">
-                                        Rates may change until confirmed by the partner
+                                        Source-backed hotel profiles, not invented room inventory
                                     </span>
                                 </div>
 
                                 <p className="mt-5 text-xs text-[var(--text-soft)]">
-                                    Compare room types, cancellation conditions, taxes and final prices on the partner site.
+                                    Explore each GTH PRO property detail first. Confirm availability, taxes and policies only with the hotel or an authorized booking provider.
                                 </p>
                             </div>
                         </div>
@@ -436,7 +434,7 @@ function HotelsContent() {
                     {/* RIGHT CONTENT */}
                     {/* ========================================================================= */}
 
-                    <main className="min-w-0">
+                    <main id="hotel-results" className="min-w-0 scroll-mt-24">
                         {/* TOP STATS */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>
@@ -453,7 +451,7 @@ function HotelsContent() {
                             <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3">
                                 <Radar size={16} />
                                 <span className="text-xs">
-                                    GTH PRO hotel directory · provider rates only when available
+                                    Up to 24 genuine records per page
                                 </span>
                             </div>
                         </div>
@@ -595,7 +593,7 @@ function HotelsContent() {
 
                                                         <div className="mt-6 space-y-3">
                                                             <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
-                                                              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
+                                                              className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
                                                               View hotel details <ChevronRight size={16}/>
                                                             </a>
                                                             {hotel.affiliate_link ? (
@@ -603,14 +601,14 @@ function HotelsContent() {
                                                                     href={hotel.affiliate_link}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer sponsored"
-                                                                    className="w-full gth-btn-gold rounded-2xl py-4 text-sm font-bold flex items-center justify-center gap-2"
+                                                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold"
                                                                 >
                                                                     Continue to partner
                                                                     <ChevronRight size={16} />
                                                                 </a>
                                                             ) : (
                                                                 <p className="text-xs text-[var(--text-soft)]">
-                                                                    Partner booking link not available for this listing. View source-backed hotel details.
+                                                                    GTH PRO hotel profile and original property source available. Booking handoff not connected for this record.
                                                                 </p>
                                                             )}
                                                         </div>
