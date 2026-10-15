@@ -10,6 +10,7 @@ on:
       - ".github/workflows/tenders-sync.yml"
       - "scripts/tenders/**"
       - "scripts/import_tenders.py"
+      - "supabase/functions/gth-tender-ingest/**"
 
 # Short-lived GitHub OIDC: no service-role credentials in GitHub Actions.
 permissions:
