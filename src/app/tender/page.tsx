@@ -5,6 +5,8 @@ import {
   Globe2, Plane, Search, ShieldCheck
 } from "lucide-react";
 import { parseTenderFilters, searchPublicTenders, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
+import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Tender Opportunities & Procurement Intelligence | GTH PRO",
@@ -28,17 +30,15 @@ const sources = [
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 function textParam(raw: string | string[] | undefined) { return typeof raw === "string" ? raw : ""; }
-function formatted(iso: string) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "Check source notice" :
-    new Intl.DateTimeFormat("en", { dateStyle:"medium", timeZone:"UTC" }).format(d);
-}
-function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string}, page:number) {
+
+function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;scope?:"local"|"world"}, page:number, lang:string) {
   const q = new URLSearchParams();
   if (filters.q) q.set("q", filters.q);
   if (filters.country) q.set("country", filters.country);
   if (filters.sector) q.set("sector", filters.sector);
   if (filters.closingBefore) q.set("closingBefore", filters.closingBefore);
+  if (filters.scope) q.set("scope",filters.scope);
+  if (lang) q.set("lang",lang);
   q.set("page", String(page));
   return "/tender?" + q.toString();
 }
@@ -46,94 +46,119 @@ function filterHref(filters: {q:string;country:string;sector:string;closingBefor
 export default async function TenderPage({searchParams}: Props) {
   const raw = await searchParams;
   const params = new URLSearchParams();
-  for (const name of ["q","country","sector","closingBefore","page"] as const) {
+  for (const name of ["q","country","sector","closingBefore","page","scope"] as const) {
     const value = textParam(raw[name]);
     if (value) params.set(name,value);
   }
   const parsed = parseTenderFilters(params);
-  const result = parsed.ok ? await searchPublicTenders(parsed.filters) : null;
-  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", closingBefore:"", page:1 };
+  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", closingBefore:"", page:1, scope:"local" as const };
+  const audience=await resolveTenderAudience(filters.country,textParam(raw.lang));
+  const homeCountry=filters.country||audience.country||"";
+  const language=audience.language;
+  const t=tenderText(language);
+  const localCountry=homeCountry?countryLabel(homeCountry,language):"";
+  const result = parsed.ok ? await searchPublicTenders({...filters,country:homeCountry,
+    nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]}) : null;
+  const countries=Array.from(COUNTRY_CODES).sort((a,b)=>countryLabel(a,language).localeCompare(countryLabel(b,language),language));
   const error = !parsed.ok ? parsed.error : result && !result.ok ? result.error : null;
   const notices = result?.ok ? result.items : [];
   const count = result?.ok ? result.total : 0;
   const pageCount = result?.ok ? Math.ceil(result.total / result.size) : 0;
-  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+  return <main lang={language} dir={language==="ar"?"rtl":"ltr"} className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
           <Globe2 size={16} aria-hidden="true" /> GTH PRO · PILLAR 03
         </p>
         <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          Tender intelligence. <span className="gold-text">Source-first opportunities.</span>
+          {t("hero")}
         </h1>
         <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
-          Search source-attributed published procurement notices by sector, location and deadline.
-          Confirm all deadlines, eligibility, amendments and bidding instructions on the issuing authority’s website.
+          {t("intro")}
         </p>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
-          <ShieldCheck size={16} aria-hidden="true"/> Only approved official-source notices with future deadlines appear here
+          <ShieldCheck size={16} aria-hidden="true"/> {t("verified")}
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link href="/tender/assistant" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
-            <ClipboardCheck size={17} aria-hidden="true"/> Start Guided Tender Assistant <ArrowRight size={17} aria-hidden="true"/>
+            <ClipboardCheck size={17} aria-hidden="true"/> {t("guided")} <ArrowRight size={17} aria-hidden="true"/>
           </Link>
           <Link href="/tender/assistant" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-semibold">
-            Check My Eligibility
+            {t("eligibility")}
           </Link>
         </div>
       </div>
     </section>
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14" aria-labelledby="tender-find">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">Procurement discovery</p>
-          <h2 id="tender-find" className="mt-2 text-2xl font-semibold md:text-3xl">Find a tender notice</h2>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{t("discover")}</p>
+          <h2 id="tender-find" className="mt-2 text-2xl font-semibold md:text-3xl">{t("find")}</h2>
         </div>
-        <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} published notice${count===1?"":"s"}` : "Source-backed catalog"}</span>
+        <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} ${t("results")}` : "Source-backed catalog"}</span>
       </div>
-      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[2fr_1fr_1fr_1fr_auto] lg:items-end lg:p-5">
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">Keywords
-          <input name="q" maxLength={100} defaultValue={filters.q} placeholder="Search tender title" className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
+      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
+          <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">Country (ISO code)
-          <input name="country" maxLength={2} defaultValue={filters.country} placeholder="IN, AE, US…" className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm uppercase text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("country")}
+          <select name="country" defaultValue={filters.country} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
+            <option value="">{audience.country?`${t("inCountry")}: ${countryLabel(audience.country,language)} (auto)`:t("allCountries")}</option>
+            {countries.map(c=><option key={c} value={c}>{countryLabel(c,language)}</option>)}
+          </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">Sector
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
+          <select name="scope" defaultValue={filters.scope} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
+            <option value="local">{t("localScope")}</option><option value="world">{t("worldScope")}</option>
+          </select>
+        </label>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("language")}
+          <select name="lang" defaultValue={language} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
+            {LANG_OPTIONS.map(l=><option value={l.code} key={l.code}>{l.label}</option>)}
+          </select>
+        </label>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("sector")}
           <select name="sector" defaultValue={filters.sector} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm capitalize text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
-            <option value="">All sectors</option>
+            <option value="">{t("allSectors")}</option>
             {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
           </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">Closing on or before
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
           <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
         </label>
         <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">
-          <Search size={17} aria-hidden="true"/> Search
+          <Search size={17} aria-hidden="true"/> {t("search")}
         </button>
       </form>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-[var(--text-soft)]" role="status">
+        <span>{filters.scope==="world"?t("worldScope"):(localCountry?`${t("inCountry")}: ${localCountry} → ${t("nearby")}`:t("selectCountry"))}
+          {result?.ok&&filters.scope==="local"&&!result.countryRequired?` · ${result.primaryCount??0} ${t("inCountry")} · ${result.nearbyCount??0} ${t("nearby")}`:""}
+        </span>
+        <span>{t("sourceLanguage")}</span>
+      </div>
       {error ? <div role="status" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-        <h3 className="font-semibold">Tender catalog not available yet</h3>
-        <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{error}. Live data will appear after the reviewed database migration and authorised source import.</p>
+        <h3 className="font-semibold">{t("notConfigured")}</h3>
+        <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{error}. {t("recheck")}</p>
       </div> : notices.length ? (
         <>
           <div className="mt-7 grid gap-4 md:grid-cols-2">
             {notices.map(tender=>(
               <article key={tender.id} className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">
-                  <span className="rounded-full border border-[var(--border)] px-3 py-1">{tender.country_code}</span>
+                  <span className="rounded-full border border-[var(--border)] px-3 py-1">{countryLabel(tender.country_code,language)}</span>
                   <span className="rounded-full border border-[var(--border)] px-3 py-1 capitalize">{tender.sector}</span>
-                  <span>Official source reference</span>
+                  <span>{tender.source_name}</span>
                 </div>
                 <h3 className="mt-4 text-lg font-semibold leading-7">{tender.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{tender.buyer}</p>
                 <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--text-soft)]">{tender.summary || "Open the notice to review source, eligibility and deadlines."}</p>
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
-                  <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><CalendarDays size={15}/> Deadline {formatted(tender.deadline_at)} UTC</span>
+                  <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><CalendarDays size={15}/> {t("deadline")} {dateLabel(tender.deadline_at,language)} UTC</span>
                   <div className="flex flex-wrap gap-3">
                     <Link href={`/tender/${tender.id}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
-                      View notice <ArrowRight size={16}/>
+                      {t("view")} <ArrowRight size={16}/>
                     </Link>
                     <Link href={`/tender/assistant?tenderId=${encodeURIComponent(tender.id)}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
-                      Check eligibility <ClipboardCheck size={16}/>
+                      {t("check")} <ClipboardCheck size={16}/>
                     </Link>
                   </div>
                 </div>
@@ -141,24 +166,24 @@ export default async function TenderPage({searchParams}: Props) {
             ))}
           </div>
           <nav aria-label="Tender results pages" className="mt-8 flex items-center justify-between gap-4">
-            {filters.page>1?<Link href={filterHref(filters,filters.page-1)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">Previous</Link>:<span/>}
-            <span className="text-sm text-[var(--text-soft)]">Page {filters.page} of {pageCount}</span>
-            {filters.page<pageCount?<Link href={filterHref(filters,filters.page+1)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">Next</Link>:<span/>}
+            {filters.page>1?<Link href={filterHref(filters,filters.page-1,language)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">{t("previous")}</Link>:<span/>}
+            <span className="text-sm text-[var(--text-soft)]">{t("page")} {filters.page} / {pageCount}</span>
+            {filters.page<pageCount?<Link href={filterHref(filters,filters.page+1,language)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">{t("next")}</Link>:<span/>}
           </nav>
         </>
       ) : <div role="status" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
         <FileSearch size={30} className="mx-auto text-[var(--gold)]" aria-hidden="true"/>
-        <h3 className="mt-4 text-lg font-semibold">No published tenders match your search</h3>
+        <h3 className="mt-4 text-lg font-semibold">{result?.ok && result.countryRequired?t("selectCountry"):t("noResults")}</h3>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
-          GTH PRO does not display fabricated procurement notices. After authorized official-source ingestion and publication validation, eligible notices will appear here.
+          {t("noResultsInfo")}
         </p>
-        <Link href="/tender" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">Clear filters <ArrowRight size={16}/></Link>
+        <Link href="/tender" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">{t("clear")} <ArrowRight size={16}/></Link>
       </div>}
     </section>
     <section id="readiness" className="border-y border-[var(--border)] bg-[var(--card)]/60 px-4 py-12 sm:px-6 md:py-16">
       <div className="mx-auto max-w-7xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">Bid-readiness guide</p>
-        <h2 className="mt-3 text-2xl font-semibold md:text-3xl">Before you respond to a tender</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{t("readiness")}</p>
+        <h2 className="mt-3 text-2xl font-semibold md:text-3xl">{t("before")}</h2>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["Verify the buyer","Check the official issuing authority and latest corrigenda."],
@@ -172,12 +197,11 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
       </div>
     </section>
-    <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 md:pt-16" aria-label="India official tender discovery">
+    <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 md:pt-16" aria-label="India official tender discovery" hidden={homeCountry!=="IN"}>
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
-        <h2 className="text-xl font-semibold">India official tender opportunities</h2>
+        <h2 className="text-xl font-semibold">{t("indiaTitle")}</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          Search notices currently published in GTH PRO, or check the central CPPP, ePublishing and GeM portals directly.
-          Government portal notices are not claimed as imported unless an authorized, source-verified feed has supplied them.
+          {t("indiaInfo")}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link href="/tender?country=IN" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold">View India catalog <ArrowRight size={16}/></Link>
