@@ -43,6 +43,7 @@ jobs:
           python -m unittest discover -s tests -p "test_tender_import.py"
           python -m unittest discover -s tests -p "test_open_tenders.py"
           python -m unittest discover -s tests -p "test_global_tenders.py"
+          python -m unittest discover -s tests -p "test_additional_tenders.py"
       - name: Official tender sync via GitHub OIDC to Supabase
         shell: bash
         run: |
