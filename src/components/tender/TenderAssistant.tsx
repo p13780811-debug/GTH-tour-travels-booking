@@ -445,7 +445,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         <section aria-labelledby="save-heading" className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
           <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--gold)]"><LockKeyhole size={16}/> Private workspace</p>
           <h2 id="save-heading" className="mt-3 text-xl font-semibold">Save and resume your tender preparation</h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Optional sign-in. Signed-in drafts are stored in an owner-only RLS table after the migration is applied. Never add confidential IDs, bank details, passwords or documents. Your current form stays in this browser tab unless you explicitly save.</p>
+          <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Optional sign-in. Signed-in drafts and preparation progress are stored in an existing owner-only RLS table. Never add confidential IDs, bank details, passwords or documents. Your current form stays in this browser tab unless you explicitly save.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <button disabled={saveBusy} type="button" onClick={saveDraft} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-50"><Save size={16}/> Save private draft</button>
             <button disabled={saveBusy} type="button" onClick={loadList} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-50"><BookOpen size={16}/> Load my saved drafts</button>
@@ -458,9 +458,20 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           {authMessage&&<p role="status" className="mt-4 rounded-xl border border-[var(--border)] p-3 text-sm">{authMessage}</p>}
           {savedRows.length>0&&<div className="mt-6 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">Your private drafts</p>
-            {savedRows.map(row=><button key={row.id} type="button" onClick={()=>openSaved(row)} className="flex min-h-12 w-full items-center justify-between gap-4 rounded-xl border border-[var(--border)] px-4 py-3 text-left text-sm hover:border-[var(--gold)]">
-              <span className="truncate">{row.tender_title||"Untitled tender"}</span>
-              <span className="shrink-0 text-xs text-[var(--text-soft)]">Resume →</span>
+            {savedRows.map(row=><button key={row.id} type="button" onClick={()=>openSaved(row)}
+              className="flex min-h-14 w-full items-center justify-between gap-4 rounded-xl border border-[var(--border)] px-4 py-3 text-left text-sm hover:border-[var(--gold)]">
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{row.tender_title||"Untitled tender"}</span>
+                <span className="mt-1 block text-xs text-[var(--text-soft)]">
+                  {row.official_notice_changed?"Source changed — review needed · ":
+                    row.readiness?.expired?"Saved deadline expired · ":
+                    row.readiness?.soon?"Closing within 72h · ":""}
+                  {row.readiness?.status==="user-reported-external-submission"
+                    ?"User-reported external submission (unverified)":
+                    "Private preparation · "+(row.readiness?.blockers.length??0)+" checks need review"}
+                </span>
+              </span>
+              <span className="shrink-0 text-xs font-semibold text-[var(--text-soft)]">Resume →</span>
             </button>)}
           </div>}
         </section>
