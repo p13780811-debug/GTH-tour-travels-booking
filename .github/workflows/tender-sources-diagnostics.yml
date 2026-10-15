@@ -1,0 +1,22 @@
+name: GTH Tender Official Source Diagnostics
+on:
+  pull_request:
+    paths:
+      - "scripts/tenders/**"
+      - "tests/test_additional_tenders.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-open-source-schemas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read-only official API schema diagnostics
+        run: python scripts/tenders/registry_probe.py
+      - name: Additional source normalization regression
+        run: python -m unittest discover -s tests -p "test_additional_tenders.py"
