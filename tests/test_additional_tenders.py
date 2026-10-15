@@ -46,7 +46,7 @@ class AdditionalOfficialTests(unittest.TestCase):
             src.ukraine_notice({**obj,"status":"complete"})
 
     def test_bounded_ukraine_detail_fetches(self):
-        listed={"data":[{"id":"3d2fa044-a3cb-4ee3-ab89-a8b395c77e2e"}]}
+        listed={"data":[{"id":"3d2fa044-a3cb-4ee3-ab89-a8b395c77e2e","status":"active.tendering"}]}
         detail={"data":{"tenderID":"UA-2026-10-15-000123-a"}}
         with patch.object(src.core,"_http_json",side_effect=[listed,detail]) as fetch, patch.object(src.time,"sleep"):
             result=src.fetch_ukraine(80)
