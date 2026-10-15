@@ -10,7 +10,8 @@ export async function GET(request: Request) {
   const {searchParams}=new URL(request.url);
   const audience=await resolveTenderAudience(valid.filters.country,searchParams.get("lang")??undefined);
   const country=valid.filters.country || audience.country || "";
-  const result = await searchPublicTenders({...valid.filters,country,nearby:valid.filters.scope==="local"?audience.country===country?audience.nearby:[]:[]});
+  const result = await searchPublicTenders({...valid.filters,country:valid.filters.scope==="world"?valid.filters.country:country,
+    nearby:valid.filters.scope==="local"&&country?audience.nearby:[]});
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers });
   return NextResponse.json({ items: result.items, total: result.total, page: result.page, pageSize: result.size,
     country,language:audience.language,scope:valid.filters.scope,
