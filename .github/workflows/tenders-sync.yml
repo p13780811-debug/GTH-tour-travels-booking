@@ -23,9 +23,11 @@ jobs:
           python-version: "3.12"
       - name: Test open notice normalization offline
         run: python -m unittest discover -s tests -p "test_open_tenders.py"
+      - name: Test additional global official-source adapters offline
+        run: python -m unittest discover -s tests -p "test_global_tenders.py"
       - name: API fetch and dry run (private DB disabled)
         if: vars.GTH_TENDER_INGESTION_ENABLED != 'true'
-        run: python scripts/tenders/open_ingestion.py --source all --limit 50
+        run: python scripts/tenders/global_ingestion.py --source all --limit 100
       - name: Import official notices into PRIVATE tender review
         if: vars.GTH_TENDER_INGESTION_ENABLED == 'true'
         env:
@@ -33,6 +35,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           EXPECTED_PROJECT_REF: ${{ vars.GTH_SUPABASE_PROJECT_REF }}
+          GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED: ${{ vars.GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED }}
+          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
         run: |
           test -n "$SUPABASE_URL" && test -n "$SUPABASE_SERVICE_ROLE_KEY" && test -n "$EXPECTED_PROJECT_REF"
-          python scripts/tenders/open_ingestion.py --source all --limit 50 --commit --expected-project-ref "$EXPECTED_PROJECT_REF"
+          if [ "$GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED" = "true" ]; then
+            python scripts/tenders/global_ingestion.py --source all --limit 100 --commit --publish-official --expected-project-ref "$EXPECTED_PROJECT_REF"
+          else
+            python scripts/tenders/global_ingestion.py --source all --limit 100 --commit --expected-project-ref "$EXPECTED_PROJECT_REF"
+          fi
