@@ -124,6 +124,62 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
   }
 }
 
+export type TenderDiscoveryStats = {
+  sectors: Record<TenderSector, number>;
+  closingSoon7: number;
+  latestImportedAt: string | null;
+};
+
+/**
+ * Public/RLS-scoped, live query-backed marketplace facets. These are true
+ * approved ACTIVE notice counts in the selected geographic area; never demo
+ * numbers, estimated totals or claimed real-time stream event counts.
+ * A separate latest-imported timestamp is deliberately NOT called "last sync":
+ * duplicate-only ingestion jobs do not update imported_at.
+ */
+export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<TenderDiscoveryStats | null> {
+  const db=publicClient();
+  if(!db) return null;
+  if(filters.scope==="local" && !filters.country) return null;
+  const countries=filters.scope==="local"
+    ? Array.from(new Set([filters.country,...(filters.nearby??[])]))
+        .filter(c=>/^[A-Z]{2}$/.test(c)).slice(0,13)
+    : filters.country?[filters.country]:[];
+  const base = () => {
+    let query=db.from("tenders")
+      .select("id",{count:"exact",head:true})
+      .eq("status","published").eq("source_verified",true).eq("is_public",true)
+      .gt("deadline_at",new Date().toISOString());
+    if(countries.length) query=query.in("country_code",countries);
+    return query;
+  };
+  try {
+    const cutoff=new Date(Date.now()+7*86400000).toISOString();
+    const sectorJobs=TENDER_SECTORS.map(sector=>base().eq("sector",sector));
+    const newest=db.from("tenders").select("imported_at")
+      .eq("status","published").eq("source_verified",true).eq("is_public",true)
+      .gt("deadline_at",new Date().toISOString())
+      .order("imported_at",{ascending:false}).limit(1);
+    if(countries.length) newest.in("country_code",countries);
+    const results=await Promise.all([
+      ...sectorJobs,
+      base().lte("deadline_at",cutoff),
+      newest
+    ]);
+    if(results.some(r=>r.error)) return null;
+    const sectors=Object.fromEntries(
+      TENDER_SECTORS.map((sector,index)=>[sector,results[index].count??0])
+    ) as Record<TenderSector,number>;
+    const latest=results[results.length-1];
+    const lastRow=Array.isArray(latest.data)?latest.data[0]:null;
+    return {
+      sectors,
+      closingSoon7:results[TENDER_SECTORS.length].count??0,
+      latestImportedAt:lastRow && typeof lastRow.imported_at==="string"?lastRow.imported_at:null
+    };
+  } catch {return null;}
+}
+
 export async function getPublicTender(id: string):
  Promise<{ok:true;item:PublicTender|null}|{ok:false;status:number;error:string}> {
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id))
