@@ -11,7 +11,7 @@ vm.runInNewContext(js,{module:mod,exports:mod.exports,Date,Set,Number,Array},{ti
 const {parsePreparation,deriveReadiness,EMPTY_PREPARATION,REVIEW_IDS}=mod.exports;
 
 const date=(days)=>new Date(Date.now()+days*86400000).toISOString();
-function input(overrides={}){return {...EMPTY_PREPARATION,...overrides,version:1};}
+function input(overrides={}){return {...EMPTY_PREPARATION,version:1,...overrides};}
 test("Empty preparation cannot claim bid submitted or official criteria verified",()=>{
  const state=parsePreparation(input());
  assert.equal(state.external_submission,"not_reported");
@@ -24,7 +24,7 @@ test("Only owner-declared progress can advance checklist and still needs officia
   checked_prebid:Array.from(REVIEW_IDS),notice_reviewed_at:new Date().toISOString()}));
  const report=deriveReadiness(state,false,date(4));
  assert.equal(report.status,"review-required");
- assert.ok(report.blockers.some(x=>x.includes("official")));
+ assert.ok(report.blockers.some(x=>x.toLowerCase().includes("official")));
 });
 test("Unverified submissions can only be labelled user-reported",()=>{
  const status=parsePreparation(input({external_submission:"user_reported",external_submission_recorded_at:new Date().toISOString()}));
