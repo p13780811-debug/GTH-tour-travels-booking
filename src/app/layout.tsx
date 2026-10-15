@@ -38,6 +38,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin()),
   applicationName: "GTH PRO",
+  icons: { apple: [{ url: "/app-icon/180", sizes: "180x180", type: "image/png" }] },
   title: { default: "GTH PRO | Global Technical Hub", template: "%s" },
   description: "GTH PRO unites Tours & Travels, Real Estate and Tender Intelligence with source-aware discovery and business onboarding.",
   keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence"],
