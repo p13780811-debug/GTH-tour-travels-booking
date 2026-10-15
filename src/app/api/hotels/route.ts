@@ -87,9 +87,9 @@ export async function GET(req: Request) {
     const window = hotelPageWindow(page, supplierVisible, catalogCount, PAGE_SIZE);
     if (supplierFailed) supplierRows = [];
     let catalogFailed = Boolean(catalogCountResult.error);
-    let catalogRows: Array<{ source_id: string; name: string; city: string | null; category: string }> = [];
+    let catalogRows: Array<{ source_id: string; name: string; city: string | null; category: string; image_url: string | null }> = [];
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
-      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,category");
+      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,category,image_url");
       if (city) catalogQuery = catalogQuery.ilike("city", cityLike);
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
       const { data, error } = await catalogQuery.order("name").order("source_id")
@@ -109,7 +109,7 @@ export async function GET(req: Request) {
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
         id: "osm:" + hotel.source_id, name: hotel.name, city: hotel.city || city || "Location not specified",
-        stars: null, image: "/placeholder.jpg", affiliate_link: null,
+        stars: null, image: safeImage(hotel.image_url), affiliate_link: null,
         source: "OpenStreetMap", source_license: "ODbL-1.0",
       }));
     // Name equality is not proof of duplicate physical properties; do not
