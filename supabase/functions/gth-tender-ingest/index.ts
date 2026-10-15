@@ -216,26 +216,40 @@ Deno.serve(async (req) => {
     if (url !== EXPECTED_ORIGIN || !key) {
       return Response.json({ error: "Server unavailable" }, { status: 503, headers: RESPONSE_HEADERS });
     }
+    let appliedChanges = 0;
     if (records.length > 0) {
+      // The service-role-only SECURITY INVOKER RPC updates changed public
+      // source fields while preserving verified eligibility review fields.
+      // Unchanged records do not rewrite updated_at, enabling reliable
+      // amendment alerts to owner-only preparation workspaces.
+      const safeRecords = records.map(({ requirements_verified: _unused, ...fields }) => fields);
       const response = await fetch(
-        EXPECTED_ORIGIN + "/rest/v1/tenders?on_conflict=source_name,source_reference",
+        EXPECTED_ORIGIN + "/rest/v1/rpc/upsert_official_tender_batch",
         {
           method: "POST",
           headers: {
             apikey: key,
             Authorization: "Bearer " + key,
             "Content-Type": "application/json",
-            Prefer: "resolution=ignore-duplicates,return=minimal",
+            Prefer: "return=representation",
           },
-          body: JSON.stringify(records),
+          body: JSON.stringify({ p_source: source, p_records: safeRecords }),
           signal: AbortSignal.timeout(18000),
         },
       );
       if (!response.ok) {
         return Response.json({ error: "Database ingestion failed" }, { status: 502, headers: RESPONSE_HEADERS });
       }
+      const body: unknown = await response.json();
+      if (isObj(body) && typeof body.applied_changes === "number" &&
+          Number.isInteger(body.applied_changes) && body.applied_changes >= 0) {
+        appliedChanges = body.applied_changes;
+      }
     }
-    return Response.json({ accepted: records.length, rejected, source, mode: "official_source_import", published_count: null }, { headers: RESPONSE_HEADERS });
+    return Response.json({
+      accepted: records.length, rejected, source, applied_changes: appliedChanges,
+      mode: "official_source_import", published_count: null,
+    }, { headers: RESPONSE_HEADERS });
   } catch {
     return Response.json({ error: "Invalid or unavailable source records" }, { status: 400, headers: RESPONSE_HEADERS });
   }
