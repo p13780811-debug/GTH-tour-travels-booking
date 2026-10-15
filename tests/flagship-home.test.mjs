@@ -199,7 +199,8 @@ test("entity master search returns real hotel name matches and verified-source t
   assert.match(search, /href=\{"\/tender\/" \+ item\.id\}/);
   assert.match(hotelApi, /if \(name\) supplierQuery = supplierQuery\.ilike\("name", nameLike\)/);
   assert.match(hotelApi, /if \(name\) catalogQuery = catalogQuery\.ilike\("name", nameLike\)/);
-  assert.match(hotelPage, /hotelParams\.set\("name", nameFilter\)/);
+  assert.match(hotelPage, /name:nameFilter/);
+  assert.match(hotelPage, /hotelParamsFor\(nextPage\)/);
   assert.match(search, /No matching published record found/);
   assert.doesNotMatch(search, /invented listings|mock results|fake hotel inventory/);
 });

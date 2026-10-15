@@ -12,9 +12,10 @@
 
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
+import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
     Search,
@@ -61,7 +62,14 @@ type HotelListing = {
     city: string;
     image: string;
     stars: number | null;
-    affiliate_link: string | null; category?:string;country?:string|null;source?:string;source_url?:string|null;hotel_website?:string|null;
+    affiliate_link: string | null;
+    category?: string;
+    country?: string | null;
+    source?: string;
+    source_url?: string | null;
+    hotel_website?: string | null;
+    location_scope?: string;
+
 };
 
 // Only results returned by the hotel's public listing API are displayed here.
@@ -84,7 +92,18 @@ function HotelsContent() {
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
-    const [filteredHotels, setFilteredHotels] = useState<HotelListing[]>([]);
+    const [total, setTotal] = useState(0);
+    const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category]);
+    const activeQueryRef = useRef(queryKey);
+    // Every API page MUST carry the identical search scope and filters.
+    const hotelParamsFor = (pageNumber: number) => hotelSearchParams({
+        destination:requestedDestination,city:requestedCity,name:nameFilter,
+        country:requestedCountry,category
+    },pageNumber);
+    const selectedType = (({
+        hotel:"Hotels",hostel:"Hostels",guest_house:"Guest houses",
+        motel:"Motels",apartment:"Apartments",resort:"Resorts"
+    } as Record<string,string>)[category] ?? "Accommodations");
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -102,7 +121,9 @@ function HotelsContent() {
     useEffect(() => {
         const controller = new AbortController();
         setHotels([]);
-        setFilteredHotels([]);
+        activeQueryRef.current = queryKey;
+        setTotal(0);
+        setLoadingMore(false);
         setLoading(true);
         setError("");
 
@@ -111,12 +132,7 @@ function HotelsContent() {
 
         async function loadHotels() {
             try {
-                const hotelParams = new URLSearchParams({ page: "1" });
-                if(requestedDestination) hotelParams.set("destination",requestedDestination);
-                else if (requestedCity) hotelParams.set("city", requestedCity);
-                if (nameFilter) hotelParams.set("name", nameFilter);
-                if (requestedCountry) hotelParams.set("country",requestedCountry);
-                if (category) hotelParams.set("category",category);
+                const hotelParams = hotelParamsFor(1);
                 const response = await fetch(`/api/hotels?${hotelParams}`, {
                     cache: "no-store",
                     signal: controller.signal,
@@ -125,8 +141,9 @@ function HotelsContent() {
                 const data: unknown = await response.json();
                 if (!Array.isArray(data)) throw new Error("Unexpected hotel response");
                 if (!controller.signal.aborted) {
+                    const apiTotal = Number(response.headers.get("X-GTH-Total"));
                     setHotels(data as HotelListing[]);
-                    setFilteredHotels(data as HotelListing[]);
+                    setTotal(Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
                     setHasMore(response.headers.get("X-GTH-Has-More") === "true");
                 }
             } catch {
@@ -138,33 +155,33 @@ function HotelsContent() {
 
         void loadHotels();
         return () => controller.abort();
-    }, [requestedCity, nameFilter, requestedCountry, category, requestedDestination]);
+    // Query key uniquely identifies a filter combination; it resets paging on every change.
+    }, [queryKey]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
         setLoadingMore(true);
         const nextPage = page + 1;
+        const startedFor = queryKey;
         try {
-            const hotelParams = new URLSearchParams({ page: String(nextPage) });
-            if (requestedDestination) hotelParams.set("destination", requestedDestination);
-            else if (requestedCity) hotelParams.set("city", requestedCity);
-            if (nameFilter) hotelParams.set("name", nameFilter);
+            const hotelParams = hotelParamsFor(nextPage);
             const response = await fetch(`/api/hotels?${hotelParams}`, { cache: "no-store" });
             if (!response.ok) throw new Error("Hotel page unavailable");
             const incoming: unknown = await response.json();
             if (!Array.isArray(incoming)) throw new Error("Unexpected hotel response");
-            const merged = [...hotels, ...(incoming as HotelListing[])].filter(
-                (hotel, index, all) => all.findIndex((entry) => String(entry.id) === String(hotel.id)) === index
-            );
-            setHotels(merged);
-            setFilteredHotels(merged);
+            if (activeQueryRef.current !== startedFor) return;
+            setHotels(existing => {
+                const byId = new Map(existing.map(item => [String(item.id),item]));
+                for (const item of incoming as HotelListing[]) byId.set(String(item.id),item);
+                return [...byId.values()];
+            });
             setPage(nextPage);
             setHasMore(response.headers.get("X-GTH-Has-More") === "true" && incoming.length > 0);
             setError("");
         } catch {
-            setError("More hotel listings could not be loaded. Please retry.");
+            if(activeQueryRef.current === startedFor)setError("More hotel listings could not be loaded. Please retry.");
         } finally {
-            setLoadingMore(false);
+            if(activeQueryRef.current === startedFor)setLoadingMore(false);
         }
     }
 
@@ -173,6 +190,7 @@ function HotelsContent() {
         if(city.length>80 || (city.length>0&&city.length<2))return;
         if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
         setNameFilter("");
+        setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
         setRequestedCountry(city?"":selectedCountry);
@@ -301,7 +319,12 @@ function HotelsContent() {
               </label>
               <p className="mt-2 text-xs text-[var(--text-soft)]">Leave city empty and select a country; or search a city worldwide. Country detection is approximate, not GPS.</p>
             </section>
-            <HotelCatalogPulse country={requestedCountry} category={category} onCategory={setCategory}/>
+            <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
+                activeQueryRef.current = "";
+                setLoadingMore(false);
+                setCategory(next);
+                document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
+            }}/>
 
             {nameFilter && (
                 <div role="status" className="mx-auto mt-5 max-w-7xl px-5 text-sm font-semibold text-[var(--text)]">
@@ -385,23 +408,23 @@ function HotelsContent() {
                                 <div className="flex items-center gap-2">
                                     <Brain size={18} />
                                     <span className="text-sm font-bold">
-                                        Booking Partner Checklist
+                                        GTH PRO Hotel Explorer
                                     </span>
                                 </div>
 
                                 <h4 className="mt-4 text-xl font-black leading-tight">
-                                    How hotel partner rates work
+                                    Independent stay discovery
                                 </h4>
 
                                 <div className="mt-4 flex items-center gap-2 text-emerald-400">
                                     <TrendingUp size={16} />
                                     <span className="text-sm">
-                                        Rates may change until confirmed by the partner
+                                        Source-backed hotel profiles, not invented room inventory
                                     </span>
                                 </div>
 
                                 <p className="mt-5 text-xs text-[var(--text-soft)]">
-                                    Compare room types, cancellation conditions, taxes and final prices on the partner site.
+                                    Explore each GTH PRO property detail first. Confirm availability, taxes and policies only with the hotel or an authorized booking provider.
                                 </p>
                             </div>
                         </div>
@@ -411,24 +434,24 @@ function HotelsContent() {
                     {/* RIGHT CONTENT */}
                     {/* ========================================================================= */}
 
-                    <main className="min-w-0">
+                    <main id="hotel-results" className="min-w-0 scroll-mt-24">
                         {/* TOP STATS */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-xl md:text-2xl font-black">
-                                    {filteredHotels.length.toLocaleString()} Hotel
-                                    Listings
+                                    {loading ? "Searching…" : total.toLocaleString()+" "+selectedType+" matching"}
+                                    
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    Source-backed listings for {requestedCity || requestedCountry || "worldwide"}
+                                    Showing {hotels.length.toLocaleString()} of {total.toLocaleString()} · {requestedDestination || requestedCity || requestedCountry || "Worldwide"} · Page {page}
                                 </p>
                             </div>
 
                             <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3">
                                 <Radar size={16} />
                                 <span className="text-xs">
-                                    Final rates on partner site
+                                    Up to 24 genuine records per page
                                 </span>
                             </div>
                         </div>
@@ -436,33 +459,41 @@ function HotelsContent() {
                         {/* HOTEL CARDS */}
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
                         {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
-                        {!loading && !error && filteredHotels.length === 0 && (
+                        {!loading && !error && hotels.length === 0 && (
                             <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
                         )}
                         <div className="space-y-5">
-                            {filteredHotels.map((hotel) => (
+                            {hotels.map((hotel) => (
                                 <div
                                     key={hotel.id}
                                     className="group gth-glass border border-[var(--border)] rounded-3xl overflow-hidden hover:scale-[1.01] transition-all"
                                 >
                                     <div className="flex flex-col lg:flex-row">
                                         {/* IMAGE */}
-                                        <div className="relative lg:w-[360px] shrink-0">
-                                            <img
-                                                src={hotel.image}
-                                                alt={hotel.name}
-                                                className="w-full h-[240px] lg:h-full object-cover"
-                                            />
+                                        <div className="relative lg:w-[360px] shrink-0 min-h-[240px]">
+                                            {hotel.image && hotel.image !== "/placeholder.jpg" ? (
+                                                <img src={hotel.image} alt={"Accommodation photo: "+hotel.name}
+                                                    loading="lazy" className="w-full h-[240px] lg:h-full object-cover"/>
+                                            ) : (
+                                                <div role="img" aria-label={"No licensed property photo for "+hotel.name}
+                                                    className="flex h-[240px] flex-col items-center justify-center gap-3 bg-[var(--bg)] px-6 text-center text-[var(--text-soft)]">
+                                                    {hotel.category==="apartment" ? <Building2 size={36} aria-hidden="true"/> :
+                                                     hotel.category==="guest_house" ? <BedDouble size={36} aria-hidden="true"/> :
+                                                     hotel.category==="hostel" ? <Users size={36} aria-hidden="true"/> :
+                                                     <Hotel size={36} aria-hidden="true"/>}
+                                                    <p className="text-xs font-medium">{(hotel.category||"hotel").replaceAll("_"," ")} · No licensed hotel photo</p>
+                                                </div>
+                                            )}
 
                                             <div className="absolute top-4 left-4 flex gap-2">
                                                 <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
                                                     <Diamond size={12} />
-                                                    Hotel
+                                                    {(hotel.category||"hotel").replaceAll("_"," ")}
                                                 </div>
 
                                                 <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
                                                     <Clock3 size={12} />
-                                                    Partner booking
+                                                    {hotel.affiliate_link ? "Partner booking available" : "GTH PRO directory" }
                                                 </div>
                                             </div>
                                         </div>
@@ -508,14 +539,14 @@ function HotelsContent() {
                                                     </div>
 
                                                     <p className="mt-5 text-sm text-[var(--text-soft)]">
-                                                        Room features and amenities should be checked with the partner before booking.
+                                                        Category: {(hotel.category||"hotel").replaceAll("_"," ")} · Source: {hotel.source||"Property directory"}
                                                     </p>
 
                                                     {/* DESCRIPTION */}
                                                     <p className="mt-5 text-sm leading-7 text-[var(--text-soft)] max-w-2xl">
-                                                        This hotel listing is provided for discovery. Check
-                                                        room types, location, cancellation conditions and
-                                                        up-to-date availability before placing a booking.
+                                                        Property details are shown in GTH PRO. Review the original
+                                                        source and confirm room types, cancellation terms and
+                                                        current availability before reserving.
                                                     </p>
                                                 </div>
 
@@ -551,18 +582,18 @@ function HotelsContent() {
                                                                 </div>
 
                                                                 <div className="mt-1 text-base font-bold">
-                                                                    Check price with partner
+                                                                    Price not independently verified
                                                                 </div>
 
                                                                 <div className="text-xs text-[var(--text-soft)] mt-1">
-                                                                    Taxes and fees confirmed by partner
+                                                                    Live prices appear only when an authorized supplier confirms them
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <div className="mt-6 space-y-3">
                                                             <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
-                                                              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
+                                                              className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
                                                               View hotel details <ChevronRight size={16}/>
                                                             </a>
                                                             {hotel.affiliate_link ? (
@@ -570,14 +601,14 @@ function HotelsContent() {
                                                                     href={hotel.affiliate_link}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer sponsored"
-                                                                    className="w-full gth-btn-gold rounded-2xl py-4 text-sm font-bold flex items-center justify-center gap-2"
+                                                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold"
                                                                 >
                                                                     Continue to partner
                                                                     <ChevronRight size={16} />
                                                                 </a>
                                                             ) : (
                                                                 <p className="text-xs text-[var(--text-soft)]">
-                                                                    Partner booking link not available for this listing. View source-backed hotel details.
+                                                                    GTH PRO hotel profile and original property source available. Booking handoff not connected for this record.
                                                                 </p>
                                                             )}
                                                         </div>
@@ -592,7 +623,7 @@ function HotelsContent() {
                         {hasMore && !loading && (
                             <button type="button" disabled={loadingMore} onClick={() => void loadMoreHotels()}
                                 className="gth-btn-gold mt-6 rounded-xl px-6 py-3 text-sm font-semibold disabled:opacity-60">
-                                {loadingMore ? "Loading more hotels..." : "Load more hotel listings"}
+                                {loadingMore ? "Loading next page…" : "Load next "+selectedType.toLowerCase()+" · "+hotels.length.toLocaleString()+" of "+total.toLocaleString()}
                             </button>
                         )}
                     </main>
