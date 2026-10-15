@@ -15,7 +15,7 @@ import {safeTenderSource} from "@/lib/tender/catalog";
 import {EMPTY_PREPARATION,PREBID_CHECKS,parsePreparation,deriveReadiness} from "@/lib/tender/workflow-state";
 
 type Notice={id:string;title:string;buyer:string;source_reference:string;source_url:string;
-  eligibility_requirements:TenderRequirements;requirements_verified:boolean};
+  eligibility_requirements:TenderRequirements;requirements_verified:boolean;deadline_at:string};
 type Saved={id:string;tender_id:string|null;tender_title:string;
   notice_details?:{title:string;buyer:string;source_reference:string;source_url:string;preparation?:unknown};
   readiness?:{status:string;soon:boolean;expired:boolean;blockers:string[]};
@@ -52,7 +52,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   const [prebidReviewed,setPrebidReviewed]=useState<string[]>([]);
   const [officialReviewedAt,setOfficialReviewedAt]=useState<string|null>(null);
   const [selfReportedSubmissionAt,setSelfReportedSubmissionAt]=useState<string|null>(null);
-  const [currentDeadline,setCurrentDeadline]=useState<string|null>(null);
+  const [currentDeadline,setCurrentDeadline]=useState<string|null>(initialTender?.deadline_at??null);
   const [sourceChanged,setSourceChanged]=useState(false);
   const prebidQuestions=PREBID_CHECKS;
   function stageLocalFiles(selected:FileList|null){
@@ -153,7 +153,12 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
       })});
       const body=await r.json();if(!r.ok)throw new Error(body.error||"Could not save draft");
       setSavedId(body.id);
-      setAuthMessage("Preparation progress, document checks and attendance review saved privately. No government bid was submitted.");
+      if(body.source_revalidation_required){
+        setOfficialReviewedAt(null);setChecklist([]);setPrebidReviewed([]);setSourceChanged(true);
+      }
+      setAuthMessage(body.source_revalidation_required
+        ?"Official source changed: previous document and attendance checks were reset. Review the updated notice and resave."
+        :"Preparation progress, document checks and attendance review saved privately. No government bid was submitted.");
     }catch(e){setAuthMessage(e instanceof Error?e.message:"Unable to save.");}
     finally{setSaveBusy(false);}
   }
