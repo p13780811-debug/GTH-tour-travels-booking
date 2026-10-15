@@ -26,7 +26,7 @@ function initialAirport(code: string | undefined, fallback: string): string {
   return code && AIRPORT.test(code) ? code : fallback;
 }
 
-export default function FlightHero({ initial = {} }: { initial?: SearchDefaults }) {
+export default function FlightHero({ initial = {}, onDatesChange }: { initial?: SearchDefaults; onDatesChange?: (departDate: string, returnDate: string) => void }) {
   const router = useRouter();
   const listId = useId().replace(/:/g, "");
   const root = useRef<HTMLDivElement>(null);
@@ -242,10 +242,10 @@ export default function FlightHero({ initial = {} }: { initial?: SearchDefaults 
         <fieldset className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--text)]">
           <legend className="sr-only">Trip type</legend>
           <label className="inline-flex cursor-pointer items-center gap-2">
-            <input type="radio" name="trip-type" checked={!roundTrip} onChange={() => setRoundTrip(false)} /> One-way
+            <input type="radio" name="trip-type" checked={!roundTrip} onChange={() => { setRoundTrip(false); onDatesChange?.(departDate, ""); }} /> One-way
           </label>
           <label className="inline-flex cursor-pointer items-center gap-2">
-            <input type="radio" name="trip-type" checked={roundTrip} onChange={() => setRoundTrip(true)} /> Round-trip
+            <input type="radio" name="trip-type" checked={roundTrip} onChange={() => { setRoundTrip(true); onDatesChange?.(departDate, returnDate); }} /> Round-trip
           </label>
         </fieldset>
         <div className="grid grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.7fr)]">
@@ -258,7 +258,7 @@ export default function FlightHero({ initial = {} }: { initial?: SearchDefaults 
             <label htmlFor="departure" className="mb-2 block text-xs font-semibold text-[var(--text-soft)]">Departure</label>
             <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-3">
               <CalendarDays size={16} className="shrink-0" />
-              <input id="departure" type="date" min={todayLocal()} value={departDate} required onChange={(event) => setDepartDate(event.target.value)}
+              <input id="departure" type="date" min={todayLocal()} value={departDate} required onChange={(event) => { setDepartDate(event.target.value); onDatesChange?.(event.target.value, roundTrip ? returnDate : ""); }}
                 className="min-w-0 w-full bg-transparent text-sm text-[var(--text)]" />
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function FlightHero({ initial = {} }: { initial?: SearchDefaults 
               <label htmlFor="return" className="mb-2 block text-xs font-semibold text-[var(--text-soft)]">Return</label>
               <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-3">
                 <CalendarDays size={16} className="shrink-0" />
-                <input id="return" type="date" min={departDate || todayLocal()} value={returnDate} required onChange={(event) => setReturnDate(event.target.value)}
+                <input id="return" type="date" min={departDate || todayLocal()} value={returnDate} required onChange={(event) => { setReturnDate(event.target.value); onDatesChange?.(departDate, event.target.value); }}
                   className="min-w-0 w-full bg-transparent text-sm text-[var(--text)]" />
               </div>
             </div>
