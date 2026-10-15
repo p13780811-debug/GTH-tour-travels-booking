@@ -29,7 +29,7 @@ def probe_one(name, url, host):
                     header = body.split(b"\n", 1)[0].decode("utf-8-sig", "replace")
                     row = next(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))), {})
                     public_fields = ("referenceNumber-numeroReference", "solicitationNumber-numeroSollicitation", "tenderClosingDate-appelOffresDateCloture", "publicationDate-datePublication", "tenderStatus-appelOffresStatut-eng", "noticeURL-URLavis-eng", "contractingEntityName-nomEntitContractante-eng")
-                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000], "sample_public_fields": {k: str(row.get(k,""))[:150] for k in public_fields}}))
+                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000], "sample_public_fields": {k: str(row.get(k,""))[:150] for k in public_fields}, "link_hosts_in_sample": __import__("collections").Counter(__import__("urllib.parse",fromlist=["urlsplit"]).urlsplit(r.get("noticeURL-URLavis-eng","")).hostname for r in list(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))))[:100]).most_common(12)}}))
                 else:
                     print(json.dumps({"source": name, "available": True, "truncated": True}))
                 return
@@ -39,7 +39,7 @@ def probe_one(name, url, host):
             else:
                 obj = json.loads(body)
                 items = obj.get("releases") if name == "uk_contractsfinder" else obj.get("data")
-                print(json.dumps({"source":name,"available":True,"top_keys":list(obj.keys()),"sample_keys": list(items[0].keys()) if isinstance(items,list) and items and isinstance(items[0],dict) else [], "sample_tender_keys": list(items[0].get("tender",{}).keys()) if isinstance(items,list) and items and isinstance(items[0],dict) and isinstance(items[0].get("tender"),dict) else []}))
+                print(json.dumps({"source":name,"available":True,"top_keys":list(obj.keys()),"sample_keys": list(items[0].keys()) if isinstance(items,list) and items and isinstance(items[0],dict) else [], "sample_tender_keys": list(items[0].get("tender",{}).keys()) if isinstance(items,list) and items and isinstance(items[0],dict) and isinstance(items[0].get("tender"),dict) else [], "sample_ids": [str(x.get("id",""))[:110] for x in items[:2]] if isinstance(items,list) else []}))
     except Exception as exc:
         print(json.dumps({"source":name,"available":False,"error":type(exc).__name__,"detail":str(exc)[:140]}))
 if __name__=="__main__":
