@@ -19,7 +19,10 @@ function safeLink(value:unknown,allowPartner=false):string|null{
  }catch{return null;}
 }
 export default async function HotelStay({params}:PageProps){
- const {id}=await params;
+ const {id:rawId}=await params;
+ // Next.js route params normally arrive decoded, but handle encoded inbound links safely.
+ let id=rawId;
+ try{id=decodeURIComponent(rawId);}catch{return <main className="mx-auto max-w-5xl p-8">Invalid hotel reference.</main>;}
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  if(!url||!key)return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -27,9 +30,14 @@ export default async function HotelStay({params}:PageProps){
   address:string|null;sourceUrl:string|null;website:string|null;partner:string|null;
   lat:number|null;lon:number|null;updated:string|null}=null;
  if(/^osm:(node|way|relation)-[0-9]{1,19}$/.test(id)){
-  const sourceId=id.slice(4).replace("-","/");
-  const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,source_url,website,latitude,longitude,updated_at")
-    .eq("source","osm").eq("source_id",sourceId).maybeSingle();
+  const sourceId=id.slice(4).replace("-", "/");
+  // Resolve through the same public OSM source identifier used in listing results.
+  // A single-row array read avoids PostgREST singular-response failures and returns
+  // no data if the row genuinely no longer exists.
+  const {data:rows,error}=await db.from("hotel_catalog")
+    .select("name,city,country_code,category,address,source_url,website,latitude,longitude,updated_at")
+    .eq("source_id",sourceId).eq("source","osm").limit(1);
+  const data=rows?.[0]??null;
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",
    address:data.address,sourceUrl:data.source_url,website:safeLink(data.website),
    partner:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
