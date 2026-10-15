@@ -166,7 +166,7 @@ def fetch_uk(limit):
 
 def fetch_brazil(limit):
     until = (date.today() + timedelta(days=60)).strftime("%Y%m%d")
-    url = BR_API + "?" + urlencode({"dataFinal": until, "pagina": 1, "tamanhoPagina": limit})
+    url = BR_API + "?" + urlencode({"dataFinal": until, "pagina": 1, "tamanhoPagina": max(limit, 10)})
     payload = core._http_json(url, allowed_host="pncp.gov.br")
     rows = payload.get("data")
     if not isinstance(rows, list):
