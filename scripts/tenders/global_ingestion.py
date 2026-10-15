@@ -123,7 +123,7 @@ def normalize_brazil(item):
         "sector": "other",  # PNCP modality is not equivalent to works/goods/services
         "summary": _clean_text(item.get("modalidadeNome"))[:4000],
         "deadline_at": _timestamp(item.get("dataEncerramentoProposta"), "BR"),
-        "published_at": core._time(item.get("dataPublicacaoPncp")),
+        "published_at": _timestamp(str(item.get("dataPublicacaoPncp")), "BR") if item.get("dataPublicacaoPncp") else None,
         "estimated_value": core._value(str(item.get("valorTotalEstimado") or "")),
         "currency": "BRL" if item.get("valorTotalEstimado") is not None else "",
     }, "brazil")
