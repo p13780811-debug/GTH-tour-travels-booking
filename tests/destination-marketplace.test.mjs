@@ -34,7 +34,7 @@ test("destination detail offers connected planning articles", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
   assert.match(page, /href="\/flights"/);
   assert.match(page, /"\/blog\/" \+ article\.slug/);
-  assert.match(page, /\/hotels\?city=/);
+  assert.match(page, /\/hotels\?destination=/);
   assert.match(page, /\/tours\?city=/);
 });
 
