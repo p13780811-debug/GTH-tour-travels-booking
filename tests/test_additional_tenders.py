@@ -15,7 +15,7 @@ NOW=datetime.now(timezone.utc).isoformat()
 class AdditionalOfficialTests(unittest.TestCase):
     def test_contractsfinder_official_link_and_fields(self):
         item={
-            "id":"d2c8df1a-3320-4a00-b934-33f70fe368ca",
+            "id":"d2c8df1a-3320-4a00-b934-33f70fe368ca-917954",
             "tender":{"title":"Provision of fleet maintenance services",
                 "status":"active","mainProcurementCategory":"services",
                 "tenderPeriod":{"endDate":FUTURE}},
@@ -69,8 +69,10 @@ class AdditionalOfficialTests(unittest.TestCase):
         self.assertEqual(record["country_code"],"CA")
         self.assertEqual(record["source_name"],"CanadaBuys Open Data")
         self.assertEqual(record["deadline_at"][11:19],"00:00:00")
+        merx=src.canada_notice({**sample,"noticeURL-URLavis-eng":"https://www.merx.com/public/solicitations/3776296409/abstract?language=EN"})
+        self.assertEqual(merx["source_url"],"https://www.merx.com/public/solicitations/3776296409/abstract")
         with self.assertRaisesRegex(ValueError,"external or unknown"):
-            src.canada_notice({**sample,"noticeURL-URLavis-eng":"https://www.merx.com/public/solicitations/123/abstract"})
+            src.canada_notice({**sample,"noticeURL-URLavis-eng":"https://evil.example/public/solicitations/3776296409/abstract"})
         with self.assertRaises(ValueError):
             src.canada_notice({**sample,"tenderStatus-appelOffresStatut-eng":"Cancelled"})
 
