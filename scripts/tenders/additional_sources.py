@@ -31,7 +31,7 @@ def contracts_finder_notice(release):
     if tender.get("status") in ("cancelled", "withdrawn", "complete"):
         raise ValueError("Not an open Contracts Finder tender")
     ref = core._text(release.get("id"))
-    if not NOTICE_UUID.fullmatch(ref):
+    if not re.fullmatch(r"[0-9a-fA-F-]{36}-[0-9]{1,10}", ref):
         raise ValueError("Contracts Finder has no official release UUID")
     buyer = release.get("buyer")
     buyer = buyer if isinstance(buyer, dict) else {}
@@ -99,16 +99,16 @@ def ukraine_notice(item):
 def fetch_ukraine(limit):
     # Public listing supplies IDs only. Resolve a small, bounded set using the
     # official detail API and only accept active tendering records.
-    payload = core._http_json(UA_API + "?" + urlencode({"limit": min(limit, 12)}), allowed_host=UA_HOST)
+    payload = core._http_json(UA_API + "?" + urlencode({"limit": min(limit, 20)}), allowed_host=UA_HOST)
     data = payload.get("data")
     if not isinstance(data, list):
         raise ValueError("Prozorro list response changed")
     notices = []
-    for item in data[:min(limit, 12)]:
+    for item in data[:min(limit, 20)]:
         if not isinstance(item, dict):
             continue
         ident = core._text(item.get("id"))
-        if not NOTICE_UUID.fullmatch(ident):
+        if not (NOTICE_UUID.fullmatch(ident) or re.fullmatch(r"[a-fA-F0-9]{32}",ident)):
             continue
         try:
             detail = core._http_json(UA_API + "/" + ident, allowed_host=UA_HOST)
