@@ -26,7 +26,7 @@ import additional_sources as extra
 UK_API = "https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages"
 BR_API = "https://pncp.gov.br/api/consulta/v1/contratacoes/proposta"
 US_API = "https://api.sam.gov/opportunities/v2/search"
-SOURCES = ("worldbank", "ted", "uk", "brazil", "uk_contractsfinder", "ukraine", "sam")
+SOURCES = ("worldbank", "ted", "uk", "brazil", "uk_contractsfinder", "ukraine", "canada", "sam")
 PUBLIC_SOURCES = frozenset(SOURCES)
 SOURCE_CONFIG = {
     "uk": ("UK Find a Tender", "www.find-tender.service.gov.uk", "www.find-tender.service.gov.uk"),
@@ -194,6 +194,7 @@ def collect(source, limit):
     fetchers = {"uk": (fetch_uk, normalize_uk), "brazil": (fetch_brazil, normalize_brazil),
                 "uk_contractsfinder": (extra.fetch_contractsfinder, extra.contracts_finder_notice),
                 "ukraine": (extra.fetch_ukraine, extra.ukraine_notice),
+                "canada": (extra.fetch_canada, extra.canada_notice),
                 "sam": (fetch_sam, normalize_sam)}
     fetch, normalize = fetchers[source]
     rows = fetch(limit)
@@ -224,7 +225,7 @@ def publish_official(records, project_ref):
     if os.environ.get("GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED") != "true":
         raise ValueError("Official publication has not been enabled")
     if any(row["source_name"] not in
-           {"World Bank", "TED EU", "UK Find a Tender", "UK Contracts Finder", "Ukraine Prozorro", "Brazil PNCP", "US SAM.gov"}
+           {"World Bank", "TED EU", "UK Find a Tender", "UK Contracts Finder", "Ukraine Prozorro", "CanadaBuys Open Data", "Brazil PNCP", "US SAM.gov"}
            for row in records):
         raise ValueError("Unapproved public source")
     # Apply the independent server-only project/host gate in official_publication.
