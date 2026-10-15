@@ -21,7 +21,9 @@ export async function GET(req:Request){
   if(country)newest.eq("country_code",country);
   const results=await Promise.all([base(),...TYPES.map(type=>base().eq("category",type)),newest]);
   if(results.some(r=>r.error))throw Error("Hotel catalog query failed");
-  const latest=results.at(-1)?.data?.[0]?.imported_at??null;
+  const result=results[results.length-1];
+  const row=Array.isArray(result.data)?result.data[0]:null;
+  const latest=row && "imported_at" in row && typeof row.imported_at==="string"?row.imported_at:null;
   const categories=Object.fromEntries(TYPES.map((key,i)=>[key,results[i+1].count??0]));
   return NextResponse.json({country:country||null,total:results[0].count??0,categories,
    latest_imported_at:latest,source:"OpenStreetMap",source_license:"ODbL-1.0",
