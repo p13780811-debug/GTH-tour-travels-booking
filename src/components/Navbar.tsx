@@ -36,7 +36,7 @@ import EstateHeader from "@/components/real-estate/EstateHeader"
 
 export default function Navbar() {
     const pathname = usePathname()
-    if (pathname === "/") return null;
+    if (pathname === "/" || pathname === "/app") return null;
     return pathname === "/real-estate" || pathname?.startsWith("/real-estate/") ? <EstateHeader /> : <EcosystemNavbar />
 }
 
@@ -118,7 +118,7 @@ function EcosystemNavbar() {
             {/* TOP STRIP */}
             {/* ================================================= */}
 
-            <div className="relative z-[120] border-b border-[var(--border)] bg-[var(--card-strong)]/80 backdrop-blur-[40px]">
+            <div className="relative z-[120] hidden border-b border-[var(--border)] bg-[var(--card-strong)]/80 backdrop-blur-[40px] lg:block">
 
                 <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 overflow-x-auto px-4 py-2 scrollbar-hide lg:px-8">
 
