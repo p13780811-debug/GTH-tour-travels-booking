@@ -31,6 +31,8 @@ function safeImage(value: unknown): string {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const rawCity = searchParams.get("city");
+  const destination = searchParams.get("destination");
+  if (destination && !/^[a-z]+(?:-[a-z]+)*$/.test(destination)) return NextResponse.json({error:"Invalid destination"},{status:400,headers:safeHeaders});
   const rawName = searchParams.get("name");
   const rawCountry = searchParams.get("country");
   const detected = req.headers.get("x-vercel-ip-country") ?? "";
@@ -45,7 +47,7 @@ export async function GET(req: Request) {
   const name = rawName ? cleanString(rawName, {
     min: 2, max: 80, pattern: /^[\p{L}\p{M}\p{N}\s.'&-]+$/u,
   }) : null;
-  if ((!city && !name && !country) || (rawCity && !city) || (rawName && !name))
+  if ((rawCity && !city) || (rawName && !name))
     return NextResponse.json({ error: "Enter a valid hotel name or destination" }, { status: 400, headers: safeHeaders });
   const rawPage = searchParams.get("page") ?? "1";
   if (!/^[1-9][0-9]{0,2}$/.test(rawPage) || Number(rawPage) > 100) {
@@ -58,15 +60,30 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 503, headers: safeHeaders });
   }
   try {
-    const supabase = createClient(url, key);
+    const supabase = createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+    // Destination links resolve to the actual destination record; user-provided
+    // strings cannot create public hotel data or change geography.
+    let matchingCity = city;
+    if (destination) {
+      const {data:place,error:placeError}=await supabase.from("destinations")
+        .select("name").eq("slug",destination).eq("is_active",true).maybeSingle();
+      if(placeError)return NextResponse.json({error:"Destination lookup unavailable"},{status:503,headers:safeHeaders});
+      const knownName=place?.name;
+      if(typeof knownName!=="string"||!cleanString(knownName,{min:2,max:80,pattern:/^[\\p{L}\\p{M}\\s.'-]+$/u}))
+        return NextResponse.json({error:"Destination not found"},{status:404,headers:safeHeaders});
+      matchingCity=knownName.trim();
+    }
     // Name queries search globally (with optional city) instead of pretending
     // that a hotel brand is a city. Escaped percent/underscore are literals.
     const safeLike = (value: string) => "%" + value.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
-    const cityLike = city ? safeLike(city) : "";
+    const cityLike = matchingCity ? safeLike(matchingCity) : "";
     const nameLike = name ? safeLike(name) : "";
     let supplierCountQuery = supabase.from("hotels").select("id", { count: "exact", head: true }).eq("is_public", true).eq("media_rights_verified", true).not("source_name","is",null);
     let catalogCountQuery = supabase.from("hotel_catalog").select("source_id", { count: "exact", head: true });
-    if (city) { supplierCountQuery = supplierCountQuery.ilike("city", cityLike); catalogCountQuery = catalogCountQuery.ilike("city", cityLike); }
+    if (matchingCity) {
+      supplierCountQuery = supplierCountQuery.ilike("city",cityLike);
+      catalogCountQuery = catalogCountQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
+    }
     if (name) { supplierCountQuery = supplierCountQuery.ilike("name", nameLike); catalogCountQuery = catalogCountQuery.ilike("name", nameLike); }
     if (country) catalogCountQuery = catalogCountQuery.eq("country_code",country);
     if (category) catalogCountQuery = catalogCountQuery.eq("category",category);
@@ -85,7 +102,7 @@ export async function GET(req: Request) {
       let supplierQuery = supabase.from("hotels")
         .select("id,name,city,image_url,affiliate_link,is_public")
         .eq("is_public", true).eq("media_rights_verified",true).not("source_name","is",null);
-      if (city) supplierQuery = supplierQuery.ilike("city", cityLike);
+      if (matchingCity) supplierQuery = supplierQuery.ilike("city", cityLike);
       if (name) supplierQuery = supplierQuery.ilike("name", nameLike);
       if (country || (category && category!=="hotel")) supplierQuery=supplierQuery.eq("city","__unavailable__");
       const { data, error } = await supplierQuery.order("name").order("id")
@@ -99,10 +116,10 @@ export async function GET(req: Request) {
     const window = hotelPageWindow(page, supplierVisible, catalogCount, PAGE_SIZE);
     if (supplierFailed) supplierRows = [];
     let catalogFailed = Boolean(catalogCountResult.error);
-    let catalogRows: Array<{ source_id: string; name: string; city: string | null; category: string; image_url: string | null; country_code:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
+    let catalogRows: Array<{ source_id: string; name: string; city: string | null; region:string|null; category: string; image_url: string | null; country_code:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
-      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,category,image_url,country_code,source_url,website,address,latitude,longitude,updated_at");
-      if (city) catalogQuery = catalogQuery.ilike("city", cityLike);
+      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,source_url,website,address,latitude,longitude,updated_at");
+      if (matchingCity) catalogQuery = catalogQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
       if (country) catalogQuery = catalogQuery.eq("country_code",country);
       if (category) catalogQuery = catalogQuery.eq("category",category);
@@ -123,7 +140,7 @@ export async function GET(req: Request) {
       }));
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
-        id: "osm:" + hotel.source_id, name: hotel.name, city: hotel.city || "City not specified",
+        id: "osm:" + hotel.source_id, name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
         country: hotel.country_code, category:hotel.category, stars: null, image: safeImage(null), affiliate_link: null,
         source_url:hotel.source_url, hotel_website:hotel.website, address:hotel.address,
         latitude:hotel.latitude, longitude:hotel.longitude, updated_at:hotel.updated_at,
@@ -134,7 +151,7 @@ export async function GET(req: Request) {
     const results = [...listings, ...osm];
     const visibleTotal = (supplierFailed ? 0 : supplierCount) + (catalogFailed ? 0 : catalogCount);
     return NextResponse.json(results, { headers: {
-      ...safeHeaders, "X-GTH-Country":country, "X-GTH-Page": String(page), "X-GTH-Page-Size": String(PAGE_SIZE),
+      ...safeHeaders, "X-GTH-Country":country, "X-GTH-Total":String(visibleTotal), "X-GTH-Page": String(page), "X-GTH-Page-Size": String(PAGE_SIZE),
       "X-GTH-Has-More": String(results.length > 0 && page * PAGE_SIZE < visibleTotal),
     } });
   } catch {
