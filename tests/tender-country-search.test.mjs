@@ -27,6 +27,7 @@ const client={from(table){
     lte(k,v){lt=[k,v];return query},
     ilike(k,v){like=[k,v];return query},
     order(){return query},
+    then(onFulfilled,onRejected){return Promise.resolve(result(0,1000)).then(onFulfilled,onRejected)},
     limit(n){return Promise.resolve(result(0,n))},
     range(start,end){return Promise.resolve(result(start,end-start+1))}
   };
@@ -81,4 +82,19 @@ test("Worldwide is allowed only by explicit user request",async()=>{
   assert.equal(res.ok,true);assert.equal(res.total,22);
   const oneCountry=await search({...base,scope:"world",country:"US"});
   assert.equal(oneCountry.total,3);
+});
+
+test("Live tender dashboard categories are DB-derived in selected region only",async()=>{
+  const stats=await mod.exports.getTenderDiscoveryStats(base);
+  assert.ok(stats);
+  assert.equal(stats.sectors.goods,19);
+  assert.equal(stats.sectors.works,0);
+  assert.equal(stats.closingSoon7,0);
+  const globalStats=await mod.exports.getTenderDiscoveryStats({...base,country:"",scope:"world",nearby:[]});
+  assert.equal(globalStats.sectors.goods,22);
+});
+test("Closing within seven days never shows unrelated or later tenders",async()=>{
+  const result=await search({...base,closingWithin:"7"});
+  assert.equal(result.ok,true);
+  assert.equal(result.total,0);
 });
