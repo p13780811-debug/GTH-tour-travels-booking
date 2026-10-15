@@ -29,7 +29,7 @@ const geistMono = Geist_Mono({
 
 // Explicit physical-device viewport; prevents narrow Android screens falling
 // back to a virtual desktop canvas with three unreadable tiny pillar cards.
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 // Public search visibility is opt-in: preview and unreleased production stay noindex.
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
