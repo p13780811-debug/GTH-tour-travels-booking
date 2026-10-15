@@ -86,7 +86,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Typecheck Supabase GitHub OIDC gateway
-        run: deno check supabase/functions/gth-tender-ingest/index.ts
+        run: deno check --config supabase/functions/gth-tender-ingest/deno.json supabase/functions/gth-tender-ingest/index.ts
       - run: npm ci --legacy-peer-deps
       - run: npx tsc --noEmit
       - run: npm run test:security
