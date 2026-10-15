@@ -80,7 +80,7 @@ jobs:
       - name: Inspect public source schemas (no sensitive fields)
         run: python3 scripts/tenders/schema_probe.py
       - name: Live official source smoke (no database writes)
-        run: python3 scripts/tenders/global_ingestion.py --source all --limit 5
+        run: python3 scripts/tenders/global_ingestion.py --source all --limit 100
       - name: Setup Deno for secure tender gateway validation
         uses: denoland/setup-deno@v2
         with:

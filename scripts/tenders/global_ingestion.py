@@ -157,7 +157,7 @@ def normalize_sam(item):
 
 def fetch_uk(limit):
     since = (datetime.now(timezone.utc) - timedelta(days=8)).strftime("%Y-%m-%dT%H:%M:%S")
-    url = UK_API + "?" + urlencode({"updatedFrom": since, "stages": "tender", "limit": limit})
+    url = UK_API + "?" + urlencode({"updatedFrom": since, "stages": "tender", "limit": min(limit, 25)})
     payload = core._http_json(url, allowed_host="www.find-tender.service.gov.uk")
     items = payload.get("releases")
     if not isinstance(items, list):
@@ -166,7 +166,7 @@ def fetch_uk(limit):
 
 def fetch_brazil(limit):
     until = (date.today() + timedelta(days=60)).strftime("%Y%m%d")
-    url = BR_API + "?" + urlencode({"dataFinal": until, "pagina": 1, "tamanhoPagina": max(limit, 10)})
+    url = BR_API + "?" + urlencode({"dataFinal": until, "pagina": 1, "tamanhoPagina": max(10, min(limit, 20))})
     payload = core._http_json(url, allowed_host="pncp.gov.br")
     rows = payload.get("data")
     if not isinstance(rows, list):
