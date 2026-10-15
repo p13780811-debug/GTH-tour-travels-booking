@@ -179,11 +179,11 @@ def main():
             if record is None:
                 rejected += 1
                 continue
-            if args.country_code:
-                if record["country_code"] and record["country_code"] != args.country_code:
-                    rejected += 1
-                    continue
-                record["country_code"] = args.country_code
+            if args.country_code and record["country_code"] and record["country_code"] != args.country_code:
+                # Geofabrik regional extracts may include border-adjacent places.
+                rejected += 1
+                continue
+            # Never infer sovereign country from a download region. Null means unknown.
             batch.append(record)
             accepted += 1
             if len(batch) >= (100 if args.edge_url else BATCH):
