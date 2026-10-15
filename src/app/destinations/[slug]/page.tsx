@@ -116,7 +116,7 @@ export default async function DestinationPage({ params }: Props) {
               Local inspiration, city insights and direct access to hotel and experience discovery. Confirm prices, availability and entry rules with the provider before booking.
             </p>
             <nav aria-label={"Plan travel to " + destination.name} className="mt-8 flex flex-wrap gap-3">
-              <Link href={"/hotels?city=" + encodeURIComponent(destination.name)}
+              <Link href={"/hotels?destination=" + encodeURIComponent(slug)}
                 className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-bold">
                 <Hotel size={18} /> Find Hotels
               </Link>
@@ -168,9 +168,9 @@ export default async function DestinationPage({ params }: Props) {
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">Hotels in {destination.name}</h2>
               <p className="mt-3 max-w-3xl text-sm text-[#c0ccdd]">Source-backed hotel records when available. Final room rates and reservations are handled by the partner.</p>
             </div>
-            <Link href={"/hotels?city=" + encodeURIComponent(destination.name)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/45 px-4 text-sm font-semibold text-[#f2d58e]">All Hotels <ArrowRight size={16} /></Link>
+            <Link href={"/hotels?destination=" + encodeURIComponent(slug)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/45 px-4 text-sm font-semibold text-[#f2d58e]">All Hotels <ArrowRight size={16} /></Link>
           </div>
-          <HotelResults city={destination.name} />
+          <HotelResults city={destination.name} destination={slug} />
         </div>
       </section>
 

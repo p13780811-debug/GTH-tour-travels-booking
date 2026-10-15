@@ -74,10 +74,11 @@ def convert(feature):
     if country and not __import__("re").fullmatch(r"[A-Za-z]{2}",country):
         country = None
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
+    region = text_value(props.get("addr:state") or props.get("is_in:state") or props.get("addr:region"), 100)
     image = https_url(props.get("image") or props.get("contact:image"))
     return {
         "source": "osm", "source_id": identifier, "name": name,
-        "city": city, "country_code": country.upper() if country else None,
+        "city": city, "region": region, "country_code": country.upper() if country else None,
         "address": street or None, "latitude": position[0], "longitude": position[1],
         "image_url": image, "image_source": "osm_tag" if image else None,
         "website": https_url(props.get("website") or props.get("contact:website")),
@@ -115,10 +116,13 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="Maximum accepted records; 0 = all")
     parser.add_argument("--dry-run", action="store_true", help="Parse and count without writes")
     parser.add_argument("--edge-url", default="", help="Authorized Supabase OIDC hotel ingestion function")
-    parser.add_argument("--country-code", default="", help="ISO-2 for known sovereign Geofabrik country extract")
+    parser.add_argument("--country-code", default="", help="Approximate Geofabrik extraction region ISO2; never sets confirmed hotel country")
+    parser.add_argument("--region", default="", help="Geofabrik regional extract path for source attribution")
     args = parser.parse_args()
     if args.country_code and not __import__("re").fullmatch(r"[A-Z]{2}", args.country_code):
         parser.error("--country-code must be an uppercase two-letter ISO country")
+    if args.region and not __import__("re").fullmatch(r"[a-z0-9_-]+(?:/[a-z0-9_-]+){1,4}",args.region):
+        parser.error("Invalid source extraction region")
     if not args.file.is_file() or args.limit < 0:
         parser.error("File must exist and --limit must be nonnegative")
     base = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
@@ -186,6 +190,9 @@ def main():
                 rejected += 1
                 continue
             # Never infer sovereign country from a download region. Null means unknown.
+            if args.region:
+                record["extract_region"]=args.region
+                record["extract_country_hint"]=args.country_code or None
             batch.append(record)
             accepted += 1
             if len(batch) >= (100 if args.edge_url else BATCH):

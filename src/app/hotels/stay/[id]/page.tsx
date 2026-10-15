@@ -26,8 +26,8 @@ export default async function HotelStay({params}:PageProps){
  let hotel:null|{name:string;city:string|null;country:string|null;category:string;source:string;
   address:string|null;sourceUrl:string|null;website:string|null;partner:string|null;
   lat:number|null;lon:number|null;updated:string|null}=null;
- if(/^osm:(node|way|relation)\/[0-9]{1,19}$/.test(id)){
-  const sourceId=id.slice(4);
+ if(/^osm:(node|way|relation)-[0-9]{1,19}$/.test(id)){
+  const sourceId=id.slice(4).replace("-","/");
   const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,source_url,website,latitude,longitude,updated_at")
     .eq("source","osm").eq("source_id",sourceId).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",

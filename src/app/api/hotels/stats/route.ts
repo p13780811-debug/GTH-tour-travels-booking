@@ -15,10 +15,10 @@ export async function GET(req:Request){
  const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  try{
   const base=()=>{let q=client.from("hotel_catalog").select("id",{count:"exact",head:true});
-   if(country)q=q.eq("country_code",country);return q;};
+   if(country)q=q.or("country_code.eq."+country+",extract_country_hint.eq."+country);return q;};
   const newest=client.from("hotel_catalog").select("imported_at")
    .order("imported_at",{ascending:false}).limit(1);
-  if(country)newest.eq("country_code",country);
+  if(country)newest.or("country_code.eq."+country+",extract_country_hint.eq."+country);
   const results=await Promise.all([base(),...TYPES.map(type=>base().eq("category",type)),newest]);
   if(results.some(r=>r.error))throw Error("Hotel catalog query failed");
   const result=results[results.length-1];
@@ -27,7 +27,7 @@ export async function GET(req:Request){
   const categories=Object.fromEntries(TYPES.map((key,i)=>[key,results[i+1].count??0]));
   return NextResponse.json({country:country||null,total:results[0].count??0,categories,
    latest_imported_at:latest,source:"OpenStreetMap",source_license:"ODbL-1.0",
-   availability_verified:false,prices_verified:false,
+   availability_verified:false,prices_verified:false,country_scope:"official OSM country tags plus extract-area hints (border-adjacent candidates possible)",
    disclosure:"Location directory only. Confirm rooms, taxes, cancellation policies and rates with hotel or authorized provider."},
    {headers:HEADERS});
  }catch{return NextResponse.json({error:"Catalog temporarily unavailable"},{status:503,headers:HEADERS});}
