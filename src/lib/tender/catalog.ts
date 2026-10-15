@@ -13,7 +13,7 @@ export type PublicTender = {
   source_reference: string; source_url: string;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; closingBefore: string; page: number };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; page: number };
 export type TenderResult =
  | { ok: true; items: PublicTender[]; total: number; page: number; size: number }
  | { ok: false; status: number; error: string };
