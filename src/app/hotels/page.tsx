@@ -14,6 +14,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 
 import {
     Search,
@@ -60,7 +61,7 @@ type HotelListing = {
     city: string;
     image: string;
     stars: number | null;
-    affiliate_link: string | null;
+    affiliate_link: string | null; category?:string;country?:string|null;source?:string;source_url?:string|null;hotel_website?:string|null;
 };
 
 // Only results returned by the hotel's public listing API are displayed here.
@@ -73,13 +74,16 @@ function HotelsContent() {
     const params = useSearchParams();
 
     const initialName = (params.get("name") || "").trim().slice(0, 80);
-    const initialCity = params.get("city")?.trim() || (initialName ? "" : "Mumbai");
+    const initialCity = params.get("city")?.trim() || "";
     const [search, setSearch] = useState(initialCity);
     const [requestedCity, setRequestedCity] = useState(initialCity);
     const [nameFilter, setNameFilter] = useState(initialName);
+    const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
+    const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
+    const [category,setCategory]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [filteredHotels, setFilteredHotels] = useState<HotelListing[]>([]);
-    const [selectedStars, setSelectedStars] = useState<number[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [page, setPage] = useState(1);
@@ -98,7 +102,7 @@ function HotelsContent() {
         setFilteredHotels([]);
         setLoading(true);
         setError("");
-        setSelectedStars([]);
+
         setPage(1);
         setHasMore(false);
 
@@ -107,6 +111,10 @@ function HotelsContent() {
                 const hotelParams = new URLSearchParams({ page: "1" });
                 if (requestedCity) hotelParams.set("city", requestedCity);
                 if (nameFilter) hotelParams.set("name", nameFilter);
+            if (requestedCountry) hotelParams.set("country",requestedCountry);
+            if (category) hotelParams.set("category",category);
+                if (requestedCountry) hotelParams.set("country",requestedCountry);
+                if (category) hotelParams.set("category",category);
                 const response = await fetch(`/api/hotels?${hotelParams}`, {
                     cache: "no-store",
                     signal: controller.signal,
@@ -128,7 +136,7 @@ function HotelsContent() {
 
         void loadHotels();
         return () => controller.abort();
-    }, [requestedCity, nameFilter]);
+    }, [requestedCity, nameFilter, requestedCountry, category]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
@@ -146,8 +154,7 @@ function HotelsContent() {
                 (hotel, index, all) => all.findIndex((entry) => String(entry.id) === String(hotel.id)) === index
             );
             setHotels(merged);
-            setFilteredHotels(merged.filter((hotel) => selectedStars.length === 0 ||
-                (hotel.stars !== null && selectedStars.includes(hotel.stars))));
+            setFilteredHotels(merged);
             setPage(nextPage);
             setHasMore(response.headers.get("X-GTH-Has-More") === "true" && incoming.length > 0);
             setError("");
@@ -158,18 +165,13 @@ function HotelsContent() {
         }
     }
 
-    const applyFilters = (_currentSearch = search, currentStars = selectedStars) => {
-        setFilteredHotels(hotels.filter((hotel) =>
-            currentStars.length === 0 || (hotel.stars !== null && currentStars.includes(hotel.stars))
-        ));
-    };
-
     const runSearch = () => {
-        const city = search.trim();
-        if (city && city.length <= 80) {
-            setNameFilter("");
-            setRequestedCity(city);
-        }
+        const city=search.trim();
+        if(city.length>80 || (city.length>0&&city.length<2))return;
+        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
+        setNameFilter("");
+        setRequestedCity(city);
+        setRequestedCountry(city?"":selectedCountry);
     };
 
     const categories = [
