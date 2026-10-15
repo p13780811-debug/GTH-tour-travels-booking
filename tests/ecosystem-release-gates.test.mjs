@@ -141,3 +141,19 @@ test("AI voice receptionist stays inside the existing Contact journey without CS
   assert.match(chat,/enforceRateLimit\(req, "ai"\)/);
   assert.match(chat,/Do not invent company registration/);
 });
+
+
+test("Travelpayouts Drive official project loader is deduplicated and does not change visual or search settings",()=>{
+  const root=source("src/app/layout.tsx");
+  const disclosure=source("src/app/affiliate-disclosure/page.tsx");
+  assert.match(root,/id="gth-travelpayouts-drive"/);
+  assert.match(root,/strategy="beforeInteractive"/);
+  assert.match(root,/emrldtp\.com\/NTA0MzQy\.js\?t=504342/);
+  assert.match(root,/script\.async = true/);
+  assert.match(root,/querySelector\('script\[src\^=/);
+  assert.match(root,/siteOrigin\(\)/);
+  assert.match(root,/GTH_PUBLIC_LAUNCH_ENABLED/);
+  assert.match(root,/<LayoutWrapper>/);
+  assert.match(disclosure,/Travelpayouts Drive may analyze travel content/);
+  assert.doesNotMatch(root,/style=\{|globals\.css\?travelpayouts/);
+});

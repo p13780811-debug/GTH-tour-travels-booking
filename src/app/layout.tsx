@@ -69,6 +69,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
+      {/* Travelpayouts Drive: project-specific, asynchronous AI affiliate tool. */}
+      <head>
+        <Script id="gth-travelpayouts-drive" strategy="beforeInteractive">
+          {`(function () {
+            if (document.querySelector('script[src^="https://emrldtp.com/NTA0MzQy.js"]')) return;
+            var script = document.createElement("script");
+            script.async = true;
+            script.setAttribute("data-cmp-ab", "2");
+            script.src = "https://emrldtp.com/NTA0MzQy.js?t=504342";
+            document.head.appendChild(script);
+          })();`}
+        </Script>
+      </head>
       <body
         className={`
           ${cinzel.className}
