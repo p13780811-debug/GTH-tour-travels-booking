@@ -70,7 +70,9 @@ def convert(feature):
     if not identifier or not __import__("re").fullmatch(r"(?:node|way|relation)/[0-9]+", identifier):
         return None
     city = text_value(props.get("addr:city") or props.get("is_in:city") or props.get("addr:place") or props.get("city"), 100)
-    country = text_value(props.get("addr:country"), 2)
+    country = text_value(props.get("addr:country") or props.get("is_in:country_code") or props.get("ISO3166-1:alpha2"), 2)
+    if country and not __import__("re").fullmatch(r"[A-Za-z]{2}",country):
+        country = None
     street = " ".join(filter(None, [text_value(props.get("addr:housenumber"), 30), text_value(props.get("addr:street"), 150)]))
     image = https_url(props.get("image") or props.get("contact:image"))
     return {
@@ -179,11 +181,11 @@ def main():
             if record is None:
                 rejected += 1
                 continue
-            if args.country_code:
-                if record["country_code"] and record["country_code"] != args.country_code:
-                    rejected += 1
-                    continue
-                record["country_code"] = args.country_code
+            if args.country_code and record["country_code"] and record["country_code"] != args.country_code:
+                # Geofabrik regional extracts may include border-adjacent places.
+                rejected += 1
+                continue
+            # Never infer sovereign country from a download region. Null means unknown.
             batch.append(record)
             accepted += 1
             if len(batch) >= (100 if args.edge_url else BATCH):

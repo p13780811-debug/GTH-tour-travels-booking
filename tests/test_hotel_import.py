@@ -49,6 +49,15 @@ class HotelImportTests(unittest.TestCase):
             "properties": {"tourism": "hotel", "name": "Unstable ID"},
         }))
 
+    def test_country_remains_unknown_without_explicit_osm_country(self):
+        record=module.convert({
+            "type":"Feature","id":"node/112233",
+            "geometry":{"type":"Point","coordinates":[7.42,43.73]},
+            "properties":{"tourism":"hotel","name":"Border Stay","addr:city":"Beausoleil"},
+        })
+        self.assertIsNone(record["country_code"])
+        self.assertEqual(record["city"],"Beausoleil")
+
     def test_only_safe_https_websites(self):
         self.assertIsNone(module.https_url("javascript:alert(1)"))
         self.assertIsNone(module.https_url("https://user:pass@example.com"))
