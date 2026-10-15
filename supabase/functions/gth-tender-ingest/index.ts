@@ -36,6 +36,10 @@ const SOURCES: Record<string, { host: string; path: RegExp }> = {
     host: "prozorro.gov.ua",
     path: /^\/tender\/UA-20\d{2}-\d{2}-\d{2}-\d{6}-[a-z]$/i,
   },
+  "CanadaBuys Open Data": {
+    host: "canadabuys.canada.ca",
+    path: /^\/en\/tender-opportunities\/tender-notice\/[A-Za-z0-9._%-]{3,170}$/,
+  },
   "Brazil PNCP": {
     host: "pncp.gov.br",
     path: /^\/app\/editais\/\d{14}\/20\d{2}\/\d+$/,
