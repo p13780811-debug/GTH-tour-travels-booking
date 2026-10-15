@@ -19,7 +19,7 @@ type Saved={id:string;tender_id:string|null;tender_title:string;
   notice_details?:{title:string;buyer:string;source_reference:string;source_url:string};
   bidder_profile:BidderProfile;
   requirement_answers:TenderRequirements;draft_text:string;updated_at:string};
-const steps=["Tender notice","Business profile","Eligibility conditions","Eligibility result","Documents","Prepare application"] as const;
+const steps=["Tender notice","Business profile","Eligibility conditions","Eligibility result","Documents","Pre-bid & site attendance","Prepare application"] as const;
 const textList=(s:string)=>s.split(/[\n,;]/).map(v=>v.trim()).filter(Boolean);
 const textInput="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]";
 const fieldLabel="block text-xs font-semibold text-[var(--text-soft)]";
@@ -43,6 +43,23 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     source_reference:initialTender?.source_reference||"",source_url:initialTender?.source_url||""
   });
   const [checklist,setChecklist]=useState<string[]>([]);
+  // No file contents are read, sent to AI, uploaded or persisted.
+  const [documentNames,setDocumentNames]=useState<{name:string,size:number}[]>([]);
+  const [documentWarning,setDocumentWarning]=useState("");
+  const [prebidReviewed,setPrebidReviewed]=useState<string[]>([]);
+  const prebidQuestions=[
+    "Check whether pre-bid attendance is mandatory and record the date",
+    "Check if a site visit, physical inspection or attendance certificate is required",
+    "Review question/clarification cut-off and any published corrigenda",
+    "Confirm mandatory forms, bid security and portal signing rules",
+  ];
+  function stageLocalFiles(selected:FileList|null){
+    const incoming=Array.from(selected??[]).slice(0,10);
+    const safe=incoming.filter(f=>/\.(pdf|docx|xlsx|png|jpe?g)$/i.test(f.name)&&f.size>0&&f.size<=10*1024*1024);
+    setDocumentNames(safe.map(f=>({name:f.name.slice(0,140),size:f.size})));
+    setDocumentWarning(safe.length!==incoming.length||(selected?.length??0)>10
+      ?"Some files were excluded: use PDF, DOCX, XLSX, JPG or PNG under 10 MB.":"");
+  }
   const [draft,setDraft]=useState("");
   const [question,setQuestion]=useState("");
   const [language,setLanguage]=useState<"en"|"hi-Latn">("hi-Latn");
@@ -72,7 +89,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
   }
   function generateDraft(){
     setDraft(buildBidPacket(profile,notice,req,report));
-    setStep(5);
+    setStep(6);
     setNoticeMessage("Editable application preparation draft generated. Review all statements before using it.");
   }
   async function askAI(mode:"guide"|"draft"){
@@ -141,7 +158,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     setSavedId(row.id);setProfile({...EMPTY_PROFILE,...row.bidder_profile});
     setReq({...EMPTY_REQUIREMENTS,...row.requirement_answers});setCriteriaVerified(false);
     setNotice(prev=>({...prev,...(row.notice_details||{}),title:row.tender_title||prev.title,id:row.tender_id||""}));
-    setDraft(row.draft_text||"");setStep(5);setChecklist([]);
+    setDraft(row.draft_text||"");setStep(6);setChecklist([]);setDocumentNames([]);setPrebidReviewed([]);
     setNoticeMessage("Private draft restored. Eligibility must be rechecked against the latest official notice.");
   }
   async function requestOtp(){
@@ -293,8 +310,39 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               <span className="text-sm leading-6">{name}</span>
             </label>)}
             <p className="text-sm text-[var(--text-soft)]">{checklist.filter(n=>requiredDocs.includes(n)).length} of {requiredDocs.length} reviewed on this device (not uploaded).</p>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+              <p className="text-sm font-semibold">Stage tender-specific files locally (optional)</p>
+              <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
+                No upload, file processing, identity verification or AI transfer. File names are only displayed in this tab.
+                Compare them with the latest authority-issued forms yourself.
+              </p>
+              <input type="file" multiple accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png" className="mt-4 block w-full text-sm"
+                onChange={e=>{stageLocalFiles(e.target.files);e.target.value="";}}/>
+              {documentWarning&&<p role="alert" className="mt-2 text-xs text-[var(--text-soft)]">{documentWarning}</p>}
+              <p className="mt-3 text-xs text-[var(--text-soft)]">{documentNames.length} files staged on this device (not saved).</p>
+              {documentNames.length>0&&<ul className="mt-2 space-y-1 text-xs text-[var(--text-soft)]">
+                {documentNames.map((file,i)=><li key={i} className="break-all">{file.name} ({Math.round(file.size/1024)} KB)</li>)}
+              </ul>}
+            </div>
           </div>}
-          {step===5&&<div className="mt-6 space-y-5">
+          {step===5&&<div className="mt-6 space-y-4">
+            <p className="text-sm leading-7 text-[var(--text-soft)]">
+              Meeting attendance, site visit, EMD and clarifications are tender-specific.
+              None is treated as mandatory unless the latest official tender states so. Mark checks only after reviewing that notice.
+            </p>
+            {prebidQuestions.map(question=><label key={question} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+              <input type="checkbox" className="mt-1 size-4 accent-amber-600"
+                checked={prebidReviewed.includes(question)}
+                onChange={e=>setPrebidReviewed(a=>e.target.checked?[...a,question]:a.filter(item=>item!==question))}/>
+              <span className="text-sm leading-6">{question}</span>
+            </label>)}
+            <p role="status" className="text-xs text-[var(--text-soft)]">{prebidReviewed.length} of {prebidQuestions.length} checked locally.
+              Attendance has not been verified or submitted to the issuing authority.</p>
+            {sourceUrl&&<a className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline" href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow">
+              Check original authority notice <ArrowRight size={16}/>
+            </a>}
+          </div>}
+          {step===6&&<div className="mt-6 space-y-5">
             <p className="text-sm leading-7 text-[var(--text-soft)]">Auto-fill a working response from your declared answers. Missing facts stay clearly marked; you must verify and edit it before using any official portal.</p>
             <button type="button" onClick={generateDraft} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
               <FilePenLine size={17}/> Generate editable bid draft
