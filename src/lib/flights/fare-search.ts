@@ -2,6 +2,19 @@
  * Aviasales Data API returns cached fare observations, not bookable inventory.
  * Only safe, public, explicitly selected fields leave the server.
  */
+/** Exact route searches are delegated to the partner; no flight times or prices are invented. */
+export function fullFlightPartnerSearchUrl(origin: string, destination: string, departure: string, returnDate: string | null = null): string {
+  if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination) || origin === destination ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(departure) || (returnDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(returnDate)))
+    throw new Error("Invalid flight route");
+  const ddmm = (date: string) => date.slice(8,10) + date.slice(5,7);
+  const path = origin + ddmm(departure) + destination + (returnDate ? ddmm(returnDate) : "") + "1";
+  const url = new URL("https://www.aviasales.com/search/" + path);
+  // Currency is an advisory preference. The provider may choose its own regional currency.
+  url.searchParams.set("currency", "inr");
+  return url.toString();
+}
+
 export type FareOption = {
   id: string;
   origin: string;
@@ -46,23 +59,18 @@ function flightPartnerUrl(
   departure: string,
   returnDate: string | null,
 ): string {
-  if (typeof link === "string" && link.length < 1800 && link.startsWith("/search/") &&
+  if (typeof link === "string" && link.length < 1800 && /^\/(?:search\/)?[A-Za-z]{3}[0-9]{4}[A-Za-z]{3}(?:[0-9]{4})?[1-9]/.test(link) &&
       !/[\x00-\x1f\\]/.test(link)) {
     try {
       const url = new URL(link, "https://www.aviasales.com");
-      if (url.origin === "https://www.aviasales.com" && url.pathname.startsWith("/search/")) {
+      if (url.origin === "https://www.aviasales.com" && /^\/(?:search\/)?[A-Za-z]{3}[0-9]{4}[A-Za-z]{3}(?:[0-9]{4})?[1-9]/.test(url.pathname)) {
         return url.toString();
       }
     } catch {
       // Fall back to an ordinary route search, never an untrusted URL.
     }
   }
-  const url = new URL("https://www.aviasales.com/search");
-  url.searchParams.set("origin", origin);
-  url.searchParams.set("destination", destination);
-  url.searchParams.set("depart_date", departure);
-  if (returnDate) url.searchParams.set("return_date", returnDate);
-  return url.toString();
+  return fullFlightPartnerSearchUrl(origin, destination, departure, returnDate);
 }
 
 export function normalizeFares(
@@ -76,7 +84,7 @@ export function normalizeFares(
   const normalized: FareOption[] = [];
   const seen = new Set<string>();
 
-  for (const item of data.slice(0, 100)) {
+  for (const item of data.slice(0, 200)) {
     if (!item || typeof item !== "object" || Array.isArray(item)) continue;
     const fare = item as Record<string, unknown>;
     const price = fare.price;
@@ -97,7 +105,7 @@ export function normalizeFares(
     if (seen.has(key)) continue;
     seen.add(key);
     normalized.push({
-      id: String(normalized.length + 1),
+      id: key,
       origin,
       destination,
       originAirport: iata(fare.origin_airport),
@@ -115,5 +123,5 @@ export function normalizeFares(
     });
   }
 
-  return normalized.sort((a, b) => a.price - b.price).slice(0, 40);
+  return normalized.sort((a, b) => a.price - b.price);
 }
