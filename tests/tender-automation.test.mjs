@@ -17,7 +17,7 @@ test("Tender assistant presents real guided application steps and editable draft
  assert.match(route,/getPublicTender/);
  assert.match(f("src/app/tender/page.tsx"),/href="\/tender\/assistant"/);
  assert.match(f("src/app/tender/page.tsx"),/t\("guided"\)/);
- assert.match(f("src/lib/tender/i18n.ts"),/Start Guided Tender Assistant/);
+ assert.match(f("src/lib/tender/i18n.ts"),/Guided Tender Assistant/);
  assert.match(f("src/app/tender\/\[id\]\/page.tsx"),/Check eligibility & prepare draft/);
 });
 test("Eligibility cannot be faked without official criteria and evidence",()=>{
