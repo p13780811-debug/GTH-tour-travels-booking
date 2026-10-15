@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, MapPin, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
+import { destinationGeography } from "@/lib/destinations/geography";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -14,8 +15,8 @@ export const metadata: Metadata = {
   openGraph: { title: "Global Destinations | GTH PRO", description: "A premium destination discovery gateway connecting travel inspiration to source-backed hotel and tour discovery.", type: "website" },
 };
 
-type Destination = { slug: string; title: string; image: string; description: string; location: string };
-type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[] }> };
+type Destination = { slug: string; title: string; image: string; description: string; location: string; country: string | null; region: string | null };
+type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[] }> };
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
 
@@ -30,9 +31,12 @@ const palette = {
   "--gold": "#eac671",
 } as CSSProperties;
 
-function pageLink(search: string, page: number) {
+function pageLink(search: string, page: number, country = "", region = "", sort = "name") {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
+  if (country) params.set("country", country);
+  if (region) params.set("region", region);
+  if (sort !== "name") params.set("sort", sort);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return "/destinations" + (query ? "?" + query : "") + "#discover";
@@ -45,12 +49,20 @@ async function loadDestinations(): Promise<Destination[]> {
     image: item.image_url,
     description: item.description,
     location: "Editorial destination guide",
+    ...destinationGeography(item.slug),
   }));
   const all = new Map(base.map((item) => [item.slug, item]));
   try {
-    const { data, error } = await supabase.from("destinations")
-      .select("name,slug,description").order("name", { ascending: true }).limit(200);
-    if (!error && data) for (const item of data) {
+    // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
+    // Never surface inactive records or assume every DB location has licensed media.
+    for (let offset = 0; offset < 1200; offset += 200) {
+      const { data, error } = await supabase.from("destinations")
+        .select("name,slug,description,country")
+        .eq("is_active", true)
+        .order("name", { ascending: true })
+        .range(offset, offset + 199);
+      if (error || !data) break;
+      for (const item of data) {
       if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) || item.slug.length > 80
         || typeof item.name !== "string" || !item.name.trim()) continue;
       const previous = all.get(item.slug);
@@ -58,11 +70,14 @@ async function loadDestinations(): Promise<Destination[]> {
         slug: item.slug,
         title: item.name.trim().slice(0, 120),
         image: previous?.image || destinationImageForSlug(item.slug),
-        location: "Global destination guide",
+        location: previous ? "Editorial destination guide" : "Destination directory",
+        ...destinationGeography(item.slug, item.country),
         description: typeof item.description === "string" && item.description.trim()
           ? item.description.trim().slice(0, 280)
           : previous?.description || "Explore local highlights and verify current travel details with official providers.",
       });
+      }
+      if (data.length < 200) break;
     }
   } catch {
     // Curated editorial guides remain available during data-provider outages.
@@ -76,10 +91,19 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
   const allDestinations = await loadDestinations();
+  const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
+  const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
+  const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";
+  const region = typeof params.region === "string" && regions.includes(params.region) ? params.region : "";
+  const sort = params.sort === "country" ? "country" : "name";
   const selected = search.toLowerCase();
-  const filtered = selected
-    ? allDestinations.filter((item) => [item.title, item.slug, item.description].some((value) => value.toLowerCase().includes(selected)))
-    : allDestinations;
+  const filtered = allDestinations.filter(item => 
+    (!selected || [item.title, item.slug, item.description, item.country || "", item.region || ""].some(value => value.toLowerCase().includes(selected))) &&
+    (!country || item.country === country) &&
+    (!region || item.region === region)
+  ).sort((a, b) => sort === "country"
+    ? (a.country || "zzz").localeCompare(b.country || "zzz") || a.title.localeCompare(b.title)
+    : a.title.localeCompare(b.title));
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const page = Math.min(requestedPage, pages);
   const visible = filtered.slice((page - 1) * perPage, page * perPage);
@@ -139,14 +163,47 @@ export default async function DestinationsPage({ searchParams }: Props) {
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-[#eac671]"><Sparkles size={15} /> Global Collection</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Destinations worth exploring</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#c0ccdd]">
-              {search ? "Matching destinations for your search." : "Editorial inspiration from across the globe."} Booking and live availability are confirmed by partners.
+              {search || country || region ? "Destinations matching your selected filters." : "Editorial inspiration from across the globe."} Booking and live availability are confirmed by partners.
             </p>
           </div>
           <div className="rounded-full border border-[#eac671]/30 px-4 py-2 text-xs text-[#dbe3f2]" role="status">
-            {filtered.length} {filtered.length === 1 ? "destination" : "destinations"}
+            {filtered.length} {filtered.length === 1 ? "destination" : "destinations"} · {countries.length} countries in directory
           </div>
         </div>
 
+        <form role="search" action="/destinations" method="get"
+          className="mt-8 grid gap-3 rounded-2xl border border-[#eac671]/30 bg-[#0c2037] p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end" aria-label="Filter worldwide destination directory">
+          <label className="block text-xs font-semibold text-[#d3deeb]">Destination or country
+            <input name="search" type="search" maxLength={70} defaultValue={search} placeholder="City, country, interest"
+              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white" />
+          </label>
+          <label className="block text-xs font-semibold text-[#d3deeb]">Region
+            <select name="region" defaultValue={region}
+              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+              <option value="">All regions</option>
+              {regions.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label className="block text-xs font-semibold text-[#d3deeb]">Country
+            <select name="country" defaultValue={country}
+              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+              <option value="">All countries</option>
+              {countries.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label className="block text-xs font-semibold text-[#d3deeb]">Sort by
+            <select name="sort" defaultValue={sort} className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+              <option value="name">Destination A–Z</option>
+              <option value="country">Country A–Z</option>
+            </select>
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="submit" className="gth-btn-gold inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Apply filters <ArrowRight size={16}/></button>
+            <Link href="/destinations#discover" className="inline-flex min-h-12 items-center justify-center px-2 text-xs font-semibold text-[#f1d48b] underline">Reset</Link>
+          </div>
+        </form>
+        <p className="mt-3 text-xs leading-6 text-[#b8c8dd]">Directory locations are editorial references; country grouping is geographic, not evidence of live hotel inventory, official tourism partnership or verified travel prices.</p>
+        
         {visible.length ? (
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:gap-6">
             {visible.map((destination, index) => (
@@ -161,6 +218,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <h3 className="text-2xl font-semibold leading-tight text-white">{destination.title}</h3>
+                  <p className="mt-2 flex items-center gap-2 text-xs font-semibold text-[#f2d58e]"><Globe2 size={14}/>{destination.country || "Country information unavailable"}{destination.region ? ` · ${destination.region}` : ""}</p>
                   <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#c2cfdf]">{destination.description}</p>
                   <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#efd087]">Explore destination <ArrowRight size={16} /></span>
                 </div>
@@ -177,9 +235,9 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
         {pages > 1 && (
           <nav aria-label="Destination pages" className="mt-9 flex flex-wrap items-center justify-center gap-3 text-sm">
-            {page > 1 ? <Link href={pageLink(search, page - 1)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]"><ChevronLeft size={16} /> Previous</Link> : null}
+            {page > 1 ? <Link href={pageLink(search, page - 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]"><ChevronLeft size={16} /> Previous</Link> : null}
             <span className="px-3 text-[#d1dcee]">Page {page} of {pages}</span>
-            {page < pages ? <Link href={pageLink(search, page + 1)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]">Next <ChevronRight size={16} /></Link> : null}
+            {page < pages ? <Link href={pageLink(search, page + 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]">Next <ChevronRight size={16} /></Link> : null}
           </nav>
         )}
       </section>

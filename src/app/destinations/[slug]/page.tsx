@@ -11,13 +11,15 @@ import { blogs } from "@/data/blogs";
 import { siteUrl } from "@/lib/seo/site";
 import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
+import { destinationGeography } from "@/lib/destinations/geography";
 
 type Props = { params: Promise<{ slug: string }> };
-type DestinationDetail = DestinationOverview & { description: string };
+type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null };
 
 async function getDestination(slug: string): Promise<DestinationDetail | null> {
   if (!/^[a-z]+(?:-[a-z]+)*$/.test(slug) || slug.length > 80) return null;
-  const editorial = destinations.find((item) => item.slug === slug) ?? null;
+  const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
+  const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug) } : null;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -26,8 +28,9 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
   try {
     const client = createClient(url, key);
     const { data, error } = await client.from("destinations")
-      .select("slug,name,description")
+      .select("slug,name,description,country")
       .eq("slug", slug)
+      .eq("is_active", true)
       .maybeSingle();
 
     if (error || !data) return editorial;
@@ -38,6 +41,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
     return {
       slug,
       name,
+      ...destinationGeography(slug, data.country),
       image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
         ? data.description.slice(0, 5000)
@@ -82,7 +86,9 @@ export default async function DestinationPage({ params }: Props) {
     ],
   };
   const availableTours = (await getTours({ city: slug })).slice(0, 6);
-  const morePlaces = destinations.filter((item) => item.slug !== slug).slice(0, 6);
+  const morePlaces = destinations.filter((item) => item.slug !== slug)
+    .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
+    .slice(0, 6);
   const suggestedGuides = blogs.filter((blog) => blog.category === "Planning" || blog.category === "Safety").slice(0, 3);
 
   const palette = {
@@ -113,7 +119,7 @@ export default async function DestinationPage({ params }: Props) {
               Discover <span className="text-[#f0d38d]">{destination.name}</span>
             </h1>
             <p className="mt-6 max-w-2xl text-sm leading-7 text-[#d4deec] sm:text-base">
-              Local inspiration, city insights and direct access to hotel and experience discovery. Confirm prices, availability and entry rules with the provider before booking.
+              {destination.country ? `${destination.country}${destination.region ? ` · ${destination.region}` : ""} · ` : ""}Editorial destination insight and access to hotel and experience discovery. Confirm current prices, availability and entry rules with the provider before booking.
             </p>
             <nav aria-label={"Plan travel to " + destination.name} className="mt-8 flex flex-wrap gap-3">
               <Link href={"/hotels?destination=" + encodeURIComponent(slug)}
@@ -135,9 +141,13 @@ export default async function DestinationPage({ params }: Props) {
             </p>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight text-white">One destination. More ways to explore.</h2>
             <p className="mt-4 text-sm leading-7 text-[#d2ddeb]">Research experiences, compare accommodation choices and read practical planning guidance from the GTH PRO ecosystem.</p>
-            <Link href="#destination-discovery" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#f2d58e]">
-              Explore the destination <ArrowRight size={16} />
-            </Link>
+            <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-4 text-sm font-bold text-[#f2d58e]">
+              <Link href="#destination-discovery" className="inline-flex items-center gap-2">
+              Guide <ArrowRight size={16} />
+              </Link>
+              <Link href="#destination-hotels" className="inline-flex items-center gap-2">Hotels <ArrowRight size={16} /></Link>
+              <Link href="#destination-tours" className="inline-flex items-center gap-2">Tours <ArrowRight size={16} /></Link>
+            </nav>
           </div>
         </div>
       </section>
@@ -146,11 +156,13 @@ export default async function DestinationPage({ params }: Props) {
         <article>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-[#f0d38d]"><Sparkles size={15} /> Destination briefing</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Explore {destination.name}</h2>
+          {destination.country && <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#f0d38d]"><Globe2 size={16}/>{destination.country}{destination.region ? ` · ${destination.region}` : ""}</p>}
           <p className="mt-5 whitespace-pre-line text-sm leading-8 text-[#cbd8e7] sm:text-base">{destination.description}</p>
           <p className="mt-5 text-xs leading-6 text-[#aab9ce]">Editorial information only. Opening hours, travel restrictions and local conditions must be confirmed with current official sources.</p>
         </article>
         <aside className="self-start rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6">
           <h3 className="text-lg font-semibold text-white">Research essentials</h3>
+          <p className="mt-2 text-xs leading-6 text-[#b8c8dd]">Destination guide, not a live fare, visa or ticketing service.</p>
           <div className="mt-5 space-y-4 text-sm text-[#d3deeb]">
             <p className="flex gap-3"><ShieldCheck size={18} className="shrink-0 text-[#f0d38d]" /> Check current local entry and safety requirements</p>
             <p className="flex gap-3"><Hotel size={18} className="shrink-0 text-[#f0d38d]" /> Verify actual dates, room options and terms</p>
