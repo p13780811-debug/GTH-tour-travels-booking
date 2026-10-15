@@ -1,17 +1,22 @@
-name: GTH Travel Bulk Hotels
+name: GTH Travel Global Hotel Catalog Sync
 on:
-  # Scheduled workflows execute from GitHub's default branch only.
-  # In this Travel feature branch, schedule remains inactive until an approved final merge.
   schedule:
-    - cron: '17 1 * * *'
-    - cron: '17 9 * * *'
-    - cron: '17 17 * * *'
+    - cron: "17 1 * * *"
+    - cron: "17 9 * * *"
+    - cron: "17 17 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gth-osm-bulk-hotels.yml"
+      - "scripts/import_osm_hotels.py"
+      - "scripts/hotels/**"
+      - "supabase/functions/gth-hotel-ingest/**"
   workflow_dispatch:
     inputs:
       region:
         required: true
         type: choice
-        options: [asia/india/western-zone, asia/india/northern-zone, asia/india/southern-zone, asia/nepal, asia/sri-lanka, asia/bangladesh, europe/monaco]
+        options: [europe/monaco, europe/luxembourg, europe/andorra, europe/liechtenstein, europe/cyprus, asia/nepal, asia/sri-lanka, asia/bangladesh, asia/india/western-zone, asia/india/northern-zone, asia/india/southern-zone]
       mode:
         required: true
         type: choice
@@ -23,55 +28,116 @@ on:
         default: "5000"
 permissions:
   contents: read
+  id-token: write
 concurrency:
-  group: osm-hotel-bulk-${{ inputs.region || 'asia/india' }}
+  group: gth-hotel-global-ingestion
   cancel-in-progress: false
 jobs:
-  bulk:
+  import-licensed-hotel-data:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    environment: ${{ github.event_name == 'schedule' || inputs.mode == 'import' && 'hotel-ingestion' || 'hotel-ingestion-preview' }}
     env:
-      REGION: ${{ inputs.region || 'asia/india/western-zone' }}
-      MODE: ${{ github.event_name == 'schedule' && 'import' || inputs.mode || 'dry-run' }}
-      MAX_RECORDS: ${{ inputs.max_records || '5000' }}
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.GTH_SUPABASE_URL }}
-      SUPABASE_INGESTION_KEY: ${{ secrets.GTH_SUPABASE_INGESTION_KEY }}
-      GTH_INGESTION_ENABLED: ${{ github.event_name == 'schedule' || inputs.mode == 'import' && 'true' || 'false' }}
+      GTH_HOTEL_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-hotel-ingest
+      GTH_INGESTION_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
-      - name: Validate allowlist and hard cap
+        with:
+          persist-credentials: false
+      - name: Resolve curated region and country
+        shell: bash
+        env:
+          REQUESTED_REGION: ${{ inputs.region }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+          REQUESTED_LIMIT: ${{ inputs.max_records }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            # First verified small official extract immediately after merging.
+            REGION=europe/monaco
+            MODE=import
+            MAX_RECORDS=5000
+          elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
+            slot=$(( 10#$(date -u +%j) * 3 + 10#$(date -u +%H) / 8 ))
+            python3 scripts/hotels/resolve_region.py --slot "$slot" > selected-region.env
+            REGION="$(sed -n 's/^REGION=//p' selected-region.env)"
+            COUNTRY="$(sed -n 's/^COUNTRY=//p' selected-region.env)"
+            MODE=import
+            MAX_RECORDS=5000
+          else
+            REGION="$REQUESTED_REGION"
+            MODE="$REQUESTED_MODE"
+            MAX_RECORDS="$REQUESTED_LIMIT"
+          fi
+          if [[ "$GITHUB_EVENT_NAME" != "schedule" ]]; then
+            case "$REGION" in
+            europe/monaco) COUNTRY=MC;;
+            europe/luxembourg) COUNTRY=LU;;
+            europe/andorra) COUNTRY=AD;;
+            europe/liechtenstein) COUNTRY=LI;;
+            europe/cyprus) COUNTRY=CY;;
+            asia/nepal) COUNTRY=NP;;
+            asia/sri-lanka) COUNTRY=LK;;
+            asia/bangladesh) COUNTRY=BD;;
+            asia/india/western-zone|asia/india/northern-zone|asia/india/southern-zone) COUNTRY=IN;;
+            *) echo "Region outside approved source registry"; exit 1;;
+            esac
+          fi
+          [[ "$REGION" =~ ^[a-z0-9/_-]{3,180}$ ]] || exit 1
+          [[ "$COUNTRY" =~ ^[A-Z]{2}$ ]] || exit 1
+          [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
+          [[ "$MAX_RECORDS" =~ ^[1-9][0-9]{0,4}$ ]] || exit 1
+          (( MAX_RECORDS <= 10000 )) || exit 1
+          {
+            echo "REGION=$REGION"
+            echo "COUNTRY=$COUNTRY"
+            echo "MODE=$MODE"
+            echo "MAX_RECORDS=$MAX_RECORDS"
+          } >> "$GITHUB_ENV"
+      - name: Offline importer validation
+        run: |
+          python3 -m unittest discover -s tests -p "test_hotel_import.py"
+          python3 -m unittest discover -s tests -p "test_hotel_region.py"
+      - name: Install osmium
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download licensed Geofabrik country extract
         shell: bash
         run: |
           set -euo pipefail
-          case "$REGION" in europe/monaco|asia/nepal|asia/sri-lanka|asia/bangladesh|asia/india/western-zone|asia/india/northern-zone|asia/india/southern-zone) ;; *) exit 1;; esac
-          [[ "$MAX_RECORDS" =~ ^[1-9][0-9]{0,5}$ ]] || exit 1
-          (( MAX_RECORDS <= 100000 )) || exit 1
-          [[ "$MODE" == dry-run || "$MODE" == import ]] || exit 1
-          if [[ "$MODE" == import ]]; then
-            test -n "$SUPABASE_INGESTION_KEY"
-            test -n "$NEXT_PUBLIC_SUPABASE_URL"
-          fi
-      - name: Install osmium
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
-      - name: Download licensed extract
-        run: |
-          set -euo pipefail
-          curl -fL --retry 3 --proto '=https' --max-time 2400 -o region.osm.pbf "https://download.geofabrik.de/${REGION}-latest.osm.pbf"
+          curl -fL --retry 3 --proto '=https' --max-time 2400 \
+            -o region.osm.pbf "https://download.geofabrik.de/$REGION-latest.osm.pbf"
           test -s region.osm.pbf
-      - name: Export accommodation OSM points
+      - name: Extract geolocated accommodation, preserving OSM IDs
+        shell: bash
         run: |
           set -euo pipefail
-          osmium tags-filter region.osm.pbf nwr/tourism=hotel,motel,hostel,guest_house,apartment,resort -o accommodation.osm.pbf --overwrite
-          osmium export --add-unique-id=type_id --geometry-types=point -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
-      - name: Guarded batch import
+          osmium tags-filter region.osm.pbf \
+            nwr/tourism=hotel,motel,hostel,guest_house,apartment,resort \
+            -o accommodation.osm.pbf --overwrite
+          osmium export --add-unique-id=type_id --geometry-types=point \
+            -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
+      - name: Secure import with GitHub OIDC
+        shell: bash
         run: |
           set -euo pipefail
-          if [[ "$MODE" == import ]]; then
-            python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit "$MAX_RECORDS"
+          if [[ "$MODE" == "dry-run" ]]; then
+            python3 scripts/import_osm_hotels.py hotels.geojsonseq \
+              --country-code "$COUNTRY" --limit "$MAX_RECORDS" --dry-run
           else
-            python3 scripts/import_osm_hotels.py hotels.geojsonseq --limit "$MAX_RECORDS" --dry-run
+            test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+            test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+            token_json="$(curl --fail --silent --show-error --proto '=https' \
+              --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-pro-hotel-ingest:dqprqjmhxjnrllczqyhz")"
+            GTH_HOTEL_OIDC_TOKEN="$(printf '%s' "$token_json" | \
+              python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+            test -n "$GTH_HOTEL_OIDC_TOKEN"
+            echo "::add-mask::$GTH_HOTEL_OIDC_TOKEN"
+            export GTH_HOTEL_OIDC_TOKEN
+            python3 scripts/import_osm_hotels.py hotels.geojsonseq \
+              --country-code "$COUNTRY" --limit "$MAX_RECORDS" \
+              --edge-url "$GTH_HOTEL_EDGE_URL"
           fi
-      - name: Attribution
+      - name: ODbL attribution
         if: always()
-        run: echo "OpenStreetMap contributors © ODbL 1.0; does not imply available rooms or live rates" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "© OpenStreetMap contributors (ODbL 1.0), Geofabrik. Hotel listing is not live room inventory, rates or booking confirmation." >> "$GITHUB_STEP_SUMMARY"

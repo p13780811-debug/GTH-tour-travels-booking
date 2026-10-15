@@ -112,22 +112,59 @@ def main():
     parser.add_argument("file", type=Path, help="OSM GeoJSONSeq / NDJSON point features")
     parser.add_argument("--limit", type=int, default=0, help="Maximum accepted records; 0 = all")
     parser.add_argument("--dry-run", action="store_true", help="Parse and count without writes")
+    parser.add_argument("--edge-url", default="", help="Authorized Supabase OIDC hotel ingestion function")
+    parser.add_argument("--country-code", default="", help="ISO-2 for known sovereign Geofabrik country extract")
     args = parser.parse_args()
+    if args.country_code and not __import__("re").fullmatch(r"[A-Z]{2}", args.country_code):
+        parser.error("--country-code must be an uppercase two-letter ISO country")
     if not args.file.is_file() or args.limit < 0:
         parser.error("File must exist and --limit must be nonnegative")
     base = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
     key = os.environ.get("SUPABASE_INGESTION_KEY", "")
+    oidc_token = os.environ.get("GTH_HOTEL_OIDC_TOKEN", "")
+    if args.edge_url and args.edge_url != "https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-hotel-ingest":
+        parser.error("Invalid project-bound OIDC ingestion endpoint")
     if not args.dry_run:
         if os.environ.get("GTH_INGESTION_ENABLED") != "true":
             parser.error("Import disabled: set GTH_INGESTION_ENABLED=true")
-        if not base.startswith("https://") or not key:
-            parser.error("Missing valid NEXT_PUBLIC_SUPABASE_URL or server-side SUPABASE_INGESTION_KEY")
+        if args.edge_url:
+            if not oidc_token:
+                parser.error("GitHub OIDC workflow token required for hotel import")
+        elif not base.startswith("https://") or not key:
+            parser.error("Missing valid Supabase URL or server-side ingestion credential")
     batch, accepted, rejected = [], 0, 0
 
     def flush():
-        if batch and not args.dry_run:
-            request_json(base, key, "hotel_catalog?on_conflict=source,source_id",
-                         payload=batch, extra={"Prefer": "resolution=merge-duplicates,return=minimal"})
+        nonlocal rejected
+        if not batch:
+            return
+        if not args.dry_run:
+            if args.edge_url:
+                payload = json.dumps({"records": batch}, separators=(",", ":")).encode()
+                request = Request(args.edge_url, data=payload, method="POST", headers={
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + oidc_token
+                })
+                for attempt in range(4):
+                    try:
+                        with urlopen(request, timeout=45) as response:
+                            outcome = json.load(response)
+                        if outcome.get("accepted") != len(batch):
+                            raise RuntimeError("Hotel import batch rejected some source records")
+                        break
+                    except HTTPError as err:
+                        if err.code in (429, 502, 503, 504) and attempt < 3:
+                            time.sleep(2 ** attempt)
+                            continue
+                        raise RuntimeError("Protected hotel ingestion service rejected the batch") from None
+                    except URLError:
+                        if attempt < 3:
+                            time.sleep(2 ** attempt)
+                            continue
+                        raise RuntimeError("Hotel ingestion endpoint unavailable") from None
+            else:
+                request_json(base, key, "hotel_catalog?on_conflict=source,source_id",
+                             payload=batch, extra={"Prefer": "resolution=merge-duplicates,return=minimal"})
         batch.clear()
 
     with args.file.open("r", encoding="utf-8") as stream:
@@ -142,9 +179,14 @@ def main():
             if record is None:
                 rejected += 1
                 continue
+            if args.country_code:
+                if record["country_code"] and record["country_code"] != args.country_code:
+                    rejected += 1
+                    continue
+                record["country_code"] = args.country_code
             batch.append(record)
             accepted += 1
-            if len(batch) >= BATCH:
+            if len(batch) >= (100 if args.edge_url else BATCH):
                 flush()
                 print(f"processed={accepted} rejected={rejected}", file=sys.stderr)
             if args.limit and accepted >= args.limit:
