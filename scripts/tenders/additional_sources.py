@@ -162,11 +162,17 @@ def canada_notice(row):
         url=urlsplit(raw_url)
     except ValueError as exc:
         raise ValueError("Malformed CanadaBuys official link") from exc
-    if (url.scheme!="https" or url.hostname!=CA_HOST or url.username or
-        url.password or url.port is not None or not
-        re.fullmatch(r"/en/tender-opportunities/tender-notice/[A-Za-z0-9._%-]{3,170}",url.path)):
+    allowed_portal = url.hostname==CA_HOST and bool(re.fullmatch(
+        r"/en/tender-opportunities/tender-notice/[A-Za-z0-9._%-]{3,170}",url.path))
+    # MERX is a tender delivery platform explicitly linked from Canada's
+    # official OPEN-tender CSV. This is government-feed attribution, not a
+    # claim that MERX is a government-owned website.
+    allowed_merx = url.hostname=="www.merx.com" and bool(re.fullmatch(
+        r"/public/solicitations/[0-9]{6,15}/abstract",url.path))
+    if (url.scheme!="https" or url.username or url.password or
+        url.port is not None or not (allowed_portal or allowed_merx)):
         raise ValueError("Canadian notice is on an external or unknown host")
-    source_url=urlunsplit(("https", CA_HOST, url.path, "", ""))
+    source_url=urlunsplit(("https", url.hostname, url.path, "", ""))
     return convert({
         "source_reference": core._text(row.get(CA_FIELDS["ref"])),
         "source_url": source_url,
@@ -179,7 +185,7 @@ def canada_notice(row):
         "summary": core._text(row.get(CA_FIELDS["description"]))[:4000],
         "estimated_value": "",
         "currency": "",
-    }, "CanadaBuys Open Data", {CA_HOST})
+    }, "CanadaBuys Open Data", {CA_HOST,"www.merx.com"})
 
 def fetch_canada(limit):
     """Bounded streaming CSV scan; skips external links and stops early.
@@ -203,7 +209,9 @@ def fetch_canada(limit):
                 break
             if row.get(CA_FIELDS["status"],"").strip().lower()!="open":
                 continue
-            if not row.get(CA_FIELDS["url"],"").startswith("https://"+CA_HOST+"/en/tender-opportunities/tender-notice/"):
+            link=row.get(CA_FIELDS["url"],"")
+            if not (link.startswith("https://"+CA_HOST+"/en/tender-opportunities/tender-notice/") or
+                    link.startswith("https://www.merx.com/public/solicitations/")):
                 continue
             records.append(row)
     return records
