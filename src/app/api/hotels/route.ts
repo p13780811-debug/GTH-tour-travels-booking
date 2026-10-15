@@ -69,7 +69,7 @@ export async function GET(req: Request) {
         .select("name").eq("slug",destination).eq("is_active",true).maybeSingle();
       if(placeError)return NextResponse.json({error:"Destination lookup unavailable"},{status:503,headers:safeHeaders});
       const knownName=place?.name;
-      if(typeof knownName!=="string"||!cleanString(knownName,{min:2,max:80,pattern:/^[\\p{L}\\p{M}\\s.'-]+$/u}))
+      if(typeof knownName!=="string"||!cleanString(knownName,{min:2,max:80,pattern:/^[\p{L}\p{M}\s.'-]+$/u}))
         return NextResponse.json({error:"Destination not found"},{status:404,headers:safeHeaders});
       matchingCity=knownName.trim();
     }
