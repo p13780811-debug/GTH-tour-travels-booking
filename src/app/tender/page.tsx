@@ -30,7 +30,7 @@ function formatted(iso: string) {
   return Number.isNaN(d.getTime()) ? "Check source notice" :
     new Intl.DateTimeFormat("en", { dateStyle:"medium", timeZone:"UTC" }).format(d);
 }
-function filterHref(filters: {q:string;country:string;sector:string;closingBefore:string}, page:number) {
+function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string}, page:number) {
   const q = new URLSearchParams();
   if (filters.q) q.set("q", filters.q);
   if (filters.country) q.set("country", filters.country);
