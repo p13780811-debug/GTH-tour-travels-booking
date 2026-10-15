@@ -21,9 +21,9 @@ const categories = [
 ] as const;
 
 export function TenderMarketOverview({
-  filters,language,total,stats
+  filters,language,stats
 }:{
-  filters:TenderFilters;language:TenderLocale;total:number;stats:TenderDiscoveryStats | null
+  filters:TenderFilters;language:TenderLocale;stats:TenderDiscoveryStats | null
 }){
   const m=marketplaceText(language);
   if(!stats) return null;
@@ -38,8 +38,8 @@ export function TenderMarketOverview({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="relative flex size-3 shrink-0">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500/40 motion-reduce:animate-none"/>
-              <span className="relative inline-flex size-3 rounded-full bg-emerald-600"/>
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[var(--gold)]/40 motion-reduce:animate-none"/>
+              <span className="relative inline-flex size-3 rounded-full bg-[var(--gold)]"/>
             </span>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text)]">{m("live")}</p>
@@ -53,7 +53,7 @@ export function TenderMarketOverview({
         <div className="grid gap-0 sm:grid-cols-3">
           <div className="border-b border-[var(--border)] px-5 py-5 sm:border-b-0 sm:border-e sm:px-7">
             <p className="text-xs font-medium text-[var(--text-soft)]">{m("notice")}</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight tabular-nums">{total.toLocaleString(language)}</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight tabular-nums">{allCount.toLocaleString(language)}</p>
           </div>
           <Link href={tenderFilterHref({...base,closingWithin:"7"},language)}
             className="group border-b border-[var(--border)] px-5 py-5 hover:bg-[var(--bg-soft)] sm:border-b-0 sm:border-e sm:px-7"
