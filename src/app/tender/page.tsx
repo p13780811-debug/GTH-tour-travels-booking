@@ -26,8 +26,19 @@ const sources = [
   {name:"UK Find a Tender",label:"United Kingdom procurement",url:"https://www.find-tender.service.gov.uk"},
   {name:"Brazil PNCP",label:"Brazil public procurement",url:"https://pncp.gov.br"},
   {name:"USA SAM.gov",label:"United States federal opportunities",url:"https://sam.gov/opportunities"},
+  {name:"CanadaBuys",label:"Canada official open procurement",url:"https://canadabuys.canada.ca"},
+  {name:"Prozorro",label:"Ukraine public procurement",url:"https://prozorro.gov.ua"},
+  {name:"UK Contracts Finder",label:"United Kingdom government tender notices",url:"https://www.contractsfinder.service.gov.uk"},
 ] as const;
 
+const SOURCE_JURISDICTION:Record<string,string>={
+  "Government e-Marketplace":"IN","Central Public Procurement Portal":"IN","CPPP ePublishing":"IN",
+  "GeM Global Bids":"IN","NICSI GeM Bids":"IN","UN Global Marketplace":"GLOBAL",
+  "World Bank Procurement":"GLOBAL","TED European Union":"EU","UK Find a Tender":"GB",
+  "Brazil PNCP":"BR","USA SAM.gov":"US","CanadaBuys":"CA",
+  "Prozorro":"UA","UK Contracts Finder":"GB"
+};
+const EU_COUNTRIES=new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE".split(" "));
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 function textParam(raw: string | string[] | undefined) { return typeof raw === "string" ? raw : ""; }
 
@@ -60,6 +71,12 @@ export default async function TenderPage({searchParams}: Props) {
   const result = parsed.ok ? await searchPublicTenders({...filters,country:filters.scope==="world"?filters.country:homeCountry,
     nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]}) : null;
   const countries=Array.from(COUNTRY_CODES).sort((a,b)=>countryLabel(a,language).localeCompare(countryLabel(b,language),language));
+  const visibleSources=sources.filter(source=>{
+    if(filters.scope==="world")return true;
+    const jurisdiction=SOURCE_JURISDICTION[source.name];
+    return jurisdiction==="GLOBAL" || jurisdiction===homeCountry ||
+      (jurisdiction==="EU"&&EU_COUNTRIES.has(homeCountry));
+  });
   const error = !parsed.ok ? parsed.error : result && !result.ok ? result.error : null;
   const notices = result?.ok ? result.items : [];
   const count = result?.ok ? result.total : 0;
@@ -129,6 +146,14 @@ export default async function TenderPage({searchParams}: Props) {
           <Search size={17} aria-hidden="true"/> {t("search")}
         </button>
       </form>
+      {homeCountry==="IN" && filters.scope!=="world" && (
+        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
+          <span className="font-semibold">{t("indiaTitle")}</span>
+          <a href="https://eprocure.gov.in/eprocure/app" target="_blank" rel="noopener noreferrer nofollow" className="font-semibold underline">{t("view")} CPPP <ArrowUpRight size={14} className="inline"/></a>
+          <a href="https://gem.gov.in" target="_blank" rel="noopener noreferrer nofollow" className="font-semibold underline">{t("view")} GeM <ArrowUpRight size={14} className="inline"/></a>
+          <a href="https://eprocure.gov.in/epublish/app" target="_blank" rel="noopener noreferrer nofollow" className="font-semibold underline">{t("view")} ePublishing <ArrowUpRight size={14} className="inline"/></a>
+        </div>
+      )}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-[var(--text-soft)]" role="status">
         <span>{filters.scope==="world"?t("worldScope"):(localCountry?`${t("inCountry")}: ${localCountry} → ${t("nearby")}`:t("selectCountry"))}
           {result?.ok&&filters.scope==="local"&&!result.countryRequired?` · ${result.primaryCount??0} ${t("inCountry")} · ${result.nearbyCount??0} ${t("nearby")}`:""}
@@ -211,12 +236,12 @@ export default async function TenderPage({searchParams}: Props) {
       </div>
     </section>
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16">
-      <h2 className="text-2xl font-semibold">Go to the official procurement source</h2>
+      <h2 className="text-2xl font-semibold">{t("officialSources")}</h2>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">These are independent official portals, not GTH PRO inventory. Check the issuing authority’s terms and eligibility.</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {sources.map(s=><a key={s.url} href={safeTenderSource(s.url) || "#"} target="_blank" rel="noopener noreferrer nofollow" className="flex min-h-32 flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
+        {visibleSources.map(s=><a key={s.url} href={safeTenderSource(s.url) || "#"} target="_blank" rel="noopener noreferrer nofollow" className="flex min-h-32 flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
           <span className="font-semibold">{s.name}</span><span className="mt-3 text-xs text-[var(--text-soft)]">{s.label}</span>
-          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Visit official portal <ArrowUpRight size={15}/></span>
+          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">{t("view")} <ArrowUpRight size={15}/></span>
         </a>)}
       </div>
     </section>
