@@ -15,7 +15,7 @@ const JWKS=createRemoteJWKSet(new URL("https://token.actions.githubusercontent.c
 const HEADERS={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};
 const TYPES=new Set(["hotel","motel","hostel","guest_house","apartment","resort"]);
 const KEYS=new Set(["source","source_id","name","city","country_code","address","latitude","longitude",
- "website","phone","category","source_license","source_url","image_url","image_source"]);
+ "website","phone","category","source_license","source_url","image_url","image_source","region"]);
 function isObject(v:unknown):v is Record<string,unknown>{
  return typeof v==="object"&&v!==null&&!Array.isArray(v);
 }
@@ -47,7 +47,7 @@ function validHotel(raw:unknown){
  return {
    source:"osm",source_id:id,name,category,latitude:lat,longitude:lon,
    source_license:"ODbL-1.0",source_url:url,
-   city:string(raw.city,100),country_code:country,address:string(raw.address,200),
+   city:string(raw.city,100),region:string(raw.region,100),country_code:country,address:string(raw.address,200),
    phone:string(raw.phone,100),website:safeHttps(raw.website,500),
    image_url:safeHttps(raw.image_url,500),
    image_source:raw.image_url?"osm_tag":null,
