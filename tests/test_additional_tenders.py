@@ -53,9 +53,31 @@ class AdditionalOfficialTests(unittest.TestCase):
         self.assertEqual(result,[detail["data"]])
         self.assertEqual(fetch.call_count,2)
 
+    def test_canada_official_csv_notice_and_timezone(self):
+        sample={
+            "referenceNumber-numeroReference":"AB-1234567",
+            "title-titre-eng":"Public hospital procurement of diagnostic equipment",
+            "contractingEntityName-nomEntitContractante-eng":"Provincial Health Authority",
+            "tenderClosingDate-appelOffresDateCloture":(datetime.now(timezone.utc)+timedelta(days=50)).date().isoformat()+"T13:00:00",
+            "publicationDate-datePublication":"2026-10-14",
+            "tenderStatus-appelOffresStatut-eng":"Open",
+            "noticeURL-URLavis-eng":"https://canadabuys.canada.ca/en/tender-opportunities/tender-notice/pw-2026-1234567",
+            "procurementCategory-categorieApprovisionnement":"Goods",
+            "tenderDescription-descriptionAppelOffres-eng":"Approved public notice"
+        }
+        record=src.canada_notice(sample)
+        self.assertEqual(record["country_code"],"CA")
+        self.assertEqual(record["source_name"],"CanadaBuys Open Data")
+        self.assertEqual(record["deadline_at"][11:19],"00:00:00")
+        with self.assertRaisesRegex(ValueError,"external or unknown"):
+            src.canada_notice({**sample,"noticeURL-URLavis-eng":"https://www.merx.com/public/solicitations/123/abstract"})
+        with self.assertRaises(ValueError):
+            src.canada_notice({**sample,"tenderStatus-appelOffresStatut-eng":"Cancelled"})
+
     def test_registry_wires_existing_and_new_sources(self):
         self.assertIn("uk_contractsfinder",global_feed.SOURCES)
         self.assertIn("ukraine",global_feed.SOURCES)
+        self.assertIn("canada",global_feed.SOURCES)
 
 if __name__=="__main__":
     unittest.main()
