@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, Building2, CalendarDays, ClipboardCheck, FileSearch,
+  ArrowRight, ArrowUpRight, Building2, ClipboardCheck, FileSearch,
   Globe2, Plane, Search, ShieldCheck
 } from "lucide-react";
-import { parseTenderFilters, searchPublicTenders, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import { parseTenderFilters, searchPublicTenders, getTenderDiscoveryStats, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import {TenderMarketOverview, TenderMarketCard} from "@/components/tender/TenderMarketplacePanels";
 import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
 export const dynamic = "force-dynamic";
@@ -42,12 +43,14 @@ const EU_COUNTRIES=new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT L
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 function textParam(raw: string | string[] | undefined) { return typeof raw === "string" ? raw : ""; }
 
-function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;scope?:"local"|"world"}, page:number, lang:string) {
+function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;closingWithin?:"7";sort?:"deadline"|"newest";scope?:"local"|"world"}, page:number, lang:string) {
   const q = new URLSearchParams();
   if (filters.q) q.set("q", filters.q);
   if (filters.country) q.set("country", filters.country);
   if (filters.sector) q.set("sector", filters.sector);
   if (filters.closingBefore) q.set("closingBefore", filters.closingBefore);
+  if (filters.closingWithin) q.set("closingWithin", filters.closingWithin);
+  if (filters.sort && filters.sort!=="deadline") q.set("sort", filters.sort);
   if (filters.scope) q.set("scope",filters.scope);
   if (lang) q.set("lang",lang);
   q.set("page", String(page));
@@ -57,7 +60,7 @@ function filterHref(filters: {q:string;country:string;sector:string;closingBefor
 export default async function TenderPage({searchParams}: Props) {
   const raw = await searchParams;
   const params = new URLSearchParams();
-  for (const name of ["q","country","sector","closingBefore","page","scope"] as const) {
+  for (const name of ["q","country","sector","closingBefore","closingWithin","sort","page","scope"] as const) {
     const value = textParam(raw[name]);
     if (value) params.set(name,value);
   }
@@ -68,8 +71,12 @@ export default async function TenderPage({searchParams}: Props) {
   const language=audience.language;
   const t=tenderText(language);
   const localCountry=homeCountry?countryLabel(homeCountry,language):"";
-  const result = parsed.ok ? await searchPublicTenders({...filters,country:filters.scope==="world"?filters.country:homeCountry,
-    nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]}) : null;
+  const searchFilters={...filters,
+    country:filters.scope==="world"?filters.country:homeCountry,
+    nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]};
+  const [result,marketStats]=parsed.ok
+    ? await Promise.all([searchPublicTenders(searchFilters),getTenderDiscoveryStats(searchFilters)])
+    : [null,null];
   const countries=Array.from(COUNTRY_CODES).sort((a,b)=>countryLabel(a,language).localeCompare(countryLabel(b,language),language));
   const visibleSources=sources.filter(source=>{
     if(filters.scope==="world")return true;
@@ -106,6 +113,7 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
       </div>
     </section>
+    {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats} view="status"/>:null}
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14" aria-labelledby="tender-find">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{t("discover")}</p>
@@ -142,10 +150,17 @@ export default async function TenderPage({searchParams}: Props) {
         <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
           <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
         </label>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
+          <select name="sort" defaultValue={filters.sort??"deadline"} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)]">
+            <option value="deadline">{language==="hi"?"पहले जल्दी बंद होने वाले":"Closing soonest"}</option>
+            <option value="newest">{language==="hi"?"पहले नए जोड़े गए":"Recently added"}</option>
+          </select>
+        </label>
         <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">
           <Search size={17} aria-hidden="true"/> {t("search")}
         </button>
       </form>
+      {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats} view="categories"/>:null}
       {homeCountry==="IN" && filters.scope!=="world" && (
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
           <span className="font-semibold">{t("indiaTitle")}</span>
@@ -166,29 +181,7 @@ export default async function TenderPage({searchParams}: Props) {
       </div> : notices.length ? (
         <>
           <div className="mt-7 grid gap-4 md:grid-cols-2">
-            {notices.map(tender=>(
-              <article key={tender.id} className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">
-                  <span className="rounded-full border border-[var(--border)] px-3 py-1">{countryLabel(tender.country_code,language)}</span>
-                  <span className="rounded-full border border-[var(--border)] px-3 py-1 capitalize">{tender.sector}</span>
-                  <span>{tender.source_name}</span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold leading-7">{tender.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{tender.buyer}</p>
-                <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--text-soft)]">{tender.summary || "Open the notice to review source, eligibility and deadlines."}</p>
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
-                  <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><CalendarDays size={15}/> {t("deadline")} {dateLabel(tender.deadline_at,language)} UTC</span>
-                  <div className="flex flex-wrap gap-3">
-                    <Link href={`/tender/${tender.id}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
-                      {t("view")} <ArrowRight size={16}/>
-                    </Link>
-                    <Link href={`/tender/assistant?tenderId=${encodeURIComponent(tender.id)}`} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">
-                      {t("check")} <ClipboardCheck size={16}/>
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            ))}
+            {notices.map(tender=><TenderMarketCard key={tender.id} tender={tender} language={language}/>)}
           </div>
           <nav aria-label="Tender results pages" className="mt-8 flex items-center justify-between gap-4">
             {filters.page>1?<Link href={filterHref(filters,filters.page-1,language)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">{t("previous")}</Link>:<span/>}

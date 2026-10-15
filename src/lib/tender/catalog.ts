@@ -13,7 +13,7 @@ export type PublicTender = {
   source_reference: string; source_url: string;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; page: number; scope?: "local"|"world"; nearby?: string[] };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[] };
 export type TenderResult =
  | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean }
  | { ok: false; status: number; error: string };
@@ -27,6 +27,10 @@ export function parseTenderFilters(params: URLSearchParams):
   const closingBefore = (params.get("closingBefore") ?? "").trim();
   const scope = params.get("scope") ?? "local";
   if (scope !== "local" && scope !== "world") return {ok:false,error:"Invalid search area"};
+  const closingWithin=params.get("closingWithin") ?? "";
+  if(closingWithin && closingWithin!=="7")return {ok:false,error:"Invalid closing soon filter"};
+  const sort=params.get("sort")??"deadline";
+  if(sort!=="deadline"&&sort!=="newest")return {ok:false,error:"Invalid sort order"};
   const rawPage = params.get("page") ?? "1";
   if (q.length > 100 || /[\u0000-\u001f]/.test(q)) return { ok: false, error: "Invalid search" };
   if (country && !/^[A-Z]{2}$/.test(country)) return { ok: false, error: "Country must be a two-letter ISO code" };
@@ -38,7 +42,7 @@ export function parseTenderFilters(params: URLSearchParams):
   }
   if (!/^[1-9]\d{0,2}$/.test(rawPage) || Number(rawPage) > 100)
     return { ok: false, error: "Invalid page" };
-  return { ok: true, filters: { q, country, sector, closingBefore, page: Number(rawPage), scope } };
+  return { ok: true, filters: { q, country, sector, closingBefore, closingWithin:closingWithin==="7"?"7":undefined, sort, page: Number(rawPage), scope } };
 }
 
 export function safeTenderSource(value: unknown): string | null {
@@ -76,6 +80,7 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
         .gt("deadline_at",new Date().toISOString());
       if(filters.sector) query=query.eq("sector",filters.sector);
       if(filters.closingBefore) query=query.lte("deadline_at",filters.closingBefore+"T23:59:59.999Z");
+      if(filters.closingWithin==="7") query=query.lte("deadline_at",new Date(Date.now()+7*86400000).toISOString());
       if(filters.q){
         const escaped=filters.q.replace(/[\\%_]/g,(v)=>"\\"+v);
         query=query.ilike("title","%"+escaped+"%");
@@ -83,7 +88,9 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       return query;
     };
     const offset=(filters.page-1)*PAGE_SIZE;
-    const sorting=(q:ReturnType<typeof makeQuery>)=>q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
+    const sorting=(q:ReturnType<typeof makeQuery>)=> filters.sort==="newest"
+      ? q.order("imported_at",{ascending:false}).order("id",{ascending:true})
+      : q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
     // World search is an *explicit* user choice. Legacy callers without a
     // scope continue to work; the tender page/API always provide one.
     if(filters.scope==="world" || !filters.scope) {
@@ -122,6 +129,62 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
   } catch {
     return {ok:false,status:503,error:"Tender catalog unavailable"};
   }
+}
+
+export type TenderDiscoveryStats = {
+  sectors: Record<TenderSector, number>;
+  closingSoon7: number;
+  latestImportedAt: string | null;
+};
+
+/**
+ * Public/RLS-scoped, live query-backed marketplace facets. These are true
+ * approved ACTIVE notice counts in the selected geographic area; never demo
+ * numbers, estimated totals or claimed real-time stream event counts.
+ * A separate latest-imported timestamp is deliberately NOT called "last sync":
+ * duplicate-only ingestion jobs do not update imported_at.
+ */
+export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<TenderDiscoveryStats | null> {
+  const db=publicClient();
+  if(!db) return null;
+  if(filters.scope==="local" && !filters.country) return null;
+  const countries=filters.scope==="local"
+    ? Array.from(new Set([filters.country,...(filters.nearby??[])]))
+        .filter(c=>/^[A-Z]{2}$/.test(c)).slice(0,13)
+    : filters.country?[filters.country]:[];
+  const base = () => {
+    let query=db.from("tenders")
+      .select("id",{count:"exact",head:true})
+      .eq("status","published").eq("source_verified",true).eq("is_public",true)
+      .gt("deadline_at",new Date().toISOString());
+    if(countries.length) query=query.in("country_code",countries);
+    return query;
+  };
+  try {
+    const cutoff=new Date(Date.now()+7*86400000).toISOString();
+    const sectorJobs=TENDER_SECTORS.map(sector=>base().eq("sector",sector));
+    const newest=db.from("tenders").select("imported_at")
+      .eq("status","published").eq("source_verified",true).eq("is_public",true)
+      .gt("deadline_at",new Date().toISOString())
+      .order("imported_at",{ascending:false}).limit(1);
+    if(countries.length) newest.in("country_code",countries);
+    const results=await Promise.all([
+      ...sectorJobs,
+      base().lte("deadline_at",cutoff),
+      newest
+    ]);
+    if(results.some(r=>r.error)) return null;
+    const sectors=Object.fromEntries(
+      TENDER_SECTORS.map((sector,index)=>[sector,results[index].count??0])
+    ) as Record<TenderSector,number>;
+    const latest=results[results.length-1];
+    const lastRow=Array.isArray(latest.data)?latest.data[0]:null;
+    return {
+      sectors,
+      closingSoon7:results[TENDER_SECTORS.length].count??0,
+      latestImportedAt:lastRow && "imported_at" in lastRow && typeof lastRow.imported_at==="string"?lastRow.imported_at:null
+    };
+  } catch {return null;}
 }
 
 export async function getPublicTender(id: string):
