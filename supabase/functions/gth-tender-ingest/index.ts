@@ -30,7 +30,7 @@ const SOURCES: Record<string, { host: string; path: RegExp }> = {
   },
   "UK Contracts Finder": {
     host: "www.contractsfinder.service.gov.uk",
-    path: /^\/Published\/Notice\/releases\/[a-fA-F0-9-]{36}\.json$/,
+    path: /^\/Published\/Notice\/releases\/[a-fA-F0-9-]{36}-[0-9]{1,10}\.json$/,
   },
   "Ukraine Prozorro": {
     host: "prozorro.gov.ua",
