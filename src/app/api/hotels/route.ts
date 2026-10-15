@@ -85,7 +85,7 @@ export async function GET(req: Request) {
       catalogCountQuery = catalogCountQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
     }
     if (name) { supplierCountQuery = supplierCountQuery.ilike("name", nameLike); catalogCountQuery = catalogCountQuery.ilike("name", nameLike); }
-    if (country) catalogCountQuery = catalogCountQuery.eq("country_code",country);
+    if (country) catalogCountQuery = catalogCountQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
     if (category) catalogCountQuery = catalogCountQuery.eq("category",category);
     if (country) supplierCountQuery = supplierCountQuery.eq("city","__country_not_supported__");
     if (category && category !== "hotel") supplierCountQuery = supplierCountQuery.eq("city","__category_not_supported__");
@@ -116,12 +116,12 @@ export async function GET(req: Request) {
     const window = hotelPageWindow(page, supplierVisible, catalogCount, PAGE_SIZE);
     if (supplierFailed) supplierRows = [];
     let catalogFailed = Boolean(catalogCountResult.error);
-    let catalogRows: Array<{ source_id: string; name: string; city: string | null; region:string|null; category: string; image_url: string | null; country_code:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
+    let catalogRows: Array<{ source_id: string; name: string; city: string | null; region:string|null; category: string; image_url: string | null; country_code:string|null;extract_country_hint:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
-      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,source_url,website,address,latitude,longitude,updated_at");
+      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,extract_country_hint,source_url,website,address,latitude,longitude,updated_at");
       if (matchingCity) catalogQuery = catalogQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
-      if (country) catalogQuery = catalogQuery.eq("country_code",country);
+      if (country) catalogQuery = catalogQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
       if (category) catalogQuery = catalogQuery.eq("category",category);
       const { data, error } = await catalogQuery.order("name").order("source_id")
         .range(window.catalogStart, window.catalogStart + window.catalogTake - 1);
@@ -141,7 +141,7 @@ export async function GET(req: Request) {
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
         id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
-        country: hotel.country_code, category:hotel.category, stars: null, image: safeImage(null), affiliate_link: null,
+        country: hotel.country_code, location_scope:hotel.country_code?"OSM country tag":"Geofabrik extract hint (not verified country)", category:hotel.category, stars: null, image: safeImage(null), affiliate_link: null,
         source_url:hotel.source_url, hotel_website:hotel.website, address:hotel.address,
         latitude:hotel.latitude, longitude:hotel.longitude, updated_at:hotel.updated_at,
         source: "OpenStreetMap", source_license: "ODbL-1.0",
