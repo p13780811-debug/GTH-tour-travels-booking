@@ -113,6 +113,7 @@ export async function POST(req:Request) {
     await enforceRateLimit(req,"submissions",user.id);
     // Bind the saved snapshot to the real approved catalog record (when one
     // exists). Users can mark their own checks, never official verification.
+    let changedOnSave=false;
     let linked:null|{id:string;title:string;buyer:string;source_reference:string;source_url:string;deadline_at:string;updated_at:string;requirements_verified:boolean}=null;
     if(tenderId){
       const {data:source,error:sourceError}=await client.from("tenders")
@@ -121,6 +122,20 @@ export async function POST(req:Request) {
       if(sourceError)throw new RequestError("Cannot verify linked catalog notice",503);
       if(!source)throw new RequestError("Tender not current; refresh the official notice before saving",409);
       linked=source;
+      const hasChangedSinceSaved=Boolean(
+        (preparation.deadline_snapshot &&
+          new Date(source.deadline_at).toISOString()!==preparation.deadline_snapshot) ||
+        (preparation.source_updated_snapshot &&
+          new Date(source.updated_at).getTime()>new Date(preparation.source_updated_snapshot).getTime())
+      );
+      if(hasChangedSinceSaved){
+        changedOnSave=true;
+        // An actual procurement update invalidates previous checklist assertions.
+        // Retain the bidder's draft text, but require all source-linked checks again.
+        preparation.notice_reviewed_at=null;
+        preparation.checked_documents=[];
+        preparation.checked_prebid=[];
+      }
       preparation.deadline_snapshot=new Date(source.deadline_at).toISOString();
       preparation.source_updated_snapshot=new Date(source.updated_at).toISOString();
       noticeDetails.title=source.title;
@@ -141,7 +156,7 @@ export async function POST(req:Request) {
       :client.from("tender_bid_workspaces").insert(data);
     const {data:stored,error}=await query.select("id,updated_at").single();
     if(error)throw new RequestError("Could not save private draft",503);
-    return Response.json({saved:true,id:stored.id,updated_at:stored.updated_at,readiness},{status:id?200:201,headers:noStore});
+    return Response.json({saved:true,id:stored.id,updated_at:stored.updated_at,readiness,source_revalidation_required:changedOnSave},{status:id?200:201,headers:noStore});
   }catch(e){return requestError(e);}
 }
 export async function DELETE(req:Request) {
