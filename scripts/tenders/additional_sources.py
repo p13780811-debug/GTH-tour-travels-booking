@@ -5,6 +5,8 @@ Only documented public APIs, bounded requests, no CAPTCHA/session bypass, and
 strict published notice links. Adapter is read-only; the existing ingestion
 gateway owns approval, project auth and database writes.
 """
+import csv
+import io
 import re
 import time
 from datetime import datetime, timedelta, timezone
@@ -117,3 +119,91 @@ def fetch_ukraine(limit):
             continue  # one temporarily missing record must not discard feed
         time.sleep(0.25)
     return notices
+
+
+# Official CanadaBuys open data: the OPEN-notices file is updated each day.
+# Third-party hosted notices embedded in the CSV are not automatically trusted:
+# only directly issued CanadaBuys portal URLs enter the live marketplace.
+CA_CSV = "https://canadabuys.canada.ca/opendata/pub/openTenderNotice-ouvertAvisAppelOffres.csv"
+CA_HOST = "canadabuys.canada.ca"
+CA_FIELDS = {
+    "ref": "referenceNumber-numeroReference",
+    "title": "title-titre-eng",
+    "buyer": "contractingEntityName-nomEntitContractante-eng",
+    "closing": "tenderClosingDate-appelOffresDateCloture",
+    "published": "publicationDate-datePublication",
+    "url": "noticeURL-URLavis-eng",
+    "status": "tenderStatus-appelOffresStatut-eng",
+    "category": "procurementCategory-categorieApprovisionnement",
+    "description": "tenderDescription-descriptionAppelOffres-eng",
+}
+def canada_utc_date(raw, required=True):
+    """Canada CSV omits zone. Use 00:00 UTC on the provided calendar date,
+    excluding rather than falsely extending same-day local deadlines.
+    """
+    value=core._text(raw)
+    if not value:
+        if required: raise ValueError("Missing CanadaBuys closing date")
+        return None
+    if not re.match(r"^\d{4}-\d{2}-\d{2}",value):
+        raise ValueError("Malformed CanadaBuys closing date")
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2})?",value):
+        value=value[:10]+"T00:00:00+00:00"
+    return core._time(value,required=required)
+
+def canada_notice(row):
+    from urllib.parse import urlsplit,urlunsplit
+    if not isinstance(row,dict):
+        raise ValueError("Invalid Canadian open data row")
+    if core._text(row.get(CA_FIELDS["status"])).casefold() != "open":
+        raise ValueError("Canadian tender is not open")
+    raw_url=core._text(row.get(CA_FIELDS["url"]))
+    try:
+        url=urlsplit(raw_url)
+    except ValueError as exc:
+        raise ValueError("Malformed CanadaBuys official link") from exc
+    if (url.scheme!="https" or url.hostname!=CA_HOST or url.username or
+        url.password or url.port is not None or not
+        re.fullmatch(r"/en/tender-opportunities/tender-notice/[A-Za-z0-9._%-]{3,170}",url.path)):
+        raise ValueError("Canadian notice is on an external or unknown host")
+    source_url=urlunsplit(("https", CA_HOST, url.path, "", ""))
+    return convert({
+        "source_reference": core._text(row.get(CA_FIELDS["ref"])),
+        "source_url": source_url,
+        "title": core._text(row.get(CA_FIELDS["title"])),
+        "buyer": core._text(row.get(CA_FIELDS["buyer"])),
+        "country_code": "CA",
+        "sector": core._sector(row.get(CA_FIELDS["category"])),
+        "deadline_at": canada_utc_date(row.get(CA_FIELDS["closing"])),
+        "published_at": canada_utc_date(row.get(CA_FIELDS["published"]),required=False),
+        "summary": core._text(row.get(CA_FIELDS["description"]))[:4000],
+        "estimated_value": "",
+        "currency": "",
+    }, "CanadaBuys Open Data", {CA_HOST})
+
+def fetch_canada(limit):
+    """Bounded streaming CSV scan; skips external links and stops early.
+    Does not crawl detail pages, save personal contact fields or cache full CSV.
+    """
+    from urllib.parse import urlsplit
+    from urllib.request import Request,urlopen
+    req=Request(CA_CSV,headers={"User-Agent":core.USER_AGENT,"Accept":"text/csv"})
+    records=[]
+    with urlopen(req,timeout=22) as response:
+        final=urlsplit(response.geturl())
+        if final.scheme!="https" or final.hostname!=CA_HOST:
+            raise ValueError("CanadaBuys CSV redirected to an unknown host")
+        decoded=io.TextIOWrapper(response,encoding="utf-8-sig",newline="")
+        reader=csv.DictReader(decoded)
+        if not reader.fieldnames or any(f not in reader.fieldnames for f in CA_FIELDS.values()):
+            raise ValueError("CanadaBuys official CSV schema changed")
+        # Only inspect a bounded number of rows, not the entire multi-MB archive.
+        for index,row in enumerate(reader):
+            if index>=2500 or len(records)>=min(limit,100):
+                break
+            if row.get(CA_FIELDS["status"],"").strip().lower()!="open":
+                continue
+            if not row.get(CA_FIELDS["url"],"").startswith("https://"+CA_HOST+"/en/tender-opportunities/tender-notice/"):
+                continue
+            records.append(row)
+    return records
