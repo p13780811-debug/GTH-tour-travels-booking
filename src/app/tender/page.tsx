@@ -15,6 +15,9 @@ export const metadata: Metadata = {
 const sources = [
   {name:"Government e-Marketplace",label:"India public procurement",url:"https://gem.gov.in"},
   {name:"Central Public Procurement Portal",label:"India e-procurement",url:"https://eprocure.gov.in/eprocure/app"},
+  {name:"CPPP ePublishing",label:"India latest tender enquiries",url:"https://eprocure.gov.in/epublish/app"},
+  {name:"GeM Global Bids",label:"India international competitive bids",url:"https://bidplus-global.gem.gov.in/"},
+  {name:"NICSI GeM Bids",label:"India official government technology procurement",url:"https://nicsi.nic.in/nicsi/nicsi-gem-bids/"},
   {name:"UN Global Marketplace",label:"United Nations procurement",url:"https://www.ungm.org"},
   {name:"World Bank Procurement",label:"Worldwide financed projects",url:"https://projects.worldbank.org/en/projects-operations/procurement"},
   {name:"TED European Union",label:"EU procurement notices",url:"https://ted.europa.eu"},
@@ -166,6 +169,20 @@ export default async function TenderPage({searchParams}: Props) {
             <span className="text-xs font-bold text-[var(--gold)]">0{i+1}</span>
             <h3 className="mt-3 font-semibold">{title}</h3><p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{detail}</p>
           </article>)}
+        </div>
+      </div>
+    </section>
+    <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 md:pt-16" aria-label="India official tender discovery">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
+        <h2 className="text-xl font-semibold">India official tender opportunities</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+          Search notices currently published in GTH PRO, or check the central CPPP, ePublishing and GeM portals directly.
+          Government portal notices are not claimed as imported unless an authorized, source-verified feed has supplied them.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/tender?country=IN" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold">View India catalog <ArrowRight size={16}/></Link>
+          <a href="https://eprocure.gov.in/eprocure/app" target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">CPPP official tenders <ArrowUpRight size={16}/></a>
+          <a href="https://gem.gov.in" target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">GeM official bids <ArrowUpRight size={16}/></a>
         </div>
       </div>
     </section>
