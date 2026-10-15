@@ -116,10 +116,13 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="Maximum accepted records; 0 = all")
     parser.add_argument("--dry-run", action="store_true", help="Parse and count without writes")
     parser.add_argument("--edge-url", default="", help="Authorized Supabase OIDC hotel ingestion function")
-    parser.add_argument("--country-code", default="", help="ISO-2 for known sovereign Geofabrik country extract")
+    parser.add_argument("--country-code", default="", help="Approximate Geofabrik extraction region ISO2; never sets confirmed hotel country")
+    parser.add_argument("--region", default="", help="Geofabrik regional extract path for source attribution")
     args = parser.parse_args()
     if args.country_code and not __import__("re").fullmatch(r"[A-Z]{2}", args.country_code):
         parser.error("--country-code must be an uppercase two-letter ISO country")
+    if args.region and not __import__("re").fullmatch(r"[a-z0-9_-]+(?:/[a-z0-9_-]+){1,4}",args.region):
+        parser.error("Invalid source extraction region")
     if not args.file.is_file() or args.limit < 0:
         parser.error("File must exist and --limit must be nonnegative")
     base = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
@@ -187,6 +190,9 @@ def main():
                 rejected += 1
                 continue
             # Never infer sovereign country from a download region. Null means unknown.
+            if args.region:
+                record["extract_region"]=args.region
+                record["extract_country_hint"]=args.country_code or None
             batch.append(record)
             accepted += 1
             if len(batch) >= (100 if args.edge_url else BATCH):
