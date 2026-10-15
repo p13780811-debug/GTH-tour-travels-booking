@@ -17,5 +17,6 @@ export default async function TenderAssistantPage({searchParams}:{searchParams:P
     source_reference:original.source_reference,source_url:original.source_url,
     eligibility_requirements:original.eligibility_requirements||{},
     requirements_verified:Boolean(original.requirements_verified),
+    deadline_at:original.deadline_at,
   }:null}/>;
 }
