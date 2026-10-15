@@ -178,7 +178,7 @@ export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<T
     return {
       sectors,
       closingSoon7:results[TENDER_SECTORS.length].count??0,
-      latestImportedAt:lastRow && typeof lastRow.imported_at==="string"?lastRow.imported_at:null
+      latestImportedAt:lastRow && "imported_at" in lastRow && typeof lastRow.imported_at==="string"?lastRow.imported_at:null
     };
   } catch {return null;}
 }
