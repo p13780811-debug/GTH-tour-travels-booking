@@ -29,7 +29,16 @@ def probe_one(name, url, host):
                     header = body.split(b"\n", 1)[0].decode("utf-8-sig", "replace")
                     row = next(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))), {})
                     public_fields = ("referenceNumber-numeroReference", "solicitationNumber-numeroSollicitation", "tenderClosingDate-appelOffresDateCloture", "publicationDate-datePublication", "tenderStatus-appelOffresStatut-eng", "noticeURL-URLavis-eng", "contractingEntityName-nomEntitContractante-eng")
-                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000], "sample_public_fields": {k: str(row.get(k,""))[:150] for k in public_fields}, "link_hosts_in_sample": __import__("collections").Counter(__import__("urllib.parse",fromlist=["urlsplit"]).urlsplit(r.get("noticeURL-URLavis-eng","")).hostname for r in list(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))))[:100]).most_common(12)}}))
+                    from collections import Counter
+                    from urllib.parse import urlsplit
+                    sampled = list(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))))[:100]
+                    host_counts = Counter(urlsplit(x.get("noticeURL-URLavis-eng", "")).hostname for x in sampled)
+                    print(json.dumps({
+                        "source": name, "available": True, "truncated": True,
+                        "header": header[:5000],
+                        "sample_public_fields": {k: str(row.get(k, ""))[:150] for k in public_fields},
+                        "link_hosts_in_sample": host_counts.most_common(12),
+                    }))
                 else:
                     print(json.dumps({"source": name, "available": True, "truncated": True}))
                 return
