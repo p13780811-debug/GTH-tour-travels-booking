@@ -99,12 +99,21 @@ def ukraine_notice(item):
 def fetch_ukraine(limit):
     # Public listing supplies IDs only. Resolve a small, bounded set using the
     # official detail API and only accept active tendering records.
-    payload = core._http_json(UA_API + "?" + urlencode({"limit": min(limit, 20)}), allowed_host=UA_HOST)
+    payload = core._http_json(UA_API + "?" + urlencode({
+        "limit": min(max(limit * 5, 40), 100),
+        "descending": 1,
+        "opt_fields": "status,tenderID",
+    }), allowed_host=UA_HOST)
     data = payload.get("data")
     if not isinstance(data, list):
         raise ValueError("Prozorro list response changed")
     notices = []
-    for item in data[:min(limit, 20)]:
+    for item in data[:100]:
+        if len(notices) >= min(limit, 20):
+            break
+        # Prozorro feed explicitly supports status via opt_fields.
+        if item.get("status") not in ("active.tendering", "active.pre-qualification"):
+            continue
         if not isinstance(item, dict):
             continue
         ident = core._text(item.get("id"))
