@@ -48,6 +48,37 @@ class GlobalTenderTests(unittest.TestCase):
         self.assertEqual(row["estimated_value"], "125000.50")
         self.assertEqual(row["source_url"], "https://pncp.gov.br/app/editais/12345678901234/2026/11")
 
+    def test_india_worldbank_country_first_provenance(self):
+        from datetime import datetime,timezone,timedelta
+        deadline=(datetime.now(timezone.utc)+timedelta(days=45)).isoformat()
+        data={
+            "procnotices":{
+                "a":{
+                    "id":"OP00991234",
+                    "bid_description":"Procurement of clean energy equipment for India",
+                    "contact_organization":"Government Energy Procurement Agency",
+                    "project_ctry_name":"India",
+                    "submission_deadline_date":deadline,
+                    "publication_date":"2026-10-14T00:00:00Z",
+                },
+                "b":{
+                    "id":"OP00991235",
+                    "bid_description":"Non-Indian procurement notice",
+                    "contact_organization":"Foreign Buyer",
+                    "project_ctry_name":"Nepal",
+                    "submission_deadline_date":deadline,
+                },
+            }
+        }
+        with patch.object(g.core,"_http_json",return_value=data) as fetch, \
+             patch.object(g.core,"_worldbank_countries",return_value={"india":"IN","nepal":"NP"}):
+            records,rejected=g.collect("worldbank_india",100)
+        self.assertEqual(len(records),1)
+        self.assertEqual(records[0]["country_code"],"IN")
+        self.assertEqual(records[0]["source_name"],"World Bank")
+        self.assertTrue(records[0]["source_url"].endswith("/OP00991234"))
+        self.assertEqual(fetch.call_count,1)
+
     def test_sam_optional_key(self):
         with patch.dict(os.environ, {}, clear=True):
             self.assertIsNone(g.fetch_sam(5))

@@ -51,8 +51,10 @@ test("approved Real Estate route and slider design remain independent",()=>{
  assert.match(source,/const isRealEstate = pathname\?\.startsWith\("\/real-estate"\)/);
  assert.match(nav,/EstateHeader/);
  assert.match(tender,/searchPublicTenders/);
- assert.match(tender,/No published tenders match your search/);
- assert.match(tender,/Official procurement source|official procurement source/i);
+ assert.match(tender,/t\("noResults"\)/);
+ assert.match(load("src/lib/tender/i18n.ts"),/No tenders available for this area/);
+ assert.match(tender,/t\("officialSources"\)/);
+ assert.match(load("src/lib/tender/i18n.ts"),/Official procurement portals/);
 });
 
 test("flagship homepage is separate from the working ecosystem gateway",()=>{

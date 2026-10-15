@@ -26,7 +26,7 @@ import additional_sources as extra
 UK_API = "https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages"
 BR_API = "https://pncp.gov.br/api/consulta/v1/contratacoes/proposta"
 US_API = "https://api.sam.gov/opportunities/v2/search"
-SOURCES = ("worldbank", "ted", "uk", "brazil", "uk_contractsfinder", "ukraine", "canada", "sam")
+SOURCES = ("worldbank_india", "worldbank", "ted", "uk", "brazil", "uk_contractsfinder", "ukraine", "canada", "sam")
 PUBLIC_SOURCES = frozenset(SOURCES)
 SOURCE_CONFIG = {
     "uk": ("UK Find a Tender", "www.find-tender.service.gov.uk", "www.find-tender.service.gov.uk"),
@@ -188,7 +188,59 @@ def fetch_sam(limit):
         raise ValueError("SAM.gov API schema changed")
     return rows[:limit]
 
+def fetch_worldbank_india(limit):
+    """Fetch actual open India procurement from the reusable World Bank feed.
+
+    The unfiltered worldwide first page often omits India. Official procurement
+    API's project_ctry_name=India filter was verified with live country-matching
+    results; exact country code and future deadlines are revalidated.
+    """
+    from urllib.parse import urlencode
+    saved=[]
+    seen=set()
+    # Three bounded pages prevent monopolizing free API quotas.
+    for offset in (0, 100, 200):
+        args={"format":"json","rows":100,"os":offset,
+              "srt":"noticedate desc,id asc","project_ctry_name":"India"}
+        payload=core._http_json(core.WORLD_BANK+"?"+urlencode(args),allowed_host="search.worldbank.org")
+        records=payload.get("procnotices")
+        if isinstance(records,dict):
+            records=list(records.values())
+        if not isinstance(records,list):
+            raise ValueError("World Bank India procurement response changed")
+        for item in records:
+            if not isinstance(item,dict):
+                continue
+            if core._text(item.get("project_ctry_name")).casefold()!="india":
+                continue
+            ref=core._text(item.get("id"))
+            if ref and ref not in seen:
+                seen.add(ref)
+                saved.append(item)
+        if len(records)<100 or len(saved)>=300:
+            break
+    return saved
+
+def collect_worldbank_india(limit):
+    accepted,rejected,seen=[],[],set()
+    for item in fetch_worldbank_india(limit):
+        try:
+            record=core._worldbank_notice(item)
+            if record["country_code"]!="IN":
+                raise ValueError("India-only filter returned another country")
+            if datetime.fromisoformat(record["deadline_at"])<=datetime.now(timezone.utc):
+                raise ValueError("Expired tender deadline")
+            if record["source_reference"] in seen:
+                continue
+            seen.add(record["source_reference"])
+            accepted.append(record)
+        except (ValueError,TypeError,OverflowError) as exc:
+            rejected.append(str(exc))
+    return accepted[:limit],rejected
+
 def collect(source, limit):
+    if source=="worldbank_india":
+        return collect_worldbank_india(limit)
     if source in ("worldbank", "ted"):
         return core.collect(source, limit)
     fetchers = {"uk": (fetch_uk, normalize_uk), "brazil": (fetch_brazil, normalize_brazil),
