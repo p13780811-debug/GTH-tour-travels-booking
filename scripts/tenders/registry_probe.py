@@ -27,7 +27,9 @@ def probe_one(name, url, host):
             if len(body) > 300000:
                 if name == "canada":
                     header = body.split(b"\n", 1)[0].decode("utf-8-sig", "replace")
-                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000]}))
+                    row = next(csv.DictReader(io.StringIO(body.decode("utf-8-sig", "replace"))), {})
+                    public_fields = ("referenceNumber-numeroReference", "solicitationNumber-numeroSollicitation", "tenderClosingDate-appelOffresDateCloture", "publicationDate-datePublication", "tenderStatus-appelOffresStatut-eng", "noticeURL-URLavis-eng", "contractingEntityName-nomEntitContractante-eng")
+                    print(json.dumps({"source": name, "available": True, "truncated": True, "header": header[:5000], "sample_public_fields": {k: str(row.get(k,""))[:150] for k in public_fields}}))
                 else:
                     print(json.dumps({"source": name, "available": True, "truncated": True}))
                 return
