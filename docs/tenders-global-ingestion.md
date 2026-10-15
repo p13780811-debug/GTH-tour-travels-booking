@@ -29,41 +29,52 @@ Safe (network API fetch, ZERO database writes):
 Live-fetch failure for a source is displayed as an error. A schema mismatch is not
 replaced by sample data. If the free SAM key is absent, SAM is explicitly "skipped."
 
-## Private intake
+## Secretless official API ingestion (automated)
+ 
+The existing six-hour GitHub Actions workflow is extended without giving GitHub
+any Supabase database key. Its `id-token: write` permission obtains a short-lived
+GitHub-signed OIDC JWT and sends validated notices to the Supabase Edge Function
+`gth-tender-ingest`. The function validates:
 
-The existing repository GitHub Action (.github/workflows/tenders-sync.yml) runs every six
-hours UTC on the **default branch** after merge. GitHub scheduler timings are approximate.
-Set GitHub Actions repository secrets directly in the GitHub UI (NEVER share in chat):
+- GitHub OIDC RS256 signature using GitHub's issuer JWKS, issuer and project-specific audience
+- exact repository ID, repository name, `refs/heads/main` and **this exact workflow path**
+- `schedule`, `workflow_dispatch` or the first approved workflow `push` run
+- approved official hostname and notice-link path, title, buyer, ISO2 country,
+  source reference, future UTC closing deadline and schema limits
 
-    SUPABASE_URL
-    SUPABASE_SERVICE_ROLE_KEY
-    SAM_GOV_API_KEY       # OPTIONAL; free key from SAM.gov account
+Only then does Supabase use its **server-side** `SUPABASE_SERVICE_ROLE_KEY` to
+insert verified-official-source records into the existing `public.tenders` table.
+No browser, GitHub job or public API receives the key. `verify_jwt = false` on
+this function is deliberate: it has strict, custom GitHub OIDC authentication;
+never remove that authentication.
 
-And repository variables:
+The default-branch workflow runs after merging the tender changes and every
+6 hours thereafter, with GitHub scheduling best-effort. Dupes are ignored;
+existing reviewed records are never overwritten. The notice is authenticated
+as from a documented official feed, **not** eligibility-approved or legally
+warranted. All applicants must confirm the latest official documents/deadline.
 
-    GTH_SUPABASE_PROJECT_REF    # must match the actual Vercel app Supabase ref
-    GTH_TENDER_INGESTION_ENABLED = true
+No repository variables, `SUPABASE_URL` GitHub secret or service-role key are
+required by this OIDC path. `SAM_GOV_API_KEY` is **optional**, free-key only,
+and without it the US connector is visibly skipped; not simulated.
 
-This imports to private review only (default). Existing published/curated notices
-are not overwritten on conflict.
+The Edge Function must be deployed to the linked GTH PRO Supabase project before
+the main-branch workflow runs. A successful dry-run/build is not proof that
+production tender listings are visible: verify source rows, RLS and website
+after the real OIDC-authorized run.
 
-## Official-feed publication (additional explicit approval)
+## Security and verification
 
-If and ONLY if both database intake is enabled and the operator approves publishing
-the original notices retrieved from fixed, documented official APIs, set:
-
-    GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED = true
-
-Then the scheduler validates required title, buyer, canonical notice identifier,
-source portal host, ISO country, deadline and future date, and writes source-provenance
-approved notices to the existing published catalog. This is machine-provenance
-verification, NOT a legal review of eligibility, time zones, amendments or attachments.
-A user must confirm the official portal's instructions before bidding.
-
-The frontend reads only current, published, source-provenance-approved rows by RLS.
-The default empty database is not evidence of live ingestion. Verify the scheduled
-GitHub run and Supabase rows before claiming the public site has data.
-
+- Run offline tests, the read-only live API smoke, Deno typecheck and the full
+  production build on PR before merging.
+- A compromised unrelated GitHub repository/branch/workflow cannot issue the
+  exact trusted workload identity.
+- Do not allow manually copied tenders or user-created content to claim official
+  feed provenance. Tender assistant verification remains separate.
+- Do not put identifiers of bidders or bid preparation drafts in tender listings.
+- All public listings include authoritative source URL and unverified-eligibility
+  disclaimer. No GTH PRO bid payment or formal submission occurs.
+ 
 ## Known technical constraints
 
 - Existing World Bank and TED parsers are preserved. Both need HTTP/live fixture testing.
