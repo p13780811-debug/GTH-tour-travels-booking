@@ -3,6 +3,7 @@ import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import type { BidderProfile, TenderRequirements } from "@/lib/tender/eligibility";
 import { safeTenderSource } from "@/lib/tender/catalog";
+import { EMPTY_PREPARATION, parsePreparation, deriveReadiness } from "@/lib/tender/workflow-state";
 export const dynamic = "force-dynamic";
 const idPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const noStore={"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"};
@@ -54,7 +55,28 @@ export async function GET(req:Request) {
       .select("id,tender_id,tender_title,notice_details,bidder_profile,requirement_answers,draft_text,status,created_at,updated_at")
       .eq("owner_id",user.id).order("updated_at",{ascending:false}).limit(25);
     if(error)throw new RequestError("Workspace unavailable",503);
-    return Response.json({items:data||[]},{headers:noStore});
+    const ids=[...new Set((data||[]).map(row=>row.tender_id).filter((id):id is string=>typeof id==="string"&&idPattern.test(id)))];
+    const catalog=ids.length?await client.from("tenders")
+      .select("id,deadline_at,updated_at,requirements_verified,source_url,source_reference")
+      .in("id",ids):{data:[],error:null};
+    // If the catalog cannot be read, the private drafts still load, but are
+    // never labelled verified or refreshed using imaginary official data.
+    const byId=new Map((catalog.data||[]).map(t=>[t.id,t]));
+    const items=(data||[]).map(row=>{
+      let preparation;
+      try{preparation=parsePreparation(row.notice_details?.preparation??EMPTY_PREPARATION);}
+      catch{preparation=EMPTY_PREPARATION;}
+      const live=row.tender_id?byId.get(row.tender_id):null;
+      const savedDeadline=preparation.deadline_snapshot;
+      const changed=Boolean(live && (Boolean(savedDeadline && savedDeadline!==new Date(live.deadline_at).toISOString()) ||
+        Boolean(preparation.source_updated_snapshot && new Date(live.updated_at).getTime()>new Date(preparation.source_updated_snapshot).getTime())));
+      const readiness=deriveReadiness(preparation,Boolean(live?.requirements_verified),
+        live?.deadline_at??savedDeadline);
+      return {...row,readiness,official_notice_changed:changed,
+        current_deadline:live?.deadline_at??null,official_source_url:live?.source_url??null,
+        source_accessible_in_catalog:Boolean(live)};
+    });
+    return Response.json({items},{headers:noStore});
   }catch(e){return requestError(e);}
 }
 export async function POST(req:Request) {
@@ -66,7 +88,7 @@ export async function POST(req:Request) {
     const title=body.title??"",draft=body.draft??"",tenderId=body.tenderId??null,id=body.id??null;
     const notice = body.notice??{};
     if(!notice||typeof notice!=="object"||Array.isArray(notice)||
-      Object.keys(notice).some(k=>!["title","buyer","source_reference","source_url"].includes(k)))
+      Object.keys(notice).some(k=>!["title","buyer","source_reference","source_url","preparation"].includes(k)))
       throw new RequestError("Invalid notice details",400);
     const ni=notice as Record<string,unknown>;
     const lengths:Record<string,number>={title:240,buyer:180,source_reference:160,source_url:2048};
@@ -77,6 +99,9 @@ export async function POST(req:Request) {
         throw new RequestError("Invalid notice details",400);
       noticeDetails[key]=val.trim();
     }
+    let preparation;
+    try{preparation=parsePreparation(ni.preparation??EMPTY_PREPARATION);}
+    catch{throw new RequestError("Invalid preparation progress",400);}
     if(noticeDetails.source_url && !safeTenderSource(noticeDetails.source_url))
       throw new RequestError("Invalid official source URL",400);
     if(typeof title!=="string"||title.length>240||typeof draft!=="string"||draft.length>12000)
@@ -86,9 +111,29 @@ export async function POST(req:Request) {
     if(id!==null&&(typeof id!=="string"||!idPattern.test(id)))
       throw new RequestError("Invalid workspace ID",400);
     await enforceRateLimit(req,"submissions",user.id);
+    // Bind the saved snapshot to the real approved catalog record (when one
+    // exists). Users can mark their own checks, never official verification.
+    let linked:null|{id:string;title:string;buyer:string;source_reference:string;source_url:string;deadline_at:string;updated_at:string;requirements_verified:boolean}=null;
+    if(tenderId){
+      const {data:source,error:sourceError}=await client.from("tenders")
+        .select("id,title,buyer,source_reference,source_url,deadline_at,updated_at,requirements_verified")
+        .eq("id",tenderId).maybeSingle();
+      if(sourceError)throw new RequestError("Cannot verify linked catalog notice",503);
+      if(!source)throw new RequestError("Tender not current; refresh the official notice before saving",409);
+      linked=source;
+      preparation.deadline_snapshot=new Date(source.deadline_at).toISOString();
+      preparation.source_updated_snapshot=new Date(source.updated_at).toISOString();
+      noticeDetails.title=source.title;
+      noticeDetails.buyer=source.buyer;
+      noticeDetails.source_reference=source.source_reference;
+      noticeDetails.source_url=source.source_url;
+    }
+    const readiness=deriveReadiness(preparation,Boolean(linked?.requirements_verified),
+      linked?.deadline_at??preparation.deadline_snapshot);
+    const workflowStatus=readiness.blockers.length?"review_required":"draft";
     const data={
-      owner_id:user.id,tender_title:title.trim(),tender_id:tenderId,
-      notice_details:noticeDetails,bidder_profile:profile,requirement_answers:requirements,draft_text:draft,status:"draft" as const,
+      owner_id:user.id,tender_title:linked?.title??title.trim(),tender_id:tenderId,
+      notice_details:{...noticeDetails,preparation},bidder_profile:profile,requirement_answers:requirements,draft_text:draft,status:workflowStatus,
       updated_at:new Date().toISOString()
     };
     const query=id
@@ -96,7 +141,7 @@ export async function POST(req:Request) {
       :client.from("tender_bid_workspaces").insert(data);
     const {data:stored,error}=await query.select("id,updated_at").single();
     if(error)throw new RequestError("Could not save private draft",503);
-    return Response.json({saved:true,id:stored.id,updated_at:stored.updated_at},{status:id?200:201,headers:noStore});
+    return Response.json({saved:true,id:stored.id,updated_at:stored.updated_at,readiness},{status:id?200:201,headers:noStore});
   }catch(e){return requestError(e);}
 }
 export async function DELETE(req:Request) {
