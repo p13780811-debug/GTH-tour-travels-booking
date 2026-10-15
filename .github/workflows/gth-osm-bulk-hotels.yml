@@ -9,6 +9,7 @@ on:
     paths:
       - ".github/workflows/gth-osm-bulk-hotels.yml"
       - "scripts/import_osm_hotels.py"
+      - "scripts/hotels/**"
       - "supabase/functions/gth-hotel-ingest/**"
   workflow_dispatch:
     inputs:
@@ -57,20 +58,10 @@ jobs:
             MODE=import
             MAX_RECORDS=5000
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
-            slot=$(( (10#$(date -u +%j) * 3 + 10#$(date -u +%H) / 8) % 11 ))
-            case "$slot" in
-              0) REGION=europe/monaco;;
-              1) REGION=europe/luxembourg;;
-              2) REGION=europe/andorra;;
-              3) REGION=europe/liechtenstein;;
-              4) REGION=europe/cyprus;;
-              5) REGION=asia/nepal;;
-              6) REGION=asia/sri-lanka;;
-              7) REGION=asia/bangladesh;;
-              8) REGION=asia/india/western-zone;;
-              9) REGION=asia/india/northern-zone;;
-              10) REGION=asia/india/southern-zone;;
-            esac
+            slot=$(( 10#$(date -u +%j) * 3 + 10#$(date -u +%H) / 8 ))
+            python3 scripts/hotels/resolve_region.py --slot "$slot" > selected-region.env
+            REGION="$(sed -n 's/^REGION=//p' selected-region.env)"
+            COUNTRY="$(sed -n 's/^COUNTRY=//p' selected-region.env)"
             MODE=import
             MAX_RECORDS=5000
           else
@@ -78,7 +69,8 @@ jobs:
             MODE="$REQUESTED_MODE"
             MAX_RECORDS="$REQUESTED_LIMIT"
           fi
-          case "$REGION" in
+          if [[ "$GITHUB_EVENT_NAME" != "schedule" ]]; then
+            case "$REGION" in
             europe/monaco) COUNTRY=MC;;
             europe/luxembourg) COUNTRY=LU;;
             europe/andorra) COUNTRY=AD;;
@@ -89,7 +81,10 @@ jobs:
             asia/bangladesh) COUNTRY=BD;;
             asia/india/western-zone|asia/india/northern-zone|asia/india/southern-zone) COUNTRY=IN;;
             *) echo "Region outside approved source registry"; exit 1;;
-          esac
+            esac
+          fi
+          [[ "$REGION" =~ ^[a-z0-9/_-]{3,180}$ ]] || exit 1
+          [[ "$COUNTRY" =~ ^[A-Z]{2}$ ]] || exit 1
           [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
           [[ "$MAX_RECORDS" =~ ^[1-9][0-9]{0,4}$ ]] || exit 1
           (( MAX_RECORDS <= 10000 )) || exit 1
@@ -100,7 +95,9 @@ jobs:
             echo "MAX_RECORDS=$MAX_RECORDS"
           } >> "$GITHUB_ENV"
       - name: Offline importer validation
-        run: python3 -m unittest discover -s tests -p "test_hotel_import.py"
+        run: |
+          python3 -m unittest discover -s tests -p "test_hotel_import.py"
+          python3 -m unittest discover -s tests -p "test_hotel_region.py"
       - name: Install osmium
         run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
       - name: Download licensed Geofabrik country extract
