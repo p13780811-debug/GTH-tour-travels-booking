@@ -16,6 +16,11 @@ const sources = [
   {name:"Government e-Marketplace",label:"India public procurement",url:"https://gem.gov.in"},
   {name:"Central Public Procurement Portal",label:"India e-procurement",url:"https://eprocure.gov.in/eprocure/app"},
   {name:"UN Global Marketplace",label:"United Nations procurement",url:"https://www.ungm.org"},
+  {name:"World Bank Procurement",label:"Worldwide financed projects",url:"https://projects.worldbank.org/en/projects-operations/procurement"},
+  {name:"TED European Union",label:"EU procurement notices",url:"https://ted.europa.eu"},
+  {name:"UK Find a Tender",label:"United Kingdom procurement",url:"https://www.find-tender.service.gov.uk"},
+  {name:"Brazil PNCP",label:"Brazil public procurement",url:"https://pncp.gov.br"},
+  {name:"USA SAM.gov",label:"United States federal opportunities",url:"https://sam.gov/opportunities"},
 ] as const;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -25,11 +30,12 @@ function formatted(iso: string) {
   return Number.isNaN(d.getTime()) ? "Check source notice" :
     new Intl.DateTimeFormat("en", { dateStyle:"medium", timeZone:"UTC" }).format(d);
 }
-function filterHref(filters: {q:string;country:string;sector:string}, page:number) {
+function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string}, page:number) {
   const q = new URLSearchParams();
   if (filters.q) q.set("q", filters.q);
   if (filters.country) q.set("country", filters.country);
   if (filters.sector) q.set("sector", filters.sector);
+  if (filters.closingBefore) q.set("closingBefore", filters.closingBefore);
   q.set("page", String(page));
   return "/tender?" + q.toString();
 }
@@ -37,13 +43,13 @@ function filterHref(filters: {q:string;country:string;sector:string}, page:numbe
 export default async function TenderPage({searchParams}: Props) {
   const raw = await searchParams;
   const params = new URLSearchParams();
-  for (const name of ["q","country","sector","page"] as const) {
+  for (const name of ["q","country","sector","closingBefore","page"] as const) {
     const value = textParam(raw[name]);
     if (value) params.set(name,value);
   }
   const parsed = parseTenderFilters(params);
   const result = parsed.ok ? await searchPublicTenders(parsed.filters) : null;
-  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", page:1 };
+  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", closingBefore:"", page:1 };
   const error = !parsed.ok ? parsed.error : result && !result.ok ? result.error : null;
   const notices = result?.ok ? result.items : [];
   const count = result?.ok ? result.total : 0;
@@ -58,11 +64,11 @@ export default async function TenderPage({searchParams}: Props) {
           Tender intelligence. <span className="gold-text">Source-first opportunities.</span>
         </h1>
         <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
-          Search published, reviewed procurement notices by sector and location.
+          Search source-attributed published procurement notices by sector, location and deadline.
           Confirm all deadlines, eligibility, amendments and bidding instructions on the issuing authority’s website.
         </p>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
-          <ShieldCheck size={16} aria-hidden="true"/> Only verified-source notices approved for public display appear here
+          <ShieldCheck size={16} aria-hidden="true"/> Only approved official-source notices with future deadlines appear here
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link href="/tender/assistant" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
@@ -81,7 +87,7 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
         <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} published notice${count===1?"":"s"}` : "Source-backed catalog"}</span>
       </div>
-      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto] lg:items-end lg:p-5">
+      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[2fr_1fr_1fr_1fr_auto] lg:items-end lg:p-5">
         <label className="block text-xs font-semibold text-[var(--text-soft)]">Keywords
           <input name="q" maxLength={100} defaultValue={filters.q} placeholder="Search tender title" className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
         </label>
@@ -93,6 +99,9 @@ export default async function TenderPage({searchParams}: Props) {
             <option value="">All sectors</option>
             {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
           </select>
+        </label>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">Closing on or before
+          <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
         </label>
         <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">
           <Search size={17} aria-hidden="true"/> Search
@@ -138,7 +147,7 @@ export default async function TenderPage({searchParams}: Props) {
         <FileSearch size={30} className="mx-auto text-[var(--gold)]" aria-hidden="true"/>
         <h3 className="mt-4 text-lg font-semibold">No published tenders match your search</h3>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
-          GTH PRO does not display fabricated procurement notices. After approved source imports and independent publication review, eligible notices will appear here.
+          GTH PRO does not display fabricated procurement notices. After authorized official-source ingestion and publication validation, eligible notices will appear here.
         </p>
         <Link href="/tender" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">Clear filters <ArrowRight size={16}/></Link>
       </div>}
@@ -163,7 +172,7 @@ export default async function TenderPage({searchParams}: Props) {
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16">
       <h2 className="text-2xl font-semibold">Go to the official procurement source</h2>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">These are independent official portals, not GTH PRO inventory. Check the issuing authority’s terms and eligibility.</p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {sources.map(s=><a key={s.url} href={safeTenderSource(s.url) || "#"} target="_blank" rel="noopener noreferrer nofollow" className="flex min-h-32 flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
           <span className="font-semibold">{s.name}</span><span className="mt-3 text-xs text-[var(--text-soft)]">{s.label}</span>
           <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Visit official portal <ArrowUpRight size={15}/></span>

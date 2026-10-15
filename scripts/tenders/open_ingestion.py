@@ -12,6 +12,7 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit
@@ -35,8 +36,8 @@ COUNTRIES = {
 }
 TED_FIELDS = [
     "publication-number", "notice-title", "buyer-name", "buyer-country",
-    "publication-date", "deadline", "contract-nature", "total-value",
-    "total-value-cur",
+    "publication-date", "deadline-receipt-tender-date-lot",
+    "contract-nature", "total-value", "total-value-cur",
 ]
 OFFICIAL = {
     "worldbank": ("World Bank", {"projects.worldbank.org"}),
@@ -149,6 +150,59 @@ def _normalized(raw, source, host):
         raise ValueError("Source link is not the expected official portal")
     return converted
 
+
+@lru_cache(maxsize=1)
+def _worldbank_countries():
+    """Resolve published country NAMES through World Bank's own official ISO2 feed."""
+    url = "https://api.worldbank.org/v2/country?format=json&per_page=400"
+    req = Request(url, headers={"Accept": "application/json", "User-Agent": USER_AGENT})
+    with urlopen(req, timeout=18) as res:
+        final = urlsplit(res.geturl())
+        if final.scheme != "https" or final.hostname != "api.worldbank.org":
+            raise ValueError("World Bank country list redirect rejected")
+        payload = res.read(500_001)
+        if len(payload) > 500_000:
+            raise ValueError("World Bank country metadata too large")
+    result = json.loads(payload)
+    if not isinstance(result, list) or len(result) < 2 or not isinstance(result[1], list):
+        raise ValueError("World Bank country directory format changed")
+    mapping = {}
+    for item in result[1]:
+        if not isinstance(item, dict):
+            continue
+        name, iso = item.get("name"), item.get("iso2Code")
+        if isinstance(name, str) and isinstance(iso, str) and re.fullmatch(r"[A-Z]{2}", iso):
+            mapping[name.strip().casefold()] = iso
+    return mapping
+
+def _worldbank_country(item):
+    code = item.get("country_code") or item.get("countrycode")
+    if code:
+        return _country(code)
+    name = _text(item.get("project_ctry_name"))
+    if not name:
+        raise ValueError("World Bank record has no project country")
+    resolved = _worldbank_countries().get(name.casefold())
+    if not resolved:
+        raise ValueError("World Bank country not mapped to official ISO2")
+    return resolved
+
+def _ted_timezone_date(raw):
+    """TED date-only values often append a UTC offset with no clock time."""
+    value = _text(raw)
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}[+-]\d{2}:\d{2}", value):
+        value = value[:10] + "T00:00:00" + value[10:]
+    return _time(value, required=True)
+
+def _ted_earliest_deadline(item):
+    raw = item.get("deadline") or item.get("deadline-receipt-tender-date-lot")
+    vals = raw if isinstance(raw, list) else [raw]
+    parsed = [_ted_timezone_date(v) for v in vals if _text(v)]
+    if not parsed:
+        raise ValueError("TED notice has no tender submission deadline")
+    # Prefer earliest lot closing to avoid promising a later deadline for all lots.
+    return min(parsed)
+
 def _worldbank_notice(item):
     ref = _text(item.get("id") or item.get("notice_id") or item.get("noticeid"))
     if not re.fullmatch(r"(?:OP)?[0-9]{4,15}", ref):
@@ -156,16 +210,16 @@ def _worldbank_notice(item):
     if not ref.startswith("OP"):
         ref = "OP" + ref.zfill(8)
     title = _text(item.get("bid_description") or item.get("notice_title") or item.get("description"))
-    buyer = _text(item.get("implementing_agency") or item.get("agency_name") or item.get("buyer"))
-    deadline = _time(item.get("deadline_date") or item.get("submission_date") or item.get("closing_date"), required=True)
+    buyer = _text(item.get("implementing_agency") or item.get("contact_organization") or item.get("agency_name") or item.get("buyer"))
+    deadline = _time(item.get("submission_deadline_date") or item.get("deadline_date") or item.get("closing_date"), required=True)
     url = "https://projects.worldbank.org/en/projects-operations/procurement-detail/" + ref
     return _normalized({
         "source_reference": ref, "source_url": url,
         "title": title, "buyer": buyer,
-        "country_code": _country(item.get("country_code") or item.get("countrycode")),
+        "country_code": _worldbank_country(item),
         "sector": _sector(item.get("procurement_category") or item.get("notice_type")),
         "deadline_at": deadline,
-        "published_at": _time(item.get("publication_date") or item.get("noticedate")),
+        "published_at": _time(item.get("publication_date") or item.get("submission_date")),
         "estimated_value": "", "currency": "",
         "summary": _text(item.get("project_name"))[:4000],
     }, "worldbank", "projects.worldbank.org")
@@ -176,7 +230,7 @@ def _ted_notice(item):
         raise ValueError("TED publication number missing or malformed")
     buyer = _text(item.get("buyer-name"))
     title = _text(item.get("notice-title"))
-    deadline = _time(item.get("deadline"), required=True)
+    deadline = _ted_earliest_deadline(item)
     currency = _text(item.get("total-value-cur")).upper()
     if currency and not re.fullmatch(r"[A-Z]{3}", currency):
         currency = ""
@@ -187,7 +241,7 @@ def _ted_notice(item):
         "country_code": _country(item.get("buyer-country")),
         "sector": _sector(item.get("contract-nature")),
         "deadline_at": deadline,
-        "published_at": _time(item.get("publication-date")),
+        "published_at": _ted_timezone_date(item.get("publication-date")) if _text(item.get("publication-date")) else None,
         "estimated_value": _value(item.get("total-value")),
         "currency": currency,
     }, "ted", "ted.europa.eu")

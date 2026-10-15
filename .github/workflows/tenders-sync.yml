@@ -4,9 +4,17 @@ on:
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tenders-sync.yml"
+      - "scripts/tenders/**"
+      - "scripts/import_tenders.py"
 
+# Short-lived GitHub OIDC: no service-role credentials in GitHub Actions.
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: gth-open-tender-sync
@@ -14,25 +22,39 @@ concurrency:
 
 jobs:
   open-procurement-sync:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
+    env:
+      GTH_TENDER_INGESTION_ENABLED: "true"
+      GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED: "true"
+      GTH_TENDER_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-tender-ingest
+      SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Test open notice normalization offline
-        run: python -m unittest discover -s tests -p "test_open_tenders.py"
-      - name: API fetch and dry run (private DB disabled)
-        if: vars.GTH_TENDER_INGESTION_ENABLED != 'true'
-        run: python scripts/tenders/open_ingestion.py --source all --limit 50
-      - name: Import official notices into PRIVATE tender review
-        if: vars.GTH_TENDER_INGESTION_ENABLED == 'true'
-        env:
-          GTH_TENDER_INGESTION_ENABLED: "true"
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          EXPECTED_PROJECT_REF: ${{ vars.GTH_SUPABASE_PROJECT_REF }}
+      - name: Offline official-source regression
         run: |
-          test -n "$SUPABASE_URL" && test -n "$SUPABASE_SERVICE_ROLE_KEY" && test -n "$EXPECTED_PROJECT_REF"
-          python scripts/tenders/open_ingestion.py --source all --limit 50 --commit --expected-project-ref "$EXPECTED_PROJECT_REF"
+          python -m unittest discover -s tests -p "test_tender_import.py"
+          python -m unittest discover -s tests -p "test_open_tenders.py"
+          python -m unittest discover -s tests -p "test_global_tenders.py"
+      - name: Official tender sync via GitHub OIDC to Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          token_url="$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-pro-tender-ingest:dqprqjmhxjnrllczqyhz"
+          token_json="$(curl --fail --silent --show-error --proto '=https' --max-time 15 \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$token_url")"
+          GTH_TENDER_OIDC_TOKEN="$(printf '%s' "$token_json" | python -c \
+            'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$GTH_TENDER_OIDC_TOKEN"
+          echo "::add-mask::$GTH_TENDER_OIDC_TOKEN"
+          export GTH_TENDER_OIDC_TOKEN
+          python scripts/tenders/global_ingestion.py --source all --limit 100 \
+            --commit --publish-official --expected-project-ref dqprqjmhxjnrllczqyhz
