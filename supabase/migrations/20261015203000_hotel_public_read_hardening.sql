@@ -7,6 +7,7 @@ drop policy if exists "Allow update hotels" on public.hotels;
 drop policy if exists "Allow delete hotels" on public.hotels;
 drop policy if exists "Allow public read hotels" on public.hotels;
 drop policy if exists "travel public hotels are review approved" on public.hotels;
+drop policy if exists "Read reviewed licensed hotel partner listings" on public.hotels;
 create policy "Read reviewed licensed hotel partner listings" on public.hotels
  for select to anon, authenticated
  using (is_public is true and media_rights_verified is true
