@@ -93,5 +93,34 @@ class OpenTenderTests(unittest.TestCase):
             module._http_json("https://example.com/notices",
                               allowed_host="api.ted.europa.eu")
 
+    def test_live_worldbank_field_contract(self):
+        row = {
+            "id": "OP00887766", "bid_description": "Procurement of climate equipment",
+            "contact_organization": "Ministry of Energy",
+            "project_ctry_name": "Nigeria",
+            "submission_deadline_date": future() + "T12:00:00Z",
+            "submission_date": "2026-10-14T00:00:00Z",
+        }
+        with patch.object(module, "_worldbank_countries", return_value={"nigeria": "NG"}):
+            record = module._worldbank_notice(row)
+        self.assertEqual(record["country_code"], "NG")
+        self.assertEqual(record["buyer"], "Ministry of Energy")
+
+    def test_live_ted_lot_deadline_field_contract(self):
+        row = {
+            "publication-number": "456789-2026",
+            "notice-title": {"eng": ["Construction of public facilities"]},
+            "buyer-name": {"eng": ["Public Construction Agency"]},
+            "buyer-country": ["DEU"],
+            "publication-date": "2026-10-15+02:00",
+            "deadline-receipt-tender-date-lot": [future() + "+02:00"],
+            "contract-nature": "works",
+        }
+        result = module._ted_notice(row)
+        self.assertEqual(result["country_code"], "DE")
+        self.assertEqual(result["sector"], "works")
+        self.assertIsNotNone(result["published_at"])
+        self.assertTrue(result["deadline_at"].endswith("+00:00"))
+
 if __name__ == "__main__":
     unittest.main()
