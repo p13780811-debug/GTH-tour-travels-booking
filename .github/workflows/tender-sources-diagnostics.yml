@@ -20,3 +20,10 @@ jobs:
         run: python scripts/tenders/registry_probe.py
       - name: Additional source normalization regression
         run: python -m unittest discover -s tests -p "test_additional_tenders.py"
+      - name: Read-only UK Contracts Finder live notices
+        run: python scripts/tenders/global_ingestion.py --source uk_contractsfinder --limit 10
+      - name: Read-only Ukraine Prozorro live notices
+        run: python scripts/tenders/global_ingestion.py --source ukraine --limit 8
+      - name: Read-only CanadaBuys government-host notices
+        run: python scripts/tenders/global_ingestion.py --source canada --limit 20
+
