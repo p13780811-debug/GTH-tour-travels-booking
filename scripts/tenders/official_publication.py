@@ -15,6 +15,7 @@ APPROVED_SOURCE_HOST = {
     "UK Find a Tender": "www.find-tender.service.gov.uk",
     "UK Contracts Finder": "www.contractsfinder.service.gov.uk",
     "Ukraine Prozorro": "prozorro.gov.ua",
+    "CanadaBuys Open Data": "canadabuys.canada.ca",
     "Brazil PNCP": "pncp.gov.br",
     "US SAM.gov": "sam.gov",
 }
