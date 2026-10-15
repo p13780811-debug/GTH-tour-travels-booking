@@ -13,7 +13,7 @@ export type PublicTender = {
   source_reference: string; source_url: string;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; page: number; scope?: "local"|"world"; nearby?: string[] };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[] };
 export type TenderResult =
  | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean }
  | { ok: false; status: number; error: string };
@@ -29,6 +29,8 @@ export function parseTenderFilters(params: URLSearchParams):
   if (scope !== "local" && scope !== "world") return {ok:false,error:"Invalid search area"};
   const closingWithin=params.get("closingWithin") ?? "";
   if(closingWithin && closingWithin!=="7")return {ok:false,error:"Invalid closing soon filter"};
+  const sort=params.get("sort")??"deadline";
+  if(sort!=="deadline"&&sort!=="newest")return {ok:false,error:"Invalid sort order"};
   const rawPage = params.get("page") ?? "1";
   if (q.length > 100 || /[\u0000-\u001f]/.test(q)) return { ok: false, error: "Invalid search" };
   if (country && !/^[A-Z]{2}$/.test(country)) return { ok: false, error: "Country must be a two-letter ISO code" };
@@ -40,7 +42,7 @@ export function parseTenderFilters(params: URLSearchParams):
   }
   if (!/^[1-9]\d{0,2}$/.test(rawPage) || Number(rawPage) > 100)
     return { ok: false, error: "Invalid page" };
-  return { ok: true, filters: { q, country, sector, closingBefore, closingWithin:closingWithin==="7"?"7":undefined, page: Number(rawPage), scope } };
+  return { ok: true, filters: { q, country, sector, closingBefore, closingWithin:closingWithin==="7"?"7":undefined, sort, page: Number(rawPage), scope } };
 }
 
 export function safeTenderSource(value: unknown): string | null {
@@ -86,7 +88,9 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       return query;
     };
     const offset=(filters.page-1)*PAGE_SIZE;
-    const sorting=(q:ReturnType<typeof makeQuery>)=>q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
+    const sorting=(q:ReturnType<typeof makeQuery>)=> filters.sort==="newest"
+      ? q.order("imported_at",{ascending:false}).order("id",{ascending:true})
+      : q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
     // World search is an *explicit* user choice. Legacy callers without a
     // scope continue to work; the tender page/API always provide one.
     if(filters.scope==="world" || !filters.scope) {
