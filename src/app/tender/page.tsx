@@ -113,7 +113,7 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
       </div>
     </section>
-    {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} total={count} stats={marketStats}/>:null}
+    {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats}/>:null}
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14" aria-labelledby="tender-find">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{t("discover")}</p>
