@@ -66,3 +66,15 @@ test("All-stays catalog stays pageable past page 100 and honors exact country sc
  assert.doesNotMatch(read("src/app/api/hotels/stats/route.ts"),/x-vercel-ip-country/);
  assert.match(read("src/app/hotels/page.tsx"),/setRequestedCountry\(selectedCountry\)/);
 });
+
+test("Category counters preserve destination, city, name and country search scope",()=>{
+ const stats=read("src/app/api/hotels/stats/route.ts");
+ const pulse=read("src/components/hotel/HotelCatalogPulse.tsx");
+ const ui=read("src/app/hotels/page.tsx");
+ assert.match(stats,/const destination=params.get\("destination"\)/);
+ assert.match(stats,/if\(matchingCity\)q=q.or\("city.ilike."\+cityLike/);
+ assert.match(stats,/if\(name\)q=q.ilike\("name",nameLike\)/);
+ assert.match(pulse,/hotelSearchParams\(\{destination,city,name,country,category:""\},1\)/);
+ assert.match(pulse,/\[country,city,destination,name\]/);
+ assert.match(ui,/city=\{requestedCity\} destination=\{requestedDestination\} name=\{nameFilter\}/);
+});

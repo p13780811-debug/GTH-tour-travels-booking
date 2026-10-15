@@ -319,7 +319,7 @@ function HotelsContent() {
               </label>
               <p className="mt-2 text-xs text-[var(--text-soft)]">Worldwide by default. Enter a two-letter country code to narrow results; city and country can be combined.</p>
             </section>
-            <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
+            <HotelCatalogPulse country={requestedCountry} city={requestedCity} destination={requestedDestination} name={nameFilter} category={category} onCategory={next=>{
                 activeQueryRef.current = "";
                 setLoadingMore(false);
                 setCategory(next);
