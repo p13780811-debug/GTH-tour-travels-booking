@@ -1,0 +1,38 @@
+name: GTH PRO Open Tender Data Sync
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gth-open-tender-sync
+  cancel-in-progress: false
+
+jobs:
+  open-procurement-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test open notice normalization offline
+        run: python -m unittest discover -s tests -p "test_open_tenders.py"
+      - name: API fetch and dry run (private DB disabled)
+        if: vars.GTH_TENDER_INGESTION_ENABLED != 'true'
+        run: python scripts/tenders/open_ingestion.py --source all --limit 50
+      - name: Import official notices into PRIVATE tender review
+        if: vars.GTH_TENDER_INGESTION_ENABLED == 'true'
+        env:
+          GTH_TENDER_INGESTION_ENABLED: "true"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPECTED_PROJECT_REF: ${{ vars.GTH_SUPABASE_PROJECT_REF }}
+        run: |
+          test -n "$SUPABASE_URL" && test -n "$SUPABASE_SERVICE_ROLE_KEY" && test -n "$EXPECTED_PROJECT_REF"
+          python scripts/tenders/open_ingestion.py --source all --limit 50 --commit --expected-project-ref "$EXPECTED_PROJECT_REF"
