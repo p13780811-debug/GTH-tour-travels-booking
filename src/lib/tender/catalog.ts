@@ -13,9 +13,9 @@ export type PublicTender = {
   source_reference: string; source_url: string;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; page: number };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; page: number; scope?: "local"|"world"; nearby?: string[] };
 export type TenderResult =
- | { ok: true; items: PublicTender[]; total: number; page: number; size: number }
+ | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean }
  | { ok: false; status: number; error: string };
 
 export function parseTenderFilters(params: URLSearchParams):
@@ -25,6 +25,8 @@ export function parseTenderFilters(params: URLSearchParams):
   const country = (params.get("country") ?? "").trim().toUpperCase();
   const sector = (params.get("sector") ?? "").trim().toLowerCase();
   const closingBefore = (params.get("closingBefore") ?? "").trim();
+  const scope = params.get("scope") ?? "local";
+  if (scope !== "local" && scope !== "world") return {ok:false,error:"Invalid search area"};
   const rawPage = params.get("page") ?? "1";
   if (q.length > 100 || /[\u0000-\u001f]/.test(q)) return { ok: false, error: "Invalid search" };
   if (country && !/^[A-Z]{2}$/.test(country)) return { ok: false, error: "Country must be a two-letter ISO code" };
@@ -36,7 +38,7 @@ export function parseTenderFilters(params: URLSearchParams):
   }
   if (!/^[1-9]\d{0,2}$/.test(rawPage) || Number(rawPage) > 100)
     return { ok: false, error: "Invalid page" };
-  return { ok: true, filters: { q, country, sector, closingBefore, page: Number(rawPage) } };
+  return { ok: true, filters: { q, country, sector, closingBefore, page: Number(rawPage), scope } };
 }
 
 export function safeTenderSource(value: unknown): string | null {
@@ -61,26 +63,65 @@ function publicClient() {
 
 export async function searchPublicTenders(filters: TenderFilters): Promise<TenderResult> {
   const db = publicClient();
-  if (!db) return { ok: false, status: 503, error: "Tender catalog is not configured" };
+  if (!db) return {ok:false,status:503,error:"Tender catalog is not configured"};
+  // Local mode requires either a user-selected ISO country or a Vercel-detected country.
+  // No location does NOT mean 'show random global inventory'.
+  if (filters.scope === "local" && !filters.country) {
+    return {ok:true,items:[],total:0,page:filters.page,size:PAGE_SIZE,countryRequired:true};
+  }
   try {
-    let query = db.from("tenders").select(PUBLIC_COLUMNS, { count: "exact" })
-      .eq("status", "published").eq("source_verified", true).eq("is_public", true)
-      .gt("deadline_at", new Date().toISOString());
-    if (filters.country) query = query.eq("country_code", filters.country);
-    if (filters.sector) query = query.eq("sector", filters.sector);
-    if (filters.closingBefore) query = query.lte("deadline_at", filters.closingBefore + "T23:59:59.999Z");
-    if (filters.q) {
-      // Escape PostgREST ILIKE wildcard characters, so user text remains literal.
-      const escaped = filters.q.replace(/[\\%_]/g, (c) => "\\" + c);
-      query = query.ilike("title", "%" + escaped + "%");
+    const makeQuery = () => {
+      let query = db.from("tenders").select(PUBLIC_COLUMNS,{count:"exact"})
+        .eq("status","published").eq("source_verified",true).eq("is_public",true)
+        .gt("deadline_at",new Date().toISOString());
+      if(filters.sector) query=query.eq("sector",filters.sector);
+      if(filters.closingBefore) query=query.lte("deadline_at",filters.closingBefore+"T23:59:59.999Z");
+      if(filters.q){
+        const escaped=filters.q.replace(/[\\%_]/g,(v)=>"\\"+v);
+        query=query.ilike("title","%"+escaped+"%");
+      }
+      return query;
+    };
+    const offset=(filters.page-1)*PAGE_SIZE;
+    const sorting=(q:ReturnType<typeof makeQuery>)=>q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
+    // World search is an *explicit* user choice. Legacy callers without a
+    // scope continue to work; the tender page/API always provide one.
+    if(filters.scope==="world" || !filters.scope) {
+      let query=makeQuery();
+      if(filters.country) query=query.eq("country_code",filters.country);
+      const {data,error,count}=await sorting(query).range(offset,offset+PAGE_SIZE-1);
+      if(error) throw error;
+      return {ok:true,items:(data??[]) as PublicTender[],total:count??0,page:filters.page,size:PAGE_SIZE};
     }
-    const offset = (filters.page - 1) * PAGE_SIZE;
-    const { data, error, count } = await query
-      .order("deadline_at", { ascending: true }).order("id", { ascending: true })
-      .range(offset, offset + PAGE_SIZE - 1);
-    if (error) return { ok: false, status: 503, error: "Tender catalog unavailable" };
-    return { ok: true, items: (data ?? []) as PublicTender[], total: count ?? 0, page: filters.page, size: PAGE_SIZE };
-  } catch { return { ok: false, status: 503, error: "Tender catalog unavailable" }; }
+    const home=filters.country;
+    const neighbours=(filters.nearby??[]).filter(c=>c!==home&&/^[A-Z]{2}$/.test(c)).slice(0,12);
+    const h=await sorting(makeQuery().eq("country_code",home)).range(offset,offset+PAGE_SIZE-1);
+    if(h.error) throw h.error;
+    const homeCount=h.count??0;
+    const homeItems=(h.data??[]) as PublicTender[];
+    if(neighbours.length===0){
+      return {ok:true,items:homeItems,total:homeCount,primaryCount:homeCount,nearbyCount:0,page:filters.page,size:PAGE_SIZE};
+    }
+    // First count nearby without retrieving a whole global catalog. RLS
+    // restricts both queries to reviewed, public, current notices.
+    const nearCountResult=await makeQuery().in("country_code",neighbours)
+      .order("deadline_at",{ascending:true}).limit(1);
+    if(nearCountResult.error) throw nearCountResult.error;
+    const nearCount=nearCountResult.count??0;
+    const remaining=PAGE_SIZE-homeItems.length;
+    let extra:PublicTender[]=[];
+    if(remaining>0 && offset+homeItems.length>=homeCount && nearCount>0){
+      const nearOffset=Math.max(0,offset-homeCount);
+      const nearbyRows=await sorting(makeQuery().in("country_code",neighbours))
+        .range(nearOffset,nearOffset+remaining-1);
+      if(nearbyRows.error) throw nearbyRows.error;
+      extra=(nearbyRows.data??[]) as PublicTender[];
+    }
+    return {ok:true,items:[...homeItems,...extra],total:homeCount+nearCount,
+      primaryCount:homeCount,nearbyCount:nearCount,page:filters.page,size:PAGE_SIZE};
+  } catch {
+    return {ok:false,status:503,error:"Tender catalog unavailable"};
+  }
 }
 
 export async function getPublicTender(id: string):
