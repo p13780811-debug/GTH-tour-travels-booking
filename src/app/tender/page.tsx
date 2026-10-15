@@ -43,13 +43,14 @@ const EU_COUNTRIES=new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT L
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 function textParam(raw: string | string[] | undefined) { return typeof raw === "string" ? raw : ""; }
 
-function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;closingWithin?:"7";scope?:"local"|"world"}, page:number, lang:string) {
+function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;closingWithin?:"7";sort?:"deadline"|"newest";scope?:"local"|"world"}, page:number, lang:string) {
   const q = new URLSearchParams();
   if (filters.q) q.set("q", filters.q);
   if (filters.country) q.set("country", filters.country);
   if (filters.sector) q.set("sector", filters.sector);
   if (filters.closingBefore) q.set("closingBefore", filters.closingBefore);
   if (filters.closingWithin) q.set("closingWithin", filters.closingWithin);
+  if (filters.sort && filters.sort!=="deadline") q.set("sort", filters.sort);
   if (filters.scope) q.set("scope",filters.scope);
   if (lang) q.set("lang",lang);
   q.set("page", String(page));
@@ -59,7 +60,7 @@ function filterHref(filters: {q:string;country:string;sector:string;closingBefor
 export default async function TenderPage({searchParams}: Props) {
   const raw = await searchParams;
   const params = new URLSearchParams();
-  for (const name of ["q","country","sector","closingBefore","closingWithin","page","scope"] as const) {
+  for (const name of ["q","country","sector","closingBefore","closingWithin","sort","page","scope"] as const) {
     const value = textParam(raw[name]);
     if (value) params.set(name,value);
   }
@@ -148,6 +149,12 @@ export default async function TenderPage({searchParams}: Props) {
         </label>
         <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
           <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
+        </label>
+        <label className="block text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
+          <select name="sort" defaultValue={filters.sort??"deadline"} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)]">
+            <option value="deadline">{language==="hi"?"पहले जल्दी बंद होने वाले":"Closing soonest"}</option>
+            <option value="newest">{language==="hi"?"पहले नए जोड़े गए":"Recently added"}</option>
+          </select>
         </label>
         <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">
           <Search size={17} aria-hidden="true"/> {t("search")}
