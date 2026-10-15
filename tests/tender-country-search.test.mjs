@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
-const now=new Date("2026-10-15T00:00:00Z");
+const now=new Date();
 const rows=[];
 for(const [country,count] of [["IN",13],["BD",4],["NP",2],["US",3]]){
   for(let i=0;i<count;i++) rows.push({
