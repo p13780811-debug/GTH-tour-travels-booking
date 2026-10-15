@@ -140,7 +140,7 @@ jobs:
           set -euo pipefail
           if [[ "$MODE" == "dry-run" ]]; then
             python3 scripts/import_osm_hotels.py hotels.geojsonseq \
-              --country-code "$COUNTRY" --limit "$MAX_RECORDS" --dry-run
+              --region "$REGION" --country-code "$COUNTRY" --limit "$MAX_RECORDS" --dry-run
           else
             test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
             test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
@@ -153,7 +153,7 @@ jobs:
             echo "::add-mask::$GTH_HOTEL_OIDC_TOKEN"
             export GTH_HOTEL_OIDC_TOKEN
             python3 scripts/import_osm_hotels.py hotels.geojsonseq \
-              --country-code "$COUNTRY" --limit "$MAX_RECORDS" \
+              --region "$REGION" --country-code "$COUNTRY" --limit "$MAX_RECORDS" \
               --edge-url "$GTH_HOTEL_EDGE_URL"
           fi
       - name: ODbL attribution
