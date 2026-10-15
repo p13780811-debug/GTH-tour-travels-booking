@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import open_ingestion as core
 from import_tenders import convert, submit
+from official_publication import submit_official
 
 UK_API = "https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages"
 BR_API = "https://pncp.gov.br/api/consulta/v1/contratacoes/proposta"
@@ -49,7 +50,7 @@ def _timestamp(value, country=""):
     if not raw:
         raise ValueError("Missing official tender deadline")
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw):
-        raw += "T00:00:00"
+        raw += "T00:00:00+00:00" if country != "BR" else "T00:00:00"
     try:
         dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
         if dt.tzinfo is None:
@@ -223,13 +224,11 @@ def publish_official(records, project_ref):
            {"World Bank", "TED EU", "UK Find a Tender", "Brazil PNCP", "US SAM.gov"}
            for row in records):
         raise ValueError("Unapproved public source")
-    # Reuse the existing audited project ref, secret and REST insert gate.
-    import_tenders = __import__("import_tenders")
+    # Apply the independent server-only project/host gate in official_publication.
     approved = [{**row, "source_verified": True, "is_public": True, "status": "published"}
                 for row in records]
-    # submit requires the same project lock but enforces review-only; keep that
-    # invariant, and use isolated official-feed path below for publication.
-    import_tenders.submit_official(approved, project_ref)
+    # Existing CSV importer stays review-only; publish only verified official feed rows.
+    submit_official(approved, project_ref)
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="Global official procurement data importer")
@@ -248,7 +247,7 @@ def main(argv=None):
         p.error("--publish-official requires --commit")
     names = SOURCES if args.source == "all" else (args.source,)
     stats = {"mode": "official_published" if args.publish_official else ("private_review" if args.commit else "dry_run"),
-             "sources": {}, "accepted": 0, "rejected": 0, "published": 0}
+             "sources": {}, "accepted": 0, "rejected": 0, "submitted_for_publication": 0}
     failures = 0
     for source in names:
         try:
@@ -259,7 +258,7 @@ def main(argv=None):
             if args.commit and records:
                 if args.publish_official:
                     publish_official(records, args.expected_project_ref)
-                    stats["published"] += len(records)  # submitted; duplicate inserts may be ignored
+                    stats["submitted_for_publication"] += len(records)  # includes ignored duplicates
                 else:
                     submit(records, args.expected_project_ref)
             stats["sources"][source] = {"accepted": len(records),
