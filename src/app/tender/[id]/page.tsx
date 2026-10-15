@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Globe2, ShieldCheck } from "lucide-react";
 import { getPublicTender, safeTenderSource } from "@/lib/tender/catalog";
+import TenderIntelligencePanel from "@/components/tender/TenderIntelligencePanel";
+import {resolveTenderAudience} from "@/lib/tender/localization";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Tender Notice | GTH PRO", robots: { index: false, follow: false } };
 function formatted(date: string) {
@@ -20,6 +22,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
   const tender=response.item;
   if (!tender) notFound();
   const url=safeTenderSource(tender.source_url);
+  const {language}=await resolveTenderAudience(tender.country_code);
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-20">
       <Link href="/tender" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text-soft)] hover:text-[var(--text)]"><ArrowLeft size={16}/> All tenders</Link>
@@ -41,6 +44,13 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
         Check eligibility & prepare draft <ArrowUpRight size={17}/>
       </Link>
       {tender.summary&&<section className="mt-9"><h2 className="text-xl font-semibold">Notice summary</h2><p className="mt-4 whitespace-pre-line text-sm leading-8 text-[var(--text-soft)]">{tender.summary}</p></section>}
+      <TenderIntelligencePanel tenderId={tender.id} language={language} sourceUrl={url}
+        notice={{
+          title:tender.title,summary:tender.summary,sector:tender.sector,
+          country_code:tender.country_code,buyer:tender.buyer,deadline_at:tender.deadline_at,
+          source_name:tender.source_name,requirements_verified:tender.requirements_verified,
+          eligibility_requirements:tender.eligibility_requirements
+        }}/>
       <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
         <p className="inline-flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={17}/> Original documents take precedence</p>
         <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Check eligibility, amendments, tender fee and final deadline directly with the issuing authority. This is a source-attributed discovery listing, not an e-bidding or payment service.</p>
