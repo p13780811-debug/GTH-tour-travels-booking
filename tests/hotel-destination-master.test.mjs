@@ -30,7 +30,8 @@ test("Destination context survives filters and main hotel search",()=>{
  const ui=read("src/app/hotels/page.tsx");
  assert.match(ui,/initialDestination/);
  assert.match(ui,/requestedDestination/);
- assert.match(ui,/hotelParams\.set\("destination"/);
+ assert.match(ui,/destination:requestedDestination/);
+ assert.match(ui,/hotelParamsFor\(nextPage\)/);
 });
 test("Region source can be used for large destination regions only when original OSM tags contain it",()=>{
  const script=read("scripts/import_osm_hotels.py");
