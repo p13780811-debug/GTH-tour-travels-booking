@@ -44,7 +44,7 @@ export async function loadMobileDiscovery():Promise<MobileDiscoveryData>{
   const results=await Promise.allSettled([
     db.from("hotel_catalog").select("source_id,name,city,region,category,extract_country_hint")
       .not("city","is",null).order("imported_at",{ascending:false}).limit(14),
-    db.from("properties").select("slug,title,city,location,property_type,image,registry_only,active_inventory_count")
+    db.from("properties").select("slug,title,city,location,property_type,image")
       .not("slug","is",null).order("id",{ascending:false}).limit(12),
     db.from("tenders").select("id,title,country_code,sector,deadline_at,source_name")
       .eq("status","published").eq("source_verified",true).eq("is_public",true)
@@ -67,7 +67,7 @@ export async function loadMobileDiscovery():Promise<MobileDiscoveryData>{
   const properties=validData(1).flatMap((p):MobileDiscoveryItem[]=>{
     const slug=text(p.slug,128),name=text(p.title,95);
     if(!/^[a-z0-9][a-z0-9-]{1,127}$/.test(slug)||!name)return [];
-    const registry=p.registry_only===true||Number(p.active_inventory_count||0)<1;
+    const registry=true;
     return [{id:slug,href:"/real-estate/"+encodeURIComponent(slug),title:name,
       subtitle:registry?"Public registry project":"Property record",
       detail:text(p.city)||text(p.location)||"Location in source",
