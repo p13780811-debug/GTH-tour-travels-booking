@@ -77,7 +77,7 @@ export function tenderMetadata(item: TenderSeoRecord | null, id: string, launche
   // unmodified title in the H1, but constrain only SEO metadata so published
   // sitemap records do not generate 120+ character search result titles.
   const suffix = ` | ${source} Tender ${country}${year ? ` ${year}` : ""} | GTH PRO`;
-  const maxName = Math.max(30, 112 - suffix.length);
+  const maxName = Math.max(30, 118 - suffix.length);
   const shortName = clean(item.title, maxName);
   const name = clean(item.title, 250).length > maxName
     ? (shortName.replace(/\s+\S*$/, "") || shortName)
