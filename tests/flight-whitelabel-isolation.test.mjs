@@ -54,7 +54,7 @@ test("no route-only font CSS or supplier global root script was introduced", () 
   const layout = read("src/app/flights/layout.tsx");
   const page = read("src/app/flights/page.tsx");
   assert.doesNotMatch(layout, /flights\.css/);
-  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.doesNotMatch(page, /tpwidg\.com|tpwgts\.com|dangerouslySetInnerHTML/);
   assert.doesNotMatch(root, /tpwidg\.com\/wl_web\/main\.js/);
 });
