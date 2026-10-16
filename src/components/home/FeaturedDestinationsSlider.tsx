@@ -84,6 +84,8 @@ export default function FeaturedDestinationsSlider({
                     <div className="hidden items-center gap-3 md:flex">
 
                         <button
+                            type="button"
+                            aria-label="Scroll featured destinations left"
                             onClick={() => scroll("left")}
                             className="gth-glass flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] transition-all duration-300 hover:-translate-y-1"
                         >
@@ -96,6 +98,8 @@ export default function FeaturedDestinationsSlider({
                         </button>
 
                         <button
+                            type="button"
+                            aria-label="Scroll featured destinations right"
                             onClick={() => scroll("right")}
                             className="gth-btn-gold flex h-11 w-11 items-center justify-center rounded-full"
                         >
