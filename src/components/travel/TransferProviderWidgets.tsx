@@ -107,6 +107,22 @@ export default function TransferProviderWidgets() {
           </p>
         )}
         <div ref={host} aria-label={widgets[active].title} className="mt-4 min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full" />
+        {active === "airport" && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
+            <p className="min-w-0 flex-1 text-xs leading-5 text-[var(--text-soft)]">
+              intui.travel may block embedded booking on some browsers. If the supplier panel is blank,
+              compare Kiwitaxi instead or continue directly with Welcome Pickups.
+            </p>
+            <button type="button" onClick={() => select("options")}
+              className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]">
+              Try Kiwitaxi
+            </button>
+            <a href="https://tpo.lv/GFuzmgYk" target="_blank" rel="noopener noreferrer sponsored"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
+              Welcome Pickups <ArrowUpRight size={13} aria-hidden="true" />
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="mt-5 flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">

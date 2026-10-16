@@ -130,7 +130,9 @@ export default function GTHNetwork({
                 <div className="hidden items-center gap-3 md:flex">
 
                     <button
-                        onClick={() => scrollSlider("left")}
+                        aria-label="Scroll partner network left"
+                            type="button"
+                            onClick={() => scrollSlider("left")}
                         disabled={!canLeft}
                         className={`
                             flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] transition-all duration-300
@@ -146,7 +148,9 @@ export default function GTHNetwork({
                     </button>
 
                     <button
-                        onClick={() => scrollSlider("right")}
+                        aria-label="Scroll partner network right"
+                            type="button"
+                            onClick={() => scrollSlider("right")}
                         disabled={!canRight}
                         className={`
                             flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] transition-all duration-300
