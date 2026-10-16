@@ -69,12 +69,20 @@ export function isIndexableTender(item: TenderSeoRecord | null, now = Date.now()
 }
 export function tenderMetadata(item: TenderSeoRecord | null, id: string, launched: boolean): Metadata {
   if (!item) return { title: "Tender unavailable | GTH PRO", robots: { index: false, follow: false } };
-  const name = clean(item.title, 88);
   const country = item.country_code === "IN" ? "India" : clean(item.country_code, 2);
-  const source = clean(item.source_name, 45);
+  const source = clean(item.source_name, 24);
   const deadline = Number.isFinite(Date.parse(item.deadline_at)) ? new Date(item.deadline_at).toISOString().slice(0, 10) : "";
   const year = deadline ? deadline.slice(0, 4) : "";
-  const title = `${name} | Open ${source} Tender ${country}${year ? ` ${year}` : ""} | GTH PRO`;
+  // Tender notices often have very long official titles. Keep the full,
+  // unmodified title in the H1, but constrain only SEO metadata so published
+  // sitemap records do not generate 120+ character search result titles.
+  const suffix = ` | ${source} Tender ${country}${year ? ` ${year}` : ""} | GTH PRO`;
+  const maxName = Math.max(30, 118 - suffix.length);
+  const shortName = clean(item.title, maxName);
+  const name = clean(item.title, 250).length > maxName
+    ? (shortName.replace(/\s+\S*$/, "") || shortName)
+    : shortName;
+  const title = name + suffix;
   const description = `${source} procurement notice ${clean(item.source_reference, 65)} by ${clean(item.buyer, 65)} in ${country}. ${deadline ? `Deadline: ${deadline}. ` : ""}${clean(item.summary, 150)}`.slice(0, 300);
   const canonical = siteUrl(`/tender/${encodeURIComponent(id)}`);
   const index = launched && isIndexableTender(item);
