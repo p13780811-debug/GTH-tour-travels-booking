@@ -3,12 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, MapPin, Plane, Search, ShieldCheck } from "lucide-react";
 import { searchTours, type TourFilters } from "@/lib/tours";
+import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   alternates: { canonical: "/tours" },
-  title: "Tours & Activities | GTH PRO Travel",
-  description: "Explore source-backed tours and destination experiences. Check itinerary, available dates, final total and cancellation terms with the booking partner.",
+  title: "Worldwide Tours, Activities & Attraction Tickets | GTH PRO Travel",
+  description: "Find global tours, attraction tickets, city passes, audio tours and activities with independent booking partners and source-backed GTH PRO records.",
   openGraph: { title: "GTH PRO Tours & Activities", description: "Explore international tours and experiences, with provider-verified bookings.", url: "/tours", type: "website", images: ["/images/mega/tours.jpg"] },
   twitter: { card: "summary_large_image", title: "GTH PRO Tours & Activities", images: ["/images/mega/tours.jpg"] },
 };
@@ -91,6 +92,8 @@ export default async function ToursPage({ searchParams }: Props) {
           </form>
         </div>
       </section>
+
+      <TourAffiliateMarketplace />
 
       <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
