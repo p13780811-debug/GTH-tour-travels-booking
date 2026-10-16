@@ -6,12 +6,13 @@ import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import { flightDestinations } from "@/data/flight/destinations";
 
-type Props = { searchParams: Promise<{ origin?: string; destination?: string }> };
+type Props = { searchParams: Promise<{ origin?: string; destination?: string; flightSearch?: string }> };
 
 export default async function FlightsPage({ searchParams }: Props) {
   const query = await searchParams;
   const origin = /^[A-Z]{3}$/.test(query.origin || "") ? query.origin! : "CCU";
   const destination = /^[A-Z]{3}$/.test(query.destination || "") ? query.destination! : "";
+  const isResultsView = typeof query.flightSearch === "string" && /^[A-Za-z0-9]{10,40}$/.test(query.flightSearch);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
@@ -66,7 +67,7 @@ export default async function FlightsPage({ searchParams }: Props) {
             </p>
           </div>
         )}
-        <AviasalesWhiteLabel />
+        <AviasalesWhiteLabel isResultsView={isResultsView} />
         <FlightJourneyServices />
         <PopularDestinations destinations={flightDestinations} origin={origin} />
 

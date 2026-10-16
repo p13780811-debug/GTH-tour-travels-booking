@@ -28,10 +28,10 @@ test("flight search stays primary with human-readable premium hero and scoped na
   const page = read("src/app/flights/page.tsx");
   const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
   assert.match(page, /Find your next flight/);
-  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(page, /<FlightJourneyServices \/>/);
   assert.match(page, /<PopularDestinations/);
-  assert.ok(page.indexOf("<AviasalesWhiteLabel />") < page.indexOf("<FlightJourneyServices />"));
+  assert.ok(page.indexOf("<AviasalesWhiteLabel isResultsView={isResultsView} />") < page.indexOf("<FlightJourneyServices />"));
   assert.match(widget, /id="tpwl-search"/);
   assert.match(widget, /id="tpwl-tickets"/);
   assert.doesNotMatch(page, /Cached fares|No cached fare observations|Math\.random/i);

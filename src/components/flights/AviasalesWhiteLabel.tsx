@@ -38,7 +38,7 @@ function isSupplierHeadAsset(node: HTMLElement): boolean {
   return false;
 }
 
-export default function AviasalesWhiteLabel() {
+export default function AviasalesWhiteLabel({ isResultsView = false }: { isResultsView?: boolean }) {
   const [status, setStatus] = useState<LoadState>("loading");
   const searchRef = useRef<HTMLDivElement>(null);
   const ticketsRef = useRef<HTMLDivElement>(null);
@@ -223,28 +223,34 @@ export default function AviasalesWhiteLabel() {
         Aviasales · Travelpayouts White Label
       </p>
       <h2 id="flight-white-label-heading" className="mt-2 text-xl font-bold sm:text-2xl">
-        Find flights for your trip
+        {isResultsView ? "Flight results" : "Find flights for your trip"}
       </h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-        Select your departure airport, destination, travel dates and passengers.
-        Compare results from the flight provider, then book with the ticket seller.
-      </p>
-      <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
-        Flight results stay on GTH PRO. For flight-only search, make sure the supplier&apos;s
-        <strong> Show hotels</strong> checkbox is unchecked; hotel discovery is available separately in GTH PRO Hotels.
-      </p>
-      <div className="mt-5 flex flex-wrap gap-2 text-xs text-[var(--text-soft)]">
-        <span className="rounded-lg border border-[var(--border)] px-3 py-2">1. Choose your route</span>
-        <span className="rounded-lg border border-[var(--border)] px-3 py-2">2. Dates & passengers</span>
-        <span className="rounded-lg border border-[var(--border)] px-3 py-2">3. Compare & book</span>
-      </div>
+      {!isResultsView && (
+        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+          Select your departure airport, destination, travel dates and passengers.
+          Compare results from the flight provider, then book with the ticket seller.
+        </p>
+      )}
+      {!isResultsView && (
+        <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+          For flight-only search, leave the supplier&apos;s <strong>Show hotels</strong> checkbox unchecked.
+          Hotel discovery is available separately in GTH PRO Hotels.
+        </p>
+      )}
+      {!isResultsView && (
+        <div className="mt-5 flex flex-wrap gap-2 text-xs text-[var(--text-soft)]">
+          <span className="rounded-lg border border-[var(--border)] px-3 py-2">1. Choose your route</span>
+          <span className="rounded-lg border border-[var(--border)] px-3 py-2">2. Dates & passengers</span>
+          <span className="rounded-lg border border-[var(--border)] px-3 py-2">3. Compare & book</span>
+        </div>
+      )}
 
-      {status === "loading" && (
+      {!isResultsView && status === "loading" && (
         <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">
           Loading flight search…
         </p>
       )}
-      {status === "error" && (
+      {!isResultsView && status === "error" && (
         <div role="alert" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
           <h3 className="text-base font-semibold">Flight search is unavailable right now</h3>
           <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
