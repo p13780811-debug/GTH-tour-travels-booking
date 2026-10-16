@@ -3,7 +3,7 @@ name: GTH Flights Visual Recovery
 on:
   push:
     branches:
-      - fix/gth-flights-results-routing-hotels-20261017
+      - fix/gth-global-navbar-flight-status-20261017
   pull_request:
     branches:
       - main
@@ -11,6 +11,9 @@ on:
       - src/app/layout.tsx
       - src/app/flights/**
       - src/components/flights/**
+      - src/components/Navbar.tsx
+      - src/components/SearchBox.tsx
+      - tests/shared-navbar-flight-status.test.mjs
       - tests/flight-visual-recovery.test.mjs
       - tests/flight-search-results-routing.test.mjs
       - src/middleware.ts
@@ -37,7 +40,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Flight visual and functional regressions
-        run: node --test tests/flight-visual-recovery.test.mjs tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs tests/travel-phase-b.test.mjs tests/flight-search-results-routing.test.mjs
+        run: node --test tests/shared-navbar-flight-status.test.mjs tests/flight-visual-recovery.test.mjs tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs tests/travel-phase-b.test.mjs tests/flight-search-results-routing.test.mjs
       - name: Lint
         run: npm run lint
       - name: Production build (no deploy)
