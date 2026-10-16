@@ -7,16 +7,15 @@ const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 test("real Travelpayouts White Label Web 23459 is the Flights primary UI", () => {
   const page = read("src/app/flights/page.tsx");
   const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
-  const iframeRoute = read("src/app/flights/embed/route.ts");
   assert.match(page, /<AviasalesWhiteLabel \/>/);
-  assert.match(iframeRoute, /wl_web\/main\.js\?wl_id=23459/);
-  assert.match(widget, /src=\{WL_FRAME_ROUTE\}/);
-  assert.match(iframeRoute, /id="tpwl-search"/);
-  assert.match(iframeRoute, /id="tpwl-tickets"/);
-  assert.match(iframeRoute, /script\.type = "module"/);
-  assert.match(iframeRoute, /script\.onerror/);
-  assert.match(iframeRoute, /document\.head\.appendChild\(script\)/);
-  assert.match(iframeRoute, /data-gth-white-label/);
+  assert.match(widget, /wl_web\/main\.js\?wl_id=23459/);
+  assert.doesNotMatch(widget, /srcDoc|WL_FRAME_ROUTE|<iframe/);
+  assert.match(widget, /id="tpwl-search"/);
+  assert.match(widget, /id="tpwl-tickets"/);
+  assert.match(widget, /script\.type = "module"/);
+  assert.match(widget, /script\.onerror/);
+  assert.match(widget, /document\.head\.appendChild\(script\)/);
+  assert.match(widget, /data-gth-white-label/);
   assert.doesNotMatch(page, /fetch\(\`\/api\/flights\/search|FlightSearchResponse|No cached fare observations|observed fares/i);
   assert.doesNotMatch(widget, /dangerouslySetInnerHTML|eval\(|document\.write|NEXT_PUBLIC_.*SECRET/);
 });
