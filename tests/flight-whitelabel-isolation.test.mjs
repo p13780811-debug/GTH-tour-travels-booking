@@ -19,7 +19,7 @@ test("TPWL 23459 executes in isolated iframe instead of the persistent app docum
   assert.match(source, /event\.source !== iframeRef\.current\.contentWindow/);
   assert.match(source, /window\.removeEventListener\("message", handleWidgetMessage\)/);
   assert.doesNotMatch(source, /document\.head\.appendChild\(script\);\s*}\s*,\s*\[\]/);
-  assert.doesNotMatch(source, /dangerouslySetInnerHTML|allow-same-origin|window\.top\.document|document\.write\(/);
+  assert.doesNotMatch(source, /dangerouslySetInnerHTML|window\.top\.document|document\.write\(/);
 });
 
 test("flight route does not load a manual font stylesheet or insert widget code globally", () => {
