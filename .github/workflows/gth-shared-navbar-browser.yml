@@ -1,0 +1,56 @@
+name: GTH Shared Navbar Browser Layout
+
+on:
+  push:
+    branches:
+      - fix/gth-global-navbar-flight-status-20261017
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/components/Navbar.tsx
+      - src/components/SearchBox.tsx
+      - scripts/shared-navbar-layout-audit.mjs
+      - .github/workflows/gth-shared-navbar-browser.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-navbar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: Install Chromium browser for layout verification
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start isolated local Next.js test server
+        run: |
+          npm run dev -- -p 3000 > /tmp/gth-navbar-next.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS --max-time 5 http://127.0.0.1:3000/flights >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -80 /tmp/gth-navbar-next.log
+          exit 1
+      - name: Assert real browser layout at 6 widths
+        run: node scripts/shared-navbar-layout-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shared-navbar-responsive-screenshots
+          path: navbar-*.png
+          if-no-files-found: ignore
