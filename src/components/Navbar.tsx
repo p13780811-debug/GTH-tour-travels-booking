@@ -209,7 +209,7 @@ function EcosystemNavbar() {
             {/* NAVBAR */}
             {/* ================================================= */}
 
-            <nav className={`
+            <nav data-gth-shared-nav="true" className={`
                 sticky
                 top-0
                 z-[110]
@@ -243,7 +243,7 @@ function EcosystemNavbar() {
 
                 {/* container */}
 
-                <div className="relative mx-auto flex w-full max-w-[1600px] min-w-0 items-center gap-2 px-4 py-3 lg:gap-2 lg:px-5 xl:gap-3 xl:px-6 2xl:px-8">
+                <div data-gth-navbar-container="true" className="relative mx-auto flex w-full max-w-[1600px] min-w-0 items-center gap-2 px-4 py-3 lg:gap-2 lg:px-5 xl:gap-3 xl:px-6 2xl:px-8">
 
                     {/* ================================================= */}
                     {/* LOGO */}
@@ -332,7 +332,7 @@ function EcosystemNavbar() {
                     {/* DESKTOP NAV */}
                     {/* ================================================= */}
 
-                    <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-1.5 2xl:gap-2">
+                    <div data-gth-desktop-links="true" className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-1.5 2xl:gap-2">
 
                         {navItems.map((item: any) => {
 
@@ -573,7 +573,7 @@ function EcosystemNavbar() {
                     {/* RIGHT */}
                     {/* ================================================= */}
 
-                    <div className="relative ml-auto flex shrink-0 items-center gap-1.5 lg:ml-0 xl:gap-2">
+                    <div data-gth-navbar-actions="true" className="relative ml-auto flex shrink-0 items-center gap-1.5 lg:ml-0 xl:gap-2">
 
                         <div className="relative hidden lg:block 2xl:hidden">
                             <button type="button" aria-label="Open ecosystem search" aria-expanded={searchOpen}
