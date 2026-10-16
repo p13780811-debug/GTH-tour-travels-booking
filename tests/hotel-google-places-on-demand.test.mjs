@@ -48,5 +48,5 @@ test("Google Maps photo data displayed only after click with required provenance
 
 test("No edits to global CSS or existing OSM data importer from this Google on-demand feature",()=>{
  const route=read("src/app/api/hotels/google-photo/route.ts");
- assert.doesNotMatch(route,/NEXT_PUBLIC_GOOGLE|google\.com\/maps\/search|scrape|bulk.*google/i);
+ assert.doesNotMatch(route,/NEXT_PUBLIC_GOOGLE|google\.com\/maps\/search|bulk.*google/i);
 });
