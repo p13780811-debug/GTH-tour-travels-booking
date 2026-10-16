@@ -52,6 +52,8 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
 
 export default async function HotelStay({params}:PageProps){
  const {id}=await params;
+ if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
  const hotel=await getHotel(id);
  if(!hotel)return <main className="mx-auto min-h-[60vh] max-w-4xl px-4 py-16">
    <h1 className="text-2xl font-semibold">Hotel record not available</h1>
