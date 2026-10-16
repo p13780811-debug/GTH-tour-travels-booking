@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { cache } from "react";
+import JsonLd from "@/components/seo/JsonLd";
+import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
+import { isIndexableTender, tenderMetadata } from "@/lib/seo/public-listings";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Globe2, ShieldCheck } from "lucide-react";
@@ -6,14 +10,19 @@ import { getPublicTender, safeTenderSource } from "@/lib/tender/catalog";
 import TenderIntelligencePanel from "@/components/tender/TenderIntelligencePanel";
 import {resolveTenderAudience} from "@/lib/tender/localization";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Tender Notice | GTH PRO", robots: { index: false, follow: false } };
+const readTender = cache((id:string) => getPublicTender(id));
+export async function generateMetadata({params}: {params:Promise<{id:string}>}):Promise<Metadata> {
+  const {id}=await params;
+  const result=await readTender(id);
+  return tenderMetadata(result.ok ? result.item : null, id, isPublicLaunch());
+}
 function formatted(date: string) {
   const d = new Date(date);
   return Number.isNaN(d.getTime()) ? "Check original notice" : new Intl.DateTimeFormat("en",{dateStyle:"full",timeZone:"UTC"}).format(d);
 }
 export default async function TenderDetailPage({params}: {params: Promise<{id:string}>}) {
   const {id}=await params;
-  const response=await getPublicTender(id);
+  const response=await readTender(id);
   if (!response.ok) return <main className="mx-auto min-h-[60vh] max-w-4xl px-4 py-20 text-[var(--text)]">
     <h1 className="text-3xl font-semibold">Tender record unavailable</h1>
     <p className="mt-4 text-sm text-[var(--text-soft)]">{response.error}. Contact the issuing authority for authoritative information.</p>
@@ -23,7 +32,17 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
   if (!tender) notFound();
   const url=safeTenderSource(tender.source_url);
   const {language}=await resolveTenderAudience(tender.country_code);
+  const canonical=siteUrl(`/tender/${encodeURIComponent(id)}`);
+  const breadcrumbData={
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    itemListElement:[
+      {"@type":"ListItem",position:1,name:"Tenders",item:siteUrl("/tender")},
+      {"@type":"ListItem",position:2,name:tender.title,item:canonical},
+    ],
+  };
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    {isPublicLaunch()&&isIndexableTender(tender)&&<JsonLd data={breadcrumbData}/>}
     <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-20">
       <Link href="/tender" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text-soft)] hover:text-[var(--text)]"><ArrowLeft size={16}/> All tenders</Link>
       <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">Verified-source procurement notice · {tender.country_code}</p>

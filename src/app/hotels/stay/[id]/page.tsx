@@ -1,10 +1,13 @@
 import type {Metadata} from "next";
+import {cache} from "react";
+import JsonLd from "@/components/seo/JsonLd";
+import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
+import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass} from "lucide-react";
 
 export const dynamic="force-dynamic";
-export const metadata:Metadata={title:"Hotel details & source | GTH PRO",robots:{index:false,follow:false}};
 type PageProps={params:Promise<{id:string}>};
 const PARTNER_HOSTS=["booking.com","trip.com","hotellook.com","klook.com","tp.media","tpo.lv"];
 function safeLink(value:unknown,allowPartner=false):string|null{
@@ -18,10 +21,9 @@ function safeLink(value:unknown,allowPartner=false):string|null{
   return u.toString();
  }catch{return null;}
 }
-export default async function HotelStay({params}:PageProps){
- const {id}=await params;
+const getHotel=cache(async(id:string)=>{
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
- if(!url||!key)return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
+ if(!url||!key)return null;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  let hotel:null|{name:string;city:string|null;country:string|null;category:string;source:string;
   address:string|null;sourceUrl:string|null;website:string|null;partner:string|null;
@@ -31,7 +33,7 @@ export default async function HotelStay({params}:PageProps){
   const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,source_url,website,latitude,longitude,updated_at")
     .eq("source","osm").eq("source_id",sourceId).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",
-   address:data.address,sourceUrl:data.source_url,website:safeLink(data.website),
+   address:data.address,sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
    partner:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
  }else if(/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(id)){
   const {data,error}=await db.from("hotels").select("name,city,affiliate_link,source_name,source_url")
@@ -40,12 +42,35 @@ export default async function HotelStay({params}:PageProps){
    source:data.source_name??"Approved provider",address:null,sourceUrl:safeLink(data.source_url),
    website:null,partner:safeLink(data.affiliate_link,true),lat:null,lon:null,updated:null};
  }
+ return hotel;
+});
+
+export async function generateMetadata({params}:PageProps):Promise<Metadata>{
+ const {id}=await params;
+ return hotelMetadata(await getHotel(id),id,isPublicLaunch());
+}
+
+export default async function HotelStay({params}:PageProps){
+ const {id}=await params;
+ if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
+ const hotel=await getHotel(id);
  if(!hotel)return <main className="mx-auto min-h-[60vh] max-w-4xl px-4 py-16">
    <h1 className="text-2xl font-semibold">Hotel record not available</h1>
    <p className="mt-4 text-sm text-[var(--text-soft)]">This listing may have changed or is not approved for publication.</p>
    <Link className="mt-5 inline-flex gap-2 underline" href="/hotels"><ArrowLeft size={16}/> Back to hotel search</Link>
  </main>;
+ const canonical=siteUrl(`/hotels/stay/${encodeURIComponent(id)}`);
+ const breadcrumbData={
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  itemListElement:[
+   {"@type":"ListItem",position:1,name:"Hotels",item:siteUrl("/hotels")},
+   {"@type":"ListItem",position:2,name:hotel.name,item:canonical},
+  ],
+ };
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+  {isPublicLaunch()&&isIndexableHotel(hotel)&&<JsonLd data={breadcrumbData}/>}
   <article className="mx-auto max-w-5xl px-4 py-12 sm:px-6 md:py-16">
    <Link href="/hotels" className="inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-soft)]">
     <ArrowLeft size={17}/> Hotels & stays</Link>
