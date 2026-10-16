@@ -53,6 +53,20 @@ export default function AviasalesWhiteLabel() {
       Array.from(document.head.querySelectorAll<HTMLElement>('style, link[rel="stylesheet"]')),
     );
 
+    // Verified in a real 1366px Chrome A/B test: the WL injects an anonymous
+    // ~190KB CSS Modules bundle whose unlayered rules override GTH's Tailwind
+    // utilities (md:hidden, flex, padding, etc.). In the existing Tailwind
+    // 'base' layer those same supplier rules keep working without overriding
+    // GTH utilities. This is NOT a new manual stylesheet or global CSS edit.
+    function lowerPriorityForSupplierBundle(node: HTMLElement) {
+      if (!(node instanceof HTMLStyleElement)) return;
+      if (node.dataset.gthTpwlLayered === "base") return;
+      const css = node.textContent || "";
+      if (css.length < 50_000 || !css.includes(".Modal-module__root___")) return;
+      node.dataset.gthTpwlLayered = "base";
+      node.textContent = "@layer base {" + css + "}";
+    }
+
     function isNextAppStylesheet(node: HTMLElement) {
       if (node.tagName === "STYLE") {
         return node.hasAttribute("data-next-hide-fouc") ||
@@ -70,8 +84,13 @@ export default function AviasalesWhiteLabel() {
     // Track only recognizable supplier assets; never delete Next.js/theme CSS.
     const headObserver = new MutationObserver((records) => {
       for (const record of records) {
+        // Some versions append an empty style node and populate it later.
+        if (record.target instanceof HTMLStyleElement) {
+          lowerPriorityForSupplierBundle(record.target);
+        }
         for (const node of record.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
+          lowerPriorityForSupplierBundle(node);
           if (isSupplierHeadAsset(node)) {
             supplierAssets.add(node);
             continue;
@@ -90,7 +109,7 @@ export default function AviasalesWhiteLabel() {
         }
       }
     });
-    headObserver.observe(document.head, { childList: true });
+    headObserver.observe(document.head, { childList: true, subtree: true, characterData: true });
 
     // The WL vendor may render nested divs and upgrade its form asynchronously.
     // A previous selector-only MutationObserver produced "unavailable" even
