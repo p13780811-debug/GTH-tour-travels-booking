@@ -1,101 +1,156 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Compass, Globe2, MapPin, ShieldCheck, Ticket } from "lucide-react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import TiqetsPartnerWidgets from "./TiqetsPartnerWidgets";
+import TourCarousel from "./TourCarousel";
 
-// These five programs were supplied/approved by the GTH PRO Travelpayouts
-// publisher. The URLs here are fixed affiliate links, not invented deep links.
+// All destination photography comes from existing GTH PRO local assets.
+// It illustrates travel themes; it does not represent a verified supplier
+// product, tour date, inventory or specific package.
 const partners = [
   {
-    name: "WeGoTrip",
-    category: "Audio & self-guided tours",
-    description: "Explore audio guides and walking experiences. Languages, locations and ticket terms are controlled by WeGoTrip.",
-    href: "https://wegotrip.tpo.lv/ZQjE9yR2",
-    Icon: BookOpen,
+    name: "WeGoTrip", category: "Audio & city walks",
+    description: "Self-guided audio tours",
+    image: "/images/cities/london.jpg",
+    imageAlt: "London destination travel scenery",
+    href: "https://wegotrip.tpo.lv/ZQjE9yR2", external: true,
   },
   {
-    name: "Klook",
-    category: "Activities & day trips",
-    description: "Explore local experiences and activities with Klook. Prices and available dates must be confirmed there.",
-    href: "https://klook.tpo.lv/IKb6eSUe",
-    Icon: Compass,
+    name: "Tiqets", category: "Attraction tickets",
+    description: "Museums & landmarks",
+    image: "/images/paris1.jpg",
+    imageAlt: "Paris travel scenery",
+    href: "#tiqets-partners-heading", external: false,
   },
   {
-    name: "Go City",
-    category: "Sightseeing passes",
-    description: "Browse multi-attraction city passes and check included attractions, validity and usage rules.",
-    href: "https://gocity.tpo.lv/NdfDWRGS",
-    Icon: Globe2,
+    name: "Klook", category: "Tours & activities",
+    description: "Activities & local trips",
+    image: "/images/cities/bali.jpg",
+    imageAlt: "Bali tropical landscape",
+    href: "https://klook.tpo.lv/IKb6eSUe", external: true,
   },
   {
-    name: "KKday",
-    category: "Day tours & experiences",
-    description: "Explore tours, destination activities and selected packages where offered by KKday.",
-    href: "https://kkday.tpo.lv/ytfvDLam",
-    Icon: MapPin,
+    name: "Go City", category: "Sightseeing passes",
+    description: "Multi-attraction passes",
+    image: "/images/cities/singapore.jpg",
+    imageAlt: "Singapore city travel scenery",
+    href: "https://gocity.tpo.lv/NdfDWRGS", external: true,
+  },
+  {
+    name: "KKday", category: "Day trips & experiences",
+    description: "Explore destinations",
+    image: "/images/cities/tokyo.jpg",
+    imageAlt: "Tokyo city travel scenery",
+    href: "https://kkday.tpo.lv/ytfvDLam", external: true,
   },
 ] as const;
 
 const categories = [
-  { name: "Guided city tours", detail: "Walking tours and local guides", Icon: MapPin },
-  { name: "Attractions & tickets", detail: "Landmarks, museums and admission", Icon: Ticket },
-  { name: "City passes", detail: "Multi-attraction passes", Icon: Globe2 },
-  { name: "Audio tours", detail: "Self-guided and listening experiences", Icon: BookOpen },
-  { name: "Day trips & outdoors", detail: "Excursions and nature activities", Icon: Compass },
+  {
+    name: "Guided city tours", description: "Walks & local guides",
+    image: "/images/cities/dubai.jpg", imageAlt: "Dubai city skyline",
+    href: "https://wegotrip.tpo.lv/ZQjE9yR2", external: true,
+  },
+  {
+    name: "Attraction tickets", description: "Museums & landmarks",
+    image: "/images/paris2.jpg", imageAlt: "Paris landmark travel scenery",
+    href: "#tiqets-partners-heading", external: false,
+  },
+  {
+    name: "Audio tours", description: "Explore at your pace",
+    image: "/images/cities/london.jpg", imageAlt: "London city travel scenery",
+    href: "https://wegotrip.tpo.lv/ZQjE9yR2", external: true,
+  },
+  {
+    name: "City passes", description: "More attractions together",
+    image: "/images/cities/singapore.jpg", imageAlt: "Singapore city attractions scenery",
+    href: "https://gocity.tpo.lv/NdfDWRGS", external: true,
+  },
+  {
+    name: "Day trips", description: "Discover nearby places",
+    image: "/images/cities/bangkok.jpg", imageAlt: "Bangkok destination scenery",
+    href: "https://kkday.tpo.lv/ytfvDLam", external: true,
+  },
+  {
+    name: "Outdoor experiences", description: "Nature & adventures",
+    image: "/images/cities/bali.jpg", imageAlt: "Bali outdoor destination scenery",
+    href: "https://klook.tpo.lv/IKb6eSUe", external: true,
+  },
 ] as const;
+
+type CardItem = (typeof partners)[number] | (typeof categories)[number];
+
+function TourImageCard({ item }: { item: CardItem }) {
+  const cardClass = "group flex w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-[206px]";
+  const body = (
+    <>
+      <div className="relative h-[112px] w-full overflow-hidden bg-[var(--bg)] sm:h-[122px]">
+        <Image
+          src={item.image} alt={item.imageAlt} fill
+          sizes="(max-width: 640px) 188px, 206px"
+          quality={85}
+          className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" aria-hidden="true" />
+      </div>
+      <span className="flex min-h-[93px] flex-col px-3 pb-3 pt-2.5">
+        <span className="flex items-start justify-between gap-1.5 text-[14px] font-bold leading-[19px]">
+          <span className="line-clamp-2">{item.name}</span>
+          <ArrowUpRight size={16} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+        </span>
+        <span className="mt-1 line-clamp-2 text-[11px] leading-[16px] text-[var(--text-soft)]">
+          {"category" in item ? item.category : item.description}
+        </span>
+        <span className="mt-auto pt-2 text-[10px] font-medium text-[var(--text-soft)]">
+          {"category" in item ? item.description : "Explore partner options"}
+        </span>
+      </span>
+    </>
+  );
+
+  return item.external ? (
+    <a href={item.href} key={item.name} target="_blank" rel="noopener noreferrer sponsored"
+      className={cardClass}>{body}</a>
+  ) : (
+    <a href={item.href} key={item.name} className={cardClass}>{body}</a>
+  );
+}
 
 export default function TourAffiliateMarketplace() {
   return (
-    <section aria-labelledby="tours-partners-heading" className="mx-auto max-w-7xl px-4 py-12 md:px-6">
-      <div className="mb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--gold)]">
-          Tours · Tickets · Experiences
-        </p>
-        <h2 id="tours-partners-heading" className="mt-2 text-2xl font-bold sm:text-3xl">
-          Explore tours with international partners
-        </h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          Browse publisher-linked booking programs alongside source-backed GTH PRO listings below.
-          Our own tour search covers published database records only; opening a partner can offer
-          other destinations and experiences not currently indexed in our database.
-        </p>
+    <section aria-labelledby="tours-partners-heading" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
+            Tours · Tickets · Experiences
+          </p>
+          <h2 id="tours-partners-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
+            Explore with global tour partners
+          </h2>
+          <p className="mt-2 max-w-3xl text-xs leading-5 text-[var(--text-soft)]">
+            Browse five travel partners. Supplier bookings and availability are managed outside GTH PRO.
+          </p>
+        </div>
+        <Link href="/affiliate-disclosure" className="text-xs text-[var(--text-soft)] underline">Affiliate disclosure</Link>
       </div>
 
-      <nav aria-label="Explore experience categories"
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {categories.map(({ name, detail, Icon }) => (
-          <div key={name} className="gth-glass flex w-[min(70vw,190px)] shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] p-4 sm:w-[190px]">
-            <Icon size={22} className="text-[var(--gold)]" aria-hidden="true" />
-            <p className="mt-3 text-sm font-semibold">{name}</p>
-            <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{detail}</p>
-          </div>
-        ))}
-      </nav>
+      <TourCarousel label="Tour booking partners">
+        {partners.map((item) => <TourImageCard key={item.name} item={item} />)}
+      </TourCarousel>
 
-      <div className="mt-8 flex items-center justify-between gap-3">
-        <h3 className="text-xl font-semibold">Tour booking partners</h3>
-        <Link href="/affiliate-disclosure" className="text-xs text-[var(--text-soft)] underline">
-          Affiliate disclosure
-        </Link>
+      <div className="mb-3 mt-7">
+        <h3 className="text-lg font-bold sm:text-xl">Find your experience</h3>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Explore six travel categories through matching booking partners.</p>
       </div>
-      <div className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {partners.map(({ name, category, description, href, Icon }) => (
-          <a key={name} href={href} target="_blank" rel="noopener noreferrer sponsored"
-            className="gth-glass flex w-[min(80vw,265px)] min-w-0 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] p-5 transition-transform hover:-translate-y-0.5 sm:w-[265px]">
-            <Icon size={23} className="text-[var(--gold)]" aria-hidden="true" />
-            <span className="mt-4 text-lg font-bold">{name}</span>
-            <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">{category}</span>
-            <span className="mt-3 flex-1 text-sm leading-6 text-[var(--text-soft)]">{description}</span>
-            <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">
-              Explore with {name} <ArrowUpRight size={16} aria-hidden="true" />
-            </span>
-          </a>
-        ))}
-      </div>
+      <TourCarousel label="Tour experience categories">
+        {categories.map((item) => <TourImageCard key={item.name} item={item} />)}
+      </TourCarousel>
 
       <TiqetsPartnerWidgets />
 
-      <p className="mt-6 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+      <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
         <ShieldCheck size={17} className="mt-1 shrink-0" aria-hidden="true" />
+        Destination imagery is illustrative, not a listing or confirmed tour offer.
         All program links and embedded widgets lead to independent suppliers. GTH PRO does not issue tickets,
         reserve provider inventory or guarantee tour availability, pricing, language support or cancellations.
       </p>
