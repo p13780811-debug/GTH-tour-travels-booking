@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Compass, Plane } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Compass, PlaneTakeoff } from "lucide-react";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
@@ -13,69 +14,68 @@ export default async function FlightsPage({ searchParams }: Props) {
   const destination = /^[A-Z]{3}$/.test(query.destination || "") ? query.destination! : "";
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]">
-      <section className="border-b border-[var(--border)] bg-[var(--card)]/60">
-        <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 md:py-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
-            GTH PRO · Worldwide flight booking discovery
-          </p>
-          <h1 className="mt-2 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl">
-            Flights, airports and your whole journey.
-          </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-            Search real supplier results using the Aviasales Travelpayouts White Label on this page.
-            Continue to airport pickup, travel insurance, car rental, tours and destination services.
-          </p>
-          <nav aria-label="Flight categories" className="mt-5 flex snap-x gap-2 overflow-x-auto pb-2 text-sm">
+    <main className="gth-flights-root overflow-x-hidden" data-gth-flight-page="true">
+      <section className="gth-flight-hero relative isolate overflow-hidden border-b border-[var(--border)]">
+        <div aria-hidden="true"
+          className="gth-flight-hero-photo pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 sm:block">
+          <Image src="/images/mega/flights.jpg" alt="" fill priority
+            sizes="(max-width: 1024px) 35vw, 580px" className="object-cover object-center" />
+        </div>
+        <div className="gth-flight-shell relative z-10 px-4 py-9 sm:px-6 sm:py-12 lg:py-14">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+              GTH PRO · Worldwide travel
+            </p>
+            <h1 className="mt-3 text-[var(--text)]">Find your next flight</h1>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
+              Search flights with Aviasales, then explore airport transfers, car rentals and travel essentials
+              in one connected GTH PRO journey.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-[var(--text-soft)]">
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> International destinations</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> Provider-operated checkout</span>
+            </div>
+          </div>
+          <nav aria-label="Flight travel categories"
+            className="mt-7 flex max-w-4xl snap-x gap-2 overflow-x-auto rounded-2xl bg-transparent pb-2 text-xs shadow-none">
             {[
               { name: "Search flights", href: "#flight-search" },
-              { name: "Airport transfers", href: "/transfers" },
+              { name: "Airport services", href: "/transfers" },
               { name: "Car rentals", href: "/cars" },
-              { name: "Travel insurance", href: "/insurance" },
+              { name: "Insurance", href: "/insurance" },
               { name: "Hotels", href: "/hotels" },
               { name: "Tours", href: "/tours" },
+              { name: "Destinations", href: "/destinations" },
             ].map((item) => (
               <Link key={item.name} href={item.href}
-                className="gth-glass inline-flex min-h-10 shrink-0 snap-start items-center rounded-xl border border-[var(--border)] px-4 text-xs font-semibold">
-                {item.name} <ArrowUpRight size={13} className="ml-2" aria-hidden="true" />
+                className="inline-flex min-h-10 shrink-0 snap-start items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] shadow-sm transition hover:border-[var(--gold)]">
+                {item.name} <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
             ))}
           </nav>
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 pb-16 pt-7 sm:px-6">
+      <div className="gth-flight-shell px-4 pb-16 pt-6 sm:px-6 sm:pt-9">
         {destination && origin !== destination && (
-          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
-            <Plane size={19} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
+            <PlaneTakeoff size={18} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
             <p>
-              Route inspiration: <strong>{origin} → {destination}</strong>.
-              Select these airports and your dates in the Aviasales search form below for
-              supplier results; this preview does not preselect an unconfirmed fare.
+              Route inspiration: <strong>{origin} → {destination}</strong>. Choose these airports and
+              your travel dates in the supplier search form to see matching offers.
             </p>
           </div>
         )}
         <AviasalesWhiteLabel />
-
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl">Continue planning after booking</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
-            Air transport is only one part of the trip. The airport and destination sections below
-            connect the services linked to the GTH PRO ecosystem.
-          </p>
-        </section>
         <FlightJourneyServices />
         <PopularDestinations destinations={flightDestinations} origin={origin} />
 
-        <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-xs leading-6 text-[var(--text-soft)]">
-          <h2 className="mb-2 flex items-center gap-2 text-base font-semibold text-[var(--text)]">
-            <Compass size={18} aria-hidden="true" /> About the flight results
-          </h2>
-          <p>
-            The embedded White Label is operated by Aviasales/Travelpayouts and displays provider
-            results when its service is available. The separate GTH PRO Data API contains historical
-            observations only and is no longer used as the primary booking UI.
-            Final fares, availability, support and purchase conditions are supplied by ticket sellers.
+        <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-sm">
+          <h2 className="flex items-center gap-2"><Compass size={18} aria-hidden="true" /> About flight bookings</h2>
+          <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
+            Search and results are operated by Aviasales/Travelpayouts. The GTH PRO historical fare
+            API is not displayed as live bookable inventory. Final availability, fares, baggage,
+            payment and support are determined by the chosen provider.
           </p>
         </section>
       </div>

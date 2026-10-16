@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./flights.css";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/flights" },
