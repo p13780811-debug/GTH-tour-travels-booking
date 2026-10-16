@@ -136,9 +136,13 @@ export default function HotelPartnerForm(){
     <fieldset disabled={busy} className="mt-6 grid gap-5 sm:grid-cols-2">
      <label className={LABEL}>Hotel or property name *<input name="hotel_name" required minLength={3} maxLength={180} className={INPUT}/></label>
      <label className={LABEL}>City *<input name="city" required minLength={2} maxLength={100} className={INPUT}/></label>
-     <label className={LABEL}>Country *<select name="country_code" required defaultValue="IN" className={INPUT}>
-      {countryOptions.map(([code,label])=><option key={code} value={code}>{label}</option>)}
-     </select></label>
+     <label className={LABEL}>Country code (ISO 2-letter) *
+      <input name="country_code" required minLength={2} maxLength={2} pattern="[A-Za-z]{2}" defaultValue="IN"
+       placeholder="IN" list="hotel-owner-country-codes" className={INPUT}/>
+      <datalist id="hotel-owner-country-codes">{countryOptions.map(([code,label])=>
+       <option key={code} value={code} label={label}/>)}</datalist>
+      <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Any country supported, e.g. IN, AE, US, GB.</span>
+     </label>
      <label className={LABEL}>Accommodation category *<select name="category" required defaultValue="hotel" className={INPUT}>
       {TYPES.map(value=><option value={value} key={value}>{value.replaceAll("_"," ")}</option>)}
      </select></label>
