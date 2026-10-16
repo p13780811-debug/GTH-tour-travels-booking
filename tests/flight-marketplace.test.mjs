@@ -64,7 +64,7 @@ test("flight page keeps travel sections connected without invented prices", () =
   const destinations = read("src/data/flight/destinations.ts");
   assert.match(page, /href: "\/hotels"/);
   assert.match(page, /href: "\/tours"/);
-  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(page, /<FlightJourneyServices \/>/);
   assert.doesNotMatch(destinations, /price:\s*["'$]/);
   assert.doesNotMatch(page, /Filter flight observations|No cached fare observations/);
