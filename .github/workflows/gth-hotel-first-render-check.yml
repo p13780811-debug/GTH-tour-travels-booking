@@ -1,0 +1,44 @@
+name: GTH Hotels First HTML Check
+on:
+  push:
+    branches:
+      - fix/gth-hotels-first-render-20261017
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/app/hotels/page.tsx
+      - tests/hotel-first-render-ux.test.mjs
+      - scripts/check-hotel-first-html.mjs
+      - .github/workflows/gth-hotel-first-render-check.yml
+permissions:
+  contents: read
+jobs:
+  server-html:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: Check hotel first-render regressions
+        run: node --test tests/hotel-first-render-ux.test.mjs tests/hotel-marketplace.test.mjs tests/hotel-india-coverage-ux.test.mjs
+      - name: Start isolated Next.js server (no production deploy)
+        run: |
+          npm run dev -- -p 3000 > /tmp/gth-hotel-first.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl -fsS --max-time 5 http://127.0.0.1:3000/hotels >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -100 /tmp/gth-hotel-first.log
+          exit 1
+      - name: Assert actual initial server HTML H1 and working search
+        run: node scripts/check-hotel-first-html.mjs

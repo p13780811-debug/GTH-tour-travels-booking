@@ -284,6 +284,7 @@ function HotelsContent() {
                                 />
 
                                 <input
+                                    aria-label="Hotel city or destination"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     onKeyDown={(e) =>
@@ -723,16 +724,49 @@ export default function HotelsPage() {
     return (
         <Suspense
             fallback={
-                <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-                    <div className="gth-glass border border-[var(--border)] rounded-3xl px-8 py-5">
-                        <div className="flex items-center gap-3">
-                            <Sparkles className="animate-pulse" size={18} />
-                            <span className="text-sm font-bold">
-                                Initializing Global Luxury Engine...
-                            </span>
+                // Searchable, source-honest initial HTML while the client-side
+                // hotel catalog hydrates. No fake hotel cards, prices or reviews.
+                <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+                    <section className="border-b border-[var(--border)] bg-[var(--card)]">
+                        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20">
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+                                GTH PRO · Global stays
+                            </p>
+                            <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
+                                Discover Hotels Around the World
+                            </h1>
+                            <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">
+                                Find source-attributed stays by destination. Verify room availability,
+                                taxes, cancellation rules and final prices with the booking partner.
+                            </p>
+                            <form action="/hotels" method="GET" role="search"
+                                className="mt-7 flex max-w-3xl flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-3 sm:flex-row sm:items-end">
+                                <div className="min-w-0 flex-1">
+                                    <label htmlFor="hotel-first-render-city" className="mb-2 block text-xs font-semibold">
+                                        City or destination
+                                    </label>
+                                    <input id="hotel-first-render-city" name="city" maxLength={80}
+                                        placeholder="e.g. Mumbai, Dubai, London"
+                                        className="min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]" />
+                                </div>
+                                <button type="submit"
+                                    className="gth-btn-gold inline-flex min-h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold">
+                                    Find hotels
+                                </button>
+                            </form>
                         </div>
-                    </div>
-                </div>
+                    </section>
+                    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-label="Hotel catalog loading">
+                        <p role="status" className="text-sm text-[var(--text-soft)]">
+                            Preparing available hotel listings…
+                        </p>
+                        <div aria-hidden="true" className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {[0, 1, 2].map((item) => (
+                                <div key={item} className="h-40 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--card)]" />
+                            ))}
+                        </div>
+                    </section>
+                </main>
             }
         >
             <HotelsContent />
