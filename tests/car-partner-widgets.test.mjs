@@ -23,7 +23,7 @@ test("provider switch is scoped to car widget with safe third-party lifecycle", 
   assert.match(widget, /mount\.appendChild\(script\)/);
   assert.match(widget, /mount\.replaceChildren\(\)/);
   assert.match(widget, /script\.onerror/);
-  assert.match(widget, /preset country and city/);
+  assert.match(widget, /specific country and city preset/);
   assert.doesNotMatch(widget, /dangerouslySetInnerHTML|eval\(|document\.write|Math\.random|localStorage/);
   assert.doesNotMatch(read("src/app/layout.tsx"), /tpwidg\.com/);
 });
