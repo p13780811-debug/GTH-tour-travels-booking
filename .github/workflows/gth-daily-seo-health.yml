@@ -1,5 +1,15 @@
 name: GTH PRO Daily SEO Health
 on:
+  push:
+    branches:
+      - fix/gth-sitemap-seo-daily-monitor-20261017
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/monitor-seo.mjs
+      - tests/sitemap-daily-seo-monitor.test.mjs
+      - .github/workflows/gth-daily-seo-health.yml
   workflow_dispatch:
   schedule:
     - cron: "20 7 * * *"
@@ -14,5 +24,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Check canonical metadata, indexability and sitemap
+      - name: Validate sitemap monitor safety and page coverage
+        run: node --test tests/sitemap-daily-seo-monitor.test.mjs
+      - name: Check live metadata, indexability and full sitemap (schedule or explicit audit)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: node scripts/monitor-seo.mjs
