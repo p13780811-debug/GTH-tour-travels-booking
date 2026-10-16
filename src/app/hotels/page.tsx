@@ -351,6 +351,10 @@ function HotelsContent() {
                 </label>
                 <button type="button" onClick={()=>exploreIndia()}
                   className="gth-btn-gold min-h-11 rounded-xl px-5 py-2 text-sm font-semibold">Explore India hotels</button>
+                <a href="/hotels/list-your-property"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2 text-sm font-semibold">
+                  List your hotel for free
+                </a>
               </div>
               <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
               <div aria-label="Popular Indian destinations" className="mt-4 flex gap-2 overflow-x-auto pb-2">
