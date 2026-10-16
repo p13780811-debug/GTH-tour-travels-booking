@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/flights" },
-  title: "Compare Flight Fare Observations | GTH PRO Travel",
+  title: "Search Flights & Airport Travel Services | GTH PRO",
   description:
-    "Explore previously observed flight fares with transparent filters, then check current availability and booking terms directly with the travel partner.",
+    "Search Aviasales White Label flights on GTH PRO and explore verified airport transfers, insurance, car rentals and destination booking partners.",
   keywords: ["flight fare comparison", "flight discovery", "GTH PRO travel", "airline fares"],
   openGraph: {
-    title: "Flight Fare Discovery | GTH PRO",
-    description: "Find routes, filter observed fares and continue with the booking partner.",
+    title: "Worldwide Flights & Airport Services | GTH PRO",
+    description: "Explore flight supplier results, airport transfers, insurance and complete travel services.",
     type: "website",
   },
 };

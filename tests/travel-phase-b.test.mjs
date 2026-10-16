@@ -34,7 +34,11 @@ test("hotel booking endpoint describes requests instead of confirmations", () =>
 test("flight search fails closed and uses partner search safely", () => {
   const page = read("src/app/flights/page.tsx");
   const api = read("src/app/api/flights/route.ts");
-  assert.match(page, /AbortController/);
+  const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
+  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(widget, /script\.onerror/);
+  assert.match(widget, /script\.remove\(\)/);
+  assert.match(widget, /id="tpwl-tickets"/);
   assert.doesNotMatch(page, /jet-tickets\.com/);
   assert.match(api, /X-Access-Token/);
   assert.doesNotMatch(api, /searchParams\.set\("token"/);
