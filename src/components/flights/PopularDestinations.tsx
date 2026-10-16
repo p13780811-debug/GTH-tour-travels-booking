@@ -18,7 +18,7 @@ export default function PopularDestinations({
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold md:text-2xl">Popular places to explore</h2>
-          <p className="mt-1 text-sm text-[var(--text-soft)]">Get inspired, choose your dates and discover available fare observations.</p>
+          <p className="mt-1 text-sm text-[var(--text-soft)]">Get inspired, choose your dates and explore provider flight search.</p>
         </div>
         <Link href="/destinations" className="text-sm font-semibold underline">All destinations</Link>
       </div>
@@ -47,7 +47,7 @@ export default function PopularDestinations({
           );
         })}
       </div>
-      <p className="mt-3 text-xs text-[var(--text-soft)]">These are inspiration links, not priced offers.</p>
+      <p className="mt-3 text-xs text-[var(--text-soft)]">These are inspiration routes, not priced offers. Select airports and dates in the flight provider widget after opening the route.</p>
     </section>
   );
 }
