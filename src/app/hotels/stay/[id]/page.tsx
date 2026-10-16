@@ -41,21 +41,24 @@ const getHotel=cache(async(id:string)=>{
  if(!url||!key)return null;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  let hotel:null|{name:string;city:string|null;country:string|null;category:string;source:string;
-  address:string|null;sourceUrl:string|null;website:string|null;partner:string|null;image:string|null;
+  address:string|null;description:string|null;sourceUrl:string|null;website:string|null;partner:string|null;image:string|null;
   lat:number|null;lon:number|null;updated:string|null}=null;
  if(/^osm:(node|way|relation)-[0-9]{1,19}$/.test(id)){
   const sourceId=id.slice(4).replace("-","/");
   const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,source_url,website,image_url,latitude,longitude,updated_at")
     .eq("source","osm").eq("source_id",sourceId).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",
-   address:data.address,sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
+   address:data.address,description:null,sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
    image:safeImage(data.image_url),partner:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
  }else if(/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(id)){
-  const {data,error}=await db.from("hotels").select("name,city,image_url,affiliate_link,source_name,source_url")
+  const {data,error}=await db.from("hotels").select("name,city,country_code,address,category,description,image_url,affiliate_link,source_name,source_url")
     .eq("id",id).eq("is_public",true).eq("media_rights_verified",true).not("source_name","is",null).maybeSingle();
-  if(!error&&data)hotel={name:data.name,city:data.city,country:null,category:"hotel",
-   source:data.source_name??"Approved provider",address:null,sourceUrl:safeLink(data.source_url),
-   website:null,image:safeImage(data.image_url),partner:safeLink(data.affiliate_link,true),lat:null,lon:null,updated:null};
+  if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category||"hotel",
+   source:data.source_name??"Approved provider",address:data.address,description:data.description,
+   sourceUrl:safeLink(data.source_url),
+   website:data.source_name==="GTH PRO Reviewed Hotel Partner"&&data.source_url&&!data.source_url.includes("/hotels/stay/")
+    ?safeLink(data.source_url):null,
+   image:safeImage(data.image_url),partner:safeLink(data.affiliate_link,true),lat:null,lon:null,updated:null};
  }
  return hotel;
 });
@@ -76,6 +79,16 @@ export default async function HotelStay({params}:PageProps){
    <Link className="mt-5 inline-flex gap-2 underline" href="/hotels"><ArrowLeft size={16}/> Back to hotel search</Link>
  </main>;
  const canonical=siteUrl(`/hotels/stay/${encodeURIComponent(id)}`);
+ const gallery:string[]=[];
+ if(hotel.source==="GTH PRO Reviewed Hotel Partner"){
+  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if(url&&key){
+   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+   const {data:photos}=await db.from("hotel_partner_public_photos").select("image_url")
+    .eq("hotel_id",id).order("slot",{ascending:true}).limit(6);
+   for(const photo of photos||[]){const image=safeImage(photo.image_url);if(image)gallery.push(image);}
+  }
+ }
  const breadcrumbData={
   "@context":"https://schema.org",
   "@type":"BreadcrumbList",
@@ -105,6 +118,12 @@ export default async function HotelStay({params}:PageProps){
       !!process.env.GOOGLE_PLACES_API_KEY && !!process.env.UPSTASH_REDIS_REST_URL &&
       !!process.env.UPSTASH_REDIS_REST_TOKEN &&
       <GoogleHotelPhoto hotelId={id}/>}
+    {gallery.length>1&&<div aria-label="Reviewed hotel photographs" className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {gallery.slice(1).map((image,index)=><img key={image} src={image}
+       alt={hotel.name+" — reviewed owner photo "+(index+2)} loading="lazy"
+       className="h-36 w-full rounded-xl border border-[var(--border)] object-cover"/>)}
+    </div>}
+    {hotel.description&&<p className="mt-6 text-sm leading-7 text-[var(--text-soft)]">{hotel.description}</p>}
     <div className="mt-7 grid gap-4 sm:grid-cols-3">
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Property type</p><p className="mt-2 font-semibold capitalize">{hotel.category.replaceAll("_"," ")}</p></div>
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Directory source</p><p className="mt-2 font-semibold">{hotel.source}</p></div>
@@ -135,7 +154,7 @@ export default async function HotelStay({params}:PageProps){
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}
      {hotel.sourceUrl&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
-       href={hotel.sourceUrl} target="_blank" rel="noopener noreferrer nofollow"><Compass size={16}/> Original directory record <ArrowUpRight size={15}/></a>}
+       href={hotel.sourceUrl} target="_blank" rel="noopener noreferrer nofollow"><Compass size={16}/> {hotel.source==="OpenStreetMap"?"Original directory record":"Hotel listing source"} <ArrowUpRight size={15}/></a>}
     </div>
     {hotel.lat!==null&&hotel.lon!==null&&<p className="mt-5 text-xs text-[var(--text-soft)]">
      Directory coordinates: {hotel.lat.toFixed(5)}, {hotel.lon.toFixed(5)} (not guaranteed to identify the entrance).
