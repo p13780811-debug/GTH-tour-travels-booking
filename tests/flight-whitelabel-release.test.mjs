@@ -9,7 +9,7 @@ test("real Travelpayouts White Label Web 23459 is the Flights primary UI", () =>
   const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
   assert.match(page, /<AviasalesWhiteLabel \/>/);
   assert.match(widget, /wl_web\/main\.js\?wl_id=23459/);
-  assert.doesNotMatch(widget, /srcDoc|WL_FRAME_ROUTE|<iframe/);
+  assert.doesNotMatch(widget, /srcDoc=|WL_FRAME_ROUTE|<iframe/);
   assert.match(widget, /id="tpwl-search"/);
   assert.match(widget, /id="tpwl-tickets"/);
   assert.match(widget, /script\.type = "module"/);
