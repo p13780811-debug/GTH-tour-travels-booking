@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 const pageUrl = "https://www.gthproglobal.com/flights";
 const browser = await chromium.launch({headless:true,args:["--no-sandbox"]});
 
-async function inspect(blockVendor){
+async function inspect(blockVendor,rewriteVendor=false){
   const context = await browser.newContext({viewport:{width:1366,height:768},deviceScaleFactor:1});
   const page = await context.newPage();
   const errors=[];
@@ -48,20 +48,33 @@ async function inspect(blockVendor){
   },label);
   let before=await snap("3s");
   let after=before;
-  if(!blockVendor){await page.waitForTimeout(22000);after=await snap("25s");}
-  await page.screenshot({path:blockVendor?"flights-no-widget.png":"flights-widget.png",fullPage:false});
+  let rewrite = null;
+  if(rewriteVendor) {
+    rewrite = await page.evaluate(() => {
+      const node = [...document.head.querySelectorAll("style")].find(s=>(s.textContent||"").length>100000);
+      if(!node) return {found:false};
+      const raw=node.textContent||"";
+      const sample={starts:raw.slice(0,180),hasImportant:raw.includes("!important"),hasLayer:raw.includes("@layer"),hasImport:raw.includes("@import"),hasCharset:raw.includes("@charset")};
+      node.textContent = "@layer base {" + raw + "}";
+      return {found:true,length:raw.length,sample,parsedRules:node.sheet?.cssRules.length||0};
+    });
+    await page.waitForTimeout(1500);
+  }
+  if(!blockVendor){await page.waitForTimeout(rewriteVendor?3500:22000);after=await snap(rewriteVendor?"layered-vendor":"25s");}
+  await page.screenshot({path:blockVendor?"flights-no-widget.png":rewriteVendor?"flights-layered-widget.png":"flights-widget.png",fullPage:false});
   await context.close();
-  return {blocked:blockVendor,first:before,last:after,errors:errors.slice(0,12),stylesheets:externalCSS.slice(0,16)};
+  return {blocked:blockVendor,rewriteVendor,first:before,last:after,rewrite,errors:errors.slice(0,12),stylesheets:externalCSS.slice(0,16)};
 }
 try{
  const clean=await inspect(true);
  const widget=await inspect(false);
+ const layered=await inspect(false,true);
  function slim(v){return {blocked:v.blocked,
-    first:{...v.first,styles:v.first.styles.length},
+    first:{...v.first,styles:v.first.styles.length},rewrite:v.rewrite,
     last:{...v.last,styles:v.last.styles.length},
     added:widget.blocked?[]:v.last.styles.filter(s=>!clean.first.styles.some(b=>b.href===s.href && b.excerpt===s.excerpt)).slice(0,20),
     errors:v.errors,stylesheets:v.stylesheets};}
  console.log("FLIGHT_CSS_AUDIT_START");
- console.log(JSON.stringify({withoutVendor:slim(clean),withVendor:slim(widget)},null,2));
+ console.log(JSON.stringify({withoutVendor:slim(clean),withVendor:slim(widget),layeredVendor:slim(layered)},null,2));
  console.log("FLIGHT_CSS_AUDIT_END");
 }finally{await browser.close();}
