@@ -400,6 +400,25 @@ function HotelsContent() {
                                       <p className="text-xs font-semibold text-[var(--text-soft)]">Real property categories</p>
                                       <p className="mt-2 text-sm text-[var(--text-soft)]">Select source-attributed accommodation types above. Unverified hotel star ratings are intentionally not presented as filters.</p>
                                     </div>
+                                    <fieldset className="space-y-2">
+                                      <legend className="mb-3 text-sm font-semibold">Accommodation categories</legend>
+                                      {[
+                                        ["","All accommodations"],
+                                        ["hotel","Hotels"],
+                                        ["resort","Resorts"],
+                                        ["guest_house","Guest houses"],
+                                        ["apartment","Apartments"],
+                                        ["hostel","Hostels"],
+                                        ["motel","Motels"]
+                                      ].map(([value,label])=>
+                                        <label key={value} className="flex min-h-10 cursor-pointer items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm">
+                                          <input type="radio" name="hotel-accommodation-category" checked={category===value}
+                                            onChange={()=>setCategory(value)} className="accent-[var(--primary)]"/>
+                                          <span>{label}</span>
+                                        </label>
+                                      )}
+                                    </fieldset>
+                                    <p className="text-xs text-[var(--text-soft)]">Categories use actual public source classifications; price, ratings, amenities and availability are not assumed.</p>
                                     {/* FEATURES */}
                                     <div>
                                         <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-soft)] mb-3">
