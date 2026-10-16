@@ -40,7 +40,10 @@ export function isIndexableHotel(item: HotelSeoRecord | null): boolean {
   // OSM location-only directory data has no independently verified amenities/rates.
   return !!item && item.source !== "OpenStreetMap" &&
     clean(item.name, 140).length >= 5 && clean(item.city, 100).length >= 2 &&
-    validHttps(item.sourceUrl) && validPartner(item.partner);
+    validHttps(item.sourceUrl) &&
+    // Owner entries have no affiliate URL: they are indexable only after
+    // explicit administrator review, verified media rights and public RLS publication.
+    (item.source === "GTH PRO Reviewed Hotel Partner" || validPartner(item.partner));
 }
 export function hotelMetadata(item: HotelSeoRecord | null, id: string, launched: boolean): Metadata {
   if (!item) return { title: "Hotel unavailable | GTH PRO", robots: { index: false, follow: false } };
