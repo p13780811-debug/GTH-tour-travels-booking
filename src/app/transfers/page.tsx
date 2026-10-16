@@ -23,7 +23,7 @@ export default function TransfersPage() {
         "Review the final price, refund policy and provider support contact before paying.",
       ]}
       partners={[
-        { name: "Welcome Pickups", url: "https://www.welcomepickups.com/", description: "Explore airport pickup services in supported destinations and complete booking on the provider website." },
+        { name: "Welcome Pickups · Affiliate", url: "https://tpo.lv/GFuzmgYk", description: "Airport transfer partner link already saved in GTH PRO; confirm availability and booking conditions on the destination website." },
       ]}
     >
       <TransportPlanner mode="transfer" />

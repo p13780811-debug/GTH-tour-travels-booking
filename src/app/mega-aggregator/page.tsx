@@ -43,6 +43,7 @@ const categories = [
     { name: "Hotels", link: "/hotels", description: "Discover stays and check availability with providers", image: "/images/mega/hotels.jpg" },
     { name: "Tours & Activities", link: "/tours", description: "Explore curated experiences", image: "/images/mega/tours.jpg" },
     { name: "Airport Transfers", link: "/transfers", description: "Plan pickups through external providers", image: "/images/mega/transfers.jpg" },
+    { name: "Car Rentals", link: "/cars", description: "Explore worldwide car hire and self-drive options", image: "/images/mega/transfers.jpg" },
     { name: "Insurance", link: "/insurance", description: "Research policy exclusions and provider coverage", image: "/images/mega/insurance.jpg" },
 ];
 
@@ -400,6 +401,7 @@ export default async function MegaAggregator() {
                                 {name:"Bus",href:"/bus"},
                                 {name:"Rail",href:"/train"},
                                 {name:"Airport Transfers",href:"/transfers"},
+                                {name:"Car Rentals",href:"/cars"},
                             ].map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">{item.name} <span className="ml-2" aria-hidden="true">↗</span></Link>)}
                         </nav>
                     </div>
