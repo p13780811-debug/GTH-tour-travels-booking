@@ -6,9 +6,9 @@ import ts from "typescript";
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 function moduleExports(path){
  const content=ts.transpileModule(read(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- const module={exports:{}};
- vm.runInNewContext(content,{exports:module.exports,module,URLSearchParams,RegExp,Array,String},{timeout:2000});
- return module.exports;
+ const mod={exports:{}};
+ vm.runInNewContext(content,{exports:mod.exports,module:mod,URLSearchParams,RegExp,Array,String},{timeout:2000});
+ return mod.exports;
 }
 const {mobileAppHref,isMobileSection}=moduleExports("src/lib/mobile/routes.ts");
 test("All app cards stay inside app-only screens, no normal website card handoff",()=>{
