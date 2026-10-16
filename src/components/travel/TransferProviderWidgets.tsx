@@ -8,13 +8,13 @@ import { ArrowUpRight, CarFront, MapPin } from "lucide-react";
 // Do not build script URLs from visitor input.
 const widgets = {
   airport: {
-    title: "Airport transfer search",
-    description: "Explore available airport pickup and drop-off services through the external supplier widget.",
+    title: "intui.travel airport transfers",
+    description: "Search intui.travel airport pickup and drop-off options in its own supplier widget. Confirm geographic coverage and pickup details with the provider.",
     src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&header=Airport%20transfers%20executed%20by%20local%20Professional%20companies&powered_by=true&color_scheme=bg&b_counter=true&b_benefit=true&b_descr=true&b_about=true&b_map=true&b_reviews=true&b_breadcrumbs=true&b_poweredby=true&b_numbers=true&b_trustpilot=true&b_assortment=true&b_reliable=true&b_extended=true&b_how=true&b_faq=true&b_why=true&b_easybook=true&campaign_id=22&promo_id=1504",
   },
   options: {
-    title: "Compare transfer options",
-    description: "Review the provider's transfer-option widget; coverage and quotes depend on the supplier.",
+    title: "Kiwitaxi transfer options",
+    description: "Review Kiwitaxi transfer options. All quoted prices, coverage and booking conditions are supplied by Kiwitaxi.",
     src: "https://tpwidg.com/content?currency=USD&trs=504342&shmarker=417668&locale=en&powered_by=true&transfer_options_limit=10&transfer_options=MCR&disable_currency_selector=true&hide_form_extras=true&hide_external_links=true&campaign_id=1&promo_id=3879",
   },
   additional: {
@@ -67,8 +67,8 @@ export default function TransferProviderWidgets() {
           <CarFront size={21} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">Third-party transfer booking</p>
-          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Find airport transfers</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
+          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Compare airport transfers</h2>
         </div>
       </div>
       <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
@@ -81,13 +81,13 @@ export default function TransferProviderWidgets() {
           className={active === "airport"
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
-          <MapPin size={16} aria-hidden="true" /> Airport pickups
+          <MapPin size={16} aria-hidden="true" /> intui.travel
         </button>
         <button type="button" aria-pressed={active === "options"} onClick={() => select("options")}
           className={active === "options"
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
-          <CarFront size={16} aria-hidden="true" /> Transfer options
+          <CarFront size={16} aria-hidden="true" /> Kiwitaxi
         </button>
         <button type="button" aria-pressed={active === "additional"} onClick={() => select("additional")}
           className={active === "additional"
