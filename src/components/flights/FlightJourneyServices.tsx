@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, CarFront, Compass, Luggage, Plane, ShieldCheck, Smartphone } from "lucide-react";
+import { ArrowUpRight, CarFront, Compass, Luggage, ShieldCheck, Smartphone } from "lucide-react";
 import { flightPartnerPrograms } from "@/lib/flights/partners";
 
 const sections = [
