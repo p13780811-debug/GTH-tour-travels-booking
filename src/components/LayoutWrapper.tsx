@@ -15,18 +15,19 @@ export default function LayoutWrapper({
     // ✅ Real estate detection
     const isRealEstate = pathname?.startsWith("/real-estate");
     const isFlagship = pathname === "/";
+    const isAppHome = pathname === "/app";
 
     return (
         <>
             {/* ✅ CONTENT */}
-            <div className={`min-h-screen ${isRealEstate || isFlagship ? 'pb-0' : 'pb-24 md:pb-0'}`}>
+            <div className={`min-h-screen ${isRealEstate || isFlagship ? 'pb-0' : 'pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-0'}`}>
                 {children}
             </div>
 
             {/* ❌ REAL ESTATE → NO global UI */}
-            {!isRealEstate && !isFlagship && (
+            {!isRealEstate && !isFlagship && <MobileNav />}
+            {!isRealEstate && !isFlagship && !isAppHome && (
                 <>
-                    <MobileNav />
                     <ChatBot />
                     <EcosystemFooter />
                 </>
