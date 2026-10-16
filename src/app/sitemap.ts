@@ -11,7 +11,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers", "/cars",
+  "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers", "/cars", "/hotels/list-your-property",
   "/insurance", "/real-estate", "/real-estate/tools", "/tender",
   "/partners", "/contact", "/about", "/affiliate-disclosure",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
@@ -29,10 +29,9 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
   // Bounded query sizes keep sitemap requests responsive; never leak private columns.
   const [hotels, tenders] = await Promise.allSettled([
     db.from("hotels")
-      .select("id,name,city,source_name,source_url,affiliate_link")
+      .select("id,name,city,country_code,category,source_name,source_url,affiliate_link")
       .eq("is_public", true).eq("media_rights_verified", true)
       .not("source_name", "is", null).not("source_url", "is", null)
-      .not("affiliate_link", "is", null)
       .order("id", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE),
     db.from("tenders")
       .select("id,title,buyer,country_code,sector,summary,deadline_at,source_name,source_reference,source_url,updated_at")
@@ -45,7 +44,7 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
   if (hotels.status === "fulfilled" && !hotels.value.error) {
     for (const item of hotels.value.data ?? []) {
       const record: HotelSeoRecord = {
-        name: item.name, city: item.city, country: null, category: "hotel",
+        name: item.name, city: item.city, country: item.country_code, category: item.category||"hotel",
         source: item.source_name, sourceUrl: item.source_url,
         partner: item.affiliate_link,
       };
