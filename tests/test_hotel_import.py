@@ -63,5 +63,36 @@ class HotelImportTests(unittest.TestCase):
         self.assertIsNone(module.https_url("https://user:pass@example.com"))
         self.assertEqual(module.https_url("https://example.com"), "https://example.com")
 
+    def test_mapped_hotel_areas_keep_real_way_and_relation_ids(self):
+        ring = [[72.87, 19.07], [72.88, 19.07], [72.88, 19.08],
+                [72.87, 19.08], [72.87, 19.07]]
+        cases = [
+            ("a246", "way/123", {"type": "Polygon", "coordinates": [ring]}),
+            ("a247", "relation/123", {"type": "MultiPolygon", "coordinates": [[ring]]}),
+        ]
+        for area_id, osm_id, geometry in cases:
+            with self.subTest(osm_id=osm_id):
+                record = module.convert({
+                    "type": "Feature", "id": area_id, "geometry": geometry,
+                    "properties": {"tourism": "hotel", "name": "Mapped Area Hotel", "addr:city": "Mumbai"}
+                })
+                self.assertIsNotNone(record)
+                self.assertEqual(record["source_id"], osm_id)
+                self.assertEqual(record["source_url"], "https://www.openstreetmap.org/" + osm_id)
+                self.assertTrue(19.06 < record["latitude"] < 19.09)
+                self.assertTrue(72.86 < record["longitude"] < 72.89)
+
+    def test_area_geometry_never_creates_coordinates_from_invalid_rings(self):
+        for geometry in [
+            {"type": "Polygon", "coordinates": [[]]},
+            {"type": "Polygon", "coordinates": [[[72.87,19.07],[72.88,19.07],[72.89,19.07],[72.87,19.07]]]},
+            {"type": "MultiPolygon", "coordinates": []},
+            {"type": "Point", "coordinates": [float("nan"),19]},
+        ]:
+            self.assertIsNone(module.convert({
+                "type": "Feature", "id": "a246", "geometry": geometry,
+                "properties": {"tourism": "hotel", "name": "Invalid Hotel"}
+            }))
+
 if __name__ == "__main__":
     unittest.main()
