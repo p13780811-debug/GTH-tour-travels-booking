@@ -1,7 +1,7 @@
-// Pre-launch canonical routing: never advertise an unowned domain until
-// production is explicitly released. This helper makes the future switch atomic.
+// Canonical origin: Vercel permanently redirects the apex to www.
+// Production visibility remains explicitly gated by GTH_PUBLIC_LAUNCH_ENABLED.
 export const PREVIEW_ORIGIN = "https://gth-pro.vercel.app";
-export const PRIMARY_ORIGIN = "https://gthproglobal.com";
+export const PRIMARY_ORIGIN = "https://www.gthproglobal.com";
 export function isPublicLaunch(): boolean {
   return process.env.VERCEL_ENV === "production" &&
     process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";

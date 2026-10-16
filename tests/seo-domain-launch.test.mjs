@@ -8,7 +8,7 @@ test("SEO domain selection is conditional: never prematurely index or point to u
   const root=source("src/app/layout.tsx");
   const robots=source("src/app/robots.ts");
   const sitemap=source("src/app/sitemap.ts");
-  assert.match(seo,/https:\/\/gthproglobal\.com/);
+  assert.match(seo,/PRIMARY_ORIGIN = "https:\/\/www\.gthproglobal\.com"/);
   assert.match(seo,/https:\/\/gth-pro\.vercel\.app/);
   assert.match(seo,/GTH_PUBLIC_LAUNCH_ENABLED === "true"/);
   assert.match(seo,/VERCEL_ENV === "production"/);
