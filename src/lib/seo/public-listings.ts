@@ -80,7 +80,7 @@ export function tenderMetadata(item: TenderSeoRecord | null, id: string, launche
   const maxName = Math.max(30, 112 - suffix.length);
   const shortName = clean(item.title, maxName);
   const name = clean(item.title, 250).length > maxName
-    ? (shortName.replace(/\\s+\\S*$/, "") || shortName)
+    ? (shortName.replace(/\s+\S*$/, "") || shortName)
     : shortName;
   const title = name + suffix;
   const description = `${source} procurement notice ${clean(item.source_reference, 65)} by ${clean(item.buyer, 65)} in ${country}. ${deadline ? `Deadline: ${deadline}. ` : ""}${clean(item.summary, 150)}`.slice(0, 300);
