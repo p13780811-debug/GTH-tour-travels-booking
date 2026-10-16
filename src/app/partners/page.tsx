@@ -9,7 +9,8 @@ export const metadata:Metadata={
 const pillars=[
  {Icon:Building2,title:"Real Estate Developers",desc:"Introduce properties, developments and approved inventory with evidence for marketplace review.",href:"/real-estate/post-property",action:"Submit a property"},
  {Icon:BadgeCheck,title:"Real Estate Agents",desc:"Request agency onboarding and share your verifiable property listing portfolio.",href:"/partners/apply?type=agent",action:"Agency application"},
- {Icon:Plane,title:"Travel Suppliers",desc:"Hotels, tours, transfers and transportation providers can propose source-backed integrations.",href:"/partners/apply?type=travel_supplier",action:"Supplier application"},
+ {Icon:Plane,title:"Hotel Owners & Managers",desc:"Submit real hotel inventory and original property photos for an administrator-reviewed public listing. No Google billing required.",href:"/hotels/list-your-property",action:"List your hotel"},
+ {Icon:Plane,title:"Travel Suppliers",desc:"Tours, transfers and transportation providers can propose source-backed integrations.",href:"/partners/apply?type=travel_supplier",action:"Supplier application"},
  {Icon:BriefcaseBusiness,title:"Affiliate & B2B Partners",desc:"Introduce a travel affiliate or distribution programme; commercial participation is subject to approval.",href:"/partners/apply?type=affiliate",action:"Partnership enquiry"}
 ] as const;
 export default function PartnersPage(){
