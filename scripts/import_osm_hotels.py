@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Import OSM accommodation GeoJSONSeq into the protected GTH PRO catalog.
 
-Input: 'osmium export --geometry-types=point,linestring,polygon -f geojsonseq region.osm.pbf -o hotels.geojsonseq'
+Input: 'osmium export --geometry-types=point,polygon -f geojsonseq region.osm.pbf -o hotels.geojsonseq'
 Runs locally/CI with GTH_INGESTION_ENABLED=true and server-only Supabase credentials.
 No network scraping or API quota consumption; requires an ODbL-compatible source.
 """
@@ -32,18 +32,55 @@ def https_url(value):
         return None
 
 def point_coords(geometry):
-    """Use point geometry only: never invent polygon centroids as hotel entrances."""
-    if not isinstance(geometry, dict) or geometry.get("type") != "Point":
+    """Source-derived approximate coordinate, never a hotel entrance claim.
+
+    OSM hotels can be points, closed ways or multipolygon relations.
+    An area centroid describes the mapped feature, not a confirmed entrance.
+    """
+    import math
+    if not isinstance(geometry, dict):
         return None
-    coords = geometry.get("coordinates")
-    if not isinstance(coords, list) or len(coords) < 2:
+    kind = geometry.get("type")
+    coordinates = geometry.get("coordinates")
+    if kind == "Point":
+        points = [coordinates]
+    elif kind == "Polygon":
+        points = coordinates[0] if isinstance(coordinates, list) and coordinates else []
+    elif kind == "MultiPolygon":
+        polygons = coordinates if isinstance(coordinates, list) else []
+        points = polygons[0][0] if polygons and polygons[0] else []
+    else:
         return None
-    lon, lat = coords[:2]
-    if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+    if not isinstance(points, list) or not 1 <= len(points) <= 20000:
         return None
-    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+    parsed = []
+    for point in points:
+        if not isinstance(point, list) or len(point) < 2:
+            return None
+        lon, lat = point[:2]
+        if (isinstance(lon, bool) or isinstance(lat, bool) or
+            not isinstance(lon, (int, float)) or not isinstance(lat, (int, float)) or
+            not math.isfinite(lon) or not math.isfinite(lat) or
+            not (-180 <= lon <= 180 and -90 <= lat <= 90)):
+            return None
+        parsed.append((float(lon), float(lat)))
+    if kind == "Point":
+        return parsed[0][1], parsed[0][0]
+    if len(parsed) < 4 or parsed[0] != parsed[-1]:
         return None
-    return float(lat), float(lon)
+    # Planar centroid over a small mapped accommodation footprint only.
+    area2 = cx = cy = 0.0
+    for (x0, y0), (x1, y1) in zip(parsed, parsed[1:]):
+        cross = x0 * y1 - x1 * y0
+        area2 += cross
+        cx += (x0 + x1) * cross
+        cy += (y0 + y1) * cross
+    if not math.isfinite(area2) or abs(area2) < 1e-12:
+        return None
+    lon, lat = cx / (3 * area2), cy / (3 * area2)
+    if not (math.isfinite(lat) and math.isfinite(lon) and -90 <= lat <= 90 and -180 <= lon <= 180):
+        return None
+    return lat, lon
 
 def convert(feature):
     if not isinstance(feature, dict) or feature.get("type") != "Feature":
@@ -66,6 +103,12 @@ def convert(feature):
         identifier = "node/" + identifier[1:]
     elif __import__("re").fullmatch(r"w[0-9]+", identifier):
         identifier = "way/" + identifier[1:]
+    elif __import__("re").fullmatch(r"a[1-9][0-9]*", identifier):
+        # Osmium area type_id: closed ways have 2*way_id;
+        # multipolygon relations have 2*relation_id+1.
+        area_id = int(identifier[1:])
+        identifier = ("way/" + str(area_id // 2) if area_id % 2 == 0
+                      else "relation/" + str((area_id - 1) // 2))
     # OSM identifiers must contain type and numeric id to avoid cross-type collisions.
     if not identifier or not __import__("re").fullmatch(r"(?:node|way|relation)/[0-9]+", identifier):
         return None

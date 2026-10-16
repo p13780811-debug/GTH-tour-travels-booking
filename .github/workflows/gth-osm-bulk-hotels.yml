@@ -53,23 +53,26 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            # India hotel coverage bootstrap after reviewed importer changes.
-            REGION=asia/india/western-zone
+            # Prioritize the Southern zone on the next reviewed workflow update:
+            # existing catalog already includes Western and Northern zones.
+            REGION=asia/india/southern-zone
             MODE=import
-            MAX_RECORDS=15000
+            MAX_RECORDS=25000
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
             day=$((10#$(date -u +%j)))
             hour=$((10#$(date -u +%H)))
-            if (( hour == 9 )); then
-              # Worldwide small licensed countries, selected from Geofabrik index.
+            if (( hour == 9 && day % 7 == 0 )); then
+              # Keep weekly rotating global ODbL coverage without starving India.
               slot=$(( day * 3 + hour / 8 ))
               python3 scripts/hotels/resolve_region.py --slot "$slot" > selected-region.env
               REGION="$(sed -n 's/^REGION=//p' selected-region.env)"
               COUNTRY="$(sed -n 's/^COUNTRY=//p' selected-region.env)"
             else
-              # India priority: visit six distinct official regional extracts,
-              # without treating their borders as verified hotel country metadata.
-              slot=$(( (day * 2 + (hour == 17 ? 1 : 0)) % 6 ))
+              # India-first backfill: three zone visits per day, all six in two
+              # days, followed by cyclic source refresh. No artificial hotels.
+              # Geofabrik extract borders do NOT verify individual hotel country.
+              phase=$(( hour == 1 ? 0 : hour == 9 ? 1 : 2 ))
+              slot=$(( (day * 3 + phase) % 6 ))
               case "$slot" in
                 0) REGION=asia/india/western-zone;;
                 1) REGION=asia/india/eastern-zone;;
@@ -81,7 +84,7 @@ jobs:
               COUNTRY=IN
             fi
             MODE=import
-            MAX_RECORDS=15000
+            MAX_RECORDS=25000
           else
             REGION="$REQUESTED_REGION"
             MODE="$REQUESTED_MODE"
@@ -125,14 +128,14 @@ jobs:
           curl -fL --retry 3 --proto '=https' --max-time 2400 \
             -o region.osm.pbf "https://download.geofabrik.de/$REGION-latest.osm.pbf"
           test -s region.osm.pbf
-      - name: Extract geolocated accommodation, preserving OSM IDs
+      - name: Extract source-located accommodation points and mapped areas
         shell: bash
         run: |
           set -euo pipefail
           osmium tags-filter region.osm.pbf \
             nwr/tourism=hotel,motel,hostel,guest_house,apartment,resort \
             -o accommodation.osm.pbf --overwrite
-          osmium export --add-unique-id=type_id --geometry-types=point \
+          osmium export --add-unique-id=type_id --geometry-types=point,polygon \
             -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
       - name: Secure import with GitHub OIDC
         shell: bash

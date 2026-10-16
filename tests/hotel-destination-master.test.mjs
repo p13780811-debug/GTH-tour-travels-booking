@@ -55,7 +55,7 @@ test("Priority India six-zone coverage and global scheduled licensed extracts ar
  assert.match(workflow,/india\/western-zone/);
  assert.match(workflow,/india\/southern-zone/);
  assert.match(workflow,/python3 scripts\/hotels\/resolve_region\.py/);
- assert.match(workflow,/MAX_RECORDS=15000/);
+ assert.match(workflow,/MAX_RECORDS=25000/);
  assert.match(workflow,/id-token: write/);
  assert.doesNotMatch(workflow,/secrets\.GTH_SUPABASE_INGESTION_KEY/);
 });

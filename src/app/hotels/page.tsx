@@ -87,18 +87,21 @@ function HotelsContent() {
     const [search, setSearch] = useState(initialCity);
     const [requestedCity, setRequestedCity] = useState(initialCity);
     const [nameFilter, setNameFilter] = useState(initialName);
+    const [searchName, setSearchName] = useState(initialName);
+    const [sort, setSort] = useState<"name_asc"|"name_desc">("name_asc");
+    const [sourceFilter, setSourceFilter] = useState<"all"|"partner"|"directory">("all");
     const [requestedDestination,setRequestedDestination]=useState(initialDestination);
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
-    const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category]);
+    const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category,sort,sourceFilter]);
     const activeQueryRef = useRef(queryKey);
     // Every API page MUST carry the identical search scope and filters.
     const hotelParamsFor = (pageNumber: number) => hotelSearchParams({
         destination:requestedDestination,city:requestedCity,name:nameFilter,
-        country:requestedCountry,category
+        country:requestedCountry,category,sort,source:sourceFilter
     },pageNumber);
     const selectedType = (({
         hotel:"Hotels",hostel:"Hostels",guest_house:"Guest houses",
@@ -115,6 +118,7 @@ function HotelsContent() {
         setSearch(initialCity);
         setRequestedCity(initialCity);
         setNameFilter(initialName);
+        setSearchName(initialName);
         setRequestedDestination(initialDestination);
     }, [initialCity, initialName,initialDestination]);
 
@@ -189,11 +193,25 @@ function HotelsContent() {
         const city=search.trim();
         if(city.length>80 || (city.length>0&&city.length<2))return;
         if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
-        setNameFilter("");
+        const hotelName=searchName.trim();
+        if(hotelName.length>80)return;
+        setNameFilter(hotelName);
         setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
         setRequestedCountry(city?"":selectedCountry);
+    };
+
+    const exploreIndia = (city = "") => {
+        setSearch(city);
+        setSearchName("");
+        setNameFilter("");
+        setCategory("");
+        setRequestedDestination("");
+        setRequestedCity(city);
+        setSelectedCountry("IN");
+        setRequestedCountry(city ? "" : "IN");
+        document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
     const categories = [
@@ -258,7 +276,7 @@ function HotelsContent() {
 
                     {/* SEARCH */}
                     <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_1fr_auto] gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
                                     className="text-[var(--text-soft)] shrink-0"
@@ -271,11 +289,17 @@ function HotelsContent() {
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && runSearch()
                                     }
-                                    placeholder="City (blank for visitor-country hotels)"
+                                    placeholder="City, town or neighbourhood (e.g. Candolim)"
                                     className="bg-transparent outline-none text-sm w-full min-w-0"
                                 />
                             </div>
 
+                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
+                                <Search size={18} className="shrink-0 text-[var(--text-soft)]" />
+                                <input aria-label="Hotel name" value={searchName} onChange={e=>setSearchName(e.target.value)}
+                                    onKeyDown={e=>e.key==="Enter"&&runSearch()} maxLength={80}
+                                    placeholder="Hotel name (optional)" className="bg-transparent outline-none text-sm w-full min-w-0" />
+                            </div>
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
                                 <CalendarDays
                                     className="text-[var(--text-soft)]"
@@ -311,13 +335,30 @@ function HotelsContent() {
             </section>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
-              <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
-                <span className="font-semibold">Country ISO code</span>
-                <input aria-label="Country code" maxLength={2} placeholder="Auto"
-                  className="w-16 bg-transparent uppercase text-[var(--text)] outline-none"
-                  value={selectedCountry} onChange={e=>setSelectedCountry(e.target.value.toUpperCase())}/>
-              </label>
-              <p className="mt-2 text-xs text-[var(--text-soft)]">Leave city empty and select a country; or search a city worldwide. Country detection is approximate, not GPS.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
+                  <span className="font-semibold">Country</span>
+                  <select aria-label="Country" value={selectedCountry}
+                    onChange={e=>setSelectedCountry(e.target.value)}
+                    className="min-h-8 bg-transparent text-[var(--text)] outline-none">
+                    <option value="">Automatic / worldwide</option>
+                    <option value="IN">India</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="US">United States</option>
+                    {selectedCountry&&!["IN","AE","GB","US"].includes(selectedCountry)&&<option value={selectedCountry}>{selectedCountry}</option>}
+                  </select>
+                </label>
+                <button type="button" onClick={()=>exploreIndia()}
+                  className="gth-btn-gold min-h-11 rounded-xl px-5 py-2 text-sm font-semibold">Explore India hotels</button>
+              </div>
+              <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
+              <div aria-label="Popular Indian destinations" className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                {["Mumbai","Goa","New Delhi","Bengaluru","Jaipur","Kolkata","Chennai","Candolim"].map(city=>
+                  <button type="button" key={city} onClick={()=>exploreIndia(city)}
+                    className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium hover:opacity-80">{city}</button>
+                )}
+              </div>
             </section>
             <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
                 activeQueryRef.current = "";
@@ -456,6 +497,28 @@ function HotelsContent() {
                             </div>
                         </div>
 
+                        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+                            <label className="flex items-center gap-2 text-sm">
+                              <span className="font-semibold">Sort</span>
+                              <select aria-label="Sort hotel listings" value={sort}
+                                onChange={e=>setSort(e.target.value as "name_asc"|"name_desc")}
+                                className="min-h-9 bg-transparent text-[var(--text)]">
+                                <option value="name_asc">Hotel name A–Z</option>
+                                <option value="name_desc">Hotel name Z–A</option>
+                              </select>
+                            </label>
+                            <label className="flex items-center gap-2 text-sm">
+                              <span className="font-semibold">Listing source</span>
+                              <select aria-label="Hotel source" value={sourceFilter}
+                                onChange={e=>setSourceFilter(e.target.value as "all"|"partner"|"directory")}
+                                className="min-h-9 bg-transparent text-[var(--text)]">
+                                <option value="all">All public listings</option>
+                                <option value="partner">Approved booking partners</option>
+                                <option value="directory">OSM hotel directory</option>
+                              </select>
+                            </label>
+                            <span className="text-xs text-[var(--text-soft)]">Real source records · Prices, reviews and availability require supplier verification</span>
+                        </div>
                         {/* HOTEL CARDS */}
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
                         {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}

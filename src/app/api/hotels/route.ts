@@ -38,6 +38,10 @@ export async function GET(req: Request) {
   const detected = req.headers.get("x-vercel-ip-country") ?? "";
   const country = rawCountry ? rawCountry.trim().toUpperCase() : (!rawCity && !rawName && /^[A-Z]{2}$/.test(detected) ? detected : "");
   const category = searchParams.get("category") ?? "";
+  const source = searchParams.get("source") ?? "all";
+  const sort = searchParams.get("sort") ?? "name_asc";
+  if (!["all","partner","directory"].includes(source) || !["name_asc","name_desc"].includes(sort))
+    return NextResponse.json({error:"Invalid source or sort"},{status:400,headers:safeHeaders});
   if ((rawCountry && !/^[A-Z]{2}$/.test(rawCountry.toUpperCase())) ||
       (category && !["hotel","motel","hostel","guest_house","apartment","resort"].includes(category)))
     return NextResponse.json({error:"Invalid country or accommodation type"},{status:400,headers:safeHeaders});
@@ -78,13 +82,16 @@ export async function GET(req: Request) {
     const safeLike = (value: string) => "%" + value.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
     const cityLike = matchingCity ? safeLike(matchingCity) : "";
     const nameLike = name ? safeLike(name) : "";
+    const ascending = sort !== "name_desc";
     let supplierCountQuery = supabase.from("hotels").select("id", { count: "exact", head: true }).eq("is_public", true).eq("media_rights_verified", true).not("source_name","is",null);
     let catalogCountQuery = supabase.from("hotel_catalog").select("source_id", { count: "exact", head: true });
     if (matchingCity) {
       supplierCountQuery = supplierCountQuery.ilike("city",cityLike);
-      catalogCountQuery = catalogCountQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
+      catalogCountQuery = catalogCountQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike+",address.ilike."+cityLike+",name.ilike."+cityLike);
     }
     if (name) { supplierCountQuery = supplierCountQuery.ilike("name", nameLike); catalogCountQuery = catalogCountQuery.ilike("name", nameLike); }
+    if (source === "partner") catalogCountQuery = catalogCountQuery.eq("source","__excluded__");
+    if (source === "directory") supplierCountQuery = supplierCountQuery.eq("city","__excluded__");
     if (country) catalogCountQuery = catalogCountQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
     if (category) catalogCountQuery = catalogCountQuery.eq("category",category);
     if (country) supplierCountQuery = supplierCountQuery.eq("city","__country_not_supported__");
@@ -102,10 +109,11 @@ export async function GET(req: Request) {
       let supplierQuery = supabase.from("hotels")
         .select("id,name,city,image_url,affiliate_link,is_public")
         .eq("is_public", true).eq("media_rights_verified",true).not("source_name","is",null);
+      if (source === "directory") supplierQuery = supplierQuery.eq("city","__excluded__");
       if (matchingCity) supplierQuery = supplierQuery.ilike("city", cityLike);
       if (name) supplierQuery = supplierQuery.ilike("name", nameLike);
       if (country || (category && category!=="hotel")) supplierQuery=supplierQuery.eq("city","__unavailable__");
-      const { data, error } = await supplierQuery.order("name").order("id")
+      const { data, error } = await supplierQuery.order("name",{ascending}).order("id",{ascending})
         .range(firstWindow.supplierStart, firstWindow.supplierStart + firstWindow.supplierTake - 1);
       if (error) supplierFailed = true;
       else supplierRows = data ?? [];
@@ -119,11 +127,12 @@ export async function GET(req: Request) {
     let catalogRows: Array<{ source_id: string; name: string; city: string | null; region:string|null; category: string; image_url: string | null; country_code:string|null;extract_country_hint:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
       let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,extract_country_hint,source_url,website,address,latitude,longitude,updated_at");
-      if (matchingCity) catalogQuery = catalogQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike);
+      if (source === "partner") catalogQuery = catalogQuery.eq("source","__excluded__");
+      if (matchingCity) catalogQuery = catalogQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike+",address.ilike."+cityLike+",name.ilike."+cityLike);
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
       if (country) catalogQuery = catalogQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
       if (category) catalogQuery = catalogQuery.eq("category",category);
-      const { data, error } = await catalogQuery.order("name").order("source_id")
+      const { data, error } = await catalogQuery.order("name",{ascending}).order("source_id",{ascending})
         .range(window.catalogStart, window.catalogStart + window.catalogTake - 1);
       if (error) catalogFailed = true;
       else catalogRows = data ?? [];

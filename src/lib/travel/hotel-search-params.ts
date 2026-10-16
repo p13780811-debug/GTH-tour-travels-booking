@@ -7,6 +7,8 @@ export type HotelSearchScope = {
   name: string;
   country: string;
   category: string;
+  sort?: "name_asc" | "name_desc";
+  source?: "all" | "partner" | "directory";
 };
 export function hotelSearchParams(scope: HotelSearchScope, page: number): URLSearchParams {
   if(!Number.isSafeInteger(page) || page < 1 || page > 100) {
@@ -18,5 +20,7 @@ export function hotelSearchParams(scope: HotelSearchScope, page: number): URLSea
   if(scope.name)params.set("name",scope.name);
   if(scope.country)params.set("country",scope.country);
   if(scope.category)params.set("category",scope.category);
+  if(scope.sort && scope.sort !== "name_asc")params.set("sort",scope.sort);
+  if(scope.source && scope.source !== "all")params.set("source",scope.source);
   return params;
 }
