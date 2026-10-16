@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {cache} from "react";
 import JsonLd from "@/components/seo/JsonLd";
+import GoogleHotelPhoto from "@/components/hotel/GoogleHotelPhoto";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import Link from "next/link";
@@ -99,6 +100,11 @@ export default async function HotelStay({params}:PageProps){
         <ImageOff size={42}/><span className="text-sm">Hotel photo pending source permission</span>
       </div>}
     </div>
+    {!hotel.image && hotel.source==="OpenStreetMap" &&
+      process.env.GTH_GOOGLE_PLACES_ON_DEMAND_ENABLED==="true" &&
+      !!process.env.GOOGLE_PLACES_API_KEY && !!process.env.UPSTASH_REDIS_REST_URL &&
+      !!process.env.UPSTASH_REDIS_REST_TOKEN &&
+      <GoogleHotelPhoto hotelId={id}/>}
     <div className="mt-7 grid gap-4 sm:grid-cols-3">
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Property type</p><p className="mt-2 font-semibold capitalize">{hotel.category.replaceAll("_"," ")}</p></div>
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Directory source</p><p className="mt-2 font-semibold">{hotel.source}</p></div>
