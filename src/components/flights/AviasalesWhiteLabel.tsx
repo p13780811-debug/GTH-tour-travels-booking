@@ -16,7 +16,6 @@ import { ArrowUpRight, ShieldCheck } from "lucide-react";
  */
 export const WL_ID = 23459;
 export const WL_SCRIPT = "https://tpwidg.com/wl_web/main.js?wl_id=23459";
-const DOCUMENTED_CDN = "https://tpwgts.com/wl_web/main.js?wl_id=23459";
 
 type WidgetState = "loading" | "loaded" | "error";
 
