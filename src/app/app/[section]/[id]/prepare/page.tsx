@@ -14,7 +14,7 @@ export default async function AppPreparationPage({params}:Props){
  if(!isMobileSection(section)||section==="flights"||id.length>160)notFound();
  const record=await loadAppDetail(section,id);
  if(!record)notFound();
- const kind=record.kind;
+ const kind=record.kind==="destination"?"destinations":record.kind;
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(96px+env(safe-area-inset-bottom))] text-[var(--text)]">
    <MobileAppHeader/>
    <div className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
