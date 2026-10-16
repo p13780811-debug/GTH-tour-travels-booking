@@ -15,7 +15,7 @@ export default function LayoutWrapper({
     // ✅ Real estate detection
     const isRealEstate = pathname?.startsWith("/real-estate");
     const isFlagship = pathname === "/";
-    const isAppHome = pathname === "/app";
+    const isAppHome = pathname === "/app" || Boolean(pathname?.startsWith("/app/"));
 
     return (
         <>
