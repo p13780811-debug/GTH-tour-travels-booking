@@ -335,13 +335,30 @@ function HotelsContent() {
             </section>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
-              <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
-                <span className="font-semibold">Country ISO code</span>
-                <input aria-label="Country code" maxLength={2} placeholder="Auto"
-                  className="w-16 bg-transparent uppercase text-[var(--text)] outline-none"
-                  value={selectedCountry} onChange={e=>setSelectedCountry(e.target.value.toUpperCase())}/>
-              </label>
-              <p className="mt-2 text-xs text-[var(--text-soft)]">Leave city empty and select a country; or search a city worldwide. Country detection is approximate, not GPS.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
+                  <span className="font-semibold">Country</span>
+                  <select aria-label="Country" value={selectedCountry}
+                    onChange={e=>setSelectedCountry(e.target.value)}
+                    className="min-h-8 bg-transparent text-[var(--text)] outline-none">
+                    <option value="">Automatic / worldwide</option>
+                    <option value="IN">India</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="US">United States</option>
+                    {selectedCountry&&!["IN","AE","GB","US"].includes(selectedCountry)&&<option value={selectedCountry}>{selectedCountry}</option>}
+                  </select>
+                </label>
+                <button type="button" onClick={()=>exploreIndia()}
+                  className="gth-btn-gold min-h-11 rounded-xl px-5 py-2 text-sm font-semibold">Explore India hotels</button>
+              </div>
+              <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
+              <div aria-label="Popular Indian destinations" className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                {["Mumbai","Goa","New Delhi","Bengaluru","Jaipur","Kolkata","Chennai","Candolim"].map(city=>
+                  <button type="button" key={city} onClick={()=>exploreIndia(city)}
+                    className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium hover:opacity-80">{city}</button>
+                )}
+              </div>
             </section>
             <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
                 activeQueryRef.current = "";
@@ -480,6 +497,28 @@ function HotelsContent() {
                             </div>
                         </div>
 
+                        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+                            <label className="flex items-center gap-2 text-sm">
+                              <span className="font-semibold">Sort</span>
+                              <select aria-label="Sort hotel listings" value={sort}
+                                onChange={e=>setSort(e.target.value as "name_asc"|"name_desc")}
+                                className="min-h-9 bg-transparent text-[var(--text)]">
+                                <option value="name_asc">Hotel name A–Z</option>
+                                <option value="name_desc">Hotel name Z–A</option>
+                              </select>
+                            </label>
+                            <label className="flex items-center gap-2 text-sm">
+                              <span className="font-semibold">Listing source</span>
+                              <select aria-label="Hotel source" value={sourceFilter}
+                                onChange={e=>setSourceFilter(e.target.value as "all"|"partner"|"directory")}
+                                className="min-h-9 bg-transparent text-[var(--text)]">
+                                <option value="all">All public listings</option>
+                                <option value="partner">Approved booking partners</option>
+                                <option value="directory">OSM hotel directory</option>
+                              </select>
+                            </label>
+                            <span className="text-xs text-[var(--text-soft)]">Real source records · Prices, reviews and availability require supplier verification</span>
+                        </div>
                         {/* HOTEL CARDS */}
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
                         {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
