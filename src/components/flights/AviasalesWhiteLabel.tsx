@@ -1,56 +1,99 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 
 /**
- * The user's Travelpayouts White Label Web widget, ID 23459.
- * Two provider-owned target elements MUST be present on the same page before
- * its module loads. No API token or paid-fare cache is sent to this widget.
+ * Travelpayouts White Label Web #23459 runs ONLY inside this disposable iframe.
  *
- * The user-provided CDN is tried first. The documented Travelpayouts CDN
- * is used only if its script fails to load, never simultaneously.
+ * The provider module may add CSS, fonts or global event listeners to its own
+ * document. Loading it in document.head of the Next.js app would leave those
+ * side effects behind after client-side navigation. The iframe confines them to
+ * its own document, destroyed by the browser when Flights unmounts.
+ *
+ * sandbox intentionally omits allow-same-origin: provider JavaScript must not
+ * access the GTH PRO application's DOM, cookies or localStorage.
  */
 export const WL_ID = 23459;
 export const WL_SCRIPT = "https://tpwidg.com/wl_web/main.js?wl_id=23459";
 const DOCUMENTED_CDN = "https://tpwgts.com/wl_web/main.js?wl_id=23459";
 
-type LoadState = "loading" | "loaded" | "error";
+type WidgetState = "loading" | "loaded" | "error";
+
+// Self-contained document with both Travelpayouts targets and no global CSS.
+// Fixed public script URLs are the only executable remote sources.
+const whiteLabelDocument = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aviasales flight search</title>
+</head>
+<body style="margin:0">
+<div id="tpwl-search"></div>
+<div id="tpwl-tickets"></div>
+<script>
+(function () {
+  var channel = "gth-tpwl-frame-23459";
+  function emit(type, height) {
+    window.parent.postMessage({ channel: channel, type: type, height: height }, "*");
+  }
+  function measure() {
+    var height = Math.max(
+      document.body.scrollHeight || 0,
+      document.documentElement.scrollHeight || 0,
+      360
+    );
+    emit("height", height);
+  }
+  if (window.ResizeObserver) {
+    var observer = new ResizeObserver(measure);
+    observer.observe(document.body);
+    observer.observe(document.documentElement);
+  }
+  window.addEventListener("load", measure);
+  function loadProvider(url, retry) {
+    var script = document.createElement("script");
+    script.type = "module";
+    script.async = true;
+    script.src = url;
+    script.setAttribute("data-gth-white-label", "23459");
+    script.onload = function () { emit("loaded"); measure(); };
+    script.onerror = function () {
+      script.remove();
+      if (retry) loadProvider("https://tpwgts.com/wl_web/main.js?wl_id=23459", false);
+      else emit("error");
+    };
+    document.head.appendChild(script);
+  }
+  loadProvider("https://tpwidg.com/wl_web/main.js?wl_id=23459", true);
+  measure();
+})();
+</script>
+</body>
+</html>`;
 
 export default function AviasalesWhiteLabel() {
-  const [state, setState] = useState<LoadState>("loading");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [status, setStatus] = useState<WidgetState>("loading");
+  const [height, setHeight] = useState(400);
 
   useEffect(() => {
-    let disposed = false;
-    let current: HTMLScriptElement | null = null;
-    function load(url: string, fallback: boolean) {
-      if (disposed) return;
-      const script = document.createElement("script");
-      current = script;
-      script.type = "module";
-      script.async = true;
-      script.src = url;
-      script.setAttribute("data-gth-white-label", "23459");
-      script.onload = () => { if (!disposed) setState("loaded"); };
-      script.onerror = () => {
-        if (disposed) return;
-        script.remove();
-        if (fallback) load(DOCUMENTED_CDN, false);
-        else setState("error");
-      };
-      document.head.appendChild(script);
-    }
-
-    // The form/results containers are already rendered in the tree.
-    load(WL_SCRIPT, true);
-    return () => {
-      disposed = true;
-      if (current) {
-        current.onload = null;
-        current.onerror = null;
-        current.remove();
+    function handleWidgetMessage(event: MessageEvent) {
+      // Opaque sandboxed frame sends origin="null"; event.source is checked.
+      if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
+      const data = event.data;
+      if (!data || typeof data !== "object" || data.channel !== "gth-tpwl-frame-23459") return;
+      if (data.type === "height" && typeof data.height === "number" && Number.isFinite(data.height)) {
+        setHeight(Math.max(360, Math.min(3200, Math.ceil(data.height))));
+      } else if (data.type === "loaded") {
+        setStatus("loaded");
+      } else if (data.type === "error") {
+        setStatus("error");
       }
-    };
+    }
+    window.addEventListener("message", handleWidgetMessage);
+    return () => window.removeEventListener("message", handleWidgetMessage);
   }, []);
 
   return (
@@ -61,24 +104,33 @@ export default function AviasalesWhiteLabel() {
         Search flights and view provider results
       </h2>
       <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-        Use the flight form below to choose airports, dates and passengers. Search results appear beneath
-        the form when returned by the White Label provider. This is supplier search, not our old historic fare cache.
+        Choose airports, dates and passengers below. Available supplier search results appear
+        beneath the form. The separate historical fare cache is not used for booking.
       </p>
-      {state === "loading" && (
-        <p role="status" className="mt-4 animate-pulse text-sm text-[var(--text-soft)]">Loading Aviasales flight search…</p>
+      {status === "loading" && (
+        <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading Aviasales flight search…</p>
       )}
-      {state === "error" && (
+      {status === "error" && (
         <p role="alert" className="mt-4 rounded-xl border border-[var(--border)] p-4 text-sm text-[var(--text-soft)]">
-          The provider flight search could not load. Please check ad blockers or open the verified affiliate provider link below.
+          The supplier flight tool could not load in the isolated frame. You can still use the
+          approved Aviasales provider link below to search and book.
         </p>
       )}
-      <div id="tpwl-search" className="mt-5 min-h-32 min-w-0 max-w-full [&_iframe]:max-w-full" aria-label="Travelpayouts live flight search form" />
-      <div id="tpwl-tickets" className="mt-4 min-w-0 max-w-full [&_iframe]:max-w-full" aria-label="Travelpayouts flight search results" />
+      <iframe
+        ref={iframeRef}
+        srcDoc={whiteLabelDocument}
+        title="Aviasales flight search and results"
+        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+        referrerPolicy="strict-origin-when-cross-origin"
+        loading="eager"
+        className="mt-4 w-full min-w-0 rounded-xl border-0 bg-white"
+        style={{ height: height + "px" }}
+      />
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
         <p className="flex max-w-2xl items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
           <ShieldCheck className="mt-0.5 shrink-0" size={15} aria-hidden="true" />
-          Provider search, pricing, booking and support are operated independently. No ticket is issued by GTH PRO.
-          Availability and final fare are established by the seller, not this page.
+          Search, prices, booking and support are operated by the independent supplier. GTH PRO
+          does not issue flight tickets; the seller confirms the final fare and availability.
         </p>
         <a href="/flights/out/aviasales" target="_blank" rel="noopener noreferrer sponsored"
           className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
