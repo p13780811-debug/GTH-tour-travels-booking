@@ -25,7 +25,7 @@ export default function TransfersPage() {
         "Review the final price, refund policy and provider support contact before paying.",
       ]}
       partners={[
-        { name: "Welcome Pickups", url: "https://www.welcomepickups.com/", description: "Explore airport pickup services in supported destinations and complete booking on the provider website." },
+        { name: "Welcome Pickups · Affiliate", url: "https://tpo.lv/GFuzmgYk", description: "Explore airport pickup services with the supplied affiliate link; final availability and booking conditions are determined by the provider." },
       ]}
     >
       <AirportJourneyServices />
