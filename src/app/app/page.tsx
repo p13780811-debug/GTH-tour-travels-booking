@@ -45,7 +45,7 @@ export default async function MobileAppHome(){
    <p className="mt-2 max-w-lg text-xs leading-5 text-[var(--text-soft)]">
     Travel, stays, property and worldwide tenders—all in one mobile hub.
    </p>
-   <div className="mt-3 max-w-sm"><AppInstall/></div>
+   <div className="mt-3 max-w-sm"><AppInstall /></div>
   </section>
 
   <nav aria-label="Quick app services" className="mt-3 flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
