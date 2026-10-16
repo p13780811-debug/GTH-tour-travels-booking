@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, RefreshCw, ShieldCheck } from "lucide-react";
+import { useEffect } from "react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 /**
  * Original Travelpayouts WL Web Widget #23459 integration.
@@ -16,8 +16,6 @@ import { ArrowRight, ArrowUpRight, RefreshCw, ShieldCheck } from "lucide-react";
 export const WL_ID = 23459;
 export const WL_SCRIPT = "https://tpwidg.com/wl_web/main.js?wl_id=23459";
 const FALLBACK_SCRIPT = "https://tpwgts.com/wl_web/main.js?wl_id=23459";
-
-type LoadState = "loading" | "ready" | "error";
 
 function isSupplierHeadAsset(node: HTMLElement): boolean {
   if (!(node instanceof HTMLElement)) return false;
@@ -39,10 +37,6 @@ function isSupplierHeadAsset(node: HTMLElement): boolean {
 }
 
 export default function AviasalesWhiteLabel({ isResultsView = false }: { isResultsView?: boolean }) {
-  const [status, setStatus] = useState<LoadState>("loading");
-  const searchRef = useRef<HTMLDivElement>(null);
-  const ticketsRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     let disposed = false;
     let currentScript: HTMLScriptElement | null = null;
@@ -123,37 +117,16 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
     });
     headObserver.observe(document.head, { childList: true, subtree: true, characterData: true });
 
-    // The WL vendor may render nested divs and upgrade its form asynchronously.
-    // A previous selector-only MutationObserver produced "unavailable" even
-    // while the visible blue Search flights form had already appeared.
+    // Only used to avoid initializing a second vendor copy after a partial load.
+    // No GTH PRO loading/error state or polling: the supplier owns its search UI.
     function hasProviderContent() {
-      for (const root of [searchRef.current, ticketsRef.current]) {
-        if (!root) continue;
-        if (root.querySelector("form, input, button, select, iframe, [role='combobox'], [role='button']")) {
-          return true;
-        }
-        // Some vendor custom elements expose text and multiple nested nodes
-        // before native form controls are added.
-        if (root.querySelectorAll("*").length >= 4 &&
-            (root.textContent || "").trim().length >= 12) return true;
-      }
-      return false;
+      return ["tpwl-search", "tpwl-tickets"].some((id) => {
+        const target = document.getElementById(id);
+        return Boolean(target?.childElementCount || target?.textContent?.trim());
+      });
     }
 
-    function reconcileStatus() {
-      if (!disposed && hasProviderContent()) setStatus("ready");
-    }
-
-    const contentObserver = new MutationObserver(reconcileStatus);
-    if (searchRef.current) contentObserver.observe(searchRef.current, { childList: true, subtree: true, characterData: true });
-    if (ticketsRef.current) contentObserver.observe(ticketsRef.current, { childList: true, subtree: true, characterData: true });
-    // Poll briefly because some suppliers render through portals or mutate
-    // properties without inserting observable nodes. This also clears any
-    // stale error when the form appears after the fallback deadline.
-    const healthCheck = window.setInterval(reconcileStatus, 750);
-    const timeout = window.setTimeout(() => {
-      if (!disposed && !hasProviderContent()) setStatus("error");
-    }, 20_000);
+    let fallbackTimer: number | undefined;
 
     function load(url: string, canRetry: boolean) {
       if (disposed) return;
@@ -163,26 +136,21 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
       script.src = url;
       script.setAttribute("data-gth-white-label", String(WL_ID));
       currentScript = script;
-      script.onload = reconcileStatus;
       script.onerror = () => {
         script.remove();
         if (disposed) return;
         // A supplier module can build its UI before a later subresource fails.
         // Never start a SECOND TPWL instance over an already rendered form.
         if (hasProviderContent()) {
-          reconcileStatus();
           return;
         }
         if (canRetry) {
           // Allow asynchronous UI rendering to finish before the fallback CDN;
           // two live White Label instances can inject duplicate global styles.
-          window.setTimeout(() => {
+          fallbackTimer = window.setTimeout(() => {
             if (disposed) return;
-            if (hasProviderContent()) reconcileStatus();
-            else load(FALLBACK_SCRIPT, false);
+            if (!hasProviderContent()) load(FALLBACK_SCRIPT, false);
           }, 1200);
-        } else if (!hasProviderContent()) {
-          setStatus("error");
         }
       };
       document.head.appendChild(script);
@@ -197,9 +165,7 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
         if (initialConfiguration === undefined) delete configuredWindow.TPWL_CONFIGURATION;
         else configuredWindow.TPWL_CONFIGURATION = initialConfiguration;
       }
-      window.clearTimeout(timeout);
-      window.clearInterval(healthCheck);
-      contentObserver.disconnect();
+      if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer);
       headObserver.disconnect();
       if (currentScript) {
         currentScript.onload = null;
@@ -245,35 +211,10 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
         </div>
       )}
 
-      {!isResultsView && status === "loading" && (
-        <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">
-          Loading flight search…
-        </p>
-      )}
-      {!isResultsView && status === "error" && (
-        <div role="alert" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
-          <h3 className="text-base font-semibold">Flight search is unavailable right now</h3>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-            The supplier search form has not appeared. You can book directly with Aviasales
-            or refresh this page to retry loading the White Label.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            <a href="/flights/out/aviasales" target="_blank" rel="noopener noreferrer sponsored"
-              className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-              Open Aviasales flight search <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
-            <button type="button" onClick={() => window.location.reload()}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
-              <RefreshCw size={16} aria-hidden="true" /> Reload flight search
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div id="tpwl-search" ref={searchRef}
+      <div id="tpwl-search"
         className="mt-5 min-h-24 min-w-0 max-w-full [&_iframe]:max-w-full"
         aria-label="Live Aviasales flight search form" />
-      <div id="tpwl-tickets" ref={ticketsRef}
+      <div id="tpwl-tickets"
         className="mt-4 min-w-0 max-w-full [&_iframe]:max-w-full"
         aria-label="Live Aviasales flight search results" />
 
