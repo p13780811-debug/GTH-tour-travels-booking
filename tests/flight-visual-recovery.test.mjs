@@ -1,21 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
 
-test("flight-only styles restore modern type without editing global ecosystem CSS", () => {
-  const css = read("src/app/flights/flights.css");
-  const layout = read("src/app/flights/layout.tsx");
-  const page = read("src/app/flights/page.tsx");
-  assert.match(layout, /import "\.\/flights\.css"/);
-  assert.match(page, /className="gth-flights-root/);
-  assert.match(css, /font-family: var\(--font-geist-sans/);
-  assert.match(css, /\.gth-flights-root h1/);
-  assert.match(css, /\.gth-flights-root h2/);
-  assert.match(css, /nav\[aria-label="GTH PRO mobile app navigation"\]/);
-  assert.match(css, /@media \(min-width: 768px\)/);
-  assert.doesNotMatch(css, /@import "tailwindcss"|\.gth-btn-gold \{|\.gth-master-home \{/);
+test("root body respects Noto Sans design font instead of overriding all travel pages with Cinzel", () => {
+  const root = read("src/app/layout.tsx");
+  const global = read("src/app/globals.css");
+  const estate = read("src/components/real-estate/Listing.module.css");
+  const flightLayout = read("src/app/flights/layout.tsx");
+  const flightPage = read("src/app/flights/page.tsx");
+  const flightService = read("src/components/flights/FlightJourneyServices.tsx");
+  assert.match(root, /Noto_Sans/);
+  assert.match(root, /\$\{notoSans\.className\}/);
+  assert.doesNotMatch(root, /Cinzel|cinzel\.className/);
+  assert.match(global, /@apply font-sans/);
+  assert.match(estate, /\.estateScope \{ font-family: var\(--font-sans\)/);
+  assert.doesNotMatch(flightLayout, /flights\.css/);
+  assert.ok(!existsSync(new URL("../src/app/flights/flights.css", import.meta.url)), "No manual Flights typography stylesheet");
+  assert.doesNotMatch(flightPage, /gth-flights-root|gth-flight-hero-photo|gth-flight-shell/);
+  assert.match(flightPage, /mx-auto w-full max-w-7xl/);
+  assert.match(flightService, /aspect-\[16\/9\]/);
 });
 
 test("flight search stays primary with human-readable premium hero and scoped nav", () => {
