@@ -5,9 +5,8 @@ import {
   Ticket, TrainFront, Users, Wifi,
 } from "lucide-react";
 
-// Provider links below are public provider pages, NOT Travelpayouts affiliate
-// tracking links unless explicitly marked "partner". Do not imply approvals,
-// prices, availability, or commission for links without program-specific IDs.
+// Only publisher-supplied links are marked "partner". Other provider links
+// remain clearly labeled independent; do not imply affiliate attribution.
 const stages = [
   {
     id: "before-flight",
@@ -15,10 +14,11 @@ const stages = [
     title: "Prepare for your flight",
     services: [
       { name: "Flight search", detail: "Find your flight and check the booking provider's final fare.", href: "/flights", Icon: Plane, kind: "internal" },
-      { name: "Flight delay compensation", detail: "Check possible compensation for eligible delayed or cancelled flights with AirHelp.", href: "https://airhelp.tpo.lv/W9baN8JY", Icon: ShieldCheck, kind: "partner" },
+      { name: "AirHelp compensation", detail: "Review whether eligible flight delays or cancellations qualify for AirHelp claims.", href: "https://airhelp.tpo.lv/W9baN8JY", Icon: ShieldCheck, kind: "partner" },
+      { name: "Compensair claims", detail: "Explore flight disruption compensation options and provider eligibility requirements.", href: "https://compensair.tpo.lv/s1kibgeh", Icon: ShieldCheck, kind: "partner" },
       { name: "Travel insurance", detail: "Review policy exclusions, coverage and insurer terms before choosing a plan.", href: "/insurance", Icon: BriefcaseMedical, kind: "internal" },
       { name: "Airport lounges", detail: "Find lounge access options; membership and entry restrictions apply.", href: "https://www.prioritypass.com/en-GB/airport-lounges", Icon: Users, kind: "provider" },
-      { name: "Travel eSIM", detail: "Check device compatibility, data limits and coverage before purchasing.", href: "https://www.airalo.com/global-esim", Icon: Wifi, kind: "provider" },
+      { name: "Yesim travel eSIM", detail: "Check destination data coverage, eSIM support and plan terms through the Yesim affiliate link.", href: "https://yesim.tpo.lv/yZBVdtqT", Icon: Wifi, kind: "partner" },
     ],
   },
   {
@@ -26,11 +26,12 @@ const stages = [
     eyebrow: "At the airport",
     title: "Transfers and terminal essentials",
     services: [
-      { name: "Airport transfers", detail: "Open the embedded Travelpayouts pickup and transfer widgets.", href: "#transfer-provider-heading", Icon: CarFront, kind: "internal" },
-      { name: "Alternative pickup", detail: "Check pickup service and destination coverage with Welcome Pickups.", href: "https://tpo.lv/GFuzmgYk", Icon: MapPinned, kind: "partner" },
-      { name: "Car rental", detail: "Browse provider rental offers, deposits and driving-licence requirements.", href: "https://in.trip.com/carhire/", Icon: CarFront, kind: "provider" },
+      { name: "Kiwitaxi & intui.travel", detail: "Open the embedded Travelpayouts airport transfer and pickup widgets.", href: "#transfer-provider-heading", Icon: CarFront, kind: "internal" },
+      { name: "Welcome Pickups", detail: "Check pickup service and destination coverage with Welcome Pickups.", href: "https://tpo.lv/GFuzmgYk", Icon: MapPinned, kind: "partner" },
+      { name: "GetTransfer.com", detail: "Explore third-party transfers and compare supplier service conditions.", href: "https://gettransfer.tpo.lv/jpv6nsqO", Icon: CarFront, kind: "partner" },
+      { name: "Car rentals (QEEQ & Localrent)", detail: "Browse dedicated GTH PRO car-hire widgets; compare deposits and licence requirements.", href: "/cars", Icon: CarFront, kind: "internal" },
       { name: "Airport parking", detail: "Check available parking at your departure airport.", href: "https://www.parkvia.com/en", Icon: CircleParking, kind: "provider" },
-      { name: "Luggage storage", detail: "Find third-party bag-storage locations and review their conditions.", href: "https://radicalstorage.com/", Icon: Luggage, kind: "provider" },
+      { name: "Radical Storage", detail: "Find luggage-storage locations and review booking terms through the supplied affiliate link.", href: "https://radicalstorage.tpo.lv/iDuI1UD0", Icon: Luggage, kind: "partner" },
     ],
   },
   {
