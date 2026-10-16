@@ -32,16 +32,16 @@ test("App detail and workflow stay within mobile route; full website only via ex
 test("App installation is PWA only and does not make false Play Store listing claims",()=>{
  const manifest=file("src/app/manifest.ts");
  const install=file("src/components/mobile/AppInstall.tsx");
- assert.match(manifest,/start_url: "\\/app"/);
- assert.match(manifest,/scope: "\\/app\\/"/);
+ assert.ok(manifest.includes('start_url: "/app"'));
+ assert.ok(manifest.includes('scope: "/app/"'));
  assert.match(manifest,/GTH PRO/);
  assert.match(install,/beforeinstallprompt/);
- assert.doesNotMatch(manifest,/play\\.google\\.com/);
+ assert.ok(!manifest.includes("play.google.com"));
 });
 test("Website styling and Real Estate routes stay outside app implementation",()=>{
  const routes=file("src/lib/mobile/routes.ts");
  const layout=file("src/components/LayoutWrapper.tsx");
  assert.match(routes,/Routes intentionally contained in the installable app shell/);
  assert.match(layout,/isAppHome/);
- assert.match(routes,/\/app\\/property/);
+ assert.ok(routes.includes("/app/property"));
 });
