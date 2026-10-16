@@ -37,6 +37,7 @@ import EstateHeader from "@/components/real-estate/EstateHeader"
 export default function Navbar() {
     const pathname = usePathname()
     if (pathname === "/" || pathname === "/app") return null;
+    if (pathname?.startsWith("/app/")) return null;
     return pathname === "/real-estate" || pathname?.startsWith("/real-estate/") ? <EstateHeader /> : <EcosystemNavbar />
 }
 

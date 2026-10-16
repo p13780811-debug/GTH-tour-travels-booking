@@ -10,7 +10,8 @@ test("Mobile home is source-backed and hero is compact, without 3 giant vertical
  assert.match(page,/MobileDiscoveryRail kind="hotel"/);
  assert.match(page,/MobileDiscoveryRail kind="property"/);
  assert.match(page,/MobileDiscoveryRail kind="tender"/);
- assert.match(page,/\/images\/gth-logo\.png/);
+ assert.match(page,/MobileAppHeader/);
+ assert.match(readFileSync(new URL("../src/components/mobile/MobileAppHeader.tsx",import.meta.url),"utf8"),/\/images\/gth-logo\.png/);
  assert.match(page,/Discover more\. Scroll less\./);
  assert.doesNotMatch(page,/One app\. Three worlds\./);
  assert.doesNotMatch(page,/h-44 overflow-hidden sm:h-52/);
