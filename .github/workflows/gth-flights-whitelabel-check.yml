@@ -12,7 +12,8 @@ on:
       - src/components/flights/**
       - src/lib/flights/**
       - tests/flight-marketplace.test.mjs
-      - tests/flight-whitelabel-release.test.mjs
+      - tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs
+      - tests/flight-whitelabel-isolation.test.mjs
       - .github/workflows/gth-flights-whitelabel-check.yml
   workflow_dispatch:
 
