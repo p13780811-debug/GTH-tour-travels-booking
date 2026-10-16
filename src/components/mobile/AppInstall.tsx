@@ -48,9 +48,14 @@ export default function AppInstall() {
     if (!prompt) { setInstructions(true); return; }
     pending.current = null;
     setAvailable(false);
-    await prompt.prompt();
-    const outcome = await prompt.userChoice;
-    if (outcome !== "accepted") setInstructions(true);
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome !== "accepted") setInstructions(true);
+    } catch {
+      // Browser installability is platform-controlled; provide manual instructions.
+      setInstructions(true);
+    }
   }
 
   if (installed) return <p className="text-xs font-semibold text-[var(--text-soft)]">App mode active on this device</p>;
