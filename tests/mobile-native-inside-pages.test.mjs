@@ -25,7 +25,7 @@ test("App detail and workflow stay within mobile route; full website only via ex
  assert.match(prepare,/MobilePreparation/);
  assert.match(prepare,/MobileAppHeader/);
  assert.match(workflow,/TASKS=\{/);
- for(const kind of ["hotels","property","tenders","destinations"])assert.match(workflow,new RegExp(kind+":\\\\["));
+ for(const kind of ["hotels","property","tenders","destinations"])assert.ok(workflow.includes(kind+":["));
  assert.match(workflow,/not a verified booking/);
  assert.match(workflow,/Notes are not sent to a server/);
 });
