@@ -19,7 +19,7 @@ const FALLBACK_SCRIPT = "https://tpwgts.com/wl_web/main.js?wl_id=23459";
 
 type LoadState = "loading" | "ready" | "error";
 
-function isSupplierHeadAsset(node: Node): node is HTMLElement {
+function isSupplierHeadAsset(node: HTMLElement): boolean {
   if (!(node instanceof HTMLElement)) return false;
   if (node.tagName === "SCRIPT") {
     const src = (node as HTMLScriptElement).src;
