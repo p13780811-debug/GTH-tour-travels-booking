@@ -71,7 +71,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
               </div>
             </Link>
            </article>)}
-         <Link href={href} className="flex w-[116px] shrink-0 snap-start flex-col items-center justify-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 text-center text-xs font-semibold">
+         <Link href={destination} className="flex w-[116px] shrink-0 snap-start flex-col items-center justify-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 text-center text-xs font-semibold">
            <ArrowUpRight size={25} className="text-[var(--gold)]" aria-hidden="true"/> View all {heading.toLowerCase()}
          </Link>
        </div>
