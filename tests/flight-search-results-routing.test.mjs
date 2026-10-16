@@ -59,8 +59,7 @@ test("real flightSearch results suppress the host's fake loading/Retry card but 
   assert.match(page, /const isResultsView = typeof query\.flightSearch === "string"/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(component, /export default function AviasalesWhiteLabel\(\{ isResultsView = false \}/);
-  assert.match(component, /!isResultsView && status === "loading"/);
-  assert.match(component, /!isResultsView && status === "error"/);
+  assert.doesNotMatch(component, /Loading flight search|Flight search is unavailable|Reload flight search|setStatus/);
   assert.match(component, /isResultsView \? "Flight results" : "Find flights for your trip"/);
   assert.match(component, /id="tpwl-search"/);
   assert.match(component, /id="tpwl-tickets"/);
