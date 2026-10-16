@@ -73,7 +73,8 @@ export function tenderMetadata(item: TenderSeoRecord | null, id: string, launche
   const country = item.country_code === "IN" ? "India" : clean(item.country_code, 2);
   const source = clean(item.source_name, 45);
   const deadline = Number.isFinite(Date.parse(item.deadline_at)) ? new Date(item.deadline_at).toISOString().slice(0, 10) : "";
-  const title = `${name} | ${source} Tender ${country} | GTH PRO`;
+  const year = deadline ? deadline.slice(0, 4) : "";
+  const title = `${name} | Open ${source} Tender ${country}${year ? ` ${year}` : ""} | GTH PRO`;
   const description = `${source} procurement notice ${clean(item.source_reference, 65)} by ${clean(item.buyer, 65)} in ${country}. ${deadline ? `Deadline: ${deadline}. ` : ""}${clean(item.summary, 150)}`.slice(0, 300);
   const canonical = siteUrl(`/tender/${encodeURIComponent(id)}`);
   const index = launched && isIndexableTender(item);
