@@ -1,6 +1,12 @@
 -- GTH PRO: owner-submitted hotel inventory with private, reviewed photo evidence.
 -- Additive. Existing hotel_catalog, real estate, supplier APIs, and global CSS unchanged.
 begin;
+alter table public.hotels add column if not exists category text;
+alter table public.hotels add column if not exists country_code text;
+alter table public.hotels add column if not exists address text;
+alter table public.hotels add column if not exists description text;
+-- Existing partner rows may have null categories; owner entries are checked on ingestion.
+create index if not exists hotels_country_category_name_idx on public.hotels(country_code,category,name);
 create table if not exists public.hotel_partner_submissions (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users(id) on delete cascade,
