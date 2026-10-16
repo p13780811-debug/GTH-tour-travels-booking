@@ -14,7 +14,7 @@ test("airport transfer page connects the full journey hub, supplier tools and ro
   assert.doesNotMatch(page, /Math\.random|guaranteed fares|instant booking confirmed/i);
 });
 
-test("provider widgets retain all three supplied tracking and campaign identifiers", () => {
+test("two identified transfer partners and third supplied widget retain tracking identifiers", () => {
   const code = read("src/components/travel/TransferProviderWidgets.tsx");
   assert.equal((code.match(/https:\/\/tpwidg\.com\/content\?/g) || []).length, 3);
   for (const id of ["trs=504342", "shmarker=417668", "campaign_id=22&promo_id=1504", "campaign_id=1&promo_id=3879", "campaign_id=627&promo_id=8951"]) {
@@ -25,6 +25,8 @@ test("provider widgets retain all three supplied tracking and campaign identifie
   assert.match(code, /b_faq=true/);
   assert.match(code, /currency=USD/);
   assert.match(code, /show_header=true/);
+  assert.match(code, /Kiwitaxi transfer options/);
+  assert.match(code, /intui\.travel airport transfers/);
   assert.match(code, /active === "additional"/);
 });
 
@@ -53,13 +55,17 @@ test("booking disclosure never claims first-party fare availability or confirmat
 
 test("airport extras connect only known internal routes, approved affiliate URLs or genuine provider pages", () => {
   const source = read("src/components/travel/AirportJourneyServices.tsx");
-  for (const route of ["/flights", "/transfers", "/hotels", "/tours", "/activities", "/destinations", "/bus", "/train", "/insurance"]) {
+  for (const route of ["/flights", "/transfers", "/cars", "/hotels", "/tours", "/activities", "/destinations", "/bus", "/train", "/insurance"]) {
     if (route === "/transfers") assert.match(source, /#transfer-provider-heading/);
     else assert.ok(source.includes('href: "' + route + '"'), route);
   }
   assert.match(source, /https:\/\/airhelp\.tpo\.lv\/W9baN8JY/);
   assert.match(source, /https:\/\/tpo\.lv\/GFuzmgYk/);
-  assert.match(source, /https:\/\/in\.trip\.com\/carhire\//);
+  assert.match(source, /href: "\/cars"/);
+  assert.match(source, /https:\/\/gettransfer\.tpo\.lv\/jpv6nsqO/);
+  assert.match(source, /https:\/\/compensair\.tpo\.lv\/s1kibgeh/);
+  assert.match(source, /https:\/\/radicalstorage\.tpo\.lv\/iDuI1UD0/);
+  assert.match(source, /https:\/\/yesim\.tpo\.lv\/yZBVdtqT/);
   assert.match(source, /https:\/\/www\.prioritypass\.com\/en-GB\/airport-lounges/);
   assert.match(source, /Independent provider website/);
   assert.match(source, /rel=\{service\.kind === "partner" \? "noopener noreferrer sponsored"/);
