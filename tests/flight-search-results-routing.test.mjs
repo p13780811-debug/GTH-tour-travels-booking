@@ -47,5 +47,24 @@ test("CSS and hero not changed as a workaround for routing",()=>{
   const root=read("src/app/layout.tsx");
   assert.match(page,/Find your next flight/);
   assert.match(root,/Noto_Sans/);
-  assert.doesNotMatch(page,/flightSearch/);
+  assert.match(page, /query\.flightSearch/);
+  assert.match(page, /isResultsView=\{isResultsView\}/);
+});
+
+
+test("real flightSearch results suppress the host's fake loading/Retry card but leave TPWL intact", () => {
+  const page = read("src/app/flights/page.tsx");
+  const component = read("src/components/flights/AviasalesWhiteLabel.tsx");
+  assert.match(page, /flightSearch\?: string/);
+  assert.match(page, /const isResultsView = typeof query\.flightSearch === "string"/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
+  assert.match(component, /export default function AviasalesWhiteLabel\(\{ isResultsView = false \}/);
+  assert.match(component, /!isResultsView && status === "loading"/);
+  assert.match(component, /!isResultsView && status === "error"/);
+  assert.match(component, /isResultsView \? "Flight results" : "Find flights for your trip"/);
+  assert.match(component, /id="tpwl-search"/);
+  assert.match(component, /id="tpwl-tickets"/);
+  assert.match(component, /href="\/flights\/out\/aviasales"/);
+  assert.match(component, /document\.head\.appendChild\(script\)/);
+  assert.doesNotMatch(component, /<iframe|srcDoc=/);
 });
