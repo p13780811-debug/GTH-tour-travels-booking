@@ -1,4 +1,4 @@
-import { Cinzel, Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
@@ -11,11 +11,6 @@ import { siteOrigin } from "@/lib/seo/site";
 const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
 
 const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
-
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
-});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,7 +80,7 @@ export default function RootLayout({
       </head>
       <body
         className={`
-          ${cinzel.className}
+          ${notoSans.className}
           ${geistSans.variable}
           ${geistMono.variable}
           antialiased
