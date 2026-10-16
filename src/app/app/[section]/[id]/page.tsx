@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {notFound} from "next/navigation";
-import {ArrowLeft,ArrowUpRight,Building2,CalendarCheck,FileSearch,Globe,Hotel,MapPin,ShieldCheck} from "lucide-react";
+import {ArrowLeft,ArrowUpRight,Building2,CalendarCheck,ClipboardCheck,FileSearch,Globe,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import {loadAppDetail} from "@/lib/mobile/catalog";
 import {isMobileSection} from "@/lib/mobile/routes";
@@ -44,6 +44,11 @@ export default async function AppRecordDetail({params}:Props){
       </div>)}
      </div>
      <div className="mt-5 flex flex-col gap-3">
+      <Link href={"/app/"+section+"/"+encodeURIComponent(id)+"/prepare"}
+        className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+        <ClipboardCheck size={16}/> {record.kind==="tender"?"Review tender readiness":
+          record.kind==="hotel"?"Plan this stay":record.kind==="property"?"Property review checklist":"Plan this destination"}
+      </Link>
       {record.kind==="destination"?<Link href={record.related}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         <MapPin size={16}/> Find local hotel records <ArrowUpRight size={15}/>
@@ -59,10 +64,10 @@ export default async function AppRecordDetail({params}:Props){
         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
          Listed accommodation website <ArrowUpRight size={15}/>
        </a>:null}
-      <Link href={record.fullSite}
+      <a href={record.fullSite} target="_blank" rel="noopener noreferrer"
         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
-        Open advanced website tools <ArrowUpRight size={15}/>
-      </Link>
+        Open full website separately <ArrowUpRight size={15}/>
+      </a>
      </div>
      <p className="mt-6 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
        <ShieldCheck size={16} className="mt-1 shrink-0 text-[var(--gold)]"/>
