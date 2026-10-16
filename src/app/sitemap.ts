@@ -7,7 +7,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers",
+  "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers", "/cars",
   "/insurance", "/real-estate", "/real-estate/tools", "/tender",
   "/partners", "/contact", "/about", "/affiliate-disclosure",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",

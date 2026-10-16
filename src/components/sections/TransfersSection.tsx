@@ -1,9 +1,9 @@
 export default function TransfersSection({ city }: { city?: string }) {
 
     const items = [
-        "Airport Transfer",
-        "Car Rental",
-        "Private Driver"
+        { label: "Airport Transfer", href: "/transfers" },
+        { label: "Car Rental", href: "/cars" },
+        { label: "Private Driver", href: "/transfers" }
     ]
 
     return (
@@ -21,11 +21,11 @@ export default function TransfersSection({ city }: { city?: string }) {
 
                     {items.map((t, i) => (
 
-                        <div key={i} className="p-12 gth-glass/10 rounded-xl text-center">
+                        <a key={i} href={t.href} className="block p-12 gth-glass/10 rounded-xl text-center">
 
-                            {t}
+                            {t.label}
 
-                        </div>
+                        </a>
 
                     ))}
 

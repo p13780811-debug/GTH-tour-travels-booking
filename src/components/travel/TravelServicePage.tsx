@@ -33,6 +33,7 @@ export default function TravelServicePage({
     { name: "Bus", href: "/bus", Icon: Bus },
     { name: "Train", href: "/train", Icon: Train },
     { name: "Airport transfers", href: "/transfers", Icon: Car },
+    { name: "Car rentals", href: "/cars", Icon: Car },
   ];
 
   return (

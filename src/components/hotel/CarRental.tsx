@@ -1,4 +1,6 @@
-export default function CarRental({ city }: any) {
+import Link from "next/link";
+
+export default function CarRental({ city }: { city?: string }) {
 
     return (
 
@@ -8,12 +10,12 @@ export default function CarRental({ city }: any) {
                 Car Rentals in {city}
             </h2>
 
-            <a
-                href="#"
+            <Link
+                href="/cars"
                 className="bg-yellow-400 text-black px-8 py-3 rounded-full font-bold"
             >
-                Search Cars
-            </a>
+                Explore Car Rentals
+            </Link>
 
         </section>
 
