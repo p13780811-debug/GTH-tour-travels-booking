@@ -3,11 +3,12 @@ name: GTH Flights Visual Recovery
 on:
   push:
     branches:
-      - fix/gth-flights-premium-visual-20261016
+      - fix/gth-root-font-inheritance-20261016
   pull_request:
     branches:
       - main
     paths:
+      - src/app/layout.tsx
       - src/app/flights/**
       - src/components/flights/**
       - tests/flight-visual-recovery.test.mjs
