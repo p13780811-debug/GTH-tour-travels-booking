@@ -46,6 +46,18 @@ export default function AviasalesWhiteLabel() {
   useEffect(() => {
     let disposed = false;
     let currentScript: HTMLScriptElement | null = null;
+    // Official TPWL Widget results URL. Without this setting, TPWL submits
+    // /?flightSearch=... and displays our unrelated ecosystem homepage.
+    // Keep the provider's results on this site's /flights route (preview-safe).
+    const configuredWindow = window as typeof window & {
+      TPWL_CONFIGURATION?: Record<string, unknown>;
+    };
+    const initialConfiguration = configuredWindow.TPWL_CONFIGURATION;
+    const configuredResultsUrl = new URL("/flights", window.location.origin).href;
+    configuredWindow.TPWL_CONFIGURATION = {
+      ...initialConfiguration,
+      resultsURL: configuredResultsUrl,
+    };
     const supplierAssets = new Set<HTMLElement>();
     // Snapshot BEFORE loading the vendor. Modern Next.js route CSS belongs to
     // the app and must never be removed during a flight widget teardown.
@@ -179,6 +191,12 @@ export default function AviasalesWhiteLabel() {
     load(WL_SCRIPT, true);
     return () => {
       disposed = true;
+      // Restore the previously registered configuration for other route tools;
+      // never clear a configuration that another component replaced meanwhile.
+      if (configuredWindow.TPWL_CONFIGURATION?.resultsURL === configuredResultsUrl) {
+        if (initialConfiguration === undefined) delete configuredWindow.TPWL_CONFIGURATION;
+        else configuredWindow.TPWL_CONFIGURATION = initialConfiguration;
+      }
       window.clearTimeout(timeout);
       window.clearInterval(healthCheck);
       contentObserver.disconnect();
@@ -210,6 +228,10 @@ export default function AviasalesWhiteLabel() {
       <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
         Select your departure airport, destination, travel dates and passengers.
         Compare results from the flight provider, then book with the ticket seller.
+      </p>
+      <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+        Flight results stay on GTH PRO. For flight-only search, make sure the supplier&apos;s
+        <strong> Show hotels</strong> checkbox is unchecked; hotel discovery is available separately in GTH PRO Hotels.
       </p>
       <div className="mt-5 flex flex-wrap gap-2 text-xs text-[var(--text-soft)]">
         <span className="rounded-lg border border-[var(--border)] px-3 py-2">1. Choose your route</span>

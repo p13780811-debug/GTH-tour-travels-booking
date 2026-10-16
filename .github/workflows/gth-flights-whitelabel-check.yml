@@ -3,7 +3,7 @@ name: GTH Flights White Label Release Checks
 on:
   push:
     branches:
-      - feat/gth-flights-whitelabel-recovery-20261016
+      - fix/gth-flights-results-routing-hotels-20261017
   pull_request:
     branches:
       - main
@@ -15,6 +15,8 @@ on:
       - tests/flight-whitelabel-release.test.mjs
       - tests/flight-whitelabel-isolation.test.mjs
       - tests/flight-supplier-css-layer.test.mjs
+      - tests/flight-search-results-routing.test.mjs
+      - src/middleware.ts
       - .github/workflows/gth-flights-whitelabel-check.yml
   workflow_dispatch:
 
@@ -38,7 +40,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Flight and partner regression tests
-        run: node --test tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs
+        run: node --test tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs tests/flight-search-results-routing.test.mjs
       - name: Lint
         run: npm run lint
       - name: Production build (no deployment)
