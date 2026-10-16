@@ -43,7 +43,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
      </div>:
      <>
        <div ref={rail} role="region" aria-roledescription="carousel" aria-label={heading+" — swipe horizontally"}
-         tabIndex={0} className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-4 pb-3 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:px-6">
+         tabIndex={0} className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain touch-pan-x scroll-smooth px-4 pb-3 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:px-6">
          {items.map((item,i)=><article key={item.id}
            role="group" aria-roledescription="slide" aria-label={String(i+1)+" of "+items.length}
            className="gth-glass flex w-[44vw] min-w-[144px] max-w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] sm:w-[218px] sm:max-w-[218px]">
