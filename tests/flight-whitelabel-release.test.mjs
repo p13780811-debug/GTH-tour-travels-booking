@@ -7,7 +7,7 @@ const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 test("real Travelpayouts White Label Web 23459 is the Flights primary UI", () => {
   const page = read("src/app/flights/page.tsx");
   const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
-  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(widget, /wl_web\/main\.js\?wl_id=23459/);
   assert.doesNotMatch(widget, /srcDoc=|WL_FRAME_ROUTE|<iframe/);
   assert.match(widget, /id="tpwl-search"/);
