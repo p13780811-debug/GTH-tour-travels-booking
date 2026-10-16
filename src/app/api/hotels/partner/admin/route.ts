@@ -50,7 +50,7 @@ export async function POST(request:Request){
    throw new RequestError("Invalid review request",400);
   const db=hotelPartnerWriter();
   const {data:row,error:readError}=await db.from("hotel_partner_submissions")
-   .select("id,hotel_name,city,category,description,address,website,status,owner_authorised,photo_rights_confirmed,published_hotel_id")
+   .select("id,hotel_name,city,country_code,category,description,address,website,status,owner_authorised,photo_rights_confirmed,published_hotel_id")
    .eq("id",id).maybeSingle();
   if(readError||!row)throw new RequestError("Hotel submission was not found",404);
   if(row.status!=="pending")throw new RequestError("Hotel has already been reviewed or is processing",409);
@@ -91,6 +91,7 @@ export async function POST(request:Request){
    // The hotel is inserted with invisible gates until both review and photo rows exist.
    const prepared=await db.from("hotels").upsert({
     id,name:row.hotel_name,city:row.city,image_url:gallery[0].image_url,
+    category:row.category,country_code:row.country_code,address:row.address,description:row.description,
     source_name:"GTH PRO Reviewed Hotel Partner",source_url:publicSource,
     affiliate_link:null,is_public:false,media_rights_verified:false,
    },{onConflict:"id"});
