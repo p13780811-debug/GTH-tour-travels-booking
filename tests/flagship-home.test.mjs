@@ -28,7 +28,7 @@ test("working mega-aggregator remains reachable at its own ecosystem route", () 
   assert.match(mega, /canonical: "\/mega-aggregator"/);
   assert.match(flagship, /href="\/mega-aggregator"/);
   assert.match(navbar, /name: "Ecosystem", href: "\/mega-aggregator"/);
-  assert.match(navbar, /pathname === "\/"\) return null/);
+  assert.match(navbar, /pathname === "\/" \|\| pathname === "\/app"\) return null/);
   assert.match(shell, /const isFlagship = pathname === "\/"/);
   assert.match(shell, /!isRealEstate && !isFlagship/);
 });
@@ -172,7 +172,7 @@ test("search enhancement leaves approved hero photography, three pillars and glo
 
 test("phone or virtual tablet viewport cannot squeeze three pillar columns", () => {
   const layout = source("src/app/layout.tsx");
-  assert.match(layout, /export const viewport: Viewport = \{ width: "device-width", initialScale: 1 \}/);
+  assert.match(layout, /export const viewport: Viewport = \{ width: "device-width", initialScale: 1, viewportFit: "cover" \}/);
   assert.match(css, /@media \(max-width: 1199px\)/);
   const mobile = css.slice(css.indexOf("Responsive correction: never render three compressed posters"));
   assert.match(mobile, /\.pillars\s*\{[\s\S]*?display: flex/);
