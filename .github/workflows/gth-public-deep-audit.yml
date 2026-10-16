@@ -1,0 +1,32 @@
+name: GTH Deep Accessibility and Partner UX Audit
+on:
+  push:
+    branches:
+      - audit/gth-public-ux-seo-20261017
+    paths:
+      - scripts/audit-public-deep.mjs
+      - .github/workflows/gth-public-deep-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-deep-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install isolated browser audit libraries
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.1 @axe-core/playwright@4.10.2
+          npx playwright install --with-deps chromium
+      - name: Check live accessibility, interactive labels and partner failures
+        run: node scripts/audit-public-deep.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gth-deep-ux-audit
+          path: audit-deep/
+          if-no-files-found: warn
