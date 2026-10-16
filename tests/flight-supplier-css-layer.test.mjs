@@ -23,9 +23,8 @@ test("the original host CSS, navbar, and whole-site typography are not edited or
   assert.match(s, /document\.head\.appendChild\(script\)/);
   assert.match(s, /id="tpwl-search"/);
   assert.match(s, /id="tpwl-tickets"/);
-  assert.match(s, /setStatus\("ready"\)/);
-  assert.match(s, /window\.setInterval\(reconcileStatus, 750\)/);
+  assert.doesNotMatch(s, /setStatus|reconcileStatus|setInterval/);
   assert.match(s, /if \(hasProviderContent\(\)\)/);
-  assert.match(s, /else load\(FALLBACK_SCRIPT, false\)/);
+  assert.match(s, /if \(!hasProviderContent\(\)\) load\(FALLBACK_SCRIPT, false\)/);
   assert.doesNotMatch(s, /<iframe|srcDoc=|allow-same-origin/);
 });

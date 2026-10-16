@@ -46,6 +46,7 @@ function EcosystemNavbar() {
     const pathname = usePathname()
 
     const [menuOpen, setMenuOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
 
     const [scrolled, setScrolled] = useState(false)
 
@@ -208,7 +209,7 @@ function EcosystemNavbar() {
             {/* NAVBAR */}
             {/* ================================================= */}
 
-            <nav className={`
+            <nav data-gth-shared-nav="true" className={`
                 sticky
                 top-0
                 z-[110]
@@ -242,7 +243,7 @@ function EcosystemNavbar() {
 
                 {/* container */}
 
-                <div className="relative mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 lg:px-8">
+                <div data-gth-navbar-container="true" className="relative mx-auto flex w-full max-w-[1600px] min-w-0 items-center gap-2 px-4 py-3 lg:gap-2 lg:px-5 xl:gap-3 xl:px-6 2xl:px-8">
 
                     {/* ================================================= */}
                     {/* LOGO */}
@@ -250,7 +251,7 @@ function EcosystemNavbar() {
 
                     <Link
                         href="/"
-                        className="group relative flex shrink-0 items-center gap-3"
+                        className="group relative flex shrink-0 items-center gap-2 xl:gap-3"
                     >
 
                         {/* glow */}
@@ -259,7 +260,7 @@ function EcosystemNavbar() {
 
                         {/* image */}
 
-                        <div className="gth-glass-ultra relative h-12 w-12 overflow-hidden rounded-full border border-[var(--gold)]/20">
+                        <div className="gth-glass-ultra relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[var(--gold)]/20 xl:h-11 xl:w-11 2xl:h-12 2xl:w-12">
 
                             <BrandVideo name="logo-motion" label="GTH PRO animated logo" className="h-full w-full object-cover" controls={false} />
 
@@ -267,7 +268,7 @@ function EcosystemNavbar() {
 
                         {/* text */}
 
-                        <div className="flex flex-col justify-center leading-none">
+                        <div className="flex min-w-0 flex-col justify-center leading-none">
 
                             <div className="flex items-center gap-1">
 
@@ -305,9 +306,9 @@ function EcosystemNavbar() {
                     {/* SEARCH */}
                     {/* ================================================= */}
 
-                    <div className="hidden flex-1 items-center justify-center xl:flex">
+                    <div className="hidden w-[220px] min-w-0 shrink-0 items-center justify-center 2xl:flex">
 
-                        <div className="relative w-full max-w-xl">
+                        <div className="relative w-full min-w-0">
 
                             <div className="absolute inset-0 rounded-full bg-[var(--gold)]/10 blur-3xl" />
 
@@ -331,7 +332,7 @@ function EcosystemNavbar() {
                     {/* DESKTOP NAV */}
                     {/* ================================================= */}
 
-                    <div className="hidden items-center gap-2 lg:flex">
+                    <div data-gth-desktop-links="true" className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex xl:gap-1.5 2xl:gap-2">
 
                         {navItems.map((item: any) => {
 
@@ -345,7 +346,7 @@ function EcosystemNavbar() {
 
                                 <div
                                     key={item.href}
-                                    className="group relative"
+                                    className={`group relative shrink-0 ${["Guides", "Blog"].includes(item.name) ? "hidden xl:block" : ""}`}
                                     onMouseEnter={() =>
                                         setHoveredMenu(item.name)
                                     }
@@ -359,32 +360,38 @@ function EcosystemNavbar() {
                                     <Link
                                         href={item.href}
                                         className={`
-                                            flex
+                                            inline-flex
+                                            min-h-10
+                                            shrink-0
                                             items-center
-                                            gap-2
-                                            rounded-full
-                                            px-4
-                                            py-2.5
+                                            justify-center
+                                            gap-1.5
+                                            whitespace-nowrap
+                                            rounded-xl
+                                            px-2
+                                            py-2
+                                            xl:px-2.5
+                                            2xl:px-3
                                             transition-all
                                             duration-500
 
                                             ${active
                                                 ? `
                                                     gth-btn-gold
-                                                    scale-105
+                                                    shadow-sm
                                                 `
                                                 : `
                                                     gth-glass
                                                     text-[var(--text)]
-                                                    hover:scale-105
+                                                    hover:border-[var(--gold)]
                                                 `
                                             }
                                         `}
                                     >
 
-                                        <Icon size={13} />
+                                        <Icon size={13} className="shrink-0" />
 
-                                        <span className="gth-nav-text">
+                                        <span className="gth-nav-text whitespace-nowrap text-xs leading-none">
 
                                             {item.name}
 
@@ -566,7 +573,20 @@ function EcosystemNavbar() {
                     {/* RIGHT */}
                     {/* ================================================= */}
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div data-gth-navbar-actions="true" className="relative ml-auto flex shrink-0 items-center gap-1.5 lg:ml-0 xl:gap-2">
+
+                        <div className="relative hidden lg:block 2xl:hidden">
+                            <button type="button" aria-label="Open ecosystem search" aria-expanded={searchOpen}
+                                onClick={() => setSearchOpen((open) => !open)}
+                                className="gth-glass flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
+                                <Search size={17} />
+                            </button>
+                            {searchOpen && (
+                                <div className="gth-glass-ultra absolute right-0 top-full z-[160] mt-3 w-[min(340px,90vw)] rounded-2xl border border-[var(--border)] p-3 shadow-[var(--shadow)]">
+                                    <SearchBox />
+                                </div>
+                            )}
+                        </div>
 
                         <ThemeToggle />
 
@@ -577,18 +597,22 @@ function EcosystemNavbar() {
                                 hidden
                                 items-center
                                 gap-2
-                                rounded-full
-                                px-5
+                                min-h-11
+                                whitespace-nowrap
+                                rounded-xl
+                                px-3
                                 py-2.5
                                 xl:flex
+                                2xl:px-4
                             "
                         >
 
                             <Crown size={14} />
 
-                            <span className="gth-nav-mini text-black">
+                            <span className="gth-nav-mini whitespace-nowrap text-black">
 
-                                Premium Access
+                                <span className="2xl:hidden">Premium</span>
+                                <span className="hidden 2xl:inline">Premium Access</span>
 
                             </span>
 

@@ -25,25 +25,20 @@ test("scope the supplier script and clean only identifiable provider assets on u
   assert.match(source, /MutationObserver/);
   assert.match(source, /isSupplierHeadAsset/);
   assert.match(source, /headObserver\.disconnect\(\)/);
-  assert.match(source, /contentObserver\.disconnect\(\)/);
   assert.match(source, /supplierAssets/);
   assert.match(source, /originalHeadStyles/);
   assert.match(source, /isNextAppStylesheet/);
   assert.match(source, /if \(!originalHeadStyles\.has\(asset\) && !isNextAppStylesheet\(asset\)/);
   assert.match(source, /asset\.remove\(\)/);
-  assert.match(source, /window\.clearTimeout\(timeout\)/);
+  assert.match(source, /window\.clearTimeout\(fallbackTimer\)/);
   assert.doesNotMatch(source, /document\.head\.replaceChildren|document\.body\.style =/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML|eval\(|document\.write\(/);
 });
 
-test("user keeps the real supplier form or a recoverable booking link after 20 seconds", () => {
+test("supplier owns its search lifecycle; no GTH loading/error/retry panel is added", () => {
   const source = read("src/components/flights/AviasalesWhiteLabel.tsx");
   assert.match(source, /hasProviderContent\(\)/);
-  assert.match(source, /window\.setInterval\(reconcileStatus, 750\)/);
-  assert.match(source, /window\.clearInterval\(healthCheck\)/);
-  assert.match(source, /20_000/);
-  assert.match(source, /status === "error"/);
-  assert.match(source, /window\.location\.reload\(\)/);
+  assert.doesNotMatch(source, /setInterval|setStatus|Loading flight search|Flight search is unavailable|Reload flight search|RefreshCw/);
   assert.match(source, /href="\/flights\/out\/aviasales"/);
   assert.match(source, /rel="noopener noreferrer sponsored"/);
   assert.match(source, /aria-labelledby="flight-white-label-heading"/);

@@ -3,13 +3,16 @@ name: GTH Flights White Label Release Checks
 on:
   push:
     branches:
-      - fix/gth-flights-results-routing-hotels-20261017
+      - fix/gth-global-navbar-flight-status-20261017
   pull_request:
     branches:
       - main
     paths:
       - src/app/flights/**
       - src/components/flights/**
+      - src/components/Navbar.tsx
+      - src/components/SearchBox.tsx
+      - tests/shared-navbar-flight-status.test.mjs
       - src/lib/flights/**
       - tests/flight-marketplace.test.mjs
       - tests/flight-whitelabel-release.test.mjs
@@ -40,7 +43,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Flight and partner regression tests
-        run: node --test tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs tests/flight-search-results-routing.test.mjs
+        run: node --test tests/shared-navbar-flight-status.test.mjs tests/flight-marketplace.test.mjs tests/flight-whitelabel-release.test.mjs tests/flight-whitelabel-isolation.test.mjs tests/flight-supplier-css-layer.test.mjs tests/flight-search-results-routing.test.mjs
       - name: Lint
         run: npm run lint
       - name: Production build (no deployment)
