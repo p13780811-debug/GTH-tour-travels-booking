@@ -1,0 +1,42 @@
+name: GTH Worldwide Tours Partner Checks
+
+on:
+  push:
+    branches:
+      - feat/gth-tours-affiliates-20261016
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/app/tours/**
+      - src/components/tours/**
+      - tests/tour-affiliate-widgets.test.mjs
+      - tests/tours-marketplace.test.mjs
+      - .github/workflows/gth-tour-affiliates-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Tours regressions
+        run: node --test tests/tour-affiliate-widgets.test.mjs tests/tours-marketplace.test.mjs
+      - name: Lint
+        run: npm run lint
+      - name: Production build (no deploy)
+        run: npm run build
