@@ -87,18 +87,21 @@ function HotelsContent() {
     const [search, setSearch] = useState(initialCity);
     const [requestedCity, setRequestedCity] = useState(initialCity);
     const [nameFilter, setNameFilter] = useState(initialName);
+    const [searchName, setSearchName] = useState(initialName);
+    const [sort, setSort] = useState<"name_asc"|"name_desc">("name_asc");
+    const [sourceFilter, setSourceFilter] = useState<"all"|"partner"|"directory">("all");
     const [requestedDestination,setRequestedDestination]=useState(initialDestination);
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
-    const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category]);
+    const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category,sort,sourceFilter]);
     const activeQueryRef = useRef(queryKey);
     // Every API page MUST carry the identical search scope and filters.
     const hotelParamsFor = (pageNumber: number) => hotelSearchParams({
         destination:requestedDestination,city:requestedCity,name:nameFilter,
-        country:requestedCountry,category
+        country:requestedCountry,category,sort,source:sourceFilter
     },pageNumber);
     const selectedType = (({
         hotel:"Hotels",hostel:"Hostels",guest_house:"Guest houses",
@@ -115,6 +118,7 @@ function HotelsContent() {
         setSearch(initialCity);
         setRequestedCity(initialCity);
         setNameFilter(initialName);
+        setSearchName(initialName);
         setRequestedDestination(initialDestination);
     }, [initialCity, initialName,initialDestination]);
 
@@ -189,11 +193,25 @@ function HotelsContent() {
         const city=search.trim();
         if(city.length>80 || (city.length>0&&city.length<2))return;
         if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
-        setNameFilter("");
+        const hotelName=searchName.trim();
+        if(hotelName.length>80)return;
+        setNameFilter(hotelName);
         setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
         setRequestedCountry(city?"":selectedCountry);
+    };
+
+    const exploreIndia = (city = "") => {
+        setSearch(city);
+        setSearchName("");
+        setNameFilter("");
+        setCategory("");
+        setRequestedDestination("");
+        setRequestedCity(city);
+        setSelectedCountry("IN");
+        setRequestedCountry(city ? "" : "IN");
+        document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
     const categories = [
@@ -258,7 +276,7 @@ function HotelsContent() {
 
                     {/* SEARCH */}
                     <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr_1fr_auto] gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
                                     className="text-[var(--text-soft)] shrink-0"
@@ -271,11 +289,17 @@ function HotelsContent() {
                                     onKeyDown={(e) =>
                                         e.key === "Enter" && runSearch()
                                     }
-                                    placeholder="City (blank for visitor-country hotels)"
+                                    placeholder="City, town or neighbourhood (e.g. Candolim)"
                                     className="bg-transparent outline-none text-sm w-full min-w-0"
                                 />
                             </div>
 
+                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
+                                <Search size={18} className="shrink-0 text-[var(--text-soft)]" />
+                                <input aria-label="Hotel name" value={searchName} onChange={e=>setSearchName(e.target.value)}
+                                    onKeyDown={e=>e.key==="Enter"&&runSearch()} maxLength={80}
+                                    placeholder="Hotel name (optional)" className="bg-transparent outline-none text-sm w-full min-w-0" />
+                            </div>
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
                                 <CalendarDays
                                     className="text-[var(--text-soft)]"
