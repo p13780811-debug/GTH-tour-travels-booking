@@ -1,5 +1,14 @@
 name: GTH PRO Daily Route Availability
 on:
+  push:
+    branches:
+      - fix/gth-production-journey-monitor-20261017
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/monitor-ecosystem.mjs
+      - .github/workflows/gth-ecosystem-daily-smoke.yml
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * *"
@@ -16,5 +25,5 @@ jobs:
           node-version: 24
       - name: Check production public routes without modification
         env:
-          GTH_PRO_MONITOR_URL: ${{ vars.GTH_PRO_MONITOR_URL }}
+          GTH_PRO_MONITOR_URL: https://www.gthproglobal.com
         run: node scripts/monitor-ecosystem.mjs
