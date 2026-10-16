@@ -63,7 +63,7 @@ test("editorial search and category filters link to complete real articles", () 
 
 test("global navigation keeps approved flagship isolated and links to Blog", () => {
   const nav = read("src/components/Navbar.tsx");
-  assert.match(nav, /if \(pathname === "\/"\) return null/);
+  assert.match(nav, /if \(pathname === "\/" \|\| pathname === "\/app"\) return null/);
   assert.match(nav, /name: "Blog", href: "\/blog"/);
   assert.match(nav, /name: "Destinations", href: "\/destinations"/);
 });
