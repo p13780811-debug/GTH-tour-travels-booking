@@ -1,0 +1,42 @@
+name: GTH Transfers Partner Widget Checks
+
+on:
+  push:
+    branches:
+      - feat/gth-transfer-widgets-20261016
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/app/transfers/**
+      - src/components/travel/**
+      - tests/transfer-widgets.test.mjs
+      - tests/transport-marketplace.test.mjs
+      - .github/workflows/gth-transfer-widgets-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Transfers and transport regressions
+        run: node --test tests/transfer-widgets.test.mjs tests/transport-marketplace.test.mjs
+      - name: Lint
+        run: npm run lint
+      - name: Production build (verification only — no deploy)
+        run: npm run build
