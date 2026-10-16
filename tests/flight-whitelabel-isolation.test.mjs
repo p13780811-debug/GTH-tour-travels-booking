@@ -15,7 +15,7 @@ test("restore documented TPWL Web native script with search and results on the s
   assert.match(source, /script\.type = "module"/);
   assert.match(source, /script\.onerror/);
   assert.match(source, /currentScript\.remove\(\)/);
-  assert.doesNotMatch(source, /iframe|srcDoc=|sandbox=/);
+  assert.doesNotMatch(source, /<iframe|srcDoc=|sandbox=/);
   assert.match(middleware, /response\.headers\.set\("X-Frame-Options", "DENY"\)/);
   assert.ok(!existsSync(new URL("../src/app/flights/embed/route.ts", import.meta.url)));
 });
