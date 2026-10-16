@@ -23,7 +23,7 @@ export default function MobileNav() {
       <div className="mx-auto grid max-w-lg grid-cols-5 px-1">
         {items.map(({href,appHref,name,Icon,matches}) => {
           const target = isApp ? appHref : href;
-          const active = isApp ? pathname === appHref : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
+          const active = isApp ? (pathname === appHref || pathname.startsWith(appHref + "/")) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
           return (
             <Link key={href} href={target} aria-current={active ? "page" : undefined}
               className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>

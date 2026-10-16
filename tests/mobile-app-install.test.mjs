@@ -28,7 +28,7 @@ test("offline service worker caches no API pages or customer data",()=>{
 test("the installed app routes all three pillars with real 64px touch targets",()=>{
  const nav=read("src/components/MobileNav.tsx");
  const hub=read("src/app/app/page.tsx");
- for(const route of ["/flights","/hotels","/real-estate","/tender"])
+ for(const route of ["/app/flights","/app/hotels","/app/property","/app/tenders"])
    assert.ok(nav.includes(route)&&hub.includes(route),route);
  assert.match(nav,/env\(safe-area-inset-bottom/);
  assert.match(nav,/min-h-\[64px\]/);

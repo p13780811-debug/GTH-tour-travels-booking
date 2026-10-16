@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {ArrowUpRight,Building2,ChevronLeft,ChevronRight,FileSearch,Hotel,MapPin} from "lucide-react";
 import type {MobileDiscoveryItem,MobileDiscoveryKind} from "@/lib/mobile/discovery";
+import {mobileAppHref} from "@/lib/mobile/routes";
 
 const PLACEHOLDER={
   destination:MapPin,hotel:Hotel,property:Building2,tender:FileSearch
@@ -13,12 +14,13 @@ const labels:Record<MobileDiscoveryKind,string>={
   destination:"Destination guide",hotel:"Directory listing",property:"Property record",tender:"Official notice"
 };
 /** One consistent 44vw card proportion and horizontal snap rail for all PWA discovery categories. */
-export default function MobileDiscoveryRail({heading,description,href,items,kind}:{
- heading:string;description:string;href:string;items:MobileDiscoveryItem[];kind:MobileDiscoveryKind;
+export default function MobileDiscoveryRail({heading,description,href,items,kind,appLinks=false}:{
+ heading:string;description:string;href:string;items:MobileDiscoveryItem[];kind:MobileDiscoveryKind;appLinks?:boolean;
 }){
  const rail=useRef<HTMLDivElement>(null);
  const id=useId();
  const Icon=PLACEHOLDER[kind];
+ const destination=appLinks?mobileAppHref(href):href;
  function move(direction:-1|1){
    const el=rail.current;
    if(!el)return;
@@ -32,7 +34,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
        <h2 id={id} className="text-[17px] font-semibold leading-6 tracking-tight sm:text-xl">{heading}</h2>
        <p className="mt-1 text-[11px] leading-4 text-[var(--text-soft)]">{description}</p>
      </div>
-     <Link href={href} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]" aria-label={"View all "+heading}>
+     <Link href={destination} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]" aria-label={"View all "+heading}>
        View all <ArrowUpRight size={15} aria-hidden="true"/>
      </Link>
    </div>
@@ -47,7 +49,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
          {items.map((item,i)=><article key={item.id}
            role="group" aria-roledescription="slide" aria-label={String(i+1)+" of "+items.length}
            className="gth-glass flex w-[44vw] min-w-[144px] max-w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] sm:w-[218px] sm:max-w-[218px]">
-            <Link href={item.href} className="group flex h-full min-h-0 flex-col" aria-label={"Explore "+item.title}>
+            <Link href={appLinks?mobileAppHref(item.href):item.href} className="group flex h-full min-h-0 flex-col" aria-label={"Explore "+item.title}>
               <div className="relative h-[112px] w-full overflow-hidden bg-[var(--bg-soft)] sm:h-[132px]">
                 {item.image ? <Image src={item.image} alt={kind==="destination"?item.title+" destination":item.title+" listing"}
                     fill sizes="(max-width:640px) 44vw,218px" className="object-cover transition-transform duration-300 group-hover:scale-105"/>:

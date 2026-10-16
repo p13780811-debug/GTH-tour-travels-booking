@@ -13,10 +13,10 @@ export const metadata:Metadata={
  appleWebApp:{capable:true,title:"GTH PRO",statusBarStyle:"default"}
 };
 const shortcuts=[
- {name:"Flights",href:"/flights",Icon:Plane},
- {name:"Hotels",href:"/hotels",Icon:Hotel},
- {name:"Property",href:"/real-estate",Icon:Building2},
- {name:"Tenders",href:"/tender",Icon:BriefcaseBusiness}
+ {name:"Flights",href:"/app/flights",Icon:Plane},
+ {name:"Hotels",href:"/app/hotels",Icon:Hotel},
+ {name:"Property",href:"/app/property",Icon:Building2},
+ {name:"Tenders",href:"/app/tenders",Icon:BriefcaseBusiness}
 ] as const;
 
 export default async function MobileAppHome(){
@@ -44,13 +44,13 @@ export default async function MobileAppHome(){
 
   <div className="mx-auto max-w-6xl">
    <MobileDiscoveryRail kind="destination" heading="Destinations" description="City guides · travel ideas"
-    href="/destinations" items={data.destinations}/>
+    href="/app/destinations" items={data.destinations} appLinks/>
    <MobileDiscoveryRail kind="hotel" heading="Hotels & stays" description="Source-backed accommodation · no invented prices"
-    href="/hotels" items={data.hotels}/>
+    href="/app/hotels" items={data.hotels} appLinks/>
    <MobileDiscoveryRail kind="property" heading="Properties" description="Real projects · source-aware details"
-    href="/real-estate" items={data.properties}/>
+    href="/app/property" items={data.properties} appLinks/>
    <MobileDiscoveryRail kind="tender" heading="Open tenders" description="Published notices · official documents"
-    href="/tender" items={data.tenders}/>
+    href="/app/tenders" items={data.tenders} appLinks/>
   </div>
 
   <section className="mx-4 mt-4 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs leading-6 text-[var(--text-soft)] sm:mx-6">
