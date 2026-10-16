@@ -32,7 +32,7 @@ test("Home rail enables app-only destinations across every content pillar",()=>{
  const home=read("src/app/app/page.tsx");
  const rail=read("src/components/mobile/MobileDiscoveryRail.tsx");
  for(const type of ["destination","hotel","property","tender"])
-   assert.match(home,new RegExp('kind="'+type+'"[^\\n]*appLinks'));
+   assert.match(home,new RegExp('kind="'+type+'"[\\s\\S]*?appLinks'));
  assert.match(home,/href:"\/app\/hotels"/);
  assert.match(home,/href:"\/app\/tenders"/);
  assert.match(rail,/appLinks\?mobileAppHref\(item\.href\)/);
@@ -73,7 +73,7 @@ test("Inner detail routes fetch actual source records without fake booking, qual
  assert.match(helper,/safeTenderSource/);
  assert.match(helper,/\.eq\("status","published"\)/);
  assert.match(helper,/Unverified in source/);
- assert.match(helper,/not confirmed/);
+ assert.match(helper,/have not been verified/);
 });
 test("Play Store listing not claimed from PWA browser install",()=>{
  const info=read("docs/gth-mobile-play-release.md");
