@@ -45,6 +45,7 @@ export default async function FlightsPage({ searchParams }: Props) {
               { name: "Insurance", href: "/insurance" },
               { name: "Hotels", href: "/hotels" },
               { name: "Tours", href: "/tours" },
+              { name: "Destinations", href: "/destinations" },
             ].map((item) => (
               <Link key={item.name} href={item.href}
                 className="inline-flex min-h-10 shrink-0 snap-start items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] shadow-sm transition hover:border-[var(--gold)]">
