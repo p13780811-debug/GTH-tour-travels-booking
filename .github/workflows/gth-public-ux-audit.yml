@@ -1,0 +1,31 @@
+name: GTH Public Site UX SEO Audit
+on:
+  push:
+    branches:
+      - audit/gth-public-ux-seo-20261017
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-live-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 34
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare isolated browser audit tools
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Crawl live sitemap, public journeys and responsive UI
+        env:
+          GTH_AUDIT_ORIGIN: https://www.gthproglobal.com
+        run: node scripts/audit-public-ux.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gth-public-ux-seo-scan
+          path: audit-results/
+          if-no-files-found: warn
