@@ -33,6 +33,22 @@ create table if not exists public.hotel_partner_photos (
   unique(submission_id,slot)
 );
 create index if not exists hotel_partner_photos_submission_idx on public.hotel_partner_photos(submission_id);
+create table if not exists public.hotel_partner_public_photos (
+ id uuid primary key default gen_random_uuid(),
+ hotel_id uuid not null references public.hotels(id) on delete cascade,
+ slot smallint not null check(slot between 0 and 5),
+ image_url text not null check(left(image_url,8)='https://'),
+ unique(hotel_id,slot)
+);
+create index if not exists hotel_partner_public_photos_hotel_idx on public.hotel_partner_public_photos(hotel_id,slot);
+alter table public.hotel_partner_public_photos enable row level security;
+revoke all on public.hotel_partner_public_photos from public,anon,authenticated;
+grant select on public.hotel_partner_public_photos to anon,authenticated;
+drop policy if exists "Approved hotel photo galleries public" on public.hotel_partner_public_photos;
+create policy "Approved hotel photo galleries public" on public.hotel_partner_public_photos
+ for select to anon,authenticated using (exists(select 1 from public.hotels h where h.id=hotel_id
+ and h.is_public is true and h.media_rights_verified is true
+ and h.source_name is not null and h.source_url is not null));
 alter table public.hotel_partner_submissions enable row level security;
 alter table public.hotel_partner_photos enable row level security;
 revoke all on public.hotel_partner_submissions from public,anon,authenticated;
