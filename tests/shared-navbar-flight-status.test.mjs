@@ -29,7 +29,8 @@ test("responsive central navbar fits search and tabs without wrapped buttons or 
  assert.match(s, /<SearchBox \/>/);
  assert.match(s, /<ThemeToggle \/>/);
  assert.match(s, /Premium Access/);
- assert.doesNotMatch(s, /hover:scale-105[\s\S]*gth-nav-text/);
+ const desktop = s.slice(s.indexOf("{/* DESKTOP NAV */}"), s.indexOf("{/* RIGHT */}"));
+ assert.doesNotMatch(desktop, /scale-105/);
  assert.match(search, /min-w-0/);
  assert.match(search, /text-\[var\(--text\)\]/);
  assert.match(search, /aria-label="Search GTH PRO cities and services"/);
