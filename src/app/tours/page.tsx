@@ -3,12 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, MapPin, Plane, Search, ShieldCheck } from "lucide-react";
 import { searchTours, type TourFilters } from "@/lib/tours";
+import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
+import TourCarousel from "@/components/tours/TourCarousel";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   alternates: { canonical: "/tours" },
-  title: "Tours & Activities | GTH PRO Travel",
-  description: "Explore source-backed tours and destination experiences. Check itinerary, available dates, final total and cancellation terms with the booking partner.",
+  title: "Worldwide Tours, Activities & Attraction Tickets | GTH PRO Travel",
+  description: "Find global tours, attraction tickets, city passes, audio tours and activities with independent booking partners and source-backed GTH PRO records.",
   openGraph: { title: "GTH PRO Tours & Activities", description: "Explore international tours and experiences, with provider-verified bookings.", url: "/tours", type: "website", images: ["/images/mega/tours.jpg"] },
   twitter: { card: "summary_large_image", title: "GTH PRO Tours & Activities", images: ["/images/mega/tours.jpg"] },
 };
@@ -92,6 +94,8 @@ export default async function ToursPage({ searchParams }: Props) {
         </div>
       </section>
 
+      <TourAffiliateMarketplace />
+
       <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -115,34 +119,35 @@ export default async function ToursPage({ searchParams }: Props) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {tours.map((tour) => (
-            <article key={String(tour.id)} className="gth-glass min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]">
-              <div className="relative aspect-[16/10] overflow-hidden">
-                <img src={tour.image_url} loading="lazy" alt={tour.title} className="h-full w-full object-cover" />
-              </div>
-              <div className="space-y-4 p-5">
-                <div>
-                  <p className="text-xs text-[var(--text-soft)]">
-                    {tour.city || tour.city_slug.replaceAll("-", " ")}
-                    {tour.country ? ` • ${tour.country}` : ""}
-                    {tour.category ? ` • ${tour.category}` : ""}
-                  </p>
-                  <h3 className="mt-2 line-clamp-2 text-lg font-bold">{tour.title}</h3>
+        {tours.length > 0 && (
+          <TourCarousel label="Source-backed tour listings">
+            {tours.map((tour) => (
+              <article key={String(tour.id)}
+                className="gth-glass flex w-[190px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:w-[216px]">
+                <div className="relative h-[116px] overflow-hidden bg-[var(--bg)] sm:h-[128px]">
+                  <img src={tour.image_url} width="432" height="270" loading="lazy" decoding="async"
+                    alt={tour.title} className="h-full w-full object-cover object-center" />
                 </div>
-                {tour.rating !== null && (
-                  <p className="text-xs text-[var(--text-soft)]">Source-listed rating: {tour.rating} / 5 (verify with partner)</p>
-                )}
-                <p className="text-xl font-bold">{priceLabel(tour.price_numeric, tour.currency)}</p>
-                <p className="text-xs leading-5 text-[var(--text-soft)]">This is not a live date-specific quote. Verify all charges and availability with the partner.</p>
-                <Link href={`/tours/${encodeURIComponent(String(tour.id))}`}
-                  className="gth-btn-gold inline-flex w-full min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
-                  View experience <ArrowRight size={17} />
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="flex min-h-[172px] flex-1 flex-col p-3">
+                  <p className="line-clamp-1 text-[11px] text-[var(--text-soft)]">
+                    {tour.city || tour.city_slug.replaceAll("-", " ")}
+                    {tour.country ? " • " + tour.country : ""}
+                    {tour.category ? " • " + tour.category : ""}
+                  </p>
+                  <h3 className="mt-1.5 line-clamp-2 min-h-[35px] text-[13px] font-bold leading-[18px]">{tour.title}</h3>
+                  {tour.rating !== null && (
+                    <p className="mt-1 text-[10px] text-[var(--text-soft)]">Source rating: {tour.rating}/5 · check provider</p>
+                  )}
+                  <p className="mt-auto pt-2 text-[13px] font-bold">{priceLabel(tour.price_numeric, tour.currency)}</p>
+                  <Link href={"/tours/" + encodeURIComponent(String(tour.id))}
+                    className="gth-btn-gold mt-3 inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold">
+                    View tour <ArrowRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </TourCarousel>
+        )}
         <div className="mt-8 flex items-start gap-3 rounded-2xl border border-[var(--border)] p-5 text-sm text-[var(--text-soft)]">
           <ShieldCheck size={18} className="mt-1 shrink-0" aria-hidden="true" />
           <p>All experiences are subject to provider confirmation. Tour dates, passenger prices, safety requirements, availability, cancellation and refunds depend on the tour operator and their booking partner.</p>
