@@ -12,8 +12,9 @@ test("root body respects Noto Sans design font instead of overriding all travel 
   const flightPage = read("src/app/flights/page.tsx");
   const flightService = read("src/components/flights/FlightJourneyServices.tsx");
   assert.match(root, /Noto_Sans/);
-  assert.match(root, /\$\{notoSans\.className\}/);
-  assert.doesNotMatch(root, /Cinzel|cinzel\.className/);
+  assert.match(root, /const cinzel = notoSans;/);
+  assert.match(root, /\$\{cinzel\.className\}/);
+  assert.doesNotMatch(root, /\bCinzel\s*\(|import\s*\{[^}]*\bCinzel\b/);
   assert.match(global, /@apply font-sans/);
   assert.match(estate, /\.estateScope \{ font-family: var\(--font-sans\)/);
   assert.doesNotMatch(flightLayout, /flights\.css/);
