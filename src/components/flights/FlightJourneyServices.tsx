@@ -63,7 +63,7 @@ export default function FlightJourneyServices() {
           <button type="button" key={category.group} aria-pressed={selected === category.group}
             onClick={() => setSelected(category.group)}
             className={"group flex w-[166px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border bg-[var(--card)] text-left shadow-sm transition hover:border-[var(--gold)] sm:w-[194px] " + (selected === category.group ? "border-[var(--gold)] ring-1 ring-[var(--gold)]" : "border-[var(--border)]")}>
-            <span className="gth-flight-service-photo relative block w-full overflow-hidden bg-[var(--bg)]">
+            <span className="relative block aspect-[16/9] w-full overflow-hidden bg-[var(--bg)]">
               <Image src={category.image} alt="" fill
                 sizes="(max-width: 640px) 166px, 194px"
                 className="object-cover transition-transform duration-300 group-hover:scale-105" />
