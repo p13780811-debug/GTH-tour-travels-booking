@@ -57,7 +57,7 @@ jobs:
             # existing catalog already includes Western and Northern zones.
             REGION=asia/india/southern-zone
             MODE=import
-            MAX_RECORDS=15000
+            MAX_RECORDS=25000
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
             day=$((10#$(date -u +%j)))
             hour=$((10#$(date -u +%H)))
@@ -84,7 +84,7 @@ jobs:
               COUNTRY=IN
             fi
             MODE=import
-            MAX_RECORDS=15000
+            MAX_RECORDS=25000
           else
             REGION="$REQUESTED_REGION"
             MODE="$REQUESTED_MODE"
@@ -128,14 +128,14 @@ jobs:
           curl -fL --retry 3 --proto '=https' --max-time 2400 \
             -o region.osm.pbf "https://download.geofabrik.de/$REGION-latest.osm.pbf"
           test -s region.osm.pbf
-      - name: Extract geolocated accommodation, preserving OSM IDs
+      - name: Extract source-located accommodation points and mapped areas
         shell: bash
         run: |
           set -euo pipefail
           osmium tags-filter region.osm.pbf \
             nwr/tourism=hotel,motel,hostel,guest_house,apartment,resort \
             -o accommodation.osm.pbf --overwrite
-          osmium export --add-unique-id=type_id --geometry-types=point \
+          osmium export --add-unique-id=type_id --geometry-types=point,polygon \
             -f geojsonseq accommodation.osm.pbf -o hotels.geojsonseq --overwrite
       - name: Secure import with GitHub OIDC
         shell: bash
