@@ -19,8 +19,7 @@ export default function HotelReviewDashboard(){
  const [busy,setBusy]=useState(false);
  const [message,setMessage]=useState("");
  const [error,setError]=useState("");
- const [verifiedBusiness,setVerifiedBusiness]=useState(false);
- const [verifiedPhotos,setVerifiedPhotos]=useState(false);
+ const [verification,setVerification]=useState<Record<string,{business:boolean;photos:boolean}>>({});
  const [note,setNote]=useState("");
  const field="min-h-12 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm";
  useEffect(()=>{
@@ -53,20 +52,21 @@ export default function HotelReviewDashboard(){
  }
  async function review(id:string,action:"approve"|"reject"){
   if(!session||busy)return;
-  if(action==="approve"&&(!verifiedBusiness||!verifiedPhotos)){
+  const checks=verification[id]||{business:false,photos:false};
+  if(action==="approve"&&(!checks.business||!checks.photos)){
    setError("Verify business/owner authority and original photo rights before publishing.");return;
   }
   setBusy(true);setError("");setMessage("");
   try{
    const response=await fetch("/api/hotels/partner/admin",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
-    body:JSON.stringify({submission_id:id,action,business_verified:verifiedBusiness,
-      photo_rights_verified:verifiedPhotos,review_note:note}),
+    body:JSON.stringify({submission_id:id,action,business_verified:checks.business,
+      photo_rights_verified:checks.photos,review_note:note}),
    });
    const data=await response.json();
    if(!response.ok)throw Error(data.error||"Hotel review could not be saved");
    setMessage(action==="approve"?"Reviewed hotel published in the public catalog":"Hotel submission rejected without publication");
-   setVerifiedBusiness(false);setVerifiedPhotos(false);setNote("");
+   setVerification(current=>({...current,[id]:{business:false,photos:false}}));setNote("");
    await refresh(session.access_token);
   }catch(err){setError(err instanceof Error?err.message:"Review failed");}
   finally{setBusy(false);}
@@ -104,12 +104,12 @@ export default function HotelReviewDashboard(){
      </div>
      <fieldset className="mt-6 space-y-3 border-t border-[var(--border)] pt-5" disabled={busy}>
       <legend className="text-sm font-semibold">Manual verification before publishing</legend>
-      <label className="flex gap-3 text-sm"><input type="checkbox" checked={verifiedBusiness} onChange={e=>setVerifiedBusiness(e.target.checked)}/> I independently checked this hotel's identity and the submitter's authority.</label>
-      <label className="flex gap-3 text-sm"><input type="checkbox" checked={verifiedPhotos} onChange={e=>setVerifiedPhotos(e.target.checked)}/> I independently checked rights to publish every selected hotel image.</label>
+      <label className="flex gap-3 text-sm"><input type="checkbox" checked={verification[item.id]?.business||false} onChange={e=>setVerification(current=>({...current,[item.id]:{business:e.target.checked,photos:current[item.id]?.photos||false}}))}/> I independently checked this hotel's identity and the submitter's authority.</label>
+      <label className="flex gap-3 text-sm"><input type="checkbox" checked={verification[item.id]?.photos||false} onChange={e=>setVerification(current=>({...current,[item.id]:{business:current[item.id]?.business||false,photos:e.target.checked}}))}/> I independently checked rights to publish every selected hotel image.</label>
       <label className="block text-sm">Reason for rejection (optional)<textarea maxLength={400} rows={2} value={note} onChange={e=>setNote(e.target.value)} className={field+" mt-2 w-full"}/></label>
       <div className="flex flex-wrap gap-3">
        <button type="button" onClick={()=>void review(item.id,"approve")}
-        disabled={busy||item.photos.length===0||!verifiedBusiness||!verifiedPhotos}
+        disabled={busy||item.photos.length===0||!verification[item.id]?.business||!verification[item.id]?.photos}
         className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-50">
         <CheckCircle2 size={17}/> Approve and publish</button>
        <button type="button" onClick={()=>void review(item.id,"reject")} disabled={busy}
