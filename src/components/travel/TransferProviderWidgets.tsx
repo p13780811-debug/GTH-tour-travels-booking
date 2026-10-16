@@ -17,6 +17,11 @@ const widgets = {
     description: "Review the provider's transfer-option widget; coverage and quotes depend on the supplier.",
     src: "https://tpwidg.com/content?currency=USD&trs=504342&shmarker=417668&locale=en&powered_by=true&transfer_options_limit=10&transfer_options=MCR&disable_currency_selector=true&hide_form_extras=true&hide_external_links=true&campaign_id=1&promo_id=3879",
   },
+  additional: {
+    title: "More travel services",
+    description: "An additional Travelpayouts partner widget. Its exact supplier and services must be confirmed in the Travelpayouts dashboard before being named.",
+    src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&show_header=true&powered_by=true&campaign_id=627&promo_id=8951",
+  },
 } as const;
 
 type WidgetType = keyof typeof widgets;
@@ -83,6 +88,12 @@ export default function TransferProviderWidgets() {
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
           <CarFront size={16} aria-hidden="true" /> Transfer options
+        </button>
+        <button type="button" aria-pressed={active === "additional"} onClick={() => select("additional")}
+          className={active === "additional"
+            ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
+            : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
+          <ArrowUpRight size={16} aria-hidden="true" /> More travel tools
         </button>
       </div>
 
