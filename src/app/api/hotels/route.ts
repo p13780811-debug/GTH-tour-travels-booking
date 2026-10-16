@@ -94,8 +94,10 @@ export async function GET(req: Request) {
     if (source === "directory") supplierCountQuery = supplierCountQuery.eq("city","__excluded__");
     if (country) catalogCountQuery = catalogCountQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
     if (category) catalogCountQuery = catalogCountQuery.eq("category",category);
-    if (country) supplierCountQuery = supplierCountQuery.eq("city","__country_not_supported__");
-    if (category && category !== "hotel") supplierCountQuery = supplierCountQuery.eq("city","__category_not_supported__");
+    if (country) supplierCountQuery = supplierCountQuery.eq("country_code",country);
+    if (category) supplierCountQuery = category === "hotel"
+      ? supplierCountQuery.or("category.eq.hotel,category.is.null")
+      : supplierCountQuery.eq("category",category);
     const [supplierCountResult, catalogCountResult] = await Promise.all([supplierCountQuery, catalogCountQuery]);
     const supplierCount = supplierCountResult.error ? 0 : (supplierCountResult.count ?? 0);
     const catalogCount = catalogCountResult.error ? 0 : (catalogCountResult.count ?? 0);
@@ -104,15 +106,18 @@ export async function GET(req: Request) {
     }
     const firstWindow = hotelPageWindow(page, supplierCount, catalogCount, PAGE_SIZE);
     let supplierFailed = Boolean(supplierCountResult.error);
-    let supplierRows: Array<{ id: string | number; name: string; city: string; image_url: string | null; affiliate_link: string | null }> = [];
+    let supplierRows: Array<{ id: string | number; name: string; city: string; image_url: string | null; affiliate_link: string | null; category:string|null; country_code:string|null; source_name:string|null }> = [];
     if (firstWindow.supplierTake > 0) {
       let supplierQuery = supabase.from("hotels")
-        .select("id,name,city,image_url,affiliate_link,is_public")
+        .select("id,name,city,image_url,affiliate_link,is_public,category,country_code,source_name")
         .eq("is_public", true).eq("media_rights_verified",true).not("source_name","is",null);
       if (source === "directory") supplierQuery = supplierQuery.eq("city","__excluded__");
       if (matchingCity) supplierQuery = supplierQuery.ilike("city", cityLike);
       if (name) supplierQuery = supplierQuery.ilike("name", nameLike);
-      if (country || (category && category!=="hotel")) supplierQuery=supplierQuery.eq("city","__unavailable__");
+      if (country) supplierQuery=supplierQuery.eq("country_code",country);
+      if (category) supplierQuery = category === "hotel"
+        ? supplierQuery.or("category.eq.hotel,category.is.null")
+        : supplierQuery.eq("category",category);
       const { data, error } = await supplierQuery.order("name",{ascending}).order("id",{ascending})
         .range(firstWindow.supplierStart, firstWindow.supplierStart + firstWindow.supplierTake - 1);
       if (error) supplierFailed = true;
@@ -145,7 +150,8 @@ export async function GET(req: Request) {
       .map((hotel) => ({
         id: hotel.id, name: hotel.name, city: hotel.city, stars: null,
         image: safeImage(hotel.image_url), affiliate_link: safePartnerLink(hotel.affiliate_link),
-        category:"hotel",source:"Verified partner listing",
+        category:hotel.category||"hotel",country:hotel.country_code,
+        source:hotel.source_name==="GTH PRO Reviewed Hotel Partner"?"Reviewed hotel owner":"Verified partner listing",
       }));
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
