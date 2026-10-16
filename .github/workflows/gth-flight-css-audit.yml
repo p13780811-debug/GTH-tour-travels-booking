@@ -31,4 +31,5 @@ jobs:
           path: |
             flights-no-widget.png
             flights-widget.png
+            flights-layered-widget.png
           if-no-files-found: ignore
