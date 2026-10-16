@@ -7,7 +7,7 @@ export const dynamic="force-dynamic";
 const HEADERS={"Cache-Control":"private, no-store, max-age=0","X-Robots-Tag":"noindex, nofollow","X-Content-Type-Options":"nosniff"};
 const denied=(code=503)=>NextResponse.json({error:"Google Maps photos not available for this hotel"},{status:code,headers:HEADERS});
 type Photo={name?:string;googleMapsUri?:string;authorAttributions?:{displayName?:string;uri?:string;photoUri?:string}[]};
-type Place=PlacesMatch & {googleMapsUri?:string;photos?:Photo[]};
+type Place=Omit<PlacesMatch,"photos"> & {googleMapsUri?:string;photos?:Photo[]};
 const googleMapLink=(value:unknown):string|null=>{
  if(typeof value!=="string"||value.length>2048)return null;
  try{const u=new URL(value);return u.protocol==="https:"&&
