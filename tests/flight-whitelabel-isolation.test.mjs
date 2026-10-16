@@ -27,7 +27,10 @@ test("scope the supplier script and clean only identifiable provider assets on u
   assert.match(source, /headObserver\.disconnect\(\)/);
   assert.match(source, /contentObserver\.disconnect\(\)/);
   assert.match(source, /supplierAssets/);
-  assert.match(source, /if \(isSupplierHeadAsset\(asset\)\) asset\.remove\(\)/);
+  assert.match(source, /originalHeadStyles/);
+  assert.match(source, /isNextAppStylesheet/);
+  assert.match(source, /if \(!originalHeadStyles\.has\(asset\) && !isNextAppStylesheet\(asset\)/);
+  assert.match(source, /asset\.remove\(\)/);
   assert.match(source, /window\.clearTimeout\(timeout\)/);
   assert.doesNotMatch(source, /document\.head\.replaceChildren|document\.body\.style =/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML|eval\(|document\.write\(/);
@@ -35,7 +38,9 @@ test("scope the supplier script and clean only identifiable provider assets on u
 
 test("user keeps the real supplier form or a recoverable booking link after 20 seconds", () => {
   const source = read("src/components/flights/AviasalesWhiteLabel.tsx");
-  assert.match(source, /isFormPresent\(\)/);
+  assert.match(source, /hasProviderContent\(\)/);
+  assert.match(source, /window\.setInterval\(reconcileStatus, 750\)/);
+  assert.match(source, /window\.clearInterval\(healthCheck\)/);
   assert.match(source, /20_000/);
   assert.match(source, /status === "error"/);
   assert.match(source, /window\.location\.reload\(\)/);
