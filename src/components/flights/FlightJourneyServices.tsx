@@ -11,30 +11,35 @@ const categories = [
     group: "Flight protection",
     title: "Flight protection",
     tagline: "Insurance & delay claims",
+    page: "/insurance", action: "Explore insurance",
     image: "/images/mega/airhelp.jpg",
   },
   {
     group: "Airport transfers",
     title: "Airport transfers",
     tagline: "Pickup & drop-off services",
+    page: "/transfers", action: "Explore airport transfers",
     image: "/images/mega/transfers.jpg",
   },
   {
     group: "Car rentals",
     title: "Car rentals",
     tagline: "Self-drive options",
+    page: "/cars", action: "Explore car rentals",
     image: "/images/mega/tripcom.jpg",
   },
   {
     group: "Airport essentials",
     title: "Airport extras",
     tagline: "eSIM & luggage storage",
+    page: "/transfers", action: "Explore airport extras",
     image: "/images/cities/singapore.jpg",
   },
   {
     group: "At destination",
     title: "Tours & experiences",
     tagline: "See more after landing",
+    page: "/tours", action: "Explore tours",
     image: "/images/mega/tours.jpg",
   },
 ] as const;
@@ -50,7 +55,7 @@ export default function FlightJourneyServices() {
           <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[var(--gold)]">Beyond the flight</p>
           <h2 id="flight-extras-heading" className="mt-1.5">Complete your journey</h2>
           <p className="mt-2 max-w-2xl text-sm text-[var(--text-soft)]">
-            Five simple travel categories. Choose a service to see booking partners and the dedicated airport hub.
+            Choose a category below, compare its booking partners, and continue to the provider that suits your trip.
           </p>
         </div>
         <Link href="/transfers" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-bold shadow-sm">
@@ -78,6 +83,10 @@ export default function FlightJourneyServices() {
         ))}
       </nav>
 
+      <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
+        Step 1: Select a category above. Step 2: Compare providers below. Step 3: Confirm prices and book with the supplier.
+      </p>
+
       <section aria-labelledby="flight-partners-active-heading"
         className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -87,8 +96,8 @@ export default function FlightJourneyServices() {
               {activeProviders.length} providers · select a service above to view more options
             </p>
           </div>
-          <Link href="/transfers" className="text-xs font-semibold text-[var(--gold)] underline">
-            Explore airport hub
+          <Link href={activeCategory.page} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
+            {activeCategory.action} <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,8 +108,8 @@ export default function FlightJourneyServices() {
                   {provider.name}<ArrowUpRight size={15} className="shrink-0" aria-hidden="true" />
                 </span>
                 <span className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{provider.detail}</span>
-                <span className="mt-2 text-[10px] text-[var(--text-soft)]">
-                  {provider.external ? "Partner booking website" : "GTH PRO partner tool"}
+                <span className="mt-auto pt-3 text-[11px] font-semibold text-[var(--gold)]">
+                  {provider.external ? "Visit booking partner" : "Open booking tool"} →
                 </span>
               </>
             );
