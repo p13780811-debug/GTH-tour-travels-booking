@@ -47,33 +47,81 @@ export default function AviasalesWhiteLabel() {
     let disposed = false;
     let currentScript: HTMLScriptElement | null = null;
     const supplierAssets = new Set<HTMLElement>();
+    // Snapshot BEFORE loading the vendor. Modern Next.js route CSS belongs to
+    // the app and must never be removed during a flight widget teardown.
+    const originalHeadStyles = new Set<HTMLElement>(
+      Array.from(document.head.querySelectorAll<HTMLElement>('style, link[rel="stylesheet"]')),
+    );
+
+    function isNextAppStylesheet(node: HTMLElement) {
+      if (node.tagName === "STYLE") {
+        return node.hasAttribute("data-next-hide-fouc") ||
+          node.hasAttribute("data-nextjs") || node.hasAttribute("data-n-href");
+      }
+      if (node.tagName !== "LINK") return false;
+      const link = node as HTMLLinkElement;
+      return link.href.includes("/_next/") ||
+        link.hasAttribute("data-precedence") ||
+        link.hasAttribute("data-n-p") ||
+        link.hasAttribute("data-n-href");
+    }
 
     // The vendor may insert styles into the global document while active.
     // Track only recognizable supplier assets; never delete Next.js/theme CSS.
     const headObserver = new MutationObserver((records) => {
       for (const record of records) {
         for (const node of record.addedNodes) {
-          if (isSupplierHeadAsset(node)) supplierAssets.add(node);
+          if (!(node instanceof HTMLElement)) continue;
+          if (isSupplierHeadAsset(node)) {
+            supplierAssets.add(node);
+            continue;
+          }
+          // Vendors may insert anonymous <style> blocks with generic selectors
+          // instead of putting "tpwl" in their content. They are tracked by
+          // insertion time and removed ONLY on widget unmount. Never collect
+          // Next.js stylesheets or styles already in the document.
+          if (!originalHeadStyles.has(node) &&
+              (node.tagName === "STYLE" ||
+                (node.tagName === "LINK" &&
+                 (node as HTMLLinkElement).rel === "stylesheet")) &&
+              !isNextAppStylesheet(node)) {
+            supplierAssets.add(node);
+          }
         }
       }
     });
     headObserver.observe(document.head, { childList: true });
 
-    const isFormPresent = () =>
-      !!searchRef.current?.querySelector("form, input, button, [role='combobox'], iframe") ||
-      !!ticketsRef.current?.querySelector("form, input, button, article, iframe");
-
-    function readyIfRendered() {
-      if (disposed) return;
-      if (isFormPresent()) setStatus("ready");
+    // The WL vendor may render nested divs and upgrade its form asynchronously.
+    // A previous selector-only MutationObserver produced "unavailable" even
+    // while the visible blue Search flights form had already appeared.
+    function hasProviderContent() {
+      for (const root of [searchRef.current, ticketsRef.current]) {
+        if (!root) continue;
+        if (root.querySelector("form, input, button, select, iframe, [role='combobox'], [role='button']")) {
+          return true;
+        }
+        // Some vendor custom elements expose text and multiple nested nodes
+        // before native form controls are added.
+        if (root.querySelectorAll("*").length >= 4 &&
+            (root.textContent || "").trim().length >= 12) return true;
+      }
+      return false;
     }
 
-    const contentObserver = new MutationObserver(readyIfRendered);
-    if (searchRef.current) contentObserver.observe(searchRef.current, { childList: true, subtree: true });
-    if (ticketsRef.current) contentObserver.observe(ticketsRef.current, { childList: true, subtree: true });
+    function reconcileStatus() {
+      if (!disposed && hasProviderContent()) setStatus("ready");
+    }
 
+    const contentObserver = new MutationObserver(reconcileStatus);
+    if (searchRef.current) contentObserver.observe(searchRef.current, { childList: true, subtree: true, characterData: true });
+    if (ticketsRef.current) contentObserver.observe(ticketsRef.current, { childList: true, subtree: true, characterData: true });
+    // Poll briefly because some suppliers render through portals or mutate
+    // properties without inserting observable nodes. This also clears any
+    // stale error when the form appears after the fallback deadline.
+    const healthCheck = window.setInterval(reconcileStatus, 750);
     const timeout = window.setTimeout(() => {
-      if (!disposed && !isFormPresent()) setStatus("error");
+      if (!disposed && !hasProviderContent()) setStatus("error");
     }, 20_000);
 
     function load(url: string, canRetry: boolean) {
@@ -84,12 +132,12 @@ export default function AviasalesWhiteLabel() {
       script.src = url;
       script.setAttribute("data-gth-white-label", String(WL_ID));
       currentScript = script;
-      script.onload = readyIfRendered;
+      script.onload = reconcileStatus;
       script.onerror = () => {
         script.remove();
         if (disposed) return;
         if (canRetry) load(FALLBACK_SCRIPT, false);
-        else setStatus("error");
+        else if (!hasProviderContent()) setStatus("error");
       };
       document.head.appendChild(script);
     }
@@ -98,6 +146,7 @@ export default function AviasalesWhiteLabel() {
     return () => {
       disposed = true;
       window.clearTimeout(timeout);
+      window.clearInterval(healthCheck);
       contentObserver.disconnect();
       headObserver.disconnect();
       if (currentScript) {
@@ -107,7 +156,10 @@ export default function AviasalesWhiteLabel() {
       }
       // Only provider-tagged CSS/scripts; preserve every global stylesheet.
       for (const asset of supplierAssets) {
-        if (isSupplierHeadAsset(asset)) asset.remove();
+        if (!originalHeadStyles.has(asset) && !isNextAppStylesheet(asset) &&
+            (isSupplierHeadAsset(asset) || asset.tagName === "STYLE" ||
+             (asset.tagName === "LINK" &&
+              (asset as HTMLLinkElement).rel === "stylesheet"))) asset.remove();
       }
     };
   }, []);
