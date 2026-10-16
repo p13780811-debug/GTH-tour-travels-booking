@@ -35,7 +35,7 @@ test("flight search fails closed and uses partner search safely", () => {
   const page = read("src/app/flights/page.tsx");
   const api = read("src/app/api/flights/route.ts");
   const widget = read("src/components/flights/AviasalesWhiteLabel.tsx");
-  assert.match(page, /<AviasalesWhiteLabel \/>/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(widget, /script\.onerror/);
   assert.match(widget, /script\.remove\(\)/);
   assert.match(widget, /id="tpwl-tickets"/);
