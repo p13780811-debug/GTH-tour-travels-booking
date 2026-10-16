@@ -1,139 +1,136 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, RefreshCw, ShieldCheck } from "lucide-react";
+
+type WidgetStatus = "loading" | "ready" | "error";
 
 /**
- * Travelpayouts White Label Web #23459 runs ONLY inside this disposable iframe.
+ * Supplier WL 23459 needs a normal HTTPS document: an opaque srcDoc sandbox
+ * cannot be treated as an officially supported booking environment.
  *
- * The provider module may add CSS, fonts or global event listeners to its own
- * document. Loading it in document.head of the Next.js app would leave those
- * side effects behind after client-side navigation. The iframe confines them to
- * its own document, destroyed by the browser when Flights unmounts.
- *
- * sandbox intentionally omits allow-same-origin: provider JavaScript must not
- * access the GTH PRO application's DOM, cookies or localStorage.
+ * /flights/embed is a standalone SAMEORIGIN-framed route, not the application
+ * root. The vendor's dynamically inserted CSS is contained in that document.
+ * The parent validates postMessage origin and source, and never injects the
+ * vendor script or styles into the persistent Next.js document.
  */
 export const WL_ID = 23459;
 export const WL_SCRIPT = "https://tpwidg.com/wl_web/main.js?wl_id=23459";
-
-type WidgetState = "loading" | "loaded" | "error";
-
-// Self-contained document with both Travelpayouts targets and no global CSS.
-// Fixed public script URLs are the only executable remote sources.
-const whiteLabelDocument = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aviasales flight search</title>
-</head>
-<body style="margin:0">
-<div id="tpwl-search"></div>
-<div id="tpwl-tickets"></div>
-<script>
-(function () {
-  var channel = "gth-tpwl-frame-23459";
-  function emit(type, height) {
-    window.parent.postMessage({ channel: channel, type: type, height: height }, "*");
-  }
-  function measure() {
-    var height = Math.max(
-      document.body.scrollHeight || 0,
-      document.documentElement.scrollHeight || 0,
-      360
-    );
-    emit("height", height);
-  }
-  if (window.ResizeObserver) {
-    var observer = new ResizeObserver(measure);
-    observer.observe(document.body);
-    observer.observe(document.documentElement);
-  }
-  window.addEventListener("load", measure);
-  function loadProvider(url, retry) {
-    var script = document.createElement("script");
-    script.type = "module";
-    script.async = true;
-    script.src = url;
-    script.setAttribute("data-gth-white-label", "23459");
-    script.onload = function () { emit("loaded"); measure(); };
-    script.onerror = function () {
-      script.remove();
-      if (retry) loadProvider("https://tpwgts.com/wl_web/main.js?wl_id=23459", false);
-      else emit("error");
-    };
-    document.head.appendChild(script);
-  }
-  loadProvider("https://tpwidg.com/wl_web/main.js?wl_id=23459", true);
-  measure();
-})();
-</script>
-</body>
-</html>`;
+export const WL_FRAME_ROUTE = "/flights/embed";
 
 export default function AviasalesWhiteLabel() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [status, setStatus] = useState<WidgetState>("loading");
-  const [height, setHeight] = useState(400);
+  const [status, setStatus] = useState<WidgetStatus>("loading");
+  const [height, setHeight] = useState(420);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    function handleWidgetMessage(event: MessageEvent) {
-      // Opaque sandboxed frame sends origin="null"; event.source is checked.
-      if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
-      const data = event.data;
-      if (!data || typeof data !== "object" || data.channel !== "gth-tpwl-frame-23459") return;
-      if (data.type === "height" && typeof data.height === "number" && Number.isFinite(data.height)) {
-        setHeight(Math.max(360, Math.min(3200, Math.ceil(data.height))));
-      } else if (data.type === "loaded") {
-        setStatus("loaded");
-      } else if (data.type === "error") {
+    const timeout = window.setTimeout(() => {
+      setStatus((current) => current === "loading" ? "error" : current);
+    }, 20_000);
+
+    function onMessage(event: MessageEvent) {
+      const frame = iframeRef.current;
+      if (!frame || event.source !== frame.contentWindow || event.origin !== window.location.origin) return;
+      const value: unknown = event.data;
+      if (!value || typeof value !== "object") return;
+      const payload = value as Record<string, unknown>;
+      if (payload.channel !== "gth-tpwl-23459") return;
+      if (payload.type === "height" && typeof payload.height === "number" && Number.isFinite(payload.height)) {
+        setHeight(Math.min(6000, Math.max(360, Math.ceil(payload.height))));
+      }
+      if (payload.type === "ready") {
+        window.clearTimeout(timeout);
+        setStatus("ready");
+      }
+      if (payload.type === "error") {
+        window.clearTimeout(timeout);
         setStatus("error");
       }
     }
-    window.addEventListener("message", handleWidgetMessage);
-    return () => window.removeEventListener("message", handleWidgetMessage);
-  }, []);
+    window.addEventListener("message", onMessage);
+    return () => {
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+    };
+  }, [attempt]);
+
+  function retry() {
+    setStatus("loading");
+    setHeight(420);
+    setAttempt((value) => value + 1);
+  }
 
   return (
     <section id="flight-search" aria-labelledby="flight-white-label-heading"
       className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">Aviasales · Travelpayouts White Label</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">
+        Aviasales · Travelpayouts White Label
+      </p>
       <h2 id="flight-white-label-heading" className="mt-2 text-xl font-bold sm:text-2xl">
-        Search flights and view provider results
+        Find flights for your trip
       </h2>
       <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-        Choose airports, dates and passengers below. Available supplier search results appear
-        beneath the form. The separate historical fare cache is not used for booking.
+        Select your departure airport, destination, travel dates and passengers.
+        Compare results from the flight provider, then complete payment with the ticket seller.
       </p>
-      {status === "loading" && (
-        <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading Aviasales flight search…</p>
+
+      <div className="mt-5 flex flex-wrap gap-2 text-xs text-[var(--text-soft)]">
+        <span className="rounded-lg border border-[var(--border)] px-3 py-2">1. Choose your route</span>
+        <span className="rounded-lg border border-[var(--border)] px-3 py-2">2. Select dates & passengers</span>
+        <span className="rounded-lg border border-[var(--border)] px-3 py-2">3. Compare flights & book</span>
+      </div>
+
+      {status === "error" ? (
+        <div role="alert" className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 sm:p-6">
+          <h3 className="text-base font-semibold">Flight search is temporarily unavailable here</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
+            Your browser, a content blocker or the supplier may prevent the embedded booking form from loading.
+            Use the Aviasales partner link to search and book directly, or retry the embedded search.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a href="/flights/out/aviasales" target="_blank" rel="noopener noreferrer sponsored"
+              className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+              Open Aviasales flight search <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
+            <button type="button" onClick={retry}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+              <RefreshCw size={16} aria-hidden="true" /> Retry on GTH PRO
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="relative mt-5 min-w-0 overflow-hidden rounded-xl bg-[var(--bg)]">
+          <iframe key={attempt} ref={iframeRef} src={WL_FRAME_ROUTE}
+            title="Aviasales flight search, date selection and results"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="eager"
+            className={"w-full min-w-0 border-0 bg-white transition-opacity duration-200 " + (status === "ready" ? "opacity-100" : "opacity-0")}
+            style={{ height: height + "px" }}
+          />
+          {status === "loading" && (
+            <div role="status" aria-live="polite"
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[var(--card)] p-5 text-center">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-[var(--gold)] border-t-transparent" aria-hidden="true" />
+              <p className="text-sm font-semibold">Connecting to Aviasales flight search…</p>
+              <p className="max-w-sm text-xs leading-5 text-[var(--text-soft)]">
+                The search form will appear here. If it cannot load, we will offer a direct supplier search instead.
+              </p>
+            </div>
+          )}
+        </div>
       )}
-      {status === "error" && (
-        <p role="alert" className="mt-4 rounded-xl border border-[var(--border)] p-4 text-sm text-[var(--text-soft)]">
-          The supplier flight tool could not load in the isolated frame. You can still use the
-          approved Aviasales provider link below to search and book.
-        </p>
-      )}
-      <iframe
-        ref={iframeRef}
-        srcDoc={whiteLabelDocument}
-        title="Aviasales flight search and results"
-        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
-        referrerPolicy="strict-origin-when-cross-origin"
-        loading="eager"
-        className="mt-4 w-full min-w-0 rounded-xl border-0 bg-white"
-        style={{ height: height + "px" }}
-      />
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-        <p className="flex max-w-2xl items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
-          <ShieldCheck className="mt-0.5 shrink-0" size={15} aria-hidden="true" />
-          Search, prices, booking and support are operated by the independent supplier. GTH PRO
-          does not issue flight tickets; the seller confirms the final fare and availability.
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border)] pt-4">
+        <p className="flex max-w-2xl items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+          <ShieldCheck className="mt-1 shrink-0" size={15} aria-hidden="true" />
+          Flights and ticket prices are provided by independent sellers. GTH PRO does not issue tickets;
+          final fare, baggage rules, availability, payment and support depend on the chosen provider.
         </p>
         <a href="/flights/out/aviasales" target="_blank" rel="noopener noreferrer sponsored"
-          className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-          Search on Aviasales <ArrowUpRight size={16} aria-hidden="true" />
+          className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[var(--gold)]">
+          Search directly on Aviasales <ArrowRight size={16} aria-hidden="true" />
         </a>
       </div>
     </section>
