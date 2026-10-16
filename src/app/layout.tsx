@@ -1,4 +1,4 @@
-import { Cinzel, Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans, Playfair_Display } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
@@ -12,10 +12,9 @@ const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--f
 
 const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
-});
+// Keep RootLayout JSX identical for approved Real Estate protection.
+// The legacy body-font binding now uses the site-wide Noto Sans family.
+const cinzel = notoSans;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

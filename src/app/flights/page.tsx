@@ -14,14 +14,14 @@ export default async function FlightsPage({ searchParams }: Props) {
   const destination = /^[A-Z]{3}$/.test(query.destination || "") ? query.destination! : "";
 
   return (
-    <main className="gth-flights-root overflow-x-hidden" data-gth-flight-page="true">
-      <section className="gth-flight-hero relative isolate overflow-hidden border-b border-[var(--border)]">
+    <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]">
         <div aria-hidden="true"
-          className="gth-flight-hero-photo pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 sm:block">
+          className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
           <Image src="/images/mega/flights.jpg" alt="" fill priority
             sizes="(max-width: 1024px) 35vw, 580px" className="object-cover object-center" />
         </div>
-        <div className="gth-flight-shell relative z-10 px-4 py-9 sm:px-6 sm:py-12 lg:py-14">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:py-14">
           <div className="max-w-2xl">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
               GTH PRO · Worldwide travel
@@ -56,7 +56,7 @@ export default async function FlightsPage({ searchParams }: Props) {
         </div>
       </section>
 
-      <div className="gth-flight-shell px-4 pb-16 pt-6 sm:px-6 sm:pt-9">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-9">
         {destination && origin !== destination && (
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
             <PlaneTakeoff size={18} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
