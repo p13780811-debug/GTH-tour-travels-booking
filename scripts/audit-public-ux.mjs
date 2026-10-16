@@ -33,7 +33,7 @@ function metadata(html) {
   const desc=clean(html.match(/<meta\s+name="description"\s+content="([^"]*)"/i)?.[1]);
   const canonical=(html.match(/<link\s+rel="canonical"\s+href="([^"]*)"/i)?.[1]||"").replace(/&amp;/g,"&");
   const robots=html.match(/<meta\s+name="robots"\s+content="([^"]*)"/i)?.[1]||"";
-  const h1=(html.match(/<h1\\b[^>]*>([\\s\\S]*?)<\\/h1>/i)?.[1]||"").replace(/<[^>]*>/g," ");
+  const h1=(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1]||"").replace(/<[^>]*>/g," ");
   const lang=html.match(/<html[^>]*\slang="([^"]*)"/i)?.[1]||"";
   return {title,description:desc,canonical,robots,h1:clean(h1),lang};
 }
