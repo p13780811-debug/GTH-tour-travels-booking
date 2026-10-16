@@ -16,6 +16,7 @@ const services = [
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
   { name: "Destinations", label: "EXPLORE THE WORLD", href: "/destinations", img: "/images/cities/paris.jpg", Icon: Globe2, detail: "Discover international destinations, city highlights and helpful planning information." },
   { name: "Airport & Travel Services", label: "TRANSFERS & TRAVEL EXTRAS", href: "/transfers", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Explore airport transfers, flight compensation, car rentals, lounges, luggage options and onward connections." },
+  { name: "Car Rentals", label: "SELF-DRIVE TRAVEL", href: "/cars", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Plan car hire, pickup dates and vehicle requirements worldwide with booking partner handoff." },
   { name: "Travel Insurance", label: "SAFER TRAVEL PLANNING", href: "/insurance", img: "/images/mega/insurance.jpg", Icon: ShieldCheck, detail: "Review medical coverage, exclusions, claims and cancellation terms before considering a policy." },
 ] as const;
 const additional = [
