@@ -29,7 +29,7 @@ test("Original hotel photos stay private, are resized and stripped of metadata",
  assert.match(api,/\.webp\(\{quality:78,effort:4\}\)/);
  assert.match(api,/PRIVATE_BUCKET/);
  assert.match(api,/\.eq\("owner_id",user\.id\)/);
- assert.match(api,/\.eq\("status","pending"\)/); // check quoted form below if changed
+ assert.match(api,/submission\.status!=="pending"/);
  assert.doesNotMatch(api,/getPublicUrl|googlePlaces|NEXT_PUBLIC_GOOGLE/);
 });
 
