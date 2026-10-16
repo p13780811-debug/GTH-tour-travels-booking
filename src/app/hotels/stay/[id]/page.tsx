@@ -23,10 +23,13 @@ function safeLink(value:unknown,allowPartner=false):string|null{
 }
 function safeImage(value:unknown):string|null{
  if(typeof value!=="string"||value.length>1024)return null;
- try{const u=new URL(value);if(u.protocol!=="https:"||u.username||u.password||!u.hostname.includes("."))return null;
- if(/google\\.com\\/travel|facebook\\.com\\/photo/i.test(value))return null;
- if(!/\\.(jpe?g|png|webp|avif)(?:$|[?#])/i.test(u.pathname+u.search))return null;
- return value;
+ try{
+  const u=new URL(value);
+  if(u.protocol!=="https:"||u.username||u.password||u.port||!u.hostname.includes("."))return null;
+  if(["www.google.com","google.com","www.facebook.com","facebook.com"].includes(u.hostname.toLowerCase()))return null;
+  const path=u.pathname.toLowerCase();
+  if(![".jpg",".jpeg",".png",".webp",".avif"].some(ext=>path.endsWith(ext)))return null;
+  return u.toString();
  }catch{return null;}
 }
 const getHotel=cache(async(id:string)=>{
