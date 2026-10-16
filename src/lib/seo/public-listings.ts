@@ -29,12 +29,18 @@ function validHttps(value: unknown): boolean {
       !/^[0-9.]+$/.test(url.hostname) && !url.hostname.includes(":");
   } catch { return false; }
 }
+const PARTNER_HOSTS = ["booking.com", "trip.com", "hotellook.com", "klook.com", "tp.media", "tpo.lv"];
+function validPartner(value: unknown): boolean {
+  if (!validHttps(value) || typeof value !== "string") return false;
+  const host = new URL(value).hostname.toLowerCase();
+  return PARTNER_HOSTS.some(domain => host === domain || host.endsWith("." + domain));
+}
 export function isIndexableHotel(item: HotelSeoRecord | null): boolean {
   // Only independently approved, source-attributed hotel partner rows.
   // OSM location-only directory data has no independently verified amenities/rates.
   return !!item && item.source !== "OpenStreetMap" &&
     clean(item.name, 140).length >= 5 && clean(item.city, 100).length >= 2 &&
-    validHttps(item.sourceUrl) && validHttps(item.partner);
+    validHttps(item.sourceUrl) && validPartner(item.partner);
 }
 export function hotelMetadata(item: HotelSeoRecord | null, id: string, launched: boolean): Metadata {
   if (!item) return { title: "Hotel unavailable | GTH PRO", robots: { index: false, follow: false } };
