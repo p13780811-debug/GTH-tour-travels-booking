@@ -28,8 +28,8 @@ export default function SearchBox() {
     };
 
     return (
-        <div className="relative w-full max-w-md mx-auto">
-            <div className="relative flex items-center group">
+        <div className="relative mx-auto w-full min-w-0 max-w-md">
+            <div className="group relative flex min-w-0 items-center">
                 <input
                     value={query}
                     onChange={(e) => {
@@ -37,11 +37,14 @@ export default function SearchBox() {
                         setIsOpen(true)
                     }}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search city hotel..."
-                    className="w-full px-5 py-3 pr-12 rounded-2xl gth-glass/10 backdrop-blur-md text-white border border-white/10 focus:border-yellow-500 outline-none transition-all placeholder:text-gray-500"
+                    aria-label="Search GTH PRO cities and services"
+                    placeholder="Search cities, hotels..."
+                    className="w-full min-w-0 rounded-2xl border border-[var(--border)] bg-transparent py-3 pl-4 pr-12 text-sm text-[var(--text)] outline-none transition-all placeholder:text-[var(--muted)] focus:border-[var(--gold)]"
                 />
 
                 <button
+                    type="button"
+                    aria-label="Submit ecosystem search"
                     onClick={() => handleSearch()}
                     className="absolute right-2 p-2 gth-btn-gold hover:gth-glass text-black rounded-xl transition-all shadow-lg"
                 >
