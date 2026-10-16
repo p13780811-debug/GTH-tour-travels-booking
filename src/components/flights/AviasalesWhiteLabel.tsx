@@ -136,8 +136,23 @@ export default function AviasalesWhiteLabel() {
       script.onerror = () => {
         script.remove();
         if (disposed) return;
-        if (canRetry) load(FALLBACK_SCRIPT, false);
-        else if (!hasProviderContent()) setStatus("error");
+        // A supplier module can build its UI before a later subresource fails.
+        // Never start a SECOND TPWL instance over an already rendered form.
+        if (hasProviderContent()) {
+          reconcileStatus();
+          return;
+        }
+        if (canRetry) {
+          // Allow asynchronous UI rendering to finish before the fallback CDN;
+          // two live White Label instances can inject duplicate global styles.
+          window.setTimeout(() => {
+            if (disposed) return;
+            if (hasProviderContent()) reconcileStatus();
+            else load(FALLBACK_SCRIPT, false);
+          }, 1200);
+        } else if (!hasProviderContent()) {
+          setStatus("error");
+        }
       };
       document.head.appendChild(script);
     }
