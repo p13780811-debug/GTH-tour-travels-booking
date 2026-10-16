@@ -60,11 +60,18 @@ try {
     }
     if (width === 1366) {
       const trigger = page.getByRole("button", {name:"Open ecosystem search"});
+      await page.waitForTimeout(700);
       await trigger.click();
+      await page.waitForTimeout(300);
+      const expanded = await trigger.getAttribute("aria-expanded");
       const input = page.getByRole("textbox", {name:"Search GTH PRO cities and services"});
-      assertMeasure(await input.isVisible(), "search popover opens with working input", result);
-      const field = await input.boundingBox();
-      assertMeasure(field && field.width >= 240, "search input has usable width", { result, field });
+      const inputVisible = await input.isVisible();
+      console.log("NAV_SEARCH_INTERACTION", JSON.stringify({expanded, inputVisible,inputs:await page.locator("input").count()}));
+      assertMeasure(expanded === "true" && inputVisible, "search popover opens with working input", {result, expanded, inputVisible});
+      if (inputVisible) {
+        const field = await input.boundingBox();
+        assertMeasure(field && field.width >= 240, "search input has usable width", { result, field });
+      }
     }
     await page.screenshot({ path: "navbar-" + width + ".png", fullPage: false });
     await context.close();
