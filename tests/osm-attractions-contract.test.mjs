@@ -12,10 +12,13 @@ test("Source ODbL table only exposes community directory with RLS",()=>{
  assert.match(sql,/GRANT EXECUTE ON FUNCTION public.gth_upsert_osm_attractions\(jsonb\) TO service_role/);
  assert.doesNotMatch(sql,/affiliate_link|price_numeric|rating/);
 });
-test("Cloud sync uses six India Geofabrik source zones and fixed official HTTPS",()=>{
+test("Cloud sync resolves licensed global extracts from an official registry and keeps OIDC",()=>{
  const wf=read(".github/workflows/gth-osm-attractions-sync.yml");
- for(const zone of ["western","northern","southern","eastern","central","north-eastern"])assert.ok(wf.includes("asia/india/"+zone+"-zone"));
- assert.match(wf,/download.geofabrik.de\/\$REGION-latest.osm.pbf/);
+ assert.match(wf,/index|registry|Geofabrik/i);
+ assert.match(wf,/--slot "\$GITHUB_RUN_NUMBER"/);
+ assert.match(wf,/geofabrik_registry.py/);
+ assert.match(wf,/\$PBF_URL/);
+ assert.match(wf,/--country-code "\$COUNTRY_CODE"/);
  assert.match(wf,/osmium tags-filter/);
  assert.match(wf,/--geometry-types=point,polygon/);
  assert.match(wf,/id-token: write/);
@@ -40,10 +43,33 @@ test("Tours index, API and directory include ODbL attribution; no false tickets"
  const tours=read("src/app/tours/page.tsx");
  for(const s of [api,page,rail])assert.match(s,/OpenStreetMap/);
  assert.match(api,/verified_tickets:false/);
+ assert.match(read("src/lib/travel/osmAttractions.ts"),/nextCursor/);
+ assert.match(api,/\.\.\.result/);
+ assert.doesNotMatch(api,/pageRaw|Number\(pageRaw\)>100/);
+ assert.match(page,/sourceProgress/);
+ assert.match(page,/Next 24/);
+ assert.match(read("src/app/attractions/progress/page.tsx"),/countriesWithRecords/);
+ assert.match(read("src/app/destinations\/[slug]\/page.tsx"),/countryName=\{destination.country\}/);
  assert.match(api,/photo_url:null/);
  assert.match(page,/robots:\{index:false,follow:true\}/);
  assert.match(page,/snap-x snap-mandatory/);
  assert.match(rail,/h-64 w-60 shrink-0 snap-start/);
  assert.match(tours,/OSMAttractionsRail/);
  assert.doesNotMatch(rail,/Math\.random|price_numeric|affiliate_link/);
+});
+
+test("Worldwide source migration adds countries and completed-run receipts without removing RLS",()=>{
+ const sql=read("supabase/migrations/20261017193000_osm_worldwide_directory.sql");
+ assert.match(sql,/ADD COLUMN IF NOT EXISTS country_code/);
+ assert.match(sql,/security_invoker = true/);
+ assert.match(sql,/gth_osm_attraction_sync_runs/);
+ assert.match(sql,/ENABLE ROW LEVEL SECURITY/);
+ assert.match(sql,/REVOKE ALL ON public.gth_osm_attraction_sync_runs/);
+ assert.match(sql,/CREATE INDEX IF NOT EXISTS gth_osm_attractions_country_keyset/);
+});
+test("Shared source helper exposes unbounded source-ID cursor rather than synthetic page totals",()=>{
+ const src=read("src/lib/travel/osmAttractions.ts");
+ assert.match(src,/\.gt\("source_id",filters.after\)/);
+ assert.match(src,/\.limit\(limit\+1\)/);
+ assert.doesNotMatch(src,/pageRaw|page<100|Math\.random/);
 });

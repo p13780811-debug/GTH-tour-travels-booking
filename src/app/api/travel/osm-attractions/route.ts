@@ -1,27 +1,36 @@
-import {createClient} from "@supabase/supabase-js";
 import {NextResponse} from "next/server";
+import {listPlaces,sourceProgress,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
 export const dynamic="force-dynamic";
-const HEADERS={"Cache-Control":"public, s-maxage=300, stale-while-revalidate=600","X-Content-Type-Options":"nosniff"};
-const REGIONS=new Set(["goa","india"]);
-const CATEGORIES=new Set(["attraction","museum","viewpoint","zoo","theme-park","fort","castle","ruins","monument","archaeological-site","beach","national-park","park","nature-reserve"]);
+const HEADERS={"Cache-Control":"public, s-maxage=120, stale-while-revalidate=240","X-Content-Type-Options":"nosniff"};
+const ALLOWED=new Set(["country","region","category","q","city","after","limit","view","page"]);
 export async function GET(req:Request){
- const p=new URL(req.url).searchParams;
- if([...p.keys()].some(k=>!["region","category","page"].includes(k)))return NextResponse.json({error:"Invalid filters"},{status:400});
- const region=p.get("region")||"india",category=p.get("category")||"",pageRaw=p.get("page")||"1";
- if(!REGIONS.has(region)||(category&&!CATEGORIES.has(category))||
-  !/^[1-9][0-9]{0,2}$/.test(pageRaw)||Number(pageRaw)>100)return NextResponse.json({error:"Invalid filters"},{status:400});
- const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
- if(!url||!key)return NextResponse.json({error:"Source directory unavailable"},{status:503});
- try{
-  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
-  let q=db.from("gth_osm_attractions").select("source_id,name,category,region_scope,city,latitude,longitude,source_url,source_license")
-   .eq("is_public",true).eq("is_community_directory",true).eq("region_scope",region)
-   .order("name",{ascending:true}).order("source_id",{ascending:true}).range((Number(pageRaw)-1)*24,Number(pageRaw)*24-1);
-  if(category)q=q.eq("category",category);
-  const {data,error}=await q;if(error)throw new Error("Source query unavailable");
-  return NextResponse.json({items:(data||[]).map(row=>({...row,verified_tickets:false,available_for_booking:false,
-   independently_verified:false,photo_url:null})),region,category:category||null,page:Number(pageRaw),
-   attribution:"© OpenStreetMap contributors (ODbL 1.0), via Geofabrik.",
-   note:"Community-mapped places, not verified attractions, entrance tickets, supplier prices or available tours."},{headers:HEADERS});
- }catch{return NextResponse.json({error:"Source directory temporarily unavailable"},{status:502,headers:{"Cache-Control":"no-store"}});}
+  const p=new URL(req.url).searchParams;
+  if([...p.keys()].some(k=>!ALLOWED.has(k))||[...p.keys()].some(k=>p.getAll(k).length>1))
+    return NextResponse.json({error:"Invalid filters"},{status:400});
+  if(p.get("view")==="progress"){
+    if(p.size>1)return NextResponse.json({error:"Invalid filters"},{status:400});
+    try{return NextResponse.json({...await sourceProgress(),attribution:"© OpenStreetMap contributors · ODbL 1.0",verified_places:0},{headers:HEADERS});}
+    catch{return NextResponse.json({error:"Progress currently unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
+  }
+  if(p.has("view")||(p.has("limit")&&!/^(?:[1-9]|[1-3][0-9]|4[0-8])$/.test(p.get("limit")||"")))
+    return NextResponse.json({error:"Invalid filters"},{status:400});
+  const pnum=p.get("page");
+  if(pnum&&(!/^[1-9][0-9]{0,5}$/.test(pnum)||Number(pnum)>1000000))
+    return NextResponse.json({error:"Invalid page"},{status:400});
+  const filters:DirectoryFilters={
+    country:p.get("country")||undefined,region:p.get("region")||undefined,
+    category:p.get("category")||undefined,city:p.get("city")||undefined,
+    q:p.get("q")||undefined,after:p.get("after")||undefined,
+    limit:p.has("limit")?Number(p.get("limit")):24,
+    page:pnum?Number(pnum):undefined,
+  };
+  if(!validFilters(filters))return NextResponse.json({error:"Invalid filters"},{status:400});
+  try{
+    const result=await listPlaces(filters);
+    return NextResponse.json({...result,
+      items:result.items.map(item=>({...item,verified_tickets:false,available_for_booking:false,
+        independently_verified:false,photo_url:null})),
+      filters,region:filters.region||"all",category:filters.category||null,page:filters.page||1,attribution:"© OpenStreetMap contributors (ODbL 1.0), via Geofabrik.",
+      note:"Country inferred from licensed extract scope, not independently certified. Mapped places are not bookable tickets."},{headers:HEADERS});
+  }catch{return NextResponse.json({error:"Source directory temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
 }
