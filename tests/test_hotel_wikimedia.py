@@ -42,13 +42,13 @@ class WikimediaHotelTests(unittest.TestCase):
     {"type":"Feature","id":"node/704","geometry":{"type":"Point","coordinates":[73.0,19.0]},
      "properties":{"tourism":"hotel","name":"Hotel 704","image":"https://share.google/images/imaginary.jpg"}},
    ]
-   source.write_text("\\n".join(json.dumps(x) for x in rows))
+   source.write_text("\n".join(json.dumps(x) for x in rows))
    found=module.candidates(source)
    self.assertEqual(len(found),1)
    self.assertEqual(found[0][0],"node/702")
    self.assertIsNone(found[0][1][0])
    self.assertEqual(found[0][1][2],"Hotel 702 exterior.jpg")
-   self.assertIsNone(module.explicitly_tagged_commons_file({"wikimedia_commons":"File:unsafe\\n.jpg"}))
+   self.assertIsNone(module.explicitly_tagged_commons_file({"wikimedia_commons":"File:unsafe\n.jpg"}))
 
  def test_names_and_coordinates_must_agree(self):
   item={"entities":{"Q123":{"labels":{"en":{"value":"The Taj Hotel"}},"claims":{
