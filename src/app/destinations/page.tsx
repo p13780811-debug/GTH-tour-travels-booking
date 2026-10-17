@@ -1,8 +1,8 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, MapPin, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
+import DestinationCard from "@/components/destination/DestinationCard";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
@@ -20,17 +20,6 @@ type Destination = { slug: string; title: string; image: string; description: st
 type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[] }> };
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
-
-const palette = {
-  "--bg": "#061426",
-  "--text": "#f6f8fe",
-  "--text-soft": "#c0ccdd",
-  "--text-muted": "#9caec5",
-  "--border": "rgba(233,194,112,.24)",
-  "--card": "rgba(9,26,45,.88)",
-  "--card-strong": "#08182b",
-  "--gold": "#eac671",
-} as CSSProperties;
 
 function pageLink(search: string, page: number, country = "", region = "", sort = "name") {
   const params = new URLSearchParams();
@@ -109,152 +98,143 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const page = Math.min(requestedPage, pages);
   const visible = filtered.slice((page - 1) * perPage, page * perPage);
   const featuredDestinations = featured.map((slug) => allDestinations.find((item) => item.slug === slug)).filter((item): item is Destination => Boolean(item));
+  const railNames = [...new Set(visible.map((item)=>item.region||"Other regions"))].sort((a,b)=>a.localeCompare(b));
+  const rails = railNames.map((name)=>({name,items:visible.filter((item)=>(item.region||"Other regions")===name)}));
+  const countryParam = country || "";
+  const regionParam = region || "";
 
   return (
-    <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
-      <section className="relative isolate overflow-hidden border-b border-[#eac671]/25">
-        <Image src="/images/global-city.jpg" alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#020b1c]/95 via-[#061426]/90 to-[#071b33]/65" />
-        <div className="mx-auto grid max-w-[1400px] items-center gap-5 px-4 py-6 sm:gap-9 sm:px-8 sm:py-16 md:py-20 lg:min-h-[570px] lg:grid-cols-[1.15fr_.85fr] lg:gap-12">
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+        <Image src="/images/global-city.jpg" alt="" fill priority sizes="100vw"
+          className="absolute -z-20 object-cover opacity-20" />
+        <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80" />
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.05fr_.95fr]">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#eac671]/45 bg-[#051426]/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.17em] text-[#f4d58a]">
-              <Globe2 size={15} /> GTH PRO / Global Travel Discovery
-            </div>
-            <h1 className="mt-3 max-w-3xl text-2xl font-semibold leading-[1.1] sm:mt-6 sm:text-4xl tracking-[-.04em] sm:text-5xl lg:text-[62px]">
-              The world is yours <span className="text-[#efd087]">to discover.</span>
-            </h1>
-            <p className="mt-2 max-w-xl text-xs leading-5 sm:mt-6 sm:text-sm sm:leading-7 text-[#d2dceb] sm:text-base">
-              Explore destination stories, connect with source-backed hotel and tour listings, and plan every journey with more confidence.
+            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">
+              <Globe2 size={16}/> GTH PRO Worldwide Explorer
             </p>
-            <form role="search" action="/destinations" method="get" className="mt-4 flex w-full max-w-2xl sm:mt-8 flex-col gap-3 rounded-2xl border border-[#eac671]/35 bg-[#041326]/90 p-3 shadow-[0_16px_45px_rgba(0,0,0,.32)] sm:flex-row">
+            <h1 className="mt-5 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+              One world. Every destination. One ecosystem.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">
+              Explore cities and regions across the globe, then connect to Hotels, Flights, Tours, Activities,
+              Transport, Real Estate and Tender discovery from each destination guide.
+            </p>
+            <form role="search" action="/destinations" method="get"
+              className="mt-6 flex max-w-xl flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:flex-row">
               <label htmlFor="destination-search" className="sr-only">Search global destinations</label>
-              <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3">
-                <Search size={20} className="shrink-0 text-[#eac671]" />
-                <input id="destination-search" name="search" type="search" defaultValue={search}
-                  placeholder="Search a city, country or travel theme" maxLength={70}
-                  className="min-h-12 w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-[#afc0d5] focus-visible:outline-none" />
+              <div className="flex min-w-0 flex-1 items-center gap-2 px-3">
+                <Search size={18} className="shrink-0 text-[var(--text-soft)]"/>
+                <input id="destination-search" name="search" type="search" defaultValue={search} maxLength={70}
+                  placeholder="Search city, country or interest" className="min-h-11 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none"/>
               </div>
-              <button type="submit" className="gth-btn-gold inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl px-6 text-sm font-bold">
-                Discover <ArrowRight size={16} />
+              <button type="submit" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
+                Explore <ArrowRight size={16}/>
               </button>
             </form>
-            <div className="mt-3 hidden flex-wrap gap-x-5 gap-y-3 sm:flex sm:mt-6 text-xs font-medium text-[#d2dceb]">
-              <span className="flex items-center gap-2"><Compass size={16} className="text-[#eac671]" /> Curated guides</span>
-              <span className="flex items-center gap-2"><Hotel size={16} className="text-[#eac671]" /> Hotel discovery</span>
-              <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#eac671]" /> Partner booking handoff</span>
+            <p className="mt-4 flex flex-wrap gap-3 text-xs text-[var(--text-soft)]">
+              <span className="inline-flex items-center gap-1"><Hotel size={15}/> Hotels</span>
+              <span className="inline-flex items-center gap-1"><Plane size={15}/> Flights</span>
+              <span className="inline-flex items-center gap-1"><Compass size={15}/> Experiences</span>
+              <span className="inline-flex items-center gap-1"><ShieldCheck size={15}/> Verified source context</span>
+            </p>
+          </div>
+          {featuredDestinations.length>0&&<div className="min-w-0">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold">Featured destinations</h2>
+              <span className="text-xs text-[var(--text-soft)]">Swipe to explore <ArrowRight size={13} className="inline"/></span>
             </div>
-          </div>
-          <div className="hidden h-[250px] grid-cols-2 gap-3 sm:grid sm:h-[325px] lg:h-[385px]">
-            {featuredDestinations.slice(0, 4).map((item, index) => (
-              <Link href={"/destinations/" + item.slug} key={item.slug}
-                className={"group relative overflow-hidden rounded-2xl border border-[#eac671]/35 bg-[#0b2038] shadow-[0_15px_32px_rgba(0,0,0,.25)] " + (index % 2 === 0 ? "translate-y-0" : "translate-y-3")}>
-                <Image src={item.image} alt={item.title} fill sizes="(max-width: 1024px) 42vw, 20vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#031021]/95 via-transparent to-transparent" />
-                <span className="absolute bottom-4 left-4 text-sm font-semibold tracking-wide text-white sm:text-lg">{item.title}</span>
-              </Link>
-            ))}
-          </div>
+            <div role="region" aria-label="Featured destinations horizontal rail" tabIndex={0}
+              className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
+              {featuredDestinations.map((destination)=><DestinationCard key={destination.slug} destination={destination}/>)}
+            </div>
+          </div>}
         </div>
       </section>
 
-      <section id="discover" className="mx-auto max-w-[1400px] scroll-mt-16 px-4 py-7 sm:px-8 sm:py-12 md:py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <section id="discover" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 md:py-14">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-[#eac671]"><Sparkles size={15} /> Global Collection</p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight sm:mt-3 sm:text-3xl md:text-4xl">Destinations worth exploring</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#c0ccdd]">
-              {search || country || region ? "Destinations matching your selected filters." : "Editorial inspiration from across the globe."} Booking and live availability are confirmed by partners.
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">
+              <Sparkles size={16}/> Worldwide destination directory
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Explore by region</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+              Open any destination to browse the full GTH PRO Travel, Real Estate and Tenders category explorer.
             </p>
           </div>
-          <div className="rounded-full border border-[#eac671]/30 px-4 py-2 text-xs text-[#dbe3f2]" role="status">
-            {filtered.length} {filtered.length === 1 ? "destination" : "destinations"} · {countries.length} countries in directory
-          </div>
+          <p role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs text-[var(--text-soft)]">
+            {filtered.length} destinations · {countries.length} countries in directory
+          </p>
         </div>
-
         <form role="search" action="/destinations" method="get"
-          className="mt-8 grid gap-3 rounded-2xl border border-[#eac671]/30 bg-[#0c2037] p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end" aria-label="Filter worldwide destination directory">
-          <label className="block text-xs font-semibold text-[#d3deeb]">Destination or country
-            <input name="search" type="search" maxLength={70} defaultValue={search} placeholder="City, country, interest"
-              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white" />
+          aria-label="Filter worldwide destination directory"
+          className="mt-6 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+          <label className="text-xs font-semibold">Search destination
+            <input name="search" type="search" defaultValue={search} maxLength={70}
+              placeholder="City, country or theme" className="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"/>
           </label>
-          <label className="block text-xs font-semibold text-[#d3deeb]">Region
-            <select name="region" defaultValue={region}
-              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+          <label className="text-xs font-semibold">Region
+            <select name="region" defaultValue={regionParam} className="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
               <option value="">All regions</option>
-              {regions.map(value => <option key={value} value={value}>{value}</option>)}
+              {regions.map(value=><option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <label className="block text-xs font-semibold text-[#d3deeb]">Country
-            <select name="country" defaultValue={country}
-              className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+          <label className="text-xs font-semibold">Country
+            <select name="country" defaultValue={countryParam} className="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
               <option value="">All countries</option>
-              {countries.map(value => <option key={value} value={value}>{value}</option>)}
+              {countries.map(value=><option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <label className="block text-xs font-semibold text-[#d3deeb]">Sort by
-            <select name="sort" defaultValue={sort} className="mt-2 min-h-12 w-full rounded-xl border border-[#eac671]/35 bg-[#041426] px-3 text-sm text-white">
+          <label className="text-xs font-semibold">Sort
+            <select name="sort" defaultValue={sort} className="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
               <option value="name">Destination A–Z</option>
               <option value="country">Country A–Z</option>
             </select>
           </label>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="submit" className="gth-btn-gold inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Apply filters <ArrowRight size={16}/></button>
-            <Link href="/destinations#discover" className="inline-flex min-h-12 items-center justify-center px-2 text-xs font-semibold text-[#f1d48b] underline">Reset</Link>
+          <div className="flex items-center gap-2">
+            <button type="submit" className="gth-btn-gold inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Apply <ArrowRight size={15}/></button>
+            <Link href="/destinations#discover" className="inline-flex min-h-11 items-center px-2 text-xs font-semibold underline">Reset</Link>
           </div>
         </form>
-        <p className="mt-3 text-xs leading-6 text-[#b8c8dd]">Directory locations are editorial references; country grouping is geographic, not evidence of live hotel inventory, official tourism partnership or verified travel prices.</p>
-        
-        {visible.length ? (
-          <div role="region" aria-label="Swipe destination cards horizontally"
-               tabIndex={0} className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-8 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible lg:grid-cols-3 xl:gap-6">
-            {visible.map((destination, index) => (
-              <Link href={"/destinations/" + destination.slug} key={destination.slug}
-                className="group flex w-[44vw] min-w-[144px] max-w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[#eac671]/25 md:w-auto md:max-w-none md:shrink bg-[#0c2037] shadow-[0_10px_30px_rgba(0,0,0,.2)] transition duration-300 hover:-translate-y-1 hover:border-[#efd087]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#efd087]">
-                <div className="relative h-[112px] overflow-hidden sm:h-[140px] md:h-[230px] xl:h-[280px]">
-                  <Image src={destination.image} alt={destination.title} fill loading="lazy"
-                    sizes="(max-width: 767px) 44vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#061426]/90 via-transparent to-transparent" />
-                  <span className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-semibold md:bottom-4 md:left-5 md:gap-2 md:text-xs text-[#ffdb89]"><MapPin size={15} /> Destination {String((page - 1) * perPage + index + 1).padStart(2, "0")}</span>
-                </div>
-                <div className="flex min-h-[108px] flex-1 flex-col p-3 md:min-h-0 md:p-5">
-                  <h3 className="line-clamp-1 text-[14px] font-semibold leading-tight text-white md:line-clamp-none md:text-2xl">{destination.title}</h3>
-                  <p className="mt-2 line-clamp-1 flex items-center gap-1 text-[10px] font-semibold md:gap-2 md:text-xs text-[#f2d58e]"><Globe2 size={14}/>{destination.country || "Country information unavailable"}{destination.region ? ` · ${destination.region}` : ""}</p>
-                  <p className="mt-3 hidden line-clamp-3 text-sm leading-6 text-[#c2cfdf] md:block">{destination.description}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-2 text-[11px] font-bold text-[#efd087] md:mt-5 md:pt-0 md:text-sm">Explore destination <ArrowRight size={16} /></span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div role="status" className="mt-8 rounded-2xl border border-[#eac671]/30 bg-[#10223a] p-10 text-center">
+        <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+          Directory locations are editorial references; country grouping does not prove live inventory, official partnerships or verified travel prices.
+        </p>
+        {visible.length>0?rails.map((rail)=>(
+          <section key={rail.name} aria-label={rail.name+" destinations"} className="mt-9">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold sm:text-xl">{rail.name}</h3>
+              <span className="text-xs text-[var(--text-soft)]">{rail.items.length} shown · Scroll horizontally <ArrowRight size={14} className="inline"/></span>
+            </div>
+            <div role="region" aria-label={rail.name+" destination cards"} tabIndex={0}
+              className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
+              {rail.items.map((destination)=><DestinationCard key={destination.slug} destination={destination}/>)}
+            </div>
+          </section>
+        )):(
+          <div role="status" className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
             <p className="text-lg font-semibold">No matching destinations yet</p>
-            <p className="mt-3 text-sm text-[#c0ccdd]">Try another city or explore the full collection.</p>
-            <Link href="/destinations#discover" className="mt-5 inline-flex items-center gap-2 text-[#efd087] underline">View all destinations <ArrowRight size={16} /></Link>
+            <p className="mt-3 text-sm text-[var(--text-soft)]">Try another city or explore the full collection.</p>
+            <Link href="/destinations#discover" className="mt-4 inline-flex items-center gap-2 text-sm underline">View all destinations <ArrowRight size={16}/></Link>
           </div>
         )}
-
-        {pages > 1 && (
-          <nav aria-label="Destination pages" className="mt-9 flex flex-wrap items-center justify-center gap-3 text-sm">
-            {page > 1 ? <Link href={pageLink(search, page - 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]"><ChevronLeft size={16} /> Previous</Link> : null}
-            <span className="px-3 text-[#d1dcee]">Page {page} of {pages}</span>
-            {page < pages ? <Link href={pageLink(search, page + 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-4 text-[#f7e0aa]">Next <ChevronRight size={16} /></Link> : null}
-          </nav>
-        )}
+        {pages>1&&<nav aria-label="Destination pages" className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm">
+          {page>1?<Link href={pageLink(search, page - 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4"><ChevronLeft size={16}/> Previous</Link>:null}
+          <span>Page {page} of {pages}</span>
+          {page<pages?<Link href={pageLink(search, page + 1, country, region, sort)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4">Next <ChevronRight size={16}/></Link>:null}
+        </nav>}
       </section>
-
-      <section className="border-t border-[#eac671]/20 bg-[#041021]">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-start justify-between gap-6 px-5 py-10 sm:px-8 md:flex-row md:items-center">
+      <section className="border-t border-[var(--border)] bg-[var(--card)]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-10 sm:px-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.17em] text-[#eac671]">Plan with confidence</p>
-            <h2 className="mt-2 text-2xl font-semibold">Go from inspiration to a real itinerary.</h2>
-            <p className="mt-2 text-sm text-[#c0ccdd]">Browse live provider links where available; final prices, entry rules and availability require independent confirmation.</p>
+            <h2 className="text-xl font-semibold">Go from inspiration to a real itinerary.</h2>
+            <p className="mt-2 text-sm text-[var(--text-soft)]">Providers confirm actual prices, opening hours, travel conditions and availability.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/hotels" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Hotel size={17} /> Find Hotels</Link>
-            <Link href="/flights" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm text-[#ffe2a2]"><Plane size={17} /> Compare Flights</Link>
-            <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm text-[#ffe2a2]"><BookOpen size={17} /> Travel Guides</Link>
+            <Link href="/hotels" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm"><Hotel size={16}/> Find Hotels</Link>
+            <Link href="/flights" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm"><Plane size={16}/> Flights</Link>
+            <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm"><BookOpen size={16}/> Guides</Link>
           </div>
         </div>
       </section>
