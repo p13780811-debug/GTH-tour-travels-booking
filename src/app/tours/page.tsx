@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, MapPin, Plane, Search, ShieldCheck } from "lucide-react";
 import { searchTours, type TourFilters } from "@/lib/tours";
 import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
+import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
 import TourCarousel from "@/components/tours/TourCarousel";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,8 @@ export default async function ToursPage({ searchParams }: Props) {
       </section>
 
       <TourAffiliateMarketplace />
+      {(!filters.city||["goa","panaji","margao"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="goa"/>}
+      {(!filters.city||["mumbai","pune","shirdi","ajanta-ellora"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="maharashtra"/>}
 
       <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
