@@ -10,6 +10,8 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from import_osm_hotels import point_coords
 
 EDGE="https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-osm-attractions-ingest"
+BATCH_GAP_SECONDS=5.5
+MAX_PER_RUN=18000  # Max 180 paced uploads; safely below the 90-minute GitHub job cap.
 REGION_ID=re.compile(r"^[a-z0-9-]+(?:/[a-z0-9-]+){0,5}$")
 COUNTRY_CODE=re.compile(r"^[A-Z]{2}$")
 CATEGORY_TAGS=[
@@ -78,10 +80,25 @@ def ingest(batch,url,token):
     if doc.get("accepted")!=len(batch):raise RuntimeError("Signed ingestion rejected source batch")
     return
   except HTTPError as e:
-   if e.code not in (429,502,503,504) or attempt==2:raise RuntimeError("OSM upload failed: HTTP "+str(e.code)) from None
+   if e.code not in (429,500,502,503,504) or attempt==2:raise RuntimeError("OSM upload failed: HTTP "+str(e.code)) from None
   except (URLError,TimeoutError):
    if attempt==2:raise RuntimeError("OSM upload unavailable") from None
-  time.sleep(2**attempt)
+  # Respect transient capacity failures without rapid-fire retries.
+  time.sleep(BATCH_GAP_SECONDS*(attempt+1))
+
+
+def paced_ingest(batch,url,token,last_finished_at=None):
+ """Keep at least 5.5 seconds between completed upload requests.
+
+ The first batch starts immediately; retries remain bounded separately.
+ No service credentials, sleep state or private keys are persisted.
+ """
+ if last_finished_at is not None:
+  remaining=BATCH_GAP_SECONDS-(time.monotonic()-last_finished_at)
+  if remaining>0:time.sleep(remaining)
+ ingest(batch,url,token)
+ return time.monotonic()
+
 
 
 def ingest_summary(summary,url,token):
@@ -101,17 +118,17 @@ def main(argv=None):
  p.add_argument("--country-code",default="IN")
  p.add_argument("--country-name",default="India")
  p.add_argument("--run-id",default="")
- p.add_argument("--limit",type=int,default=120000)
+ p.add_argument("--limit",type=int,default=MAX_PER_RUN)
  p.add_argument("--dry-run",action="store_true")
  args=p.parse_args(argv)
- if not args.file.is_file() or not 1<=args.limit<=250000 or not REGION_ID.fullmatch(args.region):p.error("Invalid source, region or limit")
+ if not args.file.is_file() or not 1<=args.limit<=MAX_PER_RUN or not REGION_ID.fullmatch(args.region):p.error("Invalid source, region or limit")
  if not COUNTRY_CODE.fullmatch(args.country_code) or not 2<=len(args.country_name)<=100 or any(ord(ch)<32 for ch in args.country_name):p.error("Invalid country from source index")
  if args.run_id and not re.fullmatch(r"[0-9]{1,20}",args.run_id):p.error("Invalid workflow run ID")
  if not args.dry_run and os.getenv("GTH_OSM_ATTRACTIONS_IMPORT_ENABLED")!="true":p.error("Cloud ingestion disabled")
  token=os.getenv("GTH_OSM_ATTRACTIONS_OIDC_TOKEN","")
  if not args.dry_run and (not token or os.getenv("GTH_OSM_ATTRACTIONS_EDGE_URL")!=EDGE):
   p.error("Protected GitHub OIDC ingestion required")
- seen=set();accepted=0;rejected=0;written=0;batch=[]
+ seen=set();accepted=0;rejected=0;written=0;batch=[];last_finished_at=None
  with args.file.open(encoding="utf-8") as stream:
   for line in stream:
    if accepted>=args.limit:break
@@ -125,13 +142,14 @@ def main(argv=None):
    if args.dry_run:continue
    batch.append(row)
    if len(batch)>=100:
-    ingest(batch,EDGE,token);written+=len(batch);batch=[]
+    last_finished_at=paced_ingest(batch,EDGE,token,last_finished_at);written+=len(batch);batch=[]
  if batch:
-  ingest(batch,EDGE,token);written+=len(batch)
+  last_finished_at=paced_ingest(batch,EDGE,token,last_finished_at);written+=len(batch)
  if not args.dry_run and args.run_id:
   ingest_summary({"run_id":args.run_id,"source_region":args.region,"country_code":args.country_code,"country_name":args.country_name,"accepted":written},EDGE,token)
  print(json.dumps({"accepted_source_places":accepted,"rejected":rejected,
   "written":written,"community_source":"OpenStreetMap contributors ODbL 1.0",
-  "not_tour_inventory":True,"independently_verified_places":0,"dry_run":args.dry_run}))
+  "not_tour_inventory":True,"independently_verified_places":0,"dry_run":args.dry_run,
+  "upload_gap_seconds":BATCH_GAP_SECONDS,"max_source_records_per_run":MAX_PER_RUN}))
  return 0
 if __name__=="__main__":sys.exit(main())

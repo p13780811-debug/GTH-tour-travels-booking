@@ -1,7 +1,9 @@
 name: GTH Worldwide Open Attractions — Licensed ODbL Sync
 on:
   schedule:
-    - cron: "17 * * * *"
+    # Once hourly at a non-peak UTC minute. Registry selects the
+    # corresponding continental low-traffic window and rotates countries.
+    - cron: "37 * * * *"
   push:
     branches: [main]
     paths:
@@ -58,13 +60,12 @@ jobs:
           fi
           [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
           echo "MODE=$MODE" >> "$GITHUB_ENV"
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            # Seed a known, small, index-validated French extract on the first global release.
-            python3 scripts/attractions/geofabrik_registry.py --region "europe/france/ile-de-france" --env-file "$GITHUB_ENV"
-          elif [[ -n "$REQUESTED_REGION" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "$REQUESTED_REGION" ]]; then
+            # Manual override still uses strict official index validation.
             python3 scripts/attractions/geofabrik_registry.py --region "$REQUESTED_REGION" --env-file "$GITHUB_ENV"
           else
-            python3 scripts/attractions/geofabrik_registry.py --slot "$GITHUB_RUN_NUMBER" --env-file "$GITHUB_ENV"
+            # Automatic push + schedule: source groups follow region-appropriate UTC windows.
+            python3 scripts/attractions/geofabrik_registry.py --auto-window --env-file "$GITHUB_ENV"
           fi
       - name: Install open source osmium utility
         run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
@@ -95,7 +96,7 @@ jobs:
           if [[ "$MODE" == dry-run ]]; then
             python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
               --region "$REGION" --country-code "$COUNTRY_CODE" --country-name "$COUNTRY_NAME" \
-              --limit 120000 --dry-run
+              --limit 18000 --dry-run
             exit 0
           fi
           token_json="$(curl --fail --silent --show-error --proto '=https' \
@@ -108,5 +109,5 @@ jobs:
           export GTH_OSM_ATTRACTIONS_OIDC_TOKEN
           python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
             --region "$REGION" --country-code "$COUNTRY_CODE" --country-name "$COUNTRY_NAME" \
-            --limit 120000 --run-id "$GITHUB_RUN_ID"
-          echo "© OpenStreetMap contributors · ODbL 1.0 via Geofabrik: region=$REGION country=$COUNTRY_CODE. Community mapping, not venue certification or ticket stock." >> "$GITHUB_STEP_SUMMARY"
+            --limit 18000 --run-id "$GITHUB_RUN_ID"
+          echo "© OpenStreetMap contributors · ODbL 1.0 via Geofabrik: region=$REGION country=$COUNTRY_CODE. Authenticated batches paced 5.5s apart; at most 18,000 source IDs per run. Community mapping, not certified venues/ticket stock." >> "$GITHUB_STEP_SUMMARY"

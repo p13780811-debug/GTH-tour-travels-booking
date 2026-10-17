@@ -5,6 +5,10 @@ No guessing download paths, admin borders or private OSM contributor metadata.
 import argparse
 import json
 import re
+from datetime import datetime, timezone
+from functools import lru_cache
+from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from urllib.request import Request, urlopen
 
 INDEX = "https://download.geofabrik.de/index-v1-nogeom.json"
@@ -66,12 +70,94 @@ def resolve(document, slot=0, requested=None):
     return regions[slot % len(regions)]
 
 
+# One hosted run per hour; schedule geographical groups in approximate
+# low-traffic local windows (NOT authoritative timezone information).
+# Each window rotates through all eligible, single-country Geofabrik leaves.
+UTC_SOURCE_WINDOWS = (
+    frozenset(("europe", "africa")),                # 00–05 UTC
+    frozenset(("north-america", "central-america", "south-america")),  # 06–11 UTC
+    frozenset(("australia-oceania",)),              # 12–17 UTC
+    frozenset(("asia",)),                           # 18–23 UTC
+)
+
+
+# Representative country time zones. Use the IANA tzdata country list for
+# other countries; never infer time zones from POI names or coordinates.
+PREFERRED_COUNTRY_ZONES = {
+    "US": "America/New_York", "CA": "America/Toronto",
+    "AU": "Australia/Sydney", "NZ": "Pacific/Auckland",
+    "IN": "Asia/Kolkata", "FR": "Europe/Paris",
+    "RU": "Europe/Moscow", "BR": "America/Sao_Paulo",
+    "CN": "Asia/Shanghai",
+}
+
+
+@lru_cache(maxsize=1)
+def country_time_zones():
+    found = {}
+    try:
+        # Ubuntu GitHub runners ship this public IANA tzdata country registry.
+        for line in Path("/usr/share/zoneinfo/zone.tab").read_text(encoding="utf-8").splitlines():
+            if line.startswith("#") or not line.strip():
+                continue
+            fields = line.split("\t")
+            if len(fields) >= 3 and CODE.fullmatch(fields[0]):
+                found.setdefault(fields[0], fields[2])
+    except OSError:
+        pass
+    found.update(PREFERRED_COUNTRY_ZONES)
+    return found
+
+
+def select_scheduled_region(regions, now=None):
+    """Choose one single-country extract in its representative local 01-06h.
+
+    UTC regional fallback covers missing IANA timezone mappings. Selection
+    advances daily and works without secrets or persistent cursor state.
+    Multi-time-zone countries use one representative zone, not city-level time.
+    """
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        raise ValueError("UTC-aware scheduling clock required")
+    utc = now.astimezone(timezone.utc)
+    group = utc.hour // 6
+    allowed = UTC_SOURCE_WINDOWS[group]
+    zones = country_time_zones()
+    local_night = []
+    for item in regions:
+        zone = zones.get(item["country_code"])
+        if not zone:
+            continue
+        try:
+            country_hour = utc.astimezone(ZoneInfo(zone)).hour
+        except ZoneInfoNotFoundError:
+            continue
+        if 1 <= country_hour < 6:
+            local_night.append(item)
+    # A country-aware local overnight selection takes precedence. If a
+    # timezone is absent or no source is eligible, retain the safe reviewed
+    # regional UTC fallback rather than silently disabling synchronization.
+    candidates = local_night or [r for r in regions if r["region"].split("/", 1)[0] in allowed]
+    if not candidates:
+        raise ValueError("No licensed source in this UTC region window")
+    # Advance by one on each day, avoiding a fixed subset of busy countries.
+    slot = (utc.date().toordinal() + utc.hour) % len(candidates)
+    return candidates[slot], group
+
+
+def scheduled_window_label(group):
+    return ("Europe/Africa", "Americas", "Oceania", "Asia")[group]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", type=int, default=0)
+    parser.add_argument("--auto-window", action="store_true")
     parser.add_argument("--region")
     parser.add_argument("--env-file", required=True)
     args = parser.parse_args()
+    if args.auto_window and args.region:
+        parser.error("Choose manual region or the automatic timezone window")
     if not 0 <= args.slot < 1000000000:
         parser.error("Invalid rotation slot")
     # Fixed official domain, bounded index response, strict JSON, no arbitrary URL input.
@@ -85,6 +171,9 @@ def main():
         item = next((r for r in regions if r["region"] == args.region), None)
         if item is None:
             raise ValueError("Region is not in reviewed official Geofabrik index")
+    elif args.auto_window:
+        item, group = select_scheduled_region(regions)
+        print(json.dumps({"utc_window": scheduled_window_label(group), "auto": True}))
     else:
         item = regions[args.slot % len(regions)]
     with open(args.env_file, "a", encoding="utf-8") as f:
