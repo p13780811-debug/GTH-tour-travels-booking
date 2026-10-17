@@ -64,3 +64,21 @@ test("guide funnel uses existing live city-filtered hotel, trip and insurance ro
  assert.match(detail,/affiliate-disclosure/);
  assert.doesNotMatch(detail,/\/esim|\$\d+|book now for/i);
 });
+
+
+test("final editorial guide booking step uses only existing approved partner destinations",()=>{
+ const detail=read("src/components/travel/GuideDetail.tsx");
+ const handoff=read("src/components/travel/GuidePartnerHandoffs.tsx");
+ const registry=read("src/lib/flights/partners.ts");
+ assert.match(detail,/<GuidePartnerHandoffs city=\{city\}\/>/);
+ for(const slug of ["klook","wegotrip","aviasales","welcome","ekta","yesim"]){
+  assert.ok(handoff.includes('slug:"'+slug+'"'),"Missing displayed program "+slug);
+  assert.ok(registry.includes('slug: "'+slug+'"'),"Missing approved source program "+slug);
+ }
+ assert.match(handoff,/findFlightPartner\(slug\)/);
+ assert.match(handoff,/u\.hostname===host/);
+ assert.match(handoff,/rel="noopener noreferrer sponsored"/);
+ assert.match(handoff,/\/hotels\/results\?city=/);
+ assert.match(handoff,/href="\/affiliate-disclosure"/);
+ assert.doesNotMatch(handoff,/src="https:\/\/tpwidg|https:\/\/klook\.tpo\.lv\//);
+});
