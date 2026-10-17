@@ -23,7 +23,7 @@ def query(region,kind,limit,offset):
  if region not in REGIONS or kind not in KINDS or not 1<=limit<=200 or not 0<=offset<=6000:raise ValueError("Invalid bounded query")
  return f"""SELECT DISTINCT ?place ?name ?geo ?kind ?description ?image WHERE {{
  VALUES ?kind {{ wd:{kind} }}
- ?place wdt:P31/wdt:P279* ?kind ; wdt:P131+ wd:{REGIONS[region]} ; wdt:P625 ?geo ; rdfs:label ?name .
+ ?place wdt:P31 ?kind ; wdt:P131 wd:{REGIONS[region]} ; wdt:P625 ?geo ; rdfs:label ?name .
  FILTER(LANG(?name)="en")
  OPTIONAL {{ ?place schema:description ?description . FILTER(LANG(?description)="en") }}
  OPTIONAL {{ ?place wdt:P18 ?image }}
@@ -37,10 +37,13 @@ def fetch_json(url,params,timeout=40):
  for attempt in range(3):
   req=urllib.request.Request(url,data=encoded,method="POST",headers={"User-Agent":UA,"Accept":"application/sparql-results+json, application/json","Content-Type":"application/x-www-form-urlencoded"})
   try:
-   with urllib.request.urlopen(req,timeout=timeout) as res:
+   with urllib.request.urlopen(req,timeout=min(timeout,24)) as res:
     raw=res.read(4000001)
     if len(raw)>4000000:raise ValueError("Response too large")
     return json.loads(raw)
+  except (TimeoutError,urllib.error.URLError) as e:
+   if attempt==2:raise
+   time.sleep((attempt+1)*2)
   except urllib.error.HTTPError as e:
    if e.code not in (429,503) or attempt==2:raise
    after=e.headers.get("Retry-After","")
@@ -140,7 +143,11 @@ def main(argv=None):
    if args.fixture:doc=json.loads(args.fixture.read_text())
    else:
     if results:time.sleep(2)
-    doc=fetch_json(BASE,{"query":query(args.region,kind,args.page_size,page*args.page_size),"format":"json"})
+    try:
+     doc=fetch_json(BASE,{"query":query(args.region,kind,args.page_size,page*args.page_size),"format":"json"},timeout=24)
+    except (TimeoutError,urllib.error.URLError,urllib.error.HTTPError) as error:
+     print("Wikidata shared query service unavailable; no records fabricated:",str(type(error).__name__),file=sys.stderr)
+     continue
    batch=parse_bindings(doc,args.region,kind)
    for row in batch:
     q=row["wikidata_qid"]
