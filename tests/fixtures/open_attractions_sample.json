@@ -1,0 +1,17 @@
+{
+  "results": {
+    "bindings": [
+      {
+        "place": {
+          "value": "http://www.wikidata.org/entity/Q23456"
+        },
+        "name": {
+          "value": "Example Fort"
+        },
+        "geo": {
+          "value": "Point(73.815 15.52)"
+        }
+      }
+    ]
+  }
+}
