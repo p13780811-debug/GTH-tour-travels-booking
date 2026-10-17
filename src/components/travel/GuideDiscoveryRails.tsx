@@ -19,7 +19,11 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
   {discoveryRows.map(row=><div key={row.title}>
    <div className="mb-2"><h3 className="text-xl font-semibold">{row.title}</h3><p className="mt-1 text-xs text-[var(--text-soft)]">{row.description}</p></div>
    <TourCarousel label={row.title+" destination cards"}>
-    {row.slugs.map(slug=>{
+    {[...row.slugs].sort((a,b)=>{
+      const first=guideBySlug(a),second=guideBySlug(b);
+      const delta=(second?counts.get(second.countryCode)||0:0)-(first?counts.get(first.countryCode)||0:0);
+      return delta||row.slugs.findIndex(item=>item===a)-row.slugs.findIndex(item=>item===b);
+    }).map(slug=>{
      const item=guideBySlug(slug);if(!item)return null;
      const picture=media.get(slug);
      const count=counts.get(item.countryCode)||0;
@@ -32,11 +36,12 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
       <div className="flex flex-1 flex-col p-4">
        <h4 className="text-lg font-bold">{item.name}</h4>
        <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">{item.summary}</p>
-       <p className="mt-3 flex items-center gap-1 text-[11px] text-[var(--text-soft)]"><MapPin size={12}/>{count?count.toLocaleString("en-IN")+" mapped country records":"Directory coverage growing"}</p>
+       <p className="mt-3 flex items-center gap-1 text-[11px] text-[var(--text-soft)]"><MapPin size={12}/>{count?(item.kind==="country"?"Imported places: ":"Country directory: ")+count.toLocaleString("en-IN"):"Import in progress — browse when available"}</p>
        <div className="mt-auto flex flex-wrap gap-x-3 gap-y-2 pt-4 text-xs">
         <Link href={"/guides/"+item.slug} className="inline-flex items-center gap-1 font-semibold underline"><BookOpen size={13}/> Explore guide</Link>
         <Link href={"/attractions?country="+item.countryCode} className="underline">Browse mapped places</Link>
-        <Link href="/hotels" className="underline">Find hotels</Link>
+        <Link href={item.city?"/hotels/results?city="+encodeURIComponent(item.city):"/hotels"} className="underline">Find hotels</Link>
+        <Link href="/ai-trip" className="underline">Plan trip</Link>
        </div>
        {picture&&<a href={picture.source_page} target="_blank" rel="noopener noreferrer nofollow" className="mt-3 line-clamp-1 text-[10px] text-[var(--text-soft)] underline">Photo: {picture.attribution_text} · {picture.license_type}</a>}
       </div>

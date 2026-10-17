@@ -6,6 +6,7 @@ import { blogs } from "@/data/blogs";
 import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
+import {sourceProgress} from "@/lib/travel/osmAttractions";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/guides" },
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export const dynamic="force-dynamic";
 export default async function GuidesPage() {
-  const media=await publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]));
+  const [media,progress]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null)]);
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
@@ -32,7 +33,7 @@ export default async function GuidesPage() {
           <Link href="/destinations" className="gth-glass inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3"><Compass size={17} /> Destinations</Link>
         </nav>
       </section>
-      <GuideDiscoveryRails media={media}/>
+      <GuideDiscoveryRails media={media} countries={progress?.countries??[]}/>
       <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
