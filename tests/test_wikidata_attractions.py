@@ -10,7 +10,7 @@ class AttractionsSecurity(unittest.TestCase):
   with self.assertRaises(ValueError):m.query("unknown","Q40080",20,0)
  def test_source_geometry_and_only_cc0(self):
   raw={"results":{"bindings":[{"place":{"value":"http://www.wikidata.org/entity/Q23456"},"name":{"value":"Example Fort"},
-    "geo":{"value":"Point(73.815 15.52)"}}]}}
+    "geo":{"value":"Point(73.815 14.95)"}}]}}
   rows=m.parse_bindings(raw,"goa","Q1785071")
   self.assertEqual(len(rows),1)
   self.assertEqual(rows[0]["category"],"fort")
