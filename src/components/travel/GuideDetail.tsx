@@ -9,11 +9,13 @@ import type {ApprovedGuideMedia} from "@/lib/travel/guideMedia";
 type Props={guide:DestinationGuide|TopicGuide;media:ApprovedGuideMedia|null;indexable:boolean;places?:Place[]};
 export default function GuideDetail({guide,media,indexable,places=[]}:Props){
  const full="countryCode" in guide;
- const city=full?guide.city:null;
+ const city=full?guide.city:guide.parentSlug==="paris"?"Paris":null;
  const code=full?guide.countryCode:"FR";
  const links=[
   {name:"Explore tours & tickets",href:city?"/tours?city="+encodeURIComponent(city):"/tours",Icon:Compass},
-  {name:"Search hotels",href:"/hotels",Icon:Hotel},
+  {name:"Search hotels",href:city?"/hotels/results?city="+encodeURIComponent(city):"/hotels",Icon:Hotel},
+  {name:"Plan a trip",href:"/ai-trip",Icon:BookOpen},
+  {name:"Travel insurance",href:"/insurance",Icon:Compass},
   {name:"Airport transfers",href:"/transfers",Icon:Plane},
   {name:"Explore mapped places",href:"/attractions?country="+code,Icon:MapPin}
  ];

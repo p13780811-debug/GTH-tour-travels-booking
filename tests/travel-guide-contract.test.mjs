@@ -43,3 +43,24 @@ test("Commons review automation proposes images but cannot publish, with no secr
  assert.match(script,/auto_publish.*False/);
  assert.doesNotMatch(workflow,/SUPABASE_SERVICE_ROLE_KEY|secrets\./);
 });
+
+
+test("guide discovery shows actual imported source counts and sorts by source coverage",()=>{
+ const guides=read("src/app/guides/page.tsx");
+ const rail=read("src/components/travel/GuideDiscoveryRails.tsx");
+ assert.match(guides,/sourceProgress\(\)/);
+ assert.match(guides,/countries=\{progress\?\.countries\?\?\[\]\}/);
+ assert.match(rail,/counts\.get\(second\.countryCode\)/);
+ assert.match(rail,/Country directory: /);
+ assert.match(rail,/Import in progress/);
+ assert.match(rail,/href="\/ai-trip"/);
+ assert.match(rail,/\/hotels\/results\?city=/);
+});
+test("guide funnel uses existing live city-filtered hotel, trip and insurance routes",()=>{
+ const detail=read("src/components/travel/GuideDetail.tsx");
+ assert.match(detail,/\/hotels\/results\?city=/);
+ assert.match(detail,/name:"Plan a trip",href:"\/ai-trip"/);
+ assert.match(detail,/name:"Travel insurance",href:"\/insurance"/);
+ assert.match(detail,/affiliate-disclosure/);
+ assert.doesNotMatch(detail,/\/esim|\$\d+|book now for/i);
+});
