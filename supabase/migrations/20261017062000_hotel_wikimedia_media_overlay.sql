@@ -6,7 +6,7 @@ create table if not exists public.hotel_catalog_media (
   source_id text not null,
   wikidata_qid text not null check(wikidata_qid ~ '^Q[1-9][0-9]{0,14}$'),
   image_url text not null check(left(image_url,29)='https://upload.wikimedia.org/'),
-  commons_page text not null check(left(commons_page,39)='https://commons.wikimedia.org/wiki/File:'),
+  commons_page text not null check(left(commons_page,40)='https://commons.wikimedia.org/wiki/File:'),
   author text not null check(char_length(author) between 1 and 400),
   license_name text not null check(char_length(license_name) between 2 and 80),
   license_url text not null check(left(license_url,8)='https://'),
