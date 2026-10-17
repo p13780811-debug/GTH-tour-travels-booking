@@ -5,8 +5,8 @@ import { ArrowUpRight, ShieldCheck, Ticket } from "lucide-react";
 
 /**
  * Direct supplier handoffs, not a simulated inventory widget.
- * Travelpayouts promo_id=3948 requires a product, but the old embed supplied
- * product="" and often rendered an empty frame / unrelated default product.
+ * The former provider-specific product embed lacked a selected ticket ID
+ * and could leave an empty frame or show an unrelated default offer.
  * Never load an external script just to fill a permanently blank panel.
  */
 const panels = {
