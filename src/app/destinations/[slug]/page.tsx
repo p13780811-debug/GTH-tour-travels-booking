@@ -185,7 +185,7 @@ export default async function DestinationPage({ params }: Props) {
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
             {availableTours.map((tour)=>(
               <Link key={String(tour.id)} href={"/tours/"+encodeURIComponent(String(tour.id))}
-                className="group flex h-48 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:shadow-lg">
+                className="group flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:shadow-lg">
                 <span className="flex items-center gap-2 text-xs font-medium text-[var(--text-soft)]"><Compass size={15}/> {tour.category||"Tour listing"}</span>
                 <h3 className="mt-4 line-clamp-2 text-base font-semibold leading-snug">{tour.title}</h3>
                 <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">Verify inclusions, dates and provider conditions.</p>
@@ -209,7 +209,7 @@ export default async function DestinationPage({ params }: Props) {
             className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
             {suggestedGuides.map((article)=>(
               <Link href={"/blog/"+article.slug} key={article.slug}
-                className="flex h-48 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:shadow-lg">
+                className="flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:shadow-lg">
                 <BookOpen size={21} aria-hidden="true"/>
                 <h3 className="mt-3 line-clamp-2 text-base font-semibold">{article.title}</h3>
                 <p className="mt-2 line-clamp-2 text-xs text-[var(--text-soft)]">{article.description}</p>
