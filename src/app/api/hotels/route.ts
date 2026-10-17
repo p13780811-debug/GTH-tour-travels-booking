@@ -145,6 +145,17 @@ export async function GET(req: Request) {
     if (supplierFailed && catalogFailed) {
       return NextResponse.json({ error: "Hotel listings are temporarily unavailable" }, { status: 502, headers: safeHeaders });
     }
+    // Licensed Wikimedia overlays are independent of OSM upsert refreshes.
+    // Lookup at most one page of exact OSM source IDs; failures never hide hotels.
+    type LicensedMedia={source_id:string;image_url:string;author:string;license_name:string;license_url:string;commons_page:string};
+    const commons=new Map<string,LicensedMedia>();
+    const candidates=catalogRows.filter(item=>!item.image_url).map(item=>item.source_id);
+    if(candidates.length){
+      const {data:media}=await supabase.from("hotel_catalog_media")
+        .select("source_id,image_url,author,license_name,license_url,commons_page")
+        .eq("source","osm").in("source_id",candidates.slice(0,24));
+      for(const item of (media||[]) as LicensedMedia[])commons.set(item.source_id,item);
+    }
     const listings = supplierRows
       .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() && typeof hotel.city === "string")
       .map((hotel) => ({
@@ -156,7 +167,11 @@ export async function GET(req: Request) {
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
         id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
-        country: hotel.country_code, location_scope:hotel.country_code?"OSM country tag":"Geofabrik extract hint (not verified country)", category:hotel.category, stars: null, image: safeImage(hotel.image_url), affiliate_link: null,
+        country: hotel.country_code, location_scope:hotel.country_code?"OSM country tag":"Geofabrik extract hint (not verified country)", category:hotel.category, stars: null, image: safeImage(hotel.image_url||commons.get(hotel.source_id)?.image_url), affiliate_link: null,
+        image_attribution:!hotel.image_url&&commons.has(hotel.source_id)?{
+          author:commons.get(hotel.source_id)!.author,license:commons.get(hotel.source_id)!.license_name,
+          license_url:commons.get(hotel.source_id)!.license_url,commons_page:commons.get(hotel.source_id)!.commons_page
+        }:null,
         source_url:hotel.source_url, hotel_website:hotel.website, address:hotel.address,
         latitude:hotel.latitude, longitude:hotel.longitude, updated_at:hotel.updated_at,
         source: "OpenStreetMap", source_license: "ODbL-1.0",
