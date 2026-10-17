@@ -5,6 +5,7 @@ import {siteUrl} from "@/lib/seo/site";
 import type {DestinationGuide,TopicGuide} from "@/lib/travel/guideCatalog";
 import type {Place} from "@/lib/travel/osmAttractions";
 import type {ApprovedGuideMedia} from "@/lib/travel/guideMedia";
+import GuidePartnerHandoffs from "@/components/travel/GuidePartnerHandoffs";
 
 type Props={guide:DestinationGuide|TopicGuide;media:ApprovedGuideMedia|null;indexable:boolean;places?:Place[]};
 export default function GuideDetail({guide,media,indexable,places=[]}:Props){
@@ -95,6 +96,7 @@ export default function GuideDetail({guide,media,indexable,places=[]}:Props){
     <Link href="/guides" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> More editorial guides</Link>
     {full&&guide.slug==="paris"&&<Link href="/guides/paris/eiffel-tower-nearby-things-to-do" className="ml-5 inline-flex items-center gap-2 text-sm underline">Eiffel Tower nearby guide <ArrowRight size={16}/></Link>}
    </div>
+   <GuidePartnerHandoffs city={city}/>
   </div>
  </main>;
 }
