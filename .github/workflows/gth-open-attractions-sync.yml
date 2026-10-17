@@ -1,0 +1,84 @@
+name: GTH Open Attractions — CC0 Destination Sync
+on:
+  schedule:
+    - cron: "41 3 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gth-open-attractions-sync.yml"
+      - "scripts/attractions/wikidata_attractions.py"
+      - "supabase/functions/gth-open-attractions-ingest/**"
+  workflow_dispatch:
+    inputs:
+      region:
+        required: true
+        type: choice
+        options: [goa, maharashtra]
+      mode:
+        required: true
+        type: choice
+        options: [dry-run, import]
+        default: dry-run
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: gth-open-attractions-import
+  cancel-in-progress: false
+jobs:
+  import-cc0-destinations:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      GTH_ATTRACTIONS_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-open-attractions-ingest
+      GTH_ATTRACTIONS_IMPORT_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Importer safety checks
+        run: |
+          python3 -m unittest discover -s tests -p "test_wikidata_attractions.py"
+          node --test tests/open-attraction-contract.test.mjs
+      - name: Select public source zone
+        shell: bash
+        env:
+          REQUESTED_REGION: ${{ inputs.region }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then REGION=goa; MODE=import
+          elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
+            day=$((10#$(date -u +%j)))
+            if (( day % 2 == 0 )); then REGION=maharashtra; else REGION=goa; fi
+            MODE=import
+          else REGION="$REQUESTED_REGION"; MODE="$REQUESTED_MODE"; fi
+          [[ "$REGION" == goa || "$REGION" == maharashtra ]] || exit 1
+          [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
+          echo "REGION=$REGION" >> "$GITHUB_ENV"
+          echo "MODE=$MODE" >> "$GITHUB_ENV"
+      - name: Bounded public Wikidata retrieval and signed private ingestion
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$MODE" == dry-run ]]; then
+            python3 scripts/attractions/wikidata_attractions.py \
+              --region "$REGION" --categories beach,fort,national-park \
+              --page-size 20 --max-pages 1 --photo-checks 3
+          else
+            test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+            test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+            token_json="$(curl --fail --silent --show-error --proto '=https' \
+              --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-open-attractions:dqprqjmhxjnrllczqyhz")"
+            GTH_ATTRACTIONS_OIDC_TOKEN="$(printf '%s' "$token_json" | \
+              python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+            test -n "$GTH_ATTRACTIONS_OIDC_TOKEN"
+            echo "::add-mask::$GTH_ATTRACTIONS_OIDC_TOKEN"
+            export GTH_ATTRACTIONS_OIDC_TOKEN
+            python3 scripts/attractions/wikidata_attractions.py \
+              --region "$REGION" --categories beach,fort,national-park \
+              --page-size 35 --max-pages 1 --photo-checks 8 --write
+          fi
+          echo "CC0 community place records remain private pending source/media review. No invented bookings or tickets." >> "$GITHUB_STEP_SUMMARY"
