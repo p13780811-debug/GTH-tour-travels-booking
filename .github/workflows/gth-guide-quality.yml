@@ -1,0 +1,35 @@
+name: GTH Editorial Attractions Guide Contract Gate
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/attractions/**"
+      - "src/app/guides/**"
+      - "src/components/travel/Guide*.tsx"
+      - "src/lib/travel/guide*.ts"
+      - "scripts/attractions/guide_media_candidates.py"
+      - "supabase/migrations/*travel_guide*"
+      - "tests/test_guide_media_queue.py"
+      - "tests/travel-guide-contract.test.mjs"
+      - ".github/workflows/gth-guide-quality.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editorial-and-image-rights-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Wikimedia media filtering, no auto publication
+        run: python3 -m unittest discover -s tests -p "test_guide_media_queue.py"
+      - name: Guide URL, crawl policy, RLS and partner handoff contracts
+        run: node --test tests/travel-guide-contract.test.mjs

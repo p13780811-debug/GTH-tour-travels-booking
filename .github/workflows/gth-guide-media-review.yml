@@ -1,0 +1,70 @@
+name: GTH Travel Guides — Licensed Wikimedia Editorial Review Queue
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gth-guide-media-review.yml"
+      - "scripts/attractions/guide_media_candidates.py"
+      - "supabase/functions/gth-guide-media-ingest/**"
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: gth-editorial-media-review
+  cancel-in-progress: false
+jobs:
+  build-rights-review-queue:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate license and source filtering offline
+        run: python3 -m unittest discover -s tests -p "test_guide_media_queue.py"
+      - name: Fetch bounded Commons media candidates for human approval
+        run: python3 scripts/attractions/guide_media_candidates.py --limit 8 --output guide_media_review_queue.json
+      - name: Preserve suggested photos and source credits as review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-travel-guide-rights-review
+          path: guide_media_review_queue.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload only unapproved review candidates with fresh signed GitHub identity
+        shell: bash
+        env:
+          GTH_MEDIA_REVIEW_EDGE: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-guide-media-ingest
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          data=json.load(open("guide_media_review_queue.json",encoding="utf-8"))
+          rows=[candidate for guide in data.get("guides",[]) for candidate in guide.get("media_candidates",[])]
+          json.dump({"rows":rows[:24]},open("guide_media_upload.json","w",encoding="utf-8"),ensure_ascii=False)
+          print("Rights-reviewed publication: 0; queued unapproved metadata:",len(rows[:24]))
+          PY
+          if [[ "$(python3 -c 'import json; print(len(json.load(open("guide_media_upload.json"))["rows"]))')" == "0" ]]; then
+            echo "No source-licensed candidates. No database changes attempted." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          token_json="$(curl --fail --silent --show-error --proto '=https' --max-time 15 \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-guide-media:dqprqjmhxjnrllczqyhz")"
+          ID_TOKEN="$(printf '%s' "$token_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$ID_TOKEN"
+          echo "::add-mask::$ID_TOKEN"
+          curl --fail-with-body --silent --show-error --proto '=https' --max-time 30 \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ID_TOKEN" \
+            --data-binary @guide_media_upload.json "$GTH_MEDIA_REVIEW_EDGE"
+          echo "Only unapproved Commons metadata candidates stored for editorial rights review." >> "$GITHUB_STEP_SUMMARY"
+      - name: Explain editorial publishing rule
+        run: |
+          echo "Only curated, license-audited and destination-relevant media can be manually approved in gth_travel_guide_media. Publishing requires editor-reviewed guide content and hero image, so thin pages stay noindex." >> "$GITHUB_STEP_SUMMARY"

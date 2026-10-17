@@ -4,6 +4,7 @@ import { blogs } from "@/data/blogs";
 import { siteOrigin } from "@/lib/seo/site";
 import { createClient } from "@supabase/supabase-js";
 import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSeoRecord } from "@/lib/seo/public-listings";
+import {indexableGuidePaths} from "@/lib/travel/guideMedia";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
@@ -86,11 +87,12 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Preview builds must not advertise unlaunched or unverified services for indexing.
   if (!publicLaunch) return [];
-  const approved = await publishedRecords().catch(() => [] as DynamicEntry[]);
+  const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...approved,
+    ...guidePaths.map(slug=>({url:base+"/guides/"+slug,changeFrequency:"monthly" as const,priority:0.55})),
   ];
 }

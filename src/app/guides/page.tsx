@@ -3,6 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, Hotel, Plane } from "lucide-react";
 import { blogs } from "@/data/blogs";
+import {discoveryRows} from "@/lib/travel/guideCatalog";
+import {publishedMedia} from "@/lib/travel/guideMedia";
+import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/guides" },
@@ -10,7 +13,9 @@ export const metadata: Metadata = {
   description: "Travel-planning resources covering flights, accommodation, activities, booking security and destination research.",
 };
 
-export default function GuidesPage() {
+export const dynamic="force-dynamic";
+export default async function GuidesPage() {
+  const media=await publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]));
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
@@ -27,6 +32,7 @@ export default function GuidesPage() {
           <Link href="/destinations" className="gth-glass inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3"><Compass size={17} /> Destinations</Link>
         </nav>
       </section>
+      <GuideDiscoveryRails media={media}/>
       <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>

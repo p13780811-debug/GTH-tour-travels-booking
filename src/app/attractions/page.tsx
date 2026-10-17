@@ -2,6 +2,9 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Compass,ExternalLink,Globe2,MapPin,Search,BarChart3} from "lucide-react";
 import {ATTRACTION_TYPES,directoryHref,listPlaces,sourceProgress,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
+import {discoveryRows} from "@/lib/travel/guideCatalog";
+import {publishedMedia} from "@/lib/travel/guideMedia";
+import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
@@ -18,9 +21,10 @@ export default async function AttractionsDirectory({searchParams}:Props){
   q:one(raw.q).trim(),city:one(raw.city).trim(),after:one(raw.after),limit:24
  };
  const valid=validFilters(f);
- const [places,progress]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress()]);
+ const [places,progress,guidePhotos]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]))]);
  const result=places.status==="fulfilled"?places.value:null;
  const stats=progress.status==="fulfilled"?progress.value:null;
+ const media=guidePhotos.status==="fulfilled"?guidePhotos.value:new Map();
  const next=result?.nextCursor?directoryHref({...f,after:result.nextCursor}):null;
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 md:py-12">
@@ -65,6 +69,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
     <Link href="/attractions?country=IN" className="underline">India places</Link>
     <Link href="/attractions/progress" className="underline">Countries & sync history</Link>
    </div>
+   <GuideDiscoveryRails media={media} countries={stats?.countries??[]}/>
    {!valid?<div role="alert" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">Invalid search. Please remove unsupported symbols or filters.</div>:
     !result?<div role="status" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">Mapped source directory temporarily unavailable. Existing records are not deleted.</div>:
     result.items.length===0?<div role="status" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-6">No imported records match these filters yet. Try another country or category; worldwide regional synchronization is incremental.</div>:
