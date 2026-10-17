@@ -36,7 +36,7 @@ function safeImage(value:unknown):string|null{
 function safeBusinessPhone(value:unknown):string|null{
  if(typeof value!=="string"||value.length>35)return null;
  const phone=value.trim();
- return /^\\+?[0-9][0-9 ()\\-.]{6,30}$/.test(phone)?phone:null;
+  return /^[+]?[0-9][0-9 ().-]{6,30}$/.test(phone)?phone:null;
 }
 const getHotel=cache(async(id:string)=>{
  // Next route params are decoded once; accept encoded IDs from legacy card URLs too.
