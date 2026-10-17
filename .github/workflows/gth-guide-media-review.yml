@@ -1,0 +1,36 @@
+name: GTH Travel Guides — Licensed Wikimedia Editorial Review Queue
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gth-editorial-media-review
+  cancel-in-progress: false
+jobs:
+  build-rights-review-queue:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate license and source filtering offline
+        run: python3 -m unittest discover -s tests -p "test_guide_media_queue.py"
+      - name: Fetch bounded Commons media candidates for human approval
+        run: python3 scripts/attractions/guide_media_candidates.py --limit 8 --output guide_media_review_queue.json
+      - name: Preserve suggested photos and source credits as review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-travel-guide-rights-review
+          path: guide_media_review_queue.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Explain editorial publishing rule
+        run: |
+          echo "Only curated, license-audited and destination-relevant media can be manually approved in gth_travel_guide_media. Publishing requires editor-reviewed guide content and hero image, so thin pages stay noindex." >> "$GITHUB_STEP_SUMMARY"
