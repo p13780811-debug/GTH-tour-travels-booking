@@ -3,6 +3,7 @@ import {cache} from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import GoogleHotelPhoto from "@/components/hotel/GoogleHotelPhoto";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import HotelStayVisual from "@/components/hotel/HotelStayVisual";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
@@ -129,9 +130,10 @@ export default async function HotelStay({params}:PageProps){
     <p className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">
      <MapPin size={16}/> {[hotel.address,hotel.city,hotel.country].filter(Boolean).join(", ")||"Location in source data"}</p>
     <div className="mt-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)]">
-      <HotelPropertyImage src={hotel.image} name={hotel.name} variant="detail"
+      {hotel.image?<HotelPropertyImage src={hotel.image} name={hotel.name} variant="detail"
        className="h-64 w-full object-cover md:h-96"
-       placeholderClassName="flex h-56 flex-col items-center justify-center gap-3 text-[var(--text-soft)]"/>
+       placeholderClassName="flex h-56 flex-col items-center justify-center gap-3 text-[var(--text-soft)]"/>:
+       <HotelStayVisual name={hotel.name} location={hotel.city||hotel.country||""}/>}
     </div>
     {hotel.imageCredit&&<p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
       Photo: <a className="underline" href={hotel.imageCredit.commonsPage} target="_blank" rel="noopener noreferrer nofollow">{hotel.imageCredit.author} · Wikimedia Commons</a>
