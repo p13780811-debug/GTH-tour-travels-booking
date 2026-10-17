@@ -65,7 +65,7 @@ def candidate(guide_slug,page):
  source=meta.get("descriptionurl")
  license_url=field("LicenseUrl")
  width,height=meta.get("width"),meta.get("height")
- if not license_name or not author or not safe_url(image,"upload.wikimedia.org","/wikipedia/commons/") or not safe_url(source,"commons.wikimedia.org","/wiki/File:") or not safe_url(license_url,urlsplit(license_url).hostname if isinstance(license_url,str) else None,"/") or not isinstance(width,int) or not isinstance(height,int) or width<800 or height<500:
+ if not license_name or not author or not safe_url(image,"upload.wikimedia.org","/wikipedia/commons/") or not safe_url(source,"commons.wikimedia.org","/wiki/File:") or not isinstance(license_url,str) or urlsplit(license_url).hostname not in ("creativecommons.org","www.creativecommons.org","commons.wikimedia.org") or not safe_url(license_url,urlsplit(license_url).hostname,"/") or not isinstance(width,int) or not isinstance(height,int) or width<800 or height<500:
   return None
  if len(author)<3:return None
  return {"guide_slug":guide_slug,"image_url":image,"source_page":source,

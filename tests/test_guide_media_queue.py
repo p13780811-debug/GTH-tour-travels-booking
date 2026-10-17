@@ -22,6 +22,9 @@ class GuideMediaCandidatesTests(unittest.TestCase):
  def test_disallowed_licenses_and_hosts_rejected(self):
   self.assertIsNone(mod.candidate("paris",page("All Rights Reserved")))
   self.assertIsNone(mod.candidate("paris",page(host="evil.example")))
+ def test_license_proof_must_be_issued_by_allowed_rights_authority(self):
+  p=page();p["imageinfo"][0]["extmetadata"]["LicenseUrl"]["value"]="https://evil.example/fake-license"
+  self.assertIsNone(mod.candidate("paris",p))
  def test_missing_author_or_small_image_rejected(self):
   p=page();p["imageinfo"][0]["extmetadata"].pop("Artist")
   self.assertIsNone(mod.candidate("paris",p))
