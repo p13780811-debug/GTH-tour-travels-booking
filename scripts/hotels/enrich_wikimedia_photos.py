@@ -195,7 +195,7 @@ def explicitly_tagged_commons_file(props):
         filename = value[len("File:"):].strip()
         if not filename or len(filename) > 240 or not IMAGE_FILE.search(filename):
             continue
-        if any(ch in filename for ch in "<>\\r\\n|?#"):
+        if any(ch in filename for ch in "<>\r\n|?#"):
             continue
         return filename
     return None
@@ -205,7 +205,7 @@ def candidates(path):
     found = {}
     with path.open(encoding="utf-8") as stream:
         for line in stream:
-            line = line.strip().lstrip("\\x1e")
+            line = line.strip().lstrip("\x1e")
             if not line:
                 continue
             try:
