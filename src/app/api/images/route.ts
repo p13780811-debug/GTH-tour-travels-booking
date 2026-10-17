@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     return Response.json({ error: "Invalid image mode" }, { status: 400 });
   const cityInput = params.get("city") || "";
   const city = cityInput ? cleanString(cityInput, {
-    min: 2, max: 60, pattern: /^[\\p{L}\\p{M}\\s.'-]+$/u,
+    min: 2, max: 60, pattern: /^[\p{L}\p{M}\s.'-]+$/u,
   }) : "";
   if (hotelIllustrations && cityInput && !city)
     return Response.json({ error: "Invalid destination" }, { status: 400 });
