@@ -41,13 +41,13 @@ def fetch_json(url,params,timeout=40):
     raw=res.read(4000001)
     if len(raw)>4000000:raise ValueError("Response too large")
     return json.loads(raw)
-  except (TimeoutError,urllib.error.URLError) as e:
-   if attempt==2:raise
-   time.sleep((attempt+1)*2)
   except urllib.error.HTTPError as e:
    if e.code not in (429,503) or attempt==2:raise
    after=e.headers.get("Retry-After","")
-   time.sleep(min(60,max(2,int(after))) if after.isdecimal() else (attempt+1)*3)
+   time.sleep(min(30,max(2,int(after))) if after.isdecimal() else (attempt+1)*3)
+  except (TimeoutError,urllib.error.URLError):
+   if attempt==2:raise
+   time.sleep((attempt+1)*2)
  raise RuntimeError("Source unavailable")
 
 def value(row,key):
