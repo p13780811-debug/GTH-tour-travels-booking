@@ -19,10 +19,11 @@ test("India hotel discovery retains source, location and alphabetical sort acros
 
 test("Server validates source/sort and keeps names/address/region attributable",()=>{
  const api=read("src/app/api/hotels/route.ts");
+ const geo=read("src/lib/travel/hotel-geo-bounds.ts");
  assert.match(api, /\["all","partner","directory"\]\.includes\(source\)/);
  assert.match(api, /\["name_asc","name_desc"\]\.includes\(sort\)/);
- assert.match(api, /address\.ilike/);
- assert.match(api, /name\.ilike/);
+ assert.match(geo, /address\.ilike/);
+ assert.match(geo, /name\.ilike/);
  assert.match(api, /sort !== "name_desc"/);
  assert.match(api, /source === "partner"/);
  assert.match(api, /source === "directory"/);
