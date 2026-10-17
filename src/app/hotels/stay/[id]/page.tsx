@@ -33,6 +33,11 @@ function safeImage(value:unknown):string|null{
   return u.toString();
  }catch{return null;}
 }
+function safeBusinessPhone(value:unknown):string|null{
+ if(typeof value!=="string"||value.length>35)return null;
+ const phone=value.trim();
+ return /^\\+?[0-9][0-9 ()\\-.]{6,30}$/.test(phone)?phone:null;
+}
 const getHotel=cache(async(id:string)=>{
  // Next route params are decoded once; accept encoded IDs from legacy card URLs too.
  try { id = decodeURIComponent(id); } catch { return null; }
@@ -41,21 +46,21 @@ const getHotel=cache(async(id:string)=>{
  if(!url||!key)return null;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  let hotel:null|{name:string;city:string|null;country:string|null;category:string;source:string;
-  address:string|null;description:string|null;sourceUrl:string|null;website:string|null;partner:string|null;image:string|null;
+  address:string|null;description:string|null;phone:string|null;sourceUrl:string|null;website:string|null;partner:string|null;image:string|null;
   lat:number|null;lon:number|null;updated:string|null;
   imageCredit:{author:string;license:string;licenseUrl:string;commonsPage:string}|null}=null;
  if(/^osm:(node|way|relation)-[0-9]{1,19}$/.test(id)){
   const sourceId=id.slice(4).replace("-","/");
-  const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,source_url,website,image_url,latitude,longitude,updated_at")
+  const {data,error}=await db.from("hotel_catalog").select("name,city,country_code,category,address,phone,source_url,website,image_url,latitude,longitude,updated_at")
     .eq("source","osm").eq("source_id",sourceId).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",
-   address:data.address,description:null,sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
+   address:data.address,description:null,phone:safeBusinessPhone(data.phone),sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
    image:safeImage(data.image_url),imageCredit:null,partner:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
  }else if(/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(id)){
   const {data,error}=await db.from("hotels").select("name,city,country_code,address,category,description,image_url,affiliate_link,source_name,source_url")
     .eq("id",id).eq("is_public",true).eq("media_rights_verified",true).not("source_name","is",null).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category||"hotel",
-   source:data.source_name??"Approved provider",address:data.address,description:data.description,
+   source:data.source_name??"Approved provider",address:data.address,description:data.description,phone:null,
    sourceUrl:safeLink(data.source_url),
    website:data.source_name==="GTH PRO Reviewed Hotel Partner"&&data.source_url&&!data.source_url.includes("/hotels/stay/")
     ?safeLink(data.source_url):null,
@@ -142,6 +147,9 @@ export default async function HotelStay({params}:PageProps){
        className="h-36 w-full rounded-xl border border-[var(--border)] object-cover"/>)}
     </div>}
     {hotel.description&&<p className="mt-6 text-sm leading-7 text-[var(--text-soft)]">{hotel.description}</p>}
+    {hotel.phone&&<p className="mt-3 text-sm text-[var(--text-soft)]">OSM-listed hotel phone (confirm with property):{" "}
+      <a className="underline" href={"tel:"+hotel.phone.replace(/[^+0-9]/g,"")}>{hotel.phone}</a>
+    </p>}
     <div className="mt-7 grid gap-4 sm:grid-cols-3">
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Property type</p><p className="mt-2 font-semibold capitalize">{hotel.category.replaceAll("_"," ")}</p></div>
      <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs text-[var(--text-soft)]">Directory source</p><p className="mt-2 font-semibold">{hotel.source}</p></div>
