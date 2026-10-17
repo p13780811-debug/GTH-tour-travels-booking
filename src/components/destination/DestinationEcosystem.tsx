@@ -41,7 +41,7 @@ export default function DestinationEcosystem({slug,name,country}:{
       {items.map((service:DestinationService)=>{
        const Icon=serviceIcons[service.key]||Compass;
        return <Link key={service.key} href={service.href}
-         className="group flex h-44 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
+         className="group flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
          <div className="flex items-center justify-between gap-2">
           <span className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-2"><Icon size={20} aria-hidden="true"/></span>
           <ArrowRight size={17} aria-hidden="true" className="text-[var(--text-soft)] transition group-hover:translate-x-1"/>
