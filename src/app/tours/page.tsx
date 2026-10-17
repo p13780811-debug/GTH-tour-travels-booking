@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, Compass, MapPin, Plane, Search, ShieldCheck } fro
 import { searchTours, type TourFilters } from "@/lib/tours";
 import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
 import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
+import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import TourCarousel from "@/components/tours/TourCarousel";
 
 export const dynamic = "force-dynamic";
@@ -96,6 +97,8 @@ export default async function ToursPage({ searchParams }: Props) {
       </section>
 
       <TourAffiliateMarketplace />
+      {(!filters.city||["goa","panaji","margao"].includes(filters.city.toLowerCase()))&&<OSMAttractionsRail region="goa"/>}
+      {!filters.city&&<OSMAttractionsRail region="india"/>}
       {(!filters.city||["goa","panaji","margao"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="goa"/>}
       {(!filters.city||["mumbai","pune","shirdi","ajanta-ellora"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="maharashtra"/>}
 

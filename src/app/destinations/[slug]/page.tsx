@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane,
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationEcosystem from "@/components/destination/DestinationEcosystem";
 import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
+import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
@@ -138,6 +139,7 @@ export default async function DestinationPage({ params }: Props) {
 
       <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
+      {slug==="goa"&&<OSMAttractionsRail region="goa"/>}
       {["mumbai","pune","ajanta-ellora","shirdi"].includes(slug)&&<OpenAttractionsRail region="maharashtra"/>}
 
       <section id="destination-discovery" className="mx-auto grid max-w-7xl scroll-mt-20 gap-6 px-4 py-12 sm:px-6 md:py-14 lg:grid-cols-[1fr_300px]">
