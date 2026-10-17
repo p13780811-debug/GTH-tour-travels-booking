@@ -27,7 +27,7 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
   const now = new Date().toISOString();
   // Public anon/RLS-scoped reads only, with explicit, narrow published-source filters.
   // Bounded query sizes keep sitemap requests responsive; never leak private columns.
-  const [hotels, tenders] = await Promise.allSettled([
+  const [hotels, tenders, attractions] = await Promise.allSettled([
     db.from("hotels")
       .select("id,name,city,country_code,category,source_name,source_url,affiliate_link")
       .eq("is_public", true).eq("media_rights_verified", true)
@@ -39,6 +39,11 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
       .gt("deadline_at", now)
       .not("summary", "is", null)
       .order("deadline_at", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE),
+    db.from("gth_open_attractions")
+      .select("wikidata_qid,name,description,source_license,wikidata_url")
+      .eq("is_public",true).eq("source_license","CC0-1.0")
+      .not("description","is",null)
+      .order("wikidata_qid",{ascending:true}).limit(500),
   ]);
   const output: DynamicEntry[] = [];
   if (hotels.status === "fulfilled" && !hotels.value.error) {
@@ -64,6 +69,15 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
           ? { lastModified: new Date(item.updated_at) } : {}),
         changeFrequency: "daily", priority: 0.5,
       });
+    }
+  }
+  if(attractions.status==="fulfilled"&&!attractions.value.error){
+    for(const item of attractions.value.data??[]){
+      if(!/^Q[1-9][0-9]{0,14}$/.test(item.wikidata_qid)||
+        typeof item.name!=="string"||item.name.length<3||
+        typeof item.description!=="string"||item.description.trim().length<35||
+        item.wikidata_url!=="https://www.wikidata.org/wiki/"+item.wikidata_qid)continue;
+      output.push({url:base+"/attractions/"+item.wikidata_qid,changeFrequency:"monthly",priority:0.35});
     }
   }
   return output;
