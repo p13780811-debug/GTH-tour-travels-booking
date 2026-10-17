@@ -43,7 +43,8 @@ test("Tours index, API and directory include ODbL attribution; no false tickets"
  const tours=read("src/app/tours/page.tsx");
  for(const s of [api,page,rail])assert.match(s,/OpenStreetMap/);
  assert.match(api,/verified_tickets:false/);
- assert.match(api,/nextCursor/);
+ assert.match(read("src/lib/travel/osmAttractions.ts"),/nextCursor/);
+ assert.match(api,/\.\.\.result/);
  assert.doesNotMatch(api,/pageRaw|Number\(pageRaw\)>100/);
  assert.match(page,/sourceProgress/);
  assert.match(page,/Next 24/);
