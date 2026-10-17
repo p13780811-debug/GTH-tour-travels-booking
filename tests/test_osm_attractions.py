@@ -52,6 +52,17 @@ class BulkAttractionTests(unittest.TestCase):
  def test_invalid_source_metadata_rejected(self):
   self.assertIsNone(m.convert(feature("n99"),"https://evil.com/x","IN","India"))
   self.assertIsNone(m.convert(feature("n99"),"europe/france","INVALID","France"))
+ def test_paced_upload_sleeps_between_batches_only(self):
+  with patch.object(m,"ingest") as request,patch.object(m.time,"monotonic",side_effect=[100.0,100.0,100.1]),patch.object(m.time,"sleep") as nap:
+   first=m.paced_ingest([{"source_id":"node/1"}],"https://example.invalid","jwt",None)
+   second=m.paced_ingest([{"source_id":"node/2"}],"https://example.invalid","jwt",first)
+   self.assertEqual(first,100.0)
+   self.assertEqual(second,100.1)
+   self.assertEqual(request.call_count,2)
+   nap.assert_called_once_with(5.5)
+ def test_import_limit_is_bounded_by_cloud_runtime(self):
+  self.assertEqual(m.BATCH_GAP_SECONDS,5.5)
+  self.assertLessEqual(m.MAX_PER_RUN,18000)
  def test_protected_import_requires_signed_identity(self):
   with patch.dict("os.environ",{},clear=True):
    with self.assertRaises(SystemExit):
