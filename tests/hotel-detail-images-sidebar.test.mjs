@@ -5,7 +5,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("OSM hotel source image from catalog is passed to cards, not nulled",()=>{
  const api=read("src/app/api/hotels/route.ts");
- assert.match(api,/hotel\.image_url\), affiliate_link: null/);
+ assert.match(api,/hotel\.image_url\|\|commons\.get\(hotel\.source_id\)\?\.image_url\), affiliate_link: null/);
  assert.match(api,/source_id\.replace\("\/",\s*"-"\)/);
  assert.match(api,/source_license: "ODbL-1\.0"/);
 });
@@ -13,7 +13,7 @@ test("Hotel detail can resolve encoded OSM card IDs and reuse sourced image",()=
  const page=read("src/app/hotels/stay/[id]/page.tsx");
  assert.match(page,/decodeURIComponent\(id\)/);
  assert.match(page,/sourceId=id\.slice\(4\)\.replace\("-","\/"\)/);
- assert.match(page,/select\("name,city,country_code,category,address,source_url,website,image_url/);
+ assert.match(page,/select\("name,city,country_code,category,address,phone,source_url,website,image_url/);
  assert.match(page,/\.eq\("source","osm"\)\.eq\("source_id",sourceId\)/);
  assert.match(page,/Hotel photo pending source permission/);
  assert.match(page,/source-attributed property image/);

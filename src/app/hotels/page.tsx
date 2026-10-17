@@ -69,6 +69,7 @@ type HotelListing = {
     source_url?: string | null;
     hotel_website?: string | null;
     location_scope?: string;
+    image_attribution?: {author:string;license:string;license_url:string;commons_page:string}|null;
 
 };
 
@@ -572,6 +573,13 @@ function HotelsContent() {
                                                 </div>
                                             )}
 
+                                            {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-3 py-2 text-[10px] leading-4">
+                                                <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow"
+                                                   className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
+                                                {" · "}
+                                                <a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow"
+                                                   className="underline">{hotel.image_attribution.license}</a>
+                                            </div>}
                                             <div className="absolute top-4 left-4 flex gap-2">
                                                 <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
                                                     <Diamond size={12} />

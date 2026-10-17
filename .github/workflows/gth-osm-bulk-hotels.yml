@@ -119,6 +119,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p "test_hotel_import.py"
           python3 -m unittest discover -s tests -p "test_hotel_region.py"
+          python3 -m unittest discover -s tests -p "test_hotel_wikimedia.py"
       - name: Install osmium
         run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
       - name: Download licensed Geofabrik country extract
@@ -159,6 +160,32 @@ jobs:
               --region "$REGION" --country-code "$COUNTRY" --limit "$MAX_RECORDS" \
               --edge-url "$GTH_HOTEL_EDGE_URL"
           fi
+      - name: Enrich real hotel imagery from licensed Commons files (bounded, no billing)
+        continue-on-error: true
+        shell: bash
+        env:
+          GTH_HOTEL_MEDIA_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-hotel-wikimedia
+        run: |
+          set -euo pipefail
+          if [[ "$MODE" == "dry-run" ]]; then
+            python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq --limit 20 --dry-run
+            exit 0
+          fi
+          token_json="$(curl --fail --silent --show-error --proto '=https' \
+            --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-hotel-wikimedia:dqprqjmhxjnrllczqyhz")"
+          GTH_HOTEL_OIDC_TOKEN="$(printf '%s' "$token_json" | \
+            python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$GTH_HOTEL_OIDC_TOKEN"
+          echo "::add-mask::$GTH_HOTEL_OIDC_TOKEN"
+          export GTH_HOTEL_OIDC_TOKEN
+          day=$((10#$(date -u +%j)))
+          hour=$((10#$(date -u +%H)))
+          rotation=$((day * 3 + hour / 8))
+          python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq \
+            --limit 20 --rotation-slot "$rotation" \
+            --edge-url "$GTH_HOTEL_MEDIA_EDGE_URL"
+          echo "Commons photographs: checked author/license/source and OSM Wikidata identity. No hotel rate or photo invented." >> "$GITHUB_STEP_SUMMARY"
       - name: ODbL attribution
         if: always()
         run: echo "© OpenStreetMap contributors (ODbL 1.0), Geofabrik. Hotel listing is not live room inventory, rates or booking confirmation." >> "$GITHUB_STEP_SUMMARY"
