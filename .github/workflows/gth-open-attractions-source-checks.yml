@@ -1,0 +1,29 @@
+name: GTH Open Attractions — Python Source Gate
+on:
+  pull_request:
+    paths:
+      - "scripts/attractions/import_osm_attractions.py"
+      - "tests/test_osm_attractions.py"
+      - "tests/osm-attractions-contract.test.mjs"
+      - ".github/workflows/gth-osm-attractions-sync.yml"
+      - ".github/workflows/gth-open-attractions-source-checks.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/attractions/import_osm_attractions.py"
+      - "tests/test_osm_attractions.py"
+      - ".github/workflows/gth-open-attractions-source-checks.yml"
+permissions:
+  contents: read
+jobs:
+  validate-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test OSM parser provenance without fetching data or secrets
+        run: python3 -m unittest discover -s tests -p "test_osm_attractions.py"
+      - name: Test RLS, route, source-licensed semantics
+        run: node --test tests/osm-attractions-contract.test.mjs
