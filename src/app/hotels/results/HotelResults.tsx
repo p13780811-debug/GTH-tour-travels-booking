@@ -1,15 +1,17 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
+import { hotelSearchParams, type HotelSearchScope } from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
-export default function HotelResults({city,destination}:{city:string;destination?:string}){
+export default function HotelResults({scope}:{scope:HotelSearchScope}){
+ const {city,destination,name,country,category,sort,source}=scope;
+ const placeLabel=city||destination.replaceAll("-"," ")||country||"your search";
  const [items,setItems]=useState<Stay[]>([]);
  const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
  const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
- const query=(n:number)=>{const p=new URLSearchParams({page:String(n)});
-   if(destination)p.set("destination",destination);else p.set("city",city);return "/api/hotels?"+p;};
+ const query=(n:number)=>"/api/hotels?"+hotelSearchParams({city,destination,name,country,category,sort,source},n);
  useEffect(()=>{
   const controller=new AbortController();
   setItems([]);setLoading(true);setError("");setPage(1);setTotal(0);setMore(false);
@@ -21,7 +23,7 @@ export default function HotelResults({city,destination}:{city:string;destination
   }).catch(()=>{if(!controller.signal.aborted)setError("Hotel listings could not be loaded. Please retry.");})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
   return ()=>controller.abort();
- },[city,destination]);
+ },[city,destination,name,country,category,sort,source]);
  async function loadMore(){
   if(!more||loading||loadingMore)return;setLoadingMore(true);
   try{
@@ -33,15 +35,15 @@ export default function HotelResults({city,destination}:{city:string;destination
    setPage(p=>p+1);setMore(next.length>0&&r.headers.get("X-GTH-Has-More")==="true");setError("");
   }catch{setError("More hotels could not be loaded; retry.");}finally{setLoadingMore(false);}
  }
- if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {city}…</p>;
+ if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {placeLabel}…</p>;
  if(error&&!items.length)return <p role="alert" className="gth-glass rounded-2xl p-6 text-sm">{error}</p>;
  if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
-  <h3 className="text-lg font-semibold">Hotel records for {city} are not imported yet</h3>
+  <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
-  <Link href={"/hotels?city="+encodeURIComponent(city)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
+  <Link href={"/hotels?"+hotelSearchParams({city,destination,name,country,category,sort,source},1)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
  </div>;
  return <section aria-label={"Hotels in "+city} className="space-y-5">
-  <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {city} · Prices, stars and room availability unverified</p>
+  <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
    {items.map(hotel=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
     <div className="relative h-44 bg-[var(--bg-soft)]">
