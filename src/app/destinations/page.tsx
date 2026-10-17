@@ -109,7 +109,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
         <Image src="/images/global-city.jpg" alt="" fill priority sizes="100vw"
           className="absolute -z-20 object-cover opacity-20" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80" />
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.05fr_.95fr]">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">
               <Globe2 size={16}/> GTH PRO Worldwide Explorer
@@ -140,18 +140,21 @@ export default async function DestinationsPage({ searchParams }: Props) {
               <span className="inline-flex items-center gap-1"><ShieldCheck size={15}/> Verified source context</span>
             </p>
           </div>
-          {featuredDestinations.length>0&&<div className="min-w-0">
+
+        </div>
+      </section>
+
+      {featuredDestinations.length>0&&<section aria-labelledby="featured-destinations-heading"
+        className="mx-auto max-w-7xl min-w-0 px-4 pb-4 pt-8 sm:px-6 md:pt-10">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold">Featured destinations</h2>
+              <h2 id="featured-destinations-heading" className="text-lg font-semibold sm:text-xl">Featured destinations</h2>
               <span className="text-xs text-[var(--text-soft)]">Swipe to explore <ArrowRight size={13} className="inline"/></span>
             </div>
             <div role="region" aria-label="Featured destinations horizontal rail" tabIndex={0}
               className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
               {featuredDestinations.map((destination)=><DestinationCard key={destination.slug} destination={destination}/>)}
             </div>
-          </div>}
-        </div>
-      </section>
+      </section>}
 
       <section id="discover" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 md:py-14">
         <div className="flex flex-wrap items-end justify-between gap-3">
