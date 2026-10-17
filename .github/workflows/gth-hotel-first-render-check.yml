@@ -26,6 +26,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Verify hotel OSM source and signed batch accounting
+        run: |
+          python3 -m unittest discover -s tests -p "test_hotel_import.py"
+          python3 -m unittest discover -s tests -p "test_hotel_oidc_batch.py"
       - run: npm ci --legacy-peer-deps
       - name: Check hotel first-render regressions
         run: node --test tests/hotel-first-render-ux.test.mjs tests/hotel-marketplace.test.mjs tests/hotel-india-coverage-ux.test.mjs tests/hotel-nearby-search.test.mjs
