@@ -48,14 +48,15 @@ test("No fake hotels, real estate images or tender images get filled with stock 
  assert.match(source,/image:null/);
  assert.doesNotMatch(source,/service_role|SUPABASE_SERVICE_ROLE_KEY|faker|Math\.random/);
 });
-test("Destination list is a mobile horizontal rail while preserving its desktop responsive grid",()=>{
+test("Destination list uses the same equal-size horizontal cards on mobile and desktop",()=>{
  const page=f("src/app/destinations/page.tsx");
+ const card=f("src/components/destination/DestinationCard.tsx");
  assert.match(page,/snap-x snap-mandatory/);
- assert.match(page,/w-\[44vw\]/);
- assert.match(page,/md:grid md:grid-cols-2/);
- assert.match(page,/md:overflow-visible/);
- assert.match(page,/h-\[112px\].*md:h-\[230px\]/);
- assert.match(page,/hidden h-\[250px\] grid-cols-2/);
+ assert.match(page,/overflow-x-auto/);
+ assert.match(page,/<DestinationCard/);
+ assert.match(card,/h-64 w-60 shrink-0 snap-start/);
+ assert.doesNotMatch(page,/md:grid md:grid-cols-2/);
+ assert.doesNotMatch(page,/md:overflow-visible/);
 });
 test("App navigation still provides direct real product flows and safe-area bottom inset",()=>{
  const nav=f("src/components/MobileNav.tsx");

@@ -33,7 +33,7 @@ test("destination page integrates real hotel and tour inventory without fake pri
 test("destination detail offers connected planning articles", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
   assert.match(page, /href="\/flights"/);
-  assert.match(page, /"\/blog\/" \+ article\.slug/);
+  assert.match(page, /"\/blog\/"\s*\+\s*article\.slug/);
   assert.match(page, /\/hotels\?destination=/);
   assert.match(page, /\/tours\?city=/);
 });
@@ -73,7 +73,8 @@ test("worldwide directory uses source-backed active rows, geographic filters and
  assert.match(listing,/params\.set\("country", country\)/);
  assert.match(listing,/params\.set\("region", region\)/);
  assert.match(listing,/pageLink\(search, page \+ 1, country, region, sort\)/);
- assert.match(listing,/Country information unavailable/);
+ const card=read("src/components/destination/DestinationCard.tsx");
+ assert.match(card,/Country information unavailable/);
  assert.match(listing,/editorial references/);
  assert.match(geography,/const cityGroups/);
  assert.match(geography,/const regionGroups/);

@@ -1,10 +1,11 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
+import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
-export default function HotelResults({city,destination}:{city:string;destination?:string}){
+export default function HotelResults({city,destination,compactRail=false}:{city:string;destination?:string;compactRail?:boolean}){
  const [items,setItems]=useState<Stay[]>([]);
  const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
  const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
@@ -42,7 +43,24 @@ export default function HotelResults({city,destination}:{city:string;destination
  </div>;
  return <section aria-label={"Hotels in "+city} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {city} · Prices, stars and room availability unverified</p>
-  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+  {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
+    className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
+    {items.map(hotel=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
+      className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
+        <HotelPropertyImage src={hotel.image} name={hotel.name}
+          className="h-full w-full object-cover"
+          placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)]"/>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col p-3">
+        <p className="text-xs capitalize text-[var(--text-soft)]">{(hotel.category||"hotel").replaceAll("_"," ")}</p>
+        <h3 className="mt-1 line-clamp-1 text-sm font-semibold">{hotel.name}</h3>
+        <p className="mt-1 line-clamp-1 flex items-center gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13} aria-hidden="true"/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
+        <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">View hotel & source <ArrowRight size={15}/></span>
+      </div>
+    </Link>)}
+  </div>}
+  {!compactRail&&  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
    {items.map(hotel=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
     <div className="relative h-44 bg-[var(--bg-soft)]">
      {hotel.image&&hotel.image!=="/placeholder.jpg"?
@@ -61,7 +79,7 @@ export default function HotelResults({city,destination}:{city:string;destination
      </div>
     </div>
    </article>)}
-  </div>
+  </div>}
   {more?<button type="button" disabled={loadingMore} onClick={()=>void loadMore()} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-60">{loadingMore?"Loading…":"Load more hotels (page "+(page+1)+")"} <BedDouble size={16}/></button>:null}
   {error?<p role="alert" className="text-sm text-[var(--text-soft)]">{error}</p>:null}
  </section>;
