@@ -33,7 +33,7 @@ class BulkAttractionTests(unittest.TestCase):
   f["properties"].update({"image":"https://unsafe.example/placeholder.jpg","phone":"+12345","fee":"5"})
   v=m.convert(f,REGION)
   self.assertIsNotNone(v)
-  self.assertEqual(set(v),{"source_id","name","category","region_scope","city","latitude","longitude","source_url","source_region","source_license","wikidata_qid"})
+  self.assertEqual(set(v),{"source_id","name","category","region_scope","city","latitude","longitude","source_url","source_region","source_license","wikidata_qid","country_code","country_name"})
  def test_area_geometry_source_only(self):
   f={"type":"Feature","id":"a2440","geometry":{"type":"Polygon","coordinates":[[[73.80,15.15],[73.81,15.15],[73.81,15.16],[73.80,15.16],[73.80,15.15]]]},
      "properties":{"historic":"fort","name":"Old Public Fort"}}
@@ -41,6 +41,17 @@ class BulkAttractionTests(unittest.TestCase):
   self.assertIsNotNone(row)
   self.assertEqual(row["source_id"],"way/1220")
   self.assertEqual(row["category"],"fort")
+ def test_worldwide_source_geography_no_false_india(self):
+  f=feature("n2043",coordinates=[2.31,48.86])
+  self.assertIsNone(m.convert(f,REGION))
+  item=m.convert(f,"europe/france/ile-de-france","FR","France")
+  self.assertEqual(item["country_code"],"FR")
+  self.assertEqual(item["country_name"],"France")
+  self.assertEqual(item["region_scope"],"world")
+  self.assertEqual(item["source_id"],"node/2043")
+ def test_invalid_source_metadata_rejected(self):
+  self.assertIsNone(m.convert(feature("n99"),"https://evil.com/x","IN","India"))
+  self.assertIsNone(m.convert(feature("n99"),"europe/france","INVALID","France"))
  def test_protected_import_requires_signed_identity(self):
   with patch.dict("os.environ",{},clear=True):
    with self.assertRaises(SystemExit):
