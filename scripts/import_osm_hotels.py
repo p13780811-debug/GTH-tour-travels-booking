@@ -181,10 +181,10 @@ def main():
                 parser.error("GitHub OIDC workflow token required for hotel import")
         elif not base.startswith("https://") or not key:
             parser.error("Missing valid Supabase URL or server-side ingestion credential")
-    batch, accepted, rejected = [], 0, 0
+    batch, accepted, rejected, remote_rejected = [], 0, 0, 0
 
     def flush():
-        nonlocal rejected
+        nonlocal rejected, remote_rejected
         if not batch:
             return
         if not args.dry_run:
@@ -198,8 +198,14 @@ def main():
                     try:
                         with urlopen(request, timeout=45) as response:
                             outcome = json.load(response)
-                        if outcome.get("accepted") != len(batch):
-                            raise RuntimeError("Hotel import batch rejected some source records")
+                        # Individual rejected OSM records must not stop valid imports.
+                        # Still reject an inconsistent gateway response.
+                        written = outcome.get("accepted")
+                        invalid = outcome.get("rejected")
+                        if (type(written) is not int or type(invalid) is not int or
+                                written < 0 or invalid < 0 or written + invalid != len(batch)):
+                            raise RuntimeError("Hotel ingestion returned invalid batch accounting")
+                        remote_rejected += invalid
                         break
                     except HTTPError as err:
                         if err.code in (429, 502, 503, 504) and attempt < 3:
@@ -244,7 +250,9 @@ def main():
             if args.limit and accepted >= args.limit:
                 break
     flush()
-    print(json.dumps({"accepted": accepted, "rejected": rejected, "dry_run": args.dry_run,
+    print(json.dumps({"accepted": accepted - remote_rejected, "rejected": rejected + remote_rejected,
+                      "accepted_source_candidates": accepted, "gateway_rejected": remote_rejected,
+                      "dry_run": args.dry_run,
                       "source_license": "ODbL-1.0", "verified_hotels": 0}))
     return 0
 
