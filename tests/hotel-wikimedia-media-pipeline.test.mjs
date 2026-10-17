@@ -53,7 +53,7 @@ test("Free photos run inside existing scheduled OSM OIDC ingestion, not by Googl
  assert.match(workflow,/id-token: write/);
  assert.match(workflow,/GTH_HOTEL_OIDC_TOKEN/);
  assert.match(workflow,/enrich_wikimedia_photos\.py/);
- assert.match(workflow,/--limit 20 --rotation-slot/);
+ assert.match(workflow,/--limit 24 --rotation-slot/);
  assert.match(workflow,/gth-hotel-wikimedia/);
  assert.match(script,/P625/);
  assert.match(script,/P18/);
