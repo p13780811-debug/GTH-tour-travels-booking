@@ -20,7 +20,6 @@ const ISO:Readonly<Record<string,string>>={
  "Norway":"NO","Portugal":"PT","Czechia":"CZ","Austria":"AT","Sweden":"SE","Italy":"IT"
 };
 export function destinationServices(place:{slug:string;name:string;country:string|null}):DestinationService[]{
- const city=encodeURIComponent(place.name);
  const slug=encodeURIComponent(place.slug);
  const country=place.country ? ISO[place.country] : undefined;
  const realEstate=new URLSearchParams({city:place.name});
