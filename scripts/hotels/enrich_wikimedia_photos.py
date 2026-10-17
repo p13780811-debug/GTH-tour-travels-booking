@@ -19,6 +19,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from import_osm_hotels import convert
 
 USER_AGENT = "GTHProHotelCommonsBot/1.0 (https://www.gthproglobal.com/contact; OSM-attributed public hotel photo enrichment)"
