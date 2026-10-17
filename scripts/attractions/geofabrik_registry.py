@@ -6,6 +6,9 @@ import argparse
 import json
 import re
 from datetime import datetime, timezone
+from functools import lru_cache
+from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from urllib.request import Request, urlopen
 
 INDEX = "https://download.geofabrik.de/index-v1-nogeom.json"
@@ -78,12 +81,40 @@ UTC_SOURCE_WINDOWS = (
 )
 
 
-def select_scheduled_region(regions, now=None):
-    """Deterministic regional UTC window with day-by-day fair rotation.
+# Representative country time zones. Use the IANA tzdata country list for
+# other countries; never infer time zones from POI names or coordinates.
+PREFERRED_COUNTRY_ZONES = {
+    "US": "America/New_York", "CA": "America/Toronto",
+    "AU": "Australia/Sydney", "NZ": "Pacific/Auckland",
+    "IN": "Asia/Kolkata", "FR": "Europe/Paris",
+    "RU": "Europe/Moscow", "BR": "America/Sao_Paulo",
+    "CN": "Asia/Shanghai",
+}
 
-    No secret state or database calls are needed; if a GitHub run is delayed,
-    the actual start hour determines its next eligible geographical group.
-    Individual countries may span several time zones.
+
+@lru_cache(maxsize=1)
+def country_time_zones():
+    found = {}
+    try:
+        # Ubuntu GitHub runners ship this public IANA tzdata country registry.
+        for line in Path("/usr/share/zoneinfo/zone.tab").read_text(encoding="utf-8").splitlines():
+            if line.startswith("#") or not line.strip():
+                continue
+            fields = line.split("\t")
+            if len(fields) >= 3 and CODE.fullmatch(fields[0]):
+                found.setdefault(fields[0], fields[2])
+    except OSError:
+        pass
+    found.update(PREFERRED_COUNTRY_ZONES)
+    return found
+
+
+def select_scheduled_region(regions, now=None):
+    """Choose one single-country extract in its representative local 01-06h.
+
+    UTC regional fallback covers missing IANA timezone mappings. Selection
+    advances daily and works without secrets or persistent cursor state.
+    Multi-time-zone countries use one representative zone, not city-level time.
     """
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
@@ -91,11 +122,26 @@ def select_scheduled_region(regions, now=None):
     utc = now.astimezone(timezone.utc)
     group = utc.hour // 6
     allowed = UTC_SOURCE_WINDOWS[group]
-    candidates = [r for r in regions if r["region"].split("/", 1)[0] in allowed]
+    zones = country_time_zones()
+    local_night = []
+    for item in regions:
+        zone = zones.get(item["country_code"])
+        if not zone:
+            continue
+        try:
+            country_hour = utc.astimezone(ZoneInfo(zone)).hour
+        except ZoneInfoNotFoundError:
+            continue
+        if 1 <= country_hour < 6:
+            local_night.append(item)
+    # A country-aware local overnight selection takes precedence. If a
+    # timezone is absent or no source is eligible, retain the safe reviewed
+    # regional UTC fallback rather than silently disabling synchronization.
+    candidates = local_night or [r for r in regions if r["region"].split("/", 1)[0] in allowed]
     if not candidates:
         raise ValueError("No licensed source in this UTC region window")
-    # Every six runs advance one full day, without always selecting country #1.
-    slot = (utc.date().toordinal() * 6 + utc.hour % 6) % len(candidates)
+    # Advance by one on each day, avoiding a fixed subset of busy countries.
+    slot = (utc.date().toordinal() + utc.hour) % len(candidates)
     return candidates[slot], group
 
 
