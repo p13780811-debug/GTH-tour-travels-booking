@@ -10,9 +10,12 @@ test("Destination pages link their hotel section and marketplace to destination 
 });
 test("Master hotel API validates destination slugs, resolves real active source name and queries source regions",()=>{
  const api=read("src/app/api/hotels/route.ts");
+ const geo=read("src/lib/travel/hotel-geo-bounds.ts");
  assert.match(api,/const destination = searchParams\.get\("destination"\)/);
  assert.match(api,/\.eq\("slug",destination\)\.eq\("is_active",true\)/);
- assert.match(api,/city\.ilike\."\+cityLike\+",region\.ilike\."\+cityLike/);
+ assert.match(api,/hotelLocationFilter\(cityLike,nearCity\)/);
+ assert.match(geo,/region\.ilike/);
+ assert.match(geo,/city\.ilike/);
  assert.match(api,/X-GTH-Total/);
  assert.match(api,/affiliate_link: null/);
  assert.doesNotMatch(api,/generateHotels|Math\.random/);
