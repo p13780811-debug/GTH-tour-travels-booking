@@ -61,18 +61,18 @@ jobs:
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
             day=$((10#$(date -u +%j)))
             hour=$((10#$(date -u +%H)))
-            if (( hour == 9 && day % 7 == 0 )); then
-              # Keep weekly rotating global ODbL coverage without starving India.
-              slot=$(( day * 3 + hour / 8 ))
+            if (( hour == 9 )); then
+              # One small licensed global source per day; keep two daily India runs.
+              # The source registry verifies extract size before selecting a PBF.
+              slot=$day
               python3 scripts/hotels/resolve_region.py --slot "$slot" > selected-region.env
               REGION="$(sed -n 's/^REGION=//p' selected-region.env)"
               COUNTRY="$(sed -n 's/^COUNTRY=//p' selected-region.env)"
             else
-              # India-first backfill: three zone visits per day, all six in two
-              # days, followed by cyclic source refresh. No artificial hotels.
+              # Two India visits daily, all six zones over three days.
               # Geofabrik extract borders do NOT verify individual hotel country.
-              phase=$(( hour == 1 ? 0 : hour == 9 ? 1 : 2 ))
-              slot=$(( (day * 3 + phase) % 6 ))
+              phase=$(( hour == 1 ? 0 : 1 ))
+              slot=$(( (day * 2 + phase) % 6 ))
               case "$slot" in
                 0) REGION=asia/india/western-zone;;
                 1) REGION=asia/india/eastern-zone;;
