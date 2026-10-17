@@ -33,7 +33,7 @@ test("destination page integrates real hotel and tour inventory without fake pri
 test("destination detail offers connected planning articles", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
   assert.match(page, /href="\/flights"/);
-  assert.match(page, /"\/blog\/" \+ article\.slug/);
+  assert.match(page, /"\/blog\/"\s*\+\s*article\.slug/);
   assert.match(page, /\/hotels\?destination=/);
   assert.match(page, /\/tours\?city=/);
 });
