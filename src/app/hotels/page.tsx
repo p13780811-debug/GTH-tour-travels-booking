@@ -16,6 +16,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import {useHotelIllustrations} from "@/lib/travel/use-hotel-illustrations";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 
@@ -99,6 +100,7 @@ function HotelsContent() {
     const [category,setCategory]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
+    const illustrations=useHotelIllustrations(requestedCity,hotels.some(h=>!h.image||h.image==="/placeholder.jpg"));
     const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category,sort,sourceFilter]);
     const activeQueryRef = useRef(queryKey);
     // Every API page MUST carry the identical search scope and filters.
@@ -556,6 +558,10 @@ function HotelsContent() {
                             </label>
                             <span className="text-xs text-[var(--text-soft)]">Real source records · Prices, reviews and availability require supplier verification</span>
                         </div>
+                        {illustrations.length>0&&<p className="mb-4 text-xs leading-6 text-[var(--text-soft)]">
+                          Some hotel cards use clearly labelled illustrative destination photography. These are not verified images of the listed properties.
+                          {" "}Photos provided by <a href="https://www.pexels.com/" target="_blank" rel="noopener noreferrer nofollow" className="underline">Pexels</a>.
+                        </p>}
                         {/* HOTEL CARDS */}
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
                         {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
@@ -563,7 +569,7 @@ function HotelsContent() {
                             <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
                         )}
                         <div className="space-y-5">
-                            {hotels.map((hotel) => (
+                            {hotels.map((hotel,index) => (
                                 <div
                                     key={hotel.id}
                                     className="group gth-glass border border-[var(--border)] rounded-3xl overflow-hidden hover:scale-[1.01] transition-all"
@@ -573,6 +579,7 @@ function HotelsContent() {
                                         <div className="relative lg:w-[360px] shrink-0 min-h-[240px]">
                                             <HotelPropertyImage
                                                 src={hotel.image} name={hotel.name}
+                                                illustration={illustrations.length?illustrations[index%illustrations.length]:null}
                                                 className="w-full h-[240px] lg:h-full object-cover"
                                                 placeholderClassName="flex h-[240px] flex-col items-center justify-center gap-3 bg-[var(--bg)] px-6 text-center text-[var(--text-soft)]"
                                               />
