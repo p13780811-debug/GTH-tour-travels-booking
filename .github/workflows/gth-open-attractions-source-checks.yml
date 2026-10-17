@@ -3,6 +3,12 @@ on:
   pull_request:
     paths:
       - "scripts/attractions/import_osm_attractions.py"
+      - "scripts/attractions/geofabrik_registry.py"
+      - "tests/test_geofabrik_registry.py"
+      - "src/lib/travel/osmAttractions.ts"
+      - "src/app/attractions/**"
+      - "src/app/api/travel/osm-attractions/**"
+      - "supabase/migrations/*osm_worldwide_directory.sql"
       - "tests/test_osm_attractions.py"
       - "tests/osm-attractions-contract.test.mjs"
       - ".github/workflows/gth-osm-attractions-sync.yml"
@@ -11,6 +17,12 @@ on:
     branches: [main]
     paths:
       - "scripts/attractions/import_osm_attractions.py"
+      - "scripts/attractions/geofabrik_registry.py"
+      - "tests/test_geofabrik_registry.py"
+      - "src/lib/travel/osmAttractions.ts"
+      - "src/app/attractions/**"
+      - "src/app/api/travel/osm-attractions/**"
+      - "supabase/migrations/*osm_worldwide_directory.sql"
       - "tests/test_osm_attractions.py"
       - ".github/workflows/gth-open-attractions-source-checks.yml"
 permissions:
@@ -25,5 +37,7 @@ jobs:
           persist-credentials: false
       - name: Test OSM parser provenance without fetching data or secrets
         run: python3 -m unittest discover -s tests -p "test_osm_attractions.py"
+      - name: Validate worldwide Geofabrik index selection and ISO inference
+        run: python3 -m unittest discover -s tests -p "test_geofabrik_registry.py"
       - name: Test RLS, route, source-licensed semantics
         run: node --test tests/osm-attractions-contract.test.mjs
