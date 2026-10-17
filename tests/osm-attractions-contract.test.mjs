@@ -12,9 +12,10 @@ test("Source ODbL table only exposes community directory with RLS",()=>{
  assert.match(sql,/GRANT EXECUTE ON FUNCTION public.gth_upsert_osm_attractions\(jsonb\) TO service_role/);
  assert.doesNotMatch(sql,/affiliate_link|price_numeric|rating/);
 });
-test("Cloud sync uses six India Geofabrik source zones and fixed official HTTPS",()=>{
+test("Cloud sync resolves licensed global extracts from an official registry and keeps OIDC",()=>{
  const wf=read(".github/workflows/gth-osm-attractions-sync.yml");
- for(const zone of ["western","northern","southern","eastern","central","north-eastern"])assert.ok(wf.includes("asia/india/"+zone+"-zone"));
+ assert.match(wf,/index|registry|Geofabrik/i);
+ assert.match(wf,/--slot "\$GITHUB_RUN_NUMBER"/);
  assert.match(wf,/geofabrik_registry.py/);
  assert.match(wf,/\$PBF_URL/);
  assert.match(wf,/--country-code "\$COUNTRY_CODE"/);
