@@ -118,6 +118,7 @@ jobs:
       - name: Offline importer validation
         run: |
           python3 -m unittest discover -s tests -p "test_hotel_import.py"
+          python3 -m unittest discover -s tests -p "test_hotel_oidc_batch.py"
           python3 -m unittest discover -s tests -p "test_hotel_region.py"
           python3 -m unittest discover -s tests -p "test_hotel_wikimedia.py"
       - name: Install osmium
@@ -161,14 +162,20 @@ jobs:
               --edge-url "$GTH_HOTEL_EDGE_URL"
           fi
       - name: Enrich real hotel imagery from licensed Commons files (bounded, no billing)
+        if: ${{ !cancelled() }}
         continue-on-error: true
         shell: bash
         env:
           GTH_HOTEL_MEDIA_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-hotel-wikimedia
         run: |
           set -euo pipefail
+          # Partial catalog upload should not prevent licensed photo enrichment.
+          if [[ ! -s hotels.geojsonseq ]]; then
+            echo "No genuine accommodation source file; media enrichment skipped."
+            exit 0
+          fi
           if [[ "$MODE" == "dry-run" ]]; then
-            python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq --limit 20 --dry-run
+            python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq --limit 24 --dry-run
             exit 0
           fi
           token_json="$(curl --fail --silent --show-error --proto '=https' \
@@ -183,7 +190,7 @@ jobs:
           hour=$((10#$(date -u +%H)))
           rotation=$((day * 3 + hour / 8))
           python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq \
-            --limit 20 --rotation-slot "$rotation" \
+            --limit 24 --rotation-slot "$rotation" \
             --edge-url "$GTH_HOTEL_MEDIA_EDGE_URL"
           echo "Commons photographs: checked author/license/source and OSM Wikidata identity. No hotel rate or photo invented." >> "$GITHUB_STEP_SUMMARY"
       - name: ODbL attribution
