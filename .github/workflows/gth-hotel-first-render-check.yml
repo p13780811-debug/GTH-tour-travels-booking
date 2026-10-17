@@ -28,7 +28,7 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - name: Check hotel first-render regressions
-        run: node --test tests/hotel-first-render-ux.test.mjs tests/hotel-marketplace.test.mjs tests/hotel-india-coverage-ux.test.mjs
+        run: node --test tests/hotel-first-render-ux.test.mjs tests/hotel-marketplace.test.mjs tests/hotel-india-coverage-ux.test.mjs tests/hotel-nearby-search.test.mjs
       - name: Start isolated Next.js server (no production deploy)
         run: |
           npm run dev -- -p 3000 > /tmp/gth-hotel-first.log 2>&1 &
