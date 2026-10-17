@@ -1,0 +1,117 @@
+name: GTH India Open Attractions — ODbL Bulk Sync
+on:
+  schedule:
+    - cron: "27 4 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gth-osm-attractions-sync.yml"
+      - "scripts/attractions/import_osm_attractions.py"
+      - "supabase/functions/gth-osm-attractions-ingest/**"
+  workflow_dispatch:
+    inputs:
+      region:
+        required: true
+        type: choice
+        options: [asia/india/western-zone, asia/india/northern-zone, asia/india/southern-zone, asia/india/eastern-zone, asia/india/central-zone, asia/india/north-eastern-zone]
+      mode:
+        required: true
+        type: choice
+        options: [dry-run, import]
+        default: dry-run
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: gth-osm-open-attractions
+  cancel-in-progress: false
+jobs:
+  import-real-source-places:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GTH_OSM_ATTRACTIONS_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-osm-attractions-ingest
+      GTH_OSM_ATTRACTIONS_IMPORT_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline source and OIDC validation
+        run: |
+          python3 -m unittest discover -s tests -p "test_osm_attractions.py"
+          node --test tests/osm-attractions-contract.test.mjs
+      - name: Resolve bounded licensed regional extract
+        shell: bash
+        env:
+          REQUESTED_REGION: ${{ inputs.region }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            REGION=asia/india/western-zone
+            MODE=import
+          elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
+            day=$((10#$(date -u +%j)))
+            case "$(( day % 6 ))" in
+              0) REGION=asia/india/western-zone;;
+              1) REGION=asia/india/northern-zone;;
+              2) REGION=asia/india/southern-zone;;
+              3) REGION=asia/india/eastern-zone;;
+              4) REGION=asia/india/central-zone;;
+              5) REGION=asia/india/north-eastern-zone;;
+            esac
+            MODE=import
+          else
+            REGION="$REQUESTED_REGION"
+            MODE="$REQUESTED_MODE"
+          fi
+          case "$REGION" in
+            asia/india/western-zone|asia/india/northern-zone|asia/india/southern-zone|asia/india/eastern-zone|asia/india/central-zone|asia/india/north-eastern-zone) ;;
+            *) echo "Region is not in reviewed Geofabrik registry"; exit 1;;
+          esac
+          [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
+          echo "REGION=$REGION" >> "$GITHUB_ENV"
+          echo "MODE=$MODE" >> "$GITHUB_ENV"
+      - name: Install open source osmium utility
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download official ODbL regional extract
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --proto '=https' --max-time 2400 \
+            "https://download.geofabrik.de/$REGION-latest.osm.pbf" -o region.osm.pbf
+          test -s region.osm.pbf
+      - name: Select source-mapped named attractions, landmarks and protected areas
+        shell: bash
+        run: |
+          set -euo pipefail
+          osmium tags-filter region.osm.pbf \
+            nwr/tourism=attraction,museum,viewpoint,zoo,theme_park \
+            nwr/historic=fort,castle,ruins,monument,archaeological_site \
+            nwr/natural=beach \
+            nwr/boundary=national_park \
+            nwr/leisure=park,nature_reserve \
+            -o mapped-places.osm.pbf --overwrite
+          osmium export --add-unique-id=type_id --geometry-types=point,polygon \
+            -f geojsonseq mapped-places.osm.pbf -o mapped-places.geojsonseq --overwrite
+      - name: OIDC-authenticated source-only catalog import
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$MODE" == dry-run ]]; then
+            python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
+              --region "$REGION" --limit 15000 --dry-run
+            exit 0
+          fi
+          token_json="$(curl --fail --silent --show-error --proto '=https' \
+            --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-osm-attractions:dqprqjmhxjnrllczqyhz")"
+          GTH_OSM_ATTRACTIONS_OIDC_TOKEN="$(printf '%s' "$token_json" | \
+            python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$GTH_OSM_ATTRACTIONS_OIDC_TOKEN"
+          echo "::add-mask::$GTH_OSM_ATTRACTIONS_OIDC_TOKEN"
+          export GTH_OSM_ATTRACTIONS_OIDC_TOKEN
+          python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
+            --region "$REGION" --limit 15000
+          echo "© OpenStreetMap contributors, ODbL 1.0 via Geofabrik. Directory records are NOT verified ticket products or confirmed tourist facility operation." >> "$GITHUB_STEP_SUMMARY"
