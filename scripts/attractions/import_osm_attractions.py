@@ -70,10 +70,39 @@ def convert(feature,region,country_code="IN",country_name="India"):
          "country_code":country_code,"country_name":country_name,
          "wikidata_qid":q if isinstance(q,str) and QID.fullmatch(q) else None}
 
+def fresh_github_oidc_token(fallback):
+ """Obtain a fresh, short-lived token for EVERY upload and final summary.
+ The runner's broker credential never leaves GitHub's actions domain.
+ Do not retry with an expired fallback if the broker is unavailable.
+ """
+ provider=os.getenv("ACTIONS_ID_TOKEN_REQUEST_URL","")
+ credential=os.getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN","")
+ if not provider and not credential:return fallback
+ from urllib.parse import urlsplit,quote
+ parsed=urlsplit(provider)
+ if (not credential or parsed.scheme!="https" or not parsed.hostname or
+     not (parsed.hostname=="actions.githubusercontent.com" or parsed.hostname.endswith(".actions.githubusercontent.com")) or
+     parsed.username or parsed.password or parsed.port not in (None,443)):
+  raise RuntimeError("Invalid GitHub Actions identity broker")
+ url=provider+("&" if parsed.query else "?")+"audience="+quote("gth-osm-attractions:dqprqjmhxjnrllczqyhz",safe="")
+ try:
+  request=Request(url,headers={"Authorization":"Bearer "+credential})
+  with urlopen(request,timeout=15) as response:
+   refreshed=json.load(response).get("value")
+  if not isinstance(refreshed,str) or not refreshed or len(refreshed)>6000:
+   raise ValueError("Invalid signed identity")
+  return refreshed
+ except (ValueError,TypeError,HTTPError,URLError,TimeoutError) as err:
+  raise RuntimeError("GitHub OIDC identity refresh unavailable") from None
+
+
 def ingest(batch,url,token):
- req=Request(url,method="POST",headers={"Content-Type":"application/json","Authorization":"Bearer "+token},
-             data=json.dumps({"rows":batch},ensure_ascii=False,separators=(",",":")).encode())
+ body=json.dumps({"rows":batch},ensure_ascii=False,separators=(",",":")).encode()
  for attempt in range(3):
+  # A large PBF can take >5 minutes to parse. Tokens minted before the parse
+  # expire; refreshing immediately before EACH request prevents HTTP 401.
+  active_token=fresh_github_oidc_token(token)
+  req=Request(url,method="POST",headers={"Content-Type":"application/json","Authorization":"Bearer "+active_token},data=body)
   try:
    with urlopen(req,timeout=40) as res:
     doc=json.load(res)
@@ -83,7 +112,6 @@ def ingest(batch,url,token):
    if e.code not in (429,500,502,503,504) or attempt==2:raise RuntimeError("OSM upload failed: HTTP "+str(e.code)) from None
   except (URLError,TimeoutError):
    if attempt==2:raise RuntimeError("OSM upload unavailable") from None
-  # Respect transient capacity failures without rapid-fire retries.
   time.sleep(BATCH_GAP_SECONDS*(attempt+1))
 
 
@@ -103,11 +131,13 @@ def paced_ingest(batch,url,token,last_finished_at=None):
 
 def ingest_summary(summary,url,token):
  body=json.dumps({"summary":summary},ensure_ascii=False,separators=(",",":")).encode("utf-8")
- request=Request(url,method="POST",headers={"Content-Type":"application/json","Authorization":"Bearer "+token},data=body)
+ # The summary is often sent 15-30 minutes after the first request.
+ active_token=fresh_github_oidc_token(token)
+ request=Request(url,method="POST",headers={"Content-Type":"application/json","Authorization":"Bearer "+active_token},data=body)
  try:
   with urlopen(request,timeout=30) as response:
    if not json.load(response).get("recorded"):raise RuntimeError("Source completion not acknowledged")
- except (HTTPError,URLError,TimeoutError) as err:
+ except (HTTPError,URLError,TimeoutError):
   raise RuntimeError("Source progress audit failed") from None
 
 
