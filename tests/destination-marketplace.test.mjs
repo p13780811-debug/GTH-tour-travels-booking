@@ -73,7 +73,8 @@ test("worldwide directory uses source-backed active rows, geographic filters and
  assert.match(listing,/params\.set\("country", country\)/);
  assert.match(listing,/params\.set\("region", region\)/);
  assert.match(listing,/pageLink\(search, page \+ 1, country, region, sort\)/);
- assert.match(listing,/Country information unavailable/);
+ const card=read("src/components/destination/DestinationCard.tsx");
+ assert.match(card,/Country information unavailable/);
  assert.match(listing,/editorial references/);
  assert.match(geography,/const cityGroups/);
  assert.match(geography,/const regionGroups/);
