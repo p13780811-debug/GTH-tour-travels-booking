@@ -67,4 +67,26 @@ class BulkAttractionTests(unittest.TestCase):
   with patch.dict("os.environ",{},clear=True):
    with self.assertRaises(SystemExit):
     m.main(["/does/not/exist","--region",REGION])
+ def test_fresh_signed_identity_per_batch_and_summary(self):
+  import io
+  with patch.dict("os.environ",{"ACTIONS_ID_TOKEN_REQUEST_URL":"https://pipelines.actions.githubusercontent.com/token?api-version=2.0",
+      "ACTIONS_ID_TOKEN_REQUEST_TOKEN":"runner-broker"},clear=True):
+   with patch.object(m,"urlopen",side_effect=lambda req,timeout: io.BytesIO(b'{"value":"new-identity"}')) as open_url:
+    self.assertEqual(m.fresh_github_oidc_token("expired-token"),"new-identity")
+    sent=open_url.call_args.args[0]
+    self.assertIn("gth-osm-attractions%3Adqprqjmhxjnrllczqyhz",sent.full_url)
+    self.assertEqual(sent.get_header("Authorization"),"Bearer runner-broker")
+   with patch.object(m,"fresh_github_oidc_token",side_effect=["new-1","new-2","new-3"]) as token:
+    with patch.object(m,"urlopen",side_effect=lambda req,timeout: io.BytesIO(b'{"accepted":1}' if b'"rows"' in req.data else b'{"recorded":true}')) as open_url:
+     m.ingest([{"source_id":"node/1"}],"https://example.invalid","stale")
+     m.ingest([{"source_id":"node/2"}],"https://example.invalid","stale")
+     m.ingest_summary({"run_id":"123"},"https://example.invalid","stale")
+     self.assertEqual(token.call_count,3)
+     self.assertEqual([call.args[0].get_header("Authorization") for call in open_url.call_args_list],
+                      ["Bearer new-1","Bearer new-2","Bearer new-3"])
+ def test_oidc_broker_cannot_steal_runner_credential(self):
+  with patch.dict("os.environ",{"ACTIONS_ID_TOKEN_REQUEST_URL":"https://evil.example/broker?x=1",
+    "ACTIONS_ID_TOKEN_REQUEST_TOKEN":"runner-broker"},clear=True):
+   with self.assertRaisesRegex(RuntimeError,"Invalid GitHub Actions identity broker"):
+    m.fresh_github_oidc_token("old")
 if __name__=="__main__":unittest.main()
