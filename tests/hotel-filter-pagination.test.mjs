@@ -43,8 +43,11 @@ test("Main page shows API total matching records instead of calling 24 the entir
 });
 test("No repeated stock property image and no generic partner label on unbookable records",()=>{
  const ui=read("src/app/hotels/page.tsx");
- assert.match(ui,/hotel\.image !== "\/placeholder\.jpg"/);
- assert.match(ui,/No licensed hotel photo/);
+ const image=read("src/components/hotel/HotelPropertyImage.tsx");
+ assert.match(ui,/HotelPropertyImage/);
+ assert.match(image,/src!=="\/placeholder\.jpg"/);
+ assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/onError=/);
  assert.match(ui,/hotel\.category\|\|"hotel"/);
  assert.match(ui,/hotel\.affiliate_link \? "Partner booking available" : "GTH PRO directory"/);
  assert.match(ui,/href=\{"\/hotels\/stay\/"\+encodeURIComponent/);
