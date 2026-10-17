@@ -1,106 +1,90 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ExternalLink, Ticket } from "lucide-react";
+import { useState } from "react";
+import { ArrowUpRight, ShieldCheck, Ticket } from "lucide-react";
 
 /**
- * Public, publisher-provided Tiqets / Travelpayouts promotion widgets.
- * No visitor input or private credential is ever incorporated into the script URL.
- * This renders provider-controlled offers, not GTH PRO tour inventory.
+ * Direct supplier handoffs, not a simulated inventory widget.
+ * The former provider-specific product embed lacked a selected ticket ID
+ * and could leave an empty frame or show an unrelated default offer.
+ * Never load an external script just to fill a permanently blank panel.
  */
-export const TIQETS_CARDS_WIDGET = "https://tpwidg.com/content?currency=USD&trs=504342&shmarker=417668&language=en&locale=en&layout=horizontal&cards=4&powered_by=true&campaign_id=89&promo_id=3947";
-export const TIQETS_PRODUCT_WIDGET = "https://tpwidg.com/content?currency=USD&trs=504342&shmarker=417668&product=&language=en&layout=horizontal&powered_by=true&campaign_id=89&promo_id=3948";
-
-const tabs = {
+const panels = {
   cards: {
     name: "Attraction tickets",
-    description: "Tiqets attraction discovery. Available places and price details are supplied by the booking partner.",
-    src: TIQETS_CARDS_WIDGET,
+    description: "Explore attraction tickets and city passes with established providers.",
+    options: [
+      { name: "Tiqets", detail: "Museums, landmarks and attraction admission", url: "https://www.tiqets.com/", sponsored: false },
+      { name: "Klook", detail: "Attractions and bookable travel activities", url: "https://klook.tpo.lv/IKb6eSUe", sponsored: true },
+      { name: "Go City", detail: "Multi-attraction city passes", url: "https://gocity.tpo.lv/NdfDWRGS", sponsored: true },
+    ],
   },
   product: {
     name: "More ticket options",
-    description: "Additional Tiqets supplier tool. A product is not preselected; the provider determines what can be displayed.",
-    src: TIQETS_PRODUCT_WIDGET,
+    description: "Explore other tour formats. Exact offers and prices appear on the provider website.",
+    options: [
+      { name: "WeGoTrip", detail: "Audio guides and city walking experiences", url: "https://wegotrip.tpo.lv/ZQjE9yR2", sponsored: true },
+      { name: "KKday", detail: "Day trips, experiences and local activities", url: "https://kkday.tpo.lv/ytfvDLam", sponsored: true },
+      { name: "Tiqets", detail: "Find tickets directly with the ticket provider", url: "https://www.tiqets.com/", sponsored: false },
+    ],
   },
 } as const;
-type WidgetTab = keyof typeof tabs;
-type WidgetStatus = "loading" | "loaded" | "failed";
+
+type WidgetTab = keyof typeof panels;
 
 export default function TiqetsPartnerWidgets() {
   const [selected, setSelected] = useState<WidgetTab>("cards");
-  const [status, setStatus] = useState<WidgetStatus>("loading");
-  const mountRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
-
-    mount.replaceChildren();
-    const script = document.createElement("script");
-    script.src = tabs[selected].src;
-    script.async = true;
-    script.charset = "utf-8";
-    script.onload = () => setStatus("loaded");
-    script.onerror = () => setStatus("failed");
-    // External widget scripts place output alongside the script's host.
-    mount.appendChild(script);
-
-    return () => {
-      script.onload = null;
-      script.onerror = null;
-      mount.replaceChildren();
-    };
-  }, [selected]);
-
-  function select(tab: WidgetTab) {
-    if (selected === tab) return;
-    setStatus("loading");
-    setSelected(tab);
-  }
+  const panel = panels[selected];
 
   return (
-    <section aria-labelledby="tiqets-partners-heading" className="gth-glass mt-9 min-w-0 rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+    <section aria-labelledby="tiqets-partners-heading"
+      className="gth-glass mt-9 min-w-0 rounded-2xl border border-[var(--border)] p-4 sm:p-6">
       <div className="flex items-center gap-3">
-        <Ticket size={23} className="shrink-0 text-[var(--gold)]" aria-hidden="true" />
+        <Ticket size={23} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">Tiqets · Travelpayouts</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">Tickets & activities</p>
           <h3 id="tiqets-partners-heading" className="mt-1 text-lg font-bold sm:text-xl">Explore attraction tickets</h3>
         </div>
       </div>
-      <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-        These affiliate widgets are hosted by an external provider. Products, service locations, ticket
-        dates, availability and final payment amounts are confirmed only on the supplier website.
+      <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+        Choose a supplier to check actual locations, dates, ticket availability, prices and cancellation conditions.
+        These links are not an on-site booking engine.
       </p>
-      <div role="group" aria-label="Tiqets search tools" className="mt-5 flex flex-wrap gap-2">
-        {(["cards", "product"] as const).map((tab) => (
-          <button type="button" key={tab} aria-pressed={selected === tab} onClick={() => select(tab)}
+      <div role="group" aria-label="Ticket provider categories" className="mt-5 flex flex-wrap gap-2">
+        {(["cards", "product"] as const).map(tab => (
+          <button key={tab} type="button" aria-pressed={selected === tab}
+            aria-controls="tiqets-ticket-results" onClick={() => setSelected(tab)}
             className={selected === tab
               ? "gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold"
               : "inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold"}>
-            {tabs[tab].name}
+            {panels[tab].name}
           </button>
         ))}
       </div>
-      <div className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
-        <h4 className="font-semibold">{tabs[selected].name}</h4>
-        <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">{tabs[selected].description}</p>
-        {status === "loading" && <p className="mt-3 text-sm text-[var(--text-soft)]" role="status">Loading ticket provider…</p>}
-        {status === "failed" && (
-          <p role="alert" className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-            This ticket tool could not load. Browser content blockers or supplier availability may affect it.
-            Use the provider's own site to explore tickets.
-          </p>
-        )}
-        <div ref={mountRef} className="mt-4 min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full"
-          aria-label={tabs[selected].name} />
+      <div id="tiqets-ticket-results" role="region" aria-label={panel.name}
+        className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+        <h4 className="font-semibold">{panel.name}</h4>
+        <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">{panel.description}</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {panel.options.map(option => (
+            <a key={option.url} href={option.url} target="_blank"
+              rel={option.sponsored ? "noopener noreferrer sponsored" : "noopener noreferrer nofollow"}
+              className="group flex min-h-32 flex-col justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 transition hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              <div>
+                <p className="text-base font-semibold">{option.name}</p>
+                <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">{option.detail}</p>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold">
+                Browse on provider website <ArrowUpRight size={15} aria-hidden="true"/>
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
-      <a href="https://www.tiqets.com/" target="_blank" rel="noopener noreferrer"
-        className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
-        Open Tiqets directly <ExternalLink size={16} aria-hidden="true" />
-      </a>
-      <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
-        The direct website link above is not an affiliate-tracked link. GTH PRO may receive a commission
-        from a booking made using the embedded partner widgets.
+      <p className="mt-4 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+        <ShieldCheck size={16} className="mt-1 shrink-0" aria-hidden="true"/>
+        Affiliate-tracked links are marked as sponsored. Tiqets' direct website link is not affiliate-tracked.
+        GTH PRO does not confirm or issue tickets, and displayed providers are not confirmed inventory.
       </p>
     </section>
   );

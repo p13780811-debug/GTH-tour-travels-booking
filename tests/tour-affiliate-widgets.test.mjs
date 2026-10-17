@@ -19,26 +19,30 @@ test("tour partner marketplace includes actual publisher-provided affiliate hand
   assert.doesNotMatch(content, /Math\.random|guaranteed price|instant booking/i);
 });
 
-test("two Tiqets widgets preserve supplied publisher and promo identifiers", () => {
+test("ticket tabs use real supplier links instead of blank product-less embeds", () => {
   const widget = source("src/components/tours/TiqetsPartnerWidgets.tsx");
-  assert.equal((widget.match(/https:\/\/tpwidg\.com\/content\?/g) || []).length, 2);
-  assert.match(widget, /trs=504342&shmarker=417668/);
-  assert.match(widget, /campaign_id=89&promo_id=3947/);
-  assert.match(widget, /campaign_id=89&promo_id=3948/);
-  assert.match(widget, /layout=horizontal&cards=4/);
-  assert.match(widget, /product=&language=en/);
-  assert.match(widget, /currency=USD/);
+  for (const target of [
+    "https://www.tiqets.com/",
+    "https://klook.tpo.lv/IKb6eSUe",
+    "https://gocity.tpo.lv/NdfDWRGS",
+    "https://wegotrip.tpo.lv/ZQjE9yR2",
+    "https://kkday.tpo.lv/ytfvDLam",
+  ]) assert.ok(widget.includes(target), "Missing verified provider link: "+target);
+  assert.match(widget, /cards:/);
+  assert.match(widget, /product:/);
+  assert.match(widget, /More ticket options/);
+  assert.match(widget, /aria-pressed=\{selected === tab\}/);
+  assert.match(widget, /aria-controls="tiqets-ticket-results"/);
+  assert.match(widget, /rel=\{option\.sponsored \? "noopener noreferrer sponsored"/);
+  assert.doesNotMatch(widget, /tpwidg\.com|promo_id=3948|product=&|<iframe|createElement\("script"\)|dangerouslySetInnerHTML|eval\(/);
 });
 
-test("external scripts load only inside a scoped Tiqets panel with safe cleanup", () => {
+test("changing tabs always has actual destination links without network-dependent iframe states", () => {
   const widget = source("src/components/tours/TiqetsPartnerWidgets.tsx");
-  assert.match(widget, /"use client"/);
-  assert.match(widget, /document\.createElement\("script"\)/);
-  assert.match(widget, /mount\.appendChild\(script\)/);
-  assert.match(widget, /mount\.replaceChildren\(\)/);
-  assert.match(widget, /script\.onerror/);
-  assert.match(widget, /aria-pressed=\{selected === tab\}/);
-  assert.doesNotMatch(widget, /dangerouslySetInnerHTML|eval\(|document\.write|localStorage|NEXT_PUBLIC_.*SECRET/);
+  assert.match(widget, /panel\.options\.map\(option =>/);
+  assert.match(widget, /setSelected\(tab\)/);
+  assert.match(widget, /<div id="tiqets-ticket-results"/);
+  assert.doesNotMatch(widget, /mountRef|mount\.replaceChildren|script\.onload|script\.onerror/);
   assert.doesNotMatch(source("src/app/layout.tsx"), /tpwidg\.com/);
   assert.doesNotMatch(source("src/app/flights/page.tsx"), /tpwidg\.com/);
 });
