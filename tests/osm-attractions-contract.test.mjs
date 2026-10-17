@@ -25,6 +25,7 @@ test("Cloud sync uses six India Geofabrik source zones and fixed official HTTPS"
 test("OIDC endpoint verifies exact repository identity and rejects source surprises",()=>{
  const fn=read("supabase/functions/gth-osm-attractions-ingest/index.ts");
  assert.match(fn,/createRemoteJWKSet/);
+ assert.doesNotMatch(fn,/const URL\s*=/,"Native URL constructor must not be shadowed");
  assert.match(fn,/jwtVerify/);
  assert.match(fn,/payload.workflow_ref!==WORKFLOW/);
  assert.match(fn,/String\(payload.repository_id\)!=="1169920747"/);
