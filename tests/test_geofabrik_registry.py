@@ -1,6 +1,7 @@
 import importlib.util
 import pathlib
 import unittest
+from datetime import datetime,timezone
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("geofabrik_registry", ROOT/"scripts/attractions/geofabrik_registry.py")
@@ -38,6 +39,23 @@ class GeofabrikRegistryTests(unittest.TestCase):
         self.assertEqual(module.resolve(self.index,requested="europe/france/paris")["country_code"],"FR")
         with self.assertRaises(ValueError):
             module.resolve(self.index,requested="https://evil.example/")
+    def test_utc_windows_select_right_world_groups(self):
+        regions=[
+          {"region":"europe/france/ile-de-france","country_code":"FR"},
+          {"region":"africa/kenya","country_code":"KE"},
+          {"region":"north-america/us/new-york","country_code":"US"},
+          {"region":"australia-oceania/australia/victoria","country_code":"AU"},
+          {"region":"asia/india/western-zone","country_code":"IN"},
+        ]
+        for hour,expected in ((2,{"FR","KE"}),(8,{"US"}),(14,{"AU"}),(20,{"IN"})):
+            chosen,group=module.select_scheduled_region(regions,datetime(2026,10,17,hour,tzinfo=timezone.utc))
+            self.assertIn(chosen["country_code"],expected)
+            self.assertEqual(group,hour//6)
+    def test_global_selection_rotates_across_available_regions(self):
+        regions=[{"region":"europe/france","country_code":"FR"},{"region":"europe/germany","country_code":"DE"}]
+        a,_=module.select_scheduled_region(regions,datetime(2026,10,17,0,tzinfo=timezone.utc))
+        b,_=module.select_scheduled_region(regions,datetime(2026,10,17,1,tzinfo=timezone.utc))
+        self.assertNotEqual(a,b)
     def test_no_fabricated_zero_coverage(self):
         with self.assertRaises(ValueError):
             module.resolve({"features":[]})
