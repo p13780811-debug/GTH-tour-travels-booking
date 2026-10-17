@@ -208,10 +208,10 @@ function HotelsContent() {
             setSearchValidation("Select 1 to 20 guests."); return;
         }
         const city=search.trim();
-        if(city.length>80 || (city.length>0&&city.length<2))return;
-        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
+        if(city.length>80 || (city.length>0&&city.length<2)){setSearchValidation("Enter a city name with at least two characters.");return;}
+        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry)){setSearchValidation("Select a valid country.");return;}
         const hotelName=searchName.trim();
-        if(hotelName.length>80)return;
+        if(hotelName.length>80){setSearchValidation("Hotel name must be 80 characters or less.");return;}
         setNameFilter(hotelName);
         setCategory("");
         setRequestedDestination("");
@@ -265,10 +265,10 @@ function HotelsContent() {
                     </div>
 
                     {/* TITLE */}
-                    <div className="mt-8">
+                    <div className="mt-4">
                         <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)]">
                             <Orbit size={14} />
-                            <span className="text-[10px] text-white tracking-[0.3em] uppercase text-[var(--text-soft)]">
+                            <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
                                 GTH GLOBAL STAYS
                             </span>
                         </div>
