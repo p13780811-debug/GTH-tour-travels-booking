@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import {cache} from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import GoogleHotelPhoto from "@/components/hotel/GoogleHotelPhoto";
+import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import Link from "next/link";
@@ -127,10 +128,9 @@ export default async function HotelStay({params}:PageProps){
     <p className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">
      <MapPin size={16}/> {[hotel.address,hotel.city,hotel.country].filter(Boolean).join(", ")||"Location in source data"}</p>
     <div className="mt-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)]">
-      {hotel.image ? <img src={hotel.image} alt={hotel.name+" — source-attributed property image"} loading="lazy" className="h-64 w-full object-cover md:h-96" /> :
-      <div role="img" aria-label="Hotel photo not yet provided by an authorized source" className="flex h-56 flex-col items-center justify-center gap-3 text-[var(--text-soft)]">
-        <ImageOff size={42}/><span className="text-sm">Hotel photo pending source permission</span>
-      </div>}
+      <HotelPropertyImage src={hotel.image} name={hotel.name} variant="detail"
+       className="h-64 w-full object-cover md:h-96"
+       placeholderClassName="flex h-56 flex-col items-center justify-center gap-3 text-[var(--text-soft)]"/>
     </div>
     {hotel.imageCredit&&<p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
       Photo: <a className="underline" href={hotel.imageCredit.commonsPage} target="_blank" rel="noopener noreferrer nofollow">{hotel.imageCredit.author} · Wikimedia Commons</a>
