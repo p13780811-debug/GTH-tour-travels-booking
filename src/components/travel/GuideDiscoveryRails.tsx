@@ -22,7 +22,7 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
     {[...row.slugs].sort((a,b)=>{
       const first=guideBySlug(a),second=guideBySlug(b);
       const delta=(second?counts.get(second.countryCode)||0:0)-(first?counts.get(first.countryCode)||0:0);
-      return delta||row.slugs.indexOf(a)-row.slugs.indexOf(b);
+      return delta||row.slugs.findIndex(item=>item===a)-row.slugs.findIndex(item=>item===b);
     }).map(slug=>{
      const item=guideBySlug(slug);if(!item)return null;
      const picture=media.get(slug);
