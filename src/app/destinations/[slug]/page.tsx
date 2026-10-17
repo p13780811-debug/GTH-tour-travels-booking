@@ -139,7 +139,7 @@ export default async function DestinationPage({ params }: Props) {
 
       <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
-      {slug==="goa"&&<OSMAttractionsRail region="goa"/>}
+      <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
       {["mumbai","pune","ajanta-ellora","shirdi"].includes(slug)&&<OpenAttractionsRail region="maharashtra"/>}
 
       <section id="destination-discovery" className="mx-auto grid max-w-7xl scroll-mt-20 gap-6 px-4 py-12 sm:px-6 md:py-14 lg:grid-cols-[1fr_300px]">
