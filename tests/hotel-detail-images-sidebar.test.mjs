@@ -13,7 +13,7 @@ test("Hotel detail can resolve encoded OSM card IDs and reuse sourced image",()=
  const page=read("src/app/hotels/stay/[id]/page.tsx");
  assert.match(page,/decodeURIComponent\(id\)/);
  assert.match(page,/sourceId=id\.slice\(4\)\.replace\("-","\/"\)/);
- assert.match(page,/select\("name,city,country_code,category,address,source_url,website,image_url/);
+ assert.match(page,/select\("name,city,country_code,category,address,phone,source_url,website,image_url/);
  assert.match(page,/\.eq\("source","osm"\)\.eq\("source_id",sourceId\)/);
  assert.match(page,/Hotel photo pending source permission/);
  assert.match(page,/source-attributed property image/);
