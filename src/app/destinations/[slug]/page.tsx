@@ -167,7 +167,7 @@ export default async function DestinationPage({ params }: Props) {
             <Link href={"/hotels?destination="+encodeURIComponent(slug)}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">All Hotels <ArrowRight size={15}/></Link>
           </div>
-          <HotelResults city={destination.name} destination={slug}/>
+          <HotelResults city={destination.name} destination={slug} compactRail/>
         </div>
       </section>
 
