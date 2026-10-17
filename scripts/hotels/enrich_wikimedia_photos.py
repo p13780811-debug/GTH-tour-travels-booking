@@ -179,6 +179,28 @@ def commons_metadata(filename):
             "author": author, "license_name": label, "license_url": license_url}
 
 
+def explicitly_tagged_commons_file(props):
+    """An OSM 'File:' link associates media with this source object.
+    Categories and arbitrary Internet/Google URLs are not property photos.
+    """
+    from urllib.parse import unquote
+    for tag in ("wikimedia_commons", "image"):
+        value = props.get(tag)
+        if not isinstance(value, str) or len(value) > 250:
+            continue
+        if value.startswith("https://commons.wikimedia.org/wiki/File:"):
+            value = unquote(value.split("/wiki/", 1)[1]).replace("_", " ")
+        if not value.startswith("File:"):
+            continue
+        filename = value[len("File:"):].strip()
+        if not filename or len(filename) > 240 or not IMAGE_FILE.search(filename):
+            continue
+        if any(ch in filename for ch in "<>\r\n|?#"):
+            continue
+        return filename
+    return None
+
+
 def candidates(path):
     found = {}
     with path.open(encoding="utf-8") as stream:
@@ -189,12 +211,16 @@ def candidates(path):
             try:
                 feature = json.loads(line)
                 props = feature.get("properties") or {}
-                qid = props.get("wikidata")
-                if not isinstance(qid, str) or not QID.fullmatch(qid):
+                if not isinstance(props, dict):
+                    continue
+                raw_qid = props.get("wikidata")
+                qid = raw_qid if isinstance(raw_qid, str) and QID.fullmatch(raw_qid) else None
+                file = explicitly_tagged_commons_file(props)
+                if qid is None and file is None:
                     continue
                 hotel = convert(feature)
                 if hotel is not None:
-                    found[hotel["source_id"]] = (qid, hotel)
+                    found[hotel["source_id"]] = (qid, hotel, file)
             except (ValueError, TypeError, AttributeError):
                 continue
     return sorted(found.items())
@@ -229,7 +255,10 @@ def main():
     pages = max(1, math.ceil(len(rows)/args.limit))
     batch = rows[(args.rotation_slot % pages)*args.limit:(args.rotation_slot % pages+1)*args.limit]
     if args.dry_run:
-        print(json.dumps({"candidates": len(rows), "sampled": len(batch), "mode": "dry-run"}))
+        print(json.dumps({"candidates": len(rows), "sampled": len(batch),
+                          "direct_commons_candidates": sum(1 for _, (_, _, file) in rows if file),
+                          "wikidata_candidates": sum(1 for _, (qid, _, _) in rows if qid),
+                          "mode": "dry-run"}))
         return 0
     if os.environ.get("GTH_INGESTION_ENABLED") != "true":
         parser.error("Public enrichment disabled")
@@ -237,20 +266,32 @@ def main():
     if not token or args.edge_url != GATEWAY:
         parser.error("GitHub OIDC token and project-bound gateway required")
     processed, approved = 0, []
-    for source_id, (qid, hotel) in batch:
+    direct_checked = wikidata_checked = image_candidates = 0
+    for source_id, (qid, hotel, direct_file) in batch:
         processed += 1
-        filename = entity_photo(qid, hotel["name"], hotel["latitude"], hotel["longitude"])
+        if direct_file:
+            direct_checked += 1
+            filename = direct_file
+            method = "osm_commons_file"
+        else:
+            wikidata_checked += 1
+            filename = entity_photo(qid, hotel["name"], hotel["latitude"], hotel["longitude"])
+            method = "wikidata_p18"
         if not filename:
             time.sleep(0.6)
             continue
+        image_candidates += 1
         media = commons_metadata(filename)
         if media:
-            approved.append({"source": "osm", "source_id": source_id, "wikidata_qid": qid, **media})
+            approved.append({"source": "osm", "source_id": source_id,
+                             "wikidata_qid": qid, "match_method": method, **media})
         time.sleep(1.0)
     if approved and not upload(approved, args.edge_url, token):
         print("Wikimedia media overlay sync unavailable; OSM directory remains intact.", file=sys.stderr)
         return 1
-    print(json.dumps({"candidates": len(rows), "checked": processed, "licensed_media": len(approved),
+    print(json.dumps({"candidates": len(rows), "checked": processed, "direct_checked": direct_checked,
+                      "wikidata_checked": wikidata_checked, "image_candidates": image_candidates,
+                      "licensed_media": len(approved),
                       "verified_booking_inventory": 0, "source": "Wikimedia Commons"}))
     return 0
 

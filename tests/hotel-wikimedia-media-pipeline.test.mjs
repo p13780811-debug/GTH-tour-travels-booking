@@ -57,7 +57,10 @@ test("Free photos run inside existing scheduled OSM OIDC ingestion, not by Googl
  assert.match(workflow,/gth-hotel-wikimedia/);
  assert.match(script,/P625/);
  assert.match(script,/P18/);
- assert.match(script,/QID\.fullmatch\(qid\)/);
+ assert.match(script,/QID\.fullmatch\(raw_qid\)/);
+ assert.match(script,/explicitly_tagged_commons_file/);
+ assert.match(script,/method = "osm_commons_file"/);
+ assert.match(script,/method = "wikidata_p18"/);
  assert.match(script,/LICENCES/);
  assert.match(script,/--dry-run/);
  assert.doesNotMatch(script,/GOOGLE_PLACES_API_KEY|RAPIDAPI_KEY|AMADEUS_API_KEY/);

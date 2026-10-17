@@ -15,6 +15,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
+import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
@@ -559,21 +560,13 @@ function HotelsContent() {
                                     <div className="flex flex-col lg:flex-row">
                                         {/* IMAGE */}
                                         <div className="relative lg:w-[360px] shrink-0 min-h-[240px]">
-                                            {hotel.image && hotel.image !== "/placeholder.jpg" ? (
-                                                <img src={hotel.image} alt={"Accommodation photo: "+hotel.name}
-                                                    loading="lazy" className="w-full h-[240px] lg:h-full object-cover"/>
-                                            ) : (
-                                                <div role="img" aria-label={"No licensed property photo for "+hotel.name}
-                                                    className="flex h-[240px] flex-col items-center justify-center gap-3 bg-[var(--bg)] px-6 text-center text-[var(--text-soft)]">
-                                                    {hotel.category==="apartment" ? <Building2 size={36} aria-hidden="true"/> :
-                                                     hotel.category==="guest_house" ? <BedDouble size={36} aria-hidden="true"/> :
-                                                     hotel.category==="hostel" ? <Users size={36} aria-hidden="true"/> :
-                                                     <Hotel size={36} aria-hidden="true"/>}
-                                                    <p className="text-xs font-medium">{(hotel.category||"hotel").replaceAll("_"," ")} · No licensed hotel photo</p>
-                                                </div>
-                                            )}
+                                            <HotelPropertyImage
+                                                src={hotel.image} name={hotel.name}
+                                                className="w-full h-[240px] lg:h-full object-cover"
+                                                placeholderClassName="flex h-[240px] flex-col items-center justify-center gap-3 bg-[var(--bg)] px-6 text-center text-[var(--text-soft)]"
+                                              />
 
-                                            {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-3 py-2 text-[10px] leading-4">
+                                                                                        {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-3 py-2 text-[10px] leading-4">
                                                 <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow"
                                                    className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
                                                 {" · "}

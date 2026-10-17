@@ -31,6 +31,25 @@ class WikimediaHotelTests(unittest.TestCase):
    self.assertEqual(found[0][0],"node/501")
    self.assertEqual(found[0][1][0],"Q12345")
 
+ def test_osm_direct_commons_file_photo_without_wikidata(self):
+  with tempfile.TemporaryDirectory() as temp:
+   source=Path(temp)/"hotels.geojsonseq"
+   rows=[
+    {"type":"Feature","id":"node/702","geometry":{"type":"Point","coordinates":[73.0,19.0]},
+     "properties":{"tourism":"hotel","name":"Hotel 702","wikimedia_commons":"File:Hotel 702 exterior.jpg"}},
+    {"type":"Feature","id":"node/703","geometry":{"type":"Point","coordinates":[73.0,19.0]},
+     "properties":{"tourism":"hotel","name":"Hotel 703","wikimedia_commons":"Category:Hotels in City"}},
+    {"type":"Feature","id":"node/704","geometry":{"type":"Point","coordinates":[73.0,19.0]},
+     "properties":{"tourism":"hotel","name":"Hotel 704","image":"https://share.google/images/imaginary.jpg"}},
+   ]
+   source.write_text("\n".join(json.dumps(x) for x in rows))
+   found=module.candidates(source)
+   self.assertEqual(len(found),1)
+   self.assertEqual(found[0][0],"node/702")
+   self.assertIsNone(found[0][1][0])
+   self.assertEqual(found[0][1][2],"Hotel 702 exterior.jpg")
+   self.assertIsNone(module.explicitly_tagged_commons_file({"wikimedia_commons":"File:unsafe\n.jpg"}))
+
  def test_names_and_coordinates_must_agree(self):
   item={"entities":{"Q123":{"labels":{"en":{"value":"The Taj Hotel"}},"claims":{
     "P625":[{"mainsnak":{"datavalue":{"value":{"latitude":19.08,"longitude":72.88}}}}],
