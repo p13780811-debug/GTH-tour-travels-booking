@@ -58,7 +58,10 @@ jobs:
           fi
           [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
           echo "MODE=$MODE" >> "$GITHUB_ENV"
-          if [[ -n "$REQUESTED_REGION" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            # Seed a known, small, index-validated French extract on the first global release.
+            python3 scripts/attractions/geofabrik_registry.py --region "europe/france/ile-de-france" --env-file "$GITHUB_ENV"
+          elif [[ -n "$REQUESTED_REGION" ]]; then
             python3 scripts/attractions/geofabrik_registry.py --region "$REQUESTED_REGION" --env-file "$GITHUB_ENV"
           else
             python3 scripts/attractions/geofabrik_registry.py --slot "$GITHUB_RUN_NUMBER" --env-file "$GITHUB_ENV"
