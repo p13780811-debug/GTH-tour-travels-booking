@@ -15,7 +15,12 @@ test("Source ODbL table only exposes community directory with RLS",()=>{
 test("Cloud sync resolves licensed global extracts from an official registry and keeps OIDC",()=>{
  const wf=read(".github/workflows/gth-osm-attractions-sync.yml");
  assert.match(wf,/index|registry|Geofabrik/i);
- assert.match(wf,/--slot "\$GITHUB_RUN_NUMBER"/);
+ assert.match(wf,/--auto-window/);
+ assert.match(wf,/cron: "37 \* \* \* \*"/);
+ assert.match(wf,/--limit 18000/);
+ assert.doesNotMatch(wf,/--limit 120000/);
+ assert.match(read("scripts/attractions/import_osm_attractions.py"),/BATCH_GAP_SECONDS=5\.5/);
+ assert.match(read("scripts/attractions/import_osm_attractions.py"),/last_finished_at=paced_ingest/);
  assert.match(wf,/geofabrik_registry.py/);
  assert.match(wf,/\$PBF_URL/);
  assert.match(wf,/--country-code "\$COUNTRY_CODE"/);
