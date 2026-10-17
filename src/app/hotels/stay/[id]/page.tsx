@@ -5,6 +5,7 @@ import GoogleHotelPhoto from "@/components/hotel/GoogleHotelPhoto";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
+import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass,ImageOff} from "lucide-react";
@@ -177,6 +178,9 @@ export default async function HotelStay({params}:PageProps){
      {hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
        <BedDouble size={17}/> Check price with partner <ArrowUpRight size={16}/></a>}
+     {!hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
+       href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.country].filter(Boolean).join(" "))} target="_blank" rel="noopener noreferrer nofollow">
+       <BedDouble size={17}/> Search availability with Booking.com <ArrowUpRight size={16}/></a>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}
      {hotel.sourceUrl&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"

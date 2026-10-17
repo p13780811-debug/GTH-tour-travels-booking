@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
+import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 
 import {
     Search,
@@ -502,6 +503,16 @@ function HotelsContent() {
                     {/* ========================================================================= */}
 
                     <main id="hotel-results" className="min-w-0 scroll-mt-24">
+                        <section aria-label="Worldwide live hotel booking search" className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+                            <div className="max-w-xl">
+                                <h2 className="text-base font-semibold">Need real room prices, photos and availability?</h2>
+                                <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Our OSM directory shows independently sourced hotel locations, not live room inventory. Search worldwide with an external booking provider and choose your actual dates and guests there.</p>
+                            </div>
+                            <a href={hotelProviderSearchUrl(requestedCity||search)} target="_blank" rel="noopener noreferrer nofollow"
+                               className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
+                                Search available hotels on Booking.com <ChevronRight size={16}/>
+                            </a>
+                        </section>
                         {/* TOP STATS */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>

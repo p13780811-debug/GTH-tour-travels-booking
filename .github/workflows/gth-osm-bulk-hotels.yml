@@ -61,18 +61,18 @@ jobs:
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
             day=$((10#$(date -u +%j)))
             hour=$((10#$(date -u +%H)))
-            if (( hour == 9 && day % 7 == 0 )); then
-              # Keep weekly rotating global ODbL coverage without starving India.
-              slot=$(( day * 3 + hour / 8 ))
+            if (( hour == 9 )); then
+              # One small licensed global source per day; keep two daily India runs.
+              # The source registry verifies extract size before selecting a PBF.
+              slot=$day
               python3 scripts/hotels/resolve_region.py --slot "$slot" > selected-region.env
               REGION="$(sed -n 's/^REGION=//p' selected-region.env)"
               COUNTRY="$(sed -n 's/^COUNTRY=//p' selected-region.env)"
             else
-              # India-first backfill: three zone visits per day, all six in two
-              # days, followed by cyclic source refresh. No artificial hotels.
+              # Two India visits daily, all six zones over three days.
               # Geofabrik extract borders do NOT verify individual hotel country.
-              phase=$(( hour == 1 ? 0 : hour == 9 ? 1 : 2 ))
-              slot=$(( (day * 3 + phase) % 6 ))
+              phase=$(( hour == 1 ? 0 : 1 ))
+              slot=$(( (day * 2 + phase) % 6 ))
               case "$slot" in
                 0) REGION=asia/india/western-zone;;
                 1) REGION=asia/india/eastern-zone;;
@@ -118,6 +118,7 @@ jobs:
       - name: Offline importer validation
         run: |
           python3 -m unittest discover -s tests -p "test_hotel_import.py"
+          python3 -m unittest discover -s tests -p "test_hotel_oidc_batch.py"
           python3 -m unittest discover -s tests -p "test_hotel_region.py"
           python3 -m unittest discover -s tests -p "test_hotel_wikimedia.py"
       - name: Install osmium
@@ -161,14 +162,20 @@ jobs:
               --edge-url "$GTH_HOTEL_EDGE_URL"
           fi
       - name: Enrich real hotel imagery from licensed Commons files (bounded, no billing)
+        if: ${{ !cancelled() }}
         continue-on-error: true
         shell: bash
         env:
           GTH_HOTEL_MEDIA_EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-hotel-wikimedia
         run: |
           set -euo pipefail
+          # Partial catalog upload should not prevent licensed photo enrichment.
+          if [[ ! -s hotels.geojsonseq ]]; then
+            echo "No genuine accommodation source file; media enrichment skipped."
+            exit 0
+          fi
           if [[ "$MODE" == "dry-run" ]]; then
-            python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq --limit 20 --dry-run
+            python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq --limit 24 --dry-run
             exit 0
           fi
           token_json="$(curl --fail --silent --show-error --proto '=https' \
@@ -183,7 +190,7 @@ jobs:
           hour=$((10#$(date -u +%H)))
           rotation=$((day * 3 + hour / 8))
           python3 scripts/hotels/enrich_wikimedia_photos.py hotels.geojsonseq \
-            --limit 20 --rotation-slot "$rotation" \
+            --limit 24 --rotation-slot "$rotation" \
             --edge-url "$GTH_HOTEL_MEDIA_EDGE_URL"
           echo "Commons photographs: checked author/license/source and OSM Wikidata identity. No hotel rate or photo invented." >> "$GITHUB_STEP_SUMMARY"
       - name: ODbL attribution
