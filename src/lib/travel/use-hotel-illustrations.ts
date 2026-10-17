@@ -30,9 +30,13 @@ export function useHotelIllustrations(location:string,enabled:boolean):HotelIllu
         if(!payload||typeof payload!=="object"||!("usage" in payload)||
            payload.usage!=="illustrative_only"||!("photos" in payload)||
            !Array.isArray(payload.photos))return [];
-        // The same source-host and metadata gates apply in the browser.
-        const {approvedPexelsIllustrations}=await import("@/lib/travel/pexels-hotel-illustrations");
-        return approvedPexelsIllustrations(payload);
+        return payload.photos.slice(0,4).filter((photo:unknown):photo is HotelIllustration=>{
+          if(!photo||typeof photo!=="object")return false;
+          const entry=photo as Record<string,unknown>;
+          return typeof entry.src==="string"&&entry.src.startsWith("https://images.pexels.com/photos/")&&
+            typeof entry.photoUrl==="string"&&entry.photoUrl.startsWith("https://www.pexels.com/photo/")&&
+            typeof entry.photographer==="string"&&entry.photographer.length>0;
+        });
       }catch{return [];}
     })();
     inFlight.set(key,promise);
