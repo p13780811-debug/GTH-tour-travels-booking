@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Globe2,Database,RefreshCw} from "lucide-react";
 import {sourceProgress} from "@/lib/travel/osmAttractions";
+import {guidePublicationStats} from "@/lib/travel/guideMedia";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
  title:"Live Open Attractions Import Progress | GTH PRO",
@@ -9,13 +10,17 @@ export const metadata:Metadata={
  robots:{index:false,follow:true}
 };
 export default async function AttractionsProgress(){
- const progress=await sourceProgress().catch(()=>null);
+ const [progress,guideStats]=await Promise.all([sourceProgress().catch(()=>null),guidePublicationStats().catch(()=>null)]);
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
    <Link href="/attractions" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> Back to global attractions</Link>
    <p className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><RefreshCw size={15}/> Public source transparency</p>
    <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Live attractions import dashboard</h1>
    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">These are actual database records and completed GitHub source syncs—not estimates or promised worldwide coverage. Scheduled extraction moves through the publicly licensed Geofabrik regional index. Source scope is approximate near borders.</p>
+   {guideStats&&<section className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+    <h2 className="text-lg font-semibold">Editorial guide publishing readiness</h2>
+    <p className="mt-2 text-sm text-[var(--text-soft)]">{guideStats.indexableGuides} of {guideStats.candidateGuides} guide candidates have BOTH editorial publication approval and independently approved licensed hero media. {guideStats.awaitingEditorialOrImageReview} remain excluded from SEO indexing.</p>
+   </section>}
    {!progress?<div role="status" className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">Progress data temporarily unavailable. No completion claim is made.</div>:<>
     <div className="mt-7 grid gap-3 sm:grid-cols-3">
      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><Database size={18}/><p className="mt-3 text-xs text-[var(--text-soft)]">Imported OSM places</p><p className="mt-1 text-3xl font-bold">{progress.total.toLocaleString("en-IN")}</p></div>
