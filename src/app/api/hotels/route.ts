@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
 import { hotelPageWindow } from "@/lib/travel/hotel-page-window";
+import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "@/lib/travel/hotel-geo-bounds";
 
 const PAGE_SIZE = 24;
 const PARTNER_HOSTS = ["klook.com", "trip.com", "booking.com", "hotellook.com", "tp.media", "tpo.lv"];
@@ -81,13 +82,25 @@ export async function GET(req: Request) {
     // that a hotel brand is a city. Escaped percent/underscore are literals.
     const safeLike = (value: string) => "%" + value.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
     const cityLike = matchingCity ? safeLike(matchingCity) : "";
+    // OSM often supplies coordinates but not addr:city. Derive a temporary
+    // proximity search from existing explicitly city-tagged properties.
+    // Never write a guessed city into hotel_catalog.
+    let nearCity = null as ReturnType<typeof hotelBounds>;
+    if (matchingCity) {
+      const labels=cityLabels(matchingCity);
+      let seeds=supabase.from("hotel_catalog").select("latitude,longitude");
+      if(labels.length===1)seeds=seeds.ilike("city",labels[0]);
+      else seeds=seeds.or(labels.map(label=>"city.ilike."+label).join(","));
+      const {data:places,error:geoError}=await seeds.limit(100);
+      if(!geoError)nearCity=hotelBounds(matchingCity,places||[]);
+    }
     const nameLike = name ? safeLike(name) : "";
     const ascending = sort !== "name_desc";
     let supplierCountQuery = supabase.from("hotels").select("id", { count: "exact", head: true }).eq("is_public", true).eq("media_rights_verified", true).not("source_name","is",null);
     let catalogCountQuery = supabase.from("hotel_catalog").select("source_id", { count: "exact", head: true });
     if (matchingCity) {
       supplierCountQuery = supplierCountQuery.ilike("city",cityLike);
-      catalogCountQuery = catalogCountQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike+",address.ilike."+cityLike+",name.ilike."+cityLike);
+      catalogCountQuery = catalogCountQuery.or(hotelLocationFilter(cityLike,nearCity));
     }
     if (name) { supplierCountQuery = supplierCountQuery.ilike("name", nameLike); catalogCountQuery = catalogCountQuery.ilike("name", nameLike); }
     if (source === "partner") catalogCountQuery = catalogCountQuery.eq("source","__excluded__");
@@ -133,7 +146,7 @@ export async function GET(req: Request) {
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
       let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,extract_country_hint,source_url,website,address,latitude,longitude,updated_at");
       if (source === "partner") catalogQuery = catalogQuery.eq("source","__excluded__");
-      if (matchingCity) catalogQuery = catalogQuery.or("city.ilike."+cityLike+",region.ilike."+cityLike+",address.ilike."+cityLike+",name.ilike."+cityLike);
+      if (matchingCity) catalogQuery = catalogQuery.or(hotelLocationFilter(cityLike,nearCity));
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
       if (country) catalogQuery = catalogQuery.or("country_code.eq."+country+",extract_country_hint.eq."+country);
       if (category) catalogQuery = catalogQuery.eq("category",category);
@@ -166,8 +179,12 @@ export async function GET(req: Request) {
       }));
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
-        id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name, city: hotel.city || hotel.region || "City not specified", region:hotel.region,
-        country: hotel.country_code, location_scope:hotel.country_code?"OSM country tag":"Geofabrik extract hint (not verified country)", category:hotel.category, stars: null, image: safeImage(hotel.image_url||commons.get(hotel.source_id)?.image_url), affiliate_link: null,
+        id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name,
+        city:hotel.city||hotel.region||(isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Near "+matchingCity+" (mapped location)":"City not specified"),
+        region:hotel.region,
+        country:hotel.country_code,
+        location_scope:hotel.city?"OSM city tag":isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Approximate nearby coordinate; no administrative city claim":"Geofabrik extract hint (not verified country)",
+        category:hotel.category, stars: null, image: safeImage(hotel.image_url||commons.get(hotel.source_id)?.image_url), affiliate_link: null,
         image_attribution:!hotel.image_url&&commons.has(hotel.source_id)?{
           author:commons.get(hotel.source_id)!.author,license:commons.get(hotel.source_id)!.license_name,
           license_url:commons.get(hotel.source_id)!.license_url,commons_page:commons.get(hotel.source_id)!.commons_page
