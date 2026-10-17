@@ -32,20 +32,24 @@ const LICENSES=new Map([
 ]);
 function validated(record:unknown){
  if(!obj(record)||Object.keys(record).some(k=>![
-  "source","source_id","wikidata_qid","image_url","commons_page","author","license_name","license_url"
+  "source","source_id","wikidata_qid","image_url","commons_page","author","license_name","license_url","match_method"
  ].includes(k)))throw Error("Unexpected fields");
  const source=txt(record.source,10),sourceId=txt(record.source_id,100);
- const qid=txt(record.wikidata_qid,20),photo=url(record.image_url,1300),page=url(record.commons_page,600);
+ const method=txt(record.match_method,30);
+ const qid=record.wikidata_qid===null?null:txt(record.wikidata_qid,20);
+ const photo=url(record.image_url,1300),page=url(record.commons_page,600);
  const author=txt(record.author,400),license=txt(record.license_name,80),licenseUrl=url(record.license_url,200);
  if(source!=="osm"||!/^(node|way|relation)\/[1-9][0-9]{0,18}$/.test(sourceId)||
-   !/^Q[1-9][0-9]{0,14}$/.test(qid))throw Error("Invalid source identity");
+   (qid!==null&&!/^Q[1-9][0-9]{0,14}$/.test(qid))||
+   !["wikidata_p18","osm_commons_file"].includes(method)||
+   (method==="wikidata_p18"&&qid===null))throw Error("Invalid source identity");
  if(photo.hostname!=="upload.wikimedia.org"||
   !photo.pathname.startsWith("/wikipedia/commons/")||
   !/\.(?:jpg|jpeg|png|webp)$/i.test(photo.pathname))throw Error("Invalid Wikimedia image URL");
  if(page.hostname!=="commons.wikimedia.org"||!page.pathname.startsWith("/wiki/File:")||
    page.pathname.length<"/wiki/File:a.jpg".length)throw Error("Invalid Commons file page");
  if(LICENSES.get(license)!==licenseUrl.toString())throw Error("Unapproved media license");
- return {source,source_id:sourceId,wikidata_qid:qid,image_url:photo.toString(),
+ return {source,source_id:sourceId,wikidata_qid:qid,match_method:method,image_url:photo.toString(),
    commons_page:page.toString(),author,license_name:license,license_url:licenseUrl.toString(),
    source_name:"Wikimedia Commons",checked_at:new Date().toISOString()};
 }
