@@ -15,8 +15,11 @@ test("Hotel detail can resolve encoded OSM card IDs and reuse sourced image",()=
  assert.match(page,/sourceId=id\.slice\(4\)\.replace\("-","\/"\)/);
  assert.match(page,/select\("name,city,country_code,category,address,phone,source_url,website,image_url/);
  assert.match(page,/\.eq\("source","osm"\)\.eq\("source_id",sourceId\)/);
- assert.match(page,/Hotel photo pending source permission/);
- assert.match(page,/source-attributed property image/);
+ const image=read("src/components/hotel/HotelPropertyImage.tsx");
+ assert.match(page,/HotelPropertyImage/);
+ assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/source-attributed property image/);
+ assert.match(image,/onError=\{\(\)=>setFailed\(true\)\}/);
 });
 test("Left sidebar has functioning data-backed accommodation categories",()=>{
  const ui=read("src/app/hotels/page.tsx");
