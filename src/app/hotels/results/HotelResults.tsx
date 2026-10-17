@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
@@ -40,6 +41,10 @@ export default function HotelResults({city,destination,compactRail=false}:{city:
   <h3 className="text-lg font-semibold">Hotel records for {city} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
   <Link href={"/hotels?city="+encodeURIComponent(city)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
+  <a href={hotelProviderSearchUrl(city)} target="_blank" rel="noopener noreferrer nofollow"
+    className="gth-btn-gold ml-0 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold sm:ml-3">
+    Find live rooms on Booking.com <ArrowRight size={16}/>
+  </a>
  </div>;
  return <section aria-label={"Hotels in "+city} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {city} · Prices, stars and room availability unverified</p>
