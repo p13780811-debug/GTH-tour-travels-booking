@@ -9,8 +9,8 @@ export type DestinationCardInfo={
 /** Exactly the same card geometry in every rail and every viewport. */
 export default function DestinationCard({destination}: {destination:DestinationCardInfo}){
  return <Link href={"/destinations/"+destination.slug}
-   className="group flex h-[320px] w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
-   <div className="relative h-40 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
+   className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
+   <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
     <Image src={destination.image} alt={destination.title+" destination"}
       fill loading="lazy" sizes="240px" className="object-cover transition-transform duration-500 group-hover:scale-105"/>
    </div>
