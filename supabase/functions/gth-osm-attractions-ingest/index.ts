@@ -3,7 +3,7 @@ import {createRemoteJWKSet,jwtVerify} from "npm:jose@5.9.6";
 const REPO="p13780811-debug/GTH-tour-travels-booking";
 const WORKFLOW=REPO+"/.github/workflows/gth-osm-attractions-sync.yml@refs/heads/main";
 const AUD="gth-osm-attractions:dqprqjmhxjnrllczqyhz";
-const URL="https://dqprqjmhxjnrllczqyhz.supabase.co";
+const PROJECT_URL="https://dqprqjmhxjnrllczqyhz.supabase.co";
 const JWKS=createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"),
  {timeoutDuration:5000,cooldownDuration:30000,cacheMaxAge:600000});
 const H={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};
@@ -53,8 +53,8 @@ Deno.serve(async req=>{
   const entries=rows.map(record);
   if(new Set(entries.map(r=>r.source_id)).size!==entries.length)throw Error("Duplicate element");
   const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if(!key||Deno.env.get("SUPABASE_URL")!==URL)return Response.json({error:"DB service unavailable"},{status:503,headers:H});
-  const result=await fetch(URL+"/rest/v1/rpc/gth_upsert_osm_attractions",{method:"POST",
+  if(!key||Deno.env.get("SUPABASE_URL")!==PROJECT_URL)return Response.json({error:"DB service unavailable"},{status:503,headers:H});
+  const result=await fetch(PROJECT_URL+"/rest/v1/rpc/gth_upsert_osm_attractions",{method:"POST",
    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
    body:JSON.stringify({p_rows:entries}),signal:AbortSignal.timeout(20000)});
   if(!result.ok)return Response.json({error:"Source DB write unavailable"},{status:502,headers:H});
