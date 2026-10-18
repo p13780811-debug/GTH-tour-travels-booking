@@ -150,7 +150,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
     <div><p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Research workspace</p><h3 className="text-lg font-bold">Compare destination details</h3></div>
     <button type="button" onClick={()=>dialog.current?.close()} aria-label="Close comparison" className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)]"><X size={18}/></button>
    </div>
-   <div className="grid gap-3 p-4 sm:p-6" style={{gridTemplateColumns:"repeat("+Math.max(1,compared.length)+",minmax(0,1fr))"}}>
+   <div className="grid grid-flow-col auto-cols-[minmax(220px,1fr)] gap-3 overflow-x-auto p-4 sm:p-6">
     {compared.map(item=><div key={item.slug} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3">
      <h4 className="break-words text-sm font-bold">{item.title}</h4>
      <dl className="mt-3 space-y-3 text-xs">
