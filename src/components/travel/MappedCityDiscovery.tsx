@@ -7,6 +7,21 @@ export default function MappedCityDiscovery({cities,title="More source-mapped ci
  cities:readonly MappedCity[];title?:string
 }){
  if(!cities.length)return null;
+ // Interleave only source-backed country groups so lower-volume countries
+ // are visible before long runs of high-volume city tags.
+ const groups=new Map<string,MappedCity[]>();
+ for(const city of cities){
+  const rows=groups.get(city.country_code)??[];
+  rows.push(city);
+  groups.set(city.country_code,rows);
+ }
+ const maxDepth=Math.max(...Array.from(groups.values(),rows=>rows.length));
+ const diverseCities:MappedCity[]=[];
+ for(let depth=0;depth<maxDepth;depth++){
+  for(const rows of groups.values()){
+   if(rows[depth])diverseCities.push(rows[depth]);
+  }
+ }
  return <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-label="Real city-tagged attractions discovery">
   <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
    <div>
@@ -18,7 +33,7 @@ export default function MappedCityDiscovery({cities,title="More source-mapped ci
    </Link>
   </div>
   <TourCarousel label="Source-backed cities horizontal discovery">
-   {cities.map(item=><article key={item.country_code+":"+item.city}
+   {diverseCities.map(item=><article key={item.country_code+":"+item.city}
     className="flex w-[220px] shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:w-[250px]">
     <p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><MapPin size={14}/>{item.country_name}</p>
     <h3 className="mt-3 line-clamp-2 text-lg font-bold">{mappedCityLabel(item.city)}</h3>
