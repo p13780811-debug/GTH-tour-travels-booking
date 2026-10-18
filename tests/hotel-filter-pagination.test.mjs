@@ -46,7 +46,7 @@ test("No repeated stock property image and no generic partner label on unbookabl
  const image=read("src/components/hotel/HotelPropertyImage.tsx");
  assert.match(ui,/HotelPropertyImage/);
  assert.match(image,/src!=="\/placeholder\.jpg"/);
- assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/Original property photo not available/);
  assert.match(image,/onError=/);
  assert.match(ui,/hotel\.category\|\|"hotel"/);
  assert.match(ui,/hotel\.affiliate_link \? "Partner booking available" : "GTH PRO directory"/);
