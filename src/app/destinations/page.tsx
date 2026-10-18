@@ -6,6 +6,8 @@ import DestinationCard from "@/components/destination/DestinationCard";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
+import {listMappedCities} from "@/lib/travel/mappedCities";
+import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -77,6 +79,7 @@ async function loadDestinations(): Promise<Destination[]> {
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
+  const mapped=await listMappedCities({pageSize:24}).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
@@ -156,6 +159,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
             </div>
       </section>}
 
+      <MappedCityDiscovery cities={mapped?.items??[]} title="Cities recently mapped by contributors"/>
       <section id="discover" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 md:py-14">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

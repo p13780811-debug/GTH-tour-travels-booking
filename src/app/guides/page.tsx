@@ -7,6 +7,8 @@ import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
 import {sourceProgress} from "@/lib/travel/osmAttractions";
+import {listMappedCities} from "@/lib/travel/mappedCities";
+import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/guides" },
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
 
 export const dynamic="force-dynamic";
 export default async function GuidesPage() {
-  const [media,progress]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null)]);
+  const [media,progress,cities]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null),listMappedCities({pageSize:30}).catch(()=>null)]);
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
@@ -34,6 +36,7 @@ export default async function GuidesPage() {
         </nav>
       </section>
       <GuideDiscoveryRails media={media} countries={progress?.countries??[]}/>
+      <MappedCityDiscovery cities={cities?.items??[]} title="Find more cities with real mapped places"/>
       <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
