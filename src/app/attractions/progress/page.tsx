@@ -48,8 +48,9 @@ export default async function AttractionsProgress(){
       {progress.runs.map(item=><article key={item.run_id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
        <p className="text-sm font-semibold">{item.country_name} · {item.country_code}</p>
        <p className="mt-1 break-all text-xs text-[var(--text-soft)]">{item.source_region}</p>
-       <p className="mt-2 text-sm">{item.accepted.toLocaleString("en-IN")} records accepted/upserted in this run</p>
-       <p className="mt-1 text-xs text-[var(--text-soft)]">Completed {new Date(item.completed_at).toLocaleString("en-IN")}</p>
+       <p className="mt-2 text-sm">{item.accepted.toLocaleString("en-IN")} mapped source IDs submitted in this run</p>
+       <p className="mt-1 text-xs font-semibold">{item.complete?"Regional extract fully scanned":"Partial region · next source-page resumes after "+item.next_offset.toLocaleString("en-IN")+" distinct place IDs"}</p>
+       <p className="mt-1 text-xs text-[var(--text-soft)]">Run completed {new Date(item.completed_at).toLocaleString("en-IN")}</p>
       </article>)}
      </div>}
     </section>
