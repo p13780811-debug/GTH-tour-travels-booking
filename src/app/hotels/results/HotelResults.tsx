@@ -66,7 +66,6 @@ export default function HotelResults({city="",destination="",compactRail=false,s
       className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
         <HotelPropertyImage src={hotel.image} name={hotel.name}
-          showIllustrationCreditLink={false}
           className="h-full w-full object-cover"
           placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)]"/>
       </div>
