@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
 import { hotelPageWindow } from "@/lib/travel/hotel-page-window";
+import {NON_PROPERTY_NAME_PATTERN,isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "@/lib/travel/hotel-geo-bounds";
 
 const PAGE_SIZE = 24;
@@ -20,13 +21,15 @@ function safePartnerLink(value: unknown): string | null {
   }
 }
 function safeImage(value: unknown): string {
-  if (typeof value !== "string") return "/placeholder.jpg";
-  if (value.startsWith("/") && !value.startsWith("//")) return value;
-  try {
-    return new URL(value).protocol === "https:" ? value : "/placeholder.jpg";
-  } catch {
-    return "/placeholder.jpg";
-  }
+  if(typeof value!=="string"||value.length>1600)return "/placeholder.jpg";
+  if(/^\/images\/[A-Za-z0-9/_-]+\.(?:jpe?g|png|webp|avif)$/i.test(value))return value;
+  try{
+    const url=new URL(value);
+    if(url.protocol!=="https:"||url.username||url.password||url.port||
+       !url.hostname.includes(".")||!/\.(?:jpe?g|png|webp|avif)$/i.test(url.pathname)||
+       /^(?:localhost|127\.|10\.|192\.168\.)/i.test(url.hostname))return "/placeholder.jpg";
+    return url.toString();
+  }catch{return "/placeholder.jpg";}
 }
 
 export async function GET(req: Request) {
@@ -97,7 +100,7 @@ export async function GET(req: Request) {
     const nameLike = name ? safeLike(name) : "";
     const ascending = sort !== "name_desc";
     let supplierCountQuery = supabase.from("hotels").select("id", { count: "exact", head: true }).eq("is_public", true).eq("media_rights_verified", true).not("source_name","is",null);
-    let catalogCountQuery = supabase.from("hotel_catalog").select("source_id", { count: "exact", head: true });
+    let catalogCountQuery = supabase.from("hotel_catalog").select("source_id", { count: "exact", head: true }).not("name","imatch",NON_PROPERTY_NAME_PATTERN);
     if (matchingCity) {
       supplierCountQuery = supplierCountQuery.ilike("city",cityLike);
       catalogCountQuery = catalogCountQuery.or(hotelLocationFilter(cityLike,nearCity));
@@ -144,7 +147,7 @@ export async function GET(req: Request) {
     let catalogFailed = Boolean(catalogCountResult.error);
     let catalogRows: Array<{ source_id: string; name: string; city: string | null; region:string|null; category: string; image_url: string | null; country_code:string|null;extract_country_hint:string|null;source_url:string;website:string|null;address:string|null;latitude:number;longitude:number;updated_at:string }> = [];
     if (window.catalogTake > 0 && !catalogFailed && window.catalogStart < catalogCount) {
-      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,extract_country_hint,source_url,website,address,latitude,longitude,updated_at");
+      let catalogQuery = supabase.from("hotel_catalog").select("source_id,name,city,region,category,image_url,country_code,extract_country_hint,source_url,website,address,latitude,longitude,updated_at").not("name","imatch",NON_PROPERTY_NAME_PATTERN);
       if (source === "partner") catalogQuery = catalogQuery.eq("source","__excluded__");
       if (matchingCity) catalogQuery = catalogQuery.or(hotelLocationFilter(cityLike,nearCity));
       if (name) catalogQuery = catalogQuery.ilike("name", nameLike);
@@ -177,7 +180,7 @@ export async function GET(req: Request) {
         category:hotel.category||"hotel",country:hotel.country_code,
         source:hotel.source_name==="GTH PRO Reviewed Hotel Partner"?"Reviewed hotel owner":"Verified partner listing",
       }));
-    const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
+    const osm = catalogRows.filter((hotel) => isDescriptiveHotelName(hotel.name))
       .map((hotel) => ({
         id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name,
         city:hotel.city||(isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Near "+matchingCity+" (mapped location)":hotel.region?"Region: "+hotel.region:"City not specified"),

@@ -2,7 +2,6 @@
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
-import {useHotelIllustrations} from "@/lib/travel/use-hotel-illustrations";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
@@ -18,7 +17,6 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const effectiveSource=scope?.source||"all";
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
  const [items,setItems]=useState<Stay[]>([]);
- const illustrations=useHotelIllustrations(effectiveCity,items.some(h=>!h.image||h.image==="/placeholder.jpg"));
  const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
  const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
  const query=(n:number)=>"/api/hotels?"+hotelSearchParams({
@@ -61,14 +59,13 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  </div>;
  return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
-  {illustrations.length>0&&<p className="text-xs leading-5 text-[var(--text-soft)]">Some card photographs illustrate the destination, not the specific hotel. Photos provided by <a href="https://www.pexels.com/" target="_blank" rel="noopener noreferrer nofollow" className="underline">Pexels</a>.</p>}
+  
   {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
     className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
-    {items.map((hotel,index)=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
+    {items.map((hotel)=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
       className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
         <HotelPropertyImage src={hotel.image} name={hotel.name}
-          illustration={illustrations.length?illustrations[index%illustrations.length]:null}
           showIllustrationCreditLink={false}
           className="h-full w-full object-cover"
           placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)]"/>
@@ -82,10 +79,9 @@ export default function HotelResults({city="",destination="",compactRail=false,s
     </Link>)}
   </div>}
   {!compactRail&&  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-   {items.map((hotel,index)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
+   {items.map((hotel)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
     <div className="relative h-44 bg-[var(--bg-soft)]">
      <HotelPropertyImage src={hotel.image} name={hotel.name}
-       illustration={illustrations.length?illustrations[index%illustrations.length]:null}
        className="h-full w-full object-cover"
        placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)]"/>
      {(!hotel.image||hotel.image==="/placeholder.jpg")&&<span className="sr-only">No verified property photo</span>}
