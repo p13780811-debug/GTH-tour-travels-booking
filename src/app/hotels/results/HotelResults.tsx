@@ -28,7 +28,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  },n);
  useEffect(()=>{
   const controller=new AbortController();
-  setItems([]);setLoading(true);setError("");setPage(1);setTotal(0);setMore(false);
+  setItems([]);setLoading(true);setLoadingMore(false);setError("");setPage(1);setTotal(0);setMore(false);
   fetch(query(1),{signal:controller.signal,cache:"no-store"}).then(async r=>{
    if(!r.ok)throw Error("Hotel catalog unavailable");const v:unknown=await r.json();
    if(!Array.isArray(v))throw Error("Invalid hotel data");
