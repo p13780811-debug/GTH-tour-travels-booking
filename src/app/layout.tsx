@@ -71,9 +71,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={cn("font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
       {/* Travelpayouts Drive: project-specific, asynchronous AI affiliate tool. */}
       <head>
-        {/* Impact.com publisher website-ownership verification for GTH PRO / Omio application.
-            Exact provider-supplied value attribute (not content). No tracking JavaScript. */}
-        <meta name="impact-site-verification" value="94cbf0e7-14b4-445d-94c5-8edd0ef466a2" />
         <Script id="gth-travelpayouts-drive" strategy="beforeInteractive">
           {`(function () {
             if (document.querySelector('script[src^="https://emrldtp.com/NTA0MzQy.js"]')) return;
