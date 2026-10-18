@@ -201,12 +201,12 @@ function HotelsContent() {
         const city=search.trim();
         const hotelName=searchName.trim();
         if(city && (city.length<2||city.length>80||
-          !/^[\\p{L}\\p{M}\\s.'-]+$/u.test(city))){
+          !/^[\p{L}\p{M}\s.'-]+$/u.test(city))){
             setDateError("Enter a valid city or destination (2–80 letters).");
             return;
         }
         if(hotelName && (hotelName.length<2||hotelName.length>80||
-          !/^[\\p{L}\\p{M}\\p{N}\\s.'&-]+$/u.test(hotelName))){
+          !/^[\p{L}\p{M}\p{N}\s.'&-]+$/u.test(hotelName))){
             setDateError("Enter a valid hotel name (2–80 characters).");
             return;
         }
