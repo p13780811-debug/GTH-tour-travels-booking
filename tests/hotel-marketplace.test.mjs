@@ -75,3 +75,14 @@ test("hotel search and result pages recover from API failures without fake recor
   assert.match(image,/Property directory/);
   assert.doesNotMatch(image,/useHotelIllustrations|illustration=/);
 });
+
+test("hotel discovery has real linked destination imagery separate from property media", () => {
+  const page=read("src/app/hotels/page.tsx");
+  assert.match(page,/featuredDestinations/);
+  assert.match(page,/src:"/images/cities/mumbai\.jpg"/);
+  assert.match(page,/src:"/images/cities/goa\.jpg"/);
+  assert.match(page,/<Image src=\{place\.image\}/);
+  assert.match(page,/href=\{"/hotels/"\+place\.slug\}/);
+  assert.match(page,/Destination photographs illustrate the cities, not any individual hotel/);
+  assert.doesNotMatch(page,/index%illustrations\.length/);
+});
