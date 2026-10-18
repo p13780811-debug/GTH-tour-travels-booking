@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { cleanString } from "@/lib/security/validators";
 import { hotelPageWindow } from "@/lib/travel/hotel-page-window";
 import {NON_PROPERTY_NAME_PATTERN,isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
+import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
 import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "@/lib/travel/hotel-geo-bounds";
 
 const PAGE_SIZE = 24;
@@ -21,15 +22,7 @@ function safePartnerLink(value: unknown): string | null {
   }
 }
 function safeImage(value: unknown): string {
-  if(typeof value!=="string"||value.length>1600)return "/placeholder.jpg";
-  if(/^\/images\/[A-Za-z0-9/_-]+\.(?:jpe?g|png|webp|avif)$/i.test(value))return value;
-  try{
-    const url=new URL(value);
-    if(url.protocol!=="https:"||url.username||url.password||url.port||
-       !url.hostname.includes(".")||!/\.(?:jpe?g|png|webp|avif)$/i.test(url.pathname)||
-       /^(?:localhost|127\.|10\.|192\.168\.)/i.test(url.hostname))return "/placeholder.jpg";
-    return url.toString();
-  }catch{return "/placeholder.jpg";}
+  return hotelSourceImageUrl(value) ?? "/placeholder.jpg";
 }
 
 export async function GET(req: Request) {
@@ -165,7 +158,7 @@ export async function GET(req: Request) {
     // Lookup at most one page of exact OSM source IDs; failures never hide hotels.
     type LicensedMedia={source_id:string;image_url:string;author:string;license_name:string;license_url:string;commons_page:string};
     const commons=new Map<string,LicensedMedia>();
-    const candidates=catalogRows.filter(item=>!item.image_url).map(item=>item.source_id);
+    const candidates=catalogRows.filter(item=>!hotelSourceImageUrl(item.image_url)).map(item=>item.source_id);
     if(candidates.length){
       const {data:media}=await supabase.from("hotel_catalog_media")
         .select("source_id,image_url,author,license_name,license_url,commons_page")
@@ -181,21 +174,26 @@ export async function GET(req: Request) {
         source:hotel.source_name==="GTH PRO Reviewed Hotel Partner"?"Reviewed hotel owner":"Verified partner listing",
       }));
     const osm = catalogRows.filter((hotel) => isDescriptiveHotelName(hotel.name))
-      .map((hotel) => ({
+      .map((hotel) => {
+        const original=hotelSourceImageUrl(hotel.image_url);
+        const licensed=original?null:commons.get(hotel.source_id);
+        const licensedUrl=hotelSourceImageUrl(licensed?.image_url);
+        return {
         id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name,
         city:hotel.city||(isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Near "+matchingCity+" (mapped location)":hotel.region?"Region: "+hotel.region:"City not specified"),
         region:hotel.region,
         country:hotel.country_code,
         location_scope:hotel.city?"OSM city tag":isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Approximate nearby coordinate; no administrative city claim":hotel.region?"OSM region tag; city unspecified":"Geofabrik extract hint (not verified country)",
-        category:hotel.category, stars: null, image: safeImage(hotel.image_url||commons.get(hotel.source_id)?.image_url), affiliate_link: null,
-        image_attribution:!hotel.image_url&&commons.has(hotel.source_id)?{
-          author:commons.get(hotel.source_id)!.author,license:commons.get(hotel.source_id)!.license_name,
-          license_url:commons.get(hotel.source_id)!.license_url,commons_page:commons.get(hotel.source_id)!.commons_page
+        category:hotel.category, stars: null, image: original||licensedUrl||"/placeholder.jpg", affiliate_link: null,
+        image_attribution:licensed&&licensedUrl?{
+          author:licensed.author,license:licensed.license_name,
+          license_url:licensed.license_url,commons_page:licensed.commons_page
         }:null,
         source_url:hotel.source_url, hotel_website:hotel.website, address:hotel.address,
         latitude:hotel.latitude, longitude:hotel.longitude, updated_at:hotel.updated_at,
         source: "OpenStreetMap", source_license: "ODbL-1.0",
-      }));
+        };
+      });
     // Name equality is not proof of duplicate physical properties; do not
     // discard unrelated hotels solely because they share a public name.
     const results = [...listings, ...osm];
