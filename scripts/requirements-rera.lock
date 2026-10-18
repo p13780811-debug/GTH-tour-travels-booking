@@ -27,7 +27,7 @@ python-dotenv==1.2.4
 realtime==2.33.0
 requests==2.34.2
 socksio==1.0.0
-soupsieve==3.0.3
+soupsieve==2.10
 storage3==2.33.0
 StrEnum==0.4.15
 supabase==2.33.0
