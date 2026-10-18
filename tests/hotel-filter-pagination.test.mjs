@@ -49,7 +49,7 @@ test("No repeated stock property image and no generic partner label on unbookabl
  assert.match(image,/Original property photo not available/);
  assert.match(image,/onError=/);
  assert.match(ui,/hotel\.category\|\|"hotel"/);
- assert.match(ui,/hotel\.affiliate_link \? "Partner booking available" : "GTH PRO directory"/);
+ assert.match(ui,/hotel\.affiliate_link \? "Partner handoff available" : "Directory listing"/);
  assert.match(ui,/href=\{"\/hotels\/stay\/"\+encodeURIComponent/);
  const api=read("src/app/api/hotels/route.ts");
  assert.match(api,/if \(category\) catalogCountQuery = catalogCountQuery\.eq\("category",category\)/);

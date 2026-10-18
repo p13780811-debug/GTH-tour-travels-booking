@@ -108,3 +108,14 @@ test("Booking-style responsive hotel list uses desktop filter sidebar and mobile
  assert.match(results,/md:flex-row/);
  assert.doesNotMatch(results,/sm:grid-cols-2 xl:grid-cols-3/);
 });
+
+test("dedicated hotel results maintain source-backed sidebar and mobile category links",()=>{
+ const code=read("src/app/hotels/results/HotelResults.tsx");
+ assert.match(code,/Hotel result filters/);
+ assert.match(code,/Accommodation categories/);
+ assert.match(code,/Mobile accommodation categories/);
+ assert.match(code,/filterHref\(\{category:type\.id\}\)/);
+ assert.match(code,/filterHref\(\{source:value\}\)/);
+ assert.match(code,/filterHref\(\{sort:value\}\)/);
+ assert.match(code,/lg:grid-cols-\[240px_minmax\(0,1fr\)\]/);
+});

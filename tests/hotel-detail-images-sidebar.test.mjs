@@ -28,6 +28,6 @@ test("Left sidebar has functioning data-backed accommodation categories",()=>{
  assert.match(ui,/Accommodation categories/);
  for(const category of ["hotel","resort","guest_house","apartment","hostel","motel"])assert.ok(ui.includes('["'+category+'",'));
  assert.match(ui,/checked=\{category===value\}/);
- assert.match(ui,/onChange=\{\(\)=>setCategory\(value\)\}/);
+ assert.match(ui,/onChange=\{\(\)=>\{setCategory\(value\);setMobileFiltersOpen\(false\);\}\}/);
  assert.match(ui,/name="hotel-accommodation-category"/);
 });

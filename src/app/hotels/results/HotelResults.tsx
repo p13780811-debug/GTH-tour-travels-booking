@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
@@ -16,6 +17,10 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const effectiveSort=scope?.sort||"name_asc";
  const effectiveSource=scope?.source||"all";
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
+ const filterHref=(overrides:Partial<HotelSearchScope>)=>"/hotels/results?"+hotelSearchParams({
+  city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,
+  category:effectiveCategory,sort:effectiveSort,source:effectiveSource,...overrides
+ },1).toString();
  const [items,setItems]=useState<Stay[]>([]);
  const [retryCount,setRetryCount]=useState(0);
  const requestKey=JSON.stringify([effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
@@ -91,7 +96,49 @@ export default function HotelResults({city="",destination="",compactRail=false,s
       </div>
     </Link>)}
   </div>}
-  {!compactRail&&  <div className="flex flex-col gap-4">
+
+  {!compactRail&&<nav aria-label="Mobile accommodation categories" className="flex gap-2 overflow-x-auto pb-2 lg:hidden">
+    {HOTEL_TYPES.map(type=><Link key={type.id} href={filterHref({category:type.id})}
+      aria-current={effectiveCategory===type.id?"page":undefined}
+      className={"shrink-0 rounded-xl border px-3 py-2 text-xs font-semibold "+(effectiveCategory===type.id?"border-[var(--gold)] bg-[var(--card)]":"border-[var(--border)] bg-[var(--bg)]")}>
+      {type.name}
+    </Link>)}
+  </nav>}
+  {!compactRail&&<div className="grid min-w-0 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+    <aside aria-label="Hotel result filters" className="hidden lg:block">
+      <div className="sticky top-24 space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <div>
+          <h3 className="text-sm font-bold">Accommodation categories</h3>
+          <nav aria-label="Filter hotel type" className="mt-3 flex flex-col gap-1">
+            {HOTEL_TYPES.map(type=><Link key={type.id} href={filterHref({category:type.id})}
+              aria-current={effectiveCategory===type.id?"page":undefined}
+              className={"rounded-lg border px-3 py-2.5 text-sm "+(effectiveCategory===type.id?"border-[var(--gold)] font-bold":"border-transparent hover:border-[var(--border)]")}>
+              {type.name}
+            </Link>)}
+          </nav>
+        </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <h3 className="text-sm font-bold">Listing source</h3>
+          <nav aria-label="Filter listing source" className="mt-3 flex flex-col gap-1">
+            {([["all","All listings"],["partner","Approved partners"],["directory","OSM directory"]] as const).map(([value,label])=>
+              <Link key={value} href={filterHref({source:value})}
+                aria-current={effectiveSource===value?"page":undefined}
+                className={"rounded-lg border px-3 py-2 text-sm "+(effectiveSource===value?"border-[var(--gold)] font-bold":"border-transparent hover:border-[var(--border)]")}>{label}</Link>)}
+          </nav>
+        </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <h3 className="text-sm font-bold">Sort results</h3>
+          <nav aria-label="Sort hotel names" className="mt-3 flex flex-col gap-1">
+            {([["name_asc","Hotel name A–Z"],["name_desc","Hotel name Z–A"]] as const).map(([value,label])=>
+              <Link key={value} href={filterHref({sort:value})}
+                aria-current={effectiveSort===value?"page":undefined}
+                className={"rounded-lg border px-3 py-2 text-sm "+(effectiveSort===value?"border-[var(--gold)] font-bold":"border-transparent hover:border-[var(--border)]")}>{label}</Link>)}
+          </nav>
+        </div>
+        <p className="text-xs leading-5 text-[var(--text-soft)]">Prices, reviews and room availability are not independently verified.</p>
+      </div>
+    </aside>
+    <div className="flex min-w-0 flex-col gap-4">
    {items.map((hotel)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] md:flex-row">
     <div className="relative h-44 shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-56 lg:w-60">
      <HotelPropertyImage src={hotel.image} name={hotel.name}
@@ -118,6 +165,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      </div>
     </div>
    </article>)}
+    </div>
   </div>}
   {more?<button type="button" disabled={loadingMore} onClick={()=>void loadMore()} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-60">{loadingMore?"Loading…":"Load more hotels (page "+(page+1)+")"} <BedDouble size={16}/></button>:null}
   {error?<p role="alert" className="text-sm text-[var(--text-soft)]">{error}</p>:null}

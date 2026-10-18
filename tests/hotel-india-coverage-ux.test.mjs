@@ -52,7 +52,8 @@ test("Hotels UI reuses global CSS, never invents room inventory or prices",()=>{
  assert.match(page,/Sort hotel listings/);
  assert.match(page,/Hotel name \(optional\)/);
  assert.match(page,/sourceFilter/);
- assert.match(page,/Price not independently verified/);
+ assert.match(page,/Price on provider/);
+ assert.match(page,/not independently verified/);
  assert.match(page,/gth-btn-gold/);
  assert.match(page,/bg-\[var\(--card\)\]/);
  assert.doesNotMatch(page,/Math\.random|generateHotels\(/);
