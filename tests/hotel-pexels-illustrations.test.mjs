@@ -36,28 +36,19 @@ test("One source-scoped Pexels query per visible destination, not per hotel",()=
  assert.match(hook,/mode=hotel_illustration/);
  assert.doesNotMatch(hook,/service_role|insert\(|upsert\(|hotel_catalog/);
 });
-test("Original hotel photograph wins, stock photography is visibly identified",()=>{
- const visual=read("src/components/hotel/HotelPropertyImage.tsx");
- assert.ok(visual.indexOf('if(src&&src!=="/placeholder.jpg"&&!failed)')<
-           visual.indexOf("if(illustration&&!illustrationFailed)"));
- assert.match(visual,/Illustrative photo — not this property/);
- assert.match(visual,/alt=\{"Illustrative travel architecture, not a verified photograph of "\+name\}/);
- assert.match(visual,/Photo: \{illustration\.photographer\} \/ Pexels/);
- assert.match(visual,/Original hotel photo not available/);
- assert.match(visual,/showIllustrationCreditLink/);
-});
-test("Cards, destination rails and detail are disclosed without altering approved CSS or catalog",()=>{
+test("Hotel cards and detail never repeat shared illustrative photos",()=>{
+ const image=read("src/components/hotel/HotelPropertyImage.tsx");
  const list=read("src/app/hotels/page.tsx");
- const rail=read("src/app/hotels/results/HotelResults.tsx");
+ const results=read("src/app/hotels/results/HotelResults.tsx");
  const detail=read("src/app/hotels/stay/[id]/page.tsx");
- const stay=read("src/components/hotel/HotelStayVisual.tsx");
- assert.match(list,/illustration=\{illustrations\.length\?/);
- assert.match(list,/Photos provided by/);
- assert.match(rail,/showIllustrationCreditLink=\{false\}/);
- assert.match(rail,/No verified property photo/);
+ const visual=read("src/components/hotel/HotelStayVisual.tsx");
+ assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/source-attributed property image/);
+ assert.match(image,/onError=\{\(\)=>setFailed\(true\)\}/);
+ for(const content of [list,results,visual,image]){
+  assert.doesNotMatch(content,/useHotelIllustrations|illustration=|index%illustrations/);
+ }
  assert.match(detail,/hotel\.image\?<HotelPropertyImage/);
  assert.match(detail,/HotelStayVisual/);
- assert.match(stay,/Illustrative travel image only/);
- for(const file of [list,rail,detail,stay])
-   assert.doesNotMatch(file,/\.from\("hotel_catalog"\)\.update\(|\.from\("hotel_catalog"\)\.insert\(/);
+ assert.doesNotMatch(visual,/Pexels|illustrations/);
 });

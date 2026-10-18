@@ -1,5 +1,6 @@
 import {createClient} from "@supabase/supabase-js";
 import {NextResponse} from "next/server";
+import {NON_PROPERTY_NAME_PATTERN} from "@/lib/travel/hotel-name-quality";
 export const dynamic="force-dynamic";
 const TYPES=["hotel","motel","hostel","guest_house","apartment","resort"] as const;
 const HEADERS={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};
@@ -14,7 +15,7 @@ export async function GET(req:Request){
  if(input&&!/^[A-Z]{2}$/.test(input))return NextResponse.json({error:"Invalid country"},{status:400,headers:HEADERS});
  const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  try{
-  const base=()=>{let q=client.from("hotel_catalog").select("id",{count:"exact",head:true});
+  const base=()=>{let q=client.from("hotel_catalog").select("id",{count:"exact",head:true}).not("name","imatch",NON_PROPERTY_NAME_PATTERN);
    if(country)q=q.or("country_code.eq."+country+",extract_country_hint.eq."+country);return q;};
   const newest=client.from("hotel_catalog").select("imported_at")
    .order("imported_at",{ascending:false}).limit(1);
