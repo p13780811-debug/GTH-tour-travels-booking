@@ -98,6 +98,11 @@ function HotelsContent() {
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
+    const [checkIn,setCheckIn]=useState("");
+    const [checkOut,setCheckOut]=useState("");
+    const [guests,setGuests]=useState(2);
+    const [searchValidation,setSearchValidation]=useState("");
+    const today = new Date().toLocaleDateString("en-CA");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
     const illustrations=useHotelIllustrations(requestedCity,hotels.some(h=>!h.image||h.image==="/placeholder.jpg"));
@@ -195,11 +200,21 @@ function HotelsContent() {
     }
 
     const runSearch = () => {
+        setSearchValidation("");
+        if ((checkIn && !checkOut) || (!checkIn && checkOut)) {
+            setSearchValidation("Select both check-in and check-out dates."); return;
+        }
+        if (checkIn && (checkIn < today || checkOut <= checkIn)) {
+            setSearchValidation("Check-out must be after a valid future check-in."); return;
+        }
+        if (!Number.isSafeInteger(guests) || guests < 1 || guests > 20) {
+            setSearchValidation("Select 1 to 20 guests."); return;
+        }
         const city=search.trim();
-        if(city.length>80 || (city.length>0&&city.length<2))return;
-        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
+        if(city.length>80 || (city.length>0&&city.length<2)){setSearchValidation("Enter a city name with at least two characters.");return;}
+        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry)){setSearchValidation("Select a valid country.");return;}
         const hotelName=searchName.trim();
-        if(hotelName.length>80)return;
+        if(hotelName.length>80){setSearchValidation("Hotel name must be 80 characters or less.");return;}
         setNameFilter(hotelName);
         setCategory("");
         setRequestedDestination("");
@@ -232,16 +247,8 @@ function HotelsContent() {
             {/* HERO */}
             {/* ========================================================================= */}
 
-            <section className="relative gth-glass overflow-hidden p-6 md:p-10">
-                <div className="absolute inset-0 text-white">
-                    <img
-                        src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1600"
-                        className="w-full h-full object-cover"
-                        alt=""
-                    />
-                </div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-20 pb-8 md:pt-28 md:pb-12">
+            <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--card)]">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 md:py-9">
                     {/* TOP NAV */}
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                         {categories.map((item, index) => (
@@ -261,26 +268,26 @@ function HotelsContent() {
                     </div>
 
                     {/* TITLE */}
-                    <div className="mt-8">
+                    <div className="mt-4">
                         <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)]">
                             <Orbit size={14} />
-                            <span className="text-[10px] text-white tracking-[0.3em] uppercase text-[var(--text-soft)]">
+                            <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
                                 GTH GLOBAL STAYS
                             </span>
                         </div>
 
-                        <h1 className="mt-5 text-2xl text-white sm:text-4xl md:text-6xl font-black leading-tight max-w-4xl">
+                        <h1 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold leading-tight max-w-4xl text-[var(--text)]">
                             Discover Hotels Around the World
                         </h1>
 
-                        <p className="mt-4 text-sm text-white md:text-lg text-[var(--text-soft)] max-w-2xl">
+                        <p className="mt-2 text-sm md:text-base text-[var(--text-soft)] max-w-2xl">
                             Explore available hotel listings worldwide, then confirm
                             prices, room details and availability with the booking partner.
                         </p>
                     </div>
 
                     {/* SEARCH */}
-                    <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
+                    <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
@@ -306,28 +313,29 @@ function HotelsContent() {
                                     onKeyDown={e=>e.key==="Enter"&&runSearch()} maxLength={80}
                                     placeholder="Hotel name (optional)" className="bg-transparent outline-none text-sm w-full min-w-0" />
                             </div>
-                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
-                                <CalendarDays
-                                    className="text-[var(--text-soft)]"
-                                    size={18}
-                                />
-
-                                <span className="text-sm truncate">
-                                    Choose dates with partner
-                                </span>
+                            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2">
+                                <CalendarDays className="shrink-0 text-[var(--text-soft)]" size={18}/>
+                                <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
+                                    <label className="min-w-0 text-xs text-[var(--text-soft)]">Check-in
+                                        <input aria-label="Check-in date" type="date" min={today} value={checkIn}
+                                            onChange={e=>{setCheckIn(e.target.value);setSearchValidation("");}}
+                                            className="mt-1 w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
+                                    </label>
+                                    <label className="min-w-0 text-xs text-[var(--text-soft)]">Check-out
+                                        <input aria-label="Check-out date" type="date" min={checkIn||today} value={checkOut}
+                                            onChange={e=>{setCheckOut(e.target.value);setSearchValidation("");}}
+                                            className="mt-1 w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
+                                    </label>
+                                </div>
                             </div>
-
-                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
-                                <Users
-                                    className="text-[var(--text-soft)]"
-                                    size={18}
-                                />
-
-                                <span className="text-sm truncate">
-                                    Choose guests with partner
+                            <label className="flex min-w-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2">
+                                <Users className="shrink-0 text-[var(--text-soft)]" size={18}/>
+                                <span className="min-w-0 flex-1 text-xs text-[var(--text-soft)]">Guests
+                                    <input aria-label="Number of guests" type="number" min={1} max={20} step={1}
+                                        value={guests} onChange={e=>{setGuests(Number(e.target.value));setSearchValidation("");}}
+                                        className="mt-1 block w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
                                 </span>
-                            </div>
-
+                            </label>
                             <button
                                 onClick={runSearch}
                                 className="gth-btn-gold rounded-2xl px-6 py-4 text-sm font-bold flex items-center justify-center gap-2"
@@ -336,6 +344,8 @@ function HotelsContent() {
                                 Search
                             </button>
                         </div>
+                        {searchValidation && <p role="alert" className="mt-3 text-sm text-[var(--text)]">{searchValidation}</p>}
+                        <p className="mt-2 text-xs text-[var(--text-soft)]">Selected: {checkIn||"date pending"} to {checkOut||"date pending"} · {guests} guest(s). Directory search is not live room availability. Confirm dates, guest capacity and rates with the provider.</p>
                     </div>
                 </div>
             </section>
