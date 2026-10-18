@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
@@ -17,6 +17,9 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const effectiveSource=scope?.source||"all";
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
  const [items,setItems]=useState<Stay[]>([]);
+ const requestKey=JSON.stringify([effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
+ const activeKey=useRef(requestKey);
+ activeKey.current=requestKey;
  const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
  const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
  const query=(n:number)=>"/api/hotels?"+hotelSearchParams({
@@ -36,15 +39,19 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   return ()=>controller.abort();
  },[effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
  async function loadMore(){
-  if(!more||loading||loadingMore)return;setLoadingMore(true);
+  if(!more||loading||loadingMore)return;
+  const startedFor=requestKey;
+  setLoadingMore(true);
   try{
    const r=await fetch(query(page+1),{cache:"no-store"});
    if(!r.ok)throw Error("Hotel page unavailable");
    const data:unknown=await r.json();if(!Array.isArray(data))throw Error("Invalid data");
+   if(activeKey.current!==startedFor)return;
    const next=data as Stay[];
    setItems(old=>{const map=new Map(old.map(x=>[String(x.id),x]));for(const x of next)map.set(String(x.id),x);return [...map.values()];});
    setPage(p=>p+1);setMore(next.length>0&&r.headers.get("X-GTH-Has-More")==="true");setError("");
-  }catch{setError("More hotels could not be loaded; retry.");}finally{setLoadingMore(false);}
+  }catch{if(activeKey.current===startedFor)setError("More hotels could not be loaded; retry.");}
+  finally{if(activeKey.current===startedFor)setLoadingMore(false);}
  }
  if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {placeLabel}…</p>;
  if(error&&!items.length)return <p role="alert" className="gth-glass rounded-2xl p-6 text-sm">{error}</p>;
