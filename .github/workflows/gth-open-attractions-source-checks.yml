@@ -50,4 +50,4 @@ jobs:
         with:
           deno-version: v2.x
       - name: Typecheck OIDC-only OSM source gateway
-        run: deno check supabase/functions/gth-osm-attractions-ingest/index.ts
+        run: deno check --config supabase/functions/gth-osm-attractions-ingest/deno.json supabase/functions/gth-osm-attractions-ingest/index.ts
