@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import socket
+import ssl
 from urllib.robotparser import RobotFileParser
 
 import requests
@@ -11,6 +12,19 @@ import requests
 ORIGIN = "https://maharerait.maharashtra.gov.in"
 PATH = "/api/maha-rera-public-view-project-registration-service/public/projectregistartion/getProjectGeneralDetailsByProjectId"
 UA = "GTH-PRO-Registry-Ingest/1.0 (+https://gthproglobal.com)"
+
+
+def tls_code(exc):
+    seen, pending = set(), [exc]
+    while pending:
+        current = pending.pop()
+        if not isinstance(current, BaseException) or id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, ssl.SSLCertVerificationError):
+            return current.verify_code
+        pending.extend([current.__cause__, current.__context__, getattr(current, "reason", None), *current.args])
+    return None
 
 
 def main():
@@ -23,7 +37,18 @@ def main():
             report["phase"] = "dns"
             socket.getaddrinfo("maharerait.maharashtra.gov.in", 443, type=socket.SOCK_STREAM)
             report["phase"] = "robots"
-            robots = session.get(ORIGIN + "/robots.txt", timeout=25, allow_redirects=False)
+            try:
+                robots = session.get(ORIGIN + "/robots.txt", timeout=25, allow_redirects=False)
+            except requests.exceptions.SSLError as exc:
+                report["default_ca_verify_code"] = tls_code(exc)
+                bundle = ssl.get_default_verify_paths().cafile
+                if not bundle or not os.path.isfile(bundle) or os.getenv("REQUESTS_CA_BUNDLE") or os.getenv("CURL_CA_BUNDLE"):
+                    raise
+                # Retry with the OS trust store; TLS/hostname validation stays enabled.
+                report["system_ca_retry"] = True
+                session.verify = bundle
+                time.sleep(5)
+                robots = session.get(ORIGIN + "/robots.txt", timeout=25, allow_redirects=False)
             report["robots_status"] = robots.status_code
             if robots.status_code not in (200, 404) or (robots.status_code == 200 and "html" in robots.headers.get("Content-Type", "").lower()):
                 report["outcome"] = "robots_policy_unavailable"
@@ -60,6 +85,8 @@ def main():
         except (requests.RequestException, ValueError, OSError) as exc:
             report["outcome"] = "source_connection_or_json_failure"
             report["error_type"] = type(exc).__name__
+            if isinstance(exc, requests.exceptions.SSLError):
+                report["tls_verify_code"] = tls_code(exc)
     return report
 
 
