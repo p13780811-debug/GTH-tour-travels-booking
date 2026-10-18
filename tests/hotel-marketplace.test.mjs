@@ -39,8 +39,11 @@ test("hotel API exposes only public listing attributes", () => {
   assert.match(api, /Cache-Control/);
 });
 
-test("hotel results show unavailable partner links honestly", () => {
+test("hotel results retain approved handoffs and honest external hotel-name search", () => {
   const result = read("src/app/hotels/results/HotelResults.tsx");
-  assert.match(result, /Partner booking link not available/);
+  assert.match(result, /Continue to booking partner/);
+  assert.match(result, /Search this hotel on Booking\.com/);
+  assert.match(result, /External name search only/);
   assert.match(result, /rel="noopener noreferrer sponsored"/);
+  assert.match(result, /rel="noopener noreferrer nofollow"/);
 });

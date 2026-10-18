@@ -57,11 +57,12 @@ export async function searchTours(filters: TourFilters): Promise<{ items: Public
   try {
     const client = createClient(url, key);
     let query = client.from("tours")
-      .select("id,title,city,city_slug,country,price_numeric,currency,rating,category,image_url")
+      .select("id,title,city,city_slug,country,price_numeric,currency,tags,image_url")
+      .eq("is_public", true).eq("media_rights_verified", true)
       .order("title", { ascending: true })
       .limit(48);
     if (city) query = query.eq("city_slug", city);
-    if (category) query = query.eq("category", category);
+    if (category) query = query.contains("tags", [category]);
     if (min !== null) query = query.gte("price_numeric", min);
     if (max !== null) query = query.lte("price_numeric", max);
 
@@ -81,8 +82,8 @@ export async function searchTours(filters: TourFilters): Promise<{ items: Public
       image_url: image(tour.image_url),
       price_numeric: typeof tour.price_numeric === "number" && tour.price_numeric > 0 ? tour.price_numeric : null,
       currency: typeof tour.currency === "string" && /^[A-Z]{3}$/.test(tour.currency) ? tour.currency : null,
-      rating: typeof tour.rating === "number" && tour.rating >= 1 && tour.rating <= 5 ? tour.rating : null,
-      category: typeof tour.category === "string" ? tour.category : null,
+      rating: null, // No verified rating column exists in the public source.
+      category: Array.isArray(tour.tags) && typeof tour.tags[0] === "string" ? tour.tags[0].slice(0, 40) : null,
     }));
     return { items, error: null, status: 200 };
   } catch {

@@ -98,6 +98,10 @@ function HotelsContent() {
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [category,setCategory]=useState("");
+    const [checkin,setCheckin]=useState("");
+    const [checkout,setCheckout]=useState("");
+    const [guests,setGuests]=useState(2);
+    const [dateError,setDateError]=useState("");
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
     const illustrations=useHotelIllustrations(requestedCity,hotels.some(h=>!h.image||h.image==="/placeholder.jpg"));
@@ -195,6 +199,10 @@ function HotelsContent() {
     }
 
     const runSearch = () => {
+        setDateError("");
+        if(Boolean(checkin)!==Boolean(checkout)){setDateError("Choose both check-in and check-out dates, or leave both empty.");return;}
+        if(checkin&&(checkin<new Date().toISOString().slice(0,10)||checkout<=checkin)){setDateError("Check-out must follow a future check-in.");return;}
+        if(!Number.isSafeInteger(guests)||guests<1||guests>20){setDateError("Choose 1–20 adults.");return;}
         const city=search.trim();
         if(city.length>80 || (city.length>0&&city.length<2))return;
         if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
@@ -204,7 +212,7 @@ function HotelsContent() {
         setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
-        setRequestedCountry(city?"":selectedCountry);
+        setRequestedCountry(selectedCountry);
     };
 
     const exploreIndia = (city = "") => {
@@ -215,7 +223,7 @@ function HotelsContent() {
         setRequestedDestination("");
         setRequestedCity(city);
         setSelectedCountry("IN");
-        setRequestedCountry(city ? "" : "IN");
+        setRequestedCountry("IN");
         document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
@@ -232,16 +240,9 @@ function HotelsContent() {
             {/* HERO */}
             {/* ========================================================================= */}
 
-            <section className="relative gth-glass overflow-hidden p-6 md:p-10">
-                <div className="absolute inset-0 text-white">
-                    <img
-                        src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1600"
-                        className="w-full h-full object-cover"
-                        alt=""
-                    />
-                </div>
+            <section className="relative gth-glass overflow-hidden border-b border-[var(--border)] bg-[var(--bg)]">
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-20 pb-8 md:pt-28 md:pb-12">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-5 pb-7 md:pt-8 md:pb-9">
                     {/* TOP NAV */}
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                         {categories.map((item, index) => (
@@ -264,16 +265,16 @@ function HotelsContent() {
                     <div className="mt-8">
                         <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)]">
                             <Orbit size={14} />
-                            <span className="text-[10px] text-white tracking-[0.3em] uppercase text-[var(--text-soft)]">
+                            <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
                                 GTH GLOBAL STAYS
                             </span>
                         </div>
 
-                        <h1 className="mt-5 text-2xl text-white sm:text-4xl md:text-6xl font-black leading-tight max-w-4xl">
+                        <h1 className="mt-5 text-2xl text-[var(--text)] sm:text-4xl md:text-5xl font-bold leading-tight max-w-4xl">
                             Discover Hotels Around the World
                         </h1>
 
-                        <p className="mt-4 text-sm text-white md:text-lg text-[var(--text-soft)] max-w-2xl">
+                        <p className="mt-4 text-sm md:text-base text-[var(--text-soft)] max-w-2xl">
                             Explore available hotel listings worldwide, then confirm
                             prices, room details and availability with the booking partner.
                         </p>
@@ -281,7 +282,7 @@ function HotelsContent() {
 
                     {/* SEARCH */}
                     <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
                                     className="text-[var(--text-soft)] shrink-0"
@@ -306,26 +307,26 @@ function HotelsContent() {
                                     onKeyDown={e=>e.key==="Enter"&&runSearch()} maxLength={80}
                                     placeholder="Hotel name (optional)" className="bg-transparent outline-none text-sm w-full min-w-0" />
                             </div>
-                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
-                                <CalendarDays
-                                    className="text-[var(--text-soft)]"
-                                    size={18}
-                                />
-
-                                <span className="text-sm truncate">
-                                    Choose dates with partner
-                                </span>
+                            <div className="flex min-w-0 items-center gap-2 bg-[var(--card)] rounded-2xl px-3 py-3">
+                                <CalendarDays className="shrink-0 text-[var(--text-soft)]" size={17} />
+                                <label htmlFor="hotel-checkin" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">Check-in
+                                    <input id="hotel-checkin" aria-label="Hotel check-in" type="date" value={checkin} 
+                                        onChange={e=>setCheckin(e.target.value)} className="mt-1 block w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
+                                </label>
                             </div>
-
-                            <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4">
-                                <Users
-                                    className="text-[var(--text-soft)]"
-                                    size={18}
-                                />
-
-                                <span className="text-sm truncate">
-                                    Choose guests with partner
-                                </span>
+                            <div className="flex min-w-0 items-center gap-2 bg-[var(--card)] rounded-2xl px-3 py-3">
+                                <CalendarDays className="shrink-0 text-[var(--text-soft)]" size={17} />
+                                <label htmlFor="hotel-checkout" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">Check-out
+                                    <input id="hotel-checkout" aria-label="Hotel check-out" type="date" value={checkout} min={checkin||undefined}
+                                        onChange={e=>setCheckout(e.target.value)} className="mt-1 block w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
+                                </label>
+                            </div>
+                            <div className="flex min-w-0 items-center gap-2 bg-[var(--card)] rounded-2xl px-3 py-3">
+                                <Users className="shrink-0 text-[var(--text-soft)]" size={17} />
+                                <label htmlFor="hotel-guests" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">Adult guests
+                                    <input id="hotel-guests" aria-label="Hotel adult guests" type="number" value={guests} min={1} max={20} step={1}
+                                        onChange={e=>setGuests(e.target.valueAsNumber)} className="mt-1 block w-full min-w-0 bg-transparent text-sm text-[var(--text)]" />
+                                </label>
                             </div>
 
                             <button
@@ -336,6 +337,8 @@ function HotelsContent() {
                                 Search
                             </button>
                         </div>
+                        {dateError&&<p role="alert" className="mt-3 text-sm text-[var(--text)]">{dateError}</p>}
+                        <p className="mt-2 text-xs text-[var(--text-soft)]">Dates and guests are planning inputs; the provider confirms real prices and availability.</p>
                     </div>
                 </div>
             </section>
@@ -510,7 +513,7 @@ function HotelsContent() {
                                 <h2 className="text-base font-semibold">Need real room prices, photos and availability?</h2>
                                 <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Our OSM directory shows independently sourced hotel locations, not live room inventory. Search worldwide with an external booking provider and choose your actual dates and guests there.</p>
                             </div>
-                            <a href={hotelProviderSearchUrl(requestedCity||search)} target="_blank" rel="noopener noreferrer nofollow"
+                            <a href={hotelProviderSearchUrl(requestedCity||search,{checkin,checkout,adults:guests})} target="_blank" rel="noopener noreferrer nofollow"
                                className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
                                 Search available hotels on Booking.com <ChevronRight size={16}/>
                             </a>
@@ -713,9 +716,14 @@ function HotelsContent() {
                                                                     <ChevronRight size={16} />
                                                                 </a>
                                                             ) : (
-                                                                <p className="text-xs text-[var(--text-soft)]">
-                                                                    GTH PRO hotel profile and original property source available. Booking handoff not connected for this record.
-                                                                </p>
+                                                                <div className="space-y-2">
+                                                                    <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults:guests})}
+                                                                       target="_blank" rel="noopener noreferrer nofollow"
+                                                                       className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
+                                                                        Search this hotel on Booking.com <ChevronRight size={16}/>
+                                                                    </a>
+                                                                    <p className="text-xs text-[var(--text-soft)]">External name search only. Confirm the exact property, dates and room rates with the provider.</p>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
