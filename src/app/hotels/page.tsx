@@ -198,19 +198,48 @@ function HotelsContent() {
 
     const runSearch = () => {
         setDateError("");
-        if(Boolean(checkin)!==Boolean(checkout)){setDateError("Choose both check-in and check-out dates, or leave both empty.");return;}
-        if(checkin&&(checkin<new Date().toISOString().slice(0,10)||checkout<=checkin)){setDateError("Check-out must follow a future check-in.");return;}
-        if(!Number.isSafeInteger(guests)||guests<1||guests>20){setDateError("Choose 1–20 adults.");return;}
         const city=search.trim();
-        if(city.length>80 || (city.length>0&&city.length<2))return;
-        if(selectedCountry&&!/^[A-Z]{2}$/.test(selectedCountry))return;
         const hotelName=searchName.trim();
-        if(hotelName.length>80)return;
+        if(city && (city.length<2||city.length>80||
+          !/^[\\p{L}\\p{M}\\s.'-]+$/u.test(city))){
+            setDateError("Enter a valid city or destination (2–80 letters).");
+            return;
+        }
+        if(hotelName && (hotelName.length<2||hotelName.length>80||
+          !/^[\\p{L}\\p{M}\\p{N}\\s.'&-]+$/u.test(hotelName))){
+            setDateError("Enter a valid hotel name (2–80 characters).");
+            return;
+        }
+        if(selectedCountry && !/^[A-Z]{2}$/.test(selectedCountry)){
+            setDateError("Choose a valid country.");
+            return;
+        }
+        if(Boolean(checkin)!==Boolean(checkout)){
+            setDateError("Choose both check-in and check-out dates, or leave both empty.");
+            return;
+        }
+        if(checkin){
+            const from=new Date(checkin+"T00:00:00Z");
+            const to=new Date(checkout+"T00:00:00Z");
+            const nights=(to.getTime()-from.getTime())/86400000;
+            if(!Number.isFinite(nights)||!Number.isFinite(from.getTime())||
+               from.toISOString().slice(0,10)!==checkin ||
+               !Number.isFinite(to.getTime())||to.toISOString().slice(0,10)!==checkout||
+               checkin<new Date().toISOString().slice(0,10)||nights<1||nights>90){
+                setDateError("Choose valid future dates for a stay of 1–90 nights.");
+                return;
+            }
+        }
+        if(!Number.isSafeInteger(guests)||guests<1||guests>20){
+            setDateError("Choose 1–20 adult guests.");
+            return;
+        }
         setNameFilter(hotelName);
         setCategory("");
         setRequestedDestination("");
         setRequestedCity(city);
         setRequestedCountry(selectedCountry);
+        document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
     const exploreIndia = (city = "") => {
