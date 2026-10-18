@@ -14,7 +14,7 @@ test("hotel landing page never manufactures hotel data or rates", () => {
 
 test("hotel results route renders the real listings component", () => {
   const page = read("src/app/hotels/results/page.tsx");
-  assert.match(page, /<HotelResults city=\{city\}/);
+  assert.match(page, /<HotelResults scope=\{\{/);\n  assert.match(page, /city, destination, name, country, category, sort, source/);
 });
 
 test("hotel API limits public projection and does not invent prices", () => {
