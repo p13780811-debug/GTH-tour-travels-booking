@@ -42,7 +42,7 @@ test("Hotel cards and detail never repeat shared illustrative photos",()=>{
  const results=read("src/app/hotels/results/HotelResults.tsx");
  const detail=read("src/app/hotels/stay/[id]/page.tsx");
  const visual=read("src/components/hotel/HotelStayVisual.tsx");
- assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/Original property photo not available/);
  assert.match(image,/source-attributed property image/);
  assert.match(image,/onError=\{\(\)=>setFailed\(true\)\}/);
  for(const content of [list,results,visual,image]){
