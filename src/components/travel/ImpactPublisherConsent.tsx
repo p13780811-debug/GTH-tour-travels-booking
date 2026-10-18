@@ -36,6 +36,10 @@ export function ImpactPublisherConsent(){
   return()=>{window.removeEventListener(EVENT,sync);window.removeEventListener("storage",sync);};
  },[]);
  useEffect(()=>{
+  // Client navigation retains third-party scripts; unload when leaving Travel.
+  if(!active&&document.querySelector('script[data-gth-impact="publisher"]')){
+   location.reload();return;
+  }
   if(!active||choice!=="allow")return;
   const u=new URL(IMPACT_STAT_SCRIPT);
   if(u.protocol!=="https:"||u.hostname!=="utt.impactcdn.com")return;
