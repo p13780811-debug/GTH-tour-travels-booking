@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import socket
 from urllib.robotparser import RobotFileParser
 
 import requests
@@ -19,6 +20,9 @@ def main():
     with requests.Session() as session:
         session.headers.update({"User-Agent": UA, "Accept": "application/json,text/plain;q=0.9"})
         try:
+            report["phase"] = "dns"
+            socket.getaddrinfo("maharerait.maharashtra.gov.in", 443, type=socket.SOCK_STREAM)
+            report["phase"] = "robots"
             robots = session.get(ORIGIN + "/robots.txt", timeout=25, allow_redirects=False)
             report["robots_status"] = robots.status_code
             if robots.status_code not in (200, 404) or (robots.status_code == 200 and "html" in robots.headers.get("Content-Type", "").lower()):
@@ -30,6 +34,7 @@ def main():
                 report["outcome"] = "robots_disallowed"
                 return report
             time.sleep(max(5, policy.crawl_delay(UA) or policy.crawl_delay("*") or 0))
+            report["phase"] = "detail"
             response = session.post(ORIGIN + PATH, json={"projectId": "4"}, timeout=35, allow_redirects=False)
             report.update(detail_status=response.status_code, content_type=response.headers.get("Content-Type", ""))
             if response.status_code != 200:
@@ -52,8 +57,9 @@ def main():
                 return type(value).__name__
             report["response_shape"] = shape(payload)
             report["outcome"] = "public_json_received"
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError, OSError) as exc:
             report["outcome"] = "source_connection_or_json_failure"
+            report["error_type"] = type(exc).__name__
     return report
 
 

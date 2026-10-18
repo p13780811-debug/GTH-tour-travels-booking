@@ -48,7 +48,10 @@ def validate_url(url: str, hosts: set[str] | frozenset[str], resolve=True):
 
 
 class Http:
-    def __init__(self, limiter: RateLimiter, user_agent: str, retries=3, session=None):
+    def __init__(self, limiter: RateLimiter, user_agent: str, retries=3, session=None, request_budget=250):
+        if not 1 <= request_budget <= 20_000:
+            raise IngestionError("HTTP request budget must be between 1 and 20000")
+        self.request_budget = request_budget
         self.limiter, self.user_agent = limiter, user_agent
         self.session = session or requests.Session()
         self.session.headers.update({"User-Agent": user_agent, "Accept": "text/html,application/json;q=0.9,*/*;q=0.8"})
@@ -59,16 +62,16 @@ class Http:
         self.robots = {}
         self.request_count = 0
 
-    def request(self, url, *, hosts, method="GET", data=None, max_bytes=4_000_000, allow_404=False):
+    def request(self, url, *, hosts, method="GET", data=None, json_body=None, max_bytes=4_000_000, allow_404=False):
         retry, redirects = self.retry, 0
         while True:
             validate_url(url, hosts)
             self.limiter.wait()
             self.request_count += 1
-            if self.request_count > 250:
+            if self.request_count > self.request_budget:
                 raise IngestionError("Per-run HTTP request budget exceeded")
             try:
-                response = self.session.request(method, url, data=data, timeout=(10, 35), allow_redirects=False, stream=True)
+                response = self.session.request(method, url, data=data, json=json_body, timeout=(10, 35), allow_redirects=False, stream=True)
             except requests.RequestException:
                 try:
                     retry = retry.increment(method=method, error=ProtocolError("Source connection failure"))
@@ -78,6 +81,9 @@ class Http:
                 continue
             status = response.status_code
             if status in (301, 302, 307, 308):
+                if method != "GET":
+                    response.close()
+                    raise IngestionError("Public POST endpoint redirected; no payload was replayed")
                 target = urljoin(url, response.headers.get("Location", ""))
                 response.close()
                 if not target or target == url or redirects >= 3:

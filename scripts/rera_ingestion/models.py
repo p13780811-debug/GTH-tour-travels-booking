@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 OFFICIAL_HOSTS = frozenset({"maharera.maharashtra.gov.in", "www.maharera.maharashtra.gov.in", "maharerait.maharashtra.gov.in"})
 SEARCH_URL = "https://www.maharera.maharashtra.gov.in/projects-search-result"
 CLUSTERS = ("Andheri", "Borivali", "Kurla", "Dombivli", "Thane West", "Palava")
-DISTRICTS = ("Mumbai Suburban", "Thane")
+DISTRICTS = ("Mumbai Suburban", "Thane", "Mumbai City")
 ALIASES = {
     "rera_id": {"rera id", "rera number", "rera no", "maharera registration number", "maharera registration no", "registration number", "registration no"},
     "project_name": {"project name", "name of project", "title"},
@@ -109,7 +109,7 @@ def unit_types(value: object) -> list[str]:
 def cluster_for(locality: str, address: str, district: str) -> str | None:
     haystack = key(locality + " " + address)
     haystack = re.sub(r"\b(?:dombivali|dombiwali)\b", "dombivli", haystack)
-    candidates = CLUSTERS[:3] if district == DISTRICTS[0] else CLUSTERS[3:]
+    candidates = CLUSTERS[:3] if district == "Mumbai Suburban" else CLUSTERS[3:] if district == "Thane" else ()
     # Palava is more specific than its wider Dombivli belt.
     for cluster in sorted(candidates, key=lambda x: (x != "Palava", -len(x))):
         if re.search(r"\b" + re.escape(key(cluster)) + r"\b", haystack):
@@ -152,7 +152,7 @@ class Project(BaseModel):
     def validate_record(self):
         if self.district not in DISTRICTS:
             raise ValueError("Outside target districts")
-        expected = "P518" if self.district == "Mumbai Suburban" else "P517"
+        expected = {"Mumbai Suburban": "P518", "Thane": "P517", "Mumbai City": "P519"}[self.district]
         if not self.rera_id.startswith(expected):
             raise ValueError("Registration prefix and district disagree")
         if self.min_carpet_sqft and self.max_carpet_sqft and self.min_carpet_sqft > self.max_carpet_sqft:
@@ -185,7 +185,7 @@ def mapped_row(headers: list[str], values: list[str]) -> tuple[dict, int]:
 
 
 def normalize(raw: dict, source_url: str = SEARCH_URL) -> Project:
-    district = {"mumbai suburban": "Mumbai Suburban", "mumbai suburb": "Mumbai Suburban", "thane": "Thane"}.get(key(raw.get("district")))
+    district = {"mumbai suburban": "Mumbai Suburban", "mumbai suburb": "Mumbai Suburban", "mumbai city": "Mumbai City", "thane": "Thane"}.get(key(raw.get("district")))
     if not district:
         raise IngestionError("Target district must be explicitly recorded")
     name = text(raw.get("project_name"))
@@ -216,7 +216,7 @@ def public_payload(p: Project) -> dict:
     # Zero/null placeholders never become source facts or AI verification.
     data.update(title=p.project_name, developer=p.developer_name, builder_name=p.developer_name,
         slug=slug_for(p.project_name, p.rera_id), country="India", state="Maharashtra",
-        city="Mumbai" if p.district == "Mumbai Suburban" else "Thane", location=p.locality or p.district,
+        city="Thane" if p.district == "Thane" else "Mumbai", location=p.locality or p.district,
         source_type="registry", ingestion_source="MahaRERA Mumbai-Thane importer v1", verified=False, ai_score=0,
         official_source_url=p.source_url, official_source_reference=p.rera_id)
     if p.latitude is not None:

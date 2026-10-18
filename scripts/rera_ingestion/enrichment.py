@@ -16,7 +16,8 @@ from .sources import read_file
 
 OSM_ATTRIBUTION = "© OpenStreetMap contributors; ODbL 1.0; https://www.openstreetmap.org/copyright"
 # Search envelopes only, never fallback property coordinates.
-BOUNDS = {"Mumbai Suburban": (19.00, 72.75, 19.32, 73.02), "Thane": (19.00, 72.90, 19.38, 73.32)}
+BOUNDS = {"Mumbai Suburban": (19.00, 72.75, 19.32, 73.02), "Thane": (19.00, 72.90, 19.38, 73.32),
+          "Mumbai City": (18.88, 72.75, 19.06, 72.94)}
 SAFE_TAGS = {"name", "official_name", "alt_name", "addr:suburb", "addr:city", "addr:postcode", "building", "ref:rera", "ref:IN:RERA"}
 COMMERCIAL_LICENSES = {"CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "owner-authorized", "Pexels License"}
 

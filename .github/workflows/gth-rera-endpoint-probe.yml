@@ -5,6 +5,10 @@ on:
     branches: [gth-mumbai-thane-rera-ingestion]
     paths:
       - scripts/probe_rera_endpoint.py
+      - scripts/ingest_rera_endpoints.py
+      - scripts/rera_ingestion/**
+      - scripts/requirements-rera.lock
+      - tests/test_mumbai_thane_*.py
       - .github/workflows/gth-rera-endpoint-probe.yml
   workflow_dispatch:
 
@@ -12,6 +16,17 @@ permissions:
   contents: read
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements-rera.lock
+      - run: python -m unittest discover -s tests -p 'test_mumbai_thane_*.py' -v
+
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -20,7 +35,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install requests==2.34.2
+      - run: python -m pip install -r scripts/requirements-rera.lock
       - name: Check public source without authentication or database writes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

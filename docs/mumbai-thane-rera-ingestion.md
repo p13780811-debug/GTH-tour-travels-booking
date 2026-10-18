@@ -1,8 +1,36 @@
-# Mumbai Suburban and Thane registry ingestion
+# Mumbai and Thane registry ingestion
 
 Entrypoint: `scripts/ingest_mumbai_thane_rera.py` (Python 3.10+).
 
 This extends the existing source-aware registry pipeline without replacing the `properties` table, approved UI, global CSS or existing importer. Missing information stays null. A RERA registration is not a GTH/AI verification, ownership certification, current inventory confirmation or media license.
+
+## Direct endpoint bulk engine: 1,000-project target and resume
+
+Bulk entrypoint: `scripts/ingest_rera_endpoints.py`. It reuses the same transport, validators and protected 50-row Supabase sink. The original `backend/MahaRERA` Python files were not present in the checked repository/branches; this is a reconstructed collector using the exact general-details endpoint from the user's saved endpoint list and the previously shared `POST {"projectId":"4"}` request shape.
+
+```bash
+# Private execution host; no portal API subscription/key or CSV export required.
+python scripts/ingest_rera_endpoints.py \
+  --limit 1000 --id-start 1 --id-end 20000 --delay 5 \
+  --fetch-budget 2500 --run-dir .gth-rera/endpoint-bulk
+
+# Same checkpoint and range resume completed project IDs, including after interruption.
+# With the existing server-only database variables and GTH_INGESTION_ENABLED=true:
+python scripts/ingest_rera_endpoints.py \
+  --limit 1000 --id-start 1 --id-end 20000 --delay 5 \
+  --fetch-budget 2500 --run-dir .gth-rera/endpoint-bulk \
+  --commit --expected-project-ref dqprqjmhxjnrllczqyhz
+```
+
+The numeric range is an explicit bounded public-ID candidate range, **not evidence that every number is a project**. If the earlier `valid_rera_ids.txt` contains numeric internal project IDs, use `--ids-file /private/valid-project-ids.txt` to avoid unnecessary discovery requests. Registration references such as `P517…` are not internal project IDs and are never converted into them. No unsupported search/list endpoint or undocumented district payload is invented.
+
+Only explicit **Mumbai Suburban, Mumbai City and Thane** district records are retained. Other districts are counted and discarded. Missing district, mismatched project ID, conflicting identities, changed schema, authorization/session responses or unreadable robots stop the run without marking the failed ID complete. Known legacy district-prefix consistency is required; a new registration format requires a separately validated mapping. The adapter currently accepts explicitly named project/legal-address fields; its live response schema must be confirmed before treating the source as operational.
+
+`--limit 1000` means 1,000 distinct in-scope registry projects in this checkpoint. Existing database IDs may be among them; it does not promise 1,000 new listings or 1,000 records in a single HTTP response. At five-second pacing, even 1,000 successful detail requests take at least about 83 minutes, plus district misses/retries/database operations. The five-hour invocation budget pauses safely; rerun the same command and directory to continue. Exit 0 means target collected, exit 3 means safely paused below target, exit 2 means source/configuration failure. Every successful detail is atomically checkpointed before the next fetch. Commits stream at 50 rows; each completed batch is acknowledged separately. After an uncertain write, rerunning reconciles through the existing conflict-safe sink.
+
+The checkpoint contains normalized public fields only in a private SQLite file. It is bound to the source selection and selected database, protected by an OS writer lock, and not committed/uploaded as a public artifact. Keep it on persistent private storage when moving between cloud workers; a fresh ephemeral GitHub runner alone does not retain it. No recurring bulk schedule is enabled by this change.
+
+No raw endpoint response, portal token, private contact/bank field, guessed unit size, price or stock project photo is stored. Registry/GTH/AI verification is not auto-promoted by this reconstructed adapter. The separate existing CSV/HTML entrypoint below remains compatible.
 
 ## Setup
 
@@ -138,6 +166,8 @@ Tests use explicitly synthetic in-memory fixtures, never production inserts. The
 
 Initial execution on 18 October 2026 UTC: direct official HTTP probe returned 503; this managed runtime also lacked direct DNS resolution for the official host during the hardened collector run. The available older 10-row CSV produced nine valid district records plus one invalid row, but none had a confirmed target-cluster locality. The scoped run therefore wrote **zero** records. No new records or photos were represented as successfully imported or verified.
 
-Refresh the authorized locality-bearing source export to supply real data; changing an API key cannot fix missing source facts. Run summaries are local-only in `.gth-rera/last-run.json` by default. Keep exports and media-review manifests in private storage, not a public repository.
+The endpoint engine removes manual CSV export as a prerequisite for bulk collection. Source availability remains a real execution requirement: the 18 October 2026 UTC GitHub-hosted public endpoint probe also failed before receiving project JSON; its run is [39169678128](https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/39169678128). The cloud environment reported both database secret variables absent; no values were accessed or logged. The database audit found 812 existing `rera` rows, including 116 Mumbai Suburban and 90 Thane rows; these are existing records, not new imports from this work. No 1,000-record live success is claimed.
+
+Run summaries are private under `.gth-rera/` by default. Keep source exports, numeric ID lists, checkpoints and media-review manifests out of a public repository.
 
 This data change does not deploy the website. `vercel.json` disables automatic deployment for its dedicated ingestion branch; production deployment behavior for other branches is unchanged.

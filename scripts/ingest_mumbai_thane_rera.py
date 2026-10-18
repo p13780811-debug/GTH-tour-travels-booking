@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,15 +60,25 @@ def arguments(argv=None):
 
 
 def write_json(path: Path, value):
+    if any(p.is_symlink() for p in (path.parent, *path.parent.parents)):
+        raise IngestionError("Output directories cannot contain symlinks")
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     if path.is_symlink():
         raise IngestionError("Output symlinks are forbidden")
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        os.chmod(temporary, 0o600)
-        json.dump(value, handle, indent=2, ensure_ascii=False)
-        handle.write("\n")
-    temporary.replace(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                prefix=path.name + ".", suffix=".tmp", delete=False) as handle:
+            temporary = Path(handle.name)
+            os.chmod(temporary, 0o600)
+            json.dump(value, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(path)
+    finally:
+        if temporary and temporary.exists():
+            temporary.unlink()
 
 
 def main(argv=None):
