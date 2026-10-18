@@ -76,7 +76,7 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
     for(const item of attractions.value.data??[]){
       if(!/^Q[1-9][0-9]{0,14}$/.test(item.wikidata_qid)||
         typeof item.name!=="string"||item.name.length<3||
-        typeof item.description!=="string"||item.description.trim().length<35||
+        typeof item.description!=="string"||item.description.trim().length<90||
         item.wikidata_url!=="https://www.wikidata.org/wiki/"+item.wikidata_qid)continue;
       output.push({url:base+"/attractions/"+item.wikidata_qid,changeFrequency:"monthly",priority:0.35});
     }

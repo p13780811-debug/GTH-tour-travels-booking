@@ -109,7 +109,7 @@ def country_time_zones():
     return found
 
 
-def select_scheduled_region(regions, now=None):
+def select_scheduled_region(regions, now=None, status=None):
     """Choose one single-country extract in its representative local 01-06h.
 
     UTC regional fallback covers missing IANA timezone mappings. Selection
@@ -140,9 +140,49 @@ def select_scheduled_region(regions, now=None):
     candidates = local_night or [r for r in regions if r["region"].split("/", 1)[0] in allowed]
     if not candidates:
         raise ValueError("No licensed source in this UTC region window")
-    # Advance by one on each day, avoiding a fixed subset of busy countries.
+    # With signed DB receipts, finish partial extracts first, then visit regions
+    # never scanned, then refresh the oldest completed extract. One source/hour.
+    # No in-memory or GitHub runner-local cursor may silently reset progress.
+    if status is not None:
+        def priority(item):
+            run = status.get(item["region"])
+            if run and not run["complete"]:
+                return (0, run["last_completed_at"], item["region"])
+            if run is None:
+                return (1, "", item["region"])
+            return (2, run["last_completed_at"], item["region"])
+        return min(candidates, key=priority), group
+    # Offline/backward compatible selection for tests and standalone previews.
     slot = (utc.date().toordinal() + utc.hour) % len(candidates)
     return candidates[slot], group
+
+def read_source_status(path):
+    """Read a bounded, authenticated gateway status snapshot from runner disk."""
+    if path is None:
+        return None
+    if path.stat().st_size > 300000:
+        raise ValueError("Source status too large")
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    rows = doc.get("regions") if isinstance(doc, dict) else None
+    if not isinstance(rows, list) or len(rows) > 3000:
+        raise ValueError("Invalid source status")
+    result = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("Invalid source status row")
+        region = row.get("source_region")
+        offset = row.get("next_offset")
+        complete = row.get("complete")
+        completed_at = row.get("last_completed_at")
+        if (not isinstance(region, str) or not PATH.fullmatch(region)
+                or type(offset) is not int or not 0 <= offset <= 10000000
+                or type(complete) is not bool or not isinstance(completed_at, str)
+                or len(completed_at) > 80 or (not complete and offset == 0)
+                or region in result):
+            raise ValueError("Invalid region resume marker")
+        result[region] = {"next_offset": offset, "complete": complete,
+                          "last_completed_at": completed_at}
+    return result
 
 
 def scheduled_window_label(group):
@@ -154,6 +194,7 @@ def main():
     parser.add_argument("--slot", type=int, default=0)
     parser.add_argument("--auto-window", action="store_true")
     parser.add_argument("--region")
+    parser.add_argument("--state-file", type=Path)
     parser.add_argument("--env-file", required=True)
     args = parser.parse_args()
     if args.auto_window and args.region:
@@ -166,25 +207,29 @@ def main():
     if len(raw) > 2_500_000:
         raise ValueError("Geofabrik registry exceeds reviewed size")
     regions = eligible_regions(json.loads(raw))
+    status = read_source_status(args.state_file)
     item = None
     if args.region:
         item = next((r for r in regions if r["region"] == args.region), None)
         if item is None:
             raise ValueError("Region is not in reviewed official Geofabrik index")
     elif args.auto_window:
-        item, group = select_scheduled_region(regions)
+        item, group = select_scheduled_region(regions, status=status)
         print(json.dumps({"utc_window": scheduled_window_label(group), "auto": True}))
     else:
         item = regions[args.slot % len(regions)]
+    previous = status.get(item["region"]) if status is not None else None
+    offset = previous["next_offset"] if previous and not previous["complete"] else 0
     with open(args.env_file, "a", encoding="utf-8") as f:
         for key, value in (("REGION", item["region"]), ("COUNTRY_CODE", item["country_code"]),
                            ("COUNTRY_NAME", item["country_name"]), ("PBF_URL", item["url"]),
-                           ("REGISTERED_REGION_COUNT", str(len(regions)))):
+                           ("REGISTERED_REGION_COUNT", str(len(regions))), ("START_OFFSET", str(offset))):
             if "\n" in value or "\r" in value:
                 raise ValueError("Untrusted registry newline")
             f.write(key + "=" + value + "\n")
     print(json.dumps({"region": item["region"], "country_code": item["country_code"],
-                      "registered_leaf_extracts": len(regions), "source": INDEX}))
+                      "registered_leaf_extracts": len(regions), "start_offset": offset,
+                      "source": INDEX}))
 
 
 if __name__ == "__main__":

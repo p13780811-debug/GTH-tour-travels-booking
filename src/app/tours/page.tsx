@@ -35,7 +35,7 @@ function priceLabel(value: number | null, code: string | null): string {
 
 export default async function ToursPage({ searchParams }: Props) {
   const filters = await searchParams;
-  const [response,cityData] = await Promise.all([searchTours(filters),listMappedCities({pageSize:30}).catch(()=>null)]);
+  const [response,cityData] = await Promise.all([searchTours(filters),listMappedCities({pageSize:48}).catch(()=>null)]);
   const tours = response.items.slice().sort((a, b) =>
     (a.price_numeric ?? Infinity) - (b.price_numeric ?? Infinity) ||
     a.title.localeCompare(b.title)

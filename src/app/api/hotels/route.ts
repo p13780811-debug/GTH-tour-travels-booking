@@ -180,10 +180,10 @@ export async function GET(req: Request) {
     const osm = catalogRows.filter((hotel) => typeof hotel.name === "string" && hotel.name.trim())
       .map((hotel) => ({
         id: "osm:" + hotel.source_id.replace("/", "-"), name: hotel.name,
-        city:hotel.city||hotel.region||(isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Near "+matchingCity+" (mapped location)":"City not specified"),
+        city:hotel.city||(isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Near "+matchingCity+" (mapped location)":hotel.region?"Region: "+hotel.region:"City not specified"),
         region:hotel.region,
         country:hotel.country_code,
-        location_scope:hotel.city?"OSM city tag":isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Approximate nearby coordinate; no administrative city claim":"Geofabrik extract hint (not verified country)",
+        location_scope:hotel.city?"OSM city tag":isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Approximate nearby coordinate; no administrative city claim":hotel.region?"OSM region tag; city unspecified":"Geofabrik extract hint (not verified country)",
         category:hotel.category, stars: null, image: safeImage(hotel.image_url||commons.get(hotel.source_id)?.image_url), affiliate_link: null,
         image_attribution:!hotel.image_url&&commons.has(hotel.source_id)?{
           author:commons.get(hotel.source_id)!.author,license:commons.get(hotel.source_id)!.license_name,

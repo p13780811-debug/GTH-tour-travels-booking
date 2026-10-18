@@ -4,16 +4,27 @@ import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {useHotelIllustrations} from "@/lib/travel/use-hotel-illustrations";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
+import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
-export default function HotelResults({city,destination,compactRail=false}:{city:string;destination?:string;compactRail?:boolean}){
+export default function HotelResults({city="",destination="",compactRail=false,scope}:{city?:string;destination?:string;compactRail?:boolean;scope?:HotelSearchScope}){
+ const effectiveCity=scope?.city||city;
+ const effectiveDestination=scope?.destination||destination;
+ const effectiveName=scope?.name||"";
+ const effectiveCountry=scope?.country||"";
+ const effectiveCategory=scope?.category||"";
+ const effectiveSort=scope?.sort||"name_asc";
+ const effectiveSource=scope?.source||"all";
+ const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
  const [items,setItems]=useState<Stay[]>([]);
- const illustrations=useHotelIllustrations(city,items.some(h=>!h.image||h.image==="/placeholder.jpg"));
+ const illustrations=useHotelIllustrations(effectiveCity,items.some(h=>!h.image||h.image==="/placeholder.jpg"));
  const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false);
  const [error,setError]=useState(""),[page,setPage]=useState(1),[total,setTotal]=useState(0),[more,setMore]=useState(false);
- const query=(n:number)=>{const p=new URLSearchParams({page:String(n)});
-   if(destination)p.set("destination",destination);else p.set("city",city);return "/api/hotels?"+p;};
+ const query=(n:number)=>"/api/hotels?"+hotelSearchParams({
+ city:effectiveCity,destination:effectiveDestination,name:effectiveName,
+ country:effectiveCountry,category:effectiveCategory,sort:effectiveSort,source:effectiveSource
+ },n);
  useEffect(()=>{
   const controller=new AbortController();
   setItems([]);setLoading(true);setError("");setPage(1);setTotal(0);setMore(false);
@@ -25,7 +36,7 @@ export default function HotelResults({city,destination,compactRail=false}:{city:
   }).catch(()=>{if(!controller.signal.aborted)setError("Hotel listings could not be loaded. Please retry.");})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
   return ()=>controller.abort();
- },[city,destination]);
+ },[effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
  async function loadMore(){
   if(!more||loading||loadingMore)return;setLoadingMore(true);
   try{
@@ -37,19 +48,19 @@ export default function HotelResults({city,destination,compactRail=false}:{city:
    setPage(p=>p+1);setMore(next.length>0&&r.headers.get("X-GTH-Has-More")==="true");setError("");
   }catch{setError("More hotels could not be loaded; retry.");}finally{setLoadingMore(false);}
  }
- if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {city}…</p>;
+ if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {placeLabel}…</p>;
  if(error&&!items.length)return <p role="alert" className="gth-glass rounded-2xl p-6 text-sm">{error}</p>;
  if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
-  <h3 className="text-lg font-semibold">Hotel records for {city} are not imported yet</h3>
+  <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
-  <Link href={"/hotels?city="+encodeURIComponent(city)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
-  <a href={hotelProviderSearchUrl(city)} target="_blank" rel="noopener noreferrer nofollow"
+  <Link href={"/hotels?"+hotelSearchParams({city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,category:effectiveCategory,sort:effectiveSort,source:effectiveSource},1)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
+  <a href={hotelProviderSearchUrl(placeLabel)} target="_blank" rel="noopener noreferrer nofollow"
     className="gth-btn-gold ml-0 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold sm:ml-3">
     Find live rooms on Booking.com <ArrowRight size={16}/>
   </a>
  </div>;
- return <section aria-label={"Hotels in "+city} className="space-y-5">
-  <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {city} · Prices, stars and room availability unverified</p>
+ return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
+  <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
   {illustrations.length>0&&<p className="text-xs leading-5 text-[var(--text-soft)]">Some card photographs illustrate the destination, not the specific hotel. Photos provided by <a href="https://www.pexels.com/" target="_blank" rel="noopener noreferrer nofollow" className="underline">Pexels</a>.</p>}
   {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
     className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
@@ -87,7 +98,14 @@ export default function HotelResults({city,destination,compactRail=false}:{city:
      <div className="mt-auto space-y-3 pt-5">
       <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
       {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
-       <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>Partner booking link not available for this listing; official source and hotel website are in details.</p>}
+       <div className="space-y-2">
+        <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "))}
+          target="_blank" rel="noopener noreferrer nofollow"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+          Search this hotel on Booking.com <ArrowRight size={16}/>
+        </a>
+        <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>External name search only. Confirm the exact property with the provider.</p>
+       </div>}
      </div>
     </div>
    </article>)}

@@ -1,5 +1,7 @@
 import importlib.util
 import pathlib
+import json
+import tempfile
 import unittest
 from datetime import datetime,timezone
 
@@ -56,6 +58,48 @@ class GeofabrikRegistryTests(unittest.TestCase):
         a,_=module.select_scheduled_region(regions,datetime(2026,10,17,0,tzinfo=timezone.utc))
         b,_=module.select_scheduled_region(regions,datetime(2026,10,17,1,tzinfo=timezone.utc))
         self.assertNotEqual(a,b)
+    def test_partial_region_runs_resume_before_new_regions(self):
+        regions=[
+          {"region":"europe/france/ile-de-france","country_code":"FR"},
+          {"region":"europe/germany/bayern","country_code":"DE"},
+        ]
+        state={"europe/france/ile-de-france":{
+          "next_offset":18000,"complete":False,"last_completed_at":"2026-10-17T02:00:00Z"}}
+        item,_=module.select_scheduled_region(
+          regions,datetime(2026,10,17,2,tzinfo=timezone.utc),state)
+        self.assertEqual(item["region"],"europe/france/ile-de-france")
+        state["europe/france/ile-de-france"]["complete"]=True
+        item,_=module.select_scheduled_region(
+          regions,datetime(2026,10,17,2,tzinfo=timezone.utc),state)
+        self.assertEqual(item["country_code"],"DE")
+
+    def test_oldest_region_refreshes_after_all_completed(self):
+        regions=[
+          {"region":"europe/france/ile-de-france","country_code":"FR"},
+          {"region":"europe/germany/bayern","country_code":"DE"},
+        ]
+        state={
+          regions[0]["region"]:{"next_offset":0,"complete":True,"last_completed_at":"2026-10-15T02:00:00Z"},
+          regions[1]["region"]:{"next_offset":0,"complete":True,"last_completed_at":"2026-10-17T02:00:00Z"},
+        }
+        item,_=module.select_scheduled_region(
+          regions,datetime(2026,10,17,2,tzinfo=timezone.utc),state)
+        self.assertEqual(item["country_code"],"FR")
+
+    def test_signed_state_file_validation(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=pathlib.Path(d)/"state.json"
+            data={"regions":[{"source_region":"europe/france/ile-de-france",
+                              "next_offset":18000,"complete":False,
+                              "last_completed_at":"2026-10-18T03:00:00Z"}]}
+            path.write_text(json.dumps(data),encoding="utf-8")
+            state=module.read_source_status(path)
+            self.assertEqual(state["europe/france/ile-de-france"]["next_offset"],18000)
+            data["regions"][0]["next_offset"]=-1
+            path.write_text(json.dumps(data),encoding="utf-8")
+            with self.assertRaises(ValueError):
+                module.read_source_status(path)
+
     def test_no_fabricated_zero_coverage(self):
         with self.assertRaises(ValueError):
             module.resolve({"features":[]})

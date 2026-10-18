@@ -23,7 +23,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
   q:one(raw.q).trim(),city:one(raw.city).trim(),after:one(raw.after),limit:24
  };
  const valid=validFilters(f);
- const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),listMappedCities({pageSize:24})]);
+ const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),listMappedCities({pageSize:48})]);
  const result=places.status==="fulfilled"?places.value:null;
  const stats=progress.status==="fulfilled"?progress.value:null;
  const media=guidePhotos.status==="fulfilled"?guidePhotos.value:new Map();

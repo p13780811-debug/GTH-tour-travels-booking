@@ -7,7 +7,7 @@ import TravelpayoutsCarWidget from "@/components/travel/TravelpayoutsCarWidget";
 
 export const metadata: Metadata = {
   title: "Worldwide Car Rental & Self-Drive Booking | GTH PRO Travel",
-  description: "Plan airport car hire, self-drive rentals, family cars and one-way rentals worldwide. Explore a Travelpayouts partner widget and confirm actual vehicle prices and booking terms with rental providers.",
+  description: "Plan airport car hire, self-drive rentals, family cars and one-way rentals worldwide. Compare QEEQ and Localrent Travelpayouts partner widgets and confirm actual vehicle prices and booking terms with rental providers.",
   alternates: { canonical: "/cars" },
   openGraph: {
     title: "Global Car Rentals & Airport Pickup | GTH PRO",
@@ -37,9 +37,9 @@ const providers = [
   {name:"QEEQ",website:"https://www.qeeq.com/",description:"Explore available vehicle categories, pickup cities and one-way rental conditions."},
 ] as const;
 const faqs = [
-  {q:"Can I book a rental car directly with GTH PRO?",a:"No. GTH PRO provides a planning interface, affiliate partner widget and links to independent booking suppliers. A rental provider confirms the vehicle and completes the reservation."},
+  {q:"Can I book a rental car directly with GTH PRO?",a:"No. GTH PRO provides a planning interface, affiliate partner widgets and links to independent booking suppliers. A rental provider confirms the vehicle and completes the reservation."},
   {q:"Do the search fields automatically transfer to a partner?",a:"Not yet. The GTH PRO rental planner keeps your entered locations and times in the browser. Enter them again within the partner widget or provider website to get actual availability."},
-  {q:"Can I rent in a different country or city?",a:"The planner supports international locations. The embedded widget includes a preset city, which may be editable depending on the provider. Worldwide provider websites offer their own search and geographic coverage."},
+  {q:"Can I rent in a different country or city?",a:"The planner supports international locations. The Localrent widget has a preset country and city, while QEEQ has its own search form. Supported locations depend on the individual supplier."},
   {q:"Can I return the car at another location?",a:"Some suppliers allow one-way returns, subject to availability and possible additional charges. Confirm return location and fees on the supplier website."},
   {q:"Is airport transfer the same as car rental?",a:"No. A car rental generally involves driving yourself; an airport transfer typically includes a driver. You can explore both options through GTH PRO."},
 ] as const;
@@ -57,7 +57,7 @@ export default function CarsPage() {
         <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight md:text-6xl">Rent a car. Explore more of the world.</h1>
         <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
           Plan airport pickup, self-drive holidays, city car hire and one-way journeys.
-          Explore rental providers and confirm actual vehicle availability, full prices and policies directly with the booking partner.
+          Switch between QEEQ and Localrent partner tools and confirm actual vehicle availability, full prices and policies directly with the booking partner.
         </p>
         <nav aria-label="Car rental quick links" className="mt-8 flex flex-wrap gap-3">
           <a href="#rental-planner-heading" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 font-semibold">Plan your rental <ArrowRight size={16}/></a>
@@ -75,7 +75,7 @@ export default function CarsPage() {
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Global rental provider handoff</p>
         <h2 id="worldwide-search-heading" className="mt-3 text-2xl font-semibold">Search rentals worldwide</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          If the featured partner widget is unavailable or starts at the wrong location, open one of these independent rental websites
+          If a featured partner widget is unavailable or has the wrong location, open one of these independent rental websites
           for a location-specific search. These are direct provider links, not guaranteed commission-generating affiliate links.
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">

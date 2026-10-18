@@ -78,3 +78,30 @@ test("Shared source helper exposes unbounded source-ID cursor rather than synthe
  assert.match(src,/\.limit\(limit\+1\)/);
  assert.doesNotMatch(src,/pageRaw|page<100|Math\.random/);
 });
+
+test("Regional source pagination, upsert idempotence, Free quota protection and OIDC state are release-gated",()=>{
+ const sql=read("supabase/migrations/20261018080000_osm_sync_resume_and_idempotence.sql");
+ const wf=read(".github/workflows/gth-osm-attractions-sync.yml");
+ const registry=read("scripts/attractions/geofabrik_registry.py");
+ const importer=read("scripts/attractions/import_osm_attractions.py");
+ const gateway=read("supabase/functions/gth-osm-attractions-ingest/index.ts");
+ const progress=read("src/app/attractions/progress/page.tsx");
+ assert.match(sql,/gth_osm_region_status/);
+ assert.match(sql,/next_offset integer NOT NULL DEFAULT 0/);
+ assert.match(sql,/complete boolean NOT NULL DEFAULT true/);
+ assert.match(sql,/IS DISTINCT FROM/);
+ assert.match(sql,/pg_database_size\(current_database\(\)\)/);
+ assert.match(sql,/GRANT EXECUTE ON FUNCTION public.gth_osm_region_status\(\) TO service_role/);
+ assert.match(wf,/--state-file/);
+ assert.match(wf,/--start-offset "\$START_OFFSET"/);
+ assert.match(wf,/\{"status":true\}/);
+ assert.match(registry,/def read_source_status/);
+ assert.match(registry,/not run\["complete"\]/);
+ assert.match(importer,/region_complete/);
+ assert.match(importer,/resumed_skipped/);
+ assert.match(gateway,/payload.status===true/);
+ assert.match(gateway,/s.next_offset/);
+ assert.match(progress,/Regional extract fully scanned/);
+ assert.match(progress,/Partial region/);
+ assert.doesNotMatch(sql,/DROP TABLE|TRUNCATE TABLE|DELETE FROM public.gth_osm_attractions/i);
+});

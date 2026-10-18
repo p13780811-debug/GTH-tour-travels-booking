@@ -1,4 +1,5 @@
 import {expandedBlogs} from "./blogExpansion";
+import {globalRouteBlogs} from "./blogGlobalRoutes";
 export interface Blog {
   slug: string;
   title: string;
@@ -201,4 +202,5 @@ Create one page containing your travel dates, essential contact details, emergen
 Use [Destinations](/destinations) for inspiration, then arrange [Flights](/flights), [Hotels](/hotels) and [Activities](/activities) through their booking partners. Always independently verify current regulations and availability.`,
   },
   ...expandedBlogs,
+  ...globalRouteBlogs,
 ];

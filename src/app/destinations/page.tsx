@@ -79,7 +79,7 @@ async function loadDestinations(): Promise<Destination[]> {
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const mapped=await listMappedCities({pageSize:24}).catch(()=>null);
+  const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
