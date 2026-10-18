@@ -7,6 +7,7 @@ import HotelStayVisual from "@/components/hotel/HotelStayVisual";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
+import {isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass,ImageOff} from "lucide-react";
@@ -69,6 +70,7 @@ const getHotel=cache(async(id:string)=>{
     ?safeLink(data.source_url):null,
    image:safeImage(data.image_url),imageCredit:null,partner:safeLink(data.affiliate_link,true),lat:null,lon:null,updated:null};
  }
+ if(hotel&&!isDescriptiveHotelName(hotel.name))return null;
  if(hotel?.source==="OpenStreetMap"&&!hotel.image){
   const {data:photo}=await db.from("hotel_catalog_media")
    .select("image_url,author,license_name,license_url,commons_page")
