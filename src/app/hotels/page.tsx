@@ -103,6 +103,13 @@ function HotelsContent() {
     const [checkout,setCheckout]=useState("");
     const [guests,setGuests]=useState(2);
     const [dateError,setDateError]=useState("");
+    const [mobileFiltersOpen,setMobileFiltersOpen]=useState(false);
+    useEffect(()=>{
+        if(!mobileFiltersOpen)return;
+        const dismiss=(event:KeyboardEvent)=>{if(event.key==="Escape")setMobileFiltersOpen(false);};
+        window.addEventListener("keydown",dismiss);
+        return ()=>window.removeEventListener("keydown",dismiss);
+    },[mobileFiltersOpen]);
     const stayParams=new URLSearchParams();
     if(checkin&&checkout){stayParams.set("checkin",checkin);stayParams.set("checkout",checkout);}
     if(Number.isSafeInteger(guests)&&guests>=1&&guests<=20)stayParams.set("adults",String(guests));
@@ -446,13 +453,23 @@ function HotelsContent() {
             {/* ========================================================================= */}
 
             <section className="max-w-7xl mx-auto px-4 py-6">
-                <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
                     {/* ========================================================================= */}
                     {/* LEFT DESKTOP SIDEBAR */}
                     {/* ========================================================================= */}
 
-                    <aside className="hidden xl:block">
-                        <div className="sticky top-24 space-y-5">
+                    {mobileFiltersOpen&&<button type="button" aria-label="Close hotel filter overlay"
+                      className="fixed inset-0 z-40 bg-[var(--bg)] opacity-90 lg:hidden"
+                      onClick={()=>setMobileFiltersOpen(false)}/>}
+                    <aside id="hotel-filter-panel" aria-label="Hotel listing filters"
+                      className={mobileFiltersOpen
+                        ?"fixed inset-y-0 left-0 z-50 w-[min(90vw,350px)] overflow-y-auto border-r border-[var(--border)] bg-[var(--bg)] p-3 shadow-2xl lg:static lg:block lg:w-auto lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+                        :"hidden lg:block"}>
+                        <div className="space-y-5 lg:sticky lg:top-24">
+                            <button type="button" onClick={()=>setMobileFiltersOpen(false)}
+                              className="mb-2 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold lg:hidden">
+                              Close filters
+                            </button>
                             {/* FILTERS */}
                             <div className="gth-glass border border-[var(--border)] rounded-3xl p-5">
                                 <div className="flex items-center gap-2 mb-5">
@@ -480,7 +497,7 @@ function HotelsContent() {
                                       ].map(([value,label])=>
                                         <label key={value} className="flex min-h-10 cursor-pointer items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm">
                                           <input type="radio" name="hotel-accommodation-category" checked={category===value}
-                                            onChange={()=>setCategory(value)} className="accent-[var(--primary)]"/>
+                                            onChange={()=>{setCategory(value);setMobileFiltersOpen(false);}} className="accent-[var(--primary)]"/>
                                           <span>{label}</span>
                                         </label>
                                       )}
@@ -565,6 +582,15 @@ function HotelsContent() {
                     {/* ========================================================================= */}
 
                     <main id="hotel-results" className="min-w-0 scroll-mt-24">
+                        <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
+                            <button type="button" aria-controls="hotel-filter-panel" aria-expanded={mobileFiltersOpen}
+                              onClick={()=>setMobileFiltersOpen(true)}
+                              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold">
+                              <Filter size={16} aria-hidden="true"/> Filter hotels
+                              {category&&<span className="text-xs text-[var(--text-soft)]">· {(category||"").replaceAll("_"," ")}</span>}
+                            </button>
+                            <span className="text-xs text-[var(--text-soft)]">Source-backed listings</span>
+                        </div>
                         <section aria-label="Worldwide live hotel booking search" className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
                             <div className="max-w-xl">
                                 <h2 className="text-base font-semibold">Need real room prices, photos and availability?</h2>
@@ -631,166 +657,54 @@ function HotelsContent() {
                         {!loading && !error && hotels.length === 0 && (
                             <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
                         )}
-                        <div className="space-y-5">
+                        <div className="space-y-4" aria-label="Hotel listing results">
                             {hotels.map((hotel) => (
-                                <div
-                                    key={hotel.id}
-                                    className="group gth-glass border border-[var(--border)] rounded-3xl overflow-hidden hover:scale-[1.01] transition-all"
-                                >
-                                    <div className="flex flex-col lg:flex-row">
-                                        {/* IMAGE */}
-                                        <div className="relative lg:w-[360px] shrink-0 min-h-[240px]">
-                                            <HotelPropertyImage
-                                                src={hotel.image} name={hotel.name}
-                                                className="w-full h-[240px] lg:h-full object-cover"
-                                                placeholderClassName="flex h-[240px] flex-col items-center justify-center gap-3 bg-[var(--bg)] px-6 text-center text-[var(--text-soft)]"
-                                              />
-
-                                                                                        {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-3 py-2 text-[10px] leading-4">
-                                                <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow"
-                                                   className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
-                                                {" · "}
-                                                <a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow"
-                                                   className="underline">{hotel.image_attribution.license}</a>
+                                <article key={hotel.id}
+                                  className="group gth-glass overflow-hidden rounded-2xl border border-[var(--border)] transition-shadow hover:shadow-lg">
+                                    <div className="flex min-w-0 flex-col md:flex-row">
+                                        <div className="relative h-44 w-full shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-52 xl:w-56 2xl:w-60">
+                                            <HotelPropertyImage src={hotel.image} name={hotel.name}
+                                              className="h-full min-h-44 w-full object-cover md:min-h-52"
+                                              placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/>
+                                            {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-2 py-1 text-[10px] leading-4">
+                                                <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
+                                                {" · "}<a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.license}</a>
                                             </div>}
-                                            <div className="absolute top-4 left-4 flex gap-2">
-                                                <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
-                                                    <Diamond size={12} />
-                                                    {(hotel.category||"hotel").replaceAll("_"," ")}
-                                                </div>
-
-                                                <div className="bg-[var(--card)] rounded-full px-3 py-2 text-[10px] font-bold flex items-center gap-1">
-                                                    <Clock3 size={12} />
-                                                    {hotel.affiliate_link ? "Partner booking available" : "GTH PRO directory" }
-                                                </div>
-                                            </div>
                                         </div>
-
-                                        {/* CONTENT */}
-                                        <div className="flex-1 p-5 md:p-6 min-w-0">
-                                            <div className="flex flex-col lg:flex-row lg:justify-between gap-5">
-                                                {/* LEFT */}
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-start gap-3 flex-wrap">
-                                                        <h3 className="text-2xl font-black leading-tight">
-                                                            {hotel.name}
-                                                        </h3>
-
-                                                        <div className="flex items-center gap-1 text-amber-400">
-                                                            {Array.from({ length: hotel.stars ?? 0 }).map(
-                                                                (_, i) => (
-                                                                    <Star
-                                                                        key={i}
-                                                                        size={14}
-                                                                        fill="currentColor"
-                                                                    />
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[var(--text-soft)] text-sm">
-                                                        <div className="flex items-center gap-1">
-                                                            <MapPin size={14} />
-                                                            {hotel.city}
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1">
-                                                            <ShieldCheck size={14} />
-                                                            Verify details with source
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1">
-                                                            <Globe2 size={14} />
-                                                            {hotel.source||"Reviewed provider"}
-                                                        </div>
-                                                    </div>
-
-                                                    <p className="mt-5 text-sm text-[var(--text-soft)]">
-                                                        Category: {(hotel.category||"hotel").replaceAll("_"," ")} · Source: {hotel.source||"Property directory"}
-                                                    </p>
-
-                                                    {/* DESCRIPTION */}
-                                                    <p className="mt-5 text-sm leading-7 text-[var(--text-soft)] max-w-2xl">
-                                                        Property details are shown in GTH PRO. Review the original
-                                                        source and confirm room types, cancellation terms and
-                                                        current availability before reserving.
-                                                    </p>
-                                                </div>
-
-                                                {/* RIGHT */}
-                                                <div className="lg:w-[240px] shrink-0">
-                                                    <div className="gth-glass border border-[var(--border)] rounded-3xl p-5 h-full flex flex-col justify-between">
-                                                        <div>
-                                                            <div className="flex items-center justify-between">
-                                                                <div>
-                                                                    <div className="text-3xl font-black">
-                                                                        {hotel.stars ?? "—"}
-                                                                    </div>
-
-                                                                    <div className="text-xs text-[var(--text-soft)]">
-                                                                        Star grade not verified
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="text-right">
-                                                                    <div className="text-xs text-[var(--text-soft)]">
-                                                                        Reviews
-                                                                    </div>
-
-                                                                    <div className="font-bold">
-                                                                        Not available
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="mt-6">
-                                                                <div className="text-xs text-[var(--text-soft)]">
-                                                                    Price
-                                                                </div>
-
-                                                                <div className="mt-1 text-base font-bold">
-                                                                    Price not independently verified
-                                                                </div>
-
-                                                                <div className="text-xs text-[var(--text-soft)] mt-1">
-                                                                    Live prices appear only when an authorized supplier confirms them
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-6 space-y-3">
-                                                            <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
-                                                              className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
-                                                              View hotel details <ChevronRight size={16}/>
-                                                            </a>
-                                                            {hotel.affiliate_link ? (
-                                                                <a
-                                                                    href={hotel.affiliate_link}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer sponsored"
-                                                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold"
-                                                                >
-                                                                    Continue to partner
-                                                                    <ChevronRight size={16} />
-                                                                </a>
-                                                            ) : (
-                                                                <div className="space-y-2">
-                                                                    <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults:guests})}
-                                                                       target="_blank" rel="noopener noreferrer nofollow"
-                                                                       className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
-                                                                        Search this hotel on Booking.com <ChevronRight size={16}/>
-                                                                    </a>
-                                                                    <p className="text-xs text-[var(--text-soft)]">External name search only. Confirm the exact property, dates and room rates with the provider.</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5 xl:flex-row xl:gap-4">
+                                            <div className="min-w-0 flex-1">
+                                                <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 text-[11px] font-semibold capitalize">
+                                                    {(hotel.category||"hotel").replaceAll("_"," ")}
+                                                </span>
+                                                <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-[var(--text)] md:text-xl">{hotel.name}</h3>
+                                                <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--text-soft)]">
+                                                    <MapPin size={14} className="shrink-0" aria-hidden="true"/>
+                                                    <span className="min-w-0 line-clamp-1">{hotel.city}{hotel.country?", "+hotel.country:""}</span>
+                                                </p>
+                                                <p className="mt-2 text-xs text-[var(--text-soft)]">
+                                                    {hotel.source||"Property directory"} · {hotel.affiliate_link ? "Partner handoff available" : "Directory listing"}
+                                                </p>
+                                                <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">Rates, room availability, star grade and reviews are not independently verified.</p>
+                                            </div>
+                                            <div className="flex w-full shrink-0 flex-col justify-end gap-2 border-t border-[var(--border)] pt-3 xl:w-48 xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0">
+                                                <span className="text-xs font-semibold text-[var(--text-soft)]">Price on provider</span>
+                                                <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
+                                                  className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
+                                                    View hotel details <ChevronRight size={15} aria-hidden="true"/>
+                                                </a>
+                                                {hotel.affiliate_link ? <a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored"
+                                                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] px-3 text-center text-xs font-semibold">
+                                                    Continue to booking partner
+                                                </a> : <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults:guests})}
+                                                   target="_blank" rel="noopener noreferrer nofollow"
+                                                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] px-3 text-center text-xs font-semibold">
+                                                    Search on Booking.com
+                                                </a>}
+                                                {!hotel.affiliate_link&&<p className="text-[11px] leading-4 text-[var(--text-soft)]">External name search only; verify exact property.</p>}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </article>
                             ))}
                         </div>
                         {hasMore && !loading && (

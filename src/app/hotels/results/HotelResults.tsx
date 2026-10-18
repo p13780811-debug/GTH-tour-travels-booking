@@ -91,26 +91,26 @@ export default function HotelResults({city="",destination="",compactRail=false,s
       </div>
     </Link>)}
   </div>}
-  {!compactRail&&  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-   {items.map((hotel)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
-    <div className="relative h-44 bg-[var(--bg-soft)]">
+  {!compactRail&&  <div className="flex flex-col gap-4">
+   {items.map((hotel)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] md:flex-row">
+    <div className="relative h-44 shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-56 lg:w-60">
      <HotelPropertyImage src={hotel.image} name={hotel.name}
-       className="h-full w-full object-cover"
-       placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)]"/>
+       className="h-full min-h-44 w-full object-cover md:min-h-48"
+       placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)] md:min-h-48"/>
      {(!hotel.image||hotel.image==="/placeholder.jpg")&&<span className="sr-only">No verified property photo</span>}
      <span className="absolute left-3 top-3 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold capitalize">{(hotel.category||"hotel").replaceAll("_"," ")}</span>
     </div>
     <div className="flex flex-1 flex-col p-5">
-     <h3 className="line-clamp-2 text-lg font-semibold">{hotel.name}</h3>
+     <h3 className="line-clamp-2 text-lg font-semibold md:text-xl">{hotel.name}</h3>
      <p className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={15}/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
-     <div className="mt-auto space-y-3 pt-5">
-      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
-      {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
+     <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
+      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
+      {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
        <div className="space-y-2">
         <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "))}
           target="_blank" rel="noopener noreferrer nofollow"
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
           Search this hotel on Booking.com <ArrowRight size={16}/>
         </a>
         <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>External name search only. Confirm the exact property with the provider.</p>

@@ -93,3 +93,18 @@ test("hotel sidebar does not present generic amenities as verified property feat
   assert.match(page,/not verified amenities of any specific hotel/);
   assert.doesNotMatch(page,/Infinity Pool|Breakfast Included|Fitness Club/);
 });
+
+test("Booking-style responsive hotel list uses desktop filter sidebar and mobile filter drawer",()=>{
+ const page=read("src/app/hotels/page.tsx");
+ const results=read("src/app/hotels/results/HotelResults.tsx");
+ assert.match(page,/lg:grid-cols-\[260px_minmax\(0,1fr\)\]/);
+ assert.match(page,/aria-controls="hotel-filter-panel"/);
+ assert.match(page,/aria-expanded=\{mobileFiltersOpen\}/);
+ assert.match(page,/Close filters/);
+ assert.match(page,/aria-label="Hotel listing results"/);
+ assert.match(page,/flex min-w-0 flex-col md:flex-row/);
+ assert.match(page,/Original hotel photos are shown|Original hotel photos are shown when supported|Original hotel photos/);
+ assert.match(results,/className="flex flex-col gap-4"/);
+ assert.match(results,/md:flex-row/);
+ assert.doesNotMatch(results,/sm:grid-cols-2 xl:grid-cols-3/);
+});
