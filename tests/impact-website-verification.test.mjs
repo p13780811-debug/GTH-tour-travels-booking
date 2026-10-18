@@ -5,7 +5,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const root=read("src/app/layout.tsx");
 const wrapper=read("src/components/LayoutWrapper.tsx");
 test("Impact/Omio website verification exact supplied meta tag, hoisted into head by React",()=>{
-  assert.match(wrapper,/<meta name="impact-site-verification" value="94cbf0e7-14b4-445d-94c5-8edd0ef466a2"\s*\/>/);
+  assert.ok(wrapper.includes('<meta name="impact-site-verification" {...{value:"94cbf0e7-14b4-445d-94c5-8edd0ef466a2"}} />'));
   assert.equal((wrapper.match(/name="impact-site-verification"/g)||[]).length,1);
   assert.match(root,/<LayoutWrapper>/);
   assert.doesNotMatch(root,/impact-site-verification|utt\.impactcdn\.com|impactStat\(/);
