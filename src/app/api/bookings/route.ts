@@ -1,13 +1,30 @@
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import {
   cleanDate,
   cleanEmail,
   cleanPositiveInteger,
   cleanString,
 } from "@/lib/security/validators";
+
+/** Server-only writer. Anonymous INSERT RLS policies stay CLOSED. */
+function bookingWriter(){
+  const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if(!url||!key)return null;
+  try{
+    const parsed=new URL(url);
+    if(parsed.protocol!=="https:"||!parsed.hostname.endsWith(".supabase.co"))return null;
+    return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+  }catch{return null;}
+}
+
+function safeHotelId(value:string):boolean{
+  return /^osm:(?:node|way|relation)-[0-9]{1,20}$/.test(value) ||
+    /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(value);
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +37,7 @@ export async function POST(req: Request) {
     const checkout = cleanDate(body?.checkout);
     const guests = cleanPositiveInteger(body?.guests, { min: 1, max: 20 });
 
-    if (!hotelId || !fullName || !email || !checkin || !checkout || !guests) {
+    if (!hotelId || !safeHotelId(hotelId) || !fullName || !email || !checkin || !checkout || !guests) {
       return NextResponse.json({ error: "Invalid booking data" }, { status: 400 });
     }
 
@@ -43,7 +60,22 @@ export async function POST(req: Request) {
     }
 
     await enforceRateLimit(req, "bookings");
-    const { error } = await supabase
+    const db=bookingWriter();
+    if(!db)return NextResponse.json({error:"Booking request service unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});
+    // Only a known public hotel or independent OSM source may receive a request.
+    if(hotelId.startsWith("osm:")){
+      const sourceId=hotelId.slice(4).replace("-", "/");
+      const {data,error}=await db.from("hotel_catalog").select("source_id")
+        .eq("source_id",sourceId).maybeSingle();
+      if(error)return NextResponse.json({error:"Hotel lookup unavailable"},{status:503});
+      if(!data)return NextResponse.json({error:"Hotel not found"},{status:404});
+    }else{
+      const {data,error}=await db.from("hotels").select("id")
+        .eq("id",hotelId).eq("is_public",true).eq("media_rights_verified",true).maybeSingle();
+      if(error)return NextResponse.json({error:"Hotel lookup unavailable"},{status:503});
+      if(!data)return NextResponse.json({error:"Hotel not found"},{status:404});
+    }
+    const { error } = await db
       .from("bookings")
       .insert([
         {
