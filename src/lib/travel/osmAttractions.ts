@@ -7,6 +7,7 @@ export const ATTRACTION_TYPES = [
 const CATEGORY = new Set<string>(ATTRACTION_TYPES);
 const ID = /^(node|way|relation)\/[1-9][0-9]{0,18}$/;
 const SAFE_SEARCH = /^[\p{L}\p{N} .'-]{0,70}$/u;
+const SAFE_CITY = /^[\p{L}\p{N} .,'()-]{1,80}$/u;
 export type DirectoryFilters = {country?:string; region?:string; category?:string; city?:string; q?:string; after?:string; limit?:number; page?:number};
 export type Place = {source_id:string;name:string;category:string;region_scope:string;city:string|null;country_code:string|null;country_name:string|null;source_url:string;source_license:string;latitude:number;longitude:number};
 export type CountryCount = {country_code:string;country_name:string;records:number;last_source_write:string};
@@ -15,7 +16,7 @@ export function validFilters(f:DirectoryFilters){
   return (!f.country || /^[A-Z]{2}$/.test(f.country)) &&
     (!f.region || ["all","goa","india","world"].includes(f.region)) &&
     (!f.category || CATEGORY.has(f.category)) &&
-    (!f.city || (f.city.length<=100 && SAFE_SEARCH.test(f.city))) &&
+    (!f.city || (f.city.length<=80 && SAFE_CITY.test(f.city))) &&
     (!f.q || SAFE_SEARCH.test(f.q)) &&
     (!f.after || ID.test(f.after)) &&
     (f.limit===undefined || (Number.isInteger(f.limit)&&f.limit>=1&&f.limit<=48)) &&

@@ -5,6 +5,8 @@ import {ATTRACTION_TYPES,directoryHref,listPlaces,sourceProgress,validFilters,ty
 import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
+import {listMappedCities} from "@/lib/travel/mappedCities";
+import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
@@ -21,7 +23,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
   q:one(raw.q).trim(),city:one(raw.city).trim(),after:one(raw.after),limit:24
  };
  const valid=validFilters(f);
- const [places,progress,guidePhotos]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]))]);
+ const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),listMappedCities({pageSize:24})]);
  const result=places.status==="fulfilled"?places.value:null;
  const stats=progress.status==="fulfilled"?progress.value:null;
  const media=guidePhotos.status==="fulfilled"?guidePhotos.value:new Map();
@@ -70,6 +72,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
     <Link href="/attractions/progress" className="underline">Countries & sync history</Link>
    </div>
    <GuideDiscoveryRails media={media} countries={stats?.countries??[]}/>
+   <MappedCityDiscovery cities={mappedCities.status==="fulfilled"?mappedCities.value.items:[]} title="More cities from real public maps"/>
    {!valid?<div role="alert" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">Invalid search. Please remove unsupported symbols or filters.</div>:
     !result?<div role="status" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">Mapped source directory temporarily unavailable. Existing records are not deleted.</div>:
     result.items.length===0?<div role="status" className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--card)] p-6">No imported records match these filters yet. Try another country or category; worldwide regional synchronization is incremental.</div>:

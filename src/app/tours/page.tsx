@@ -8,6 +8,8 @@ import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
 import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import {destinationGeography} from "@/lib/destinations/geography";
 import TourCarousel from "@/components/tours/TourCarousel";
+import {listMappedCities} from "@/lib/travel/mappedCities";
+import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -33,7 +35,7 @@ function priceLabel(value: number | null, code: string | null): string {
 
 export default async function ToursPage({ searchParams }: Props) {
   const filters = await searchParams;
-  const response = await searchTours(filters);
+  const [response,cityData] = await Promise.all([searchTours(filters),listMappedCities({pageSize:30}).catch(()=>null)]);
   const tours = response.items.slice().sort((a, b) =>
     (a.price_numeric ?? Infinity) - (b.price_numeric ?? Infinity) ||
     a.title.localeCompare(b.title)
@@ -98,6 +100,7 @@ export default async function ToursPage({ searchParams }: Props) {
       </section>
 
       <TourAffiliateMarketplace />
+      <MappedCityDiscovery cities={cityData?.items??[]} title="Discover tours through more mapped cities"/>
       <OSMAttractionsRail region={filters.city&&["goa","panaji","margao"].includes(filters.city.toLowerCase())?"goa":undefined} countryName={filters.city?destinationGeography(filters.city.toLowerCase()).country:null} city={filters.city||null}/>
       {(!filters.city||["goa","panaji","margao"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="goa"/>}
       {(!filters.city||["mumbai","pune","shirdi","ajanta-ellora"].includes(filters.city.toLowerCase()))&&<OpenAttractionsRail region="maharashtra"/>}

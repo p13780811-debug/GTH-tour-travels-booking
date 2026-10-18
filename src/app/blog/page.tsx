@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { blogs, type Blog } from "@/data/blogs";
+import {listMappedCities} from "@/lib/travel/mappedCities";
+import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const metadata: Metadata = {
   title: "Travel Journal & Guides | GTH PRO",
@@ -49,6 +51,7 @@ export default async function BlogList({ searchParams }: Props) {
     (selected === "All" || article.category === selected)
     && (!query || [article.title, article.description, article.category, article.content].some((value) => value.toLowerCase().includes(query))));
   const lead = blogs[0];
+  const mapped=await listMappedCities({pageSize:24}).catch(()=>null);
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f7f9fd]">
@@ -85,6 +88,7 @@ export default async function BlogList({ searchParams }: Props) {
         </div>
       </section>
 
+      <MappedCityDiscovery cities={mapped?.items??[]} title="Explore real cities before your next trip"/>
       <section id="journal" className="mx-auto max-w-[1400px] scroll-mt-12 px-5 py-12 sm:px-8 md:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
