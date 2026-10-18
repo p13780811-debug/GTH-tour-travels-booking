@@ -104,7 +104,7 @@ test("Booking-style responsive hotel list uses desktop filter sidebar and mobile
  assert.match(page,/aria-label="Hotel listing results"/);
  assert.match(page,/flex min-w-0 flex-col md:flex-row/);
  assert.match(page,/Original hotel photos are shown|Original hotel photos are shown when supported|Original hotel photos/);
- assert.match(results,/className="flex flex-col gap-4"/);
+ assert.match(results,/className="flex min-w-0 flex-col gap-4"/);
  assert.match(results,/md:flex-row/);
  assert.doesNotMatch(results,/sm:grid-cols-2 xl:grid-cols-3/);
 });
