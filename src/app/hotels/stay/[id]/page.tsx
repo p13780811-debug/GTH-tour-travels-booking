@@ -91,8 +91,10 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
 export default async function HotelStay({params,searchParams}:PageProps){
  const {id}=await params;
  const requested=searchParams?await searchParams:{};
- const checkin=firstSearchValue(requested.checkin).slice(0,10);
- const checkout=firstSearchValue(requested.checkout).slice(0,10);
+ const checkinInput=firstSearchValue(requested.checkin);
+ const checkoutInput=firstSearchValue(requested.checkout);
+ const checkin=/^\d{4}-\d{2}-\d{2}$/.test(checkinInput)?checkinInput:"";
+ const checkout=/^\d{4}-\d{2}-\d{2}$/.test(checkoutInput)?checkoutInput:"";
  const adultString=firstSearchValue(requested.adults);
  const adults=/^(?:[1-9]|1[0-9]|20)$/.test(adultString)?Number(adultString):undefined;
  const requestedStay={checkin,checkout,adults};
