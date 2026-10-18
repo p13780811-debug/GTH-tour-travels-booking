@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import MobileNav from "./MobileNav";
 import ChatBot from "./ChatBot";
 import EcosystemFooter from "./sections/EcosystemFooter";
+import {ImpactPublisherConsent} from "./travel/ImpactPublisherConsent";
 
 export default function LayoutWrapper({
     children,
@@ -23,6 +24,8 @@ export default function LayoutWrapper({
             <div className={`min-h-screen ${isRealEstate || isFlagship ? 'pb-0' : 'pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-0'}`}>
                 {children}
             </div>
+
+            <ImpactPublisherConsent />
 
             {/* ❌ REAL ESTATE → NO global UI */}
             {!isRealEstate && !isFlagship && <MobileNav />}

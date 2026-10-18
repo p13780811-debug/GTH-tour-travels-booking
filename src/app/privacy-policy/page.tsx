@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import RealEstateFooter from "@/components/real-estate/RealEstateFooter"
+import {ImpactConsentSettings} from "@/components/travel/ImpactPublisherConsent"
 
 import {
     ShieldCheck,
@@ -418,6 +419,8 @@ export default function PrivacyPolicy() {
                                 remember user preferences, enhance security and provide
                                 personalized ecosystem recommendations.
                             </p>
+                            <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">On Travel discovery and editorial pages we optionally load the Impact.com publisher STAT tag only after consent. It can transform brand links and record ad/link impressions, page URLs and session identifiers. We do not send account email, booking records or user identity through identifyUser. Consent can be changed below; withdrawing it reloads the page if the tag has been loaded.</p>
+                            <ImpactConsentSettings />
 
                         </section>
 
