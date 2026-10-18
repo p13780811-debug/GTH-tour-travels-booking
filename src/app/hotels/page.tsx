@@ -14,6 +14,8 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
@@ -259,6 +261,15 @@ function HotelsContent() {
         document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
+    const featuredDestinations = [
+      {city:"Mumbai",slug:"mumbai",image:"/images/cities/mumbai.jpg"},
+      {city:"Goa",slug:"goa",image:"/images/cities/goa.jpg"},
+      {city:"Dubai",slug:"dubai",image:"/images/cities/dubai.jpg"},
+      {city:"London",slug:"london",image:"/images/cities/london.jpg"},
+      {city:"Singapore",slug:"singapore",image:"/images/cities/singapore.jpg"},
+      {city:"Tokyo",slug:"tokyo",image:"/images/cities/tokyo.jpg"},
+    ] as const;
+
     const categories = [
         { icon: Hotel, label: "Hotels", href: "/hotels", active: true },
         { icon: Plane, label: "Flights", href: "/flights", active: false },
@@ -398,12 +409,23 @@ function HotelsContent() {
                 </a>
               </div>
               <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
-              <div aria-label="Popular Indian destinations" className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                {["Mumbai","Goa","New Delhi","Bengaluru","Jaipur","Kolkata","Chennai","Candolim"].map(city=>
-                  <button type="button" key={city} onClick={()=>exploreIndia(city)}
-                    className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-medium hover:opacity-80">{city}</button>
+              <nav aria-label="Explore hotel destination guides" className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
+                {featuredDestinations.map(place=>
+                  <Link key={place.slug} href={"/hotels/"+place.slug}
+                    className="group flex w-44 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-48">
+                    <span className="relative block h-24 w-full overflow-hidden">
+                      <Image src={place.image} alt={place.city+" destination scenery"} fill sizes="(max-width: 640px) 176px, 192px"
+                        className="object-cover transition-transform duration-200 group-hover:scale-105"/>
+                    </span>
+                    <span className="flex min-h-12 items-center justify-between gap-2 px-3 text-sm font-semibold">
+                      Hotels in {place.city}<ChevronRight size={15} aria-hidden="true"/>
+                    </span>
+                  </Link>
                 )}
-              </div>
+              </nav>
+              <p className="text-xs text-[var(--text-soft)]">
+                Destination photographs illustrate the cities, not any individual hotel. Property photos are displayed only from the listing source.
+              </p>
             </section>
             <HotelCatalogPulse country={requestedCountry} category={category} onCategory={next=>{
                 activeQueryRef.current = "";
