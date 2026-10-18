@@ -17,6 +17,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const effectiveSource=scope?.source||"all";
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
  const [items,setItems]=useState<Stay[]>([]);
+ const [retryCount,setRetryCount]=useState(0);
  const requestKey=JSON.stringify([effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
  const activeKey=useRef(requestKey);
  activeKey.current=requestKey;
@@ -37,7 +38,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   }).catch(()=>{if(!controller.signal.aborted)setError("Hotel listings could not be loaded. Please retry.");})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
   return ()=>controller.abort();
- },[effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
+ },[effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource,retryCount]);
  async function loadMore(){
   if(!more||loading||loadingMore)return;
   const startedFor=requestKey;
@@ -54,7 +55,13 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   finally{if(activeKey.current===startedFor)setLoadingMore(false);}
  }
  if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {placeLabel}…</p>;
- if(error&&!items.length)return <p role="alert" className="gth-glass rounded-2xl p-6 text-sm">{error}</p>;
+ if(error&&!items.length)return <div role="alert" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">
+  <p>{error}</p>
+  <button type="button" onClick={()=>setRetryCount(n=>n+1)}
+   className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-semibold">
+   Retry hotel listings
+  </button>
+ </div>;
  if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
   <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
