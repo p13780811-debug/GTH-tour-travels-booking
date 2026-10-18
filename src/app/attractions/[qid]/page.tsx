@@ -4,6 +4,9 @@ import {notFound} from "next/navigation";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,Compass,MapPin,ShieldCheck} from "lucide-react";
 import {safeAffiliateUrl,safeCommonsMedia} from "@/lib/travel/open-attractions";
+import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
+import {isIndexableAttraction} from "@/lib/seo/large-sitemaps";
+import JsonLd from "@/components/seo/JsonLd";
 export const dynamic="force-dynamic";
 type Props={params:Promise<{qid:string}>};
 type Data={wikidata_qid:string;name:string;description:string|null;category:string;region_slug:string;country_code:string;
@@ -22,8 +25,13 @@ async function place(qid:string):Promise<Data|null>{
 export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {qid}=await params;const item=await place(qid);
  if(!item)return {title:"Attraction not available | GTH PRO",robots:{index:false,follow:false}};
- return {title:item.name+" | GTH PRO Attractions",description:item.description||"Source-backed community attraction reference with location and image credits.",
- alternates:{canonical:"/attractions/"+qid},robots:{index:true,follow:true}};
+ const index=isPublicLaunch()&&isIndexableAttraction(item);
+ const title=item.name+" | "+item.region_slug+" Attractions | GTH PRO";
+ const description=index?item.description!.slice(0,180):"Community-maintained location details, not verified opening hours, ticket prices or booking availability.";
+ return {title,description,alternates:{canonical:"/attractions/"+qid},robots:{index,follow:index},
+  openGraph:{title,description,url:"/attractions/"+qid,type:"article",...(index&&item.image_url&&item.commons_page&&item.image_license_url?{images:[item.image_url]}:{})},
+  twitter:{card:"summary",title,description}};
+
 }
 export default async function AttractionDetail({params}:Props){
  const {qid}=await params,item=await place(qid);if(!item)notFound();
@@ -36,7 +44,13 @@ export default async function AttractionDetail({params}:Props){
    .eq("is_active",true).eq("approved_by_admin",true).limit(2);
   links=(data||[]).map(x=>({partner:x.partner,url:safeAffiliateUrl(x.approved_url)})).filter((x):x is {partner:string;url:string}=>Boolean(x.url)&&["getyourguide","viator"].includes(x.partner));
  }
- return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]"><div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 md:py-14">
+ const index=isPublicLaunch()&&isIndexableAttraction(item);
+ const breadcrumb={"@context":"https://schema.org","@type":"BreadcrumbList",
+ itemListElement:[{"@type":"ListItem",position:1,name:"Tours & Activities",item:siteUrl("/tours")},
+ {"@type":"ListItem",position:2,name:item.name,item:siteUrl("/attractions/"+qid)}]};
+ return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+ {index&&<JsonLd data={breadcrumb}/>}
+ <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 md:py-14">
   <Link href="/tours" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> Tours & experiences</Link>
   <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]">GTH PRO · Source-backed attraction</p>
   <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{item.name}</h1>
