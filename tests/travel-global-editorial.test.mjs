@@ -4,7 +4,7 @@ import {existsSync, readFileSync} from "node:fs";
 
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const newEditorial = read("src/data/blogGlobalRoutes.ts");
-const articleBlocks = newEditorial.split('  {\n    slug:').slice(1);
+const articleBlocks = newEditorial.split("  {\n").slice(1);
 
 function field(block, name) {
   const line = block.split("\n").find(item => item.trimStart().startsWith(name + ": "));
@@ -44,4 +44,17 @@ test("Destination articles have distinct slugs, matching city assets and complet
     assert.match(image, /^\/images\/cities\/[a-z-]+\.jpg$/);
     assert.ok(existsSync(new URL("../public" + image, import.meta.url)), "Image missing: " + image);
   }
+});
+
+test("Five travel hubs show up to 48 real city tags with country-balanced rails", () => {
+  for (const route of ["tours", "attractions", "guides", "blog", "destinations"]) {
+    const page=read("src/app/" + route + "/page.tsx");
+    assert.ok(page.includes("listMappedCities({pageSize:48})"), route + " window not expanded");
+    assert.ok(page.includes("MappedCityDiscovery"), route + " mapped discovery missing");
+  }
+  const rail=read("src/components/travel/MappedCityDiscovery.tsx");
+  assert.ok(rail.includes("new Map<string,MappedCity[]>()"));
+  assert.ok(rail.includes("diverseCities.map(item=>"));
+  assert.ok(rail.includes("mappedCityLink(item.country_code,item.city)"));
+  assert.doesNotMatch(rail, /Math.random|sampleCities|fakeCity/);
 });
