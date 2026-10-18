@@ -119,6 +119,7 @@ function HotelsContent() {
         motel:"Motels",apartment:"Apartments",resort:"Resorts"
     } as Record<string,string>)[category] ?? "Accommodations");
 
+    const [retryCount,setRetryCount]=useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [page, setPage] = useState(1);
@@ -171,7 +172,7 @@ function HotelsContent() {
         void loadHotels();
         return () => controller.abort();
     // Query key uniquely identifies a filter combination; it resets paging on every change.
-    }, [queryKey]);
+    }, [queryKey,retryCount]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
@@ -595,7 +596,13 @@ function HotelsContent() {
                         <p className="mb-4 text-xs leading-6 text-[var(--text-soft)]">Original hotel photos are shown when supported by the property source. Missing images have an explicit neutral state; unrelated stock photos are not used.</p>
                         {/* HOTEL CARDS */}
                         {loading && <p role="status" className="gth-glass rounded-2xl p-6">Loading hotel listings...</p>}
-                        {error && <p role="alert" className="gth-glass rounded-2xl p-6">{error}</p>}
+                        {error && <div role="alert" className="gth-glass rounded-2xl border border-[var(--border)] p-6">
+                            <p className="text-sm">{error}</p>
+                            <button type="button" onClick={()=>setRetryCount(n=>n+1)}
+                              className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold">
+                              Retry hotel search
+                            </button>
+                          </div>}
                         {!loading && !error && hotels.length === 0 && (
                             <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
                         )}
