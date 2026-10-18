@@ -56,7 +56,8 @@ test("Exact source-linked per-record titles and explicit noindex for unreviewed 
  assert.match(destination,/robots:\{index,follow:index\}/);
  assert.match(attraction,/isPublicLaunch\(\)&&isIndexableAttraction\(item\)/);
  assert.match(attraction,/robots:\{index,follow:index\}/);
- assert.doesNotMatch(attraction,/guaranteed tickets|verified opening hours|cheap tickets/i);
+ assert.doesNotMatch(attraction,/aggregateRating|lowPriceGuarantee|fakeReviews/i);
+ assert.match(attraction,/not verified opening hours/);
  assert.doesNotMatch(helper,/Math\.random|generate fake/i);
 });
 
