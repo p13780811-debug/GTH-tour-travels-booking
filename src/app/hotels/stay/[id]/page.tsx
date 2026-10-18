@@ -14,7 +14,10 @@ import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass,ImageOff} from "lucide-react";
 
 export const dynamic="force-dynamic";
-type PageProps={params:Promise<{id:string}>};
+type PageProps={params:Promise<{id:string}>;searchParams?:Promise<Record<string,string|string[]|undefined>>};
+function firstSearchValue(value:string|string[]|undefined):string{
+ return typeof value==="string"?value:Array.isArray(value)?value[0]||"":"";
+}
 const PARTNER_HOSTS=["booking.com","trip.com","hotellook.com","klook.com","tp.media","tpo.lv"];
 function safeLink(value:unknown,allowPartner=false):string|null{
  if(typeof value!=="string"||value.length>2048)return null;
@@ -85,8 +88,14 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
  return hotelMetadata(await getHotel(id),id,isPublicLaunch());
 }
 
-export default async function HotelStay({params}:PageProps){
+export default async function HotelStay({params,searchParams}:PageProps){
  const {id}=await params;
+ const requested=searchParams?await searchParams:{};
+ const checkin=firstSearchValue(requested.checkin).slice(0,10);
+ const checkout=firstSearchValue(requested.checkout).slice(0,10);
+ const adultString=firstSearchValue(requested.adults);
+ const adults=/^(?:[1-9]|1[0-9]|20)$/.test(adultString)?Number(adultString):undefined;
+ const requestedStay={checkin,checkout,adults};
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
  const hotel=await getHotel(id);
@@ -159,6 +168,7 @@ export default async function HotelStay({params}:PageProps){
       This is a property-location discovery listing, not a confirmed room offer. Check travel dates,
       room type, total taxes, accessibility, cancellation conditions and availability with the property or an authorized booking partner.
       No unverified nightly prices, star ratings or customer reviews are displayed.
+      {checkin&&checkout?" Your selected dates will be passed to the external hotel search when valid; booking is never confirmed here.":""}
      </p>
      <div className="mt-6 grid gap-3 sm:grid-cols-2">
       {[
@@ -176,7 +186,7 @@ export default async function HotelStay({params}:PageProps){
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
        <BedDouble size={17}/> Check price with partner <ArrowUpRight size={16}/></a>}
      {!hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
-       href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.country].filter(Boolean).join(" "))} target="_blank" rel="noopener noreferrer nofollow">
+       href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.country].filter(Boolean).join(" "),requestedStay)} target="_blank" rel="noopener noreferrer nofollow">
        <BedDouble size={17}/> Search availability with Booking.com <ArrowUpRight size={16}/></a>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}
