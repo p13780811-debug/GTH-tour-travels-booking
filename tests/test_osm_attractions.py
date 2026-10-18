@@ -89,7 +89,7 @@ class BulkAttractionTests(unittest.TestCase):
   rows=[feature("n1"),feature("n2"),feature("n3"),feature("n3")]
   with tempfile.TemporaryDirectory() as d:
    source=pathlib.Path(d)/"mapped.geojsonseq"
-   source.write_text("\\n".join(json.dumps(r) for r in rows)+"\\n",encoding="utf-8")
+   source.write_text("\n".join(json.dumps(r) for r in rows)+"\n",encoding="utf-8")
    def scan(offset):
     output=io.StringIO()
     with redirect_stdout(output):
