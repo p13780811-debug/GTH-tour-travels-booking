@@ -51,7 +51,7 @@ export default async function BlogList({ searchParams }: Props) {
     (selected === "All" || article.category === selected)
     && (!query || [article.title, article.description, article.category, article.content].some((value) => value.toLowerCase().includes(query))));
   const lead = blogs[0];
-  const mapped=await listMappedCities({pageSize:24}).catch(()=>null);
+  const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f7f9fd]">
