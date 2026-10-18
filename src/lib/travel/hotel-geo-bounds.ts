@@ -45,11 +45,10 @@ export function hotelBounds(city:string, samples:Coordinate[]):HotelGeoBounds|nu
   };
 }
 export function hotelLocationFilter(cityLike:string,bounds:HotelGeoBounds|null):string{
+  // A hotel name or street address mentioning a city is not proof of its location.
   const clauses=[
     "city.ilike."+cityLike,
-    "region.ilike."+cityLike,
-    "address.ilike."+cityLike,
-    "name.ilike."+cityLike
+    "region.ilike."+cityLike
   ];
   if(bounds)clauses.push("and(latitude.gte."+bounds.minLat+
     ",latitude.lte."+bounds.maxLat+",longitude.gte."+bounds.minLon+

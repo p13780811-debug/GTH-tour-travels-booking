@@ -87,7 +87,14 @@ export default function HotelResults({city,destination,compactRail=false}:{city:
      <div className="mt-auto space-y-3 pt-5">
       <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
       {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
-       <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>Partner booking link not available for this listing; official source and hotel website are in details.</p>}
+       <div className="space-y-2">
+        <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "))}
+          target="_blank" rel="noopener noreferrer nofollow"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+          Search this hotel on Booking.com <ArrowRight size={16}/>
+        </a>
+        <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>External name search only. Confirm the exact property with the provider.</p>
+       </div>}
      </div>
     </div>
    </article>)}

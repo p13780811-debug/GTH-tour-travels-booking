@@ -9,7 +9,7 @@ import { siteUrl } from "@/lib/seo/site";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
-const fields = "id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link";
+const fields = "id,title,city,city_slug,country,price_numeric,currency,tags,image_url,affiliate_link";
 
 function publicPartnerLink(value: unknown): string | null {
   if (typeof value !== "string" || value.length > 2048) return null;
@@ -50,7 +50,7 @@ async function getTour(slug: string) {
   if (!url || !key) return null;
   const client = createClient(url, key);
   const isId = /^\d+$/.test(slug) || /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(slug);
-  const query = client.from("tours").select(fields).limit(1);
+  const query = client.from("tours").select(fields).eq("is_public",true).eq("media_rights_verified",true).limit(1);
   const { data, error } = isId
     ? await query.eq("id", slug).maybeSingle()
     : await query.eq("city_slug", slug).maybeSingle();
@@ -84,7 +84,8 @@ export default async function TourDetailPage({ params }: Props) {
     try {
       const client = createClient(url, key);
       const response = await client.from("tours").select(fields)
-        .eq("country", tour.country).neq("id", tour.id).limit(8);
+        .eq("country", tour.country).neq("id", tour.id)
+        .eq("is_public",true).eq("media_rights_verified",true).limit(8);
       if (!response.error) related = (response.data || []) as Record<string, unknown>[];
     } catch {
       // A missing recommendations feed must not break the actual experience page.
