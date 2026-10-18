@@ -72,7 +72,7 @@ function db(){
  return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
 }
 export function knownSeoKind(x:string):x is SeoKind{
- return SEO_KIN.some(kind=>kind===x);
+ return SEO_KINDS.some(kind=>kind===x);
 }
 export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:number}[]>{
  if(!isPublicLaunch())return [];
