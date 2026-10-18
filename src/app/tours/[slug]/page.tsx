@@ -5,11 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowUpRight, Compass, ShieldCheck } from "lucide-react";
 import RelatedCarousel from "@/components/RelatedCarousel";
 import JsonLd from "@/components/seo/JsonLd";
-import { siteUrl } from "@/lib/seo/site";
+import { siteUrl,isPublicLaunch } from "@/lib/seo/site";
+import {isIndexableTour} from "@/lib/seo/large-sitemaps";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
-const fields = "id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link";
+const fields = "id,title,city,city_slug,country,price_numeric,currency,rating,image_url,affiliate_link,provider,source_name,source_url,is_public,media_rights_verified";
 
 function publicPartnerLink(value: unknown): string | null {
   if (typeof value !== "string" || value.length > 2048) return null;
@@ -50,7 +51,7 @@ async function getTour(slug: string) {
   if (!url || !key) return null;
   const client = createClient(url, key);
   const isId = /^\d+$/.test(slug) || /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(slug);
-  const query = client.from("tours").select(fields).limit(1);
+  const query = client.from("tours").select(fields).eq("is_public",true).eq("media_rights_verified",true).limit(1);
   const { data, error } = isId
     ? await query.eq("id", slug).maybeSingle()
     : await query.eq("city_slug", slug).maybeSingle();
@@ -62,8 +63,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tour = await getTour(slug);
   if (!tour) return { title: "Tour not found | GTH PRO", robots: { index: false } };
+  const index=isPublicLaunch()&&isIndexableTour(tour);
   return {
     title: `${tour.title} | GTH PRO Tours`,
+    robots: {index,follow:index},
     description: `Explore ${tour.title}. Review the itinerary, final price, availability and cancellation terms with the booking partner.`,
     alternates: { canonical: `/tours/${encodeURIComponent(slug)}` },
     openGraph: { title: tour.title, description: `Explore ${tour.title}. Confirm current prices, tour details and availability with the provider.`, url: `/tours/${encodeURIComponent(slug)}`, type: "website" },

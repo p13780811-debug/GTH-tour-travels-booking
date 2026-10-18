@@ -11,18 +11,19 @@ import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
-import { siteUrl } from "@/lib/seo/site";
+import { siteUrl,isPublicLaunch } from "@/lib/seo/site";
+import {isIndexableDestination} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
 import { destinationGeography } from "@/lib/destinations/geography";
 
 type Props = { params: Promise<{ slug: string }> };
-type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null };
+type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
 async function getDestination(slug: string): Promise<DestinationDetail | null> {
   if (!/^[a-z]+(?:-[a-z]+)*$/.test(slug) || slug.length > 80) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
-  const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug) } : null;
+  const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -31,12 +32,15 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
   try {
     const client = createClient(url, key);
     const { data, error } = await client.from("destinations")
-      .select("slug,name,description,country")
+      .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle();
 
     if (error || !data) return editorial;
+    const approved=isIndexableDestination(data as unknown as Record<string,unknown>);
+    // Never overwrite a curated, source-reviewed editorial page with unapproved imported copy.
+    if (!approved && editorial) return editorial;
     const name = typeof data.name === "string" && data.name.trim().length <= 120
       ? data.name.trim()
       : editorial?.name;
@@ -44,6 +48,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
     return {
       slug,
       name,
+      seoApproved:approved,
       ...destinationGeography(slug, data.country),
       image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
@@ -63,9 +68,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const place = await getDestination(slug);
   if (!place) return { title: "Destination not found | GTH PRO", robots: { index: false } };
+  const index=isPublicLaunch()&&place.seoApproved;
   return {
     title: `Explore ${place.name} | GTH PRO Destinations`,
-    description: `Plan a trip to ${place.name}: discover accommodation, tour listings and practical travel guides. Verify current prices and booking conditions with providers.`,
+    description: place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`,
+    robots:{index,follow:index},
     alternates: { canonical: `/destinations/${slug}` },
     openGraph: {
       title: `Explore ${place.name} | GTH PRO Travel`,
