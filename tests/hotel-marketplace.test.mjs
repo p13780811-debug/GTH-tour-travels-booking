@@ -86,3 +86,10 @@ test("hotel discovery has real linked destination imagery separate from property
   assert.match(page,/Destination photographs illustrate the cities, not any individual hotel/);
   assert.doesNotMatch(page,/index%illustrations\.length/);
 });
+
+test("hotel sidebar does not present generic amenities as verified property features", () => {
+  const page=read("src/app/hotels/page.tsx");
+  assert.match(page,/General planning checklist only/);
+  assert.match(page,/not verified amenities of any specific hotel/);
+  assert.doesNotMatch(page,/Infinity Pool|Breakfast Included|Fitness Club/);
+});
