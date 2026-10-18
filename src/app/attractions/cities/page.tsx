@@ -1,7 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Compass,Search,MapPin,Globe2} from "lucide-react";
-import {listMappedCities,validCityFilters,mappedCityLink,cityExplorerHref,type MappedCityFilters} from "@/lib/travel/mappedCities";
+import {listMappedCities,validCityFilters,mappedCityLink,mappedCityLabel,cityExplorerHref,type MappedCityFilters} from "@/lib/travel/mappedCities";
 import {sourceProgress} from "@/lib/travel/osmAttractions";
 
 export const dynamic="force-dynamic";
@@ -55,7 +55,7 @@ export default async function MappedCitiesPage({searchParams}:Props){
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
        {data.items.map(city=><article key={city.country_code+city.city} className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
         <p className="inline-flex items-center gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13}/>{city.country_name}</p>
-        <h3 className="mt-2 line-clamp-2 text-lg font-bold">{city.city}</h3>
+        <h3 className="mt-2 line-clamp-2 text-lg font-bold">{mappedCityLabel(city.city)}</h3>
         <p className="mt-2 text-sm text-[var(--text-soft)]">{city.records.toLocaleString("en-IN")} source-mapped places</p>
         <Link href={mappedCityLink(city.country_code,city.city)} className="gth-btn-gold mt-5 inline-flex min-h-11 items-center justify-between rounded-xl px-3 text-xs font-semibold">
          Browse actual attractions <ArrowRight size={15}/>

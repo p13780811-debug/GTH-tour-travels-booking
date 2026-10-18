@@ -13,6 +13,10 @@ export function validCityFilters(filters:MappedCityFilters){
   (!filters.page||(Number.isInteger(filters.page)&&filters.page>=1&&filters.page<=MAX_PAGE))&&
   (!filters.pageSize||(Number.isInteger(filters.pageSize)&&filters.pageSize>=1&&filters.pageSize<=48));
 }
+/** Presentation only: preserve actual source city key for case-insensitive source queries. */
+export function mappedCityLabel(city:string){
+ return city.replace(/(^|[\s-])(\p{L})/gu,(_match,separator:string,letter:string)=>separator+letter.toLocaleUpperCase("en"));
+}
 export function mappedCityLink(country:string,city:string){
  const params=new URLSearchParams({country,city});
  return "/attractions?"+params.toString();

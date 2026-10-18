@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {ArrowRight,Compass,Hotel,MapPin} from "lucide-react";
 import TourCarousel from "@/components/tours/TourCarousel";
-import {mappedCityLink,type MappedCity} from "@/lib/travel/mappedCities";
+import {mappedCityLink,mappedCityLabel,type MappedCity} from "@/lib/travel/mappedCities";
 
 export default function MappedCityDiscovery({cities,title="More source-mapped cities"}:{
  cities:readonly MappedCity[];title?:string
@@ -21,7 +21,7 @@ export default function MappedCityDiscovery({cities,title="More source-mapped ci
    {cities.map(item=><article key={item.country_code+":"+item.city}
     className="flex w-[220px] shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:w-[250px]">
     <p className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]"><MapPin size={14}/>{item.country_name}</p>
-    <h3 className="mt-3 line-clamp-2 text-lg font-bold">{item.city}</h3>
+    <h3 className="mt-3 line-clamp-2 text-lg font-bold">{mappedCityLabel(item.city)}</h3>
     <p className="mt-2 text-xs text-[var(--text-soft)]">{item.records.toLocaleString("en-IN")} public mapped records</p>
     <div className="mt-auto grid gap-2 pt-5 text-xs">
      <Link href={mappedCityLink(item.country_code,item.city)} className="gth-btn-gold inline-flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 font-semibold">
