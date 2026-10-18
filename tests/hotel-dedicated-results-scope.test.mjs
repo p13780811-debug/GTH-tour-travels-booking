@@ -17,11 +17,11 @@ test("dedicated hotel results route reads full search scope", () => {
 });
 
 test("first page and next page use the same canonical query builder", () => {
-  assert.match(results, /hotelSearchParams\\(\\{/);
+  assert.ok(results.includes("hotelSearchParams({"));
   for (const pair of ["city:effectiveCity","destination:effectiveDestination","name:effectiveName","country:effectiveCountry","category:effectiveCategory","sort:effectiveSort","source:effectiveSource"]) {
     assert.ok(results.includes(pair), pair+" must survive the canonical hotel query");
   }
-  assert.match(results, /scope\\?:HotelSearchScope/);
+  assert.ok(results.includes("scope?:HotelSearchScope"));
   assert.match(results, /compactRail&&/);
   assert.match(results, /fetch\(query\(1\)/);
   assert.match(results, /fetch\(query\(page\+1\)/);
