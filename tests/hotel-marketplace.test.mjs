@@ -47,3 +47,31 @@ test("hotel results retain approved handoffs and honest external hotel-name sear
   assert.match(result, /rel="noopener noreferrer sponsored"/);
   assert.match(result, /rel="noopener noreferrer nofollow"/);
 });
+
+test("hotel search retains validated guest and date planning across details", () => {
+  const list = read("src/app/hotels/page.tsx");
+  const detail = read("src/app/hotels/stay/[id]/page.tsx");
+  assert.match(list,/const stayParams=new URLSearchParams/);
+  assert.match(list,/stayParams\.set\("checkin",checkin\)/);
+  assert.match(list,/stayParams\.set\("checkout",checkout\)/);
+  assert.match(list,/stayParams\.set\("adults",String\(guests\)\)/);
+  assert.match(list,/encodeURIComponent\(String\(hotel\.id\)\)\+staySuffix/);
+  assert.match(detail,/searchParams\?:Promise/);
+  assert.match(detail,/const requestedStay=\{checkin,checkout,adults\}/);
+  assert.match(detail,/hotelProviderSearchUrl\([^\n]*,requestedStay\)/);
+  assert.match(list,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
+});
+
+test("hotel search and result pages recover from API failures without fake records", () => {
+  const landing=read("src/app/hotels/page.tsx");
+  const results=read("src/app/hotels/results/HotelResults.tsx");
+  const image=read("src/components/hotel/HotelPropertyImage.tsx");
+  assert.match(landing,/Retry hotel search/);
+  assert.match(landing,/\[queryKey,retryCount\]/);
+  assert.match(results,/Retry hotel listings/);
+  assert.match(results,/effectiveSource,retryCount\]/);
+  assert.match(results,/activeKey\.current!==startedFor/);
+  assert.match(image,/Original property photo not available/);
+  assert.match(image,/Property directory/);
+  assert.doesNotMatch(image,/useHotelIllustrations|illustration=/);
+});
