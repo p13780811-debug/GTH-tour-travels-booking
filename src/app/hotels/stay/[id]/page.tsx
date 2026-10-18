@@ -8,6 +8,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
+import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass,ImageOff} from "lucide-react";
@@ -27,15 +28,7 @@ function safeLink(value:unknown,allowPartner=false):string|null{
  }catch{return null;}
 }
 function safeImage(value:unknown):string|null{
- if(typeof value!=="string"||value.length>1024)return null;
- try{
-  const u=new URL(value);
-  if(u.protocol!=="https:"||u.username||u.password||u.port||!u.hostname.includes("."))return null;
-  if(["www.google.com","google.com","www.facebook.com","facebook.com"].includes(u.hostname.toLowerCase()))return null;
-  const path=u.pathname.toLowerCase();
-  if(![".jpg",".jpeg",".png",".webp",".avif"].some(ext=>path.endsWith(ext)))return null;
-  return u.toString();
- }catch{return null;}
+ return hotelSourceImageUrl(value);
 }
 function safeBusinessPhone(value:unknown):string|null{
  if(typeof value!=="string"||value.length>35)return null;
