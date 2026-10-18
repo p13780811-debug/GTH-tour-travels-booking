@@ -101,6 +101,10 @@ function HotelsContent() {
     const [checkout,setCheckout]=useState("");
     const [guests,setGuests]=useState(2);
     const [dateError,setDateError]=useState("");
+    const stayParams=new URLSearchParams();
+    if(checkin&&checkout){stayParams.set("checkin",checkin);stayParams.set("checkout",checkout);}
+    if(Number.isSafeInteger(guests)&&guests>=1&&guests<=20)stayParams.set("adults",String(guests));
+    const staySuffix=stayParams.size?"?"+stayParams.toString():"";
     const [hotels, setHotels] = useState<HotelListing[]>([]);
     const [total, setTotal] = useState(0);
     const queryKey = JSON.stringify([requestedDestination,requestedCity,nameFilter,requestedCountry,category,sort,sourceFilter]);
@@ -724,7 +728,7 @@ function HotelsContent() {
                                                         </div>
 
                                                         <div className="mt-6 space-y-3">
-                                                            <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
+                                                            <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
                                                               className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
                                                               View hotel details <ChevronRight size={16}/>
                                                             </a>
