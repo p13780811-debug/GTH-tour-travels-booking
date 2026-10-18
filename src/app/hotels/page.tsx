@@ -489,30 +489,30 @@ function HotelsContent() {
                                     {/* FEATURES */}
                                     <div>
                                         <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-soft)] mb-3">
-                                            Amenities to confirm
+                                            Before you book
                                         </p>
 
                                         <div className="space-y-2">
                                             {[
                                                 {
                                                     icon: Wifi,
-                                                    label: "High-Speed WiFi",
+                                                    label: "Confirm Wi-Fi access",
                                                 },
                                                 {
                                                     icon: Waves,
-                                                    label: "Infinity Pool",
+                                                    label: "Check pool availability",
                                                 },
                                                 {
                                                     icon: Dumbbell,
-                                                    label: "Fitness Club",
+                                                    label: "Ask about gym facilities",
                                                 },
                                                 {
                                                     icon: Coffee,
-                                                    label: "Breakfast Included",
+                                                    label: "Confirm meal inclusions",
                                                 },
                                                 {
                                                     icon: ShieldCheck,
-                                                    label: "Secure Stay",
+                                                    label: "Check safety and policies",
                                                 },
                                             ].map((item, index) => (
                                                 <div
@@ -525,6 +525,9 @@ function HotelsContent() {
                                                     </span>
                                                 </div>
                                             ))}
+                                        <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">
+                                            General planning checklist only. These features are not verified amenities of any specific hotel.
+                                        </p>
                                         </div>
                                     </div>
                                 </div>
