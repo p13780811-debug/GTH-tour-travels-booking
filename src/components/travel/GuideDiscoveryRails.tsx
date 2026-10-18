@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {BookOpen,Compass,ArrowRight,MapPin} from "lucide-react";
 import TourCarousel from "@/components/tours/TourCarousel";
 import {discoveryRows,guideBySlug} from "@/lib/travel/guideCatalog";
@@ -29,7 +30,7 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
      const count=counts.get(item.countryCode)||0;
      return <article key={slug} className="flex w-[230px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:w-[275px]">
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--bg)]">
-       {picture?<img src={picture.image_url} width={picture.width} height={picture.height} alt={picture.alt_text} loading="lazy" decoding="async" className="h-full w-full object-cover"/>:
+       {picture?<Image src={picture.image_url} width={picture.width} height={picture.height} alt={picture.alt_text} sizes="(max-width: 640px) 230px, 275px" className="h-full w-full object-cover" loading="lazy"/>:
        <div className="flex h-full items-center justify-center gap-2 text-sm text-[var(--text-soft)]"><Compass size={23}/><span>Rights-approved photo pending</span></div>}
        <span className="absolute bottom-2 left-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-2 py-1 text-[11px] font-semibold">{item.kind==="country"?"Country":"Destination"} guide</span>
       </div>
@@ -43,7 +44,10 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
         <Link href={item.city?"/hotels/results?city="+encodeURIComponent(item.city):"/hotels"} className="underline">Find hotels</Link>
         <Link href="/ai-trip" className="underline">Plan trip</Link>
        </div>
-       {picture&&<a href={picture.source_page} target="_blank" rel="noopener noreferrer nofollow" className="mt-3 line-clamp-1 text-[10px] text-[var(--text-soft)] underline">Photo: {picture.attribution_text} · {picture.license_type}</a>}
+       {picture&&<p className="mt-3 text-[10px] leading-4 text-[var(--text-soft)]">
+        Photo: <a href={picture.source_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{picture.attribution_text}</a>{" · "}
+        <a href={picture.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{picture.license_type}</a>{" · "}Responsive display crop; original unchanged
+       </p>}
       </div>
      </article>;
     })}

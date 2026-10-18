@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {ArrowLeft,ArrowRight,BookOpen,Compass,Hotel,Plane,MapPin,ExternalLink} from "lucide-react";
 import JsonLd from "@/components/seo/JsonLd";
 import {siteUrl} from "@/lib/seo/site";
@@ -44,10 +45,10 @@ export default function GuideDetail({guide,media,indexable,places=[]}:Props){
     <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--text-soft)]">{guide.summary}</p>
    </header>
    <figure className="mt-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-    {media?<img src={media.image_url} width={media.width} height={media.height} alt={media.alt_text} className="aspect-[16/9] max-h-[420px] w-full object-cover" loading="eager"/>:
+    {media?<Image src={media.image_url} width={media.width} height={media.height} alt={media.alt_text} priority sizes="(max-width: 768px) 100vw, 1100px" className="aspect-[16/9] max-h-[420px] w-full object-cover"/>:
     <div className="flex aspect-[16/9] max-h-[320px] items-center justify-center gap-2 text-sm text-[var(--text-soft)]"><Compass size={24}/> Rights-approved destination photo pending</div>}
     <figcaption className="px-4 py-3 text-xs text-[var(--text-soft)]">
-     {media?<><a href={media.source_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{media.attribution_text} · {media.source_name}</a>{" · "}<a href={media.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{media.license_type}</a></>:
+     {media?<><a href={media.source_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{media.attribution_text} · {media.source_name}</a>{" · "}<a href={media.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{media.license_type}</a>{" · "}Photo shown in a responsive display crop; source file is unchanged.</>:
      "Only rights-reviewed real-place imagery is published; no unrelated stock imagery is presented as a destination."}
     </figcaption>
    </figure>

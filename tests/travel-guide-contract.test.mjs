@@ -82,3 +82,18 @@ test("final editorial guide booking step uses only existing approved partner des
  assert.match(handoff,/href="\/affiliate-disclosure"/);
  assert.doesNotMatch(handoff,/src="https:\/\/tpwidg|https:\/\/klook\.tpo\.lv\//);
 });
+
+test("Reviewed Wikimedia media uses remote-optimized Next images and clear CC attribution",()=>{
+ const config=read("next.config.ts");
+ const rail=read("src/components/travel/GuideDiscoveryRails.tsx");
+ const detail=read("src/components/travel/GuideDetail.tsx");
+ const media=read("src/lib/travel/guideMedia.ts");
+ assert.ok(config.includes('hostname: "upload.wikimedia.org"'));
+ assert.ok(config.includes('pathname: "/wikipedia/commons/**"'));
+ assert.match(rail,/import Image from "next\/image"/);
+ assert.match(detail,/import Image from "next\/image"/);
+ assert.match(detail,/media\.license_url/);
+ assert.match(rail,/picture\.license_url/);
+ assert.match(detail,/source file is unchanged/);
+ assert.match(media,/license\.hostname==="creativecommons\.org"/);
+});

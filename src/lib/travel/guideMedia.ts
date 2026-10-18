@@ -12,7 +12,7 @@ function client(){
 function mediaSafe(raw:ApprovedGuideMedia):boolean{
  try{const page=new URL(raw.source_page),license=new URL(raw.license_url);
   return !!safeCommonsMedia(raw.image_url)&&page.protocol==="https:"&&page.hostname==="commons.wikimedia.org"&&
-   page.pathname.startsWith("/wiki/File:")&&license.protocol==="https:"&&!license.username&&!license.password&&
+   page.pathname.startsWith("/wiki/File:")&&license.protocol==="https:"&&license.hostname==="creativecommons.org"&&!license.username&&!license.password&&!license.port&&raw.source_name==="Wikimedia Commons"&&
    ["CC BY 4.0","CC BY-SA 4.0","CC0 1.0","Public domain"].includes(raw.license_type)&&
    raw.attribution_text.length>=3&&raw.alt_text.length>=8&&raw.width>=800&&raw.height>=500;
  }catch{return false;}
