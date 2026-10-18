@@ -62,7 +62,7 @@ test("live hotel and tour data, SEO and source honesty preserved",()=>{
  assert.match(index,/curatedDestinations\.map/);
  assert.match(index,/destinationImageForSlug\(item\.slug\)/);
  assert.match(index,/\.eq\("is_active", true\)/);
- assert.match(index,/pageLink\(search, page \+ 1, country, region, sort\)/);
+ assert.match(index,/pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
  assert.match(detail,/<HotelResults city=\{destination\.name\} destination=\{slug\} compactRail\/>/);
  assert.match(detail,/getTours\(\{ city: slug \}\)/);
  assert.match(detail,/String\(tour\.id\)/);
