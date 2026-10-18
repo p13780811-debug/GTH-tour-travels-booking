@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {hotelSourceImageUrl} from "../src/lib/travel/hotel-source-image.ts";
 import {isDescriptiveHotelName,NON_PROPERTY_NAME_PATTERN} from "../src/lib/travel/hotel-name-quality.ts";
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("No numeric or generic OSM campus blocks are displayed as accommodation brands",()=>{
@@ -22,9 +23,26 @@ test("Counts, results and category stats use same server-side source-name filter
  assert.match(detail,/if\(hotel&&!isDescriptiveHotelName\(hotel\.name\)\)return null/);
  assert.doesNotMatch(api,/\.delete\(|\.update\(|\.upsert\(/);
 });
-test("Source image links must be direct HTTPS images, not image search pages",()=>{
+test("Cards and detail use the same safe property-media URL policy",()=>{
  const api=read("src/app/api/hotels/route.ts");
- assert.match(api,/jpe\?g\|png\|webp\|avif/);
- assert.match(api,/url\.username/);
- assert.match(api,/url\.pathname/);
+ const detail=read("src/app/hotels/stay/[id]/page.tsx");
+ const policy=read("src/lib/travel/hotel-source-image.ts");
+ assert.match(api,/import \{hotelSourceImageUrl\}/);
+ assert.match(detail,/import \{hotelSourceImageUrl\}/);
+ assert.match(api,/const candidates=catalogRows\.filter\(item=>!hotelSourceImageUrl\(item\.image_url\)\)/);
+ assert.match(api,/const original=hotelSourceImageUrl\(hotel\.image_url\)/);
+ assert.match(detail,/return hotelSourceImageUrl\(value\)/);
+ assert.match(policy,/jpe\?g\|png\|webp\|avif/);
+ assert.match(policy,/url\.username/);
+ assert.match(policy,/url\.pathname/);
+ const exact="https://upload.wikimedia.org/wikipedia/commons/a/a1/hotel.jpg?width=640";
+ assert.equal(hotelSourceImageUrl(exact),exact);
+ assert.equal(hotelSourceImageUrl("/images/hotels/verified.webp"),"/images/hotels/verified.webp");
+ for(const bad of [
+  null,"","/placeholder.jpg","https://example.org/hotel-search",
+  "http://upload.wikimedia.org/wikipedia/commons/a/a1/hotel.jpg",
+  "https://user:password@example.org/hotel.jpg",
+  "https://127.0.0.1/hotel.jpg","https://cdn.example.org/hotel.svg",
+  "https://cdn.example.org/hotel.jpg#fragment"
+ ])assert.equal(hotelSourceImageUrl(bad),null,String(bad));
 });
