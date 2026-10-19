@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title: { absolute: title }, description,
         alternates: { canonical },
         robots: { index: isIndexableProperty(property) && isPublicLaunch(), follow: Boolean(property) },
-        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: media ? property?.title : "Illustrative architecture, not a project photo" }] },
+        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: media ? property?.title : "GTH PRO logo; project photograph not available" }] },
         twitter: { card: "summary_large_image", title, description, images: [image] },
     }
 }
