@@ -23,7 +23,7 @@ export default async function LiveHotelDetail({params,searchParams}:Props) {
   let hotel=null;
   try{
     const requestHeaders=await headers();
-    await enforceRateLimit(new Request("https://gthproglobal.com/hotels/live/"+id,{headers:requestHeaders}),"flights");
+    await enforceRateLimit(new Request("https://gthproglobal.com/hotels/live/"+id,{headers:requestHeaders}),"hotels");
     hotel=normalizeLiteApiHotel(providerHotelDetail(await getLiteApiHotel(id)));
   }catch{
     return <main className="min-h-screen bg-[var(--bg)] px-4 py-24 text-[var(--text)]"><div className="gth-glass mx-auto max-w-3xl rounded-xl border border-[var(--border)] p-8"><h1 className="text-xl font-bold">Hotel information unavailable</h1><p className="mt-2 text-sm">Please retry your search. No bookings have been created.</p><Link href="/hotels/live" className="gold-text mt-4 inline-block underline">Back to hotel search</Link></div></main>;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchLiteApiHotels, LiteApiError } from "@/lib/travel/liteapi-client";
-import { normalizeLiteApiList } from "@/lib/travel/liteapi-view-model";
+import { normalizeLiteApiList, providerHotelRows } from "@/lib/travel/liteapi-view-model";
 import { signLiteApiPhoto } from "@/lib/travel/liteapi-photo-proof";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 
@@ -14,19 +14,24 @@ export async function GET(request: Request) {
   const country = (params.get("country") ?? "").trim().toUpperCase();
   const city = (params.get("city") ?? "").trim();
   const pageText = params.get("page") ?? "1";
+  const hotelName = (params.get("name") ?? "").trim();
   if (!/^[A-Z]{2}$/.test(country) ||
       !/^[\p{L}\p{M} .'-]{2,80}$/u.test(city) ||
-      !/^(?:[1-9]|10)$/.test(pageText))
-    return NextResponse.json({ error: "Choose a valid city, ISO country and page (1–10)." }, { status: 400, headers });
+      (hotelName && !/^[\p{L}\p{M}\p{N}\s.'&-]{2,80}$/u.test(hotelName)) ||
+      !/^[1-9][0-9]{0,2}$/.test(pageText) || Number(pageText)>500)
+    return NextResponse.json({ error: "Choose a valid city, ISO country and page (1–500)." }, { status: 400, headers });
   try {
-    await enforceRateLimit(request, "flights");
+    await enforceRateLimit(request, "hotels");
     const page = Number(pageText);
     const raw = await searchLiteApiHotels({ countryCode: country, cityName: city,
-      limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
+      hotelName: hotelName || undefined, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
     const items = normalizeLiteApiList(raw).map(item =>
       ({ ...item, photoProof: item.image ? signLiteApiPhoto(item.id, item.image) ?? undefined : undefined }));
     return NextResponse.json({
-      items, page, hasMore: items.length === PAGE_SIZE && page < 10,
+      items, page, hasMore: providerHotelRows(raw).length === PAGE_SIZE && page < 500,
+      imageCount: items.filter(item => Boolean(item.image)).length,
+      starCount: items.filter(item => item.stars !== null).length,
+      amenityCount: items.filter(item => item.amenities.length>0).length,
       source: "LiteAPI / Nuitée", availabilityChecked: false,
       message: "Hotel metadata only. Rates, booking availability and cancellation terms are not confirmed.",
     }, { headers });

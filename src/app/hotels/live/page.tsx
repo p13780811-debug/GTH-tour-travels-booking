@@ -19,9 +19,11 @@ function LiveSearch() {
   const params = useSearchParams();
   const startCity = params.get("city") || "Dubai";
   const startCountry = params.get("country") || "AE";
+  const startName=params.get("name")||"";
   const [city, setCity] = useState(startCity);
   const [country, setCountry] = useState(startCountry);
-  const [search, setSearch] = useState({ city:startCity, country:startCountry, page:1 });
+  const [hotelName,setHotelName]=useState(startName);
+  const [search, setSearch] = useState({ city:startCity, country:startCountry, name:startName, page:1 });
   const [items, setItems] = useState<LiveHotel[]>([]);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ function LiveSearch() {
   const [hotelType, setHotelType] = useState("");
   const [sort, setSort] = useState("name");
   const [filterOpen, setFilterOpen] = useState(false);
-  const submit = useCallback((c:string, k:string) => {
+  const submit = useCallback((c:string, k:string, n:string) => {
     const nextCity = c.trim(), nextCountry = k.trim().toUpperCase();
     if (!/^[\p{L}\p{M} .'-]{2,80}$/u.test(nextCity) || !/^[A-Z]{2}$/.test(nextCountry)) {
       setError("Enter a valid city and two-letter ISO country code."); return;
@@ -40,13 +42,15 @@ function LiveSearch() {
     setMinStars(0);
     setAmenity("");
     setHotelType("");
-    setSearch({ city:nextCity, country:nextCountry, page:1 });
-    window.history.replaceState(null, "", "/hotels/live?city="+encodeURIComponent(nextCity)+"&country="+encodeURIComponent(nextCountry));
+    const name=n.trim();
+    if(name&&!/^[\p{L}\p{M}\p{N}\s.'&-]{2,80}$/u.test(name)){setError("Enter a valid hotel name.");return;}
+    setSearch({ city:nextCity, country:nextCountry, name, page:1 });
+    window.history.replaceState(null, "", "/hotels/live?"+new URLSearchParams({city:nextCity,country:nextCountry,...(name?{name}:{})}));
   }, []);
   useEffect(() => {
     const abort = new AbortController();
     setLoading(true); setError("");
-    const query = new URLSearchParams({ city:search.city,country:search.country,page:String(search.page) });
+    const query = new URLSearchParams({ city:search.city,country:search.country,page:String(search.page),...(search.name?{name:search.name}:{}) });
     fetch("/api/hotels/live?"+query, { signal:abort.signal, cache:"no-store" })
       .then(async (response) => {
         const data = await response.json() as ApiResponse;
@@ -76,13 +80,14 @@ function LiveSearch() {
         <span className="gold-text text-xs font-bold uppercase tracking-widest">GTH PRO · Provider hotel discovery</span>
         <h1 className="mt-3 text-3xl font-bold md:text-5xl">Worldwide hotels, real property names</h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Explore live LiteAPI hotel content. Property ratings and facilities appear only when the provider supplies them. Prices, room availability, booking and cancellation terms are not checked here.</p>
-        <form className="mt-6 grid gap-3 sm:grid-cols-[1fr_9rem_auto]" onSubmit={event=>{event.preventDefault();submit(city,country);}}>
+        <form className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_7rem_auto]" onSubmit={event=>{event.preventDefault();submit(city,country,hotelName);}}>
           <label className="grid gap-1 text-xs font-semibold">Destination city<input className="min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-base text-[var(--text)]" value={city} maxLength={80} onChange={event=>setCity(event.target.value)} required /></label>
+          <label className="grid gap-1 text-xs font-semibold">Hotel name (optional)<input className="min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-base text-[var(--text)]" value={hotelName} maxLength={80} onChange={event=>setHotelName(event.target.value)} /></label>
           <label className="grid gap-1 text-xs font-semibold">Country (ISO-2)<input className="min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-base text-[var(--text)]" value={country} maxLength={2} onChange={event=>setCountry(event.target.value.toUpperCase())} required /></label>
           <button type="submit" className="gth-btn-gold self-end inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 font-semibold"><Search size={17}/> Search hotels</button>
         </form>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="Popular destination searches">
-          {PICKS.map(p=><button key={p.city} type="button" onClick={()=>{setCity(p.city);setCountry(p.country);submit(p.city,p.country);}} className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs font-semibold">{p.city}</button>)}
+          {PICKS.map(p=><button key={p.city} type="button" onClick={()=>{setCity(p.city);setCountry(p.country);setHotelName("");submit(p.city,p.country,"");}} className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs font-semibold">{p.city}</button>)}
         </div>
       </header>
       <section className="flex items-end justify-between gap-4">

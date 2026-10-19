@@ -53,6 +53,17 @@ export function providerHotelDetail(raw: unknown): unknown {
   const value = record(raw);
   return value?.data ?? null;
 }
+/** The provider sometimes returns HTML descriptions. Never inject supplier HTML into a page. */
+export function sourceDescription(raw: unknown): string | null {
+  const value = str(raw, 12000);
+  if (!value) return null;
+  const cleaned = value.replace(/<br\s*\/?\s*>/gi, "\n").replace(/<\/(?:p|div|li|h[1-6])>/gi, "\n")
+    .replace(/<[^>]*>/g, " ").replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/[ \t]+/g, " ").replace(/\n\s*\n\s*\n/g, "\n\n").trim();
+  return cleaned ? cleaned.slice(0,5000) : null;
+}
 export function normalizeLiteApiHotel(raw: unknown): LiveHotel | null {
   const hotel = record(raw);
   if (!hotel) return null;
@@ -67,7 +78,7 @@ export function normalizeLiteApiHotel(raw: unknown): LiveHotel | null {
   for (const item of photoRows.slice(0, 30)) {
     const photo = record(item);
     if (!photo) continue;
-    const url = safeLiteApiImage(photo.url ?? photo.urlHd);
+    const url = safeLiteApiImage(photo.urlHd) ?? safeLiteApiImage(photo.url);
     if (url && !images.includes(url)) images.push(url);
     if (url && photo.defaultImage === true) defaultImages.push(url);
   }
@@ -88,7 +99,7 @@ export function normalizeLiteApiHotel(raw: unknown): LiveHotel | null {
     city: str(hotel.city, 100) ?? "",
     country: (str(hotel.country, 2) ?? "").toUpperCase(),
     address, category: type,
-    description: str(hotel.hotelDescription ?? hotel.description, 5000),
+    description: sourceDescription(hotel.hotelDescription ?? hotel.description),
     stars, amenities, image: main, gallery,
   };
 }

@@ -34,7 +34,7 @@ test("Provider API never writes inventory and is protected by shared rate limits
  const route=read("src/app/api/hotels/live/route.ts");
  const proof=read("src/lib/travel/liteapi-photo-proof.ts");
  const detail=read("src/app/hotels/live/[id]/page.tsx");
- assert.match(route,/enforceRateLimit\(request, "flights"\)/);
+ assert.match(route,/enforceRateLimit\(request, "hotels"\)/);
  assert.match(route,/searchLiteApiHotels/);
  assert.doesNotMatch(route,/supabase|\.upsert\(|\.insert\(|\.delete\(/);
  assert.match(proof,/timingSafeEqual/);
