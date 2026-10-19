@@ -145,7 +145,7 @@ export default function RealEstatePage() {
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
         <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
         <div className={styles.workspace}>
-            <aside ref={sidebar} className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
+            <aside ref={sidebar} id="explorer-filter-panel" className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
                 <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
