@@ -32,3 +32,37 @@ If you have 21,516 OSM hotel records and zero affiliate provider property IDs/ap
 Photo enrichment: source images / licensed Wikimedia Commons as separate overlays; the optional Google Places on-demand feature requires an enabled approved API key and usage budget. Do not copy Google images to Supabase, invent hotel photographs, or label stock interiors as real property photos.
 
 No production deployment, data mutation, or secret exposure is part of this code change.
+
+## Official Travelpayouts bulk link conversion API (no manual 21,500 links)
+
+Travelpayouts officially supports **POST https://api.travelpayouts.com/links/v1/create**,
+**up to 10 full original brand URLs/request** and **100 requests/minute/marker**.
+Reference: https://support.travelpayouts.com/hc/en-us/articles/25289759198226-API-for-Travelpayouts-partner-links
+
+The input must already contain a confirmed Klook property detail URL and the same hotel's OSM source ID. Example Klook-specific pattern:
+\`https://www.klook.com/hotels/detail/{KLOOK_PROPERTY_ID}-{slug}/\`.
+\`OSM source ID != Klook property ID\`. Hotel name or coordinates alone cannot safely infer Klook ID.
+An illustrative user-verified hotel is PARKROYAL COLLECTION Pickering, Klook ID 254865,
+but **that hotel currently has no matching source row in GTH's OSM catalog**, so it must not be falsely assigned to an unrelated PARKROYAL hotel.
+
+Input mapping headers:
+\`\`\`
+osm_source_id,provider,provider_property_id,provider_property_url,hotel_name_at_provider
+\`\`\`
+
+This new generator checks hotel IDs and property URL paths, runs a dry-run by default, then calls the official server-side Travelpayouts API in 10-link batches with bounded rate limiting and retries:
+
+\`\`\`bash
+python3 scripts/hotels/generate_travelpayouts_klook_links.py \
+  --csv approved_klook_id_mapping.csv --output pending_gth_affiliate_links.csv
+
+# Only with confirmed Klook program approval and an authorized property-ID feed:
+export TRAVELPAYOUTS_TRS='<your existing Traffic Source project ID>'
+# TRAVELPAYOUTS_MARKER and TRAVELPAYOUTS_API_TOKEN are existing server-only variables.
+python3 scripts/hotels/generate_travelpayouts_klook_links.py \
+  --csv approved_klook_id_mapping.csv --output pending_gth_affiliate_links.csv --generate
+\`\`\`
+
+The output adds \`affiliate_url\`, ready for the **separate staging importer** in this folder. Nothing automatically publishes, edits the hotel catalog, or changes active Book Now links. Stage inactive source mappings, then approve exact identity and authorized program in \`/admin/hotels\`.
+
+**Practical upper bound**: 21,500 known and verified Klook property URLs imply 2,150 API requests. The documented limit is 100/minute/marker, so the theoretical lower bound is ~22 minutes (real duration longer); that is not a promise of 21,500 Klook matches or approvals.
