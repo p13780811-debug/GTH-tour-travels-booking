@@ -28,6 +28,18 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
   return () => { window.removeEventListener("gth-discovery-filters", sync); window.removeEventListener("popstate", sync) }
  }, [])
 
+ const chooseCategory = (value: string) => {
+  const nextType = filters.type === value ? "" : value
+  setFilters(previous => ({ ...previous, type: nextType }))
+  const url = new URL(window.location.href)
+  if (nextType) url.searchParams.set("type", nextType)
+  else url.searchParams.delete("type")
+  url.searchParams.delete("page")
+  window.history.replaceState(null, "", url)
+  window.dispatchEvent(new Event("gth-discovery-filters"))
+  onApply()
+ }
+
  return <details id="discovery-filters" open={expanded || undefined} className={`gth-glass ${styles.filterPanel}`}>
   <summary>Refine your search <span className="text-sm font-normal opacity-70">· Location, type, bedrooms & budget</span></summary>
   <form className={styles.filterForm} onSubmit={event => {
@@ -46,10 +58,10 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
    <fieldset className="col-span-full min-w-0 rounded-xl border border-[var(--border)] p-3">
     <legend className="px-1 text-sm font-semibold text-[var(--text)]">Property categories</legend>
     <div className="grid grid-cols-1 gap-2" role="group" aria-label="Property categories">
-     <button type="button" aria-pressed={!filters.type} onClick={() => setFilters(previous => ({...previous,type:""}))}
+     <button type="button" aria-pressed={!filters.type} onClick={() => chooseCategory("")}
        className={`flex min-h-11 w-full items-center rounded-lg border px-3 py-2 text-left text-sm ${!filters.type?"border-[var(--gold)] bg-[var(--bg-soft)] font-semibold text-[var(--text)]":"border-[var(--border)] bg-[var(--card)] text-[var(--text)]"}`}>All property categories</button>
      {[...PROJECT_CATEGORIES,...LISTING_CATEGORIES].map(([value,label]) =>
-      <button key={value} type="button" aria-pressed={filters.type===value} onClick={() => setFilters(previous => ({...previous,type:previous.type===value?"":value}))}
+      <button key={value} type="button" aria-pressed={filters.type===value} onClick={() => chooseCategory(value)}
        className={`flex min-h-11 w-full items-center rounded-lg border px-3 py-2 text-left text-sm ${filters.type===value?"border-[var(--gold)] bg-[var(--bg-soft)] font-semibold text-[var(--text)]":"border-[var(--border)] bg-[var(--card)] text-[var(--text)]"}`}>{label}</button>
      )}
     </div>
