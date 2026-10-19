@@ -27,12 +27,10 @@ create table if not exists public.hotel_booking_links (
    not active or (exact_property_verified and program_approved and verified_at is not null)
  )
 );
-create unique index if not exists hotel_booking_links_osm_unique
- on public.hotel_booking_links(catalog_source,catalog_source_id,provider)
- where reviewed_hotel_id is null;
-create unique index if not exists hotel_booking_links_partner_unique
- on public.hotel_booking_links(reviewed_hotel_id,provider)
- where reviewed_hotel_id is not null;
+alter table public.hotel_booking_links
+ add constraint hotel_booking_links_osm_unique unique(catalog_source,catalog_source_id,provider);
+alter table public.hotel_booking_links
+ add constraint hotel_booking_links_partner_unique unique(reviewed_hotel_id,provider);
 create index if not exists hotel_booking_links_approved_idx
  on public.hotel_booking_links(catalog_source,catalog_source_id,verified_at desc) where active;
 alter table public.hotel_booking_links enable row level security;
