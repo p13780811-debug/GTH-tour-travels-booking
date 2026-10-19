@@ -23,6 +23,10 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Clearly distinguish inspirational destination imagery from specific hotel/tour/property media and from bookable inventory. Show honest empty search results, never imply a hotel or tour exists solely from a destination cover photo.
 - Respect source attribution, responsive image sizes, lazy loading, accessibility and mobile scroll performance; preserve existing global header/footer and navigation.
 
+- Luxury pixel-precise destination card specification: sharp, properly cropped responsive imagery; desktop cinematic image/text balance; mobile swipeable side-by-side rails with short description, country/city label and working CTA, keeping cards compact.
+- Use existing connected Pexels API for destination imagery where allowed; audit API terms, license, attribution and brand/person restrictions. Store image provenance, use image sizing/caching responsibly and never claim zero copyright risk. Do not use generic destination imagery as a specific hotel/tour photo.
+- Preserve navy/gold ecosystem design and existing navigation/footer. Optimize native touch scroll and avoid costly scroll animations; validate Android mobile performance.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
