@@ -12,6 +12,10 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Destination catalogue pagination ceiling (existing loader stops at 1200 records).
 - Mobile regression checks, booking links, tests, and production build.
 
+- Global hotels: audit Dubai and other international destinations for absent imported records versus city/country query mismatches; verify actual country coverage before making availability claims.
+- Hotel media: measure Mumbai/Goa missing-photo rates; enrich only exact-property licensed images with source attribution, never unrelated stock or fabricated images.
+- Destination-to-hotel links: verify destination slug, city and country routing end-to-end, and ensure a meaningful honest empty state when no records exist.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
