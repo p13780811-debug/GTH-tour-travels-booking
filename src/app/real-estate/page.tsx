@@ -54,7 +54,7 @@ export default function RealEstatePage() {
         try {
             const positive = (key: string) => { const value = Number(params.get(key)); return Number.isFinite(value) && value > 0 ? value : undefined }
             const sort = params.get("sort")
-            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
+            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: (() => { const value = params.get("type")?.trim(); return value && /^[\p{L}\p{N}\s/-]{1,80}$/u.test(value) ? value : undefined })(), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
             if (current !== request.current) return
             setProperties(data)
             setPage(nextPage)
