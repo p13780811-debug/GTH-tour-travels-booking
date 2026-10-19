@@ -4,7 +4,7 @@ import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
 import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
-import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
+import {ArrowRight,BedDouble,Hotel,MapPin} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
 export default function HotelResults({city="",destination="",compactRail=false,scope}:{city?:string;destination?:string;compactRail?:boolean;scope?:HotelSearchScope}){

@@ -24,10 +24,9 @@ test("No synthetic hotels or borrowed property photos when matching destination 
  const ui=read("src/app/hotels/results/HotelResults.tsx");
  assert.match(ui,/not imported yet/);
  assert.match(ui,/No verified property photo/);
- assert.match(ui,/Search this hotel on Booking\.com/);
- assert.match(ui,/External name search only/);
- assert.match(ui,/rel="noopener noreferrer nofollow"/);
- assert.match(ui,/rel="noopener noreferrer sponsored"/);
+ assert.match(ui,/No direct partner booking link yet/);
+ assert.match(ui,/View hotel & source/);
+ assert.doesNotMatch(ui,/hotelProviderSearchUrl/);
  assert.match(ui,/\/hotels\/stay\//);
  assert.match(ui,/hasMore|setMore/);
 });

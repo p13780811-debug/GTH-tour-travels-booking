@@ -42,7 +42,8 @@ test("Hotels planning controls and fallback routes work without changing global 
   assert.match(page,/id="hotel-guests"/);
   assert.match(page,/setRequestedCountry\(selectedCountry\)/);
   assert.match(page,/setRequestedCountry\("IN"\)/);
-  assert.match(page,/hotelProviderSearchUrl\(\[hotel.name,hotel.city,hotel.country\]/);
-  assert.match(read("src/app/hotels/results/HotelResults.tsx"),/Search this hotel on Booking\.com/);
+  assert.match(page,/View hotel details/);
+  assert.doesNotMatch(page,/hotelProviderSearchUrl/);
+  assert.doesNotMatch(read("src/app/hotels/results/HotelResults.tsx"),/Search this hotel on Booking\.com/);
   assert.doesNotMatch(page,/images\.pexels\.com\/photos\/258154/);
 });

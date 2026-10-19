@@ -39,13 +39,17 @@ test("hotel API exposes only public listing attributes", () => {
   assert.match(api, /Cache-Control/);
 });
 
-test("hotel results retain approved handoffs and honest external hotel-name search", () => {
+test("hotel results always open GTH details before optional provider booking", () => {
   const result = read("src/app/hotels/results/HotelResults.tsx");
-  assert.match(result, /Continue to booking partner/);
-  assert.match(result, /Search this hotel on Booking\.com/);
-  assert.match(result, /External name search only/);
-  assert.match(result, /rel="noopener noreferrer sponsored"/);
-  assert.match(result, /rel="noopener noreferrer nofollow"/);
+  const detail = read("src/app/hotels/stay/[id]/page.tsx");
+  assert.match(result, /View hotel & source/);
+  assert.match(result, /\/hotels\/stay\//);
+  assert.match(result, /Booking options inside hotel details/);
+  assert.doesNotMatch(result, /hotelProviderSearchUrl|Search this hotel on Booking\.com|Continue to booking partner/);
+  assert.match(detail, /Book Now with Partner/);
+  assert.match(detail, /href=\{hotel\.partner\}/);
+  assert.match(detail, /rel="noopener noreferrer sponsored"/);
+  assert.doesNotMatch(detail, /hotelProviderSearchUrl/);
 });
 
 test("hotel search retains validated guest and date planning across details", () => {
@@ -57,8 +61,9 @@ test("hotel search retains validated guest and date planning across details", ()
   assert.match(list,/stayParams\.set\("adults",String\(guests\)\)/);
   assert.match(list,/encodeURIComponent\(String\(hotel\.id\)\)\+staySuffix/);
   assert.match(detail,/searchParams\?:Promise/);
-  assert.match(detail,/const requestedStay=\{checkin,checkout,adults\}/);
-  assert.match(detail,/hotelProviderSearchUrl\([^\n]*,requestedStay\)/);
+  assert.match(detail,/Your selected stay is/);
+  assert.match(detail,/The partner confirms availability/);
+  assert.match(detail,/Direct booking is not yet connected/);
   assert.match(list,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
 });
 

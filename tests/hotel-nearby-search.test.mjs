@@ -36,15 +36,17 @@ test("hotel booking search uses official external provider without invented affi
   assert.equal(url.searchParams.has("aid"),false);
   assert.equal(hotelProviderSearchUrl(""),"https://www.booking.com/");
 });
-test("API stays anon-read-only and page links to external live inventory",()=>{
+test("API stays anon-read-only and hotels use a detail-first booking flow",()=>{
   const api=read("src/app/api/hotels/route.ts");
   const page=read("src/app/hotels/page.tsx");
   const rail=read("src/app/hotels/results/HotelResults.tsx");
   assert.match(api,/hotelLocationFilter\(cityLike,nearCity\)/);
   assert.match(api,/isInHotelBounds/);
   assert.doesNotMatch(api,/SUPABASE_SERVICE_ROLE_KEY|\.update\(|\.insert\(/);
-  assert.match(page,/hotelProviderSearchUrl/);
-  assert.match(rail,/hotelProviderSearchUrl/);
+  assert.match(page,/View hotel details/);
+  assert.match(rail,/View hotel & source/);
+  assert.doesNotMatch(page,/hotelProviderSearchUrl/);
+  assert.doesNotMatch(rail,/hotelProviderSearchUrl/);
 });
 test("server-side source validation remains strict and partial rejection counted",()=>{
   const importer=read("scripts/import_osm_hotels.py");
