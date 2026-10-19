@@ -3,7 +3,6 @@ import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
-import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin,ShieldCheck} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
@@ -71,10 +70,6 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
   <Link href={"/hotels?"+hotelSearchParams({city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,category:effectiveCategory,sort:effectiveSort,source:effectiveSource},1)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
-  <a href={hotelProviderSearchUrl(placeLabel)} target="_blank" rel="noopener noreferrer nofollow"
-    className="gth-btn-gold ml-0 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold sm:ml-3">
-    Find live rooms on Booking.com <ArrowRight size={16}/>
-  </a>
  </div>;
  return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
@@ -153,15 +148,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
       <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
-      {hotel.affiliate_link?<a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">Continue to booking partner <ArrowRight size={16}/></a>:
-       <div className="space-y-2">
-        <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "))}
-          target="_blank" rel="noopener noreferrer nofollow"
-          className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
-          Search this hotel on Booking.com <ArrowRight size={16}/>
-        </a>
-        <p className="flex gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={15} className="mt-1 shrink-0"/>External name search only. Confirm the exact property with the provider.</p>
-       </div>}
+      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.affiliate_link ? "Booking options inside hotel details" : "No direct partner booking link yet"}</p>
      </div>
     </div>
    </article>)}

@@ -19,7 +19,6 @@ import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
-import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 
 import {
     Search,
@@ -591,15 +590,9 @@ function HotelsContent() {
                             </button>
                             <span className="text-xs text-[var(--text-soft)]">Source-backed listings</span>
                         </div>
-                        <section aria-label="Worldwide live hotel booking search" className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-                            <div className="max-w-xl">
-                                <h2 className="text-base font-semibold">Need real room prices, photos and availability?</h2>
-                                <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Our OSM directory shows independently sourced hotel locations, not live room inventory. Search worldwide with an external booking provider and choose your actual dates and guests there.</p>
-                            </div>
-                            <a href={hotelProviderSearchUrl(requestedCity||search,{checkin,checkout,adults:guests})} target="_blank" rel="noopener noreferrer nofollow"
-                               className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
-                                Search available hotels on Booking.com <ChevronRight size={16}/>
-                            </a>
+                        <section aria-label="Hotel research and booking journey" className="mb-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+                            <h2 className="text-base font-semibold">Choose a hotel, then view its details</h2>
+                            <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Explore exact property details on GTH PRO first. Book Now is provided inside the detail page only when that hotel has an approved partner booking link. No second generic supplier search.</p>
                         </section>
                         {/* TOP STATS */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
@@ -692,15 +685,7 @@ function HotelsContent() {
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                                                     View hotel details <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
-                                                {hotel.affiliate_link ? <a href={hotel.affiliate_link} target="_blank" rel="noopener noreferrer sponsored"
-                                                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] px-3 text-center text-xs font-semibold">
-                                                    Continue to booking partner
-                                                </a> : <a href={hotelProviderSearchUrl([hotel.name,hotel.city,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults:guests})}
-                                                   target="_blank" rel="noopener noreferrer nofollow"
-                                                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] px-3 text-center text-xs font-semibold">
-                                                    Search on Booking.com
-                                                </a>}
-                                                {!hotel.affiliate_link&&<p className="text-[11px] leading-4 text-[var(--text-soft)]">External name search only; verify exact property.</p>}
+                                                <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.affiliate_link ? "Booking options on hotel detail page." : "Exact hotel partner link not yet connected."}</p>
                                             </div>
                                         </div>
                                     </div>

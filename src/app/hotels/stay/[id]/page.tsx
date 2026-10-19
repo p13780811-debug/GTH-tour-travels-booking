@@ -6,7 +6,6 @@ import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelStayVisual from "@/components/hotel/HotelStayVisual";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
-import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
 import {isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
 import Link from "next/link";
@@ -97,7 +96,6 @@ export default async function HotelStay({params,searchParams}:PageProps){
  const checkout=/^\d{4}-\d{2}-\d{2}$/.test(checkoutInput)?checkoutInput:"";
  const adultString=firstSearchValue(requested.adults);
  const adults=/^(?:[1-9]|1[0-9]|20)$/.test(adultString)?Number(adultString):undefined;
- const requestedStay={checkin,checkout,adults};
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
  const hotel=await getHotel(id);
@@ -170,7 +168,7 @@ export default async function HotelStay({params,searchParams}:PageProps){
       This is a property-location discovery listing, not a confirmed room offer. Check travel dates,
       room type, total taxes, accessibility, cancellation conditions and availability with the property or an authorized booking partner.
       No unverified nightly prices, star ratings or customer reviews are displayed.
-      {checkin&&checkout?" Your selected dates will be passed to the external hotel search when valid; booking is never confirmed here.":""}
+      {checkin&&checkout?` Your selected stay is ${checkin} to ${checkout}${adults?` for ${adults} adult${adults>1?"s":""}`:""}. The partner confirms availability and may ask you to confirm dates again.`:""}
      </p>
      <div className="mt-6 grid gap-3 sm:grid-cols-2">
       {[
@@ -186,10 +184,10 @@ export default async function HotelStay({params,searchParams}:PageProps){
     <div className="mt-7 flex flex-wrap gap-3">
      {hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
-       <BedDouble size={17}/> Check price with partner <ArrowUpRight size={16}/></a>}
-     {!hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
-       href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.country].filter(Boolean).join(" "),requestedStay)} target="_blank" rel="noopener noreferrer nofollow">
-       <BedDouble size={17}/> Search availability with Booking.com <ArrowUpRight size={16}/></a>}
+       <BedDouble size={17}/> Book Now with Partner <ArrowUpRight size={16}/></a>}
+     {!hotel.partner&&<div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--text-soft)]">
+       Direct booking is not yet connected for this exact hotel. You can review the property information here without being redirected to another hotel search.
+      </div>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}
      {hotel.sourceUrl&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
