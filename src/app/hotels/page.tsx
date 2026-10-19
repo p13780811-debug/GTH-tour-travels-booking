@@ -652,7 +652,9 @@ function HotelsContent() {
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    {sourceFilter==="liteapi"?"Page-wise LiteAPI results · total provider count not asserted":"Showing "+hotels.length.toLocaleString()+" of "+total.toLocaleString()} · {requestedDestination || requestedCity || requestedCountry || "Worldwide"} · Page {page}
+                                    {sourceFilter==="liteapi"
+                                      ? <>Page-wise LiteAPI results · total provider count not asserted</>
+                                      : <>Showing {hotels.length.toLocaleString()} of {total.toLocaleString()}</>} · {requestedDestination || requestedCity || requestedCountry || "Worldwide"} · Page {page}
                                 </p>
                             </div>
 
