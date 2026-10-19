@@ -205,10 +205,10 @@ export default async function HotelStay({params,searchParams}:PageProps){
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
        <BedDouble size={17}/> Book Now{hotel.partnerName?" · "+hotel.partnerName:""} <ArrowUpRight size={16}/></a>}
      {!hotel.partner&&<div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--text-soft)]">
-       Exact-property booking is not yet connected for this hotel. You can search by this hotel\u2019s name and location on Booking.com; the provider may show matching results rather than the exact hotel page.
+       Exact-property booking is not yet connected for this hotel. You can search by this hotel’s name and location on Booking.com; the provider may show matching results rather than the exact hotel page.
       </div>}
      {!hotel.partner&&(hotel.city||hotel.address||hotel.country)&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
-       href={hotelProviderSearchUrl([hotel.name,hotel.address||hotel.city||hotel.country,hotel.city,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults})}
+       href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.address,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults})}
        target="_blank" rel="noopener noreferrer nofollow">
        <BedDouble size={17}/> Find this hotel on Booking.com <ArrowUpRight size={16}/></a>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
