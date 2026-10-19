@@ -31,6 +31,10 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Reuse each pillar's actual three-pillar ecosystem homepage image asset as the corresponding pillar landing-page hero (Travel, Real Estate, Tender); inspect actual assets and image rights before wiring, never substitute generated lookalikes.
 - Country/destination discovery card cover image should match the same destination detail page wide hero; use one canonical media reference with responsive image variants and crop positioning, not independent arbitrary image selection.
 
+- User-confirmed exact Real Estate visual reference (19 Oct mobile and desktop screenshots): white editorial hero card, left headline/action badges and right skyline/villa image on desktop; on mobile vertically stack copy first and SAME skyline/villa image below, followed by intent tabs/search and native bottom navigation. Do not replace with a generic real-estate photo or generated lookalike.
+- Maintain exact media identity across listing/discovery card and detail hero for hotel, tour and destination records: the selected card's verified entity-specific primary image must be the detail hero primary image, with responsive crop/size variants only; support honest no-photo states for records without verified media.
+- Before implementing cross-pillar heroes, identify the real source asset already used in the ecosystem three-pillar homepage and Real Estate Explorer; reuse the existing asset rather than approximate by visual search.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
