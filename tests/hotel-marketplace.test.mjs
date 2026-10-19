@@ -39,8 +39,90 @@ test("hotel API exposes only public listing attributes", () => {
   assert.match(api, /Cache-Control/);
 });
 
-test("hotel results show unavailable partner links honestly", () => {
+test("hotel results always open GTH details before optional provider booking", () => {
   const result = read("src/app/hotels/results/HotelResults.tsx");
-  assert.match(result, /Partner booking link not available/);
-  assert.match(result, /rel="noopener noreferrer sponsored"/);
+  const detail = read("src/app/hotels/stay/[id]/page.tsx");
+  assert.match(result, /View hotel & source/);
+  assert.match(result, /\/hotels\/stay\//);
+  assert.match(result, /Booking options inside hotel details/);
+  assert.doesNotMatch(result, /hotelProviderSearchUrl|Search this hotel on Booking\.com|Continue to booking partner/);
+  assert.match(detail, /Book Now\{hotel\.partnerName/);
+  assert.match(detail, /href=\{hotel\.partner\}/);
+  assert.match(detail, /rel="noopener noreferrer sponsored"/);
+  assert.match(detail, /hotelProviderSearchUrl/);
+  assert.match(detail, /Find this hotel on Booking.com/);
+  assert.match(detail, /!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
+});
+
+test("hotel search retains validated guest and date planning across details", () => {
+  const list = read("src/app/hotels/page.tsx");
+  const detail = read("src/app/hotels/stay/[id]/page.tsx");
+  assert.match(list,/const stayParams=new URLSearchParams/);
+  assert.match(list,/stayParams\.set\("checkin",checkin\)/);
+  assert.match(list,/stayParams\.set\("checkout",checkout\)/);
+  assert.match(list,/stayParams\.set\("adults",String\(guests\)\)/);
+  assert.match(list,/encodeURIComponent\(String\(hotel\.id\)\)\+staySuffix/);
+  assert.match(detail,/searchParams\?:Promise/);
+  assert.match(detail,/Your selected stay is/);
+  assert.match(detail,/The partner confirms availability/);
+  assert.match(detail,/Exact-property booking is not yet connected/);
+  assert.match(list,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
+});
+
+test("hotel search and result pages recover from API failures without fake records", () => {
+  const landing=read("src/app/hotels/page.tsx");
+  const results=read("src/app/hotels/results/HotelResults.tsx");
+  const image=read("src/components/hotel/HotelPropertyImage.tsx");
+  assert.match(landing,/Retry hotel search/);
+  assert.match(landing,/\[queryKey,retryCount\]/);
+  assert.match(results,/Retry hotel listings/);
+  assert.match(results,/effectiveSource,retryCount\]/);
+  assert.match(results,/activeKey\.current!==startedFor/);
+  assert.match(image,/Original property photo not available/);
+  assert.match(image,/Property directory/);
+  assert.doesNotMatch(image,/useHotelIllustrations|illustration=/);
+});
+
+test("hotel discovery has real linked destination imagery separate from property media", () => {
+  const page=read("src/app/hotels/page.tsx");
+  assert.match(page,/featuredDestinations/);
+  assert.match(page,/image:"\/images\/cities\/mumbai\.jpg"/);
+  assert.match(page,/image:"\/images\/cities\/goa\.jpg"/);
+  assert.match(page,/<Image src=\{place\.image\}/);
+  assert.match(page,/href=\{"\/hotels\/"\+place\.slug\}/);
+  assert.match(page,/Destination photographs illustrate the cities, not any individual hotel/);
+  assert.doesNotMatch(page,/index%illustrations\.length/);
+});
+
+test("hotel sidebar does not present generic amenities as verified property features", () => {
+  const page=read("src/app/hotels/page.tsx");
+  assert.match(page,/General planning checklist only/);
+  assert.match(page,/not verified amenities of any specific hotel/);
+  assert.doesNotMatch(page,/Infinity Pool|Breakfast Included|Fitness Club/);
+});
+
+test("Booking-style responsive hotel list uses desktop filter sidebar and mobile filter drawer",()=>{
+ const page=read("src/app/hotels/page.tsx");
+ const results=read("src/app/hotels/results/HotelResults.tsx");
+ assert.match(page,/lg:grid-cols-\[260px_minmax\(0,1fr\)\]/);
+ assert.match(page,/aria-controls="hotel-filter-panel"/);
+ assert.match(page,/aria-expanded=\{mobileFiltersOpen\}/);
+ assert.match(page,/Close filters/);
+ assert.match(page,/aria-label="Hotel listing results"/);
+ assert.match(page,/flex min-w-0 flex-col md:flex-row/);
+ assert.match(page,/Original hotel photos are shown|Original hotel photos are shown when supported|Original hotel photos/);
+ assert.match(results,/className="flex min-w-0 flex-col gap-4"/);
+ assert.match(results,/md:flex-row/);
+ assert.doesNotMatch(results,/sm:grid-cols-2 xl:grid-cols-3/);
+});
+
+test("dedicated hotel results maintain source-backed sidebar and mobile category links",()=>{
+ const code=read("src/app/hotels/results/HotelResults.tsx");
+ assert.match(code,/Hotel result filters/);
+ assert.match(code,/Accommodation categories/);
+ assert.match(code,/Mobile accommodation categories/);
+ assert.match(code,/filterHref\(\{category:type\.id\}\)/);
+ assert.match(code,/filterHref\(\{source:value\}\)/);
+ assert.match(code,/filterHref\(\{sort:value\}\)/);
+ assert.match(code,/lg:grid-cols-\[240px_minmax\(0,1fr\)\]/);
 });

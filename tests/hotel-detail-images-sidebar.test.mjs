@@ -5,7 +5,9 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("OSM hotel source image from catalog is passed to cards, not nulled",()=>{
  const api=read("src/app/api/hotels/route.ts");
- assert.match(api,/hotel\.image_url\|\|commons\.get\(hotel\.source_id\)\?\.image_url\), affiliate_link: null/);
+ assert.match(api,/const original=hotelSourceImageUrl\(hotel\.image_url\)/);
+ assert.match(api,/const licensed=original\?null:commons\.get\(hotel\.source_id\)/);
+ assert.match(api,/image: original\|\|licensedUrl\|\|"\/placeholder\.jpg"/);
  assert.match(api,/source_id\.replace\("\/",\s*"-"\)/);
  assert.match(api,/source_license: "ODbL-1\.0"/);
 });
@@ -17,7 +19,7 @@ test("Hotel detail can resolve encoded OSM card IDs and reuse sourced image",()=
  assert.match(page,/\.eq\("source","osm"\)\.eq\("source_id",sourceId\)/);
  const image=read("src/components/hotel/HotelPropertyImage.tsx");
  assert.match(page,/HotelPropertyImage/);
- assert.match(image,/Original hotel photo not available/);
+ assert.match(image,/Original property photo not available/);
  assert.match(image,/source-attributed property image/);
  assert.match(image,/onError=\{\(\)=>setFailed\(true\)\}/);
 });
@@ -26,6 +28,6 @@ test("Left sidebar has functioning data-backed accommodation categories",()=>{
  assert.match(ui,/Accommodation categories/);
  for(const category of ["hotel","resort","guest_house","apartment","hostel","motel"])assert.ok(ui.includes('["'+category+'",'));
  assert.match(ui,/checked=\{category===value\}/);
- assert.match(ui,/onChange=\{\(\)=>setCategory\(value\)\}/);
+ assert.match(ui,/onChange=\{\(\)=>\{setCategory\(value\);setMobileFiltersOpen\(false\);\}\}/);
  assert.match(ui,/name="hotel-accommodation-category"/);
 });

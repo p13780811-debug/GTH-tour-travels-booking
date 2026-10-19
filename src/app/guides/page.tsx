@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export const dynamic="force-dynamic";
 export default async function GuidesPage() {
-  const [media,progress,cities]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null),listMappedCities({pageSize:30}).catch(()=>null)]);
+  const [media,progress,cities]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null),listMappedCities({pageSize:48}).catch(()=>null)]);
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">

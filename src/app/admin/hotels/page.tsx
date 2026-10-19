@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {ShieldCheck} from "lucide-react";
 import HotelReviewDashboard from "@/components/hotel/HotelReviewDashboard";
+import HotelBookingLinkReview from "@/components/hotel/HotelBookingLinkReview";
 export const metadata:Metadata={
  title:"Hotel Partner Review | GTH PRO Admin",
  robots:{index:false,follow:false},
@@ -14,6 +15,7 @@ export default function AdminHotels(){
    <h1 className="mt-4 text-3xl font-semibold">Hotel partner review</h1>
    <p className="mt-3 mb-8 text-sm leading-7 text-[var(--text-soft)]">Private submissions and photos. Every public listing requires administrator verification of the hotel, owner authority and image publication rights.</p>
    <HotelReviewDashboard/>
+   <HotelBookingLinkReview/>
   </div>
  </main>;
 }

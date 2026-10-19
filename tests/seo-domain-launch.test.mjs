@@ -16,7 +16,7 @@ test("SEO domain selection is conditional: never prematurely index or point to u
   assert.match(root,/index: false, follow: false/);
   assert.match(sitemap,/if \(!publicLaunch\) return \[\]/);
   assert.match(sitemap,/const base = siteOrigin\(\)/);
-  assert.match(robots,/sitemap: siteOrigin\(\) \+ "\/sitemap\.xml"/);
+  assert.match(robots,/sitemap: \[siteOrigin\(\) \+ "\/sitemap\.xml",siteOrigin\(\) \+ "\/sitemap-index\.xml"\]/);
   assert.match(robots,/allow: "\/"/);
   assert.match(robots,/disallow: privateRoutes/);
   assert.doesNotMatch(root,/alternates:\s*\{\s*canonical:\s*"\/"\s*\}/);

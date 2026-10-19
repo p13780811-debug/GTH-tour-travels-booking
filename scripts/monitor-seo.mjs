@@ -33,6 +33,48 @@ try {
     } catch { errors.push("sitemap.xml: invalid URL"); }
   }
   console.log("Sitemap URLs discovered: " + urls.length);
+  // Inspect the new live sitemap index and sample every content category.
+  // Never fetch all 30,000 detail URLs in one daily monitor (cost/traffic-safe).
+  const indexXml = await get("/sitemap-index.xml");
+  if (!/<sitemapindex\b/.test(indexXml)) errors.push("sitemap-index.xml: invalid XML root");
+  const shardUrls = [...indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map(m => decode(m[1]))
+    .filter(v => v !== origin + "/sitemap.xml");
+  if (shardUrls.length !== new Set(shardUrls).size) errors.push("sitemap-index.xml: duplicate sitemaps");
+  const groups = new Map();
+  for (const u of shardUrls) {
+    let path;
+    try {
+      const parsed = new URL(u);
+      if (parsed.origin !== origin || parsed.search || parsed.hash ||
+        !/^\/seo-sitemaps\/(hotels|tours|destinations|attractions|tenders)\/[0-9]+\.xml$/.test(parsed.pathname)) {
+        errors.push("sitemap-index.xml: invalid shard URL");
+        continue;
+      }
+      path = parsed.pathname;
+    } catch { errors.push("sitemap-index.xml: invalid shard URL"); continue; }
+    const kind = path.split("/")[2];
+    const current = groups.get(kind) || [];
+    current.push(path);
+    groups.set(kind, current);
+  }
+  const sampled = [...groups.values()].flatMap(v => v.length > 1 ? [v[0], v[v.length - 1]] : v).slice(0, 12);
+  for (const shard of sampled) {
+    const xml = await get(shard);
+    if (!/<urlset\b/.test(xml)) { errors.push(shard + ": invalid sitemap root"); continue; }
+    const found = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => decode(m[1]));
+    if (!found.length || found.length > 1000) { errors.push(shard + ": empty/oversized shard"); continue; }
+    if (found.length !== new Set(found).size) errors.push(shard + ": duplicate canonical URLs");
+    for (const u of [found[0],found[Math.floor(found.length/2)],found[found.length-1]]) {
+      try {
+        const parsed = new URL(u);
+        if (parsed.origin !== origin || parsed.search || parsed.hash) errors.push(shard + ": invalid destination URL");
+        else sitemapPaths.push(parsed.pathname);
+      } catch { errors.push(shard + ": invalid listed URL"); }
+    }
+  }
+  console.log("SEO index: " + shardUrls.length + " category shards; " + sampled.length + " sampled (not Google indexing proof)");
+
 } catch (error) {
   errors.push("robots/sitemap fetch failed: " + (error instanceof Error ? error.message : "unknown"));
 }

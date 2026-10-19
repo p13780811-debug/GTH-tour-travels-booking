@@ -4,7 +4,7 @@ import styles from "./Listing.module.css"
 
 const initial = { country:"", city:"", type:"", listing:"", bedrooms:"", currency:"", minPrice:"", maxPrice:"", sort:"latest" }
 
-export default function DiscoveryFilters({ onApply }: { onApply: () => void }) {
+export default function DiscoveryFilters({ onApply, expanded = false }: { onApply: () => void; expanded?: boolean }) {
  const [filters, setFilters] = useState<Record<string,string>>(initial)
 
  useEffect(() => {
@@ -18,7 +18,7 @@ export default function DiscoveryFilters({ onApply }: { onApply: () => void }) {
   return () => { window.removeEventListener("gth-discovery-filters", sync); window.removeEventListener("popstate", sync) }
  }, [])
 
- return <details id="discovery-filters" className={`gth-glass ${styles.filterPanel}`}>
+ return <details id="discovery-filters" open={expanded || undefined} className={`gth-glass ${styles.filterPanel}`}>
   <summary>Refine your search <span className="text-sm font-normal opacity-70">· Location, type, bedrooms & budget</span></summary>
   <form className={styles.filterForm} onSubmit={event => {
    event.preventDefault()

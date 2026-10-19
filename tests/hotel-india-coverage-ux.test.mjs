@@ -17,13 +17,15 @@ test("India hotel discovery retains source, location and alphabetical sort acros
  }
 });
 
-test("Server validates source/sort and keeps names/address/region attributable",()=>{
+test("Server validates source/sort and excludes hotel-name or street text as city evidence",()=>{
  const api=read("src/app/api/hotels/route.ts");
  const geo=read("src/lib/travel/hotel-geo-bounds.ts");
  assert.match(api, /\["all","partner","directory"\]\.includes\(source\)/);
  assert.match(api, /\["name_asc","name_desc"\]\.includes\(sort\)/);
- assert.match(geo, /address\.ilike/);
- assert.match(geo, /name\.ilike/);
+ assert.match(geo, /city\.ilike/);
+ assert.match(geo, /region\.ilike/);
+ assert.doesNotMatch(geo, /address\.ilike|name\.ilike/);
+ assert.match(api, /catalogCountQuery\.ilike\("name", nameLike\)/);
  assert.match(api, /sort !== "name_desc"/);
  assert.match(api, /source === "partner"/);
  assert.match(api, /source === "directory"/);
@@ -50,7 +52,8 @@ test("Hotels UI reuses global CSS, never invents room inventory or prices",()=>{
  assert.match(page,/Sort hotel listings/);
  assert.match(page,/Hotel name \(optional\)/);
  assert.match(page,/sourceFilter/);
- assert.match(page,/Price not independently verified/);
+ assert.match(page,/Price on provider/);
+ assert.match(page,/not independently verified/);
  assert.match(page,/gth-btn-gold/);
  assert.match(page,/bg-\[var\(--card\)\]/);
  assert.doesNotMatch(page,/Math\.random|generateHotels\(/);

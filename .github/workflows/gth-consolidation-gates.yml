@@ -15,13 +15,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Ensure approved Real Estate UI, backend routes and media are unchanged
+      - name: Preserve ecosystem shell and Real Estate workflows around the approved explorer redesign
         run: |
           set -euo pipefail
-          # Compare ONLY changes introduced by this PR to its base; previously merged SEO changes are not part of this PR.
-          # Scoped master CSS is guarded by dedicated design regression tests.
+          # The user approved the compact explorer integration in this consolidated release.
+          # Only its listing page, scoped components, filter expansion, detail typography
+          # and saved-search budget handling may change. Shared navigation/footer,
+          # global CSS, publishing, enquiry and account workflows stay protected.
           git diff --exit-code HEAD^1 HEAD -- \
-            src/app/real-estate/page.tsx \
+            src/app/globals.css \
+            src/components/Navbar.tsx \
+            src/components/Footer.tsx \
             src/app/real-estate/layout.tsx \
             'src/app/real-estate/[slug]/' \
             src/app/real-estate/admin/ \
@@ -32,6 +36,14 @@ jobs:
             src/app/real-estate/tools/ \
             src/components/real-estate/ \
             src/lib/real-estate/ \
+            ':!src/components/real-estate/Explorer.module.css' \
+            ':!src/components/real-estate/ExplorerCard.tsx' \
+            ':!src/components/real-estate/ExplorerDialog.tsx' \
+            ':!src/components/real-estate/ExplorerHero.tsx' \
+            ':!src/components/real-estate/DiscoveryFilters.tsx' \
+            ':!src/components/real-estate/PropertyDetailClient.tsx' \
+            ':!src/lib/real-estate/explorer.ts' \
+            ':!src/lib/real-estate/saved-searches.ts' \
             src/app/api/real-estate/ \
             src/app/api/admin/leads/route.ts \
             src/app/api/admin/submissions/route.ts \
@@ -39,7 +51,6 @@ jobs:
             src/components/mobile/BottomNav.tsx \
             public/brand/property-story.jpg \
             public/brand/property-story.mp4
-          test -z "$(git diff --name-only HEAD^1 HEAD -- src/components/real-estate/ src/app/real-estate/page.tsx src/app/real-estate/layout.tsx)"
           # Root metadata may change for SEO, but approved rendered layout/navbar is byte-identical.
           git show HEAD^1:src/app/layout.tsx \
             | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui

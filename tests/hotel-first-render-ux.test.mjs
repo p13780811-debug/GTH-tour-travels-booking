@@ -25,7 +25,7 @@ test("hotel catalog still uses actual API data and source-backed partner handoff
  assert.match(s, /fetch\(\`\/api\/hotels\?\$\{hotelParams\}\`/);
  assert.match(s, /<HotelsContent \/>/);
  assert.match(s, /setHotels\(data as HotelListing\[\]\)/);
- assert.match(s, /hotel\.affiliate_link/);
+ assert.match(s, /hotel\.booking_ready/);
  assert.match(s, /aria-label="Hotel city or destination"/);
  assert.doesNotMatch(s, /Math\.random|generateHotels\(/);
 });

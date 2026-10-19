@@ -46,7 +46,7 @@ test("destination marketplace has real GET search, bounded pagination and bundle
   assert.match(list, /name="search"/);
   assert.match(list, /const perPage = 18/);
   assert.match(list, /filtered\.slice\(/);
-  assert.match(list, /pageLink\(search, page \+ 1, country, region, sort\)/);
+  assert.match(list, /pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
   assert.match(list, /destinationImageForSlug\(item\.slug\)/);
   assert.match(data, /availableCityImages/);
   assert.match(data, /\/images\/default-city\.jpg/);
@@ -72,7 +72,7 @@ test("worldwide directory uses source-backed active rows, geographic filters and
  assert.match(listing,/role="search"/);
  assert.match(listing,/params\.set\("country", country\)/);
  assert.match(listing,/params\.set\("region", region\)/);
- assert.match(listing,/pageLink\(search, page \+ 1, country, region, sort\)/);
+ assert.match(listing,/pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
  const card=read("src/components/destination/DestinationCard.tsx");
  assert.match(card,/Country information unavailable/);
  assert.match(listing,/editorial references/);
