@@ -35,6 +35,11 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Maintain exact media identity across listing/discovery card and detail hero for hotel, tour and destination records: the selected card's verified entity-specific primary image must be the detail hero primary image, with responsive crop/size variants only; support honest no-photo states for records without verified media.
 - Before implementing cross-pillar heroes, identify the real source asset already used in the ecosystem three-pillar homepage and Real Estate Explorer; reuse the existing asset rather than approximate by visual search.
 
+- Marketplace-grade category/filter navigation on every applicable pillar discovery page, using the existing Real Estate desktop left filter sidebar as the layout benchmark and mobile category chips plus accessible filter sheet/drawer.
+- Hotels: distinguish accommodation types (hotel/resort/villa/apartment/hostel/guesthouse/serviced apartment), star ratings, verified amenities (pool/Wi-Fi/parking/breakfast/AC), price, room/bed/guest capacity, cancellation terms and BHK only for applicable apartment inventory. Never fabricate ratings, amenities or available rooms; unsupported filter fields must not appear functional.
+- Tours/Activities: category, destination, duration, price, verified rating where present, suitability and booking readiness. Tenders: country/region, sector, deadline, eligibility and budget where sourced. Preserve source-backed sorting, URL-deep-linked filter state, empty/loading states and accessible responsive interactions.
+- Compare the UX patterns against leading international travel/accommodation marketplaces before implementation, but retain original GTH PRO branding and avoid copying proprietary design assets.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
