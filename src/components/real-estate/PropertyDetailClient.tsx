@@ -76,7 +76,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
             <div className="min-w-0">
-                <PropertyGallery slug={slug} title={property.title} image={property.image} gallery={property.gallery} district={property.district} locality={property.location || property.city} propertyType={property.property_type} />
+                <PropertyGallery slug={slug} title={property.title} image={property.image} gallery={property.gallery} district={property.district} locality={property.location || property.city} propertyType={property.property_type} reraId={property.rera_id} />
                 <nav aria-label="Project sections" className={styles.sectionNav}><a href="#overview">Overview</a>{hasInventory && <a href="#inventory">Active inventory</a>}<a href="#recorded-details">Project records</a><a href="#location">Location</a><a href="#enquiry">{isRegistryProject ? "Request details" : "Enquire"}</a></nav>
                 <section id="overview" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24">
                     <h2 className="text-2xl md:text-3xl font-bold">{isRegistryProject ? "Project overview" : "Property overview"}</h2>
