@@ -85,7 +85,7 @@ test('rate limiting fails closed; database errors do not leak internal diagnosti
  for(const [code,status] of [['P0002',404],['22023',400],['XX000',503]]){const {route}=leadRoute({rpcError:{code,message:'private database diagnostics'}});const res=await route.POST(req());assert.equal(res.status,status);assert.doesNotMatch(await res.text(),/private database diagnostics/)}
 });
 test('private schema capture is atomic, idempotent and unavailable to browser roles',()=>{
- const sql=read('supabase/migrations/20261019164511_real_estate_buyer_leads_and_property_seo.sql');
+ const sql=read('supabase/migrations/20261019165857_real_estate_buyer_leads_and_property_seo.sql');
  assert.match(sql,/property_leads enable row level security/);assert.match(sql,/on conflict\(request_id\) do nothing/);assert.match(sql,/insert into public.leads/);assert.match(sql,/security invoker set search_path=''/);assert.match(sql,/revoke all on function .* from public,anon,authenticated/);assert.match(sql,/grant execute on function .* to service_role/);assert.doesNotMatch(sql,/grant insert on public.property_leads to anon/i);
  assert.match(sql,/gth_seo_properties_v1 with\(security_invoker=true\)/);
  assert.match(read('src/lib/seo/large-sitemaps.ts'),/properties:\{view:"gth_seo_properties_v1"/);

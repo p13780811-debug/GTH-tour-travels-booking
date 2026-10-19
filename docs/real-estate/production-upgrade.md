@@ -26,7 +26,7 @@ NEXT_PUBLIC_HOME_LOAN_AFFILIATE_URL=
 
 `SUPABASE_URL` can optionally override the server database URL. The service role is imported only through `server-only`. Missing database or shared Redis configuration makes lead submission return a safe 503; it never pretends to save a lead. Existing Redis enquiry limits remain in effect (per-client and global quotas).
 
-Apply **only** `supabase/migrations/20261019164511_real_estate_buyer_leads_and_property_seo.sql` to the intended project using the normal reviewed migration process. Do not blindly push unrelated pending historical migrations. This additive migration creates the private buyer table, approved PDF catalogue, service-only atomic capture function and read-only project SEO view. It also expands the legacy CRM source constraint to accept the source values already used by the existing quick enquiry route.
+Apply **only** `supabase/migrations/20261019165857_real_estate_buyer_leads_and_property_seo.sql` to the intended project using the normal reviewed migration process. Do not blindly push unrelated pending historical migrations. This additive migration creates the private buyer table, approved PDF catalogue, service-only atomic capture function and read-only project SEO view. It also expands the legacy CRM source constraint to accept the source values already used by the existing quick enquiry route.
 
 ## Modules
 
