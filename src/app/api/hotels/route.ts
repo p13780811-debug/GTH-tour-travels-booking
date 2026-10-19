@@ -5,9 +5,10 @@ import { hotelPageWindow } from "@/lib/travel/hotel-page-window";
 import {NON_PROPERTY_NAME_PATTERN,isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
 import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "@/lib/travel/hotel-geo-bounds";
+import {safeVerifiedHotelAffiliateUrl,type HotelBookingMapping} from "@/lib/travel/hotel-booking-links";
 
 const PAGE_SIZE = 24;
-const PARTNER_HOSTS = ["klook.com", "trip.com", "booking.com", "hotellook.com", "tp.media", "tpo.lv"];
+const PARTNER_HOSTS = ["klook.com", "trip.com", "booking.com", "tp.media", "tpo.lv"];
 const safeHeaders = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 
 function safePartnerLink(value: unknown): string | null {
@@ -165,11 +166,34 @@ export async function GET(req: Request) {
         .eq("source","osm").in("source_id",candidates.slice(0,24));
       for(const item of (media||[]) as LicensedMedia[])commons.set(item.source_id,item);
     }
+    // Page-bounded exact hotel partner matches. Never infer a bookable property from OSM name.
+    // Public RLS exposes only approved, recently verified supplier hotel mappings.
+    const bookingReady=new Set<string>();
+    type ApprovedMapping=HotelBookingMapping & {catalog_source_id:string|null;reviewed_hotel_id:string|null};
+    const sourceIds=catalogRows.map(row=>row.source_id);
+    if(sourceIds.length){
+      const {data:links}=await supabase.from("hotel_booking_links")
+        .select("catalog_source_id,reviewed_hotel_id,provider,provider_property_id,provider_property_url,affiliate_url,hotel_name_at_provider")
+        .eq("catalog_source","osm").eq("active",true)
+        .in("catalog_source_id",sourceIds.slice(0,PAGE_SIZE)).limit(PAGE_SIZE*3);
+      for(const row of (links||[]) as ApprovedMapping[]){
+        if(row.catalog_source_id&&safeVerifiedHotelAffiliateUrl(row))bookingReady.add("osm:"+row.catalog_source_id);
+      }
+    }
+    const supplierIds=supplierRows.map(row=>String(row.id));
+    if(supplierIds.length){
+      const {data:links}=await supabase.from("hotel_booking_links")
+        .select("catalog_source_id,reviewed_hotel_id,provider,provider_property_id,provider_property_url,affiliate_url,hotel_name_at_provider")
+        .eq("active",true).in("reviewed_hotel_id",supplierIds.slice(0,PAGE_SIZE)).limit(PAGE_SIZE*3);
+      for(const row of (links||[]) as ApprovedMapping[]){
+        if(row.reviewed_hotel_id&&safeVerifiedHotelAffiliateUrl(row))bookingReady.add(row.reviewed_hotel_id);
+      }
+    }
     const listings = supplierRows
       .filter((hotel) => typeof hotel.name === "string" && hotel.name.trim() && typeof hotel.city === "string")
       .map((hotel) => ({
         id: hotel.id, name: hotel.name, city: hotel.city, stars: null,
-        image: safeImage(hotel.image_url), affiliate_link: safePartnerLink(hotel.affiliate_link),
+        image: safeImage(hotel.image_url), affiliate_link: null, booking_ready: bookingReady.has(String(hotel.id)),
         category:hotel.category||"hotel",country:hotel.country_code,
         source:hotel.source_name==="GTH PRO Reviewed Hotel Partner"?"Reviewed hotel owner":"Verified partner listing",
       }));
@@ -185,6 +209,7 @@ export async function GET(req: Request) {
         country:hotel.country_code,
         location_scope:hotel.city?"OSM city tag":isInHotelBounds(hotel.latitude,hotel.longitude,nearCity)?"Approximate nearby coordinate; no administrative city claim":hotel.region?"OSM region tag; city unspecified":"Geofabrik extract hint (not verified country)",
         category:hotel.category, stars: null, image: original||licensedUrl||"/placeholder.jpg", affiliate_link: null,
+        booking_ready: bookingReady.has("osm:"+hotel.source_id),
         image_attribution:licensed&&licensedUrl?{
           author:licensed.author,license:licensed.license_name,
           license_url:licensed.license_url,commons_page:licensed.commons_page

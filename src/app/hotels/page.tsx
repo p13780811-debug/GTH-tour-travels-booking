@@ -66,6 +66,7 @@ type HotelListing = {
     image: string;
     stars: number | null;
     affiliate_link: string | null;
+    booking_ready?: boolean;
     category?: string;
     country?: string | null;
     source?: string;
@@ -675,7 +676,7 @@ function HotelsContent() {
                                                     <span className="min-w-0 line-clamp-1">{hotel.city}{hotel.country?", "+hotel.country:""}</span>
                                                 </p>
                                                 <p className="mt-2 text-xs text-[var(--text-soft)]">
-                                                    {hotel.source||"Property directory"} · {hotel.affiliate_link ? "Partner handoff available" : "Directory listing"}
+                                                    {hotel.source||"Property directory"} · {hotel.booking_ready ? "Exact hotel booking on details" : "Directory listing"}
                                                 </p>
                                                 <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">Rates, room availability, star grade and reviews are not independently verified.</p>
                                             </div>
@@ -685,7 +686,7 @@ function HotelsContent() {
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                                                     View hotel details <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
-                                                <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.affiliate_link ? "Booking options on hotel detail page." : "Exact hotel partner link not yet connected."}</p>
+                                                <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.booking_ready ? "Book Now is available inside hotel details." : "Exact hotel partner link not yet connected."}</p>
                                             </div>
                                         </div>
                                     </div>

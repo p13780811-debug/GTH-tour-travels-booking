@@ -6,7 +6,7 @@ import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
 import {hotelSearchParams,validatedHotelStay,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
- affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
+ affiliate_link:string|null;booking_ready?:boolean;source?:string;source_license?:string;country?:string|null};
 export default function HotelResults({city="",destination="",compactRail=false,scope}:{city?:string;destination?:string;compactRail?:boolean;scope?:HotelSearchScope}){
  const effectiveCity=scope?.city||city;
  const effectiveDestination=scope?.destination||destination;
@@ -151,7 +151,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
       <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
-      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.affiliate_link ? "Booking options inside hotel details" : "No direct partner booking link yet"}</p>
+      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "Booking options inside hotel details" : "No direct partner booking link yet"}</p>
      </div>
     </div>
    </article>)}
