@@ -27,6 +27,10 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Use existing connected Pexels API for destination imagery where allowed; audit API terms, license, attribution and brand/person restrictions. Store image provenance, use image sizing/caching responsibly and never claim zero copyright risk. Do not use generic destination imagery as a specific hotel/tour photo.
 - Preserve navy/gold ecosystem design and existing navigation/footer. Optimize native touch scroll and avoid costly scroll animations; validate Android mobile performance.
 
+- Use the existing Real Estate Explorer page as the responsive design reference for Travel and Tender while retaining each pillar's distinct functional requirements and the shared ecosystem shell.
+- Reuse each pillar's actual three-pillar ecosystem homepage image asset as the corresponding pillar landing-page hero (Travel, Real Estate, Tender); inspect actual assets and image rights before wiring, never substitute generated lookalikes.
+- Country/destination discovery card cover image should match the same destination detail page wide hero; use one canonical media reference with responsive image variants and crop positioning, not independent arbitrary image selection.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
