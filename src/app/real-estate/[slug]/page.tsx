@@ -1,6 +1,5 @@
 import { cache } from "react"
 import { notFound } from "next/navigation"
-import { getPropertyVisuals } from "@/lib/propertyImages"
 import { isIndexableProperty, propertySeo, validPropertySlug } from "@/lib/real-estate/property-seo"
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
@@ -17,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const property = await readProperty(slug)
     const { title, description } = propertySeo(property)
     const media = approvedMedia(slug, property?.image)
-    const image = media?.url || getPropertyVisuals(property?.district || "", property?.location || property?.city || "", property?.property_type || "", [], slug).heroImage
+    const image = media?.url || "/images/gth-logo.png"
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
     return {
         title: { absolute: title }, description,
