@@ -171,3 +171,37 @@ The endpoint engine removes manual CSV export as a prerequisite for bulk collect
 Run summaries are private under `.gth-rera/` by default. Keep source exports, numeric ID lists, checkpoints and media-review manifests out of a public repository.
 
 This data change does not deploy the website. `vercel.json` disables automatic deployment for its dedicated ingestion branch; production deployment behavior for other branches is unchanged.
+
+
+## Operator-supplied historical MahaRERA ZIP: direct CSV bulk fallback (19 October 2026)
+
+The user's original `archive(2).zip` contains **43,943 CSV rows across 11 files**, with **43,926 unique RERA registration IDs** in the complete bundle. It has district-specific datasets (including Pune, Nashik, Palghar, Raigarh, Nagpur and other districts) plus a revoked-project exclusions file. These are **historical public registry snapshots, not real-time listings**; the latest `date_last_modified` in the files is **23 March 2024**. The upload does not contain verified current property prices, contact-approved agents, original project photographs, live inventory, bookings or an official per-project detail URL.
+
+PR #93's original model and sink intentionally cover **Mumbai Suburban, Thane and Mumbai City only**; no claim of statewide ingestion is made. Their three regular CSV files contain **12,042 rows**. After keeping the recorded district consistent with the expected RERA registration prefix and excluding 61 conflicting rows, the preliminary registration/name audit yields **11,981 eligible candidate registrations**. Only records passing the actual validated importer contract qualify for database submission. The revoked list is mandatory; revoked references are excluded, not listed as available. An arbitrary ZIP cannot be trusted as proof of license rights or registry verification.
+
+This release adds **`scripts/ingest_rera_archive.py`**, reusing PR #93's existing `Project` model, private SQLite `Checkpoint`, protected `SupabaseSink` and 50-record upserts. It does not need the blocked official endpoint. It processes exactly the supplied CSV schema (`MM/DD/YYYY` completion dates, combined source latitude/longitude, reported sanction/area/unit-count metrics and postal code). Original project land area is never mislabeled carpet area. Source public counts go to explicitly marked `registry_evidence.snapshot_metrics`, not prices or bedrooms. `verified_status` and `verified` stay false; unavailable values stay null. Existing approved property records, identifiers, photos, prices and moderation are protected by the shared sink.
+
+Use a local/private runner with the ZIP file; **the ZIP itself must not be committed to this public GitHub repository**, and chat uploads are not automatically present in GitHub Actions:
+
+```bash
+# No API calls, secrets, Supabase writes or deployment; prepare a deterministic 1000-record window.
+python scripts/ingest_rera_archive.py --zip "/private/archive(2).zip" \
+  --limit 1000 --offset 0 --run-dir .gth-rera/archive-0
+
+# Subsequent nonoverlapping batches, once the previous batch is reviewed:
+python scripts/ingest_rera_archive.py --zip "/private/archive(2).zip" \
+  --limit 1000 --offset 1000 --run-dir .gth-rera/archive-1000
+
+# Only after confirming source redistribution/import rights and reviewing the dry-run,
+# use protected server-only credentials already configured in the private job:
+GTH_INGESTION_ENABLED=true python scripts/ingest_rera_archive.py \
+  --zip "/private/archive(2).zip" --limit 1000 --offset 0 \
+  --run-dir .gth-rera/archive-0 \
+  --commit --authorized-snapshot --expected-project-ref dqprqjmhxjnrllczqyhz
+```
+
+The default selection interleaves the three target districts, avoiding 1,000 records exclusively from the first CSV. An interrupted run can reuse **the same source ZIP, offset, limit and private run directory** to reconcile acknowledged 50-row batches safely. Changing source archive or window in an existing checkpoint fails closed. No background schedule, database mutation or release deployment is activated by adding the importer.
+
+The ZIP's source/update dates are retained as historical metadata; `captured_at` means when GTH parsed the file, **not** when the underlying registry facts were refreshed. The provided archive lacks live source permission/license evidence, so no automated write or public asset publication should occur before authorization and the release gates. Full-state/district expansion outside these three districts needs a separately reviewed schema and sourcing contract rather than weakening the current district validator.
+
+Validation: `python -m unittest discover -s tests -p 'test_mumbai_thane_*.py' -v`. Existing public endpoint probe remains a distinct diagnostic; its TLS/source-access failure does not validate or invalidate the supplied offline CSV.
