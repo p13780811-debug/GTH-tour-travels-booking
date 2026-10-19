@@ -15,6 +15,7 @@ import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-esta
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
+import PartnerHandshake from "@/components/property/PartnerHandshake"
 import TrustStandard from "@/components/real-estate/TrustStandard"
 import BottomNav from "@/components/mobile/BottomNav"
 import styles from "@/components/real-estate/Explorer.module.css"
@@ -53,7 +54,7 @@ export default function RealEstatePage() {
         try {
             const positive = (key: string) => { const value = Number(params.get(key)); return Number.isFinite(value) && value > 0 ? value : undefined }
             const sort = params.get("sort")
-            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
+            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: (() => { const value = params.get("type")?.trim(); return value && /^[\p{L}\p{N}\s/-]{1,80}$/u.test(value) ? value : undefined })(), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
             if (current !== request.current) return
             setProperties(data)
             setPage(nextPage)
@@ -158,6 +159,7 @@ export default function RealEstatePage() {
                 <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
+                <PartnerHandshake onOpen={() => setFiltersOpen(false)} />
                 <p className={styles.sidebarNote}><LockKeyhole size={13} />Your shortlist and saved searches stay on this device.</p>
             </aside>
             <section id="listing-results" className={styles.results} aria-busy={loading}>

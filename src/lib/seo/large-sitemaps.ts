@@ -1,4 +1,5 @@
 import "server-only";
+import {isIndexableProperty} from "@/lib/real-estate/property-seo";
 import {createClient} from "@supabase/supabase-js";
 import type {MetadataRoute} from "next";
 import {isIndexableHotel,isIndexableTender,type HotelSeoRecord,type TenderSeoRecord} from "@/lib/seo/public-listings";
@@ -9,13 +10,14 @@ import {siteOrigin,isPublicLaunch} from "@/lib/seo/site";
  */
 export const SEO_PAGE_SIZE=1000;
 export const SEO_MAX_PAGES=500;
-export const SEO_KINDS=["hotels","tours","destinations","attractions","tenders"] as const;
+export const SEO_KINDS=["hotels","tours","destinations","attractions","tenders","properties"] as const;
 export type SeoKind=typeof SEO_KINDS[number];
 const CONFIG:Record<SeoKind,{view:string;key:string;fields:string;path:string;priority:number;frequency:"weekly"|"monthly"|"daily"}>={
  hotels:{view:"gth_seo_hotels_v1",key:"id",fields:"id,name,city,country_code,category,source_name,source_url,affiliate_link,created_at",path:"/hotels/stay/",priority:.4,frequency:"weekly"},
  tours:{view:"gth_seo_tours_v1",key:"id",fields:"id,title,city,city_slug,country,provider,source_name,source_url,affiliate_link",path:"/tours/",priority:.4,frequency:"weekly"},
  destinations:{view:"gth_seo_destinations_v1",key:"slug",fields:"slug,name,country,description,source_name,source_url,created_at",path:"/destinations/",priority:.5,frequency:"weekly"},
  attractions:{view:"gth_seo_attractions_v1",key:"wikidata_qid",fields:"wikidata_qid,name,description,wikidata_url,updated_at",path:"/attractions/",priority:.35,frequency:"monthly"},
+ properties:{view:"gth_seo_properties_v1",key:"slug",fields:"id,title,slug,city,district,rera_id,official_source_url,status,created_at",path:"/real-estate/",priority:.5,frequency:"weekly"},
  tenders:{view:"gth_seo_tenders_v1",key:"id",fields:"id,title,buyer,country_code,sector,summary,deadline_at,source_name,source_reference,source_url,updated_at",path:"/tender/",priority:.5,frequency:"daily"}
 };
 const UUID=/^[a-f\d]{8}-[a-f\d]{4}-[1-8][a-f\d]{3}-[89ab][a-f\d]{3}-[a-f\d]{12}$/i;
@@ -61,6 +63,7 @@ export function eligibleSeoRow(kind:SeoKind,row:Record<string,unknown>):boolean{
   category:(row.category as string)||"hotel",source:row.source_name as string,
   sourceUrl:row.source_url as string,partner:row.affiliate_link as string
  } satisfies HotelSeoRecord);
+ if(kind==="properties")return isIndexableProperty(row);
  if(kind==="tours")return isIndexableTour(row);
  if(kind==="destinations")return isIndexableDestination(row);
  if(kind==="attractions")return isIndexableAttraction(row);

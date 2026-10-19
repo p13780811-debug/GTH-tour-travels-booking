@@ -6,8 +6,10 @@ import Link from "next/link"
 import JourneyNav from "./JourneyNav"
 import { MapPin, Share2, ArrowLeft, Building2, MessageSquare, BadgeCheck, FileCheck2 } from "lucide-react"
 import { PropertyService } from "@/lib/real-estate/propertyService"
-import { approvedMedia } from "@/lib/real-estate/approved-media"
-import PropertyImage from "./PropertyImage"
+import PropertyGallery from "@/components/property/PropertyGallery"
+import PropertyLeadActions from "@/components/property/PropertyLeadActions"
+import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
+import PartnerHandshake from "@/components/property/PartnerHandshake"
 import SavePropertyButton from "./SavePropertyButton"
 import RegistryDetails from "./RegistryDetails"
 import EnquiryForm from "./EnquiryForm"
@@ -23,7 +25,6 @@ const AIChat = dynamic(() => import("@/components/AIChat"), { ssr: false, loadin
 export default function PropertyDetailClient({ slug, initialData, related = [], inventory = [] }: { slug: string; initialData?: any; related?: any[]; inventory?: any[] }) {
     const [property, setProperty] = useState<any>(initialData || null)
     const [loading, setLoading] = useState(!initialData)
-    const [selectedImage, setSelectedImage] = useState("")
     const [shareMessage, setShareMessage] = useState("")
     const [showAI, setShowAI] = useState(false)
 
@@ -38,8 +39,6 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
     if (loading) return <main className="gth-container py-24"><p role="status">Loading property details…</p></main>
     if (!property) return <main className="gth-container py-24"><h1 className="gth-title">Property unavailable</h1><p className="my-6 opacity-70">This listing could not be loaded. Please retry or browse available listings.</p><Link className={`gth-btn ${styles.action}`} href="/real-estate">Browse properties</Link></main>
 
-    const images = Array.from(new Set<string>([property.image, ...(Array.isArray(property.gallery) ? property.gallery : [])].filter((url): url is string => typeof url === "string" && Boolean(approvedMedia(slug, url)))))
-    const image = images.includes(selectedImage) ? selectedImage : images[0]
     const hasCoordinates = typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180
     const isRegistryProject = Boolean(property.registry_only || property.source_type === "registry" || property.data_quality_limited)
     const hasInventory = Array.isArray(inventory) && inventory.length > 0
@@ -77,11 +76,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
             <div className="min-w-0">
-                <section aria-label="Property gallery" className="gth-glass rounded-3xl overflow-hidden">
-                    <div className={images.length ? styles.gallery : styles.galleryEmpty}><PropertyImage key={image || slug} slug={slug} src={image} alt={property.title} className="h-full w-full" /></div>
-                    {images.length > 1 && <div className="flex gap-3 overflow-x-auto p-4">{images.map((url, index) => <button key={url} aria-label={`View approved image ${index + 1}`} aria-pressed={image === url} onClick={() => setSelectedImage(url)} className="gth-glass rounded-xl p-2 shrink-0 w-24 h-20"><PropertyImage slug={slug} src={url} alt={`Property view ${index + 1}`} className="h-full w-full" /></button>)}</div>}
-                    <p className="p-4 text-sm opacity-70">{images.length ? "Approved listing media. Architectural renders are labeled separately." : "No approved listing media is available yet. A neutral project cover is shown instead of unrelated imagery."}</p>
-                </section>
+                <PropertyGallery slug={slug} title={property.title} image={property.image} gallery={property.gallery} district={property.district} locality={property.location || property.city} propertyType={property.property_type} />
                 <nav aria-label="Project sections" className={styles.sectionNav}><a href="#overview">Overview</a>{hasInventory && <a href="#inventory">Active inventory</a>}<a href="#recorded-details">Project records</a><a href="#location">Location</a><a href="#enquiry">{isRegistryProject ? "Request details" : "Enquire"}</a></nav>
                 <section id="overview" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24">
                     <h2 className="text-2xl md:text-3xl font-bold">{isRegistryProject ? "Project overview" : "Property overview"}</h2>
@@ -95,12 +90,14 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
                 <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><h2 className="text-2xl font-bold">Location</h2><p className="opacity-70 mt-3">{[property.location || property.city, property.state, property.country].filter((value:any) => value && !/not provided/i.test(String(value))).join(" · ") || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
             </div>
             <aside className={styles.enquiryPanel}>
-                {isRegistryProject ? <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><p className="gold-text text-xs uppercase tracking-widest mt-4">{hasInventory ? "Inventory interest" : "Project interest"}</p><h2 className="text-2xl font-bold mt-3">{hasInventory ? "Request current availability" : "Request current project details"}</h2><p className="opacity-70 leading-7 my-4">{hasInventory ? "Tell GTH PRO you want current availability or contact information for the published inventory on this registry project." : "This is a public registry profile, not an active seller listing. Tell GTH PRO you want current pricing, inventory or contact information and we can use that demand signal to source updated project data."}</p><EnquiryForm propertyId={property.id} mode="registry" />{officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className={`gth-btn ${styles.action} mt-4`}>Open official MahaRERA</a>}</section> : <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><h2 className="text-2xl font-bold mt-4">Take the next step</h2><p className="opacity-70 leading-7 my-4">Request current project details, pricing or a visit. Submission sends an enquiry; it does not reserve a property.</p><EnquiryForm propertyId={property.id} /></section>}
+                {isRegistryProject ? <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><p className="gold-text text-xs uppercase tracking-widest mt-4">{hasInventory ? "Inventory interest" : "Project interest"}</p><h2 className="text-2xl font-bold mt-3">{hasInventory ? "Request current availability" : "Request current project details"}</h2><p className="opacity-70 leading-7 my-4">{hasInventory ? "Tell GTH PRO you want current availability or contact information for the published inventory on this registry project." : "This is a public registry profile, not an active seller listing. Tell GTH PRO you want current pricing, inventory or contact information and we can use that demand signal to source updated project data."}</p><PropertyLeadActions property={property} /><details className="mt-4"><summary className="cursor-pointer text-sm opacity-70">Quick phone enquiry</summary><EnquiryForm propertyId={property.id} mode="registry" /></details>{officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className={`gth-btn ${styles.action} mt-4`}>Open official MahaRERA</a>}</section> : <section id="enquiry" className="gth-glass rounded-3xl p-6 scroll-mt-24"><Building2 size={24} className="gold-text" aria-hidden="true" /><h2 className="text-2xl font-bold mt-4">Take the next step</h2><p className="opacity-70 leading-7 my-4">Request current project details, pricing or a visit. Submission sends an enquiry; it does not reserve a property.</p><PropertyLeadActions property={property} /><details className="mt-4"><summary className="cursor-pointer text-sm opacity-70">Quick phone enquiry</summary><EnquiryForm propertyId={property.id} /></details></section>}
                 <section className="gth-glass rounded-3xl p-6 mt-5"><p className="gold-text text-xs uppercase tracking-widest">{isRegistryProject ? "Project assistant" : "Listing assistant"}</p><p className="opacity-70 text-sm leading-7 my-4">Ask about recorded details. The assistant cannot confirm availability or investment outcomes.</p><button className={`gth-btn ${styles.action}`} aria-expanded={showAI} onClick={() => setShowAI(value => !value)}><MessageSquare size={16} aria-hidden="true" />{showAI ? "Close assistant" : isRegistryProject ? "Ask about this project" : "Ask about this listing"}</button>{showAI && <div className="h-[450px] mt-4 overflow-hidden rounded-2xl"><AIChat context={isRegistryProject ? `Public registry project: ${property.title}; Location: ${property.location}; Registration reference: ${property.rera_id || "not provided"}; Published inventory count: ${inventory.length}. Discuss only recorded project fields and explicitly published inventory. Do not invent missing details or verification.` : `Property: ${property.title}; Location: ${property.location}; Listed price: ${property.formatted_price}; Type: ${property.property_type}. Do not invent missing details.`} /></div>}</section>
+                <HomeLoanCalculator />
                 <OwnerProjectAds />
             </aside>
         </div>
         <nav aria-label="Mobile listing actions" className={styles.mobileEnquiry}>{isRegistryProject ? <><div><span className="text-xs opacity-70">Project status</span><p className="gold-text font-bold text-sm">{hasInventory ? `${inventory.length} active` : "Registry only"}</p></div><a href="#enquiry" className={`gth-btn-gold ${styles.action}`}>{hasInventory ? "Check availability" : "Request details"}</a></> : <><div><span className="text-xs opacity-70">Listed price</span><p className="gold-text font-bold text-sm">{property.formatted_price || "Price on request"}</p></div><a href="#enquiry" className={`gth-btn-gold ${styles.action}`}>Enquire</a></>}</nav>
         {related.length > 0 && <section className="mt-16"><h2 className="text-2xl md:text-3xl font-bold">More in this city</h2><p className="opacity-70 mt-3">Related inventory based on the recorded city.</p><div className="grid gap-5 mt-8 sm:grid-cols-2 xl:grid-cols-3">{related.filter(item => item.slug !== slug).slice(0, 6).map(item => <PropertyCardPro key={item.id} p={item} />)}</div></section>}
+        <PartnerHandshake footer />
     </main>
 }

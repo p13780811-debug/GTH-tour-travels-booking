@@ -35,3 +35,5 @@
 @media(max-width:600px){.detailPage{padding-inline:14px}.detailPage h1{font-size:28px}.detailPage h2{font-size:21px}}
 @media(max-width:960px){.sidebar[data-open=true]{z-index:160;padding-bottom:calc(22px + env(safe-area-inset-bottom));overscroll-behavior:contain}.scrim[data-open=true]{z-index:150}.compareTray{bottom:calc(80px + env(safe-area-inset-bottom))}.filterToggle,.resultActions select,.iconButton{min-height:44px}.iconButton{min-width:44px}.resultActions>label{flex:1;min-width:0}.resultActions select{width:100%;max-width:none}}
 @media(max-width:600px){.resultActions select{font-size:16px}.save{width:44px;height:44px}.compareTray{bottom:calc(78px + env(safe-area-inset-bottom))}}
+
+.sidebarClose.iconButton{display:none}@media(max-width:960px){.sidebarClose.iconButton{display:inline-flex}}
