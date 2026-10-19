@@ -20,6 +20,11 @@ The submitted machine-readable dataset metadata labels its license **Apache 2.0*
 
 ## Refresh and release
 
+Publication is disabled by default. The route returns 404 unless the server-only
+`GTH_MARKET_RESEARCH_ENABLED=true` flag is deliberately configured after the
+source licensing discrepancy has been resolved. No flag is enabled by this release.
+The approved main property explorer remains available independently.
+
 - Update only from a reviewed replacement dataset with a version, source checksum, documented licensing and a working independent source check.
 - Recompute aggregates offline, check raw row counts, reconcile segment names/dates, ensure no raw or generated identifiers, run `node --test tests/market-intelligence.test.mjs`, then typecheck/build in PR CI.
 - Product release stays in the user's single consolidated release. **Do not merge or deploy this PR separately.** This route is `noindex` because it is a development/research sandbox.

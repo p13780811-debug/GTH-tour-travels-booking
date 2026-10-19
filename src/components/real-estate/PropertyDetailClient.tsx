@@ -15,6 +15,7 @@ import OwnerProjectAds from "./OwnerProjectAds"
 import PropertyCardPro from "./PropertyCardPro"
 import ProjectInventory from "./ProjectInventory"
 import styles from "./Listing.module.css"
+import explorer from "./Explorer.module.css"
 
 const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
 const AIChat = dynamic(() => import("@/components/AIChat"), { ssr: false, loading: () => <p role="status">Loading listing assistant…</p> })
@@ -63,7 +64,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         } catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setShareMessage("Could not share. Copy the page address from your browser.") }
     }
 
-    return <main className="gth-container pb-28 pt-6 md:pt-10">
+    return <main className={`gth-container pb-28 pt-6 md:pt-10 ${explorer.detailPage}`}>
         <JourneyNav />
         <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <Link href="/real-estate" className="inline-flex items-center gap-2 opacity-70 hover:opacity-100"><ArrowLeft size={16} aria-hidden="true" />All properties</Link>

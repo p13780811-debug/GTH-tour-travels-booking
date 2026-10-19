@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "feat/real-estate-explorer-design-20261019": false,
+      "release/gth-one-shot-20261018": false
+    }
+  }
+}

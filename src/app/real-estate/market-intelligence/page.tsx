@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import research from '@/data/market-intelligence/mumbai-research.json'
 import type { MumbaiResearch } from '@/lib/market-intelligence'
 import MarketIntelligenceClient from './MarketIntelligenceClient'
@@ -13,5 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default function MarketIntelligencePage() {
+  // Publication remains opt-in until the source's conflicting license notices
+  // have been independently resolved. Existing property discovery is unaffected.
+  if (process.env.GTH_MARKET_RESEARCH_ENABLED !== 'true') notFound()
   return <MarketIntelligenceClient research={dataset} />
 }

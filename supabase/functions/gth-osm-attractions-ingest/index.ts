@@ -56,31 +56,14 @@ Deno.serve(async req=>{
   const body:unknown=JSON.parse(raw);
   if(!body||typeof body!=="object"||Array.isArray(body))throw Error("Invalid payload");
   const payload=body as Record<string,unknown>;
-  // Status is available ONLY after the same exact GitHub OIDC claim validation as writes.
-  // Never expose service credentials or public unrestricted database enumeration.
-  if(Object.keys(payload).length===1&&payload.status===true){
-   const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-   if(!key||Deno.env.get("SUPABASE_URL")!==PROJECT_URL)
-    return Response.json({error:"DB service unavailable"},{status:503,headers:H});
-   const response=await fetch(PROJECT_URL+"/rest/v1/rpc/gth_osm_region_status",{
-    method:"POST",
-    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
-    body:"{}",signal:AbortSignal.timeout(20000)});
-   if(!response.ok)return Response.json({error:"Regional status unavailable"},{status:503,headers:H});
-   const regions:unknown=await response.json();
-   if(!Array.isArray(regions)||regions.length>3000)throw Error("Invalid bounded region status");
-   return Response.json({regions},{headers:H});
-  }
   if(Object.keys(payload).length===1&&payload.summary){
    const summary=payload.summary;
    if(!summary||typeof summary!=="object"||Array.isArray(summary))throw Error("Invalid sync summary");
    const s=summary as Record<string,unknown>;
-   if(Object.keys(s).some(k=>!["run_id","source_region","country_code","country_name","accepted","next_offset","complete"].includes(k))||
+   if(Object.keys(s).some(k=>!["run_id","source_region","country_code","country_name","accepted"].includes(k))||
     s.run_id!==workflowRun||typeof s.source_region!=="string"||!REGION.test(s.source_region)||
     !CODE.test(String(s.country_code))||typeof s.country_name!=="string"||s.country_name.length<2||s.country_name.length>100||
-    /[\u0000-\u001f<>]/.test(s.country_name)||!Number.isInteger(s.accepted)||Number(s.accepted)<0||Number(s.accepted)>18000||
-    !Number.isInteger(s.next_offset)||Number(s.next_offset)<0||Number(s.next_offset)>10000000||
-    typeof s.complete!=="boolean"||(s.complete===false&&Number(s.next_offset)===0))
+    /[\u0000-\u001f<>]/.test(s.country_name)||!Number.isInteger(s.accepted)||Number(s.accepted)<0||Number(s.accepted)>250000)
     throw Error("Invalid source audit");
    const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
    if(!key||Deno.env.get("SUPABASE_URL")!==PROJECT_URL)return Response.json({error:"DB service unavailable"},{status:503,headers:H});

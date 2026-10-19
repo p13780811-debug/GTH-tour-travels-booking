@@ -47,7 +47,7 @@ CREATE OR REPLACE VIEW public.gth_seo_tenders_v1 WITH (security_invoker=true) AS
    AND source_url ~* '^https://[^ /?#]+';
 
 REVOKE ALL ON public.gth_seo_hotels_v1, public.gth_seo_tours_v1,
- public.gth_seo_destinations_v1, public.gth_seo_attractions_v1, public.gth_seo_tenders_v1 FROM PUBLIC;
+ public.gth_seo_destinations_v1, public.gth_seo_attractions_v1, public.gth_seo_tenders_v1 FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.gth_seo_hotels_v1, public.gth_seo_tours_v1,
  public.gth_seo_destinations_v1, public.gth_seo_attractions_v1, public.gth_seo_tenders_v1 TO anon,authenticated;
 COMMIT;

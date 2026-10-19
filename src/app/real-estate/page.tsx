@@ -4,31 +4,38 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import type { User } from "@supabase/supabase-js"
-import { LayoutGrid, Map, SlidersHorizontal } from "lucide-react"
+import { ArrowUpRight, Compass, GitCompareArrows, Heart, Info, LayoutGrid, LockKeyhole, Map, SlidersHorizontal, Sparkles, X } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
 import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
 import SavedSearches from "@/components/real-estate/SavedSearches"
-import RealEstateHero from "@/components/real-estate/RealEstateHero"
-import PropertyCardPro from "@/components/real-estate/PropertyCardPro"
+import ExplorerHero from "@/components/real-estate/ExplorerHero"
+import ExplorerCard from "@/components/real-estate/ExplorerCard"
+import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-estate/ExplorerDialog"
+import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
+import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
 import TrustStandard from "@/components/real-estate/TrustStandard"
 import BottomNav from "@/components/mobile/BottomNav"
-import styles from "@/components/real-estate/Listing.module.css"
+import styles from "@/components/real-estate/Explorer.module.css"
 
 const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
 const PAGE_SIZE = 24
-const categories = [{ label:"Apartments", value:"Apartment" },{ label:"Villas", value:"Villa" },{ label:"Commercial", value:"Commercial" },{ label:"Plots", value:"Plot" }]
 
 export default function RealEstatePage() {
     const [user, setUser] = useState<User | null>(null)
-    const [properties, setProperties] = useState<any[]>([])
+    const [properties, setProperties] = useState<ExplorerProperty[]>([])
     const [activeFilters, setActiveFilters] = useState<[string, string][]>([])
     const [query, setQuery] = useState("")
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(1)
     const [view, setView] = useState<"list" | "map">("list")
+    const [filtersOpen, setFiltersOpen] = useState(false)
+    const [compared, setCompared] = useState<ExplorerProperty[]>([])
+    const [savedCount, setSavedCount] = useState(0)
+    const [dialog, setDialog] = useState<ExplorerDialogState | null>(null)
+    const sidebar = useRef<HTMLElement>(null)
     const request = useRef(0)
 
     const load = useCallback(async (requestedPage?: number) => {
@@ -44,7 +51,9 @@ export default function RealEstatePage() {
         setError("")
         setQuery((params.get("query") || "").slice(0, 120))
         try {
-            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, sort: params.get("sort") === "ai" ? "ai" : "latest" })
+            const positive = (key: string) => { const value = Number(params.get(key)); return Number.isFinite(value) && value > 0 ? value : undefined }
+            const sort = params.get("sort")
+            const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: text("type"), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
             if (current !== request.current) return
             setProperties(data)
             setPage(nextPage)
@@ -59,7 +68,7 @@ export default function RealEstatePage() {
     useEffect(() => {
         let active = true
         load()
-        supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) })
+        supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
         const onHistory = () => { load() }
         window.addEventListener("popstate", onHistory)
@@ -67,6 +76,31 @@ export default function RealEstatePage() {
         const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, () => { clearPropertyCache(); load() }).subscribe()
         return () => { active = false; request.current += 1; auth.subscription.unsubscribe(); window.removeEventListener("popstate", onHistory); window.removeEventListener("gth-search-load", onHistory); supabase.removeChannel(channel) }
     }, [load])
+
+    useEffect(() => {
+        const sync = () => { try { setSavedCount(normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY) || "[]")).length) } catch { setSavedCount(0) } }
+        sync(); window.addEventListener("gth-saved", sync); window.addEventListener("storage", sync)
+        return () => { window.removeEventListener("gth-saved", sync); window.removeEventListener("storage", sync) }
+    }, [])
+
+    useEffect(() => {
+        if (!filtersOpen) return
+        const previous = document.activeElement as HTMLElement | null
+        const overflow = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        sidebar.current?.querySelector<HTMLButtonElement>("button")?.focus()
+        const keys = (event: KeyboardEvent) => {
+            if (event.key === "Escape") { event.preventDefault(); setFiltersOpen(false) }
+            if (event.key !== "Tab") return
+            const elements = Array.from(sidebar.current?.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, a[href]") || []).filter(node => node.getClientRects().length)
+            const first = elements[0], last = elements.at(-1)
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+        }
+        const resize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
+        window.addEventListener("keydown", keys); window.addEventListener("resize", resize)
+        return () => { document.body.style.overflow = overflow; window.removeEventListener("keydown", keys); window.removeEventListener("resize", resize); previous?.focus() }
+    }, [filtersOpen])
 
     const updateSearch = (term: string) => {
         const url = new URL(window.location.href)
@@ -77,17 +111,18 @@ export default function RealEstatePage() {
         load(1)
         document.getElementById("listing-results")?.scrollIntoView({ block:"start" })
     }
-    const applyCategory = (value: string) => {
+    const applyIntent = (value: string) => {
         const url = new URL(window.location.href)
-        for (const key of ["page", ...(value === "buy" || value === "rent" ? ["listing"] : ["type"])]) url.searchParams.delete(key)
-        url.searchParams.set(value === "buy" || value === "rent" ? "listing" : "type", value)
+        url.searchParams.delete("page")
+        if (value) url.searchParams.set("listing", value)
+        else url.searchParams.delete("listing")
         window.history.replaceState(null, "", url)
         window.dispatchEvent(new Event("gth-discovery-filters"))
         load(1)
     }
     const openFilters = () => {
-        const panel = document.getElementById("discovery-filters") as HTMLDetailsElement | null
-        if (panel) { panel.open = true; panel.scrollIntoView({ block:"start" }); panel.querySelector("summary")?.focus() }
+        if (window.innerWidth <= 960) setFiltersOpen(true)
+        else sidebar.current?.querySelector<HTMLInputElement>("input")?.focus()
     }
     const removeFilter = (key: string) => {
         const url = new URL(window.location.href)
@@ -105,30 +140,45 @@ export default function RealEstatePage() {
     const changePage = (next:number) => { load(next); document.getElementById("listing-results")?.scrollIntoView({block:"start"}) }
     const coordinates = properties.filter(property => typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180)
 
-    return <main className="min-h-screen pb-28 md:pb-16">
-        <div id="property-search" className="scroll-mt-24"><RealEstateHero query={query} setQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyCategory} /></div>
-        <div className="gth-container">
-            <section aria-label="Browse property categories" className={styles.browseBar}>{categories.map(category => <button key={category.value} aria-pressed={activeFilters.some(([key,value]) => (key === "type" || key === "listing") && value === category.value)} className={`gth-btn ${styles.action}`} onClick={() => applyCategory(category.value)} disabled={loading}>{category.label}</button>)}</section>
-            <DiscoveryFilters onApply={() => { clearPropertyCache(); load(1) }} />
-            <SavedSearches />
-            {activeFilters.length > 0 && <div className={styles.filterChips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)} <span aria-hidden="true">×</span></button>)}<button onClick={reset}>Clear all</button></div>}
-            <GlobalMarkets />
-            <section id="listing-results" className="scroll-mt-24 mt-10" aria-busy={loading}>
-                <header className="flex items-center justify-between gap-5 flex-wrap mb-6">
-                    <div><p className="gold-text text-xs uppercase tracking-widest">Global property discovery</p><h2 className="text-3xl font-bold mt-2">Explore projects and listings</h2><p className="opacity-70 text-sm mt-2" role="status">{loading ? "Loading property records…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
-                    <div className="flex gap-2 flex-wrap"><button className={`gth-btn ${styles.action}`} aria-pressed={view === "list"} onClick={() => setView("list")}><LayoutGrid size={16} aria-hidden="true" />Listings</button><button className={`gth-btn ${styles.action}`} aria-pressed={view === "map"} onClick={() => setView("map")}><Map size={16} aria-hidden="true" />Map</button><button className={`gth-btn ${styles.action}`} onClick={openFilters}><SlidersHorizontal size={16} aria-hidden="true" />Filters</button></div>
+    const showInfo = (kind: "ranking" | "verification", property?: ExplorerProperty) => setDialog({ kind, property })
+    const sort = activeFilters.find(([key]) => key === "sort")?.[1] || "latest"
+    const setSort = (value: string) => {
+        const url = new URL(window.location.href)
+        if (value === "latest") url.searchParams.delete("sort")
+        else url.searchParams.set("sort", value)
+        url.searchParams.delete("page"); window.history.replaceState(null, "", url)
+        window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
+    }
+    return <main className={`gth-container ${styles.page}`}>
+        <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
+        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
+        <div className={styles.workspace}>
+            <button className={styles.scrim} data-open={filtersOpen} tabIndex={-1} aria-label="Close filters" hidden={!filtersOpen} onClick={() => setFiltersOpen(false)} />
+            <aside ref={sidebar} className={styles.sidebar} data-open={filtersOpen} role={filtersOpen ? "dialog" : undefined} aria-modal={filtersOpen || undefined} aria-labelledby="explorer-filter-title">
+                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
+                <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
+                <SavedSearches />
+                <p className={styles.sidebarNote}><LockKeyhole size={13} />Your shortlist and saved searches stay on this device.</p>
+            </aside>
+            <section id="listing-results" className={styles.results} aria-busy={loading}>
+                <header className={styles.resultsHeader}><div><p className={styles.eyebrow}>PROPERTY DISCOVERY</p><h2>Explore projects and listings</h2><p role="status">{loading ? "Loading property records…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
+                    <div className={styles.resultActions}><button className={styles.filterToggle} onClick={openFilters} aria-haspopup="dialog" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />Filters</button><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} /></button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} /></button></div>
                 </header>
-                {loading && <div className={styles.propertyGrid} aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={`gth-glass ${styles.skeleton}`}><div className={styles.skeletonMedia} /><div className={styles.skeletonLine} /><div className={styles.skeletonLine} /></div>)}</div>}
-                {error && <div className="gth-glass rounded-3xl p-8" role="alert"><h3 className="font-bold">We could not load the inventory</h3><p className="opacity-70 mt-3">{error}</p><button className={`gth-btn-gold ${styles.action} mt-5`} onClick={() => load(page)}>Retry</button></div>}
-                {!loading && !error && properties.length === 0 && <div className="gth-glass rounded-3xl p-8"><h3 className="text-xl font-bold">{page > 1 ? "You have reached the end of these results" : "No results match this search"}</h3><p className="opacity-70 mt-3">Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.action} mt-5`} onClick={reset}>Clear search and filters</button></div>}
-                {!loading && !error && view === "map" && <div className="gth-glass rounded-3xl p-5 mb-6"><p className="text-sm opacity-70 mb-4">{coordinates.length} results on this page have stored coordinates. Map pins are not a measurement or location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-2xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to Listings to explore the available records.</p>}</div>}
-                {!loading && !error && view === "list" && <div className={styles.propertyGrid}>{properties.map(property => <PropertyCardPro key={property.id} p={property} />)}</div>}
-                <nav aria-label="Property result pages" className="flex items-center justify-center gap-4 mt-10 flex-wrap"><button className={`gth-btn ${styles.action}`} disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button className={`gth-btn ${styles.action}`} disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
+                {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
+                <div className={styles.rankingLine}><Sparkles size={14} /><button onClick={() => showInfo("ranking")}>Understand the signals. Inspect record coverage and stored ranking details.<Info size={13} /></button></div>
+                {loading && <div className={styles.grid} aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={styles.skeleton} />)}</div>}
+                {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
+                {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : "No results match this search"}</h3><p>Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search and filters</button></div>}
+                {!loading && !error && view === "map" && <div className={styles.empty}><p>{coordinates.length} results on this page have stored coordinates. Map pins are not location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to the grid to explore the available records.</p>}</div>}
+                {!loading && !error && view === "list" && <div className={styles.grid}>{properties.map(property => <ExplorerCard key={property.id} property={property} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
+                <nav aria-label="Property result pages" className={styles.pagination}><button disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
+                <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link></div></section>
             </section>
-            <TrustStandard />
-            <section className="mt-14" aria-labelledby="buyer-guide"><p className="gold-text text-xs uppercase tracking-widest">Before your next move</p><h2 id="buyer-guide" className="text-2xl font-bold mt-3">A clearer way to explore property</h2><div className={styles.guideGrid}>{[{title:"Review the records",text:"Check the registration reference, developer and recorded project details. Registration is not a guarantee of delivery."},{title:"Compare what matters",text:"Save listings and compare location, reported area and available specifications on this device."},{title:"Confirm before committing",text:"Ask for current pricing, legal documents and a site visit before making a payment or decision."}].map(item => <article key={item.title} className="gth-glass"><h3 className="font-bold">{item.title}</h3><p className="text-sm opacity-70 leading-7 mt-3">{item.text}</p></article>)}</div></section>
-            <section className="gth-glass rounded-3xl p-6 md:p-8 mt-14 flex items-center justify-between gap-6 flex-wrap"><div><h2 className="text-2xl font-bold">Have a property to share?</h2><p className="opacity-70 mt-3">Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>Submit your listing</Link></section>
         </div>
+        <div className={styles.support}><GlobalMarkets /><TrustStandard /></div>
+        <section className={styles.submit}><div><h2>Have a property to share?</h2><p>Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.button}`}>Submit your listing<ArrowUpRight size={15} /></Link></section>
+        {compared.length > 0 && <section className={styles.compareTray} aria-label="Selected property comparison"><strong><GitCompareArrows size={17} />{compared.length} selected</strong><div className={styles.compareNames}>{compared.map(property => <button key={property.slug} onClick={() => setCompared(previous => previous.filter(item => item.slug !== property.slug))} aria-label={`Remove ${property.title} from comparison`}><span>{property.title}</span><X size={12} /></button>)}</div><button className={styles.compareClear} onClick={() => setCompared([])}>Clear</button><button className={`gth-btn-gold ${styles.button}`} disabled={compared.length < 2} onClick={() => setDialog({ kind:"compare", properties:compared })}>Compare<ArrowUpRight size={14} /></button></section>}
+        {dialog && <ExplorerDialog state={dialog} onClose={() => setDialog(null)} />}
         <BottomNav user={user} />
     </main>
 }
