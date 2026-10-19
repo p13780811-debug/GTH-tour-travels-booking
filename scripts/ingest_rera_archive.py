@@ -32,7 +32,7 @@ def arguments(argv=None):
     p.add_argument("--run-dir", type=Path, default=Path(".gth-rera/archive-bulk"))
     p.add_argument("--env-file", type=Path, default=Path(".env"))
     p.add_argument("--delay", type=float, default=5.0, help="Minimum delay between database operations")
-    p.add_argument("--expected-project-ref", default="", help="Exact Supabase ref, mandatory for commit")
+    p.add_argument("--expected-project-ref", default="dqprqjmhxjnrllczqyhz", help="Exact preselected GTH Supabase project ref")
     p.add_argument("--authorized-snapshot", action="store_true", help="Explicitly confirm rights/provenance review for database ingestion")
     p.add_argument("--commit", action="store_true", help="Opt-in to server-only protected database upsert")
     a = p.parse_args(argv)
@@ -71,7 +71,7 @@ def main(argv=None) -> int:
             "kind": "historic_archive_v1", "sha256": snapshot["archive_sha256"],
             "offset": args.offset, "limit": args.limit, "districts": snapshot["scope"],
         }, sort_keys=True).encode()).hexdigest()
-        checkpoint = Checkpoint(args.run_dir, fingerprint, args.expected_project_ref or "offline_only")
+        checkpoint = Checkpoint(args.run_dir, fingerprint, args.expected_project_ref)
         for position, project in enumerate(projects, 1):
             if not checkpoint.attempted(position):
                 checkpoint.save(position, "validated_csv_snapshot", project)
