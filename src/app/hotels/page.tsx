@@ -192,10 +192,9 @@ function HotelsContent() {
                 if (sourceFilter === "liteapi" && (!requestedCountry || !(requestedCity||requestedDestination))) {
                     throw Error("Choose a city and its ISO-2 country before searching the live provider.");
                 }
-                const response = await fetch(`${sourceFilter==="liteapi"?"/api/hotels/live":"/api/hotels"}?${hotelParams}`, {
-                    cache: "no-store",
-                    signal: controller.signal,
-                });
+                const response = sourceFilter==="liteapi"
+                  ? await fetch(`/api/hotels/live?${hotelParams}`, {cache:"no-store",signal:controller.signal})
+                  : await fetch(`/api/hotels?${hotelParams}`, {cache:"no-store",signal:controller.signal});
                 if (!response.ok) throw new Error("Hotel listings unavailable");
                 const payload: unknown = await response.json();
                 const data = sourceFilter==="liteapi" ? liteApiRows(payload) : payload;
@@ -205,7 +204,8 @@ function HotelsContent() {
                       && "hasMore" in payload && payload.hasMore===true;
                     const apiTotal = Number(response.headers.get("X-GTH-Total"));
                     setHotels(data as HotelListing[]);
-                    setTotal(sourceFilter==="liteapi" ? data.length : Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
+                    if(sourceFilter==="liteapi")setTotal(data.length);
+                    else setTotal(Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
                     setHasMore(sourceFilter==="liteapi" ? liveMore : response.headers.get("X-GTH-Has-More") === "true");
                 }
             } catch {
@@ -228,7 +228,9 @@ function HotelsContent() {
         const startedFor = queryKey;
         try {
             const hotelParams = hotelParamsFor(nextPage);
-            const response = await fetch(`${sourceFilter==="liteapi"?"/api/hotels/live":"/api/hotels"}?${hotelParams}`, { cache: "no-store" });
+            const response = sourceFilter==="liteapi"
+              ? await fetch(`/api/hotels/live?${hotelParams}`, {cache:"no-store"})
+              : await fetch(`/api/hotels?${hotelParams}`, {cache:"no-store"});
             if (!response.ok) throw new Error("Hotel page unavailable");
             const payload: unknown = await response.json();
             const incoming = sourceFilter==="liteapi" ? liteApiRows(payload) : payload;
@@ -730,10 +732,15 @@ function HotelsContent() {
                                             </div>
                                             <div className="flex w-full shrink-0 flex-col justify-end gap-2 border-t border-[var(--border)] pt-3 xl:w-48 xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0">
                                                 <span className="text-xs font-semibold text-[var(--text-soft)]">Price on provider</span>
-                                                <a href={providerPath(hotel)}
-                                                  className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
+                                                {hotel.source==="LiteAPI / Nuitée"
+                                                ? <a href={providerPath(hotel)}
+                                                    className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                                                     View hotel details <ChevronRight size={15} aria-hidden="true"/>
-                                                </a>
+                                                  </a>
+                                                : <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
+                                                    className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
+                                                    View hotel details <ChevronRight size={15} aria-hidden="true"/>
+                                                  </a>}
                                                 <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.source==="LiteAPI / Nuitée"?"Original provider photos, details and listed facilities. Rates checked separately.":hotel.booking_ready ? "Book Now is available inside hotel details." : "Exact hotel partner link not yet connected."}</p>
                                             </div>
                                         </div>
