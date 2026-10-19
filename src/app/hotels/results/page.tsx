@@ -26,6 +26,9 @@ export default async function Page({ searchParams }: PageProps) {
   const rawSource = first(params.source);
   const sort = rawSort === "name_desc" ? "name_desc" : "name_asc";
   const source = rawSource === "partner" || rawSource === "directory" ? rawSource : "all";
+  const checkin=first(params.checkin).slice(0,10);
+  const checkout=first(params.checkout).slice(0,10);
+  const adults=first(params.adults).slice(0,2);
   const hasScope = Boolean(city || destination || name || country || category);
 
   return (
@@ -37,7 +40,7 @@ export default async function Page({ searchParams }: PageProps) {
         </p>
         {hasScope ? (
           <div className="mt-8">
-            <HotelResults scope={{ city, destination, name, country, category, sort, source }} />
+            <HotelResults scope={{ city, destination, name, country, category, sort, source, checkin, checkout, adults }} />
           </div>
         ) : (
           <div className="gth-glass mt-8 rounded-2xl border border-[var(--border)] p-6" role="status">

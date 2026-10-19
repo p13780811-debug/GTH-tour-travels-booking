@@ -8,6 +8,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
 import {isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
+import {safeVerifiedHotelAffiliateUrl,providerDisplayName,type HotelBookingMapping} from "@/lib/travel/hotel-booking-links";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowLeft,ArrowUpRight,MapPin,ShieldCheck,BedDouble,CalendarDays,Globe,Compass,ImageOff} from "lucide-react";
@@ -17,7 +18,7 @@ type PageProps={params:Promise<{id:string}>;searchParams?:Promise<Record<string,
 function firstSearchValue(value:string|string[]|undefined):string{
  return typeof value==="string"?value:Array.isArray(value)?value[0]||"":"";
 }
-const PARTNER_HOSTS=["booking.com","trip.com","hotellook.com","klook.com","tp.media","tpo.lv"];
+const PARTNER_HOSTS=["booking.com","trip.com","klook.com","tp.media","tpo.lv"];
 function safeLink(value:unknown,allowPartner=false):string|null{
  if(typeof value!=="string"||value.length>2048)return null;
  try{
@@ -45,7 +46,7 @@ const getHotel=cache(async(id:string)=>{
  if(!url||!key)return null;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  let hotel:null|{name:string;city:string|null;country:string|null;category:string;source:string;
-  address:string|null;description:string|null;phone:string|null;sourceUrl:string|null;website:string|null;partner:string|null;image:string|null;
+  address:string|null;description:string|null;phone:string|null;sourceUrl:string|null;website:string|null;partner:string|null;partnerName:string|null;image:string|null;
   lat:number|null;lon:number|null;updated:string|null;
   imageCredit:{author:string;license:string;licenseUrl:string;commonsPage:string}|null}=null;
  if(/^osm:(node|way|relation)-[0-9]{1,19}$/.test(id)){
@@ -54,7 +55,7 @@ const getHotel=cache(async(id:string)=>{
     .eq("source","osm").eq("source_id",sourceId).maybeSingle();
   if(!error&&data)hotel={name:data.name,city:data.city,country:data.country_code,category:data.category,source:"OpenStreetMap",
    address:data.address,description:null,phone:safeBusinessPhone(data.phone),sourceUrl:safeLink(data.source_url),website:safeLink(data.website),
-   image:safeImage(data.image_url),imageCredit:null,partner:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
+   image:safeImage(data.image_url),imageCredit:null,partner:null,partnerName:null,lat:data.latitude,lon:data.longitude,updated:data.updated_at};
  }else if(/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(id)){
   const {data,error}=await db.from("hotels").select("name,city,country_code,address,category,description,image_url,affiliate_link,source_name,source_url")
     .eq("id",id).eq("is_public",true).eq("media_rights_verified",true).not("source_name","is",null).maybeSingle();
@@ -63,9 +64,26 @@ const getHotel=cache(async(id:string)=>{
    sourceUrl:safeLink(data.source_url),
    website:data.source_name==="GTH PRO Reviewed Hotel Partner"&&data.source_url&&!data.source_url.includes("/hotels/stay/")
     ?safeLink(data.source_url):null,
-   image:safeImage(data.image_url),imageCredit:null,partner:safeLink(data.affiliate_link,true),lat:null,lon:null,updated:null};
+   image:safeImage(data.image_url),imageCredit:null,partner:null,partnerName:null,lat:null,lon:null,updated:null};
  }
  if(hotel&&!isDescriptiveHotelName(hotel.name))return null;
+ // Booking is a separate exact-property overlay; OSM data and photos remain untouched.
+ // A missing migration, empty supplier feed or expired manual verification fails closed.
+ if(hotel){
+  const sourceId=hotel.source==="OpenStreetMap"?id.slice(4).replace("-","/"):null;
+  let query=db.from("hotel_booking_links")
+   .select("provider,provider_property_id,provider_property_url,affiliate_url,hotel_name_at_provider")
+   .eq("active",true).eq("exact_property_verified",true).eq("program_approved",true)
+   .gte("verified_at",new Date(Date.now()-180*86400000).toISOString());
+  if(sourceId)query=query.eq("catalog_source","osm").eq("catalog_source_id",sourceId);
+  else query=query.eq("reviewed_hotel_id",id);
+  const {data:options,error:optionsError}=await query.order("verified_at",{ascending:false}).limit(4);
+  if(!optionsError&&options)for(const option of options){
+   const link=safeVerifiedHotelAffiliateUrl(option as HotelBookingMapping);
+   if(link){hotel.partner=link;hotel.partnerName=providerDisplayName(option.provider);break;}
+  }
+ }
+
  if(hotel?.source==="OpenStreetMap"&&!hotel.image){
   const {data:photo}=await db.from("hotel_catalog_media")
    .select("image_url,author,license_name,license_url,commons_page")
@@ -184,9 +202,9 @@ export default async function HotelStay({params,searchParams}:PageProps){
     <div className="mt-7 flex flex-wrap gap-3">
      {hotel.partner&&<a className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold"
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
-       <BedDouble size={17}/> Book Now with Partner <ArrowUpRight size={16}/></a>}
+       <BedDouble size={17}/> Book Now{hotel.partnerName?" · "+hotel.partnerName:""} <ArrowUpRight size={16}/></a>}
      {!hotel.partner&&<div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--text-soft)]">
-       Direct booking is not yet connected for this exact hotel. You can review the property information here without being redirected to another hotel search.
+       Exact-property booking is not yet connected for this hotel. GTH PRO will not redirect you to an unrelated hotel or a generic partner search.
       </div>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}

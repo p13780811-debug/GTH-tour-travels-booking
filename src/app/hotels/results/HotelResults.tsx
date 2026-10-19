@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
-import {hotelSearchParams,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
+import {hotelSearchParams,validatedHotelStay,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin} from "lucide-react";
 type Stay={id:string|number;name:string;city:string;category?:string;image:string;stars:number|null;
  affiliate_link:string|null;source?:string;source_license?:string;country?:string|null};
@@ -16,9 +16,12 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const effectiveSort=scope?.sort||"name_asc";
  const effectiveSource=scope?.source||"all";
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
+ const stay=validatedHotelStay(scope?.checkin,scope?.checkout,scope?.adults);
+ const staySuffix=stay?"?"+new URLSearchParams({checkin:stay.checkin,checkout:stay.checkout,...(stay.adults?{adults:String(stay.adults)}:{})}).toString():"";
  const filterHref=(overrides:Partial<HotelSearchScope>)=>"/hotels/results?"+hotelSearchParams({
   city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,
-  category:effectiveCategory,sort:effectiveSort,source:effectiveSource,...overrides
+  category:effectiveCategory,sort:effectiveSort,source:effectiveSource,
+  checkin:scope?.checkin,checkout:scope?.checkout,adults:scope?.adults,...overrides
  },1).toString();
  const [items,setItems]=useState<Stay[]>([]);
  const [retryCount,setRetryCount]=useState(0);
@@ -76,7 +79,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   
   {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
     className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
-    {items.map((hotel)=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))}
+    {items.map((hotel)=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
       className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
         <HotelPropertyImage src={hotel.image} name={hotel.name}
@@ -147,7 +150,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      <p className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={15}/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
-      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
+      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
       <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.affiliate_link ? "Booking options inside hotel details" : "No direct partner booking link yet"}</p>
      </div>
     </div>
