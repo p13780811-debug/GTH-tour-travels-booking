@@ -70,8 +70,10 @@ export function normalizeLiteApiHotel(raw: unknown): LiveHotel | null {
   const id = str(hotel.id ?? hotel.hotelId, 128);
   const name = str(hotel.name ?? hotel.hotelName);
   if (!id || !/^[A-Za-z0-9_-]{1,128}$/.test(id) || !name) return null;
-  const stars = typeof hotel.starRating === "number" && Number.isFinite(hotel.starRating)
-    && hotel.starRating >= 1 && hotel.starRating <= 5 ? hotel.starRating : null;
+  const rawStars = hotel.starRating ?? hotel.stars;
+  // /data/hotel often uses starRating; /data/hotels uses stars, including 3.5.
+  const stars = typeof rawStars === "number" && Number.isFinite(rawStars)
+    && rawStars >= 1 && rawStars <= 5 ? rawStars : null;
   const photoRows = Array.isArray(hotel.hotelImages) ? hotel.hotelImages : [];
   const images: string[] = [];
   const defaultImages: string[] = [];
