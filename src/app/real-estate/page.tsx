@@ -70,7 +70,7 @@ export default function RealEstatePage() {
         load()
         supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
-        const onHistory = () => { load() }
+        const onHistory = () => { setFiltersOpen(false); load() }
         window.addEventListener("popstate", onHistory)
         window.addEventListener("gth-search-load", onHistory)
         const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, () => { clearPropertyCache(); load() }).subscribe()
