@@ -205,7 +205,9 @@ function HotelsContent() {
                     const apiTotal = Number(response.headers.get("X-GTH-Total"));
                     setHotels(data as HotelListing[]);
                     if(sourceFilter==="liteapi")setTotal(data.length);
-                    else setTotal(Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
+                    else {
+                      setTotal(Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
+                    }
                     setHasMore(sourceFilter==="liteapi" ? liveMore : response.headers.get("X-GTH-Has-More") === "true");
                 }
             } catch {
