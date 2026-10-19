@@ -164,7 +164,8 @@ def read_archive(path: Path, *, offset: int = 0, limit: int = 1000) -> tuple[lis
         raise IngestionError("Archive offset or batch limit is outside supported bounds")
     if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_ARCHIVE_BYTES:
         raise IngestionError("Source ZIP must be a regular private file under 40 MB")
-    archive_hash = hashlib.file_digest(path.open("rb"), "sha256").hexdigest()
+    with path.open("rb") as source_file:
+        archive_hash = hashlib.file_digest(source_file, "sha256").hexdigest()
     counts = Counter()
     pools: dict[str, list[Project]] = {district: [] for district in DATASETS}
     try:
