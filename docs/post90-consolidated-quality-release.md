@@ -19,6 +19,10 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Worldwide multi-source hotel ingestion: audit prior Kaggle CSV provenance/license and actual geographic coverage before treating it as Europe-only; inventory OSM/Geofabrik and partner sources by country, including UAE/Dubai; add resumable, deduplicated, quota-aware cloud ingestion only from authorized sources.
 - Verify per-country imported/published/searchable/photo-covered counts and destination-to-hotel routes; never conflate accommodation directory entries with confirmed bookable inventory.
 
+- Destination-first visual discovery: add image-rich country and destination rails on Hotels, Tours, Activities and other relevant landing pages using real licensed destination media and verified inventory imagery where available. Keep cards light on mobile and avoid blank first impressions.
+- Clearly distinguish inspirational destination imagery from specific hotel/tour/property media and from bookable inventory. Show honest empty search results, never imply a hotel or tour exists solely from a destination cover photo.
+- Respect source attribution, responsive image sizes, lazy loading, accessibility and mobile scroll performance; preserve existing global header/footer and navigation.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
