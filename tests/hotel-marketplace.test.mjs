@@ -49,7 +49,9 @@ test("hotel results always open GTH details before optional provider booking", (
   assert.match(detail, /Book Now\{hotel\.partnerName/);
   assert.match(detail, /href=\{hotel\.partner\}/);
   assert.match(detail, /rel="noopener noreferrer sponsored"/);
-  assert.doesNotMatch(detail, /hotelProviderSearchUrl/);
+  assert.match(detail, /hotelProviderSearchUrl/);
+  assert.match(detail, /Find this hotel on Booking.com/);
+  assert.match(detail, /!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
 });
 
 test("hotel search retains validated guest and date planning across details", () => {

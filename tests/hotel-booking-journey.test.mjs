@@ -20,6 +20,9 @@ test("GTH booking starts only on hotel details after the source-to-property mapp
  assert.match(detail,/href=\{hotel\.partner\}/);
  assert.match(detail,/Book Now\{hotel\.partnerName/);
  assert.match(detail,/Exact-property booking is not yet connected/);
+ assert.match(detail,/hotelProviderSearchUrl/);
+ assert.match(detail,/Find this hotel on Booking.com/);
+ assert.match(detail,/!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
  for(const page of [list,results])assert.doesNotMatch(page,/hotelProviderSearchUrl|Search this hotel on Booking\.com/);
 });
 test("travel stay scope carries unchanged through results, navigation and detail page",()=>{

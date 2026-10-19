@@ -66,3 +66,30 @@ python3 scripts/hotels/generate_travelpayouts_klook_links.py \
 The output adds \`affiliate_url\`, ready for the **separate staging importer** in this folder. Nothing automatically publishes, edits the hotel catalog, or changes active Book Now links. Stage inactive source mappings, then approve exact identity and authorized program in \`/admin/hotels\`.
 
 **Practical upper bound**: 21,500 known and verified Klook property URLs imply 2,150 API requests. The documented limit is 100/minute/marker, so the theoretical lower bound is ~22 minutes (real duration longer); that is not a promise of 21,500 Klook matches or approvals.
+
+
+## Travelpayouts Drive — zero-manual-link Booking.com fallback
+
+The global project layout already loads the project-specific Drive script through
+\`emrldtp.com\`. Official Travelpayouts Drive link switching can turn regular
+Booking.com URLs into affiliate links *only when the Booking.com partner program
+is approved for this project and the brand is enabled under Drive > Advanced
+settings > Switch links*. Being present in the head **does not prove** active
+tracking or confirmed commissions.
+
+GTH hotel detail pages keep a two-tier handoff:
+1. **Book Now** — verified exact-property partner link from \`hotel_booking_links\`.
+2. **Find this hotel on Booking.com** — non-claiming hotel-name + location
+   search with validated dates and guest counts if available, only when a
+   location exists. This may resolve to the actual hotel or show multiple
+   results; it is **not** a guaranteed exact-property deep link.
+
+Use \`hotelProviderSearchUrl\` to build the ordinary Booking.com URL.
+Let Drive convert that URL in the browser when enabled. Never invent affiliate
+markers or Klook property IDs, and never substitute \`klook.com\` for
+\`booking.com\` in the Booking.com \`/searchresults.html\` path. Hotel listings
+remain internal to GTH and direct the visitor to GTH's detail page first.
+
+Travelpayouts docs:
+- https://support.travelpayouts.com/hc/en-us/articles/26867379580178
+- https://support.travelpayouts.com/hc/en-us/articles/32083238510482
