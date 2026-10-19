@@ -28,6 +28,7 @@ function LiveSearch() {
   const [error, setError] = useState("");
   const [minStars, setMinStars] = useState(0);
   const [amenity, setAmenity] = useState("");
+  const [hotelType, setHotelType] = useState("");
   const [sort, setSort] = useState("name");
   const [filterOpen, setFilterOpen] = useState(false);
   const submit = useCallback((c:string, k:string) => {
@@ -38,6 +39,7 @@ function LiveSearch() {
     setError("");
     setMinStars(0);
     setAmenity("");
+    setHotelType("");
     setSearch({ city:nextCity, country:nextCountry, page:1 });
     window.history.replaceState(null, "", "/hotels/live?city="+encodeURIComponent(nextCity)+"&country="+encodeURIComponent(nextCountry));
   }, []);
@@ -60,12 +62,13 @@ function LiveSearch() {
     return () => abort.abort();
   }, [search]);
   const amenityOptions = useMemo(() => [...new Set(items.flatMap(h=>h.amenities))].slice(0,30),[items]);
+  const typeOptions = useMemo(() => [...new Set(items.map(h=>h.category).filter((s):s is string=>Boolean(s)))].sort(),[items]);
   const shown = useMemo(() => {
     const filtered = items.filter(h => (minStars === 0 || (h.stars !== null && h.stars >= minStars))
-      && (!amenity || h.amenities.includes(amenity)));
+      && (!amenity || h.amenities.includes(amenity)) && (!hotelType || h.category === hotelType));
     return filtered.sort((a,b)=>sort==="stars" ? (b.stars ?? -1)-(a.stars ?? -1)
       : a.name.localeCompare(b.name));
-  },[items,minStars,amenity,sort]);
+  },[items,minStars,amenity,hotelType,sort]);
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <div className="mx-auto max-w-7xl space-y-7 px-4 py-7 md:px-6 md:py-12">
       <Link href="/hotels" className="inline-flex items-center gap-2 text-sm text-[var(--text-soft)] hover:underline"><ArrowLeft size={16}/> Hotel marketplace</Link>
@@ -93,6 +96,10 @@ function LiveSearch() {
             <label className="grid gap-2 text-sm">Star classification
               <select className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2" value={minStars} onChange={e=>setMinStars(Number(e.target.value))}>
                 <option value={0}>Any verified stars</option><option value={3}>3+ stars</option><option value={4}>4+ stars</option><option value={5}>5 stars</option>
+              </select></label>
+            <label className="grid gap-2 text-sm">Provider-listed type
+              <select className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2" value={hotelType} onChange={e=>setHotelType(e.target.value)}>
+                <option value="">All provider-listed types</option>{typeOptions.map(t=><option key={t} value={t}>{t}</option>)}
               </select></label>
             <label className="grid gap-2 text-sm">Provider-listed facility
               <select className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2" value={amenity} onChange={e=>setAmenity(e.target.value)}>
