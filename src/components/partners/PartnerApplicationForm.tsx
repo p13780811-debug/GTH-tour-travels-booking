@@ -8,7 +8,7 @@ const choices=[
   ["affiliate","Affiliate or commercial partnership"],
   ["general","General enquiry"],
 ] as const;
-export default function PartnerApplicationForm({defaultType="developer"}:{defaultType?:string}){
+export default function PartnerApplicationForm({defaultType="developer",realEstateOnly=false}:{defaultType?:string;realEstateOnly?:boolean}){
   const [type,setType]=useState(defaultType);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
@@ -35,7 +35,7 @@ export default function PartnerApplicationForm({defaultType="developer"}:{defaul
             consent_to_contact:raw.consent_to_contact==="yes",
           };
           const response=await fetch("/api/partners/apply",{
-            method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)
+            method:"POST",signal:AbortSignal.timeout(15000),headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)
           });
           const data=await response.json();
           if(!response.ok)throw new Error(data.error||"Application unavailable");
@@ -45,7 +45,7 @@ export default function PartnerApplicationForm({defaultType="developer"}:{defaul
       }}>
         <label className={label+" sm:col-span-2"}>What describes your enquiry?
           <select name="application_type" value={type} onChange={e=>setType(e.target.value)} className={input}>
-            {choices.map(([value,title])=><option key={value} value={value}>{title}</option>)}
+            {choices.filter(([value])=>!realEstateOnly||value==="developer"||value==="agent").map(([value,title])=><option key={value} value={value}>{title}</option>)}
           </select>
         </label>
         <label className={label}>Contact name *

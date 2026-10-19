@@ -1,3 +1,4 @@
+import { seoShard } from "@/lib/seo/large-sitemaps";
 import type { MetadataRoute } from "next";
 import { destinations } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
@@ -87,12 +88,13 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Preview builds must not advertise unlaunched or unverified services for indexing.
   if (!publicLaunch) return [];
-  const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
+  const [approved,guidePaths,properties]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[]),seoShard("properties",0).catch(()=>[] as DynamicEntry[])]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...approved,
+    ...properties, // Remaining project shards are advertised by sitemap-index.xml.
     ...guidePaths.map(slug=>({url:base+"/guides/"+slug,changeFrequency:"monthly" as const,priority:0.55})),
   ];
 }

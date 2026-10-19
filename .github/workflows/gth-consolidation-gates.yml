@@ -18,16 +18,14 @@ jobs:
       - name: Preserve ecosystem shell and Real Estate workflows around the approved explorer redesign
         run: |
           set -euo pipefail
-          # The user approved the compact explorer integration in this consolidated release.
-          # Only its listing page, scoped components, filter expansion, detail typography
-          # and saved-search budget handling may change. Shared navigation/footer,
-          # global CSS, publishing, enquiry and account workflows stay protected.
+          # Approved expansion: project imagery, buyer CRM capture, EMI and project SEO.
+          # Shared navigation/footer, global CSS, publishing and account flows stay protected.
           git diff --exit-code HEAD^1 HEAD -- \
             src/app/globals.css \
             src/components/Navbar.tsx \
             src/components/Footer.tsx \
             src/app/real-estate/layout.tsx \
-            'src/app/real-estate/[slug]/' \
+            ':(literal)src/app/real-estate/[slug]/' \
             src/app/real-estate/admin/ \
             src/app/real-estate/post-property/ \
             src/app/real-estate/portfolio/ \
@@ -42,10 +40,16 @@ jobs:
             ':!src/components/real-estate/ExplorerHero.tsx' \
             ':!src/components/real-estate/DiscoveryFilters.tsx' \
             ':!src/components/real-estate/PropertyDetailClient.tsx' \
+            ':!src/components/real-estate/PropertyImage.tsx' \
+            ':!src/components/real-estate/LeadsDashboard.tsx' \
+            ':(exclude,literal)src/app/real-estate/[slug]/page.tsx' \
+            ':!src/lib/real-estate/buyer-leads.ts' \
+            ':!src/lib/real-estate/emi.ts' \
+            ':!src/lib/real-estate/lead-server.ts' \
+            ':!src/lib/real-estate/property-seo.ts' \
             ':!src/lib/real-estate/explorer.ts' \
             ':!src/lib/real-estate/saved-searches.ts' \
             src/app/api/real-estate/ \
-            src/app/api/admin/leads/route.ts \
             src/app/api/admin/submissions/route.ts \
             src/components/brand/BrandVideo.tsx \
             src/components/mobile/BottomNav.tsx \

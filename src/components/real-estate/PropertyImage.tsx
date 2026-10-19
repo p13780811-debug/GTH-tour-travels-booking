@@ -1,13 +1,23 @@
 "use client"
 import { useState } from "react"
-import { Building2 } from "lucide-react"
 import { approvedMedia, reviewedInventoryMedia } from "@/lib/real-estate/approved-media"
-import styles from "./Listing.module.css"
-export default function PropertyImage({ slug, src, alt, className = "" }: { slug: string; src?: string; alt: string; className?: string }) {
-  const [failed, setFailed] = useState(false)
+import { getPropertyVisuals, responsivePhoto, type PropertyVisual } from "@/lib/propertyImages"
+import styles from "@/components/property/PropertyUpgrade.module.css"
+type Props = { slug: string; src?: string; alt: string; className?: string; district?: string; locality?: string; propertyType?: string; visual?: PropertyVisual }
+export default function PropertyImage(props: Props) {
+  const { slug, src, alt, className = "", district = "", locality = "", propertyType = "", visual } = props
+  const [failed, setFailed] = useState<string[]>([])
+  const [loaded, setLoaded] = useState("")
   const media = approvedMedia(slug, src)
-  const reviewedInventory = reviewedInventoryMedia(src)
-  if ((!media && !reviewedInventory) || failed) return <div className={`${styles.registryPlaceholder} ${className}`}><div className={styles.registryPlaceholderContent}><div className={styles.registryPlaceholderMark}><Building2 size={26} className="gold-text" aria-hidden="true" /></div><p className="font-bold">Project media pending</p><p className="opacity-70 text-sm leading-6 mt-2">No approved listing photo is available. GTH PRO does not substitute unrelated property imagery.</p></div></div>
-  const imageUrl = media?.url || String(src)
-  return <div className={`relative ${className}`}><img src={imageUrl} alt={alt} loading="lazy" onError={() => setFailed(true)} className="h-full w-full object-cover" />{media?.kind === "render" && <span className="gth-badge absolute bottom-2 left-2">Architectural render</span>}{reviewedInventory && !media && <span className="gth-badge absolute bottom-2 left-2">Reviewed listing photo</span>}</div>
+  const reviewed = reviewedInventoryMedia(src)
+  const visuals = getPropertyVisuals(district, locality, propertyType, [], slug)
+  const actual = !visual && (media?.url || (reviewed ? src : undefined))
+  const candidates = [actual, visual?.url || visuals.heroImage, visuals.fallback.url].filter((url): url is string => Boolean(url))
+  const url = candidates.find(candidate => !failed.includes(candidate))
+  const illustrative = !actual || url !== actual
+  const caption = illustrative ? "Illustrative imagery · not a project photo" : media?.kind === "render" ? "Approved architectural render" : "Reviewed listing photo"
+  return <div className={`${styles.visual} ${className}`} data-loaded={url && loaded === url}>
+    {url ? <img key={url} src={responsivePhoto(url, 1000)} srcSet={illustrative ? `${responsivePhoto(url, 480)} 480w, ${responsivePhoto(url, 1000)} 1000w, ${responsivePhoto(url, 1600)} 1600w` : undefined} sizes="(max-width: 600px) 100vw, (max-width: 1100px) 50vw, 700px" alt={illustrative ? visual?.label || visuals.hero.label : alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onLoad={() => setLoaded(url)} onError={() => setFailed(values => [...values, url])} /> : <div className={styles.visualError}>Image unavailable. Project records remain available below.</div>}
+    <span className={styles.visualCaption}>{url ? caption : "Project record"}</span>
+  </div>
 }

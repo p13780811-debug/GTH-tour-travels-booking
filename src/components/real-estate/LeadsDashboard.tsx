@@ -32,7 +32,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
 
     const filteredLeads = useMemo(() => {
         return leads.filter((l) =>
-            l.phone?.toLowerCase().includes(search.toLowerCase())
+            [l.phone,l.buyer?.full_name,l.buyer?.project_name,l.buyer?.email].some(value=>String(value||"").toLowerCase().includes(search.toLowerCase()))
         );
     }, [search, leads]);
 
@@ -197,6 +197,7 @@ export default function LeadsDashboard({ onClose, properties }: any) {
                                             <p className="text-sm opacity-60 mt-1">
                                                 {l.source === "inventory_enquiry" ? `Inventory enquiry · Project #${l.property_id}` : l.source === "registry_project_interest" ? `Project interest · Project #${l.property_id}` : `Listing enquiry · Property #${l.property_id}`}
                                             </p>
+                                            {l.buyer && <div className="mt-3 text-sm leading-6 break-words"><p className="font-semibold">{l.buyer.full_name} · {l.buyer.project_name}</p><p>{l.buyer.email || "No email supplied"}</p><p>{l.buyer.preferred_unit} · {l.buyer.budget_range || "Budget not supplied"}</p><p className="gold-text">{String(l.buyer.intent_type).replaceAll("_", " ")}</p></div>}
                                             {l.inventory_id && <p className="text-xs opacity-50 mt-1">Inventory ref: {l.inventory_id}</p>}
                                         </div>
                                     </div>

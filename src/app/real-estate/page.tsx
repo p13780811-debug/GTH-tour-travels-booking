@@ -15,6 +15,7 @@ import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-esta
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
+import PartnerHandshake from "@/components/property/PartnerHandshake"
 import TrustStandard from "@/components/real-estate/TrustStandard"
 import BottomNav from "@/components/mobile/BottomNav"
 import styles from "@/components/real-estate/Explorer.module.css"
@@ -158,6 +159,7 @@ export default function RealEstatePage() {
                 <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
+                <PartnerHandshake />
                 <p className={styles.sidebarNote}><LockKeyhole size={13} />Your shortlist and saved searches stay on this device.</p>
             </aside>
             <section id="listing-results" className={styles.results} aria-busy={loading}>
