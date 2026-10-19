@@ -16,6 +16,9 @@ This branch accumulates post-PR90 fixes in one reviewable release. Do not merge 
 - Hotel media: measure Mumbai/Goa missing-photo rates; enrich only exact-property licensed images with source attribution, never unrelated stock or fabricated images.
 - Destination-to-hotel links: verify destination slug, city and country routing end-to-end, and ensure a meaningful honest empty state when no records exist.
 
+- Worldwide multi-source hotel ingestion: audit prior Kaggle CSV provenance/license and actual geographic coverage before treating it as Europe-only; inventory OSM/Geofabrik and partner sources by country, including UAE/Dubai; add resumable, deduplicated, quota-aware cloud ingestion only from authorized sources.
+- Verify per-country imported/published/searchable/photo-covered counts and destination-to-hotel routes; never conflate accommodation directory entries with confirmed bookable inventory.
+
 ## Release guardrails
 - Keep MahaRERA/OSM importer deployment independent of website deploys. Data-only updates must not trigger Vercel builds.
 - Preserve source attribution, data rights, user privacy, existing Real Estate behavior, SEO canonicals, and global ecosystem shell.
