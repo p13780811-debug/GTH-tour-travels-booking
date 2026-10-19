@@ -286,6 +286,7 @@ function HotelsContent() {
 
     return (
         <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
+            <div className="mx-auto max-w-7xl px-4 pt-4"><Link href="/hotels/live" className="gth-glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] px-4 py-3 text-sm"><span><strong>Worldwide live hotel discovery</strong> · Search current LiteAPI property content by city and country; availability is not verified.</span><span className="gold-text font-semibold">Explore global hotels →</span></Link></div>
             {/* ========================================================================= */}
             {/* HERO */}
             {/* ========================================================================= */}

@@ -43,8 +43,8 @@ async function request<T>(path: "/data/hotels" | "/data/hotel", params: URLSearc
 export function searchLiteApiHotels(filters: LiteApiHotelSearch): Promise<unknown> {
   const countryCode = filters.countryCode?.trim().toUpperCase();
   const cityName = filters.cityName?.trim();
-  if (countryCode && !/^[A-Z]{2}$/.test(countryCode)) throw new LiteApiError(400, "Invalid country code");
-  if (cityName && (!/^[\\p{L}\\p{M} .'-]{2,80}$/u.test(cityName))) throw new LiteApiError(400, "Invalid city");
+  if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) throw new LiteApiError(400, "Invalid country code");
+  if (!cityName || !/^[\p{L}\p{M} .'-]{2,80}$/u.test(cityName)) throw new LiteApiError(400, "Invalid city");
   const limit = filters.limit ?? 50;
   const offset = filters.offset ?? 0;
   if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
