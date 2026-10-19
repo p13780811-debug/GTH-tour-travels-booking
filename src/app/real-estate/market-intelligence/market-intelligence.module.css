@@ -1,0 +1,46 @@
+.page { padding-top: 24px; padding-bottom: 112px; max-width: 1240px; }
+.breadcrumbs { display: flex; align-items: center; gap: 10px; font-size: 13px; opacity: .75; margin-bottom: 22px; }
+.breadcrumbs a:hover { text-decoration: underline; }
+.hero { border: 1px solid color-mix(in srgb, #b89b59 38%, transparent); background: linear-gradient(122deg, color-mix(in srgb, var(--card) 92%, #ad8a4a 8%), var(--card)); border-radius: 24px; padding: clamp(24px, 4vw, 45px); margin-bottom: 24px; }
+.eyebrow { text-transform: uppercase; letter-spacing: .13em; color: #ae8e4c; font-size: 11px; font-weight: 750; margin-bottom: 11px; }
+.hero h1 { font-size: clamp(31px, 4vw, 51px); line-height: 1.12; font-weight: 800; letter-spacing: -.035em; max-width: 860px; }
+.hero > p:not(.eyebrow):not(.warning) { max-width: 810px; opacity: .8; line-height: 1.8; margin-top: 15px; }
+.flags { display: flex; flex-wrap: wrap; gap: 9px; margin: 22px 0; }
+.flags span { font-size: 12px; border: 1px solid color-mix(in srgb, currentColor 20%, transparent); padding: 8px 12px; border-radius: 999px; }
+.warning { margin-top: 16px; border: 1px solid color-mix(in srgb, #b89b59 48%, transparent); background: color-mix(in srgb, #b89b59 9%, transparent); padding: 16px 18px; border-radius: 12px; line-height: 1.7; font-size: 13px; }
+.surface { min-width: 0; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); background: var(--card); border-radius: 22px; padding: clamp(20px, 3vw, 32px); margin-bottom: 20px; }
+.surface h2, .source h2 { font-size: clamp(21px, 2.4vw, 27px); font-weight: 750; letter-spacing: -.025em; }
+.sectionIntro { display: flex; align-items: end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.sectionIntro > p { font-size: 12px; opacity: .72; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 13px; margin-top: 24px; }
+.fields label, .stationFilters label { display: flex; flex-direction: column; gap: 9px; font-size: 12px; font-weight: 650; }
+.fields input, .fields select, .stationFilters input, .stationFilters select { width: 100%; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); color: var(--text); background: var(--bg); border-radius: 10px; padding: 12px; font: inherit; min-height: 44px; }
+.fields :is(input,select):focus-visible, .stationFilters :is(input,select):focus-visible { outline: 2px solid #b89b59; outline-offset: 2px; }
+.estimate { margin-top: 24px; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(200px, 1.3fr); gap: 20px; align-items: center; border-radius: 16px; padding: 24px; background: color-mix(in srgb, #b89b59 11%, var(--bg)); }
+.estimate > div { display: flex; flex-direction: column; gap: 7px; }
+.estimate span, .statRow span { font-size: 12px; opacity: .72; }
+.estimate strong { font-size: clamp(26px, 4vw, 35px); }
+.estimate small, .estimate p { font-size: 13px; line-height: 1.75; }
+.estimate p { opacity: .86; }
+.estimate small { opacity: .8; }
+.statRow { display: flex; flex-wrap: wrap; gap: 30px; margin: 24px 0 16px; }
+.statRow > div { display: flex; flex-direction: column; gap: 6px; }
+.statRow strong { font-size: clamp(18px, 2vw, 23px); }
+.figure { overflow: hidden; }
+.figure svg { display: block; width: 100%; max-height: 230px; }
+.chartLabels { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; opacity: .65; margin-top: 5px; }
+.small { font-size: 12px; opacity: .72; line-height: 1.8; margin-top: 12px; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.rates { margin-top: 22px; }
+.rateRow, .stationList > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); padding: 12px 0; font-size: 13px; }
+.rateRow > span small { opacity: .6; }
+.rateRow strong { white-space: nowrap; }
+.stationFilters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.stationList { max-height: 380px; overflow-y: auto; }
+.stationList > div span { opacity: .68; text-align: right; }
+.source { border-top: 1px solid color-mix(in srgb, currentColor 17%, transparent); padding-top: 26px; margin-top: 24px; }
+.source p { font-size: 13px; line-height: 1.9; opacity: .78; margin: 12px 0; max-width: 1050px; }
+.source a:not(.action) { text-decoration: underline; text-underline-offset: 3px; }
+.action { display: inline-flex; align-items: center; margin-top: 12px; padding: 11px 15px; border: 1px solid #b89b59; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 13px; }
+.action:hover { background: color-mix(in srgb, #b89b59 15%, transparent); }
+@media (max-width: 760px) { .page { padding-top: 14px; } .twoColumns, .estimate { grid-template-columns: 1fr; } .stationFilters { grid-template-columns: 1fr; } .statRow { gap: 20px; } .hero { border-radius: 18px; } .surface { border-radius: 18px; } }
