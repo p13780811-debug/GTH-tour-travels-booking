@@ -84,23 +84,14 @@ export default function RealEstatePage() {
         return () => { window.removeEventListener("gth-saved", sync); window.removeEventListener("storage", sync) }
     }, [])
 
+    // Inline responsive filters scroll with the page, not inside a viewport-locked dialog.
     useEffect(() => {
         if (!filtersOpen) return
-        const previous = document.activeElement as HTMLElement | null
-        const overflow = document.body.style.overflow
-        document.body.style.overflow = "hidden"
-        sidebar.current?.querySelector<HTMLButtonElement>("button")?.focus()
-        const keys = (event: KeyboardEvent) => {
-            if (event.key === "Escape") { event.preventDefault(); setFiltersOpen(false) }
-            if (event.key !== "Tab") return
-            const elements = Array.from(sidebar.current?.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, a[href]") || []).filter(node => node.getClientRects().length)
-            const first = elements[0], last = elements.at(-1)
-            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
-            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
-        }
-        const resize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
-        window.addEventListener("keydown", keys); window.addEventListener("resize", resize)
-        return () => { document.body.style.overflow = overflow; window.removeEventListener("keydown", keys); window.removeEventListener("resize", resize); previous?.focus() }
+        const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setFiltersOpen(false) }
+        const onResize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
+        window.addEventListener("keydown", onKey)
+        window.addEventListener("resize", onResize)
+        return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize) }
     }, [filtersOpen])
 
     const updateSearch = (term: string) => {
@@ -122,7 +113,7 @@ export default function RealEstatePage() {
         load(1)
     }
     const openFilters = () => {
-        if (window.innerWidth <= 960) setFiltersOpen(true)
+        if (window.innerWidth <= 960) setFiltersOpen(previous => !previous)
         else sidebar.current?.querySelector<HTMLInputElement>("input")?.focus()
     }
     const removeFilter = (key: string) => {
@@ -154,8 +145,7 @@ export default function RealEstatePage() {
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
         <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
         <div className={styles.workspace}>
-            <button className={styles.scrim} data-open={filtersOpen} tabIndex={-1} aria-label="Close filters" hidden={!filtersOpen} onClick={() => setFiltersOpen(false)} />
-            <aside ref={sidebar} className={styles.sidebar} data-open={filtersOpen} role={filtersOpen ? "dialog" : undefined} aria-modal={filtersOpen || undefined} aria-labelledby="explorer-filter-title">
+            <aside ref={sidebar} className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
                 <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
@@ -164,7 +154,7 @@ export default function RealEstatePage() {
             </aside>
             <section id="listing-results" className={styles.results} aria-busy={loading}>
                 <header className={styles.resultsHeader}><div><p className={styles.eyebrow}>PROPERTY DISCOVERY</p><h2>Explore projects and listings</h2><p role="status">{loading ? "Loading property records…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
-                    <div className={styles.resultActions}><button className={styles.filterToggle} onClick={openFilters} aria-haspopup="dialog" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />Filters</button><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} /></button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} /></button></div>
+                    <div className={styles.resultActions}><button className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-title" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />Filters</button><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} /></button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} /></button></div>
                 </header>
                 {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
                 <div className={styles.rankingLine}><Sparkles size={14} /><button onClick={() => showInfo("ranking")}>Understand the signals. Inspect record coverage and stored ranking details.<Info size={13} /></button></div>
