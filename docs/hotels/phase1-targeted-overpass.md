@@ -64,3 +64,70 @@ Existing importer PR #93 retains this self-contained read-only source
 script and tests. Nothing from this task is copied into the one-shot
 website release PR #121. Running export requires an environment with
 external HTTPS connectivity; no website deployment is involved.
+
+## Phase 1 — enrichment module and validation (2026-10-20)
+
+Use `scripts/hotels/phase1_enrich_166.py` **after** obtaining the
+166-record OSM snapshot. This is a self-contained enrichment stage on the
+existing importer branch; it **never performs Supabase writes or website builds**.
+
+```bash
+# Offline zero-network, zero-invention baseline; full 166 record JSON:
+python scripts/hotels/phase1_enrich_166.py --no-commons
+
+# Deliberately opted-in, one-time source lookups:
+python scripts/hotels/phase1_enrich_166.py --refresh-osm-tags \
+  --allow-public-nominatim --output final_enriched_hotels_166.json
+
+# Offline regression gates:
+python -m unittest discover -s tests -p 'test_phase1_hotel_enrichment.py' -v
+python -m unittest discover -s tests -p 'test_phase1_overpass_hotels.py' -v
+```
+
+**OSMF public Nominatim usage policy**:
+https://operations.osmfoundation.org/policies/nominatim/
+This command is a deliberately one-time operator-invoked run (not a cron,
+not a public-facing website endpoint). It uses a distinctive identifying
+User-Agent and contact email, a **single sequential worker**, >=1.2 seconds
+between queries, and a persistent JSON cache. Avoid distributed execution
+or regular API calls. For repeated enterprise-scale enrichment, deploy
+your own Nominatim service or obtain a suitable licensed provider rather
+than burdening the donated public endpoint. OSM/ODbL attribution required.
+
+**Address provenance**: First prefer exact source element `addr:*` tags,
+then existing catalog address. A Nominatim reverse result is treated as a
+hotel address only if it has the **same OSM element type and ID**; other
+nearby roads are explicitly labelled vicinity/unverified. Remaining blanks
+become `"Hotel Name, Target Locality, City, State"`, labelled
+`address_source=locality_display_fallback_not_street_verified`.
+This is a user-friendly location label, not an official registered address.
+
+**Facilities**: Positive source tags only. `internet_access=wlan` means
+Wi-Fi, **not Free Wi-Fi** without explicit fee evidence. No AC, television,
+power backup, CCTV, room service, pool or accessibility claims without
+positive tags. Published `facilities=[]` means unknown, not absent.
+
+**Photos**: Only explicit OSM Commons File or `wikidata=Q...` matching
+the property's identity can be considered. Wikimedia API must expose an
+allowlisted reuse license and artist metadata, and an HTTPS JPEG/PNG/WebP
+thumbnail has to return a successful `HEAD` image check. Photo evidence
+(`media_evidence`) retains source, artist and license. This is
+*automated source matching*, not a guarantee that the image is current,
+rights-cleared for every use or an accurate hotel exterior: editorial
+review remains necessary. No DuckDuckGo hotlinking, fake gallery duplication,
+generic luxury images masquerading as the hotel, or 3–4 photo guarantees.
+Future verified regional artwork belongs in **separately labelled
+illustrative_gallery**, never `gallery`.
+
+**Affiliates/stars**: Exact affiliate URLs remain null until an approved
+hotel/provider ID matches the existing `hotel_booking_links` workflow.
+Stars appear only when an exact OSM element has a 1–5 `stars` tag; this
+is *source attributed*, not independently certified government star
+classification.
+
+**Output certification**: `final_enriched_hotels_166.json` contains 166
+preserved identities with `readiness.structurally_valid` and separately
+`readiness.fully_enriched`. The initial committed version is an **offline
+baseline**, not proof that online enrichment has succeeded. An isolated
+GitHub Actions job may produce a later more enriched artifact, without
+merging PR #93, affecting PR #121 or changing the live DB.
