@@ -13,6 +13,7 @@ import ExplorerHero from "@/components/real-estate/ExplorerHero"
 import ExplorerCard from "@/components/real-estate/ExplorerCard"
 import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-estate/ExplorerDialog"
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
+import { getPublishedProjectMedia } from "@/lib/real-estate/published-media"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
 import PartnerHandshake from "@/components/property/PartnerHandshake"
@@ -57,7 +58,9 @@ export default function RealEstatePage() {
             const sort = params.get("sort")
             const data = await PropertyService.getAll({ limit: PAGE_SIZE, page: nextPage, query: params.get("query")?.slice(0, 120) || undefined, country: text("country"), city: text("city"), type: (() => { const value = params.get("type")?.trim(); return value && /^[\p{L}\p{N}\s/-]{1,80}$/u.test(value) ? value : undefined })(), listing: ["buy","rent"].includes(params.get("listing") || "") ? params.get("listing")! : undefined, bedrooms: Number.isInteger(bedrooms) && bedrooms > 0 && bedrooms <= 20 ? bedrooms : undefined, minPrice: positive("minPrice"), maxPrice: positive("maxPrice"), currency: text("currency"), sort: sort === "ai" || sort === "price_low" || sort === "price_high" ? sort : "latest" })
             if (current !== request.current) return
-            setProperties(data)
+            const visibleMedia = await getPublishedProjectMedia(data.map((item: ExplorerProperty) => Number(item.id)))
+            if (current !== request.current) return
+            setProperties(data.map((item: ExplorerProperty) => ({...item,publishedMedia:visibleMedia.filter(m=>Number(m.project_id)===Number(item.id))})))
             setPage(nextPage)
             if (nextPage > 1) url.searchParams.set("page", String(nextPage))
             else url.searchParams.delete("page")
