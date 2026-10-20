@@ -19,16 +19,24 @@ function listNames(records:unknown[],keys:string[]):string[]{
 }
 export default function NuiteeHotelDetails({hotel}:{hotel:H}){
  const [tab,setTab]=useState<"overview"|"amenities"|"rooms"|"photos">("overview");
+ const [cover,setCover]=useState(0);
+ const [broken,setBroken]=useState<number[]>([]);
+ const heroImages=(hotel.images||[]).slice(0,5);
  const amenities=listNames(hotel.facilities,["name","facilityName","description","label","title"]);
  const rooms=listNames(hotel.rooms,["name","roomName","roomTypeName","description","title"]);
  const description=readable(hotel.description);
  const tabs=[["overview","Overview"],["amenities","Amenities"],["rooms","Rooms"],["photos","Photos"]] as const;
  return <main className="min-h-screen bg-[var(--bg)] p-4 text-[var(--text)] md:p-10"><div className="mx-auto max-w-6xl space-y-5">
  <a className="inline-flex rounded-lg border border-[var(--border)] px-4 py-2 text-sm" href="/hotels/nuitee-sandbox">← Back to hotel catalog</a>
- <header className="gth-glass space-y-3 rounded-2xl border border-[var(--border)] p-6">
+ <header className="gth-glass space-y-4 rounded-2xl border border-[var(--border)] p-5 md:p-7">
  <p className="text-xs font-semibold text-[var(--text-soft)]">NUITEE SUPPLIER · SANDBOX PREVIEW</p><h1 className="text-2xl font-bold md:text-3xl">{hotel.name}</h1>
  <p className="text-sm text-[var(--text-soft)]">{hotel.address||hotel.city||"Address not provided by supplier"}</p>
  <p className="text-sm">{hotel.stars===null?"Official star classification not supplied":hotel.stars+" star hotel"} · {hotel.images?.length||0} photos</p>
+ <div className="grid gap-2 overflow-hidden rounded-xl md:grid-cols-4 md:grid-rows-2">
+ {heroImages[cover]&&!broken.includes(cover)?<div className="relative h-64 overflow-hidden bg-[var(--bg-soft)] md:col-span-3 md:row-span-2 md:h-96"><img src={heroImages[cover]} alt={hotel.name+" hero photograph"} className="h-full w-full object-cover" onError={()=>setBroken(s=>[...s,cover])}/><div className="absolute bottom-3 right-3 rounded-lg bg-[var(--card)] px-3 py-2 text-xs">Supplier photograph</div></div>:<div className="flex h-64 items-center justify-center bg-[var(--bg-soft)] text-sm md:col-span-3 md:row-span-2">Supplier photo unavailable</div>}
+ <div className="grid grid-cols-2 gap-2 md:grid-cols-1">{heroImages.slice(1,3).map((url,i)=><button key={url} type="button" className="h-28 overflow-hidden rounded-lg border border-[var(--border)] md:h-[188px]" onClick={()=>setCover(i+1)} aria-label={"View hero photo "+(i+2)}><img src={url} alt="" className="h-full w-full object-cover"/></button>)}</div>
+ </div>
+ <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-[var(--text-soft)]">Explore the hotel, rooms, facilities and photographs</p><a className="gth-btn-gold inline-flex rounded-xl px-5 py-3 font-semibold" href={"/hotels/nuitee-sandbox/"+encodeURIComponent(hotel.supplierHotelId)+"/checkout"}>Book Now · Sandbox</a></div>
  </header>
  <nav aria-label="Hotel detail categories" className="flex snap-x gap-2 overflow-x-auto pb-2">{tabs.map(([id,label])=><button key={id} type="button" aria-current={tab===id?"page":undefined} onClick={()=>setTab(id)} className={"shrink-0 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold "+(tab===id?"gth-btn-gold":"bg-[var(--card)]")}>{label}</button>)}</nav>
  {tab==="overview"&&<section className="gth-glass space-y-3 rounded-2xl p-6"><h2 className="text-xl font-semibold">About this property</h2><p className="text-sm leading-7 text-[var(--text-soft)]">{description||"Supplier has not provided a hotel description."}</p><div className="grid gap-3 sm:grid-cols-3">{[["Facilities",amenities.length],["Room types",rooms.length],["Photo URLs",hotel.images?.length||0]].map(([label,count])=><div key={label} className="rounded-xl border border-[var(--border)] p-4"><p className="text-sm text-[var(--text-soft)]">{label}</p><p className="text-xl font-semibold">{count}</p></div>)}</div></section>}
