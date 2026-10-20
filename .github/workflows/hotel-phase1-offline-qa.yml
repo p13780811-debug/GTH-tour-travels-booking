@@ -1,0 +1,37 @@
+name: GTH Phase 1 Hotels — Offline Source QA
+on:
+  push:
+    branches: [gth-mumbai-thane-rera-ingestion]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[phase1-hotels-final-qa]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile all targeted Phase-1-only scripts
+        run: |
+          python -m py_compile scripts/hotels/phase1_enrich_166.py scripts/hotels/phase1_commons_candidate_review.py scripts/hotels/phase1_overpass_hotels.py
+      - name: Test geo bounds, provenance, reject unlicensed media and bounded retries
+        run: |
+          python -m unittest discover -s tests -p 'test_phase1_hotel_enrichment.py' -v
+          python -m unittest discover -s tests -p 'test_phase1_overpass_hotels.py' -v
+          python -m unittest discover -s tests -p 'test_phase1_commons_candidate_review.py' -v
+      - name: Validate 166 identities and no fabricated approved gallery
+        run: |
+          python scripts/hotels/phase1_enrich_166.py --no-commons --output /tmp/phase1-offline.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/phase1-offline.json'))
+          assert d['hotel_count']==166 and d['readiness']['structurally_valid']
+          assert all(not row['gallery'] and row['affiliate_url'] is None for row in d['records'])
+          print('Approved source-only scope: 166 hotel identities; no fake photos')
+          PY
