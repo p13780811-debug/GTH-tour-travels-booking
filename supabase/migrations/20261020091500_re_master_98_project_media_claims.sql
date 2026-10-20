@@ -197,6 +197,10 @@ begin
     select 1 from public.property_project_claims c where c.id=item.claim_id
     and c.status='approved' and c.project_id=item.project_id
   ) then raise exception 'Project authorization not approved'; end if;
+  if p_decision='approved' and not exists (
+    select 1 from storage.objects o where o.bucket_id='gth-re-claim-media'
+      and o.name=item.object_key and o.metadata->>'mimetype'='image/webp'
+  ) then raise exception 'Private source image missing or invalid'; end if;
   update public.property_claim_media set status=p_decision,reviewed_by=auth.uid(),
     reviewed_at=now(),review_notes=left(coalesce(p_notes,''),1000) where id=p_id;
 end; $$;
