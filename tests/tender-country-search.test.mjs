@@ -18,9 +18,9 @@ const client={from(table){
   assert.equal(table,"tenders");
   calls++;
   const eq={},membership={};
-  let gt,lt,like,limitValue=1000;
+  let gt,lt,like,limitValue=1000,head=false;
   const query={
-    select(){return query},
+    select(_columns,options){head=Boolean(options?.head);return query},
     eq(k,v){eq[k]=v;return query},
     in(k,v){membership[k]=v;return query},
     gt(k,v){gt=[k,v];return query},
@@ -40,7 +40,9 @@ const client={from(table){
       if(like && !String(r[like[0]]).toLowerCase().includes(like[1].replaceAll("%","").toLowerCase()))return false;
       return true;
     }).sort((a,b)=>a.deadline_at.localeCompare(b.deadline_at)||a.id.localeCompare(b.id));
-    return {data:filtered.slice(offset,offset+n),count:filtered.length,error:null};
+    // Match the real PostgREST range failure rather than silently returning [].
+    if(!head&&offset>0&&offset>=filtered.length)return {data:null,count:null,error:{code:"PGRST103"}};
+    return {data:head?null:filtered.slice(offset,offset+n),count:filtered.length,error:null};
   }
   return query;
 }};
@@ -70,6 +72,30 @@ test("Page boundary preserves home-first ordering then nearby without duplicates
   assert.ok(res.items.slice(1).every(r=>["BD","NP"].includes(r.country_code)));
   assert.equal(new Set(res.items.map(r=>r.id)).size,res.items.length);
   assert.ok(!res.items.some(r=>r.country_code==="US"));
+});
+test("Second page still loads nearby when all home notices fit on the first page",async()=>{
+  const filters={...base,country:"BD",nearby:["IN","NP"]};
+  const first=await search(filters);
+  const second=await search({...filters,page:2});
+  assert.equal(second.ok,true);assert.equal(second.total,19);
+  assert.equal(second.primaryCount,4);assert.equal(second.nearbyCount,15);
+  assert.equal(second.items.length,7);
+  assert.ok(second.items.every(r=>["IN","NP"].includes(r.country_code)));
+  const ids=[...first.items,...second.items].map(r=>r.id);
+  assert.equal(new Set(ids).size,19);
+});
+test("Empty home group and pages beyond local results do not query invalid ranges",async()=>{
+  const nearby=await search({...base,country:"LK",nearby:["IN"],page:2});
+  assert.equal(nearby.ok,true);assert.equal(nearby.items.length,1);assert.equal(nearby.total,13);
+  for(const filters of [{...base,page:3},{...base,country:"BD",nearby:[],page:2}]){
+    const result=await search(filters);
+    assert.equal(result.ok,true);assert.equal(result.items.length,0);
+    assert.ok(result.total>0);
+  }
+});
+test("An out-of-range worldwide page preserves count without reporting an outage",async()=>{
+  const result=await search({...base,scope:"world",country:"US",page:2});
+  assert.equal(result.ok,true);assert.equal(result.total,3);assert.equal(result.items.length,0);
 });
 test("Unknown visitor does not see random worldwide inventory",async()=>{
   const before=calls;

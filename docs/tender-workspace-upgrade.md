@@ -35,6 +35,8 @@ Live checks confirmed keyword search, clearing filters, the seven-day selector, 
 
 The calendar download exposed an existing 180-character description truncation that cut the official source URL. The follow-up correction preserves the full bounded HTTPS URL, rejects credentials/control-character injection, and folds lines at 75 UTF-8 octets. Five regression tests cover the observed long-URL failure, Unicode folding, UTC deadlines, unsafe inputs and expired/invalid dates.
 
+Second-page testing also reproduced a pre-existing country-first pagination bug: when the home group contained fewer than 12 notices, its second-page offset triggered PostgREST `PGRST103` before nearby rows were loaded. Local discovery now counts the public home/nearby groups before requesting bounded row ranges, skipping exhausted groups. Explicit worldwide out-of-range pages recover the exact public count and return an empty page. Three regression tests use realistic PostgREST 416 behavior and cover exhausted/empty home groups, no duplicates across the boundary, and out-of-range local/world pages.
+
 ## Release
 
 The Tender feature and calendar-correction branches have automatic Vercel previews disabled to conserve the user's deployment quota. Keep existing unrelated draft PRs and their release holds unchanged. Main merges deploy automatically; verify each released SHA reaches READY on the GTH PRO custom domain. No manual Vercel deployment or hosting-plan change is required.

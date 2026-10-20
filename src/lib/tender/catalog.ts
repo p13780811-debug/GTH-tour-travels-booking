@@ -74,8 +74,8 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
     return {ok:true,items:[],total:0,page:filters.page,size:PAGE_SIZE,countryRequired:true};
   }
   try {
-    const makeQuery = () => {
-      let query = db.from("tenders").select(PUBLIC_COLUMNS,{count:"exact"})
+    const makeQuery = (head=false) => {
+      let query = db.from("tenders").select(PUBLIC_COLUMNS,{count:"exact",head})
         .eq("status","published").eq("source_verified",true).eq("is_public",true)
         .gt("deadline_at",new Date().toISOString());
       if(filters.sector) query=query.eq("sector",filters.sector);
@@ -97,30 +97,45 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       let query=makeQuery();
       if(filters.country) query=query.eq("country_code",filters.country);
       const {data,error,count}=await sorting(query).range(offset,offset+PAGE_SIZE-1);
+      // PostgREST returns 416/PGRST103 for offsets beyond the last record.
+      // A stale or manually entered page is an empty result, not a catalog outage.
+      if(error?.code==="PGRST103"){
+        let countQuery=makeQuery(true);
+        if(filters.country)countQuery=countQuery.eq("country_code",filters.country);
+        const totals=await countQuery;
+        if(totals.error)throw totals.error;
+        return {ok:true,items:[],total:totals.count??0,page:filters.page,size:PAGE_SIZE};
+      }
       if(error) throw error;
       return {ok:true,items:(data??[]) as PublicTender[],total:count??0,page:filters.page,size:PAGE_SIZE};
     }
     const home=filters.country;
     const neighbours=(filters.nearby??[]).filter(c=>c!==home&&/^[A-Z]{2}$/.test(c)).slice(0,12);
-    const h=await sorting(makeQuery().eq("country_code",home)).range(offset,offset+PAGE_SIZE-1);
-    if(h.error) throw h.error;
-    const homeCount=h.count??0;
-    const homeItems=(h.data??[]) as PublicTender[];
-    if(neighbours.length===0){
-      return {ok:true,items:homeItems,total:homeCount,primaryCount:homeCount,nearbyCount:0,page:filters.page,size:PAGE_SIZE};
-    }
-    // First count nearby without retrieving a whole global catalog. RLS
-    // restricts both queries to reviewed, public, current notices.
-    const nearCountResult=await makeQuery().in("country_code",neighbours)
-      .order("deadline_at",{ascending:true}).limit(1);
+    // Count each group first: after the home group is exhausted, sending its
+    // global page offset to PostgREST would produce a 416 before nearby loads.
+    // Both count and row queries retain exactly the same public/RLS filters.
+    const [homeCountResult,nearCountResult]=await Promise.all([
+      makeQuery(true).eq("country_code",home),
+      neighbours.length?makeQuery(true).in("country_code",neighbours)
+        :Promise.resolve({count:0,error:null})
+    ]);
+    if(homeCountResult.error)throw homeCountResult.error;
     if(nearCountResult.error) throw nearCountResult.error;
+    const homeCount=homeCountResult.count??0;
     const nearCount=nearCountResult.count??0;
+    let homeItems:PublicTender[]=[];
+    if(offset<homeCount){
+      const h=await sorting(makeQuery().eq("country_code",home))
+        .range(offset,Math.min(homeCount-1,offset+PAGE_SIZE-1));
+      if(h.error)throw h.error;
+      homeItems=(h.data??[]) as PublicTender[];
+    }
     const remaining=PAGE_SIZE-homeItems.length;
+    const nearOffset=Math.max(0,offset-homeCount);
     let extra:PublicTender[]=[];
-    if(remaining>0 && offset+homeItems.length>=homeCount && nearCount>0){
-      const nearOffset=Math.max(0,offset-homeCount);
+    if(remaining>0 && offset+homeItems.length>=homeCount && nearOffset<nearCount){
       const nearbyRows=await sorting(makeQuery().in("country_code",neighbours))
-        .range(nearOffset,nearOffset+remaining-1);
+        .range(nearOffset,Math.min(nearCount-1,nearOffset+remaining-1));
       if(nearbyRows.error) throw nearbyRows.error;
       extra=(nearbyRows.data??[]) as PublicTender[];
     }
