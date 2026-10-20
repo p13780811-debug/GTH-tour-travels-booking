@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { isIndexableProperty, propertySeo, validPropertySlug } from "@/lib/real-estate/property-seo"
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
+import { getPublishedProjectMedia, projectCover, publishedMediaUrl } from "@/lib/real-estate/published-media"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import { supabase } from "@/lib/supabase"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
@@ -16,13 +17,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const property = await readProperty(slug)
     const { title, description } = propertySeo(property)
     const media = approvedMedia(slug, property?.image)
-    const image = media?.url || "/images/gth-logo.png"
+    const published = property ? projectCover(await getPublishedProjectMedia([Number(property.id)])) : undefined
+    const image = published ? siteUrl(publishedMediaUrl(published.id)) : media?.url || "/images/gth-logo.png"
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
     return {
         title: { absolute: title }, description,
         alternates: { canonical },
         robots: { index: isIndexableProperty(property) && isPublicLaunch(), follow: Boolean(property) },
-        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: media ? property?.title : "GTH PRO logo; project photograph not available" }] },
+        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: published ? `${property?.title} — ${published.media_type === "render" ? "approved architectural render" : "reviewed project image"}` : media ? property?.title : "GTH PRO logo; project photograph not available" }] },
         twitter: { card: "summary_large_image", title, description, images: [image] },
     }
 }
@@ -31,7 +33,7 @@ export default async function PropertyPage({ params }: PageProps) {
     const { slug } = await params
     const property = await readProperty(slug)
     if (!property) notFound()
-    const [inventory, related] = await Promise.all([
+    const [inventory, related, publishedMedia] = await Promise.all([
         (async () => {
             try {
                 const { data, error } = await supabase.from("property_inventory")
@@ -46,8 +48,10 @@ export default async function PropertyPage({ params }: PageProps) {
             try { return (await PropertyService.getAll({ city: property.city, limit: 7, sort: "latest" })).filter((item: { slug: string }) => item.slug !== slug).slice(0, 6) }
             catch { return [] }
         })(),
+        getPublishedProjectMedia([Number(property.id)]),
     ])
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
+    const cover = projectCover(publishedMedia)
     const structuredData = property ? {
         "@context": "https://schema.org",
         "@graph": [
@@ -56,6 +60,7 @@ export default async function PropertyPage({ params }: PageProps) {
                 "@id": `${canonical}#page`,
                 url: canonical,
                 name: property.title,
+                ...(cover ? { primaryImageOfPage: { "@type": "ImageObject", url: siteUrl(publishedMediaUrl(cover.id)), caption: `${property.title} — ${cover.media_type === "render" ? "architectural render" : "reviewed project photo"}` } } : {}),
                 ...(property.description ? { description: property.description } : {}),
                 breadcrumb: { "@id": `${canonical}#breadcrumb` },
             },
@@ -71,6 +76,6 @@ export default async function PropertyPage({ params }: PageProps) {
     } : null
     return <>
         {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
-        <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} />
+        <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} publishedMedia={publishedMedia} />
     </>
 }
