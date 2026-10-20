@@ -60,7 +60,7 @@ test('buyer enquiry modes are tabs, submit is the real CTA, and consent stays re
  const html=renderToStaticMarkup(React.createElement(Modal,{property:{id:1,title:'Registered project',slug:'registered-project'},initialIntent:'pricing_enquiry',onClose(){}}));
  const tags=buttons(html);
  assert.equal(tags.length,4);
- for(const label of ['Price breakup','Brochure & plans','Site visit'])neutralControl(findButton(tags,label));
+ for(const label of ['Price breakup','Brochure &amp; plans','Site visit'])neutralControl(findButton(tags,label));
  globalCta(findButton(tags,'Send project enquiry'));
  assert.match(html,/<input(?=[^>]*name="consent")(?=[^>]*required)[^>]*>/);
  assert.match(html,/aria-label="Enquiry type"/);
