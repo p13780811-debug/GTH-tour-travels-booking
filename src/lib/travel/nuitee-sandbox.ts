@@ -35,7 +35,7 @@ function photo(v: unknown): string | null {
 }
 function photos(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
-  return v.slice(0,30).map(i => {
+  return v.slice(0,50).map(i => {
     const value = object(i);
     return photo(typeof i === "string" ? i : value?.url ?? value?.urlHd ?? value?.urlFull);
   }).filter((i): i is string => Boolean(i));

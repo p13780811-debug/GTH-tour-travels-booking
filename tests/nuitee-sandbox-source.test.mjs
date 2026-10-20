@@ -31,6 +31,18 @@ test("no booking action or rate charging in preview routes", () => {
   assert.match(search, /Cache-Control/);
   assert.match(prebook, /bookingConfirmed: false/);
 });
+test("preview uses image load and failure feedback without publishing supplier media", () => {
+  const page = read("src/app/hotels/nuitee-sandbox/page.tsx");
+  const gallery = read("src/components/hotels/NuiteeSandboxGallery.tsx");
+  assert.match(adapter, /v\.slice\(0,50\)/);
+  assert.match(page, /NuiteeSandboxGallery/);
+  assert.match(page, /onError=\{\(\) => setBroken\(true\)\}/);
+  assert.match(gallery, /onLoad=\{\(\) => recordLoad\(active\)\}/);
+  assert.match(gallery, /onError=\{\(\) => recordError\(active\)\}/);
+  assert.match(gallery, /PENDING|not licensed for public use|does not verify property identity/i);
+  assert.doesNotMatch(gallery, /supabase|insert\(|upsert\(|bookingConfirmed: true/);
+});
+
 test("hotel identity and empty-image safety preserved", () => {
   assert.match(adapter, /supplierHotelId: id/);
   assert.match(adapter, /images: primary/);

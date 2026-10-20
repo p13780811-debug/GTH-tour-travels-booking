@@ -1,6 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import NuiteeSandboxGallery from "@/components/hotels/NuiteeSandboxGallery";
 type Hotel={supplierHotelId:string;name:string;city:string|null;address:string|null;images:string[];stars:number|null;facilities:unknown[]};
+function SupplierCardPhoto({ hotel }: { hotel: Hotel }) {
+ const [broken, setBroken] = useState(false);
+ const url = hotel.images?.[0];
+ useEffect(() => setBroken(false), [hotel.supplierHotelId, url]);
+ if (!url || broken) return <div className="flex h-44 items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-soft)]">{broken ? "Supplier image failed to load" : "No supplier photo provided"}</div>;
+ return <img src={url} alt={"Nuitee supplier preview for "+hotel.name} onError={() => setBroken(true)} className="h-44 w-full object-cover" loading="lazy" referrerPolicy="no-referrer"/>;
+}
 export default function NuiteeSandboxPage(){
  const [token,setToken]=useState("");const [city,setCity]=useState("Mumbai");
  const [country,setCountry]=useState("IN");const [hotels,setHotels]=useState<Hotel[]>([]);
@@ -34,8 +42,8 @@ export default function NuiteeSandboxPage(){
  {!busy&&!error&&hotels.length===0&&<p className="text-sm text-[var(--text-soft)]">Enter the separate preview test token and search. No catalog is preloaded.</p>}
  <p aria-live="polite" className="text-sm">{hotels.length?hotels.length+" sandbox supplier hotel records returned":""}</p>
  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{hotels.map(h=><article key={h.supplierHotelId} className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
- {h.images?.[0]?<img src={h.images[0]} alt={"Supplier image for "+h.name} className="h-44 w-full object-cover" loading="lazy" referrerPolicy="no-referrer"/>:<div className="flex h-44 items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-soft)]">No supplier photo provided</div>}
+ <SupplierCardPhoto hotel={h}/>
  <div className="space-y-2 p-4"><h2 className="font-semibold">{h.name}</h2><p className="text-sm text-[var(--text-soft)]">{h.address||h.city||"Address unavailable"}</p><p className="text-xs text-[var(--text-soft)]">Supplier ID: {h.supplierHotelId}</p><button className="gth-btn-gold rounded-lg px-4 py-2 text-sm" disabled={busy} onClick={()=>void inspect(h.supplierHotelId)}>View supplier details</button></div></article>)}</div>
- {detail&&<section className="gth-glass space-y-3 rounded-xl p-5" aria-label="Hotel details"><h2 className="text-xl font-semibold">{detail.name}</h2><p>{detail.address||"Address unavailable"}</p><p className="text-sm">{detail.facilities?.length||0} supplier facility records</p><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{detail.images?.slice(0,8).map((src,i)=><img key={src+i} src={src} alt={detail.name+" photo "+(i+1)} className="h-28 w-full rounded-lg object-cover" loading="lazy" referrerPolicy="no-referrer"/>)}</div></section>}
+ {detail&&<section className="gth-glass space-y-3 rounded-xl p-5" aria-label="Hotel details"><h2 className="text-xl font-semibold">{detail.name}</h2><p>{detail.address||"Address unavailable"}</p><p className="text-sm">{detail.facilities?.length||0} supplier facility records</p><NuiteeSandboxGallery hotelId={detail.supplierHotelId} hotelName={detail.name} urls={detail.images||[]}/></section>}
  </div></main>
 }
