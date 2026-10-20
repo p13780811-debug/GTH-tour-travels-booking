@@ -72,13 +72,24 @@ class Wikimedia:
                 self.sleeper(2**(attempt+1))
         return result
 
-def strong_name_match(hotel_name, file_title):
+def strong_name_match(hotel_name, file_title, city=None):
+    """Require explicit named hotel and city in the *file title*.
+
+    Commons full-text search itself is NOT hotel identity evidence.
+    This gate rejects historical people called Sharada and generic SeaView
+    landscapes that happen to appear in Mumbai search results.
+    """
     title=key_tokens(file_title)
     required=key_tokens(hotel_name)-STOPWORDS
-    # Single generic words are too easy to confuse with another hotel.
-    if not required or (len(required)==1 and len(next(iter(required)))<5):
+    if not required or not required.issubset(title):
         return False
-    return required.issubset(title)
+    if city and not key_tokens(city).issubset(title):
+        return False
+    # A one-word hotel name requires the literal word 'hotel' or equivalent
+    # along with its geographical city label in the file name.
+    if len(required)==1 and not (title & {"hotel","resort","guesthouse","lodge"}):
+        return False
+    return True
 
 def search_files(row, wiki):
     # A name+city public Commons file search is a lead, not identity proof.
@@ -94,7 +105,7 @@ def file_evidence(title,row,wiki,*,check_image=True):
     if not isinstance(title,str) or not title.startswith("File:"):
         return None
     # Name check prevents one destination's unrelated hotel photo from being assigned.
-    if not strong_name_match(row["name"],title):
+    if not strong_name_match(row["name"],title,row["city"]):
         return None
     data=wiki.request({"action":"query","prop":"imageinfo","titles":title,
                        "iiprop":"url|mime|extmetadata","iiurlwidth":"1000"})
