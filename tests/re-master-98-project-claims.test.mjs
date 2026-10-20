@@ -133,3 +133,80 @@ test("RE-05: direct Storage JWT cannot upload to a different claimant's pending 
  assert.match(storageInsert,/c\.status in \('pending','approved'\)/);
  assert.match(storageInsert,/else false/);
 });
+
+
+test("RE-05: candidate evidence cannot be deleted while metadata exists, only orphan owner files", () => {
+ const sql=fs.readFileSync("supabase/migrations/20261020091500_re_master_98_project_media_claims.sql","utf8");
+ const policy=sql.split('create policy "re claim private orphan cleanup"')[1].split('-- Only a separate administrator')[0];
+ assert.match(policy,/for delete to authenticated/i);
+ assert.match(policy,/bucket_id='gth-re-claim-media'/);
+ assert.match(policy,/storage.foldername\(name\)\)\[2\]=\(select auth.uid\(\)\)/);
+ assert.match(policy,/not exists \(/);
+ assert.match(policy,/m.object_key=name/);
+});
+test("RE-06: corrupted alleged PNG rejected without touching private storage", async() => {
+ const sharp=(await import("sharp")).default;
+ let writes=0;
+ const user={id:"123e4567-e89b-12d3-a456-426614174000",app_metadata:{}};
+ const claimId="11111111-1111-4111-8111-111111111111";
+ const context={user,client:{
+  from(){return {select(){return this},eq(){return this},async single(){return {data:{id:claimId,project_id:17,status:"pending"},error:null}}}},
+  storage:{from(){return {upload(){writes++;throw new Error("must not upload")}}}}
+ }};
+ const route=load("src/app/api/property-claims/media/route.ts",{
+  "node:crypto":await import("node:crypto"),"sharp":{default:sharp},
+  "@/lib/security/auth":{authenticatedStorage:async()=>context},
+  "@/lib/security/rate-limit":{enforceRateLimit:async()=>{}},
+  "@/lib/security/request":request,"@/lib/security/validators":validators,
+ });
+ const form=new FormData();
+ form.set("claim_id",claimId);form.set("media_type","photo");
+ form.set("license_basis","creator");form.set("supplier","Original photographer");
+ form.set("permission_reference","Written media permission reference");
+ form.set("rights_attested","true");
+ form.set("file",new File([new Uint8Array([1,2,3,4])],"invalid.png",{type:"image/png"}));
+ const response=await route.POST(new Request("https://example.test/api/property-claims/media",{method:"POST",body:form}));
+ assert.equal(response.status,415);
+ assert.equal(writes,0);
+});
+test("RE-06: failed metadata insert cleans only newly created private orphan",async()=>{
+ const sharp=(await import("sharp")).default;
+ const user={id:"123e4567-e89b-12d3-a456-426614174000",app_metadata:{}};
+ const claimId="11111111-1111-4111-8111-111111111111";
+ const image=await sharp({create:{width:8,height:8,channels:3,background:"#fff"}}).png().toBuffer();
+ const uploaded=[],removed=[];
+ const context={user,client:{
+  from(table){
+   if(table==="property_project_claims")return {
+    select(){return this},eq(){return this},async single(){return {data:{id:claimId,project_id:17,status:"pending"},error:null}}
+   };
+   if(table==="property_claim_media")return {
+    insert(){return this},select(){return this},async single(){return {data:null,error:{message:"duplicate"}}}
+   };
+   throw new Error("Unexpected table");
+  },
+  storage:{from(bucket){
+   assert.equal(bucket,"gth-re-claim-media");
+   return {
+    async upload(key,data){uploaded.push(key);assert.ok(data.length>0);return {error:null}},
+    async remove(keys){removed.push(...keys);return {error:null}},
+   };
+  }},
+ }};
+ const route=load("src/app/api/property-claims/media/route.ts",{
+  "node:crypto":await import("node:crypto"),"sharp":{default:sharp},
+  "@/lib/security/auth":{authenticatedStorage:async()=>context},
+  "@/lib/security/rate-limit":{enforceRateLimit:async()=>{}},
+  "@/lib/security/request":request,"@/lib/security/validators":validators,
+ });
+ const form=new FormData();
+ form.set("claim_id",claimId);form.set("media_type","photo");form.set("license_basis","creator");
+ form.set("supplier","Original photographer");form.set("permission_reference","Original author signed rights agreement");
+ form.set("rights_attested","true");
+ form.set("file",new File([image],"photo.png",{type:"image/png"}));
+ const response=await route.POST(new Request("https://example.test/api/property-claims/media",{method:"POST",body:form}));
+ assert.equal(response.status,409);
+ assert.equal(uploaded.length,1);
+ assert.deepEqual(removed,uploaded);
+ assert.match(uploaded[0],new RegExp("^claims/"+user.id+"/"+claimId+"/[a-f0-9-]{36}\\.webp$"));
+});
