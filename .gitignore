@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only registry run state, source exports and media review manifests
+/.gth-rera/
+/data/maharera/private/
+__pycache__/
+*.pyc
+/supabase/.temp/
