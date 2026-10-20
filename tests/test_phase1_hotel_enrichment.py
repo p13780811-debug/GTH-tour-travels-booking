@@ -84,6 +84,19 @@ class OfflineTests(unittest.TestCase):
             return z
         self.assertIsNone(m.commons_file("Unauthorized.jpg",self.cache,fetch=bad,verify_head=False))
 
+    def test_failed_overpass_source_audit_never_claims_amenities(self):
+        audit = {}
+        def unavailable(*args, **kwargs):
+            raise ValueError("source unavailable")
+        input_records = [{"id":"osm-node-123","lat":19.0,"lon":72.8}]
+        found=m.refresh_tags(input_records,self.cache,enabled=True,fetch=unavailable,
+                             sleep=lambda _:None,audit=audit)
+        self.assertEqual(found,{})
+        self.assertEqual(audit["batches_failed"],1)
+        self.assertEqual(audit["batches_succeeded"],0)
+        self.assertEqual(audit["tagged_hotels"],0)
+        self.assertIn("DO_NOT_CLAIM_VERIFIED_AMENITIES",audit["status"])
+
     def test_no_arbitrary_https_photo_host(self):
         self.assertIsNone(m.https("https://evil.example.com/x.jpg", {"upload.wikimedia.org"}))
         self.assertIsNone(m.https("http://upload.wikimedia.org/x.jpg", {"upload.wikimedia.org"}))
