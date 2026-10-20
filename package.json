@@ -17,7 +17,8 @@
     "test:security": "node --test tests/*.test.mjs",
     "check:production-env": "node scripts/check-production-env.mjs",
     "check:ecosystem-release": "node scripts/audit-ecosystem-readiness.mjs",
-    "monitor:ecosystem": "node scripts/monitor-ecosystem.mjs"
+    "monitor:ecosystem": "node scripts/monitor-ecosystem.mjs",
+    "postbuild": "node scripts/verify-nuitee-sandbox-preview.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
