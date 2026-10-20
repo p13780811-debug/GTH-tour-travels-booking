@@ -1,5 +1,4 @@
-import importlib.util,json,pathlib,unittest,io,tempfile
-from contextlib import redirect_stdout
+import importlib.util,json,pathlib,unittest
 from unittest.mock import patch
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 SPEC=importlib.util.spec_from_file_location("osm_attractions",ROOT/"scripts/attractions/import_osm_attractions.py")
@@ -85,36 +84,6 @@ class BulkAttractionTests(unittest.TestCase):
      self.assertEqual(token.call_count,3)
      self.assertEqual([call.args[0].get_header("Authorization") for call in open_url.call_args_list],
                       ["Bearer new-1","Bearer new-2","Bearer new-3"])
- def test_bounded_resume_completes_large_region_without_dropping_tail(self):
-  rows=[feature("n1"),feature("n2"),feature("n3"),feature("n3")]
-  with tempfile.TemporaryDirectory() as d:
-   source=pathlib.Path(d)/"mapped.geojsonseq"
-   source.write_text("\n".join(json.dumps(r) for r in rows)+"\n",encoding="utf-8")
-   def scan(offset):
-    output=io.StringIO()
-    with redirect_stdout(output):
-     self.assertEqual(m.main([str(source),"--region",REGION,"--limit","2",
-                   "--start-offset",str(offset),"--dry-run"]),0)
-    return json.loads(output.getvalue())
-   first=scan(0)
-   self.assertEqual(first["accepted_source_places"],2)
-   self.assertFalse(first["region_complete"])
-   self.assertEqual(first["next_offset"],2)
-   second=scan(first["next_offset"])
-   self.assertEqual(second["accepted_source_places"],1)
-   self.assertTrue(second["region_complete"])
-   self.assertEqual(second["next_offset"],0)
-   self.assertEqual(second["resumed_skipped"],2)
-
- def test_invalid_resume_offsets_rejected(self):
-  with tempfile.TemporaryDirectory() as d:
-   source=pathlib.Path(d)/"mapped.geojsonseq"
-   source.write_text("",encoding="utf-8")
-   for value in ("-1","10000001"):
-    with redirect_stdout(io.StringIO()):
-     with self.assertRaises(SystemExit):
-      m.main([str(source),"--region",REGION,"--start-offset",value,"--dry-run"])
-
  def test_oidc_broker_cannot_steal_runner_credential(self):
   with patch.dict("os.environ",{"ACTIONS_ID_TOKEN_REQUEST_URL":"https://evil.example/broker?x=1",
     "ACTIONS_ID_TOKEN_REQUEST_TOKEN":"runner-broker"},clear=True):

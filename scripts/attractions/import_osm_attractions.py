@@ -149,10 +149,9 @@ def main(argv=None):
  p.add_argument("--country-name",default="India")
  p.add_argument("--run-id",default="")
  p.add_argument("--limit",type=int,default=MAX_PER_RUN)
- p.add_argument("--start-offset",type=int,default=0,help="Authenticated prior region cursor (eligible unique source rows)")
  p.add_argument("--dry-run",action="store_true")
  args=p.parse_args(argv)
- if not args.file.is_file() or not 1<=args.limit<=MAX_PER_RUN or not 0<=args.start_offset<=10000000 or not REGION_ID.fullmatch(args.region):p.error("Invalid source, region or limit")
+ if not args.file.is_file() or not 1<=args.limit<=MAX_PER_RUN or not REGION_ID.fullmatch(args.region):p.error("Invalid source, region or limit")
  if not COUNTRY_CODE.fullmatch(args.country_code) or not 2<=len(args.country_name)<=100 or any(ord(ch)<32 for ch in args.country_name):p.error("Invalid country from source index")
  if args.run_id and not re.fullmatch(r"[0-9]{1,20}",args.run_id):p.error("Invalid workflow run ID")
  if not args.dry_run and os.getenv("GTH_OSM_ATTRACTIONS_IMPORT_ENABLED")!="true":p.error("Cloud ingestion disabled")
@@ -160,23 +159,16 @@ def main(argv=None):
  if not args.dry_run and (not token or os.getenv("GTH_OSM_ATTRACTIONS_EDGE_URL")!=EDGE):
   p.error("Protected GitHub OIDC ingestion required")
  seen=set();accepted=0;rejected=0;written=0;batch=[];last_finished_at=None
- eligible_position=0;resumed_skipped=0;has_more=False
  with args.file.open(encoding="utf-8") as stream:
   for line in stream:
-
+   if accepted>=args.limit:break
    line=line.strip().lstrip("\x1e")
    if not line:continue
    try:feature=json.loads(line);row=convert(feature,args.region,args.country_code,args.country_name)
    except (ValueError,TypeError,AttributeError):row=None
    if row is None or row["source_id"] in seen:
     rejected+=1;continue
-   seen.add(row["source_id"])
-   # Continue where the last successful bounded source run stopped.
-   if eligible_position<args.start_offset:
-    eligible_position+=1;resumed_skipped+=1;continue
-   if accepted>=args.limit:
-    has_more=True;break
-   eligible_position+=1;accepted+=1
+   seen.add(row["source_id"]);accepted+=1
    if args.dry_run:continue
    batch.append(row)
    if len(batch)>=100:
@@ -184,13 +176,9 @@ def main(argv=None):
  if batch:
   last_finished_at=paced_ingest(batch,EDGE,token,last_finished_at);written+=len(batch)
  if not args.dry_run and args.run_id:
-  ingest_summary({"run_id":args.run_id,"source_region":args.region,"country_code":args.country_code,"country_name":args.country_name,"accepted":written,
-                  "next_offset":eligible_position if has_more else 0,
-                  "complete":not has_more},EDGE,token)
+  ingest_summary({"run_id":args.run_id,"source_region":args.region,"country_code":args.country_code,"country_name":args.country_name,"accepted":written},EDGE,token)
  print(json.dumps({"accepted_source_places":accepted,"rejected":rejected,
-  "written":written,"resume_from_offset":args.start_offset,
-  "resumed_skipped":resumed_skipped,"next_offset":eligible_position if has_more else 0,
-  "region_complete":not has_more,"community_source":"OpenStreetMap contributors ODbL 1.0",
+  "written":written,"community_source":"OpenStreetMap contributors ODbL 1.0",
   "not_tour_inventory":True,"independently_verified_places":0,"dry_run":args.dry_run,
   "upload_gap_seconds":BATCH_GAP_SECONDS,"max_source_records_per_run":MAX_PER_RUN}))
  return 0
