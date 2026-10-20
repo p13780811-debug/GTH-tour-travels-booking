@@ -8,3 +8,6 @@ This branch deliberately invokes the isolated GitHub Actions hotel enrichment QA
 - Wikimedia files: reuse permitted only with identity tag, approved license and attribution.
 - Output: GitHub Actions artifact containing JSON plus audit readiness metadata.
 - Source name/location never modified; no fictitious amenities, ratings or hotel image URLs.
+
+## CI retry
+Original run found a pre-existing Python escaped-newline syntax defect in the Phase 1 Overpass module. Fixed in commit 8678453ae7f775a5beba353c2698e6dd81474a41; rerun complete offline QA before network enrichment. No deployment or database writes.
