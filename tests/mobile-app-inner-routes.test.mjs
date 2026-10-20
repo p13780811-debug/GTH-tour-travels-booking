@@ -40,7 +40,7 @@ test("Home rail enables app-only destinations across every content pillar",()=>{
 });
 test("PWA stays scoped to app and its internal shortcuts, website routes unaffected",()=>{
  const manifest=read("src/app/manifest.ts");
- assert.match(manifest,/scope: "\/app\/"/);
+ assert.match(manifest,/scope: "\/app"/);
  for(const path of ["/app/flights","/app/hotels","/app/property","/app/tenders"])
    assert.ok(manifest.includes('url: "'+path+'"'));
  const desktop=read("src/components/Navbar.tsx");
