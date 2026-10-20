@@ -26,7 +26,7 @@ def plain(v):
     return html.unescape(re.sub(r"<[^>]+>", "", str(v or ""))).strip()[:600]
 
 def key_tokens(v):
-    return set(re.findall(r"[^\\W_]+", plain(v).casefold(), re.UNICODE))
+    return set(re.findall(r"[^\W_]+", plain(v).casefold(), re.UNICODE))
 
 def geo_distance_m(a,b):
     p1,p2 = math.radians(a[0]),math.radians(b[0])
@@ -178,7 +178,7 @@ def main():
     data=json.loads(args.input.read_text(encoding="utf8"))
     result=review_all(data,Wikimedia(),limit=args.max_hotels)
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\\n",encoding="utf8")
+    args.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     print(json.dumps({k:v for k,v in result.items() if k!="records"}))
     return 0 if not result["errors"] else 2
 
