@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqual } from "node:crypto";
+import { sandboxAuthorized } from "@/lib/travel/nuitee-test-auth";
 import { listSandboxHotels } from "@/lib/travel/nuitee-sandbox";
 
 export const runtime = "nodejs";
@@ -8,16 +8,6 @@ const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options"
 const error = (message: string, status: number) => NextResponse.json({ error: message }, { status, headers });
 
 /** Preview-only: requires a distinct internal test token, never the supplier key. */
-export function sandboxAuthorized(request: Request): boolean {
-  if (process.env.VERCEL_ENV !== "preview" ||
-      process.env.GTH_NUITEE_MODE !== "sandbox" ||
-      process.env.GTH_NUITEE_SANDBOX_ENABLED !== "true") return false;
-  const expected = process.env.GTH_NUITEE_TEST_ACCESS_TOKEN;
-  const supplied = request.headers.get("x-gth-nuitee-test-token");
-  if (!expected || expected.length < 32 || !supplied || supplied.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(expected), Buffer.from(supplied));
-}
-
 export async function GET(request: Request) {
   if (!sandboxAuthorized(request)) return error("Not found", 404);
   const params = new URL(request.url).searchParams;
