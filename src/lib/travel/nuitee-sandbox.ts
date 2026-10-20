@@ -7,7 +7,7 @@ function key(): string {
   if (process.env.GTH_NUITEE_MODE !== "sandbox" ||
       process.env.GTH_NUITEE_SANDBOX_ENABLED !== "true") throw new Error("DISABLED");
   const value = process.env.NUITEE_SANDBOX_API_KEY?.trim();
-  if (!value || !value.startsWith("sandbox_")) throw new Error("NOT_CONFIGURED");
+  if (!value || !/^sand_[A-Za-z0-9_-]{12,}$/.test(value)) throw new Error("NOT_CONFIGURED");
   return value;
 }
 async function request(path: "hotels" | "hotel", params: URLSearchParams): Promise<unknown> {
@@ -47,18 +47,20 @@ export function normalizeNuiteeHotel(value: unknown) {
   const name = str(h.name,200);
   if (!id || !name) return null;
   const city = str(h.city,120);
+  const location = object(h.location);
   const images = photos(h.hotelImages ?? h.images);
   const primary = photo(h.main_photo ?? h.mainPhoto ?? h.thumbnail) ?? images[0] ?? null;
   const address = str(h.address,500);
   return {
     supplier: "nuitee", supplierHotelId: id, name, city,
-    countryCode: str(h.countryCode,3),
+    countryCode: str(h.countryCode ?? h.country,3),
     address, images: primary ? [...new Set([primary,...images])] : images,
     stars: typeof h.starRating === "number" && h.starRating >= 0 && h.starRating <= 5 ? h.starRating : null,
-    latitude: typeof h.latitude === "number" && Math.abs(h.latitude) <= 90 ? h.latitude : null,
-    longitude: typeof h.longitude === "number" && Math.abs(h.longitude) <= 180 ? h.longitude : null,
+    latitude: typeof (location?.latitude ?? h.latitude) === "number" && Math.abs(Number(location?.latitude ?? h.latitude)) <= 90 ? Number(location?.latitude ?? h.latitude) : null,
+    longitude: typeof (location?.longitude ?? h.longitude) === "number" && Math.abs(Number(location?.longitude ?? h.longitude)) <= 180 ? Number(location?.longitude ?? h.longitude) : null,
     facilities: Array.isArray(h.hotelFacilities) ? h.hotelFacilities.slice(0,100) : [],
     description: str(h.hotelDescription,12000),
+    rooms: Array.isArray(h.rooms) ? h.rooms.slice(0,100) : [],
     sandbox: true, bookable: false,
   };
 }
