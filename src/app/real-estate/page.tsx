@@ -39,6 +39,8 @@ export default function RealEstatePage() {
     const [dialog, setDialog] = useState<ExplorerDialogState | null>(null)
     const sidebar = useRef<HTMLElement>(null)
     const filterToggle = useRef<HTMLButtonElement>(null)
+    const closeFilter = useRef<HTMLButtonElement>(null)
+    const touchStartY = useRef<number | null>(null)
     const request = useRef(0)
 
     const load = useCallback(async (requestedPage?: number) => {
@@ -91,8 +93,25 @@ export default function RealEstatePage() {
     // Inline responsive filters scroll with the page, not inside a viewport-locked dialog.
     useEffect(() => {
         if (!filtersOpen) return
-        const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { setFiltersOpen(false); filterToggle.current?.focus() } }
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === "Escape") { setFiltersOpen(false); filterToggle.current?.focus() }
+            if (event.key === "Tab" && window.innerWidth <= 960 && sidebar.current) {
+                const focusables = [...sidebar.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex="0"]')].filter(el => el.getClientRects().length > 0);
+                if (!focusables.length) return;
+                const first = focusables[0], last = focusables[focusables.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+            }
+        }
         const onResize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
+        if (window.innerWidth <= 960) {
+            const oldOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            closeFilter.current?.focus();
+            window.addEventListener("keydown", onKey);
+            window.addEventListener("resize", onResize);
+            return () => { document.body.style.overflow = oldOverflow; window.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize) }
+        }
         window.addEventListener("keydown", onKey)
         window.addEventListener("resize", onResize)
         return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize) }
@@ -149,9 +168,11 @@ export default function RealEstatePage() {
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
         <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
+        <button type="button" aria-label="Close property filters" tabIndex={filtersOpen ? 0 : -1} className={styles.scrim} data-open={filtersOpen} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} />
         <div className={styles.workspace}>
-            <aside ref={sidebar} id="explorer-filter-panel" className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
-                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} aria-label="Close filters"><X size={18} /></button></div>
+            <aside ref={sidebar} id="explorer-filter-panel" className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title" role={filtersOpen ? "dialog" : undefined} aria-modal={filtersOpen ? true : undefined}>
+                <button type="button" className={styles.sheetHandle} aria-label="Swipe down or tap to close filters" onTouchStart={event => { touchStartY.current = event.touches[0]?.clientY ?? null }} onTouchEnd={event => { const last = event.changedTouches[0]?.clientY; if (last != null && touchStartY.current != null && last - touchStartY.current > 65) { setFiltersOpen(false); filterToggle.current?.focus() } touchStartY.current = null }} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }}><span /></button>
+                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button ref={closeFilter} className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
                 <PartnerHandshake onOpen={() => setFiltersOpen(false)} />
