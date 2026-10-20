@@ -7,7 +7,7 @@ function key(): string {
   if (process.env.GTH_NUITEE_MODE !== "sandbox" ||
       process.env.GTH_NUITEE_SANDBOX_ENABLED !== "true") throw new Error("DISABLED");
   const value = process.env.NUITEE_SANDBOX_API_KEY?.trim();
-  if (!value || !/^sand_[A-Za-z0-9_-]{12,}$/.test(value)) throw new Error("NOT_CONFIGURED");
+  if (!value || !/^(?:sand|sandbox)_[A-Za-z0-9_-]{12,}$/.test(value)) throw new Error("NOT_CONFIGURED");
   return value;
 }
 async function request(path: "hotels" | "hotel", params: URLSearchParams): Promise<unknown> {

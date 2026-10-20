@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const offerId = typeof record.offerId === "string" && /^[\w.:-]{8,512}$/.test(record.offerId) ? record.offerId : null;
   if (!offerId) return result({ error: "Invalid offer ID" }, 400);
   const key = process.env.NUITEE_SANDBOX_API_KEY;
-  if (!key || !/^sand_[A-Za-z0-9_-]{12,}$/.test(key)) return result({ error: "Sandbox not configured" }, 503);
+  if (!key || !/^(?:sand|sandbox)_[A-Za-z0-9_-]{12,}$/.test(key)) return result({ error: "Sandbox not configured" }, 503);
   try {
     const response = await fetch("https://book.liteapi.travel/v3.0/rates/prebook", {
       method: "POST", cache: "no-store", signal: AbortSignal.timeout(20000),

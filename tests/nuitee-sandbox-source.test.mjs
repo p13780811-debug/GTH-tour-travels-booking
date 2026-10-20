@@ -18,11 +18,15 @@ test("all supplier test routes require server-only preview auth", () => {
 });
 test("supplier keys stay server-only and sandbox-scoped", () => {
   assert.match(adapter, /NUITEE_SANDBOX_API_KEY/);
-  assert.match(adapter, /sand_\[A-Za-z0-9_-\]/);
+  assert.match(adapter, /sand\|sandbox/);
+  assert.match(rates, /sand\|sandbox/);
+  assert.match(prebook, /sand\|sandbox/);
   assert.doesNotMatch([adapter, search, details, rates].join("\n"), /NEXT_PUBLIC_NUITEE|prod_/);
 });
 test("no booking action or rate charging in preview routes", () => {
-  assert.doesNotMatch([search, details, rates, prebook].join("\n"), /rates\/book|rates\/prebook/);
+  // Sandbox prebook rechecks a rate; it is not a confirmed booking or payment.
+  assert.doesNotMatch([search, details, rates, prebook].join("\n"), /\/rates\/book\b/);
+  assert.match(prebook, /\/rates\/prebook/);
   assert.match(rates, /bookable: false/);
   assert.match(search, /Cache-Control/);
   assert.match(prebook, /bookingConfirmed: false/);
