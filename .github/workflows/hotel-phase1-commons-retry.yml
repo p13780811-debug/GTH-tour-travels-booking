@@ -1,0 +1,37 @@
+name: GTH Phase 1 Commons Retry Six Exceptions
+on:
+  push:
+    branches: [gth-mumbai-thane-rera-ingestion]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retry:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[phase1-commons-retry]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check Python and candidate correctness
+        run: |
+          python -m py_compile scripts/hotels/phase1_commons_candidate_review.py
+          python -m unittest discover -s tests -p 'test_phase1_commons_candidate_review.py' -v
+      - name: Retry only six source API exceptions, never all 166 again
+        run: |
+          python scripts/hotels/phase1_commons_candidate_review.py \
+            --only-ids osm-way-379934504,osm-node-12560777888,osm-node-1234802637,osm-node-13684281413,osm-node-1051794011,osm-way-1377185728 \
+            --max-hotels 6 \
+            --output docs/hotels/phase1_commons_photo_retry6.json
+      - name: Upload isolated research artifact; no DB/website writes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-commons-hotel-photo-retry-six
+          path: docs/hotels/phase1_commons_photo_retry6.json
+          retention-days: 14
+          if-no-files-found: warn
