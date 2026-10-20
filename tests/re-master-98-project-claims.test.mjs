@@ -20,7 +20,7 @@ const makeRequest=(path,data)=>new Request("https://localhost"+path,{
   method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)
 });
 const claimRoute=(client,user={id:"user1",app_metadata:{}})=>load(
- "src/app/api/real-estate/project-claims/route.ts",{
+ "src/app/api/property-claims/route.ts",{
  "@/lib/security/auth":{authenticatedStorage:async()=>({client,user})},
  "@/lib/security/rate-limit":{enforceRateLimit:async()=>{}},
  "@/lib/security/request":request,
@@ -41,7 +41,7 @@ test("RE-05: private bucket, immutable review and no public candidate rights",()
 test("RE-06: malformed RERA and missing authority attestation fail before write",async()=>{
  let touched=false;
  const route=claimRoute({from(){touched=true;throw new Error("Should not query") }});
- const r=await route.POST(makeRequest("/api/real-estate/project-claims",{
+ const r=await route.POST(makeRequest("/api/property-claims",{
   rera_reference:"P000",claimant_role:"developer",legal_name:"A Builder",
   authority_reference:"Document evidence exists",rights_attested:true,authority_attested:false
  }));
@@ -52,7 +52,7 @@ test("RE-06: only unique exact registry project can be claimed",async()=>{
  let inserted=false;
  const query={select(){return this;},eq(){return this;},async limit(){return {data:[],error:null}}};
  const route=claimRoute({from(table){if(table==="properties")return query;inserted=true;throw new Error("Must not insert");}});
- const response=await route.POST(makeRequest("/api/real-estate/project-claims",{
+ const response=await route.POST(makeRequest("/api/property-claims",{
   rera_reference:"P51800002057",claimant_role:"agent",legal_name:"Authorized Agent",
   authority_reference:"Written project permission #2026",
   authority_attested:true,rights_attested:true,
@@ -68,7 +68,7 @@ test("RE-06: owner session is authoritative, review defaults to pending",async()
   return {data:{id:"test-id",status:"pending",project_id:42,rera_reference:"P51800002057"},error:null};
  }};
  const route=claimRoute({from(table){return table==="properties"?query:insertion;}},{id:"real-user",app_metadata:{},user_metadata:{role:"admin"}});
- const response=await route.POST(makeRequest("/api/real-estate/project-claims",{
+ const response=await route.POST(makeRequest("/api/property-claims",{
   rera_reference:"p51800002057",claimant_role:"owner",legal_name:"Registered Owner",
   authority_reference:"Signed ownership reference 1234",
   authority_attested:true,rights_attested:true,
@@ -116,7 +116,7 @@ test("RE-06: reviewer RPC only gets validated decision, never publication flag",
  });
 });
 test("RE-06: old public upload never used for new project-claim evidence",()=>{
- const upload=fs.readFileSync("src/app/api/real-estate/claim-media/route.ts","utf8");
+ const upload=fs.readFileSync("src/app/api/property-claims/media/route.ts","utf8");
  assert.match(upload,/gth-re-claim-media/);
  assert.doesNotMatch(upload,/\.from\(["']property-images["']\)/);
  assert.match(upload,/sharp\(source/);
