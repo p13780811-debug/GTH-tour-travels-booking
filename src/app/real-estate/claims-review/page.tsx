@@ -98,11 +98,11 @@ export default function ProjectClaimReviewPage() {
      <p className="mt-2 text-sm">Name: {item.legal_name} · Role: {item.claimant_role} · Organization: {item.organization_name||"Not provided"}</p>
      <p className="text-sm mt-2 break-words">Authority evidence: {item.authority_reference}</p>
      <p className="text-xs mt-2 opacity-60">Submitted {new Date(item.created_at).toLocaleString()}</p>
-     <label className="grid gap-2 mt-4 text-sm">Internal review notes
+     <label className="grid gap-2 mt-4 text-sm">Independent verification notes (20+ characters required for approval)
       <textarea rows={2} maxLength={1000} className="gth-glass rounded-xl p-3" value={notes[item.id]||""} onChange={event=>setNotes(prev=>({...prev,[item.id]:event.target.value}))}/>
      </label>
      <div className="flex flex-wrap gap-3 mt-4">
-      <button type="button" disabled={busy} className="gth-btn-gold" onClick={()=>void review(item.id,"claim","approved")}>Approve evidence</button>
+      <button type="button" disabled={busy || (notes[item.id]||"").trim().length < 20} className="gth-btn-gold" onClick={()=>void review(item.id,"claim","approved")}>Approve evidence</button>
       <button type="button" disabled={busy} className="gth-btn" onClick={()=>void review(item.id,"claim","rejected")}>Reject</button>
      </div>
     </article>)}</div>
@@ -114,11 +114,11 @@ export default function ProjectClaimReviewPage() {
      {item.original_url && <p className="mt-2 text-sm break-all">Source: {item.original_url}</p>}
      <p className="text-xs mt-2 opacity-60">Submitted {new Date(item.created_at).toLocaleString()}</p>
      <button type="button" disabled={busy} className="underline mt-3 text-sm" onClick={()=>void preview(item.id)}>View private image for 60 seconds</button>
-     <label className="grid gap-2 mt-4 text-sm">Internal review notes
+     <label className="grid gap-2 mt-4 text-sm">Independent verification notes (20+ characters required for approval)
       <textarea rows={2} maxLength={1000} className="gth-glass rounded-xl p-3" value={notes[item.id]||""} onChange={event=>setNotes(prev=>({...prev,[item.id]:event.target.value}))}/>
      </label>
      <div className="flex flex-wrap gap-3 mt-4">
-      <button type="button" disabled={busy} className="gth-btn-gold" onClick={()=>void review(item.id,"media","approved")}>Approve rights review</button>
+      <button type="button" disabled={busy || (notes[item.id]||"").trim().length < 20} className="gth-btn-gold" onClick={()=>void review(item.id,"media","approved")}>Approve rights review</button>
       <button type="button" disabled={busy} className="gth-btn" onClick={()=>void review(item.id,"media","rejected")}>Reject</button>
      </div>
     </article>)}</div>
