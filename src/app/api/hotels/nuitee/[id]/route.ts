@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSandboxHotel } from "@/lib/travel/nuitee-sandbox";
-import { sandboxAuthorized } from "../search/route";
+import { sandboxAuthorized } from "@/lib/travel/nuitee-test-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
