@@ -14,3 +14,5 @@ Original run found a pre-existing Python escaped-newline syntax defect in the Ph
 
 ## Commons exact hotel media candidate research
 A one-time 166-hotel Wikimedia Commons review is requested. Source API queries only return potential file matches; any file must pass license/author/image checks and is **NOT** automatically considered a photo of that hotel. Never write to Supabase; no production deployment; all candidate images await separate hotel identity and commercial rights audit.\n
+## One-time Commons source exception retry
+Retry only six specific failing source identities from first 166-hotel scan. Never repeat full Wikimedia search or automatically publish matched files. Capture Commons API error code and save artifact without any production database operation.\n
