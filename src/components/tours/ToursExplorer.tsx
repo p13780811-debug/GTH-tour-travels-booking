@@ -72,13 +72,13 @@ function TourFilterForm({ filters, sort, view, basePath, id }: {
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label htmlFor={id+"-min"} className="block text-[11px] text-[var(--text-soft)]">
             Minimum
-            <input id={id+"-min"} name="minPrice" type="number" min="0" max="100000000" step="1"
+            <input id={id+"-min"} name="minPrice" type="number" min="0" max="100000000" step="0.01"
               defaultValue={typeof filters.minPrice === "string" ? filters.minPrice : ""}
               placeholder="Any" className="mt-1 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-2 text-sm text-[var(--text)]" />
           </label>
           <label htmlFor={id+"-max"} className="block text-[11px] text-[var(--text-soft)]">
             Maximum
-            <input id={id+"-max"} name="maxPrice" type="number" min="0" max="100000000" step="1"
+            <input id={id+"-max"} name="maxPrice" type="number" min="0" max="100000000" step="0.01"
               defaultValue={typeof filters.maxPrice === "string" ? filters.maxPrice : ""}
               placeholder="Any" className="mt-1 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-2 text-sm text-[var(--text)]" />
           </label>
@@ -255,8 +255,8 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
                 <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-soft)]">Explore GTH PRO</p>
                 <nav aria-label="Tours Explorer quick navigation" className="mt-3 flex flex-col gap-1 text-xs">
                   <Link href="/mega-aggregator" className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Home</Link>
-                  <Link href="/tours" aria-current="page" className="rounded-lg border border-[var(--gold)] bg-[var(--bg)] px-2 py-2 font-bold">Tours Explorer</Link>
-                  <Link href="/activities" className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Activities</Link>
+                  <Link href="/tours" aria-current={basePath === "/tours" ? "page" : undefined} className="rounded-lg border border-[var(--gold)] bg-[var(--bg)] px-2 py-2 font-bold">Tours Explorer</Link>
+                  <Link href="/activities" aria-current={basePath === "/activities" ? "page" : undefined} className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Activities</Link>
                   <Link href="/attractions" className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Attractions</Link>
                   <Link href="/hotels" className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Hotels</Link>
                   <Link href="/flights" className="rounded-lg px-2 py-2 hover:bg-[var(--bg)]">Flights</Link>
@@ -277,7 +277,7 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <nav aria-label="Sort tour listings" className="flex flex-wrap gap-1">
-                  {([{ value: "name", label: "Name" }, { value: "price", label: "Price (one currency)" }] as const).map(option => (
+                  {([{ value: "name", label: "Name" }, { value: "price", label: "Price (one currency)" }] as const).filter(option => option.value !== "price" || Boolean(filters.currency)).map(option => (
                     <Link key={option.value} href={tourUrl(basePath, filters, sort, view, {field:"sort",value:option.value})}
                       aria-current={sort === option.value ? "page" : undefined}
                       className={"inline-flex min-h-10 items-center rounded-lg border px-3 text-xs font-semibold " +
