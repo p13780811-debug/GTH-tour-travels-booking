@@ -2,11 +2,14 @@ name: GTH Five Smart Upgrades — No Deployment
 on:
   pull_request:
     branches: [release/gth-one-shot-pending-20261020]
+  push:
+    branches: [feat/gth-five-smart-upgrades-20261020]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   smart-suite-quality:
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[nuitee-gallery-qa]')
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
