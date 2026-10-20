@@ -123,12 +123,20 @@ def osm_tags_query(records):
             terms.append(m.group(1) + "(id:" + m.group(2) + ");")
     return "[out:json][timeout:45];(" + "".join(terms) + ");out center tags;"
 
-def refresh_tags(records, cache, enabled=False, fetch=fetch_json, sleep=time.sleep):
-    """Query ONLY snapshot element IDs; never city-wide. Existing identities stay untouched."""
+def refresh_tags(records, cache, enabled=False, fetch=fetch_json, sleep=time.sleep, audit=None):
+    """Query frozen OSM IDs only; report network/source failures explicitly.
+
+    An empty tag result is not proof of an amenity-free hotel.
+    """
     result = {}
+    stats = audit if audit is not None else {}
+    stats.update({"requested":bool(enabled),"batches_total":0,
+                  "batches_succeeded":0,"batches_failed":0,
+                  "tagged_hotels":0,"error_types":[]})
     if not enabled:
         return result
     for offset in range(0, len(records), 25):
+        stats["batches_total"]+=1
         batch = records[offset:offset + 25]
         key = "osm-tags:v1:" + hashlib.sha256(osm_tags_query(batch).encode()).hexdigest()
         data = cache.get(key)
@@ -136,15 +144,27 @@ def refresh_tags(records, cache, enabled=False, fetch=fetch_json, sleep=time.sle
             try:
                 data = fetch(OVERPASS, "overpass-api.de",
                              payload=urlencode({"data":osm_tags_query(batch)}).encode())
-            except (HTTPError, URLError, ValueError, TimeoutError):
+            except (HTTPError, URLError, ValueError, TimeoutError) as exc:
+                stats["batches_failed"]+=1
+                stats["error_types"].append(type(exc).__name__)
                 sleep(2)
+                continue
+            if not isinstance(data,dict) or not isinstance(data.get("elements"),list):
+                stats["batches_failed"]+=1
+                stats["error_types"].append("MalformedOSMSourceResponse")
                 continue
             cache.put(key, data)
             sleep(2)
+        stats["batches_succeeded"]+=1
         for el in data.get("elements", []):
             eid = "osm-%s-%s" % (el.get("type"), el.get("id"))
             if any(row["id"] == eid for row in batch) and isinstance(el.get("tags"), dict):
                 result[eid] = el["tags"]
+    stats["tagged_hotels"]=len(result)
+    if stats["batches_failed"]:
+        stats["status"]="PARTIAL_OR_UNAVAILABLE_DO_NOT_CLAIM_VERIFIED_AMENITIES"
+    else:
+        stats["status"]="OSM_ELEMENT_TAG_QUERY_COMPLETED"
     return result
 
 def tagged_address(tags):
@@ -355,9 +375,12 @@ def main(argv=None):
     rows=source.get("records")
     if not isinstance(rows, list) or len(rows)!=166:
         p.error("phase 1 source must contain exactly 166 verified OSM source identities")
-    osm_tags=refresh_tags(rows, cache, enabled=args.refresh_osm_tags)
+    osm_audit={}
+    osm_tags=refresh_tags(rows, cache, enabled=args.refresh_osm_tags, audit=osm_audit)
     result=enrich(source, cache, PublicNominatim(cache, args.allow_public_nominatim),
                   tags_by_id=osm_tags, commons=not args.no_commons)
+    result["osm_tag_source_audit"]=osm_audit
+    result["readiness"]["osm_tags_checked"]=bool(osm_audit["batches_succeeded"]) and not osm_audit["batches_failed"]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False)+"\n", encoding="utf8")
     print(json.dumps(result["readiness"], indent=2))
