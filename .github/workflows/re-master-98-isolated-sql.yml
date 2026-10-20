@@ -1,0 +1,44 @@
+name: GTH RE Master 98 — Isolated Claim RLS
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261020091500_re_master_98_project_media_claims.sql'
+      - 'tests/re-master-98-rls/**'
+      - '.github/workflows/re-master-98-isolated-sql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: gth-temporary-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap disposable Auth and Storage fixture
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f tests/re-master-98-rls/bootstrap.sql
+      - name: Apply staged migration to temporary PostgreSQL (never Supabase production)
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261020091500_re_master_98_project_media_claims.sql
+      - name: Verify private owner RLS, independent review and no publication
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f tests/re-master-98-rls/assertions.sql
