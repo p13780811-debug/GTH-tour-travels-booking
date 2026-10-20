@@ -1,7 +1,7 @@
 import { authenticatedStorage } from "@/lib/security/auth";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
-import { configuredMediaFeeds, validateMediaCandidate } from "@/lib/real-estate/media-feed";
+import { configuredMediaFeeds, validateMediaCandidate } from "@/lib/property-media/media-feed";
 
 export const runtime="nodejs";
 export async function POST(req:Request){

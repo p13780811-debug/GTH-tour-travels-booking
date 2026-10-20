@@ -1,4 +1,4 @@
-import { privateMediaStore } from "@/lib/real-estate/media-private";
+import { privateMediaStore } from "@/lib/property-media/media-private";
 export const runtime="nodejs";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const noStore={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};

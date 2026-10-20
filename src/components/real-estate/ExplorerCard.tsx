@@ -4,7 +4,7 @@ import { ArrowUpRight, BedDouble, Check, MapPin, Maximize, ShieldCheck, Sparkles
 import PropertyLeadActions from "@/components/property/PropertyLeadActions"
 import { coverage, known, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import PropertyImage from "./PropertyImage"
-import { projectCover } from "@/lib/real-estate/published-media"
+import { projectCover } from "@/lib/property-media/published-media"
 import SavePropertyButton from "./SavePropertyButton"
 import styles from "./Explorer.module.css"
 

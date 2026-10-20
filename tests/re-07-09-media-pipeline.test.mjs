@@ -5,7 +5,7 @@ const read = file => readFileSync(file,"utf8");
 
 test("Media candidates never fetch remote images or bypass exact approved source contracts",()=>{
  const intake=read("src/app/api/admin/property-media-feeds/route.ts");
- const check=read("src/lib/real-estate/media-feed.ts");
+ const check=read("src/lib/property-media/media-feed.ts");
  assert.match(intake,/configuredMediaFeeds/);
  assert.match(intake,/validateMediaCandidate/);
  assert.match(intake,/eq\("source_type","registry"\)/);

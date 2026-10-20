@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Building2 } from "lucide-react"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
-import { publishedMediaUrl, type PublishedMedia } from "@/lib/real-estate/published-media"
+import { publishedMediaUrl, type PublishedMedia } from "@/lib/property-media/published-media"
 
 type Props = {
  slug: string; src?: string; published?: PublishedMedia; alt: string; className?: string;

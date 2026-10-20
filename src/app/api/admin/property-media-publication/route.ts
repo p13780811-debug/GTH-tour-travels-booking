@@ -1,7 +1,7 @@
 import { authenticatedStorage } from "@/lib/security/auth";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { cleanString } from "@/lib/security/validators";
-import { privateMediaStore } from "@/lib/real-estate/media-private";
+import { privateMediaStore } from "@/lib/property-media/media-private";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(req:Request){
  try{

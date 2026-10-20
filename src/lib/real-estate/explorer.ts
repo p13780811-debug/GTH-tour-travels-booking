@@ -6,7 +6,7 @@ export type ExplorerProperty = {
   data_quality_limited?: boolean; active_inventory_count?: number; inventory_min_price?: number;
   inventory_currency?: string; official_source_url?: string; ai_score?: number;
   lat?: number; lng?: number;
-  publishedMedia?: import("./published-media").PublishedMedia[];
+  publishedMedia?: import("../property-media/published-media").PublishedMedia[];
 }
 
 export function known(value: unknown): string {

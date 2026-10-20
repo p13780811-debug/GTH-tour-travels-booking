@@ -62,7 +62,7 @@ grant all on public.property_published_media to service_role;
 -- Definer predicate is required because private claim evidence is not SELECTable by anon.
 -- Never grant direct public access to the private claim/media tables.
 create or replace function public.is_property_media_public(p_id uuid)
-returns boolean language sql stable security definer set search_path='' as $
+returns boolean language sql stable security definer set search_path='' as $$
  select exists (
    select 1 from public.property_published_media p
    join public.property_claim_media m on m.id=p.claim_media_id
@@ -75,7 +75,7 @@ returns boolean language sql stable security definer set search_path='' as $
      and m.reviewed_by is not null and m.reviewed_at is not null
      and m.reviewed_by<>m.uploader_id
  );
-$;
+$$;
 revoke all on function public.is_property_media_public(uuid) from public;
 grant execute on function public.is_property_media_public(uuid) to anon,authenticated,service_role;
 create policy "public may see independently approved media metadata" on public.property_published_media
