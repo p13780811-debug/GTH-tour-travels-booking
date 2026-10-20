@@ -1,6 +1,7 @@
 import { authenticatedStorage } from "@/lib/security/auth";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { cleanString } from "@/lib/security/validators";
+import { privateMediaStore } from "@/lib/real-estate/media-private";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(req:Request){
  try{
@@ -24,10 +25,11 @@ export async function GET(req:Request){
  try{
   const {client,user}=await authenticatedStorage(req);
   if(user.app_metadata?.role!=="admin")throw new RequestError("Administrator access required",403);
+  const publicationDb=privateMediaStore();
   const [media,published]=await Promise.all([
    client.from("property_claim_media").select("id,project_id,claim_id,media_type,supplier,attribution,license_basis,permission_reference,reviewed_at,status")
     .eq("status","approved").order("reviewed_at",{ascending:false}).limit(60),
-   client.from("property_published_media").select("id,claim_media_id,project_id,media_type,is_primary,published_at")
+   publicationDb.from("property_published_media").select("id,claim_media_id,project_id,media_type,is_primary,published_at")
     .eq("status","published").order("published_at",{ascending:false}).limit(60),
   ]);
   if(media.error||published.error)throw new RequestError("Media publication queue unavailable",503);
