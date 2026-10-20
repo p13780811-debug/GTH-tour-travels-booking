@@ -37,3 +37,24 @@
 @media(max-width:600px){.resultActions select{font-size:16px}.compareTray{bottom:calc(78px + env(safe-area-inset-bottom))}}
 
 .sidebarClose.iconButton{display:none}@media(max-width:960px){.sidebarClose.iconButton{display:inline-flex}}
+
+/* Control semantics: shared GTH CTAs remain exclusive to actual conversion actions.
+   Neutral tabs, icon controls and record links reuse existing global theme tokens. */
+.heroPills button{min-height:34px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:10px;box-shadow:none}
+.searchIntent{gap:20px}
+.searchIntent button{min-height:44px;padding:8px 0;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--text-muted);font-size:12px;font-weight:500;box-shadow:none}
+.searchIntent button[aria-pressed=true]{border-bottom-color:var(--gold);color:var(--text);font-weight:700}
+.sourceNote button{padding:4px 0;border:0;border-radius:0;background:none;color:var(--text-muted);box-shadow:none;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+.workspaceNav>button{min-height:44px;padding:10px 0;border:0;border-radius:0;background:none;color:var(--text);box-shadow:none;font-size:12px}
+.iconButton{min-height:42px;min-width:42px;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);box-shadow:none}
+.iconButton[aria-pressed=true]{border-color:var(--gold);color:var(--gold)}
+.filterToggle{min-height:44px;padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);box-shadow:none}
+.rankingLine button{padding:0;border:0;border-radius:0;background:none;color:var(--text-muted);box-shadow:none;font-size:inherit}
+.chips button{min-height:34px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);box-shadow:none;font-size:11px}
+.save{height:42px;width:42px;padding:0;border:1px solid var(--border);border-radius:50%;background:var(--card);color:var(--text);box-shadow:none}
+.save[aria-pressed=true]{border-color:var(--gold);color:var(--gold)}
+.cardMeta button{padding:0;border:0;border-radius:0;background:none;color:var(--text-muted);box-shadow:none;font-size:inherit}
+.rank{padding:11px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:none;color:var(--text);box-shadow:none;font-size:11px}
+.pagination button{min-height:40px;padding:8px 13px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);box-shadow:none}
+.compareNames button{padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);box-shadow:none;font-size:11px}
+.compareClear{padding:8px;border:0;background:none;color:var(--text);box-shadow:none;font-size:11px}
