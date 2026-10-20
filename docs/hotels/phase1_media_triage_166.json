@@ -1,0 +1,45 @@
+{
+  "phase": 1,
+  "scope": "Frozen 166 OSM hotels only",
+  "method": "Machine-readable title/location screening of Wikimedia Commons candidates; NOT human verification or publication approval",
+  "source_action_run": "https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/39463434550",
+  "records_processed": 166,
+  "initial_candidates": 3,
+  "automatic_rejections": [
+    {
+      "osm_id": "osm-node-245654709",
+      "hotel": "Sharada",
+      "candidate": "File:Dr. Babasaheb Ambedkar married Dr. Sharada Kabir ... New Delhi ... .jpg",
+      "reason": "Person photograph; not hotel/property; false name match"
+    },
+    {
+      "osm_id": "osm-node-279962108",
+      "hotel": "seaview",
+      "candidate": "File:SeaView.JPG",
+      "reason": "Generic filename without exact Mumbai property identity"
+    }
+  ],
+  "pending_exact_identity_manual_review": [
+    {
+      "osm_id": "osm-node-1504771680",
+      "hotel": "Sea Green Hotel",
+      "city": "Mumbai",
+      "commons_file": "https://commons.wikimedia.org/wiki/File:Hotel_Sea_Green_Marine_Drive_Mumbai.jpg",
+      "license_reported": "CC BY-SA 3.0",
+      "author_reported": "Pradeep Mohandas",
+      "decision": "NOT_APPROVED; verify photo subject, location and reuse conditions before publication"
+    }
+  ],
+  "api_error_count": 6,
+  "api_error_ids": [
+    "osm-way-379934504",
+    "osm-node-12560777888",
+    "osm-node-1234802637",
+    "osm-node-13684281413",
+    "osm-node-1051794011",
+    "osm-way-1377185728"
+  ],
+  "approved_property_images": 0,
+  "imported_media_rows": 0,
+  "phase2_unlocked": false
+}
