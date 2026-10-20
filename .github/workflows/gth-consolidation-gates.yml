@@ -54,12 +54,32 @@ jobs:
             ':!src/lib/real-estate/property-seo.ts' \
             ':!src/lib/real-estate/explorer.ts' \
             ':!src/lib/real-estate/saved-searches.ts' \
+            ':(exclude,literal)src/app/api/real-estate/dossier/[slug]/route.ts' \
+            ':(exclude,literal)src/app/api/real-estate/locality/[slug]/route.ts' \
+            ':(exclude,literal)src/app/real-estate/[slug]/dossier/page.tsx' \
+            ':!src/components/mobile/BottomNav.tsx' \
+            ':!src/components/real-estate/LocalityIntelligence.tsx' \
+            ':!src/components/real-estate/PrintDossier.tsx' \
+            ':!src/lib/real-estate/connectivity.ts' \
+            ':!src/lib/real-estate/dossier-pdf.ts' \
             src/app/api/real-estate/ \
             src/app/api/admin/submissions/route.ts \
             src/components/brand/BrandVideo.tsx \
             src/components/mobile/BottomNav.tsx \
             public/brand/property-story.jpg \
             public/brand/property-story.mp4
+          # These eight feature files were reviewed in PR #123 and integrated at
+          # ced80d13. Keep them byte-identical to that immutable reviewed revision;
+          # do not broadly exempt the rest of Real Estate or the mobile shell.
+          git diff --exit-code ced80d13d59f6dd33bb8970683faea0c419d9283 HEAD -- \
+            ':(literal)src/app/api/real-estate/dossier/[slug]/route.ts' \
+            ':(literal)src/app/api/real-estate/locality/[slug]/route.ts' \
+            ':(literal)src/app/real-estate/[slug]/dossier/page.tsx' \
+            src/components/mobile/BottomNav.tsx \
+            src/components/real-estate/LocalityIntelligence.tsx \
+            src/components/real-estate/PrintDossier.tsx \
+            src/lib/real-estate/connectivity.ts \
+            src/lib/real-estate/dossier-pdf.ts
           # Root metadata may change for SEO, but approved rendered layout/navbar is byte-identical.
           git show HEAD^1:src/app/layout.tsx \
             | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui
