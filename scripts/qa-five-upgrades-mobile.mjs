@@ -38,7 +38,7 @@ try {
  assert.equal(response.ok(),true,"Manifest route must respond");
  const manifest=await response.json();
  assert.equal(manifest.start_url,"/app");
- assert.equal(manifest.scope,"/");
+ assert.equal(manifest.scope,"/app");
  assert.ok(manifest.icons.some(i=>i.sizes==="192x192"));
  await page.goto(base+"/app",{waitUntil:"domcontentloaded",timeout:45000});
  await page.getByRole("button",{name:/Add GTH PRO to home screen|Install GTH PRO/}).waitFor({state:"visible",timeout:30000});

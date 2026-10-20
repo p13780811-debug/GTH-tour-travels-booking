@@ -33,7 +33,7 @@ test("App installation is PWA only and does not make false Play Store listing cl
  const manifest=file("src/app/manifest.ts");
  const install=file("src/components/mobile/AppInstall.tsx");
  assert.ok(manifest.includes('start_url: "/app"'));
- assert.ok(manifest.includes('scope: "/app/"'));
+ assert.ok(manifest.includes('scope: "/app"'));
  assert.match(manifest,/GTH PRO/);
  assert.match(install,/beforeinstallprompt/);
  assert.ok(!manifest.includes("play.google.com"));
