@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import type { User } from "@supabase/supabase-js"
-import { ArrowUpRight, Compass, GitCompareArrows, Heart, Info, LayoutGrid, LockKeyhole, Map, SlidersHorizontal, Sparkles, X } from "lucide-react"
+import { ArrowUpRight, Check, Compass, GitCompareArrows, Heart, Info, LayoutGrid, LockKeyhole, Map, SlidersHorizontal, Sparkles, X } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PropertyService, clearPropertyCache } from "@/lib/real-estate/propertyService"
 import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
@@ -37,6 +37,7 @@ export default function RealEstatePage() {
     const [savedCount, setSavedCount] = useState(0)
     const [dialog, setDialog] = useState<ExplorerDialogState | null>(null)
     const sidebar = useRef<HTMLElement>(null)
+    const filterToggle = useRef<HTMLButtonElement>(null)
     const request = useRef(0)
 
     const load = useCallback(async (requestedPage?: number) => {
@@ -84,23 +85,14 @@ export default function RealEstatePage() {
         return () => { window.removeEventListener("gth-saved", sync); window.removeEventListener("storage", sync) }
     }, [])
 
+    // Inline responsive filters scroll with the page, not inside a viewport-locked dialog.
     useEffect(() => {
         if (!filtersOpen) return
-        const previous = document.activeElement as HTMLElement | null
-        const overflow = document.body.style.overflow
-        document.body.style.overflow = "hidden"
-        sidebar.current?.querySelector<HTMLButtonElement>("button")?.focus()
-        const keys = (event: KeyboardEvent) => {
-            if (event.key === "Escape") { event.preventDefault(); setFiltersOpen(false) }
-            if (event.key !== "Tab") return
-            const elements = Array.from(sidebar.current?.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), select:not(:disabled), summary, a[href]") || []).filter(node => node.getClientRects().length)
-            const first = elements[0], last = elements.at(-1)
-            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
-            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
-        }
-        const resize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
-        window.addEventListener("keydown", keys); window.addEventListener("resize", resize)
-        return () => { document.body.style.overflow = overflow; window.removeEventListener("keydown", keys); window.removeEventListener("resize", resize); previous?.focus() }
+        const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { setFiltersOpen(false); filterToggle.current?.focus() } }
+        const onResize = () => { if (window.innerWidth > 960) setFiltersOpen(false) }
+        window.addEventListener("keydown", onKey)
+        window.addEventListener("resize", onResize)
+        return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize) }
     }, [filtersOpen])
 
     const updateSearch = (term: string) => {
@@ -122,7 +114,7 @@ export default function RealEstatePage() {
         load(1)
     }
     const openFilters = () => {
-        if (window.innerWidth <= 960) setFiltersOpen(true)
+        if (window.innerWidth <= 960) setFiltersOpen(previous => !previous)
         else sidebar.current?.querySelector<HTMLInputElement>("input")?.focus()
     }
     const removeFilter = (key: string) => {
@@ -152,11 +144,11 @@ export default function RealEstatePage() {
     }
     return <main className={`gth-container ${styles.page}`}>
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
-        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
+        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button className="gth-btn" onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
+        <button ref={filterToggle} className={`gth-btn ${styles.filterToggle}`} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
         <div className={styles.workspace}>
-            <button className={styles.scrim} data-open={filtersOpen} tabIndex={-1} aria-label="Close filters" hidden={!filtersOpen} onClick={() => setFiltersOpen(false)} />
-            <aside ref={sidebar} className={styles.sidebar} data-open={filtersOpen} role={filtersOpen ? "dialog" : undefined} aria-modal={filtersOpen || undefined} aria-labelledby="explorer-filter-title">
-                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X size={18} /></button></div>
+            <aside ref={sidebar} id="explorer-filter-panel" className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
+                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`gth-btn ${styles.iconButton} ${styles.sidebarClose}`} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
                 <PartnerHandshake onOpen={() => setFiltersOpen(false)} />
@@ -164,22 +156,22 @@ export default function RealEstatePage() {
             </aside>
             <section id="listing-results" className={styles.results} aria-busy={loading}>
                 <header className={styles.resultsHeader}><div><p className={styles.eyebrow}>PROPERTY DISCOVERY</p><h2>Explore projects and listings</h2><p role="status">{loading ? "Loading property records…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
-                    <div className={styles.resultActions}><button className={styles.filterToggle} onClick={openFilters} aria-haspopup="dialog" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />Filters</button><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} /></button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} /></button></div>
+                    <div className={styles.resultActions}><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={`gth-btn ${styles.iconButton}`} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} />{view === "list" && <Check size={12} aria-hidden="true" />}</button><button className={`gth-btn ${styles.iconButton}`} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} />{view === "map" && <Check size={12} aria-hidden="true" />}</button></div>
                 </header>
-                {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
-                <div className={styles.rankingLine}><Sparkles size={14} /><button onClick={() => showInfo("ranking")}>Understand the signals. Inspect record coverage and stored ranking details.<Info size={13} /></button></div>
+                {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button className="gth-btn inline-flex items-center gap-2" key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button className="gth-btn" onClick={reset}>Clear all</button></div>}
+                <div className={styles.rankingLine}><Sparkles size={14} /><button className="gth-btn" onClick={() => showInfo("ranking")}>Understand the signals. Inspect record coverage and stored ranking details.<Info size={13} /></button></div>
                 {loading && <div className={styles.grid} aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={styles.skeleton} />)}</div>}
-                {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
+                {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
                 {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : "No results match this search"}</h3><p>Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search and filters</button></div>}
                 {!loading && !error && view === "map" && <div className={styles.empty}><p>{coordinates.length} results on this page have stored coordinates. Map pins are not location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to the grid to explore the available records.</p>}</div>}
                 {!loading && !error && view === "list" && <div className={styles.grid}>{properties.map(property => <ExplorerCard key={property.id} property={property} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
-                <nav aria-label="Property result pages" className={styles.pagination}><button disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
+                <nav aria-label="Property result pages" className={styles.pagination}><button className="gth-btn" disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button className="gth-btn" disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
                 <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link></div></section>
             </section>
         </div>
         <div className={styles.support}><GlobalMarkets /><TrustStandard /></div>
-        <section className={styles.submit}><div><h2>Have a property to share?</h2><p>Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.button}`}>Submit your listing<ArrowUpRight size={15} /></Link></section>
-        {compared.length > 0 && <section className={styles.compareTray} aria-label="Selected property comparison"><strong><GitCompareArrows size={17} />{compared.length} selected</strong><div className={styles.compareNames}>{compared.map(property => <button key={property.slug} onClick={() => setCompared(previous => previous.filter(item => item.slug !== property.slug))} aria-label={`Remove ${property.title} from comparison`}><span>{property.title}</span><X size={12} /></button>)}</div><button className={styles.compareClear} onClick={() => setCompared([])}>Clear</button><button className={`gth-btn-gold ${styles.button}`} disabled={compared.length < 2} onClick={() => setDialog({ kind:"compare", properties:compared })}>Compare<ArrowUpRight size={14} /></button></section>}
+        <section className={styles.submit}><div><h2>Have a property to share?</h2><p>Submit accurate details for review before publication.</p></div><Link href="/real-estate/post-property" className={`gth-btn gth-btn-gold ${styles.button}`}>Submit your listing<ArrowUpRight size={15} /></Link></section>
+        {compared.length > 0 && <section className={styles.compareTray} aria-label="Selected property comparison"><strong><GitCompareArrows size={17} />{compared.length} selected</strong><div className={styles.compareNames}>{compared.map(property => <button className="gth-btn" key={property.slug} onClick={() => setCompared(previous => previous.filter(item => item.slug !== property.slug))} aria-label={`Remove ${property.title} from comparison`}><span>{property.title}</span><X size={12} /></button>)}</div><button className={`gth-btn ${styles.compareClear}`} onClick={() => setCompared([])}>Clear</button><button className={`gth-btn gth-btn-gold ${styles.button}`} disabled={compared.length < 2} onClick={() => setDialog({ kind:"compare", properties:compared })}>Compare<ArrowUpRight size={14} /></button></section>}
         {dialog && <ExplorerDialog state={dialog} onClose={() => setDialog(null)} />}
         <BottomNav user={user} />
     </main>

@@ -1,6 +1,5 @@
 import { cache } from "react"
 import { notFound } from "next/navigation"
-import { getPropertyVisuals } from "@/lib/propertyImages"
 import { isIndexableProperty, propertySeo, validPropertySlug } from "@/lib/real-estate/property-seo"
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
@@ -17,13 +16,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const property = await readProperty(slug)
     const { title, description } = propertySeo(property)
     const media = approvedMedia(slug, property?.image)
-    const image = media?.url || getPropertyVisuals(property?.district || "", property?.location || property?.city || "", property?.property_type || "", [], slug).heroImage
+    const image = media?.url || "/images/gth-logo.png"
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
     return {
         title: { absolute: title }, description,
         alternates: { canonical },
         robots: { index: isIndexableProperty(property) && isPublicLaunch(), follow: Boolean(property) },
-        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: media ? property?.title : "Illustrative architecture, not a project photo" }] },
+        openGraph: { title, description, url: canonical, siteName: "GTH PRO", type: "website", images: [{ url: image, alt: media ? property?.title : "GTH PRO logo; project photograph not available" }] },
         twitter: { card: "summary_large_image", title, description, images: [image] },
     }
 }

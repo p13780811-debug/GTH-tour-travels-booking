@@ -41,6 +41,11 @@ jobs:
             ':!src/components/real-estate/DiscoveryFilters.tsx' \
             ':!src/components/real-estate/PropertyDetailClient.tsx' \
             ':!src/components/real-estate/PropertyImage.tsx' \
+            ':!src/components/real-estate/SavedSearches.tsx' \
+            ':!src/components/real-estate/SavePropertyButton.tsx' \
+            ':!src/components/real-estate/PropertyCardPro.tsx' \
+            ':!src/components/real-estate/EnquiryForm.tsx' \
+            ':!src/components/real-estate/OwnerProjectAds.tsx' \
             ':!src/components/real-estate/LeadsDashboard.tsx' \
             ':(exclude,literal)src/app/real-estate/[slug]/page.tsx' \
             ':!src/lib/real-estate/buyer-leads.ts' \

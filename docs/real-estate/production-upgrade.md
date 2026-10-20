@@ -30,9 +30,9 @@ Apply **only** `supabase/migrations/20261019165857_real_estate_buyer_leads_and_p
 
 ## Modules
 
-- `src/lib/propertyImages.ts`: deterministic commercial / high-rise / township stock imagery and source credits.
-- `src/components/real-estate/PropertyImage.tsx`: approved project photos first, labelled stock fallback, responsive images, blur-up, secondary-image fallback and graceful network failure.
-- `src/components/property/PropertyGallery.tsx`: reviewed gallery or three clearly labelled exterior / sample interior / aerial inspiration photographs. Stock photographs do not establish this project's location, finishes, amenities or floor plans. Generic blueprints are deliberately not presented as project plans.
+- `src/lib/propertyImages.ts`: retained stock visual utility and source credits; not used as project photographs in the explorer.
+- `src/components/real-estate/PropertyImage.tsx`: approved project photos only, exact approval checks and a project-name / registration cover when no approved photo is available or an image fails.
+- `src/components/property/PropertyGallery.tsx`: reviewed project gallery or a project-specific registration cover. Unrelated stock photographs and generic blueprints are not presented as project media.
 - `src/components/property/LeadModal.tsx`: pricing, brochure and visit requests; explicit contact consent, accessible native modal, retry reference and confirmed-success state.
 - `src/app/api/property/lead/route.ts`: bounded same-origin request, strict validation, shared rate limiter, private writer and approved document projection. No raw contact logging or external notification webhook.
 - `src/lib/real-estate/buyer-leads.ts`: shared phone normalization and field validation; safe PDF link parsing.
@@ -54,7 +54,7 @@ No brochures or floor plans are fabricated or seeded. Add a PDF only after revie
 
 Actual property photographs retain the existing exact listing / asset permission checks in `src/lib/real-estate/approved-media.ts`. Stock inspiration is never written to property source data or counted as verified project evidence.
 
-The curated source-page URLs live alongside each image in `PROPERTY_VISUAL_BANK`. Pexels photographs use the [Pexels License](https://www.pexels.com/license/) (commercial use allowed; review its restrictions before replacing assets). Review date: 2026-10-19. All 11 CDN assets were browser-tested successfully. The gallery provides the selected source credit. Stock imagery is illustrative, not a property advertisement photograph or evidence of a bank relationship.
+The retained visual utility is not used by the property cards, gallery or metadata as a substitute for approved project photos. Its curated source-page URLs live alongside each image in `PROPERTY_VISUAL_BANK`. Pexels photographs use the [Pexels License](https://www.pexels.com/license/) (commercial use allowed; review its restrictions before replacing assets). Review date: 2026-10-19. All 11 CDN assets were browser-tested successfully. The production gallery shows only approved/reviewed project assets. Stock imagery is illustrative, not a property advertisement photograph or evidence of a bank relationship.
 
 ## SEO and rollout
 
@@ -74,3 +74,11 @@ npm run build
 ```
 
 `tests/property-production-upgrade.test.mjs` covers malformed / oversized / cross-site requests, Indian phone normalization, consent, enum validation, private RPC errors, repeat references, document outages, admin CRM enrichment, EMI calculations, unsafe links, media mapping and project SEO eligibility. SQL validation uses a rolled-back synthetic transaction to prove atomic CRM linkage, idempotency, anonymous denials and administrator RLS visibility, leaving zero test buyer records. No external broker message, loan application or visit booking is sent by validation.
+
+## PR #96 completion — global button styling
+
+Search, categories, ranking / verification controls, comparison, saved searches, enquiry modes, partner intake and loan handoff use the existing `gth-btn` / `gth-btn-gold` classes. Explorer CSS contains layout rules only for these controls; it does not override their backgrounds, text colours, radius, border, typography, padding or shadows. `globals.css`, the shared navigation/header/footer, policy pages, data APIs and database are unchanged by this UI completion.
+
+The sidebar has natural height without an internal scrollbar. On narrow screens, the Filters control appears before its inline panel. All eleven choices (All plus ten categories) remain visible in the normal page flow, and selecting a category applies it immediately. Selected controls keep accessible pressed states and visible checkmarks.
+
+`tests/real-estate-global-theme.test.mjs` renders the real category, hero and buyer-modal components and verifies the shared styling contract, accessible consent and natural-height sidebar. It also guards against local CSS taking ownership of global button appearance.

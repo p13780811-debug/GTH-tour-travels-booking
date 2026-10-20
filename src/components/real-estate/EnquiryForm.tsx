@@ -1,7 +1,6 @@
 "use client"
 import { useId, useState } from "react"
 import { readApiJson } from "@/lib/api-response"
-import styles from "./Listing.module.css"
 
 export default function EnquiryForm({ propertyId, inventoryId, mode = "listing" }: { propertyId: number; inventoryId?: string; mode?: "listing" | "registry" | "inventory" }) {
  const formId = useId()
@@ -24,7 +23,7 @@ export default function EnquiryForm({ propertyId, inventoryId, mode = "listing" 
   <label htmlFor={`${formId}-phone`} className="block">Your phone number</label>
   <input id={`${formId}-phone`} aria-describedby={`${formId}-privacy`} disabled={busy} className="gth-glass rounded-xl p-3 w-full" type="tel" inputMode="tel" autoComplete="tel" required minLength={8} maxLength={24} value={phone} onChange={e => setPhone(e.target.value)} />
   <p id={`${formId}-privacy`} className="text-sm opacity-70">{inventory ? "Your number is stored against this specific inventory item for follow-up." : registry ? "Your number is stored with this project-interest request. It is not presented as a direct developer or seller enquiry." : "Your number will be shared with the listing team to respond to this enquiry."}</p>
-  <button className={`gth-btn-gold ${styles.action}`} disabled={busy}>{busy ? "Sending…" : inventory ? "Request availability" : registry ? "Request project details" : "Send enquiry"}</button>
+  <button className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`} disabled={busy}>{busy ? "Sending…" : inventory ? "Request availability" : registry ? "Request project details" : "Send enquiry"}</button>
   {message && <p role={failed ? "alert" : "status"}>{message}</p>}
  </form>
 }
