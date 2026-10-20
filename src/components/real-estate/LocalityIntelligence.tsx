@@ -18,7 +18,7 @@ export default function LocalityIntelligence({slug}:{slug:string}){
  }
  return <section className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4" aria-label="Source-backed local connectivity">
   <h3 className="flex items-center gap-2 font-semibold"><MapPin size={17} className="text-[var(--gold)]"/> Locality intelligence</h3>
-  <p className="mt-2 text-xs text-[var(--text-soft)]">Free OSM transport lookup is on demand. No verified metro or driving claims without source data.</p>
+  <p className="mt-2 text-xs text-[var(--text-soft)]">Free OSM transport lookup is on demand. No verified metro or driving claims without source data. Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline">OpenStreetMap contributors</a>.</p>
   {!data&&<button type="button" className="gth-btn mt-3 min-h-11" disabled={loading} onClick={()=>void load()}>{loading?"Checking recorded coordinates…":"Check nearby metro and airport"}</button>}
   {error&&<p role="status" className="mt-2 text-xs">{error}</p>}
   {data&&<div className="mt-3 space-y-3 text-sm">

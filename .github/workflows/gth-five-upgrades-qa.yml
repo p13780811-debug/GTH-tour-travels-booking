@@ -1,0 +1,37 @@
+name: GTH five upgrades — isolated QA (no deployment)
+on:
+  pull_request:
+    branches:
+      - release/gth-one-shot-pending-20261020
+    paths:
+      - "src/app/api/real-estate/**"
+      - "src/app/real-estate/**"
+      - "src/lib/real-estate/**"
+      - "src/components/real-estate/**"
+      - "src/components/ecosystem/**"
+      - "src/components/mobile/BottomNav.tsx"
+      - "src/app/search/page.tsx"
+      - "src/app/tours/page.tsx"
+      - "tests/gth-five-upgrades.test.mjs"
+      - ".github/workflows/gth-five-upgrades-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-build-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: node --test tests/gth-five-upgrades.test.mjs
+      - run: npx tsc --noEmit
+      - run: npm run test:security
+      - run: npm run build

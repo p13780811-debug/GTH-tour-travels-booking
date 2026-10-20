@@ -35,7 +35,7 @@ export function nearestOsm(elements:OsmElement[], origin:Coordinates, category:"
 export function safeRoutingBase(raw:string|undefined):URL|null {
  if(!raw)return null;
  try {const u=new URL(raw);if(u.protocol!=="https:"||u.username||u.password||u.search||u.hash||u.port||u.pathname!=="/")return null;
- if(["localhost","127.0.0.1","::1"].includes(u.hostname)||!u.hostname.includes("."))return null;
+ if(["localhost","127.0.0.1","::1"].includes(u.hostname)||!u.hostname.includes(".")||/^(?:\\d{1,3}\\.){3}\\d{1,3}$/.test(u.hostname)||u.hostname.endsWith(".local"))return null;
  return u;
  }catch{return null}
 }

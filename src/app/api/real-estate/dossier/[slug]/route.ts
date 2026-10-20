@@ -60,7 +60,7 @@ export async function GET(req:Request,{params}:{params:Promise<{slug:string}>}){
    date:new Date().toISOString().slice(0,10),
    attribution:licensed?.attribution||"",image:licensed?.image
   });
-  return new Response(pdf,{status:200,headers:{
+  return new Response(pdf.buffer as ArrayBuffer,{status:200,headers:{
    "Content-Type":"application/pdf",
    "Content-Disposition":'attachment; filename="gth-pro-'+slug+'-dossier.pdf"',
    "Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff",

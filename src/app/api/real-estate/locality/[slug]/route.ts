@@ -18,8 +18,8 @@ export async function GET(req:Request,{params}:{params:Promise<{slug:string}>}){
   const query=`[out:json][timeout:8];(nwr(around:6000,${origin.lat},${origin.lng})["railway"="station"]["station"~"^(subway|light_rail)$"];nwr(around:6000,${origin.lat},${origin.lng})["railway"="subway_entrance"];nwr(around:90000,${origin.lat},${origin.lng})["aeroway"="aerodrome"]["iata"];);out center 40;`;
   let elements:OsmElement[]=[];
   try{
-   const endpoint="https://overpass.kumi.systems/api/interpreter";
-   const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded",Accept:"application/json"},body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(10000),next:{revalidate:86400}});
+   const endpoint="https://overpass.private.coffee/api/interpreter";
+   const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded",Accept:"application/json","User-Agent":"GTHPRO/1.0 (official@gthproglobal.com)"},body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(10000),next:{revalidate:86400}});
    if(!response.ok)throw Error("OSM provider unavailable");
    const size=Number(response.headers.get("content-length")||0);
    if(size>300000)throw Error("Unexpected response size");
@@ -45,6 +45,6 @@ export async function GET(req:Request,{params}:{params:Promise<{slug:string}>}){
     }
    }catch{/* Driving time remains unavailable, not fabricated. */}
   }
-  return Response.json({status:"source_backed",metro,airport,airportDriveMinutes,notice:"OSM features and recorded project coordinates. Distances are straight-line, not walking distances. Routing minutes are estimates when configured. Confirm precise address and transport times."},{headers});
+  return Response.json({status:"source_backed",metro,airport,airportDriveMinutes,notice:"OpenStreetMap contributors (ODbL). Based on recorded project coordinates; straight-line distances are not walking routes. Road estimates require a configured routing service. Confirm details independently."},{headers});
  }catch(e){return requestError(e)}
 }
