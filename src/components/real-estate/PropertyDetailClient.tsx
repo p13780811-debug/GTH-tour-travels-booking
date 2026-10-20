@@ -7,6 +7,7 @@ import JourneyNav from "./JourneyNav"
 import { MapPin, Share2, ArrowLeft, Building2, MessageSquare, BadgeCheck, FileCheck2 } from "lucide-react"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import PropertyGallery from "@/components/property/PropertyGallery"
+import type { PublishedMedia } from "@/lib/property-media/published-media"
 import PropertyLeadActions from "@/components/property/PropertyLeadActions"
 import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
 import PartnerHandshake from "@/components/property/PartnerHandshake"
@@ -22,7 +23,7 @@ import explorer from "./Explorer.module.css"
 const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
 const AIChat = dynamic(() => import("@/components/AIChat"), { ssr: false, loading: () => <p role="status">Loading listing assistant…</p> })
 
-export default function PropertyDetailClient({ slug, initialData, related = [], inventory = [] }: { slug: string; initialData?: any; related?: any[]; inventory?: any[] }) {
+export default function PropertyDetailClient({ slug, initialData, related = [], inventory = [], publishedMedia = [] }: { slug: string; initialData?: any; related?: any[]; inventory?: any[]; publishedMedia?: PublishedMedia[] }) {
     const [property, setProperty] = useState<any>(initialData || null)
     const [loading, setLoading] = useState(!initialData)
     const [shareMessage, setShareMessage] = useState("")
@@ -76,7 +77,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         </header>
         <div className={`${styles.detailLayout} mt-8`}>
             <div className="min-w-0">
-                <PropertyGallery slug={slug} title={property.title} image={property.image} gallery={property.gallery} district={property.district} locality={property.location || property.city} propertyType={property.property_type} reraId={property.rera_id} />
+                <PropertyGallery slug={slug} title={property.title} image={property.image} gallery={property.gallery} publishedMedia={publishedMedia} district={property.district} locality={property.location || property.city} propertyType={property.property_type} reraId={property.rera_id} />
                 <nav aria-label="Project sections" className={styles.sectionNav}><a href="#overview">Overview</a>{hasInventory && <a href="#inventory">Active inventory</a>}<a href="#recorded-details">Project records</a><a href="#location">Location</a><a href="#enquiry">{isRegistryProject ? "Request details" : "Enquire"}</a></nav>
                 <section id="overview" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24">
                     <h2 className="text-2xl md:text-3xl font-bold">{isRegistryProject ? "Project overview" : "Property overview"}</h2>
