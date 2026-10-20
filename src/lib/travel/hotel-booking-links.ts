@@ -30,6 +30,10 @@ export function validHotelBookingMapping(value:HotelBookingMapping):boolean{
  const property=urlCheck(value.provider_property_url,p==="other_approved"?["klook.com","trip.com","booking.com"]:HOSTS[p].filter(h=>h!=="tp.media"&&!h.endsWith(".tpo.lv")&&!h.endsWith(".tp.st")));
  const affiliate=urlCheck(value.affiliate_url,HOSTS[p]);
  if(!property||!affiliate)return false;
+ // Generic landing pages and opaque shortlinks are not proof of an exact hotel booking target.
+ if(affiliate.hostname!==property.hostname)return false;
+ if(affiliate.pathname==="/" || /\/(?:search|hotels?|activities|destinations?)(?:\/?$)/i.test(affiliate.pathname))return false;
+ if(affiliate.pathname!==property.pathname && !affiliate.searchParams.has("hotelId") && !affiliate.searchParams.has("hotel_id"))return false;
  // Reject travel landing pages that only contain a city search.
  if(/\/(?:searchresults|search|destinations?|flights)(?:[/?#]|$)/i.test(property.pathname))return false;
  if(property.pathname==="/"&&!property.searchParams.has("hotelId"))return false;
