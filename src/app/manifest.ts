@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "GTH PRO",
     description: "One mobile ecosystem for Travel, Real Estate and Tender discovery.",
     start_url: "/app",
-    scope: "/app/",
+    scope: "/",
     display: "standalone",
     orientation: "any",
     background_color: "#061426",

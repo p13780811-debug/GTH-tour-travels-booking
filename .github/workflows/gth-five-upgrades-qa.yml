@@ -16,6 +16,9 @@ on:
       - "src/app/search/page.tsx"
       - "src/app/tours/page.tsx"
       - "tests/gth-five-upgrades.test.mjs"
+      - "tests/gth-connectivity.test.mjs"
+      - "scripts/qa-five-upgrades-mobile.mjs"
+      - "src/app/manifest.ts"
       - ".github/workflows/gth-five-upgrades-qa.yml"
   workflow_dispatch:
 permissions:
@@ -35,6 +38,30 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: node --test tests/gth-five-upgrades.test.mjs
+      - run: node --experimental-strip-types --test tests/gth-connectivity.test.mjs
       - run: npx tsc --noEmit
       - run: npm run test:security
       - run: npm run build
+      - name: Install isolated Chromium browser QA dependencies
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Exercise installability and mobile filter gestures against local production server
+        run: |
+          npm run start > /tmp/gth-five-upgrades-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          success=0
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/manifest.webmanifest > /dev/null; then success=1; break; fi
+            sleep 2
+          done
+          if [ "$success" -ne 1 ]; then cat /tmp/gth-five-upgrades-server.log; exit 1; fi
+          node scripts/qa-five-upgrades-mobile.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gth-five-upgrades-mobile-qa
+          path: /tmp/gth-five-upgrades-screenshots/
+          if-no-files-found: ignore
+          retention-days: 3
