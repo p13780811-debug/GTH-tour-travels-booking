@@ -1,0 +1,30 @@
+name: GTH Five Smart Upgrades — No Deployment
+on:
+  pull_request:
+    branches: [release/gth-one-shot-pending-20261020]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smart-suite-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies (no deployment)
+        run: npm ci --legacy-peer-deps
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Security and GTH smart suite regression tests
+        run: npm run test:security
+      - name: ESLint
+        run: npm run lint
+      - name: Next.js production build (compile only)
+        run: npm run build

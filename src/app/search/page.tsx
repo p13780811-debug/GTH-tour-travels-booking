@@ -1,3 +1,4 @@
+import { smartSearchTarget } from "@/lib/search/smart-intent";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -51,6 +52,8 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     route + (value ? "?" + new URLSearchParams({ [key]: value }).toString() : "") + hash;
 
   if (category === "property") {
+    const smart = smartSearchTarget(q, "property");
+    if (smart.filters.bedrooms || smart.filters.maxPrice || smart.filters.city) return smart.href;
     const type = /\bvillas?\b/i.test(q) ? "Villa" : /\b(apartments?|flats?|[1-9]\s*bhk)\b/i.test(q) ? "Apartment" : "";
     const area = q.replace(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|for sale|for rent|buy|rent|[1-9]\s*bhk|in|near)\b/gi, " ").replace(/\s+/g, " ").trim();
     const params = new URLSearchParams();
@@ -64,6 +67,8 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     return withParam("/tender", "q", subject || q, "#tender-find");
   }
   if (category === "hotel") {
+    const smart = smartSearchTarget(q, "hotel");
+    if (smart.filters.city && /\b(?:in|near|around)\s+/i.test(q)) return smart.href;
     const cityPhrase = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
     if (cityPhrase) return withParam("/hotels", "city", cleanPlace(cityPhrase[1]));
     const hotelName = cleanPlace(q);
