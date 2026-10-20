@@ -1,0 +1,3002 @@
+{
+  "phase": 1,
+  "dataset_type": "source-backed hotel media research queue (not publication)",
+  "website_candidates_verified_owner_sites": false,
+  "source": "Supabase hotel_catalog website OSM field + frozen 166 OSM source IDs",
+  "summary": {
+    "hotels": 166,
+    "with_website_candidates": 38,
+    "without_website_candidates": 128,
+    "approved_hotel_photos": 0
+  },
+  "records": [
+    {
+      "id": "osm-way-381009371",
+      "name": "Art Land",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/381009371",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-379937023",
+      "name": "Balaka",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/379937023",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-379514528",
+      "name": "Blue View Hotel",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/379514528",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-381004553",
+      "name": "D D Palace",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/381004553",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-381011677",
+      "name": "Dighali - I Tourism Property",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/381011677",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380954238",
+      "name": "Dolphine",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380954238",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-379936391",
+      "name": "Hotel Ashamukti",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/379936391",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380958415",
+      "name": "Hotel Belanibas",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380958415",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380952547",
+      "name": "Hotel Cafeteria",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380952547",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380059022",
+      "name": "Hotel Duke",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380059022",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380054412",
+      "name": "Hotel Nandan",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380054412",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380951150",
+      "name": "Hotel Neel Sagar",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380951150",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380054122",
+      "name": "Hotel Sandhyadeep",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380054122",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380952296",
+      "name": "Hotel Sathi",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380952296",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380054512",
+      "name": "Hotel Sea Touch",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380054512",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380763887",
+      "name": "Hotel Sun n' Sea",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380763887",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380958697",
+      "name": "Hotel Sunrise",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380958697",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-381004326",
+      "name": "Parijat Hotel and Resturant",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/381004326",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380961260",
+      "name": "Ranjana",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380961260",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-6237642685",
+      "name": "Sagarika",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/node/6237642685",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-379933931",
+      "name": "Saikatabas",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/379933931",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380961304",
+      "name": "Sea Bird",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380961304",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380953649",
+      "name": "Sea Coast",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380953649",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380059617",
+      "name": "Sea Hawk",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380059617",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380955781",
+      "name": "Sea View",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380955781",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-379934504",
+      "name": "Sea Wind",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/379934504",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380953457",
+      "name": "Seagul",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380953457",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380058884",
+      "name": "Trinamul Bhaban",
+      "city": "Digha",
+      "locality": "New Digha Sea Beach & Hotel Zone",
+      "osm_source_url": "https://www.openstreetmap.org/way/380058884",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380966931",
+      "name": "DVC Guest House",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380966931",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380968534",
+      "name": "Gitanjali",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380968534",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380972594",
+      "name": "Hotel Le Roi",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380972594",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4704629505",
+      "name": "Hotel Rajeet",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/node/4704629505",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380967337",
+      "name": "Kanchan International",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380967337",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380748812",
+      "name": "Larica Holiday Inn",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380748812",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380753290",
+      "name": "New Sagarpriya",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380753290",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380761791",
+      "name": "Rajeet",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380761791",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380762430",
+      "name": "Rupkatha",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380762430",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-499223957",
+      "name": "SBI Holiday Home",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/499223957",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380758764",
+      "name": "Sea Mars",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380758764",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380968364",
+      "name": "Suman's",
+      "city": "Digha",
+      "locality": "Old Digha Marine Drive & Sea Beach",
+      "osm_source_url": "https://www.openstreetmap.org/way/380968364",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-380068750",
+      "name": "Sandy Bay",
+      "city": "Digha",
+      "locality": "Shankarpur Coast Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/380068750",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11449429773",
+      "name": "Hotel home town",
+      "city": "Mumbai",
+      "locality": "Bandra Kurla Complex",
+      "osm_source_url": "https://www.openstreetmap.org/node/11449429773",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4310354082",
+      "name": "Grand Residency Hotel",
+      "city": "Mumbai",
+      "locality": "Bandra West Sea Face",
+      "osm_source_url": "https://www.openstreetmap.org/node/4310354082",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-7045173523",
+      "name": "Hotel Linkway",
+      "city": "Mumbai",
+      "locality": "Bandra West Sea Face",
+      "osm_source_url": "https://www.openstreetmap.org/node/7045173523",
+      "website_candidate": "https://hotellinkway.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-12346531475",
+      "name": "Hotel Metro Palace",
+      "city": "Mumbai",
+      "locality": "Bandra West Sea Face",
+      "osm_source_url": "https://www.openstreetmap.org/node/12346531475",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-8447999692",
+      "name": "Park Inn",
+      "city": "Mumbai",
+      "locality": "Bandra West Sea Face",
+      "osm_source_url": "https://www.openstreetmap.org/node/8447999692",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11691659261",
+      "name": "Hotel Shivraj Dhaba Karad Belapur",
+      "city": "Mumbai",
+      "locality": "Belapur, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/11691659261",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3761144466",
+      "name": "Hotel Three Star",
+      "city": "Mumbai",
+      "locality": "Belapur, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/3761144466",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-904069095",
+      "name": "Landmark Hotel",
+      "city": "Mumbai",
+      "locality": "Belapur, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/904069095",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-7137339285",
+      "name": "Abode Bombay",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/7137339285",
+      "website_candidate": "https://abodeboutiquehotels.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-12564896083",
+      "name": "Bentleys Hotel",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/12564896083",
+      "website_candidate": "https://bentleyshotel.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-961369363",
+      "name": "Carlton Hotel",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/961369363",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4841717121",
+      "name": "Garden Hotel",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/4841717121",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1056702163",
+      "name": "Hotel Lawrence",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/1056702163",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-12560777888",
+      "name": "Hotel Volga",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/12560777888",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3306535082",
+      "name": "Kishan-Aga Begs P.G.H.",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/3306535082",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3306535081",
+      "name": "Palm Breaze",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/3306535081",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1286194734",
+      "name": "Residency",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/1286194734",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1504771680",
+      "name": "Sea Green Hotel",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/1504771680",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3306535109",
+      "name": "Sea Shore Guesthouse",
+      "city": "Mumbai",
+      "locality": "Colaba",
+      "osm_source_url": "https://www.openstreetmap.org/node/3306535109",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1643105789",
+      "name": "Benazeer",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/1643105789",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-9740687824",
+      "name": "Central Government Touring Officers Guest House",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/9740687824",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1234802637",
+      "name": "City Palace",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/1234802637",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-8219843151",
+      "name": "Elphinstone Hotel",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/8219843151",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-485966125",
+      "name": "Great Punjab Hotel",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/485966125",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-665036885",
+      "name": "Hotel Adarsh Palace",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/665036885",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11465204240",
+      "name": "Hotel Heraa",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/11465204240",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3229419686",
+      "name": "Hotel Manama",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/3229419686",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245654643",
+      "name": "Imperial Palace",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/245654643",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1541857829",
+      "name": "InterContinental Hotel",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/1541857829",
+      "website_candidate": "https://www.ihg.com/intercontinental/hotels/gb/en/mumbai/bomhb/hoteldetail",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-1643105794",
+      "name": "Residency",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/1643105794",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245654709",
+      "name": "Sharada",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/245654709",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-12298890609",
+      "name": "Ship Hotel",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/12298890609",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3216971090",
+      "name": "Sun Star Residency",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/3216971090",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4133868438",
+      "name": "Windsor",
+      "city": "Mumbai",
+      "locality": "Fort",
+      "osm_source_url": "https://www.openstreetmap.org/node/4133868438",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1392005677",
+      "name": "Airlines International",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/1392005677",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245669308",
+      "name": "Ajanta",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/245669308",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11609355462",
+      "name": "Alfa Executive",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/11609355462",
+      "website_candidate": "https://hotelalfaexecutive.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-1803677376",
+      "name": "Anand Bhavan",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/1803677376",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245669161",
+      "name": "Atlantic",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/245669161",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-296357707",
+      "name": "Citizen Hotel",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/296357707",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245668712",
+      "name": "Classic",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/245668712",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1392005681",
+      "name": "Galaxy",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/1392005681",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-5942782826",
+      "name": "Hotel Alpha International",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/5942782826",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1646774067",
+      "name": "Mid Town",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/1646774067",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245669365",
+      "name": "Royal Garden",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/245669365",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-279962108",
+      "name": "seaview",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/279962108",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4265701092",
+      "name": "Treebo Sea Side",
+      "city": "Mumbai",
+      "locality": "Juhu Beach & Vile Parle West",
+      "osm_source_url": "https://www.openstreetmap.org/node/4265701092",
+      "website_candidate": "https://treebohotels.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-245666563",
+      "name": "Anita Mahal",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/245666563",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11445777740",
+      "name": "Hotel Dwarka",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/11445777740",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4021895998",
+      "name": "Hotel Galaxy View (Oyo Rooms)",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/4021895998",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3289549971",
+      "name": "Hotel Kamaran residency",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/3289549971",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-7920057609",
+      "name": "Hotel Sunny",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/7920057609",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245666128",
+      "name": "Jewel of Chembur",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/245666128",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1651404912",
+      "name": "Malhar",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/1651404912",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-245666538",
+      "name": "Maruthi Mahal",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/245666538",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3530903071",
+      "name": "triveni bar",
+      "city": "Mumbai",
+      "locality": "Kurla Station & LTT Hub",
+      "osm_source_url": "https://www.openstreetmap.org/node/3530903071",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-3978876100",
+      "name": "Hotel Sapna",
+      "city": "Mumbai",
+      "locality": "Marine Drive",
+      "osm_source_url": "https://www.openstreetmap.org/node/3978876100",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11691775240",
+      "name": "K Star Hotel",
+      "city": "Mumbai",
+      "locality": "Nerul",
+      "osm_source_url": "https://www.openstreetmap.org/node/11691775240",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1514113522",
+      "name": "Abbot Hotel",
+      "city": "Mumbai",
+      "locality": "Vashi, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/1514113522",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-267473867",
+      "name": "Supreme Heritage",
+      "city": "Mumbai",
+      "locality": "Vashi, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/267473867",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1121957945",
+      "name": "Yogi excutive",
+      "city": "Mumbai",
+      "locality": "Vashi, Navi Mumbai",
+      "osm_source_url": "https://www.openstreetmap.org/node/1121957945",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-5827266885",
+      "name": "Divine Beach Homestay",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/5827266885",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4183332741",
+      "name": "Emanuil Lodge",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4183332741",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1051795983",
+      "name": "Hotel Sriram",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051795983",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4183407932",
+      "name": "Hotel Sweet Home",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4183407932",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-8236272317",
+      "name": "New Shankar International",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/8236272317",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4592083189",
+      "name": "Santana",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4592083189",
+      "website_candidate": "https://www.indiasantana.net/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-4540132635",
+      "name": "Santana Hotel",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4540132635",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4183389749",
+      "name": "Sidharth Inn",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4183389749",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4183308259",
+      "name": "Swadhin Hotel",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/4183308259",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11680922769",
+      "name": "Travellers Inn",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/11680922769",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1314683285",
+      "name": "Z Hotel",
+      "city": "Puri",
+      "locality": "Chakratirth Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1314683285",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1364539647",
+      "name": "Chanakya BNR Hotel",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539647",
+      "website_candidate": "https://www.chanakyabnrpuri.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-14221294197",
+      "name": "Golden Tree",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/14221294197",
+      "website_candidate": "https://hotelgoldentree.in/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-1051796148",
+      "name": "Hotel Basu",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051796148",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-13684700029",
+      "name": "Hotel Bishnu Bhaban",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/13684700029",
+      "website_candidate": "https://bishnubhaban.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539666",
+      "name": "Hotel Golden Palace",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539666",
+      "website_candidate": "https://hotelgoldenspalacepuri.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-6149803885",
+      "name": "HOTEL KONARK",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/6149803885",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-6422675186",
+      "name": "Hotel Krishna Resorts and Restaurant (pure veg)",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/6422675186",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4510129155",
+      "name": "Hotel New Sea Hawk",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/4510129155",
+      "website_candidate": "https://hotelnewseahawk.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-4520320535",
+      "name": "Hotel Pulin Puri",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/4520320535",
+      "website_candidate": "https://www.hotelpulinpuri.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-4601062689",
+      "name": "Hotel Shakuntala Palace",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/4601062689",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1051794043",
+      "name": "Hotel Sitara",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051794043",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1051829724",
+      "name": "Hotel Sonali",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051829724",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-11162551237",
+      "name": "Hotel Sonali",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/11162551237",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1364539664",
+      "name": "Hotel Vijoya International",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539664",
+      "website_candidate": "https://vijoyainternational.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-4209890227",
+      "name": "Krishna Palace",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/4209890227",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-relation-18782077",
+      "name": "Mayfair Heritage",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/relation/18782077",
+      "website_candidate": "https://www.mayfairhotels.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539662",
+      "name": "Mayfair Waves",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539662",
+      "website_candidate": "https://www.mayfairhotels.com/waves-puri/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539653",
+      "name": "Panthanivas",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539653",
+      "website_candidate": "https://otdc.odisha.gov.in/accommodations/panthanivas-puri",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539646",
+      "name": "Samudra Hotel",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539646",
+      "website_candidate": "https://www.thegallerygroups.com/hotel-details.php?hotel_id=2",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-6307816391",
+      "name": "Smile Holiday",
+      "city": "Puri",
+      "locality": "Golden Beach / Swargadwar Sea Front",
+      "osm_source_url": "https://www.openstreetmap.org/node/6307816391",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-13520679507",
+      "name": "Guest house of SCGM",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/13520679507",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1051794820",
+      "name": "Hotel Samraj",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051794820",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-1051795001",
+      "name": "Hotel Subhadra",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051795001",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-13684281413",
+      "name": "Hotel Sukadev Homes",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/13684281413",
+      "website_candidate": "https://www.hotelsdhomes.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-1051794011",
+      "name": "Marchikote Inn",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/1051794011",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-4672913589",
+      "name": "Shree Vishnu Darshan Holiday Home",
+      "city": "Puri",
+      "locality": "Grand Road near Jagannath Temple",
+      "osm_source_url": "https://www.openstreetmap.org/node/4672913589",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-13245954062",
+      "name": "Adritra Guest House",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/13245954062",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-relation-18843865",
+      "name": "Blue Lily",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/relation/18843865",
+      "website_candidate": "https://bluelilybeachresort.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-14221300030",
+      "name": "Camellia Hotel & Resort's Puri",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/14221300030",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1377185728",
+      "name": "Dreamland",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185728",
+      "website_candidate": "https://hoteldreamlandpuri.chobs.in/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-relation-18782078",
+      "name": "Empires Hotel",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/relation/18782078",
+      "website_candidate": "https://www.empireshotel.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-relation-18985454",
+      "name": "Fortune Beachfront Puri",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/relation/18985454",
+      "website_candidate": "https://www.itchotels.com/in/en/fortunebeachfront-puri",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185721",
+      "name": "Golden Dust",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185721",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-node-13564689002",
+      "name": "Gour Govinda Swami ashram guesthouse",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/13564689002",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1368065128",
+      "name": "Hans Coco Palms",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065128",
+      "website_candidate": "https://hanscocopalmshotels.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1368065125",
+      "name": "Hotel Prabhupada",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065125",
+      "website_candidate": "https://hotelprabhupada.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-13245942463",
+      "name": "Hotel Rohit Rohini",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/13245942463",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1368065126",
+      "name": "Hotel Shreehari",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065126",
+      "website_candidate": "https://www.hotelshreehari.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1368065130",
+      "name": "Hotel Sonar Bangla, Puri",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065130",
+      "website_candidate": "https://www.hotelsonarbangla.com/puri/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1368065131",
+      "name": "Jeevan Sandhya",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065131",
+      "website_candidate": "https://hoteljeevansandhya.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185730",
+      "name": "Lucky India",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185730",
+      "website_candidate": "https://www.luckyindiahotels.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185722",
+      "name": "Niladri Premium",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185722",
+      "website_candidate": "https://hotelniladripremium.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539671",
+      "name": "NRS Royal Palace",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539671",
+      "website_candidate": "https://nrsroyalpalace.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185718",
+      "name": "Regenta Cental",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185718",
+      "website_candidate": "https://regentarewards.com/hotel/regenta-central-puri",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185729",
+      "name": "Rivera",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185729",
+      "website_candidate": "https://hotelriverapuri.com/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185726",
+      "name": "Shakti Horizon",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185726",
+      "website_candidate": "https://shaktihorizon.in/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-node-13564857159",
+      "name": "Sri Srirup Siddhanti Gaudiya Sevashram",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/node/13564857159",
+      "website_candidate": "https://bvmlu.org/SBSSM/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1364539672",
+      "name": "Swosti Premium",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1364539672",
+      "website_candidate": "https://www.swostihotels.com/swosti-premium-beach-resorts-puri/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1377185720",
+      "name": "The Bay Suites",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1377185720",
+      "website_candidate": "https://www.thebaysuites.in/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1548261102",
+      "name": "The Eastern Dham",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1548261102",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1368065138",
+      "name": "Treebo Siddharth International",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065138",
+      "website_candidate": "https://www.treebo.com/hotels-in-puri/treebo-sidhartha-international-baliapanda-baliapanda-2961/",
+      "website_evidence": "OSM hotel_catalog.website tag; ownership and permission NOT verified",
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "review property identity; request original photos and documented commercial publication permission"
+    },
+    {
+      "id": "osm-way-1548261101",
+      "name": "White Sands",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1548261101",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    },
+    {
+      "id": "osm-way-1368065139",
+      "name": "Yashasvi Inn",
+      "city": "Puri",
+      "locality": "Marine Drive Road",
+      "osm_source_url": "https://www.openstreetmap.org/way/1368065139",
+      "website_candidate": null,
+      "website_evidence": null,
+      "media_status": "NO_APPROVED_PROPERTY_PHOTOS",
+      "approved_property_photo_count": 0,
+      "required_evidence": [
+        "exact hotel subject match",
+        "rights for commercial publication or compatible open license",
+        "image author and attribution",
+        "image URL content validation"
+      ],
+      "next_action": "source licensed property photo through exact OSM/Wikidata match or owner submission"
+    }
+  ]
+}
