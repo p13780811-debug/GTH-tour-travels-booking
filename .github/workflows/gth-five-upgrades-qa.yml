@@ -1,5 +1,8 @@
 name: GTH five upgrades — isolated QA (no deployment)
 on:
+  push:
+    branches:
+      - feature/gth-smart-synergy-five-upgrades
   pull_request:
     branches:
       - release/gth-one-shot-pending-20261020

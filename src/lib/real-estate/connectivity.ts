@@ -16,9 +16,9 @@ export type OsmElement = { type?:string; id?:number; lat?:number; lon?:number; c
 export function nearestOsm(elements:OsmElement[], origin:Coordinates, category:"metro"|"airport"):NearbyPlace|null {
  const options:NearbyPlace[]=[];
  for (const item of elements) {
-  const lat=item.type==="node"?item.lat:item.center?.lat;
-  const lng=item.type==="node"?item.lon:item.center?.lon;
-  if(!validCoordinates({lat,lng})||!Number.isSafeInteger(item.id)||!["node","way","relation"].includes(item.type||"")) continue;
+  const coord={lat:item.type==="node"?item.lat:item.center?.lat,lng:item.type==="node"?item.lon:item.center?.lon};
+  if(!validCoordinates(coord)||!Number.isSafeInteger(item.id)||!["node","way","relation"].includes(item.type||"")) continue;
+  const {lat,lng}=coord;
   const tags=item.tags||{};
   const isMetro=tags.station==="subway"||tags.station==="light_rail"||tags.subway==="yes"||
    tags.railway==="subway_entrance";
@@ -35,7 +35,7 @@ export function nearestOsm(elements:OsmElement[], origin:Coordinates, category:"
 export function safeRoutingBase(raw:string|undefined):URL|null {
  if(!raw)return null;
  try {const u=new URL(raw);if(u.protocol!=="https:"||u.username||u.password||u.search||u.hash||u.port||u.pathname!=="/")return null;
- if(["localhost","127.0.0.1","::1"].includes(u.hostname)||!u.hostname.includes(".")||/^(?:\\d{1,3}\\.){3}\\d{1,3}$/.test(u.hostname)||u.hostname.endsWith(".local"))return null;
+ if(["localhost","127.0.0.1","::1"].includes(u.hostname)||!u.hostname.includes(".")||/^(?:\d{1,3}\.){3}\d{1,3}$/.test(u.hostname)||u.hostname.endsWith(".local"))return null;
  return u;
  }catch{return null}
 }

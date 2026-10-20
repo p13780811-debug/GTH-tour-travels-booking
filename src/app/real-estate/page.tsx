@@ -90,7 +90,7 @@ export default function RealEstatePage() {
         return () => { window.removeEventListener("gth-saved", sync); window.removeEventListener("storage", sync) }
     }, [])
 
-    // Inline responsive filters scroll with the page, not inside a viewport-locked dialog.
+    // Responsive Real Estate filters preserve the desktop sidebar and open an accessible mobile bottom sheet.
     useEffect(() => {
         if (!filtersOpen) return
         const onKey = (event: KeyboardEvent) => {
