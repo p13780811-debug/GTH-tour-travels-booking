@@ -11,6 +11,7 @@ import { countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText } from "@/lib/tender/i18n";
 import { marketplaceText } from "@/lib/tender/marketplace-copy";
 import { tenderFilterHref } from "@/lib/tender/urls";
+import { TenderSaveCompare } from "./TenderDiscoveryActions";
 
 const categories = [
   {key:"works",Icon:Hammer},
@@ -82,9 +83,9 @@ export function TenderMarketOverview({
           <h2 id="tender-category-title" className="mt-2 text-2xl font-semibold">{m("categories")}</h2>
           <p className="mt-3 max-w-3xl text-sm text-[var(--text-soft)]">{m("categoryHelp")}</p>
         </div>
-        <Link className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold hover:border-[var(--gold)]"
+        <Link className="gth-btn inline-flex items-center gap-2 justify-center"
           href={tenderFilterHref({...base,sector:""},language)}>
-          {m("all")} <span className="tabular-nums text-[var(--text-soft)]">{allCount}</span>
+          {m("all")} <span className="tabular-nums">{allCount}</span>
         </Link>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -107,9 +108,9 @@ export function TenderMarketOverview({
         })}
       </div>
       <Link href={tenderFilterHref({...base,closingWithin:"7"},language)}
-        className="mt-5 flex min-h-14 flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 hover:border-[var(--gold)]">
-        <span className="inline-flex items-center gap-3 text-sm font-semibold"><Timer size={19} className="text-[var(--gold)]" aria-hidden="true"/>{m("soon")}</span>
-        <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
+        className="gth-btn mt-5 flex flex-wrap items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-3"><Timer size={19} aria-hidden="true"/>{m("soon")}</span>
+        <span className="inline-flex items-center gap-2 text-xs">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
       </Link>
     </section>:null}
   </>;
@@ -131,10 +132,10 @@ export function TenderMarketCard({tender,language}:{
   const urgent=hours>0&&hours<=72;
   const closingDays=Math.max(0,Math.ceil(hours/24));
   const original=safeTenderSource(tender.source_url);
-  return <article className="group flex h-full flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition-colors hover:border-[var(--gold)] sm:p-6">
+  return <article className="group flex h-full min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition-colors hover:border-[var(--gold)] sm:p-6">
     <div className="flex flex-wrap items-center gap-2 text-xs">
       <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 font-semibold">
-        <span aria-hidden="true" className="size-2 rounded-full bg-emerald-600"/>
+        <span aria-hidden="true" className="size-2 rounded-full bg-[var(--gold)]"/>
         {m("open")}
       </span>
       {urgent?<span className="rounded-full border border-[var(--gold)] px-3 py-1 font-semibold text-[var(--text)]">{m("urgency")}</span>:null}
@@ -144,7 +145,7 @@ export function TenderMarketCard({tender,language}:{
       <span className="flex items-center gap-2"><BadgeCheck size={16} aria-hidden="true"/>{tender.source_name}</span>
       <span className="capitalize">{m(tender.sector)}</span>
     </div>
-    <h3 className="mt-4 text-lg font-semibold leading-7">
+    <h3 className="mt-4 break-words text-lg font-semibold leading-7">
       <Link href={"/tender/"+tender.id} className="hover:underline">{tender.title}</Link>
     </h3>
     <p className="mt-2 line-clamp-2 text-sm font-medium text-[var(--text-soft)]">{tender.buyer}</p>
@@ -162,13 +163,14 @@ export function TenderMarketCard({tender,language}:{
       </div>
     </div>
     <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--text-soft)]"><ShieldCheck size={14} aria-hidden="true"/>{m("deadlineNote")}</p>
+    <TenderSaveCompare id={tender.id} title={tender.title}/>
     <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
       <Link href={"/tender/"+tender.id}
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold hover:border-[var(--gold)]">
+        className="gth-btn inline-flex items-center gap-2 justify-center">
         <FileText size={16} aria-hidden="true"/>{t("view")}
       </Link>
       {original?<a href={original} target="_blank" rel="noopener noreferrer nofollow"
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold hover:border-[var(--gold)]">
+        className="gth-btn inline-flex items-center gap-2 justify-center">
         {m("openOriginal")} <ArrowUpRight size={16} aria-hidden="true"/>
       </a>:null}
       <Link href={"/tender/assistant?tenderId="+encodeURIComponent(tender.id)}

@@ -110,7 +110,9 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     setAiBusy(true);setAiReply("");
     try{
       const context={
-        tender:{title:notice.title,buyer:notice.buyer,reference:notice.source_reference},
+        tender:{title:notice.title,buyer:notice.buyer,reference:notice.source_reference,
+          deadline_utc:currentDeadline,
+          deadline_note:"Catalog snapshot only; confirm the latest deadline, timezone and corrigenda on the official portal."},
         requirements:req,screening:report.status,
         bidder:{name:profile.business_name,country:profile.business_country,experience:profile.years_experience,
           turnover:profile.annual_turnover,currency:profile.turnover_currency,
@@ -206,7 +208,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     const a=document.createElement("a");a.href=url;a.download=`gth-tender-${safeFileName(notice.source_reference)}-draft.txt`;
     a.click();URL.revokeObjectURL(url);
   }
-  return <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-14">
         <Link href="/tender" className="inline-flex min-h-10 items-center gap-2 text-sm text-[var(--text-soft)]">
@@ -215,7 +217,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
           GTH PRO · Tender Preparation Assistant
         </p>
-        <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+        <h1 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight sm:text-3xl">
           Prepare your tender, one step at a time.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
@@ -231,8 +233,8 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
       <nav aria-label="Tender assistant steps" className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
         {steps.map((label,i)=><button key={label} type="button" onClick={()=>{setStep(i);setNoticeMessage("");}}
           aria-current={step===i?"step":undefined}
-          className={`inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${step===i?"border-[var(--gold)] bg-[var(--card)] text-[var(--text)]":"border-[var(--border)] bg-[var(--bg)] text-[var(--text-soft)] hover:border-[var(--gold)]"}`}>
-          <span className="text-xs text-[var(--gold)]">0{i+1}</span> {label}
+          className="gth-btn inline-flex shrink-0 items-center gap-3 text-start">
+          <span aria-hidden="true">{step===i?"✓":"0"+(i+1)}</span> {label}
         </button>)}
       </nav>
       <div className="min-w-0 space-y-5">
@@ -256,7 +258,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
             <label className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm">
               <input type="checkbox" checked={Boolean(officialReviewedAt)}
                 onChange={e=>setOfficialReviewedAt(e.target.checked?new Date().toISOString():null)}
-                className="size-4 accent-amber-600"/>
+                className="size-4 accent-[var(--gold)]"/>
               I personally checked the current official notice and corrigenda (self-declaration, not GTH verification).
             </label>
             {sourceChanged?<p role="alert" className="rounded-xl border border-[var(--gold)] p-4 text-sm font-semibold">
@@ -293,11 +295,11 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               <label className={fieldLabel}>Official eligibility clauses (text only)
                 <textarea rows={5} className={textInput} maxLength={10000} value={clauses} onChange={e=>setClauses(e.target.value)} placeholder="Paste official eligibility paragraphs here..."/></label>
               <label className="flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
-                <input type="checkbox" className="mt-1 h-4 w-4 accent-amber-600" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/>
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--gold)]" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/>
                 I agree to send my pasted eligibility text to the Gemini AI provider. This does not verify it.
               </label>
               <button type="button" disabled={!aiConsent||extractBusy||clauses.trim().length<60} onClick={extractClauses}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-40">
+                className="gth-btn inline-flex items-center gap-2 justify-center">
                 <Sparkles size={16}/> {extractBusy?"Extracting…":"Extract draft requirements"}
               </button>
               {extractMessage&&<p role="status" className="text-xs leading-6 text-[var(--text-soft)]">{extractMessage}</p>}
@@ -338,12 +340,12 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
                 <HelpCircle className="mt-1 shrink-0 text-[var(--gold)]" size={19}/>}
               <div><p className="text-sm font-semibold">{c.label} — {c.result==="meets"?"Declared match":c.result==="gap"?"Gap":"Unknown"}</p><p className="mt-1 text-sm leading-6 text-[var(--text-soft)]">{c.detail}</p></div>
             </article>):<p className="text-sm leading-7 text-[var(--text-soft)]">No official eligibility conditions available yet. Open the notice and enter exact criteria in Step 3.</p>}
-            <button type="button" onClick={()=>setStep(2)} className="min-h-11 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Review conditions</button>
+            <button type="button" onClick={()=>setStep(2)} className="gth-btn inline-flex items-center justify-center">Review conditions</button>
           </div>}
           {step===4&&<div className="mt-6 space-y-4">
             <p className="text-sm leading-7 text-[var(--text-soft)]">{req.required_documents?.length?"Checklist based on the entered tender requirements.":"General preparation suggestions only, not a list of mandatory documents for this tender."} Check off items when you have independently reviewed them.</p>
-            {requiredDocs.map(name=><label key={name} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
-              <input type="checkbox" className="mt-1 h-4 w-4 accent-amber-600" checked={checklist.includes(name)} onChange={e=>setChecklist(prev=>e.target.checked?[...prev,name]:prev.filter(x=>x!==name))}/>
+            {requiredDocs.map(name=><label key={name} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] p-4 text-sm">
+              <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--gold)]" checked={checklist.includes(name)} onChange={e=>setChecklist(prev=>e.target.checked?[...prev,name]:prev.filter(x=>x!==name))}/>
               <span className="text-sm leading-6">{name}</span>
             </label>)}
             <p className="text-sm text-[var(--text-soft)]">{checklist.filter(n=>requiredDocs.includes(n)).length} of {requiredDocs.length} reviewed on this device (not uploaded).</p>
@@ -367,8 +369,8 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               Meeting attendance, site visit, EMD and clarifications are tender-specific.
               None is treated as mandatory unless the latest official tender states so. Mark checks only after reviewing that notice.
             </p>
-            {prebidQuestions.map(question=><label key={question.id} className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
-              <input type="checkbox" className="mt-1 size-4 accent-amber-600"
+            {prebidQuestions.map(question=><label key={question.id} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] p-4 text-sm">
+              <input type="checkbox" className="mt-1 size-4 accent-[var(--gold)]"
                 checked={prebidReviewed.includes(question.id)}
                 onChange={e=>setPrebidReviewed(a=>e.target.checked?[...a,question.id]:a.filter(item=>item!==question.id))}/>
               <span className="text-sm leading-6">{question.label}</span>
@@ -381,19 +383,19 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           </div>}
           {step===6&&<div className="mt-6 space-y-5">
             <p className="text-sm leading-7 text-[var(--text-soft)]">Auto-fill a working response from your declared answers. Missing facts stay clearly marked; you must verify and edit it before using any official portal.</p>
-            <button type="button" onClick={generateDraft} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
+            <button type="button" onClick={generateDraft} className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center">
               <FilePenLine size={17}/> Generate editable bid draft
             </button>
             <label className={fieldLabel}>Your application preparation draft
               <textarea rows={17} className={textInput+" font-mono text-xs leading-6"} value={draft} maxLength={12000} onChange={e=>setDraft(e.target.value)} placeholder="Click Generate editable bid draft"/></label>
             <div className="flex flex-wrap gap-3">
-              <button disabled={!draft.trim()} type="button" onClick={downloadDraft} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold disabled:opacity-40">
+              <button disabled={!draft.trim()} type="button" onClick={downloadDraft} className="gth-btn inline-flex items-center gap-2 justify-center">
                 <Download size={16}/> Download .txt draft
               </button>
-              <button disabled={!draft.trim()} type="button" onClick={async()=>{try{await navigator.clipboard.writeText(draft);setNoticeMessage("Draft copied.");}catch{setNoticeMessage("Copy unavailable; select the text manually.");}}} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold disabled:opacity-40">
+              <button disabled={!draft.trim()} type="button" onClick={async()=>{try{await navigator.clipboard.writeText(draft);setNoticeMessage("Draft copied.");}catch{setNoticeMessage("Copy unavailable; select the text manually.");}}} className="gth-btn inline-flex items-center gap-2 justify-center">
                 <ClipboardCheck size={16}/> Copy draft
               </button>
-              {sourceUrl&&<a href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Open official portal <ArrowRight size={16}/></a>}
+              {sourceUrl&&<a href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex items-center gap-2 justify-center">Open official portal <ArrowRight size={16}/></a>}
             </div>
             <p className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-xs leading-6 text-[var(--text-soft)]">
               No submission, fee payment or document upload is performed here. Final entry and submission on the official portal require your review and explicit action.
@@ -404,7 +406,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
                 {readiness.blockers.map(item=><li key={item}>{item}</li>)}
               </ul>:<p className="mt-2 text-xs text-[var(--text-soft)]">Checklist prepared for your final independent authority review.</p>}
               <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm">
-                <input type="checkbox" className="mt-1 size-4 accent-amber-600" checked={Boolean(selfReportedSubmissionAt)}
+                <input type="checkbox" className="mt-1 size-4 accent-[var(--gold)]" checked={Boolean(selfReportedSubmissionAt)}
                   onChange={e=>setSelfReportedSubmissionAt(e.target.checked?new Date().toISOString():null)}/>
                 I personally submitted this bid at the official portal. Save as my own report, NOT a GTH-confirmed submission.
               </label>
@@ -415,8 +417,8 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           </p>:null}
           {noticeMessage&&<p role="status" className="mt-5 rounded-xl border border-[var(--border)] p-3 text-sm">{noticeMessage}</p>}
           <div className="mt-7 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
-            <button type="button" disabled={step===0} onClick={()=>{setStep(Math.max(0,step-1));setNoticeMessage("");}} className="min-h-11 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-30">Back</button>
-            <button type="button" disabled={step===steps.length-1} onClick={()=>{setStep(Math.min(steps.length-1,step+1));setNoticeMessage("");}} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-40">Next step <ArrowRight size={16}/></button>
+            <button type="button" disabled={step===0} onClick={()=>{setStep(Math.max(0,step-1));setNoticeMessage("");}} className="gth-btn inline-flex items-center justify-center">Back</button>
+            <button type="button" disabled={step===steps.length-1} onClick={()=>{setStep(Math.min(steps.length-1,step+1));setNoticeMessage("");}} className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center">Next step <ArrowRight size={16}/></button>
           </div>
         </section>
 
@@ -432,12 +434,12 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           <label className={fieldLabel+" mt-4"}>Your question
             <textarea rows={3} className={textInput} maxLength={1500} value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Mujhe EMD aur technical bid kaise prepare karna hai?"/></label>
           <label className="mt-4 flex items-start gap-3 text-xs leading-6 text-[var(--text-soft)]">
-            <input type="checkbox" className="mt-1 h-4 w-4 accent-amber-600" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/>
+            <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--gold)]" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/>
             I agree to send only the typed business summary, tender conditions and question to the Gemini AI provider for this request. No files are uploaded.
           </label>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button type="button" disabled={aiBusy||!aiConsent||!question.trim()} onClick={()=>askAI("guide")} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-40"><Sparkles size={16}/> {aiBusy?"Thinking…":"Ask AI Coach"}</button>
-            <button type="button" disabled={aiBusy||!aiConsent} onClick={()=>askAI("draft")} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-40">Get drafting advice</button>
+            <button type="button" disabled={aiBusy||!aiConsent||!question.trim()} onClick={()=>askAI("guide")} className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center"><Sparkles size={16}/> {aiBusy?"Thinking…":"Ask AI Coach"}</button>
+            <button type="button" disabled={aiBusy||!aiConsent} onClick={()=>askAI("draft")} className="gth-btn inline-flex items-center gap-2 justify-center">Get drafting advice</button>
           </div>
           {aiReply&&<div role="status" className="mt-5 whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 text-sm leading-7">{aiReply}</div>}
         </section>
@@ -447,22 +449,22 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
           <h2 id="save-heading" className="mt-3 text-xl font-semibold">Save and resume your tender preparation</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Optional sign-in. Signed-in drafts and preparation progress are stored in an existing owner-only RLS table. Never add confidential IDs, bank details, passwords or documents. Your current form stays in this browser tab unless you explicitly save.</p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <button disabled={saveBusy} type="button" onClick={saveDraft} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold disabled:opacity-50"><Save size={16}/> Save private draft</button>
-            <button disabled={saveBusy} type="button" onClick={loadList} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-50"><BookOpen size={16}/> Load my saved drafts</button>
+            <button disabled={saveBusy} type="button" onClick={saveDraft} className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center"><Save size={16}/> Save private draft</button>
+            <button disabled={saveBusy} type="button" onClick={loadList} className="gth-btn inline-flex items-center gap-2 justify-center"><BookOpen size={16}/> Load my saved drafts</button>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
             <label className={fieldLabel}>Need to sign in? Email address
               <input type="email" className={textInput} maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com"/></label>
-            <button disabled={saveBusy} type="button" onClick={requestOtp} className="min-h-11 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold disabled:opacity-50">Email sign-in link</button>
+            <button disabled={saveBusy} type="button" onClick={requestOtp} className="gth-btn inline-flex items-center justify-center">Email sign-in link</button>
           </div>
           {authMessage&&<p role="status" className="mt-4 rounded-xl border border-[var(--border)] p-3 text-sm">{authMessage}</p>}
           {savedRows.length>0&&<div className="mt-6 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">Your private drafts</p>
             {savedRows.map(row=><button key={row.id} type="button" onClick={()=>openSaved(row)}
-              className="flex min-h-14 w-full items-center justify-between gap-4 rounded-xl border border-[var(--border)] px-4 py-3 text-left text-sm hover:border-[var(--gold)]">
+              className="gth-btn flex w-full items-center justify-between gap-4">
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{row.tender_title||"Untitled tender"}</span>
-                <span className="mt-1 block text-xs text-[var(--text-soft)]">
+                <span className="mt-1 block text-xs">
                   {row.official_notice_changed?"Source changed — review needed · ":
                     row.readiness?.expired?"Saved deadline expired · ":
                     row.readiness?.soon?"Closing within 72h · ":""}
@@ -471,11 +473,11 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
                     "Private preparation · "+(row.readiness?.blockers.length??0)+" checks need review"}
                 </span>
               </span>
-              <span className="shrink-0 text-xs font-semibold text-[var(--text-soft)]">Resume →</span>
+              <span className="shrink-0 text-xs">Resume →</span>
             </button>)}
           </div>}
         </section>
       </div>
     </div>
-  </div>;
+  </main>;
 }

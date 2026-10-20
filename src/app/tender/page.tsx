@@ -8,6 +8,8 @@ import { parseTenderFilters, searchPublicTenders, getTenderDiscoveryStats, TENDE
 import {TenderMarketOverview, TenderMarketCard} from "@/components/tender/TenderMarketplacePanels";
 import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
+import { tenderFilterHref } from "@/lib/tender/urls";
+import { TenderWorkspaceToolbar } from "@/components/tender/TenderDiscoveryActions";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Tender Opportunities & Procurement Intelligence | GTH PRO",
@@ -90,27 +92,41 @@ export default async function TenderPage({searchParams}: Props) {
   const pageCount = result?.ok ? Math.ceil(result.total / result.size) : 0;
   return <main lang={language} dir={language==="ar"?"rtl":"ltr"} className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-9 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
           <Globe2 size={16} aria-hidden="true" /> GTH PRO · PILLAR 03
         </p>
-        <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="mt-4 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
           {t("hero")}
         </h1>
-        <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
           {t("intro")}
         </p>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
           <ShieldCheck size={16} aria-hidden="true"/> {t("verified")}
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link href="/tender/assistant" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-sm font-semibold">
+          <Link href="/tender/assistant" className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
             <ClipboardCheck size={17} aria-hidden="true"/> {t("guided")} <ArrowRight size={17} aria-hidden="true"/>
           </Link>
-          <Link href="/tender/assistant" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-semibold">
-            {t("eligibility")}
+          <Link href="/tender/saved" className="gth-btn inline-flex items-center justify-center gap-2">
+            Saved tenders & comparison
           </Link>
         </div>
+        </div>
+        <aside aria-label="Tender workflow" className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">From discovery to preparation</p>
+          <h2 className="mt-3 text-xl font-semibold">A clearer path to your next bid.</h2>
+          <ol className="mt-5 space-y-4 text-sm">
+            <li><a href="#tender-find" className="inline-flex min-h-11 items-center gap-3 underline underline-offset-4"><Search size={17} aria-hidden="true"/>Find notices by country, category and closing date</a></li>
+            <li><Link href="/tender/saved" className="inline-flex min-h-11 items-center gap-3 underline underline-offset-4"><FileSearch size={17} aria-hidden="true"/>Shortlist and compare the recorded details</Link></li>
+            <li><Link href="/tender/assistant" className="inline-flex min-h-11 items-center gap-3 underline underline-offset-4"><ClipboardCheck size={17} aria-hidden="true"/>
+            {t("eligibility")}
+            </Link></li>
+            <li><a href="#readiness" className="inline-flex min-h-11 items-center gap-3 underline underline-offset-4"><ShieldCheck size={17} aria-hidden="true"/>Review documents and submit on the official portal</a></li>
+          </ol>
+        </aside>
       </div>
     </section>
     {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats} view="status"/>:null}
@@ -121,45 +137,56 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
         <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} ${t("results")}` : "Source-backed catalog"}</span>
       </div>
-      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
-          <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
+      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" className="grid min-w-0 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
+          <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("country")}
-          <select name="country" defaultValue={filters.country} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
-            <option value="">{audience.country?`${t("inCountry")}: ${countryLabel(audience.country,language)} (auto)`:t("allCountries")}</option>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("country")}
+          <select name="country" defaultValue={filters.country} className="gth-input mt-2 min-w-0">
+            <option value="">{filters.scope==="world"?"All countries":audience.country?`${t("inCountry")}: ${countryLabel(audience.country,language)} (auto)`:t("allCountries")}</option>
             {countries.map(c=><option key={c} value={c}>{countryLabel(c,language)}</option>)}
           </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
-          <select name="scope" defaultValue={filters.scope} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
+          <select name="scope" defaultValue={filters.scope} className="gth-input mt-2 min-w-0">
             <option value="local">{t("localScope")}</option><option value="world">{t("worldScope")}</option>
           </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("language")}
-          <select name="lang" defaultValue={language} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("language")}
+          <select name="lang" defaultValue={language} className="gth-input mt-2 min-w-0">
             {LANG_OPTIONS.map(l=><option value={l.code} key={l.code}>{l.label}</option>)}
           </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("sector")}
-          <select name="sector" defaultValue={filters.sector} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm capitalize text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("sector")}
+          <select name="sector" defaultValue={filters.sector} className="gth-input mt-2 min-w-0">
             <option value="">{t("allSectors")}</option>
             {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
           </select>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
-          <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]"/>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
+          <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="gth-input mt-2 min-w-0"/>
         </label>
-        <label className="block text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
-          <select name="sort" defaultValue={filters.sort??"deadline"} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 text-sm text-[var(--text)]">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
+          <select name="sort" defaultValue={filters.sort??"deadline"} className="gth-input mt-2 min-w-0">
             <option value="deadline">{language==="hi"?"पहले जल्दी बंद होने वाले":"Closing soonest"}</option>
             <option value="newest">{language==="hi"?"पहले नए जोड़े गए":"Recently added"}</option>
           </select>
         </label>
-        <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">Deadline window
+          <select name="closingWithin" defaultValue={filters.closingWithin??""} className="gth-input mt-2 min-w-0">
+            <option value="">Any upcoming deadline</option><option value="7">Closing in the next 7 days</option>
+          </select>
+        </label>
+        <button type="submit" className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
           <Search size={17} aria-hidden="true"/> {t("search")}
         </button>
+        <Link href={tenderFilterHref({q:"",country:homeCountry,sector:"",scope:filters.scope},language)} className="gth-btn inline-flex items-center justify-center">{t("clear")}</Link>
       </form>
+      <TenderWorkspaceToolbar notices={notices} searchHref={tenderFilterHref(searchFilters,language)} searchLabel={[filters.q||"All notices",localCountry||(filters.scope==="world"?"Worldwide":"Choose country"),filters.sector,filters.closingWithin?"Closing in 7 days":""].filter(Boolean).join(" · ")}/>
+      {filters.q||filters.sector||filters.closingBefore||filters.closingWithin ? <nav aria-label="Active tender filters" className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-xs text-[var(--text-soft)]">Active filters:</span>
+        {(["q","sector","closingBefore","closingWithin"] as const).map(key => filters[key] ? <Link key={key} href={tenderFilterHref({...searchFilters,[key]:undefined},language)} aria-label={"Remove " + key + " filter"} className="gth-btn inline-flex items-center justify-center gap-2">{key === "closingWithin" ? "Closing in 7 days" : filters[key]} ×</Link> : null)}
+      </nav> : null}
       {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats} view="categories"/>:null}
       {homeCountry==="IN" && filters.scope!=="world" && (
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
@@ -184,9 +211,9 @@ export default async function TenderPage({searchParams}: Props) {
             {notices.map(tender=><TenderMarketCard key={tender.id} tender={tender} language={language}/>)}
           </div>
           <nav aria-label="Tender results pages" className="mt-8 flex items-center justify-between gap-4">
-            {filters.page>1?<Link href={filterHref(filters,filters.page-1,language)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">{t("previous")}</Link>:<span/>}
+            {filters.page>1?<Link href={filterHref(searchFilters,filters.page-1,language)} className="gth-btn inline-flex items-center justify-center">{t("previous")}</Link>:<span/>}
             <span className="text-sm text-[var(--text-soft)]">{t("page")} {filters.page} / {pageCount}</span>
-            {filters.page<pageCount?<Link href={filterHref(filters,filters.page+1,language)} className="min-h-11 rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-semibold">{t("next")}</Link>:<span/>}
+            {filters.page<pageCount?<Link href={filterHref(searchFilters,filters.page+1,language)} className="gth-btn inline-flex items-center justify-center">{t("next")}</Link>:<span/>}
           </nav>
         </>
       ) : <div role="status" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
@@ -222,9 +249,9 @@ export default async function TenderPage({searchParams}: Props) {
           {t("indiaInfo")}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link href="/tender?country=IN" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold">View India catalog <ArrowRight size={16}/></Link>
-          <a href="https://eprocure.gov.in/eprocure/app" target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">CPPP official tenders <ArrowUpRight size={16}/></a>
-          <a href="https://gem.gov.in" target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">GeM official bids <ArrowUpRight size={16}/></a>
+          <Link href="/tender?country=IN" className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center">View India catalog <ArrowRight size={16}/></Link>
+          <a href="https://eprocure.gov.in/eprocure/app" target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex items-center gap-2 justify-center">CPPP official tenders <ArrowUpRight size={16}/></a>
+          <a href="https://gem.gov.in" target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex items-center gap-2 justify-center">GeM official bids <ArrowUpRight size={16}/></a>
         </div>
       </div>
     </section>
@@ -239,9 +266,9 @@ export default async function TenderPage({searchParams}: Props) {
       </div>
     </section>
     <nav aria-label="Other GTH PRO pillars" className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pb-12 sm:px-6">
-      <Link href="/mega-aggregator" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm"><Globe2 size={16}/> Ecosystem</Link>
-      <Link href="/travel" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm"><Plane size={16}/> Travel</Link>
-      <Link href="/real-estate" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm"><Building2 size={16}/> Real Estate</Link>
+      <Link href="/mega-aggregator" className="gth-btn inline-flex items-center gap-2 justify-center"><Globe2 size={16}/> Ecosystem</Link>
+      <Link href="/travel" className="gth-btn inline-flex items-center gap-2 justify-center"><Plane size={16}/> Travel</Link>
+      <Link href="/real-estate" className="gth-btn inline-flex items-center gap-2 justify-center"><Building2 size={16}/> Real Estate</Link>
     </nav>
   </main>;
 }

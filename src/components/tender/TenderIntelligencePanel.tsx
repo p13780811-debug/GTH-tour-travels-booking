@@ -1,10 +1,10 @@
 "use client";
 
 import {useMemo,useState} from "react";
-import {buildTenderDeadlineCalendar} from "@/lib/tender/calendar";
+import {TenderDeadlineDownload} from "./TenderDiscoveryActions";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BadgeCheck, BookCheck, BriefcaseBusiness, CalendarClock,
+  ArrowRight, ArrowUpRight, BadgeCheck, BookCheck, BriefcaseBusiness,
   CheckCircle2, ClipboardCheck, FileCheck2, FileSearch, FileUp,
   HelpCircle, Layers3, ShieldAlert
 } from "lucide-react";
@@ -79,7 +79,7 @@ export default function TenderIntelligencePanel({notice,sourceUrl,language="en",
     return <div key={id} className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
       <label className="flex cursor-pointer items-start gap-3">
         <input type="checkbox" checked={Boolean(reviewed[id])} onChange={e=>setReviewed(s=>({...s,[id]:e.target.checked}))}
-          className="mt-1 size-4 shrink-0 accent-amber-600" aria-label={t.reviewed+": "+task.title}/>
+          className="mt-1 size-4 shrink-0 accent-[var(--gold)]" aria-label={t.reviewed+": "+task.title}/>
         <span className="min-w-0">
           <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
             {task.title}
@@ -98,22 +98,6 @@ export default function TenderIntelligencePanel({notice,sourceUrl,language="en",
         </label>
       </div>:null}
     </div>;
-  }
-  function saveDeadlineReminder(){
-    const ics=buildTenderDeadlineCalendar({
-      id:tenderId,title:notice.title,deadline_at:notice.deadline_at,
-      source_name:notice.source_name,source_url:sourceUrl??""
-    });
-    if(!ics)return;
-    const file=new Blob([ics],{type:"text/calendar;charset=utf-8"});
-    const objectUrl=URL.createObjectURL(file);
-    const anchor=document.createElement("a");
-    anchor.href=objectUrl;
-    anchor.download="gth-tender-"+tenderId.replace(/[^a-z0-9-]/gi,"").slice(0,50)+"-deadline.ics";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(objectUrl);
   }
   function stage(title:string,items:ReviewStage[]){
     return <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
@@ -174,16 +158,13 @@ export default function TenderIntelligencePanel({notice,sourceUrl,language="en",
     {stage(t.attendance,intelligence.attendance)}
     {stage(t.checks,intelligence.bidSteps)}
     <div className="flex flex-wrap gap-3">
-      {intelligence.noticeStatus==="accepting-notices"?<button type="button" onClick={saveDeadlineReminder}
-        className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">
-        <CalendarClock size={17} aria-hidden="true"/> Save deadline reminder (.ics)
-      </button>:null}
+      {intelligence.noticeStatus==="accepting-notices"?<TenderDeadlineDownload tender={{id:tenderId,title:notice.title,deadline_at:notice.deadline_at,source_name:notice.source_name,source_url:sourceUrl??""}}/>:null}
       <Link href={"/tender/assistant?tenderId="+encodeURIComponent(tenderId)}
-        className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
+        className="gth-btn gth-btn-gold inline-flex items-center gap-2 justify-center">
         <BookCheck size={17} aria-hidden="true"/>{t.launch} <ArrowRight size={16} aria-hidden="true"/>
       </Link>
       {sourceUrl?<a href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow"
-        className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">
+        className="gth-btn inline-flex items-center gap-2 justify-center">
         <FileSearch size={17} aria-hidden="true"/>{t.source}<ArrowUpRight size={16} aria-hidden="true"/>
       </a>:null}
     </div>
