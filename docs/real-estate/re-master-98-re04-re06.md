@@ -4,11 +4,19 @@ Date: 2026-10-20. Canonical inventory: https://github.com/p13780811-debug/GTH-to
 ## Release protection
 This is one existing GTH PRO ecosystem, not a new property website. The scoped feature branch `feat/re-master-98-rights-safe-claims-20261020` is held back from Git deployment in `vercel.json`. Do **not** independently merge or deploy; stage with open PR #97 and the parallel SEO owner for a final consolidated one-shot release. No production schema or stored media was changed by this PR. Main GTH global CSS, Navbar, footer, pricing, listing approval, CRM, and the published public photos are untouched.
 
+## Correct production data model (read-only verification)
+Verified 2026-10-20 against production Supabase `dqprqjmhxjnrllczqyhz`:
+- `public.properties` — **12,587 registry/discovery records** in the base table, of which **11,747** have `source_type='registry'`. Remaining records are not automatically active sale/rent units.
+- `public.property_inventory` — **0 unit inventory records** in this observation; this is a separate optional authorized marketplace table linked to `properties.id` via `project_id`. Zero inventory rows do **not** mean that the `properties` table is empty or corrupted.
+- `public.property_leads` — **0 buyer-enquiry rows**, separate from base registry and inventory. `gth_capture_property_lead` writes a `property_leads` row and links its `legacy_lead_id` to `public.leads` in the same database transaction.
+- `public.leads` — **0 legacy/admin CRM rows** in this observation; it also has optional `inventory_id` referencing `property_inventory.id`.
+These are **four different measures**. Do not infer live sale/rent availability, lead conversions or site health simply from record counts. No code/data migration or production mutation was performed for these counts. RE-03 (#101) remains under the parallel chat.
+
 ## RE-04 / Issue #102 — technical audit; dependent / blocked
 - Existing property sitemap: `src/app/sitemap.ts`, `src/app/sitemap-index.xml/route.ts` and `src/app/seo-sitemaps/[kind]/[page]/route.ts`; `src/lib/seo/large-sitemaps.ts` contains the `properties` config and 1,000-URL shards.
 - Property metadata and canonical: `src/app/real-estate/[slug]/page.tsx` and `src/lib/real-estate/property-seo.ts`. Canonical uses the configured public-origin helper and detail-page robots gate uses `isIndexableProperty` + `isPublicLaunch`.
 - Current eligibility requires a RERA ID, valid slug/title and an official MahaRERA HTTPS URL. **It does not require a useful original project description, current authorized media, published unit inventory, or independent verification.** The title template says “Floor Plans, Price” even where none is available; this needs an evidence-backed review by the separate SEO work owner rather than a conflicting patch.
-- Master creation audit: 12,587 properties, only 33 description strings >=150 chars, 0 nonempty galleries. This is not evidence of indexing or Google clicks.
+- Master creation audit: 12,587 base properties, only 33 description strings >=150 chars, 0 nonempty galleries. This is not evidence of indexing or Google clicks.
 - **BLOCKER**: #99 Search Console domain property exports for 28d/90d, URL inspection and canonical/index coverage, and #101 data-provenance baseline are being handled in another chat. No 100-URL SEO crawl, genuine GSC click/impression baseline or postrelease indexing verification has been performed here. Keep #102 open. Give the SEO owner the risks above and ask them to append verified fixes/evidence to #102, not duplicate their PR.
 
 ## RE-05 / Issue #103 — rights-safe schema staged
