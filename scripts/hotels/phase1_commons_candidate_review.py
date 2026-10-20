@@ -62,7 +62,10 @@ class Wikimedia:
                     raw=resp.read(3_000_001)
                     if len(raw)>3_000_000:raise ValueError("large response")
                     result=json.loads(raw)
-                    if isinstance(result,dict) and "error" in result:raise ValueError("Commons API error")
+                    if isinstance(result,dict) and "error" in result:
+                        err=result["error"]
+                        code=str(err.get("code","unknown"))[:75] if isinstance(err,dict) else "unknown"
+                        raise ValueError("CommonsAPI:"+code)
                     return result
             except HTTPError as err:
                 if err.code not in (429,502,503,504) or attempt==2:raise
@@ -148,12 +151,19 @@ def file_evidence(title,row,wiki,*,check_image=True):
                     "source":"Wikimedia Commons public file metadata"}
     return None
 
-def review_all(snapshot,wiki,*,limit=None,check_images=True,sleeper=time.sleep):
+def review_all(snapshot,wiki,*,limit=None,check_images=True,sleeper=time.sleep,only_ids=None):
     records=snapshot["records"]
     if len(records)!=166 or len({r["id"] for r in records})!=166:
         raise ValueError("Only the frozen 166 OSM Phase-1 records are authorized")
     if any(not ID.fullmatch(r["id"]) or r["city"] not in ("Digha","Puri","Mumbai") for r in records):
         raise ValueError("Unexpected OSM identity or destination")
+    if only_ids is not None:
+        if not only_ids or len(only_ids)!=len(set(only_ids)):
+            raise ValueError("Invalid empty or duplicate retry identities")
+        found={r["id"] for r in records}
+        if not set(only_ids).issubset(found):
+            raise ValueError("Retry includes OSM ID outside frozen 166")
+        records=[r for r in records if r["id"] in only_ids]
     output=[];errors=[]
     for row in records[:limit]:
         entry={"id":row["id"],"name":row["name"],"city":row["city"],
@@ -170,7 +180,8 @@ def review_all(snapshot,wiki,*,limit=None,check_images=True,sleeper=time.sleep):
             else:entry["source_status"]="NO_IDENTITY_MATCHING_COMMONS_FILE_FOUND"
         except (HTTPError,URLError,ValueError,TimeoutError) as exc:
             entry["source_status"]="SOURCE_LOOKUP_UNAVAILABLE"
-            errors.append({"id":row["id"],"reason":type(exc).__name__})
+            errors.append({"id":row["id"],"reason":type(exc).__name__,
+                           "api_code":str(exc)[:100] if isinstance(exc,ValueError) else None})
         output.append(entry)
         sleeper(0.35)
     return {"phase":1,"source":"Wikimedia Commons licensed media candidates", "destination_locked":True,
@@ -184,10 +195,12 @@ def main():
     p.add_argument("--input",type=Path,default=Path("docs/hotels/phase1-existing-osm-catalog-snapshot.json"))
     p.add_argument("--output",type=Path,default=Path("docs/hotels/phase1_commons_photo_candidates_166.json"))
     p.add_argument("--max-hotels",type=int,default=166)
+    p.add_argument("--only-ids",default="",help="Comma-separated strict subset of the frozen 166 OSM hotel IDs")
     args=p.parse_args()
     if not 1<=args.max_hotels<=166:p.error("1<=max-hotels<=166")
     data=json.loads(args.input.read_text(encoding="utf8"))
-    result=review_all(data,Wikimedia(),limit=args.max_hotels)
+    selected=[x.strip() for x in args.only_ids.split(",") if x.strip()] if args.only_ids else None
+    result=review_all(data,Wikimedia(),limit=args.max_hotels,only_ids=selected)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     print(json.dumps({k:v for k,v in result.items() if k!="records"}))
