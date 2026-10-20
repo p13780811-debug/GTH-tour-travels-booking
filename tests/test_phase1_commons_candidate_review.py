@@ -23,6 +23,9 @@ class WikimediaPhotoReviewTests(unittest.TestCase):
         self.assertTrue(m.strong_name_match("Mayfair Heritage","File:Mayfair Heritage Puri entrance.jpg"))
         self.assertFalse(m.strong_name_match("Mayfair Heritage","File:Heritage Hotel Puri.jpg"))
         self.assertFalse(m.strong_name_match("Sea View","File:Beach View Puri.jpg"))
+        self.assertFalse(m.strong_name_match("Sharada","File:Dr. Sharada Kabir in Bombay.jpg","Mumbai"))
+        self.assertFalse(m.strong_name_match("seaview","File:SeaView.JPG","Mumbai"))
+        self.assertTrue(m.strong_name_match("Sea Green Hotel","File:Hotel Sea Green Marine Drive Mumbai.jpg","Mumbai"))
     def test_nonderivative_osm_coords(self):
         self.assertLess(m.geo_distance_m((19.8,85.8),(19.8001,85.8001)),20)
         self.assertGreater(m.geo_distance_m((19.8,85.8),(19.9,85.9)),1000)
