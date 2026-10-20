@@ -30,7 +30,7 @@ export default function ClaimProjectPage() {
   useEffect(() => {
     let active = true;
     token().then(async access => {
-      const rows = await readApiJson<Claim[]>(await fetch("/api/real-estate/project-claims", {
+      const rows = await readApiJson<Claim[]>(await fetch("/api/property-claims", {
         headers: { Authorization: `Bearer ${access}` }, cache: "no-store",
       }));
       if (active) setClaims(Array.isArray(rows) ? rows : []);
@@ -44,7 +44,7 @@ export default function ClaimProjectPage() {
     setError(""); setNotice(""); setBusy(true);
     try {
       const access = await token();
-      const claim = await readApiJson<Claim>(await fetch("/api/real-estate/project-claims", {
+      const claim = await readApiJson<Claim>(await fetch("/api/property-claims", {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${access}` },
         body: JSON.stringify({
           ...values, authority_attested: values.authority_attested === "on",
@@ -70,7 +70,7 @@ export default function ClaimProjectPage() {
       const access = await token();
       body.set("claim_id", current.id); body.set("file", file);
       body.set("rights_attested", body.get("rights_attested") === "on" ? "true" : "false");
-      const result = await readApiJson<MediaReceipt>(await fetch("/api/real-estate/claim-media", {
+      const result = await readApiJson<MediaReceipt>(await fetch("/api/property-claims/media", {
         method: "POST", headers: { Authorization: `Bearer ${access}` }, body,
       }));
       setUploads(existing => [...existing, result]);
