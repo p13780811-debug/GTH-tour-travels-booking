@@ -462,7 +462,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
               className="gth-btn flex w-full items-center justify-between gap-4">
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{row.tender_title||"Untitled tender"}</span>
-                <span className="mt-1 block text-xs text-[var(--text-soft)]">
+                <span className="mt-1 block text-xs">
                   {row.official_notice_changed?"Source changed — review needed · ":
                     row.readiness?.expired?"Saved deadline expired · ":
                     row.readiness?.soon?"Closing within 72h · ":""}
@@ -471,7 +471,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
                     "Private preparation · "+(row.readiness?.blockers.length??0)+" checks need review"}
                 </span>
               </span>
-              <span className="shrink-0 text-xs font-semibold text-[var(--text-soft)]">Resume →</span>
+              <span className="shrink-0 text-xs">Resume →</span>
             </button>)}
           </div>}
         </section>

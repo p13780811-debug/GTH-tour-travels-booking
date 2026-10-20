@@ -85,7 +85,7 @@ export function TenderMarketOverview({
         </div>
         <Link className="gth-btn inline-flex items-center gap-2 justify-center"
           href={tenderFilterHref({...base,sector:""},language)}>
-          {m("all")} <span className="tabular-nums text-[var(--text-soft)]">{allCount}</span>
+          {m("all")} <span className="tabular-nums">{allCount}</span>
         </Link>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -109,8 +109,8 @@ export function TenderMarketOverview({
       </div>
       <Link href={tenderFilterHref({...base,closingWithin:"7"},language)}
         className="gth-btn mt-5 flex flex-wrap items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-3 text-sm font-semibold"><Timer size={19} className="text-[var(--gold)]" aria-hidden="true"/>{m("soon")}</span>
-        <span className="inline-flex items-center gap-2 text-xs text-[var(--text-soft)]">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
+        <span className="inline-flex items-center gap-3"><Timer size={19} aria-hidden="true"/>{m("soon")}</span>
+        <span className="inline-flex items-center gap-2 text-xs">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
       </Link>
     </section>:null}
   </>;
