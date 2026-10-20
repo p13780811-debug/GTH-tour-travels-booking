@@ -107,12 +107,12 @@ test("RE-06: reviewer RPC only gets validated decision, never publication flag",
  });
  const id="00000000-0000-0000-0000-000000000001";
  const response=await route.POST(makeRequest("/api/admin/project-claims",{
-  id,type:"media",decision:"approved",publish:true,verified:true,
+  id,type:"media",decision:"approved",notes:"Reviewer checked supplier authorization and project identity",publish:true,verified:true,
  }));
  assert.equal(response.status,200);
  assert.deepEqual(call,{
   name:"review_property_claim_media",
-  payload:{p_id:id,p_decision:"approved",p_notes:""},
+  payload:{p_id:id,p_decision:"approved",p_notes:"Reviewer checked supplier authorization and project identity"},
  });
 });
 test("RE-06: old public upload never used for new project-claim evidence",()=>{
@@ -209,4 +209,23 @@ test("RE-06: failed metadata insert cleans only newly created private orphan",as
  assert.equal(uploaded.length,1);
  assert.deepEqual(removed,uploaded);
  assert.match(uploaded[0],new RegExp("^claims/"+user.id+"/"+claimId+"/[a-f0-9-]{36}\\.webp$"));
+});
+
+test("RE-06: moderator cannot approve unverified rights with blank review notes",async()=>{
+ let called=false;
+ const route=load("src/app/api/admin/project-claims/route.ts",{
+  "@/lib/security/auth":{authenticatedStorage:async()=>({
+   user:{id:"reviewer",app_metadata:{role:"admin"}},
+   client:{rpc(){called=true;throw new Error("Must not approve without evidence")}},
+  })},
+  "@/lib/security/request":request,"@/lib/security/validators":validators,
+ });
+ const response=await route.POST(makeRequest("/api/admin/project-claims",{
+  id:"00000000-0000-0000-0000-000000000001",type:"media",decision:"approved",notes:"approved",
+ }));
+ assert.equal(response.status,400);
+ assert.equal(called,false);
+ const sql=fs.readFileSync("supabase/migrations/20261020091500_re_master_98_project_media_claims.sql","utf8");
+ assert.match(sql,/Documented independent claim review evidence required/);
+ assert.match(sql,/Documented independent media review evidence required/);
 });
