@@ -131,3 +131,50 @@ preserved identities with `readiness.structurally_valid` and separately
 baseline**, not proof that online enrichment has succeeded. An isolated
 GitHub Actions job may produce a later more enriched artifact, without
 merging PR #93, affecting PR #121 or changing the live DB.
+
+## Hotel photographs: actual sourcing queue and publication path (2026-10-20)
+
+Read-only audit of the 166 exact OSM records: 38 have an `hotel_catalog.website`
+source tag and 128 do not. **Those 38 URLs are *unverified leads*, not
+authorization to copy images or proof that the domain is controlled by the
+current owner.** No row had an OSM `image_url` and the connected
+`hotel_catalog_media` / `hotel_partner_public_photos` tables currently
+contain zero approved images.
+
+The 166-row research queue lives at
+`docs/hotels/phase1_photo_sourcing_queue_166.json`. Every row preserves
+exact OSM ID/name/locality, and includes the source website lead (if any)
+plus a documented `NO_APPROVED_PROPERTY_PHOTOS` status. **No generic
+regional photograph may be substituted and presented as that hotel.**
+
+Priority order for licensed photo collection:
+1. Exact OSM `image`, `wikimedia_commons`, and exact
+   identity-matched Wikidata Commons media; validate rights, author,
+   source, file URL, property identity and image subject. Commons
+   files have individual reuse licenses and require appropriate credit.
+2. The 38 OSM website candidates: independently confirm business identity
+   and ask the property owner/management for commercial listing permission,
+   with 3–6 original exterior, bedroom, bathroom and common-area photos.
+   **Do not scrape/copy published website images without evidence of rights.**
+3. The remaining 128: try exact hotel OSM/Wikidata media tags, official
+   tourism registry image access only if license permits commercial reuse,
+   and owner invitations via the existing
+   `/hotels/list-your-property` authenticated workflow. Approved
+   photos are reviewed by an admin via `/admin/hotels`.
+4. If unavailable, keep `gallery=[]` and use a neutral `Photo not
+   available` state or **separately labelled** freely licensed
+   destination artwork. Never label generic destinations as hotel exteriors.
+
+Image acceptance: exact property identity, valid JPEG/PNG/WebP, HEAD/GET
+verification, suitable license or owner consent, photographer attribution,
+image rights and a moderation decision. Frontend publication must not happen
+solely because a crawler found an accessible JPG URL. The website's
+existing owner photo intake re-encodes uploaded images privately; approved
+reviewed media are published only through authorized admin routes.
+
+Hotel *ratings, amenities, current price and room availability* require
+their own independent, property-specific evidence. Zero payment credentials
+are needed for OpenStreetMap/Wikimedia/owner submissions, but legitimate
+licensed hotel photos cannot be guaranteed for every hotel at no cost.
+This PR only stages the data source/research output and does not merge,
+deploy, insert Supabase rows or modify the active website importer.
