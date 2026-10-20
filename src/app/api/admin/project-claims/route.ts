@@ -33,6 +33,8 @@ export async function POST(req: Request) {
       !["approved", "rejected", "taken_down"].includes(decision || "") ||
       (type === "claim" && decision === "taken_down"))
       throw new RequestError("Invalid review request", 400);
+    if ((decision === "approved" || decision === "taken_down") && (notes || "").trim().length < 20)
+      throw new RequestError("Document the independent verification or takedown reason (20 characters minimum)", 400);
     const name = type === "claim" ? "review_property_project_claim" : "review_property_claim_media";
     const { error } = await client.rpc(name, { p_id: id, p_decision: decision, p_notes: notes });
     if (error) throw new RequestError("Independent review denied or record unavailable", 409);
