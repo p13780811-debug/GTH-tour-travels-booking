@@ -25,5 +25,25 @@ try {
  const photos=hotel?.hotelImages ?? hotel?.images ?? [];
  console.log("[Nuitee QA] detail: idMatched="+Boolean(hotel?.id===id)+" name="+Boolean(hotel?.name)+" address="+Boolean(hotel?.address)+" images="+(Array.isArray(photos)?photos.length:0));
  if(!hotel||hotel.id!==id){console.error("[Nuitee QA] detail ID mismatch");process.exit(1)}
- console.log("[Nuitee QA] search and details passed; rates/prebook require valid stay offer test.");
+ const checkin="2026-11-20",checkout="2026-11-21";
+ const rateResult=await fetch("https://api.liteapi.travel/v3.0/hotels/rates",{
+  method:"POST",headers:{"X-API-Key":key,accept:"application/json","Content-Type":"application/json"},
+  body:JSON.stringify({hotelIds:named.map(h=>h.id),checkin,checkout,currency:"USD",guestNationality:"IN",occupancies:[{adults:2}],maxRatesPerHotel:3,timeout:10}),
+  signal:AbortSignal.timeout(20000)
+ });
+ if(rateResult.status===204){console.error("[Nuitee QA] rates returned 204 no availability");process.exit(1)}
+ if(!rateResult.ok){console.error("[Nuitee QA] rates supplier HTTP "+rateResult.status);process.exit(1)}
+ const rateData=await rateResult.json();
+ const offer=(Array.isArray(rateData?.data)?rateData.data:[]).flatMap(h=>Array.isArray(h?.roomTypes)?h.roomTypes:[]).find(x=>typeof x?.offerId==="string")?.offerId;
+ console.log("[Nuitee QA] rate search: hotels="+(Array.isArray(rateData?.data)?rateData.data.length:0)+" offerAvailable="+Boolean(offer));
+ if(!offer){console.error("[Nuitee QA] no prebookable offer returned");process.exit(1)}
+ const pre=await fetch("https://book.liteapi.travel/v3.0/rates/prebook",{
+ method:"POST",headers:{"X-API-Key":key,accept:"application/json","Content-Type":"application/json"},
+ body:JSON.stringify({offerId:offer,usePaymentSdk:false}),signal:AbortSignal.timeout(25000)
+ });
+ if(!pre.ok){console.error("[Nuitee QA] prebook supplier HTTP "+pre.status);process.exit(1)}
+ const preData=await pre.json();
+ console.log("[Nuitee QA] prebook: sessionCreated="+Boolean(preData?.data?.prebookId)+" noReservationRequested=true");
+ if(!preData?.data?.prebookId)process.exit(1);
+ console.log("[Nuitee QA] PASS listing/details/rates/prebook (sandbox only, no booking charged)");
 } catch(e){console.error("[Nuitee QA] request failed: "+(e?.name==="TimeoutError"?"timeout":"supplier or network error"));process.exit(1)}
