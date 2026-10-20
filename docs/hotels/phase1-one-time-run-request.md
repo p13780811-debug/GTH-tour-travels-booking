@@ -11,3 +11,6 @@ This branch deliberately invokes the isolated GitHub Actions hotel enrichment QA
 
 ## CI retry
 Original run found a pre-existing Python escaped-newline syntax defect in the Phase 1 Overpass module. Fixed in commit 8678453ae7f775a5beba353c2698e6dd81474a41; rerun complete offline QA before network enrichment. No deployment or database writes.
+
+## Commons exact hotel media candidate research
+A one-time 166-hotel Wikimedia Commons review is requested. Source API queries only return potential file matches; any file must pass license/author/image checks and is **NOT** automatically considered a photo of that hotel. Never write to Supabase; no production deployment; all candidate images await separate hotel identity and commercial rights audit.\n
