@@ -42,14 +42,14 @@ export default async function AttractionsProgress(){
      </div>
     </section>
     <section className="mt-9">
-     <h2 className="text-xl font-semibold">Latest completed regional source runs</h2>
+     <h2 className="text-xl font-semibold">Latest completed source runs</h2>
      {progress.runs.length===0?<p className="mt-3 text-sm text-[var(--text-soft)]">The historical India import happened before sync receipts were enabled. New successful worldwide runs will appear here.</p>:
      <div className="mt-4 grid gap-3 sm:grid-cols-2">
       {progress.runs.map(item=><article key={item.run_id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
        <p className="text-sm font-semibold">{item.country_name} · {item.country_code}</p>
        <p className="mt-1 break-all text-xs text-[var(--text-soft)]">{item.source_region}</p>
        <p className="mt-2 text-sm">{item.accepted.toLocaleString("en-IN")} mapped source IDs submitted in this run</p>
-       <p className="mt-1 text-xs font-semibold">{item.complete?"Regional extract fully scanned":"Partial region · next source-page resumes after "+item.next_offset.toLocaleString("en-IN")+" distinct place IDs"}</p>
+       <p className="mt-1 text-xs font-semibold">{"Completed source sync receipt"}</p>
        <p className="mt-1 text-xs text-[var(--text-soft)]">Run completed {new Date(item.completed_at).toLocaleString("en-IN")}</p>
       </article>)}
      </div>}
