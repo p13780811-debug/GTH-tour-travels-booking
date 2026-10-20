@@ -72,7 +72,7 @@ begin
  if not public.is_property_media_public(pub) then
    raise exception 'PUBLICATION_GATE_FAILED';
  end if;
- if (select count(*) from public.property_published_media where status='published')<>1 then
+ if (select count(*) from public.property_published_media)<>1 then
    raise exception 'PUBLICATION_COUNT_INVALID';
  end if;
  begin
@@ -107,7 +107,7 @@ begin
  if public.is_property_media_public(pub) then
    raise exception 'TAKEN_DOWN_MEDIA_STILL_PUBLIC';
  end if;
- if exists(select 1 from public.property_published_media where status='published') then
+ if exists(select 1 from public.property_published_media) then
    raise exception 'TAKEDOWN_DID_NOT_CLOSE_PUBLICATION';
  end if;
 end $$;
