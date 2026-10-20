@@ -10,8 +10,8 @@ const xml=(body:string)=>'<?xml version="1.0" encoding="UTF-8"?>\n'+
  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '+
  'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'+body+'</urlset>';
 /** SEO-owner safe: independent shard endpoint, not a replacement for the existing sitemap-index. */
-export async function GET(_req:Request,{params}:{params:Promise<{page:string}>}){
- const {page}=await params;
+export async function GET(req:Request){
+ const page=new URL(req.url).searchParams.get("page")||"0";
  if(!isPublicLaunch()||!/^(0|[1-9][0-9]{0,2})$/.test(page))
   return new Response("Not found",{status:404,headers:{"Cache-Control":"no-store"}});
  const offset=Number(page)*500;

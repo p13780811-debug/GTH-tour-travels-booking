@@ -50,7 +50,7 @@ test("Registry records retain truthful placeholders until approved project media
 });
 
 test("Only eligible registered project pages and independently published images enter image sitemap",()=>{
- const sitemap=read("src/app/seo-sitemaps/property-images/[page].xml/route.ts");
+ const sitemap=read("src/app/seo-sitemaps/property-images.xml/route.ts");
  assert.match(sitemap,/isPublicLaunch/);
  assert.match(sitemap,/property_published_media/);
  assert.match(sitemap,/eq\("status","published"\)/);
