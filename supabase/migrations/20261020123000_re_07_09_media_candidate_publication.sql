@@ -59,14 +59,28 @@ alter table public.property_published_media enable row level security;
 revoke all on public.property_published_media from public,anon,authenticated;
 grant select(id,project_id,media_type,attribution,is_primary,published_at) on public.property_published_media to anon,authenticated;
 grant all on public.property_published_media to service_role;
+-- Definer predicate is required because private claim evidence is not SELECTable by anon.
+-- Never grant direct public access to the private claim/media tables.
+create or replace function public.is_property_media_public(p_id uuid)
+returns boolean language sql stable security definer set search_path='' as $
+ select exists (
+   select 1 from public.property_published_media p
+   join public.property_claim_media m on m.id=p.claim_media_id
+   join public.property_project_claims c on c.id=m.claim_id
+   join public.properties project on project.id=p.project_id
+   where p.id=p_id and p.status='published'
+     and m.status='approved' and c.status='approved'
+     and m.project_id=p.project_id and c.project_id=p.project_id
+     and project.rera_id=c.rera_reference and project.source_type='registry'
+     and m.reviewed_by is not null and m.reviewed_at is not null
+     and m.reviewed_by<>m.uploader_id
+ );
+$;
+revoke all on function public.is_property_media_public(uuid) from public;
+grant execute on function public.is_property_media_public(uuid) to anon,authenticated,service_role;
 create policy "public may see independently approved media metadata" on public.property_published_media
- for select to anon,authenticated using (status='published'
-  and exists (
-    select 1 from public.property_claim_media m
-      join public.property_project_claims c on c.id=m.claim_id
-    where m.id=claim_media_id and m.project_id=project_id
-      and m.status='approved' and c.status='approved' and c.project_id=project_id
-  ));
+ for select to anon,authenticated
+ using (public.is_property_media_public(id));
 
 -- Only the reviewer can publish, after claim AND media were independently approved.
 create or replace function public.manage_property_media_publication(
