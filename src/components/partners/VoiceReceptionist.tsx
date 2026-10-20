@@ -1,5 +1,5 @@
 "use client"
-import { SITE_CONFIG } from "@/lib/site-config";;
+import { SITE_CONFIG } from "@/lib/site-config";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
