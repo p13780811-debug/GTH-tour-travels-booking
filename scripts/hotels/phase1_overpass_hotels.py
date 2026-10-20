@@ -97,14 +97,18 @@ def request_zone(box,endpoint):
   data=json.load(response)
  if not isinstance(data,dict) or not isinstance(data.get("elements"),list):raise ValueError("Invalid Overpass response")
  return data["elements"]
-def within_bounds(rec, bbox):\n s,w,n,e=bbox\n return s <= rec["lat"] <= n and w <= rec["lon"] <= e\n\ndef export(endpoint,check_images=False,delay=2):
+def within_bounds(rec, bbox):
+ s,w,n,e=bbox
+ return s <= rec["lat"] <= n and w <= rec["lon"] <= e
+
+def export(endpoint,check_images=False,delay=2):
  records={}
  failures=[]
  for code,(city,locality,bbox) in ZONES.items():
   try:
    for el in request_zone(bbox,endpoint):
     rec=normalize(el,city,locality,check_images)
-    if rec:
+    if rec and within_bounds(rec,bbox):
      # Exact ID dedupe; zones overlap. First deterministic locality wins.
      records.setdefault(rec["id"],rec)
   except Exception as err:failures.append({"zone":code,"error":type(err).__name__})
