@@ -18,7 +18,7 @@ try {
   await page.keyboard.press("Escape");
   await drawer.waitFor({state:"hidden"});
   await toggle.click();
-  await page.getByRole("button",{name:"Close property filters"}).click({force:true});
+  await page.mouse.click(15,15); // Tap the uncovered backdrop above the 84dvh mobile sheet.
   await drawer.waitFor({state:"hidden"});
   await toggle.click();
   const handle=page.getByRole("button",{name:"Swipe down or tap to close filters"});
