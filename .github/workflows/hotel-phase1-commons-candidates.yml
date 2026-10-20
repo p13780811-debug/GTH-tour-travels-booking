@@ -1,0 +1,51 @@
+name: GTH Hotel Phase 1 Commons Photo Research
+on:
+  push:
+    branches: [gth-mumbai-thane-rera-ingestion]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gth-phase1-commons-photo-research
+  cancel-in-progress: false
+jobs:
+  research:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[phase1-commons-photo-run]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile and run isolated offline tests
+        run: |
+          python -m py_compile scripts/hotels/phase1_commons_candidate_review.py
+          python -m unittest discover -s tests -p 'test_phase1_commons_candidate_review.py' -v
+      - name: Query free Wikimedia Commons for matching licensed photo candidates
+        run: |
+          python scripts/hotels/phase1_commons_candidate_review.py --max-hotels 166 \
+            --input docs/hotels/phase1-existing-osm-catalog-snapshot.json \
+            --output docs/hotels/phase1_commons_photo_candidates_166.json
+      - name: Validate frozen 166 OSM IDs and candidate-only status
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          src=json.loads(Path("docs/hotels/phase1-existing-osm-catalog-snapshot.json").read_text())["records"]
+          d=json.loads(Path("docs/hotels/phase1_commons_photo_candidates_166.json").read_text())
+          assert d["processed"]==166 and d["approved_hotels"]==0
+          assert {r["id"]:(r["name"],r["lat"],r["lon"]) for r in src}=={r["id"]:(r["name"],r["lat"],r["lon"]) for r in d["records"]}
+          assert all(not r["approved_photos"] for r in d["records"])
+          print({"processed":d["processed"],"candidate_hotels":d["candidate_hotels"]})
+          PY
+      - name: Upload isolated photo-source review JSON, never DB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-commons-hotel-photo-review-166
+          path: docs/hotels/phase1_commons_photo_candidates_166.json
+          retention-days: 14
+          if-no-files-found: warn
