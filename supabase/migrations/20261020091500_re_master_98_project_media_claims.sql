@@ -190,6 +190,9 @@ begin
      or p_decision not in ('approved','rejected') then
     raise exception 'Not authorized';
   end if;
+  if p_decision='approved' and char_length(btrim(coalesce(p_notes,'')))<20 then
+    raise exception 'Documented independent claim review evidence required';
+  end if;
   select * into item from public.property_project_claims where id=p_id for update;
   if not found or item.status<>'pending' or item.claimant_id=auth.uid() then
     raise exception 'Claim not eligible for independent review';
@@ -211,6 +214,10 @@ begin
   if auth.uid() is null or coalesce(auth.jwt()->'app_metadata'->>'role','')<>'admin'
      or p_decision not in ('approved','rejected','taken_down') then
     raise exception 'Not authorized';
+  end if;
+  if p_decision in ('approved','taken_down')
+     and char_length(btrim(coalesce(p_notes,'')))<20 then
+    raise exception 'Documented independent media review evidence required';
   end if;
   select * into item from public.property_claim_media where id=p_id for update;
   if not found or item.uploader_id=auth.uid() or item.status not in ('pending','approved') then
