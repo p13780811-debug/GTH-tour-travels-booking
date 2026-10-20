@@ -23,7 +23,7 @@ export default function TenderLoading() {
         <p className="mt-6 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
           <ShieldCheck size={16} aria-hidden="true" /> Tender notices must be verified with their original issuing authorities before applying.
         </p>
-        <Link href="/tender/assistant" className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+        <Link href="/tender/assistant" className="gth-btn mt-5 inline-flex items-center justify-center">
           Learn how to prepare a tender
         </Link>
       </div>
