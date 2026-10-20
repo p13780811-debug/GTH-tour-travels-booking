@@ -165,6 +165,22 @@ create policy "re claim private image review downloads" on storage.objects
     )
   );
 
+-- A claimant may remove ONLY their own incomplete/unregistered upload.
+-- Approved and candidate evidence already referenced by property_claim_media cannot
+-- be removed through an ordinary Storage JWT; moderators retain the review trail.
+drop policy if exists "re claim private orphan cleanup" on storage.objects;
+create policy "re claim private orphan cleanup" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id='gth-re-claim-media'
+    and (storage.foldername(name))[1]='claims'
+    and (storage.foldername(name))[2]=(select auth.uid())::text
+    and not exists (
+      select 1 from public.property_claim_media m
+      where m.object_key=name
+    )
+  );
+
 -- Only a separate administrator can review; review does not imply publication.
 create or replace function public.review_property_project_claim(p_id uuid,p_decision text,p_notes text default null)
 returns void language plpgsql security definer set search_path='' as $$
