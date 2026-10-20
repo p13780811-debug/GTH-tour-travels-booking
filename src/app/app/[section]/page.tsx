@@ -1,3 +1,4 @@
+import AppFiltersSheet from "@/components/mobile/AppFiltersSheet";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -69,6 +70,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
      {q.destination&&<input type="hidden" name="destination" value={q.destination}/>}
      <button type="submit" className="gth-btn-gold min-h-11 rounded-xl px-4 text-xs font-semibold">Search</button>
    </form>}
+  {facets.length>0 && <AppFiltersSheet title={current.name} options={facets.map(f=>({label:f.name,href:appQueryHref(section,q,{category:f.id,page:1}),selected:q.category===f.id}))} />}
   {facets.length>0?<nav aria-label={section+" categories"} className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
     {facets.map(f=><Link key={f.id} href={appQueryHref(section,q,{category:f.id,page:1})}
      aria-current={q.category===f.id?"page":undefined}
@@ -78,7 +80,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
     </Link>)}
    </nav>:null}
   {section==="flights"?<div className="mx-4 mt-2 text-xs leading-5 text-[var(--text-soft)] sm:mx-6">
-      Fares are cached observations, not guaranteed bookable prices.
+      Flights are searched and priced by the Aviasales White Label on this page. Final availability and checkout are controlled by the ticket provider.
     </div>:null}
   {result.error?<div role="status" className="mx-4 mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm sm:mx-6">
      {result.error}. <Link href={destination} className="underline">Try again</Link>

@@ -40,7 +40,6 @@ export default function RealEstatePage() {
     const sidebar = useRef<HTMLElement>(null)
     const filterToggle = useRef<HTMLButtonElement>(null)
     const request = useRef(0)
-    const sheetStartY = useRef<number | null>(null)
 
     const load = useCallback(async (requestedPage?: number) => {
         const current = ++request.current
@@ -150,21 +149,9 @@ export default function RealEstatePage() {
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
         <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
-        {filtersOpen && <button type="button" aria-label="Dismiss mobile filters" className="fixed inset-0 z-[150] hidden bg-black/50 max-[960px]:block" onClick={() => setFiltersOpen(false)} />}
         <div className={styles.workspace}>
             <aside ref={sidebar} id="explorer-filter-panel" className={styles.sidebar} data-open={filtersOpen} aria-labelledby="explorer-filter-title">
-                <div className={styles.sidebarHeader}
-                  onTouchStart={event => { sheetStartY.current = event.touches[0]?.clientY ?? null }}
-                  onTouchEnd={event => {
-                    const start = sheetStartY.current
-                    sheetStartY.current = null
-                    const end = event.changedTouches[0]?.clientY
-                    if (start !== null && end !== undefined && end - start > 80 && window.innerWidth <= 960) {
-                      setFiltersOpen(false)
-                      filterToggle.current?.focus()
-                    }
-                  }}>
-                  <span className="hidden cursor-grab select-none text-[10px] text-[var(--text-soft)] max-[960px]:block">Swipe down to close</span><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} aria-label="Close filters"><X size={18} /></button></div>
+                <div className={styles.sidebarHeader}><h2 id="explorer-filter-title"><SlidersHorizontal size={15} />Refine your search</h2><button className={`${styles.iconButton} ${styles.sidebarClose}`} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} aria-label="Close filters"><X size={18} /></button></div>
                 <DiscoveryFilters expanded onApply={() => { clearPropertyCache(); load(1); setFiltersOpen(false) }} />
                 <SavedSearches />
                 <PartnerHandshake onOpen={() => setFiltersOpen(false)} />

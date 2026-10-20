@@ -1,7 +1,5 @@
 name: GTH Five Smart Upgrades — No Deployment
 on:
-  push:
-    branches: [feat/gth-five-smart-upgrades-20261020]
   pull_request:
     branches: [release/gth-one-shot-pending-20261020]
   workflow_dispatch:

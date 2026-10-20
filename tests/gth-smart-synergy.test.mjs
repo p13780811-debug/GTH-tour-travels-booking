@@ -46,18 +46,18 @@ test("only published and rights-cleared record media enters printable dossier",(
  assert.match(prop,/official@gthproglobal\.com/);
  assert.match(tour,/official@gthproglobal\.com/);
 });
-test("service worker never caches documents or sensitive dynamic API responses",()=>{
+test("PWA uses a network-first offline fallback without API/booking cache",()=>{
  const sw=readFileSync("public/sw.js","utf8");
- assert.match(sw,/request\.mode==="navigate"/);
- assert.match(sw,/\/_next\/static\//);
- assert.match(sw,/if\(!publicAsset\)return/);
- assert.doesNotMatch(sw,/\/api\/.*cache\.put/);
+ assert.match(sw,/caches\.open\(CACHE\)/);
+ assert.match(sw,/cache\.add\(OFFLINE\)/);
+ assert.match(sw,/event\.request\.mode !== "navigate"/);
+ assert.doesNotMatch(sw,/cache\.put|cache\.addAll|localStorage|indexedDB/);
 });
 test("mobile bottom-sheet and nav retain reduced-motion and keyboard support",()=>{
- const sheet=readFileSync("src/app/real-estate/page.tsx","utf8");
- const nav=readFileSync("src/components/mobile/BottomNav.tsx","utf8");
+ const sheet=readFileSync("src/components/mobile/AppFiltersSheet.tsx","utf8");
+ const nav=readFileSync("src/components/MobileNav.tsx","utf8");
  assert.match(sheet,/onTouchEnd=/);
- assert.match(sheet,/Swipe down to close/);
+ assert.match(sheet,/Swipe header down to close/);
  assert.match(nav,/motion-reduce:transition-none/);
  assert.match(nav,/aria-current=/);
 });

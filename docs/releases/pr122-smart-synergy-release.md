@@ -25,8 +25,7 @@ merge this feature PR into PR #121's release branch; perform ONE final release f
    direct-file PDF download. WhatsApp is user-initiated via wa.me text share.
    Trip saving is device-only, with an explicit limit.
 5. Existing manifest, installer, mobile routes remain intact. Improve motion and
-   swipe-to-close property filters; service-worker caches hashed public static
-   assets only, never APIs, accounts, booking results, private photos, or HTML.
+   swipe-to-close property filters; service-worker preserves an offline informational fallback (not cached live inventory). Site speed relies on immutable Next.js assets over HTTP.
    Offline navigation shows an informational fallback, not stale bookings.
 
 ## Release gates
