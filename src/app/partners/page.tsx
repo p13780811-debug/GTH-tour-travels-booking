@@ -1,3 +1,4 @@
+import { SITE_CONFIG } from "@/lib/site-config";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowRight, Building2, Globe2, Plane, ShieldCheck, BriefcaseBusiness, BadgeCheck, Handshake} from "lucide-react";
@@ -68,7 +69,7 @@ export default function PartnersPage(){
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Official business contact</dt>
-          <dd className="mt-2 text-sm leading-7"><a className="break-all font-semibold text-[var(--gold)] underline" href="mailto:official.gthpro@gmail.com">official.gthpro@gmail.com</a></dd>
+          <dd className="mt-2 text-sm leading-7"><a className="break-all font-semibold text-[var(--gold)] underline" href={`mailto:${SITE_CONFIG.supportEmail}`}>{SITE_CONFIG.supportEmail}</a></dd>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Business model</dt>

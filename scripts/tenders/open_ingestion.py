@@ -43,7 +43,7 @@ OFFICIAL = {
     "worldbank": ("World Bank", {"projects.worldbank.org"}),
     "ted": ("TED EU", {"ted.europa.eu"}),
 }
-USER_AGENT = "GTHPRO-Official-Procurement-Data/1.0 (official.gthpro@gmail.com)"
+USER_AGENT = "GTHPRO-Official-Procurement-Data/1.0 (+https://www.gthproglobal.com/contact)"
 
 def _http_json(url, *, payload=None, allowed_host, attempts=3):
     if urlsplit(url).scheme != "https" or urlsplit(url).hostname != allowed_host:

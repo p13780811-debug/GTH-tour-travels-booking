@@ -1,4 +1,5 @@
 "use client"
+import { SITE_CONFIG } from "@/lib/site-config";
 
 import Link from "next/link"
 import RealEstateFooter from "@/components/real-estate/RealEstateFooter"
@@ -528,6 +529,8 @@ export default function PrivacyPolicy() {
                                 For privacy-related concerns, legal inquiries or data access
                                 requests, users may contact the GTH PRO support and compliance team.
                             </p>
+
+                            <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">Email: <a href={`mailto:${SITE_CONFIG.legalEmail}`} className="font-semibold text-[var(--gold)] underline break-all">{SITE_CONFIG.legalEmail}</a></p>
 
                             <div className="mt-8 flex flex-wrap gap-4">
 

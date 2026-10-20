@@ -1,3 +1,4 @@
+import { SITE_CONFIG } from "@/lib/site-config";
 import { safeStructuredData, siteUrl } from "@/lib/seo/site";
 
 /**
@@ -16,12 +17,12 @@ export default function SiteIdentitySchema() {
         alternateName: "Global Technical Hub",
         url: origin,
         description: "Independent digital discovery platform for travel, real estate and tender information.",
-        email: "official.gthpro@gmail.com",
+        email: SITE_CONFIG.contactEmail,
         logo: siteUrl("/images/gth-logo.png"),
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "business enquiries",
-          email: "official.gthpro@gmail.com",
+          email: SITE_CONFIG.contactEmail,
           url: siteUrl("/contact"),
         },
       },

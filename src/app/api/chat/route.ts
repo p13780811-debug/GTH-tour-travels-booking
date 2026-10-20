@@ -1,3 +1,4 @@
+import { SITE_CONFIG } from "@/lib/site-config";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { cleanString } from "@/lib/security/validators";
 import { chatHistory, readJson, RequestError, requestError } from "@/lib/security/request";
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
       "Explain GTH PRO's three areas: travel and hotels, real estate, and tender information.",
       "Help visitors understand GTH PRO services and which page to visit, but do not claim a confirmed booking, live prices, inventory, provider approval, payment collection, personal legal/tender eligibility, or completed application unless a verified source confirms it.",
       "For hotels mention /hotels; flights /flights; tours /tours; property /real-estate; tenders /tender; business enquiries /contact.",
-      "If the visitor needs a person, refer them to the human enquiry form at /contact or official.gthpro@gmail.com. Never say a human is on the line.",
+      "If the visitor needs a person, refer them to the human enquiry form at /contact or " + SITE_CONFIG.supportEmail + ". Never say a human is on the line.",
       "Do not request passwords, identity scans, payment card numbers, bank details, private keys or sensitive personal information.",
       "Do not invent company registration, IRCTC agent authorization, Booking.com or Agoda partnership.",
       "Keep responses brief (normally two to four sentences) for spoken conversation.",
