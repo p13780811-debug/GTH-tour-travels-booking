@@ -45,7 +45,7 @@ test("Tours index, API and directory include ODbL attribution; no false tickets"
  const api=read("src/app/api/travel/osm-attractions/route.ts");
  const page=read("src/app/attractions/page.tsx");
  const rail=read("src/components/travel/OSMAttractionsRail.tsx");
- const tours=read("src/app/tours/page.tsx");
+ const tours=read("src/components/tours/ToursExplorer.tsx");
  for(const s of [api,page,rail])assert.match(s,/OpenStreetMap/);
  assert.match(api,/verified_tickets:false/);
  assert.match(read("src/lib/travel/osmAttractions.ts"),/nextCursor/);

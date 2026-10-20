@@ -35,7 +35,8 @@ test("Navigation is a scoped secondary rail, not a duplicate global theme or ove
  assert.match(flights,/export const metadata/);
  assert.doesNotMatch(source,/\/real-estate|\/tender/);
 });
-\ntest("each travel hero renderer owns one navigation slot after its hero",()=>{
+
+test("each travel hero renderer owns one navigation slot after its hero",()=>{
  const renderers=[
   "src/components/tours/ToursExplorer.tsx","src/app/tours/[slug]/page.tsx","src/app/tours/loading.tsx",
   "src/app/flights/page.tsx","src/app/hotels/page.tsx","src/app/hotels/[slug]/page.tsx",

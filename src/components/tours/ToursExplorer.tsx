@@ -151,7 +151,7 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
   const query = { ...filters, page: String(filters.page) };
   const [response, cityData] = await Promise.all([
     searchTours(parsed.ok ? query : raw as TourFilters),
-    listMappedCities({search:activeCity.slice(0,60),pageSize:12}).catch(() => null),
+    listMappedCities({search:activeCity.slice(0,60),pageSize:48}).catch(() => null),
   ]);
   const tours = response.items;
   const pages = Math.max(1,Math.ceil(response.total/response.pageSize));

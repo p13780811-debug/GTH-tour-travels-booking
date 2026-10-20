@@ -62,8 +62,10 @@ test("flight API validates dates, limits data fields and protects API token", ()
 test("flight page keeps travel sections connected without invented prices", () => {
   const page = read("src/app/flights/page.tsx");
   const destinations = read("src/data/flight/destinations.ts");
-  assert.match(page, /href: "\/hotels"/);
-  assert.match(page, /href: "\/tours"/);
+  const navigation = read("src/components/travel/TravelSectionNav.tsx");
+  assert.match(page, /<TravelSectionNav\s*\/>/);
+  assert.match(navigation, /href:\s*"\/hotels"/);
+  assert.match(navigation, /href:\s*"\/tours"/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.match(page, /<FlightJourneyServices \/>/);
   assert.doesNotMatch(destinations, /price:\s*["'$]/);
