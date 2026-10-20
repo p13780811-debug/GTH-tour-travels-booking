@@ -13,12 +13,12 @@ function compile(path,dependencies={}) {
   const code=ts.transpileModule(source,{compilerOptions:{
     module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,
   }}).outputText;
-  const module={exports:{}};
-  vm.runInNewContext(code,{module,exports:module.exports,URL,URLSearchParams,Intl,
+  const compiledModule={exports:{}};
+  vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,URL,URLSearchParams,Intl,
     require:name=>{if(name in dependencies)return dependencies[name];throw Error("Unexpected dependency "+name);},
     process:{env:{NEXT_PUBLIC_SUPABASE_URL:"https://test.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"ci-public-test-key"}},
   },{timeout:2000});
-  return module.exports;
+  return compiledModule.exports;
 }
 const discovery=compile("src/lib/tours/discovery.ts");
 const defaults=discovery.EMPTY_TOUR_SEARCH;

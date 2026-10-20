@@ -1,4 +1,3 @@
-import TravelSectionNav from "@/components/travel/TravelSectionNav";
 // ============================================================================
 // 🌍 GTH PRO — HOTELS GLOBAL 2026
 // 🏆 WORLD-CLASS MOBILE-FIRST + PREMIUM DESKTOP EXPERIENCE
@@ -12,6 +11,8 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 // ============================================================================
 
 "use client";
+
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
