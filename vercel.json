@@ -7,7 +7,8 @@
       "release/gth-one-shot-20261018": false,
       "fix/real-estate-filters-theme-media-20261020": false,
       "feat/tender-workspace-upgrade-20261020": false,
-      "fix/tender-calendar-source-20261020": false
+      "fix/tender-calendar-source-20261020": false,
+      "fix/gth-official-zoho-email-centralization-20261020": false
     }
   }
 }
