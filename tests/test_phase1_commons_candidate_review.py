@@ -50,6 +50,17 @@ class WikimediaPhotoReviewTests(unittest.TestCase):
                        "Artist":{"value":"User"}}}]}]}}
         self.assertIsNone(m.file_evidence("File:Mayfair Heritage Puri entrance.jpg",self.puri,Fake(),check_image=False))
         self.assertIsNone(m.file_evidence("File:Unrelated Resort Puri.jpg",self.puri,Fake(),check_image=False))
+    def test_exact_subset_retry_is_bounded_and_preserves_source(self):
+        class Empty:
+            def request(self, params):
+                return {"query":{"search":[]}}
+        names=[self.snapshot["records"][0]["id"],self.snapshot["records"][1]["id"]]
+        report=m.review_all(self.snapshot,Empty(),only_ids=names,sleeper=lambda _:None)
+        self.assertEqual(report["processed"],2)
+        self.assertEqual({r["id"] for r in report["records"]},set(names))
+        with self.assertRaises(ValueError):
+            m.review_all(self.snapshot,Empty(),only_ids=["osm-node-999999999999999"],sleeper=lambda _:None)
+
     def test_fail_closed_without_licensed_photos(self):
         class Fake:
             def request(self,params):
