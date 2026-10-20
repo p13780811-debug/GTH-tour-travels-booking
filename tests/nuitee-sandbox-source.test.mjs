@@ -38,7 +38,7 @@ test("preview uses image load and failure feedback without publishing supplier m
   assert.match(adapter, /v\.slice\(0,50\)/);
   assert.match(page, /NuiteeSandboxExplorer/);
   assert.match(explorer, /NuiteeSandboxGallery/);
-  assert.match(explorer, /onError=\{\(\) => setFailed\(true\)\}/);
+  assert.match(explorer, /onError=\{\(\)\s*=>\s*setFailed\(true\)\}/);
   assert.match(gallery, /onLoad=\{\(\) => recordLoad\(active\)\}/);
   assert.match(gallery, /onError=\{\(\) => recordError\(active\)\}/);
   assert.match(gallery, /PENDING|not licensed for public use|does not verify property identity/i);
