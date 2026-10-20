@@ -40,10 +40,10 @@ export default function ClaimProjectPage() {
 
   const submitClaim = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
     setError(""); setNotice(""); setBusy(true);
     try {
       const access = await token();
-      const values = Object.fromEntries(new FormData(event.currentTarget));
       const claim = await readApiJson<Claim>(await fetch("/api/real-estate/project-claims", {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${access}` },
         body: JSON.stringify({
@@ -63,10 +63,11 @@ export default function ClaimProjectPage() {
   const submitMedia = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!current || !file) return;
+    const formElement = event.currentTarget;
+    const body = new FormData(formElement);
     setBusy(true); setError(""); setNotice("");
     try {
       const access = await token();
-      const body = new FormData(event.currentTarget);
       body.set("claim_id", current.id); body.set("file", file);
       body.set("rights_attested", body.get("rights_attested") === "on" ? "true" : "false");
       const result = await readApiJson<MediaReceipt>(await fetch("/api/real-estate/claim-media", {
@@ -74,7 +75,7 @@ export default function ClaimProjectPage() {
       }));
       setUploads(existing => [...existing, result]);
       setFile(null);
-      event.currentTarget.reset();
+      formElement.reset();
       setNotice("Image stored privately for review. It has not been published.");
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Private media upload failed");
