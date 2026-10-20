@@ -48,3 +48,14 @@ test("Registry records retain truthful placeholders until approved project media
  assert.match(details,/primaryImageOfPage/);
  assert.match(details,/getPublishedProjectMedia/);
 });
+
+test("Only eligible registered project pages and independently published images enter image sitemap",()=>{
+ const sitemap=read("src/app/seo-sitemaps/property-images/[page].xml/route.ts");
+ assert.match(sitemap,/isPublicLaunch/);
+ assert.match(sitemap,/property_published_media/);
+ assert.match(sitemap,/eq\("status","published"\)/);
+ assert.match(sitemap,/gth_seo_properties_v1/);
+ assert.match(sitemap,/media_type!=="floor_plan"/);
+ assert.match(sitemap,/publishedMediaUrl/);
+ assert.doesNotMatch(sitemap,/property_claim_media|media_candidates|property_inventory/);
+});
