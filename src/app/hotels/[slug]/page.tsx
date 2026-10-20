@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,7 +69,7 @@ export default async function HotelCityPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData} />
-      <section className="relative isolate overflow-hidden">
+      <section className="relative isolate overflow-hidden" data-travel-hero="true">
         <div className="absolute inset-0 -z-10">
           <Image src={image} fill priority alt={`Travel destination: ${parsed.city}`} sizes="100vw" className="object-cover" />
           <div className="absolute inset-0 bg-black/65" />
@@ -86,6 +87,7 @@ export default async function HotelCityPage({ params }: Props) {
           </Link>
         </div>
       </section>
+      <TravelSectionNav />
 
       <section className="mx-auto max-w-7xl px-4 py-10 md:px-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

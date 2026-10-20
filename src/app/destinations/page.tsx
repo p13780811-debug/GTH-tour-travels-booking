@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -144,7 +145,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
   return (
    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+    <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
      <div className="absolute inset-0 -z-20 bg-[var(--bg-soft)]"/>
      <div className="absolute inset-y-0 right-0 -z-10 hidden w-[52%] lg:block">
       <Image src="/images/global-city.jpg" alt="" fill priority sizes="52vw" className="object-cover opacity-35"/>
@@ -176,6 +177,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       <p className="mt-2 text-[11px] text-[var(--text-soft)]">GTH PRO destination artwork is illustrative. Listings are not a guarantee of live hotel inventory or independently verified ticket availability.</p>
      </div>
     </section>
+      <TravelSectionNav />
 
     <section id="discover" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 lg:py-10">
      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

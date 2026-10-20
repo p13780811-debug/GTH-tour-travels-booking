@@ -34,17 +34,18 @@ test("all illustrative card images are existing high-byte-size local source file
 
 test("partner strip precedes category strip and Tiqets, followed by real listings", () => {
   const source = read("src/components/tours/TourAffiliateMarketplace.tsx");
-  const page = read("src/app/tours/page.tsx");
+  const page = read("src/components/tours/ToursExplorer.tsx");
   const first = source.indexOf('<TourCarousel label="Tour booking partners">');
   const second = source.indexOf('<TourCarousel label="Tour experience categories">');
   const third = source.indexOf("<TiqetsPartnerWidgets />");
   assert.ok(first >= 0 && first < second && second < third);
-  assert.ok(page.indexOf("<TourAffiliateMarketplace />") < page.indexOf("Discover experiences"));
+  assert.ok(page.indexOf("<TourAffiliateMarketplace ") < page.indexOf("Discover experiences"));
   assert.match(page, /<TourCarousel label="Source-backed tour listings">/);
   assert.match(page, /w-\[190px\]/);
   assert.match(page, /sm:w-\[216px\]/);
   assert.match(page, /tours\.length > 0/);
-  assert.match(page, /searchTours\(filters\)/);
+  assert.match(page, /searchTours\(/);
+  assert.match(page, /parseTourFilters\(raw\)/);
   assert.doesNotMatch(page, /grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3/);
 });
 

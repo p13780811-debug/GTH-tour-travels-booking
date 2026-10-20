@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -51,6 +52,7 @@ export default async function AttractionDetail({params}:Props){
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
  {index&&<JsonLd data={breadcrumb}/>}
  <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 md:py-14">
+<header data-travel-hero="true">
   <Link href="/tours" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> Tours & experiences</Link>
   <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]">GTH PRO · Source-backed attraction</p>
   <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{item.name}</h1>
@@ -60,6 +62,8 @@ export default async function AttractionDetail({params}:Props){
      <div className="flex h-48 items-center justify-center text-sm text-[var(--text-soft)]">No independently licensed photo available</div>}
    {image&&<p className="p-3 text-xs text-[var(--text-soft)]">Photo: <a href={item.commons_page!} target="_blank" rel="noopener noreferrer nofollow" className="underline">{item.image_author} · Wikimedia Commons</a>{" · "}<a href={item.image_license_url!} target="_blank" rel="noopener noreferrer nofollow" className="underline">{item.image_license}</a></p>}
   </div>
+</header>
+<TravelSectionNav />
   <p className="mt-6 text-sm leading-7 text-[var(--text-soft)]">{item.description||"This source record is community maintained. Verify current access and visitor conditions with the official venue."}</p>
   <p className="mt-4 flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={16}/>{item.latitude}, {item.longitude} · Wikidata coordinates</p>
   <a href={item.wikidata_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">Original Wikidata record <ArrowUpRight size={16}/></a>

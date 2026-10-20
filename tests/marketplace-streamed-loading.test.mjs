@@ -24,9 +24,9 @@ test("Tenders loading is accessible and doesn't fabricate public opportunities",
  assert.doesNotMatch(s,/123|10000 tenders|live now/);
 });
 test("existing Tours/Tenders forms and source-backed result engines preserved",()=>{
- const tours=read("src/app/tours/page.tsx");
+ const tours=read("src/components/tours/ToursExplorer.tsx");
  const tender=read("src/app/tender/page.tsx");
- assert.match(tours,/searchTours\(filters\)/);
+ assert.match(tours,/searchTours\(/);
  assert.match(tours,/method="GET"/);
  assert.match(tender,/searchPublicTenders\(searchFilters\)/);
  assert.match(tender,/getTenderDiscoveryStats\(searchFilters\)/);

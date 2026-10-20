@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +22,7 @@ export default async function GuidesPage() {
   const [media,progress,cities]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null),listMappedCities({pageSize:48}).catch(()=>null)]);
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24" data-travel-hero="true">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO • Travel resource hub</p>
         <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">Plan better with practical travel guides</h1>
         <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
@@ -35,6 +36,7 @@ export default async function GuidesPage() {
           <Link href="/destinations" className="gth-glass inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3"><Compass size={17} /> Destinations</Link>
         </nav>
       </section>
+      <TravelSectionNav />
       <GuideDiscoveryRails media={media} countries={progress?.countries??[]}/>
       <MappedCityDiscovery cities={cities?.items??[]} title="Find more cities with real mapped places"/>
       <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">

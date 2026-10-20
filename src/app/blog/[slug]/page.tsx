@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -64,7 +65,7 @@ export default async function BlogPage({ params }: Props) {
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
       <JsonLd data={articleData} />
-      <header className="relative isolate overflow-hidden border-b border-[#eac671]/25">
+      <header className="relative isolate overflow-hidden border-b border-[#eac671]/25" data-travel-hero="true">
         <Image src={blog.image} alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#031021]/98 via-[#061426]/92 to-[#07172c]/75" />
         <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 md:py-24">
@@ -85,6 +86,7 @@ export default async function BlogPage({ params }: Props) {
           </div>
         </div>
       </header>
+      <TravelSectionNav />
 
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-8 px-5 py-10 sm:px-8 md:py-16 lg:grid-cols-[minmax(0,1fr)_300px]">
         <article aria-label={blog.title} className="min-w-0 overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6 shadow-[0_18px_50px_rgba(0,0,0,.2)] sm:p-9 lg:p-12">

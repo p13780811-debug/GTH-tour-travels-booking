@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Link from "next/link";
 import Image from "next/image";
 import {ArrowLeft,ArrowRight,BookOpen,Compass,Hotel,Plane,MapPin,ExternalLink} from "lucide-react";
@@ -39,7 +40,7 @@ export default function GuideDetail({guide,media,indexable,places=[]}:Props){
     {!full&&<><span>/</span><Link href="/guides/paris" className="underline">Paris</Link></>}
     <span>/</span><span aria-current="page">{guide.title}</span>
    </nav>
-   <header className="mt-6">
+   <header data-travel-hero="true" className="mt-6">
     <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]">GTH PRO · Editorial travel planning</p>
     <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight sm:text-5xl">{guide.title}</h1>
     <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--text-soft)]">{guide.summary}</p>
@@ -52,6 +53,7 @@ export default function GuideDetail({guide,media,indexable,places=[]}:Props){
      "Only rights-reviewed real-place imagery is published; no unrelated stock imagery is presented as a destination."}
     </figcaption>
    </figure>
+   <TravelSectionNav />
    {!indexable&&<p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-xs text-[var(--text-soft)]">Editorial preview · This guide is excluded from search indexing until content and image rights are independently approved.</p>}
    <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
     <div className="space-y-9">
