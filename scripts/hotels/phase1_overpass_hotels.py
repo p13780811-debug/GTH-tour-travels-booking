@@ -97,7 +97,7 @@ def request_zone(box,endpoint):
   data=json.load(response)
  if not isinstance(data,dict) or not isinstance(data.get("elements"),list):raise ValueError("Invalid Overpass response")
  return data["elements"]
-def export(endpoint,check_images=False,delay=2):
+def within_bounds(rec, bbox):\n s,w,n,e=bbox\n return s <= rec["lat"] <= n and w <= rec["lon"] <= e\n\ndef export(endpoint,check_images=False,delay=2):
  records={}
  failures=[]
  for code,(city,locality,bbox) in ZONES.items():
