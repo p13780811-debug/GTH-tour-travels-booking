@@ -1,3 +1,5 @@
+import { cache } from "react";
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,8 +19,8 @@ function publicPartnerLink(value: unknown): string | null {
   try {
     const url = new URL(value);
     const domains = ["klook.com", "trip.com", "booking.com", "hotellook.com", "viator.com",
-      "getyourguide.com", "expedia.com", "tp.media", "tpo.lv"];
-    if (url.protocol !== "https:" || url.username || url.password) return null;
+      "getyourguide.com", "expedia.com", "tiqets.com", "wegotrip.com", "gocity.com", "kkday.com", "tp.media", "tpo.lv"];
+    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
     const host = url.hostname.toLowerCase();
     return domains.some((domain) => host === domain || host.endsWith(`.${domain}`))
       ? url.toString() : null;
@@ -44,12 +46,13 @@ function quote(price: unknown, currency: unknown): string {
   }
 }
 
-async function getTour(slug: string) {
+const getTour = cache(async (slug: string) => {
   if (!/^[a-zA-Z0-9-]{1,100}$/.test(slug)) return null;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
-  const client = createClient(url, key);
+  try {
+  const client = createClient(url, key, {auth:{persistSession:false,autoRefreshToken:false}});
   const isId = /^\d+$/.test(slug) || /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(slug);
   const query = client.from("tours").select(fields).eq("is_public",true).eq("media_rights_verified",true).limit(1);
   const { data, error } = isId
@@ -57,7 +60,8 @@ async function getTour(slug: string) {
     : await query.eq("city_slug", slug).maybeSingle();
   if (error || !data) return null;
   return data;
-}
+  } catch { return null; }
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -107,7 +111,7 @@ export default async function TourDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData} />
-      <section className="relative isolate overflow-hidden">
+      <section data-travel-hero="true" className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <img src={imageUrl(tour.image_url)} alt="" className="h-full w-full object-cover opacity-40" />
           <div className="absolute inset-0 bg-[var(--bg)]/75" />
@@ -117,7 +121,7 @@ export default async function TourDetailPage({ params }: Props) {
           <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[var(--text-soft)]">
             {tour.city || tour.city_slug} {tour.country ? `• ${tour.country}` : ""}
           </p>
-          <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight md:text-6xl">{tour.title}</h1>
+          <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight sm:text-3xl">{tour.title}</h1>
           <p className="mt-4 text-2xl font-bold">{shownPrice}</p>
           <p className="mt-2 max-w-3xl text-sm text-[var(--text-soft)]">
             Listing price, if available, is not a live date-specific quote. Confirm all costs and conditions on the partner site.
@@ -132,6 +136,7 @@ export default async function TourDetailPage({ params }: Props) {
           )}
         </div>
       </section>
+      <TravelSectionNav />
 
       <section className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-12 md:grid-cols-[minmax(0,1fr)_300px] md:px-6">
         <div className="gth-glass rounded-2xl border border-[var(--border)] p-6">

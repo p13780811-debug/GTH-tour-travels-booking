@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle2, Compass, PlaneTakeoff } from "lucide-react";
@@ -16,7 +17,7 @@ export default async function FlightsPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
-      <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
         <div aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
           <Image src="/images/mega/flights.jpg" alt="" fill priority
@@ -37,25 +38,11 @@ export default async function FlightsPage({ searchParams }: Props) {
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> Provider-operated checkout</span>
             </div>
           </div>
-          <nav aria-label="Flight travel categories"
-            className="mt-7 flex max-w-4xl snap-x gap-2 overflow-x-auto rounded-2xl bg-transparent pb-2 text-xs shadow-none">
-            {[
-              { name: "Search flights", href: "#flight-search" },
-              { name: "Airport services", href: "/transfers" },
-              { name: "Car rentals", href: "/cars" },
-              { name: "Insurance", href: "/insurance" },
-              { name: "Hotels", href: "/hotels" },
-              { name: "Tours", href: "/tours" },
-              { name: "Destinations", href: "/destinations" },
-            ].map((item) => (
-              <Link key={item.name} href={item.href}
-                className="inline-flex min-h-10 shrink-0 snap-start items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] shadow-sm transition hover:border-[var(--gold)]">
-                {item.name} <ArrowUpRight size={13} aria-hidden="true" />
-              </Link>
-            ))}
-          </nav>
+          <Link href="#flight-search" className="gth-btn-gold mt-6 inline-flex items-center gap-2">Search flights <ArrowUpRight size={14}/></Link>
+
         </div>
       </section>
+      <TravelSectionNav />
 
       <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-9">
         {destination && origin !== destination && (

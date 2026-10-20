@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Link from "next/link";
 import { Compass, ShieldCheck } from "lucide-react";
 
@@ -6,8 +7,11 @@ export default function ToursLoading() {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-16">
+<header data-travel-hero="true">
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">GTH PRO · Global experiences</p>
         <h1 className="mt-3 text-2xl font-bold sm:text-4xl">Explore tours and activities</h1>
+</header>
+<TravelSectionNav />
         <p role="status" aria-live="polite" className="mt-4 flex items-center gap-2 text-sm text-[var(--text-soft)]">
           <Compass size={17} aria-hidden="true" /> Preparing available experiences and source-backed listings…
         </p>

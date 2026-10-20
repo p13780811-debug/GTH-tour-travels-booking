@@ -7,12 +7,19 @@ on:
   pull_request:
     branches:
       - main
+      - release/gth-one-shot-pending-20261020
     paths:
-      - src/app/tours/**
+      - src/app/**
+      - src/lib/tours/**
+      - src/lib/tours.ts
+      - src/components/travel/**
       - src/components/tours/**
       - tests/tour-affiliate-widgets.test.mjs
       - tests/tour-card-layout.test.mjs
+      - tests/**
       - tests/tours-marketplace.test.mjs
+      - tests/tours-discovery.test.mjs
+      - tests/travel-section-navigation.test.mjs
       - .github/workflows/gth-tour-affiliates-check.yml
   workflow_dispatch:
 
@@ -36,7 +43,7 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Tours regressions
-        run: node --test tests/tour-affiliate-widgets.test.mjs tests/tour-card-layout.test.mjs tests/tours-marketplace.test.mjs
+        run: npm run test:security
       - name: Lint
         run: npm run lint
       - name: Production build (no deploy)

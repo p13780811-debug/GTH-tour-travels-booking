@@ -14,7 +14,7 @@ test("tour API never exposes raw database rows", () => {
 });
 
 test("tour listing cards are linked to unique records, not the city only", () => {
-  const page = read("src/app/tours/page.tsx");
+  const page = read("src/components/tours/ToursExplorer.tsx");
   assert.match(page, /String\(tour\.id\)/);
   assert.doesNotMatch(page, /<MapWrapper/);
   assert.doesNotMatch(page, /BEST DEAL|Instant Booking|Guaranteed Price/);

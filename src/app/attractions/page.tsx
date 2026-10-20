@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Compass,ExternalLink,Globe2,MapPin,Search,BarChart3} from "lucide-react";
@@ -30,6 +31,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
  const next=result?.nextCursor?directoryHref({...f,after:result.nextCursor}):null;
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 md:py-12">
+<header data-travel-hero="true">
    <nav className="flex flex-wrap items-center justify-between gap-3">
     <Link href="/tours" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={17}/> Tours & Activities</Link>
     <Link href="/attractions/progress" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline"><BarChart3 size={17}/> Full import dashboard</Link>
@@ -37,6 +39,8 @@ export default async function AttractionsDirectory({searchParams}:Props){
    <p className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><Globe2 size={16}/> Worldwide open attractions · © OpenStreetMap contributors</p>
    <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Discover mapped places around the world</h1>
    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Explore source-linked beaches, landmarks, forts, museums and parks. Coverage grows as official Geofabrik extracts finish importing. A map record does not certify an operating venue, ticket or attraction availability.</p>
+</header>
+<TravelSectionNav />
    <section aria-label="Real source directory progress" className="mt-7 grid gap-3 sm:grid-cols-3">
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs text-[var(--text-soft)]">Imported public map records</p><p className="mt-2 text-2xl font-bold">{stats?stats.total.toLocaleString("en-IN"):"Unavailable"}</p></div>
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs text-[var(--text-soft)]">Countries with imported records</p><p className="mt-2 text-2xl font-bold">{stats?stats.countriesWithRecords:"Unavailable"}</p></div>

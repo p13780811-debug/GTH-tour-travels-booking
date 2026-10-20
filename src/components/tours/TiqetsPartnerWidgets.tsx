@@ -56,7 +56,7 @@ export default function TiqetsPartnerWidgets() {
             aria-controls="tiqets-ticket-results" onClick={() => setSelected(tab)}
             className={selected === tab
               ? "gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold"
-              : "inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold"}>
+              : "gth-btn inline-flex items-center"}>
             {panels[tab].name}
           </button>
         ))}

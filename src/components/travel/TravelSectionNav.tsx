@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark} from "lucide-react";
+import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark, ShieldCheck} from "lucide-react";
 
 /**
  * Shared secondary navigation across travel categories and their detail pages.
@@ -21,6 +21,7 @@ export const TRAVEL_SECTIONS = [
   {href:"/cars",label:"Car rentals",Icon:CarFront},
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},
+  {href:"/insurance",label:"Insurance",Icon:ShieldCheck},
 ] as const;
 
 export default function TravelSectionNav(){

@@ -38,7 +38,8 @@ test("provider controls Booking.com hotel option, with flight-only instruction a
   const page=read("src/app/flights/page.tsx");
   assert.match(s,/Show hotels/);
   assert.match(s,/checkbox unchecked/);
-  assert.match(page,/href: "\/hotels"/);
+  assert.match(page,/<TravelSectionNav\s*\/>/);
+  assert.match(read("src/components/travel/TravelSectionNav.tsx"),/href:\s*"\/hotels"/);
   assert.doesNotMatch(s,/window\.open\(|booking\.com|hotellook/);
 });
 

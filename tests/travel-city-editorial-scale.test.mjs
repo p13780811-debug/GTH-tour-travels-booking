@@ -28,7 +28,7 @@ test("Mapped city finder enforces safe filters and true count-based bounded pagi
 });
 test("Tours, Attractions, Guides, Blogs and Destinations surface actual mapped cities",()=>{
  const pages=[
-  "src/app/tours/page.tsx","src/app/attractions/page.tsx","src/app/guides/page.tsx",
+  "src/components/tours/ToursExplorer.tsx","src/app/attractions/page.tsx","src/app/guides/page.tsx",
   "src/app/blog/page.tsx","src/app/destinations/page.tsx"
  ];
  for(const page of pages){

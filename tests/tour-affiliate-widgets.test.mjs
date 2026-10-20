@@ -48,12 +48,12 @@ test("changing tabs always has actual destination links without network-dependen
 });
 
 test("source-backed tour search and detail routes are preserved", () => {
-  const tours = source("src/app/tours/page.tsx");
+  const tours = source("src/components/tours/ToursExplorer.tsx");
   const activities = source("src/app/activities/page.tsx");
   assert.match(tours, /import TourAffiliateMarketplace/);
-  assert.match(tours, /<TourAffiliateMarketplace \/>/);
-  assert.match(tours, /searchTours\(filters\)/);
+  assert.match(tours, /<TourAffiliateMarketplace search=\{filters\}/);
+  assert.match(tours, /searchTours\(/);
   assert.match(tours, /String\(tour\.id\)/);
-  assert.match(activities, /<ToursPage searchParams=\{searchParams\}/);
+  assert.match(activities, /<ToursExplorer searchParams=\{searchParams\} basePath="\/activities"/);
   assert.doesNotMatch(tours, /Guaranteed Price|Instant Booking|Math\.random/);
 });

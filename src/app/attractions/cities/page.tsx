@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Compass,Search,MapPin,Globe2} from "lucide-react";
@@ -25,12 +26,15 @@ export default async function MappedCitiesPage({searchParams}:Props){
  const pages=Math.max(1,Math.ceil((data?.total||0)/36));
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+<header data-travel-hero="true">
    <Link href="/attractions" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> Back to Attractions</Link>
    <p className="mt-5 flex items-center gap-2 text-xs uppercase tracking-widest text-[var(--text-soft)]"><Globe2 size={16}/> GTH PRO · Real city-tagged map records</p>
    <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Explore source-mapped cities worldwide</h1>
    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
     Find actual OpenStreetMap attractions by city and country, then move to independent tour and hotel providers. City tags are supplied by OSM contributors and may be incomplete. This is not a paid-tour or certified-city directory.
    </p>
+</header>
+<TravelSectionNav />
    <form role="search" action="/attractions/cities" method="get" className="mt-7 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
     <label className="text-xs font-semibold">Search a city
      <input name="search" type="search" maxLength={60} defaultValue={f.search} placeholder="Mumbai, Paris, Segovia..."

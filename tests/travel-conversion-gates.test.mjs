@@ -12,7 +12,7 @@ test("Tours list and detail use the real license-approved table schema",()=>{
     assert.match(s,/is_public/);
   }
   assert.match(list,/currency,tags,image_url/);
-  assert.match(list,/\.contains\("tags", \[category\]\)/);
+  assert.match(list,/\.contains\("tags", \[f\.category\]\)/);
   assert.match(detail,/currency,tags,image_url,affiliate_link/);
   assert.match(list,/rating: null/);
 });

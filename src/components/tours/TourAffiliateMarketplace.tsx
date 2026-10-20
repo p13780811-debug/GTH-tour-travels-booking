@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import TiqetsPartnerWidgets from "./TiqetsPartnerWidgets";
 import TourCarousel from "./TourCarousel";
+import { EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
 
 // All destination photography comes from existing GTH PRO local assets.
 // It illustrates travel themes; it does not represent a verified supplier
@@ -78,7 +79,7 @@ const categories = [
   },
 ] as const;
 
-type CardItem = (typeof partners)[number] | (typeof categories)[number];
+type CardItem = {name:string;description:string;category?:string;image:string;imageAlt:string;href:string;external:boolean;action?:string;current?:boolean};
 
 function TourImageCard({ item }: { item: CardItem }) {
   const cardClass = "group flex w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-[206px]";
@@ -99,10 +100,10 @@ function TourImageCard({ item }: { item: CardItem }) {
           <ArrowUpRight size={16} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
         </span>
         <span className="mt-1 line-clamp-2 text-[11px] leading-[16px] text-[var(--text-soft)]">
-          {"category" in item ? item.category : item.description}
+          {item.category || item.description}
         </span>
         <span className="mt-auto pt-2 text-[10px] font-medium text-[var(--text-soft)]">
-          {"category" in item ? item.description : "Explore partner options"}
+          {item.action || (item.category ? item.description : "Explore partner options")}
         </span>
       </span>
     </>
@@ -112,11 +113,11 @@ function TourImageCard({ item }: { item: CardItem }) {
     <a href={item.href} key={item.name} target="_blank" rel="noopener noreferrer sponsored"
       className={cardClass}>{body}</a>
   ) : (
-    <a href={item.href} key={item.name} className={cardClass}>{body}</a>
+    <Link href={item.href} key={item.name} aria-current={item.current?"page":undefined} className={cardClass}>{body}</Link>
   );
 }
 
-export default function TourAffiliateMarketplace() {
+export default function TourAffiliateMarketplace({search=EMPTY_TOUR_SEARCH,basePath="/tours"}:{search?:TourSearch;basePath?:"/tours"|"/activities"}) {
   return (
     <section aria-labelledby="tours-partners-heading" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -140,10 +141,14 @@ export default function TourAffiliateMarketplace() {
 
       <div className="mb-3 mt-7">
         <h3 className="text-lg font-bold sm:text-xl">Find your experience</h3>
-        <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Explore six travel categories through matching booking partners.</p>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Choose an experience type{search.city?" for "+search.city:""}. Your destination stays selected.</p>
       </div>
       <TourCarousel label="Tour experience categories">
-        {categories.map((item) => <TourImageCard key={item.name} item={item} />)}
+        {categories.map((item,index) => <TourImageCard key={item.name} item={{
+          ...item, external:false,
+          href:tourDiscoveryHref(basePath,search,"rail",{category:TOUR_CATEGORIES[index].value,page:1}),
+          current:search.category===TOUR_CATEGORIES[index].value, action:"Choose this experience type",
+        }} />)}
       </TourCarousel>
 
       <TiqetsPartnerWidgets />

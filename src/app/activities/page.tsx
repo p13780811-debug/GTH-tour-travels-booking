@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import ToursPage from "../tours/page";
-import type { TourFilters } from "@/lib/tours";
+import ToursExplorer from "@/components/tours/ToursExplorer";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tours" },
@@ -13,7 +12,7 @@ export const metadata: Metadata = {
 export default function ActivitiesPage({
   searchParams,
 }: {
-  searchParams: Promise<TourFilters>;
+  searchParams: Promise<Record<string,unknown>>;
 }) {
-  return <ToursPage searchParams={searchParams} />;
+  return <ToursExplorer searchParams={searchParams} basePath="/activities" />;
 }
