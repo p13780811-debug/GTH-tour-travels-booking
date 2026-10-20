@@ -137,7 +137,7 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
         <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} ${t("results")}` : "Source-backed catalog"}</span>
       </div>
-      <form method="GET" action="/tender" role="search" className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
+      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" className="grid min-w-0 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
         <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
           <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
         </label>

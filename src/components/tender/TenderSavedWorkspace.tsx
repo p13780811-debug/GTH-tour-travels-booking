@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Bookmark, GitCompareArrows, RefreshCw, X } from "lucide-react";
 import { useTenderWorkspace } from "./useTenderWorkspace";
@@ -55,7 +55,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
     return () => { disposed = true; clearTimeout(timer); controller.abort(); };
   },[key,revision]);
   const rows = loading || !key ? [] : loaded.rows;
-  const current = useMemo(() => rows.flatMap(row => row.item ? [row.item] : []),[rows]);
+  const current = rows.flatMap(row => row.item ? [row.item] : []);
   function remove(id: string) {
     const persisted = update(value => ({...value,[view === "saved" ? "saved" : "comparison"]:value[view === "saved" ? "saved" : "comparison"].filter(item => item !== id)}));
     setMessage(persisted ? "Removed from this device's list." : "Removed for this tab session. Browser storage is unavailable.");
