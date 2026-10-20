@@ -1,3 +1,4 @@
+import { SITE_CONFIG } from "@/lib/site-config";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowRight, Globe2, Mail} from "lucide-react";
@@ -20,7 +21,7 @@ export default function ContactPage(){
         <aside className="space-y-5">
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
             <Mail className="text-[var(--gold)]" size={24}/>
-            <h2 className="mt-4 text-lg font-semibold">Business enquiries</h2><a href="mailto:official.gthpro@gmail.com" className="mt-4 inline-block break-all text-sm font-semibold text-[var(--gold)] underline">official.gthpro@gmail.com</a><p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Direct email for business, partnership and platform enquiries.</p>
+            <h2 className="mt-4 text-lg font-semibold">Business enquiries</h2><a href={`mailto:${SITE_CONFIG.supportEmail}`} className="mt-4 inline-block break-all text-sm font-semibold text-[var(--gold)] underline">{SITE_CONFIG.supportEmail}</a><p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Direct email for business, partnership and platform enquiries.</p>
             <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Send business enquiries using the form. Submissions are stored privately for review. Do not share sensitive credentials, payment details or identity-document scans. See our privacy policy for data handling.</p>
           </div>
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
