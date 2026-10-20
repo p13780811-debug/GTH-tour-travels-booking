@@ -145,7 +145,77 @@ create policy "re claim private image inserts" on storage.objects
     bucket_id='gth-re-claim-media'
     and (storage.foldername(name))[1]='claims'
     and (storage.foldername(name))[2]=(select auth.uid())::text
-    and name ~ '^claims/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}[.]webp$'
+    and case when name ~ '^claims/[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}[.]webp
+drop policy if exists "re claim private image review downloads" on storage.objects;
+create policy "re claim private image review downloads" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id='gth-re-claim-media'
+    and (
+      (storage.foldername(name))[2]=(select auth.uid())::text
+      or (select auth.jwt()->'app_metadata'->>'role')='admin'
+    )
+  );
+
+-- Only a separate administrator can review; review does not imply publication.
+create or replace function public.review_property_project_claim(p_id uuid,p_decision text,p_notes text default null)
+returns void language plpgsql security definer set search_path='' as $$
+declare item public.property_project_claims;
+begin
+  if auth.uid() is null or coalesce(auth.jwt()->'app_metadata'->>'role','')<>'admin'
+     or p_decision not in ('approved','rejected') then
+    raise exception 'Not authorized';
+  end if;
+  select * into item from public.property_project_claims where id=p_id for update;
+  if not found or item.status<>'pending' or item.claimant_id=auth.uid() then
+    raise exception 'Claim not eligible for independent review';
+  end if;
+  if p_decision='approved' and not exists (
+    select 1 from public.properties p where p.id=item.project_id
+    and p.rera_id=item.rera_reference and p.source_type='registry'
+  ) then raise exception 'Registry identity changed'; end if;
+  update public.property_project_claims set status=p_decision,reviewed_at=now(),
+    reviewed_by=auth.uid(),review_notes=left(coalesce(p_notes,''),1000) where id=p_id;
+end; $$;
+revoke all on function public.review_property_project_claim(uuid,text,text) from public,anon;
+grant execute on function public.review_property_project_claim(uuid,text,text) to authenticated;
+
+create or replace function public.review_property_claim_media(p_id uuid,p_decision text,p_notes text default null)
+returns void language plpgsql security definer set search_path='' as $$
+declare item public.property_claim_media;
+begin
+  if auth.uid() is null or coalesce(auth.jwt()->'app_metadata'->>'role','')<>'admin'
+     or p_decision not in ('approved','rejected','taken_down') then
+    raise exception 'Not authorized';
+  end if;
+  select * into item from public.property_claim_media where id=p_id for update;
+  if not found or item.uploader_id=auth.uid() or item.status not in ('pending','approved') then
+    raise exception 'Media not eligible for independent review';
+  end if;
+  if p_decision='approved' and not exists (
+    select 1 from public.property_project_claims c where c.id=item.claim_id
+    and c.status='approved' and c.project_id=item.project_id
+  ) then raise exception 'Project authorization not approved'; end if;
+  if p_decision='approved' and not exists (
+    select 1 from storage.objects o where o.bucket_id='gth-re-claim-media'
+      and o.name=item.object_key and o.metadata->>'mimetype'='image/webp'
+  ) then raise exception 'Private source image missing or invalid'; end if;
+  update public.property_claim_media set status=p_decision,reviewed_by=auth.uid(),
+    reviewed_at=now(),review_notes=left(coalesce(p_notes,''),1000) where id=p_id;
+end; $$;
+revoke all on function public.review_property_claim_media(uuid,text,text) from public,anon;
+grant execute on function public.review_property_claim_media(uuid,text,text) to authenticated;
+
+comment on table public.property_claim_media is
+'Private candidate evidence: approval is not publication. Requires independent rights, project match and content review before any public delivery.';
+
+      then exists (
+        select 1 from public.property_project_claims c
+        where c.id=((storage.foldername(name))[3])::uuid
+          and c.claimant_id=(select auth.uid()) and c.status in ('pending','approved')
+      )
+      else false
+    end
   );
 drop policy if exists "re claim private image review downloads" on storage.objects;
 create policy "re claim private image review downloads" on storage.objects
