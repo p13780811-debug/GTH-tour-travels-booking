@@ -33,10 +33,12 @@ test("no booking action or rate charging in preview routes", () => {
 });
 test("preview uses image load and failure feedback without publishing supplier media", () => {
   const page = read("src/app/hotels/nuitee-sandbox/page.tsx");
+  const explorer = read("src/components/hotels/NuiteeSandboxExplorer.tsx");
   const gallery = read("src/components/hotels/NuiteeSandboxGallery.tsx");
   assert.match(adapter, /v\.slice\(0,50\)/);
-  assert.match(page, /NuiteeSandboxGallery/);
-  assert.match(page, /onError=\{\(\) => setBroken\(true\)\}/);
+  assert.match(page, /NuiteeSandboxExplorer/);
+  assert.match(explorer, /NuiteeSandboxGallery/);
+  assert.match(explorer, /onError=\{\(\) => setFailed\(true\)\}/);
   assert.match(gallery, /onLoad=\{\(\) => recordLoad\(active\)\}/);
   assert.match(gallery, /onError=\{\(\) => recordError\(active\)\}/);
   assert.match(gallery, /PENDING|not licensed for public use|does not verify property identity/i);
