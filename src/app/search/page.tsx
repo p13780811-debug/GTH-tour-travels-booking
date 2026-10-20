@@ -52,10 +52,22 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
 
   if (category === "property") {
     const type = /\bvillas?\b/i.test(q) ? "Villa" : /\b(apartments?|flats?|[1-9]\s*bhk)\b/i.test(q) ? "Apartment" : "";
-    const area = q.replace(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|for sale|for rent|buy|rent|[1-9]\s*bhk|in|near)\b/gi, " ").replace(/\s+/g, " ").trim();
+    const area = q.replace(/\b(?:under|below|upto|up to|max(?:imum)?|less than)\s*(?:rs\.?|inr|₹)?\s*\d+(?:\.\d+)?\s*(?:cr(?:ore)?s?|l(?:ac|akh)s?|lakhs?|crores?)\b/gi, " ").replace(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|for sale|for rent|buy|rent|[1-9]\s*bhk|in|near)\b/gi, " ").replace(/\s+/g, " ").trim();
     const params = new URLSearchParams();
     if (area) params.set("query", area);
     if (type) params.set("type", type);
+    const bhk = q.match(/\b([1-9])\s*bhk\b/i);
+    if (bhk) params.set("bedrooms", bhk[1]);
+    const budget = q.match(/\b(?:under|below|upto|up to|max(?:imum)?|less than)\s*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)\s*(cr(?:ore)?s?|l(?:ac|akh)s?|lakhs?|crores?)\b/i);
+    if (budget) {
+      const amount = Number(budget[1]);
+      const multiplier = /^cr|^crore/i.test(budget[2]) ? 10_000_000 : 100_000;
+      const maxPrice = Math.round(amount * multiplier);
+      if (Number.isSafeInteger(maxPrice) && maxPrice > 0) {
+        params.set("currency", "INR");
+        params.set("maxPrice", String(maxPrice));
+      }
+    }
     if (/\bfor rent\b|\brental\b/i.test(q)) params.set("listing", "rent");
     return "/real-estate" + (params.size ? "?" + params.toString() : "") + "#listing-results";
   }

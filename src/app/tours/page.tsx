@@ -8,6 +8,7 @@ import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
 import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import {destinationGeography} from "@/lib/destinations/geography";
 import TourCarousel from "@/components/tours/TourCarousel";
+import SmartSynergy from "@/components/ecosystem/SmartSynergy";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
@@ -353,6 +354,7 @@ export default async function ToursPage({ searchParams }: Props) {
           </Link>
         ))}
       </nav>
-    </main>
+    <SmartSynergy city={activeCity} context="travel" />
+  </main>
   );
 }

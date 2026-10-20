@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import JourneyNav from "./JourneyNav"
+import SmartSynergy from "@/components/ecosystem/SmartSynergy"
 import { MapPin, Share2, ArrowLeft, Building2, MessageSquare, BadgeCheck, FileCheck2 } from "lucide-react"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import PropertyGallery from "@/components/property/PropertyGallery"
@@ -68,7 +69,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         <JourneyNav />
         <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <Link href="/real-estate" className="inline-flex items-center gap-2 opacity-70 hover:opacity-100"><ArrowLeft size={16} aria-hidden="true" />All properties</Link>
-            <div className="flex gap-3 items-center"><SavePropertyButton slug={slug} className="gth-btn inline-flex items-center justify-center" /><button onClick={share} className={`gth-btn inline-flex items-center justify-center gap-2`}><Share2 size={16} aria-hidden="true" />Share</button></div>
+            <div className="flex gap-3 items-center"><SavePropertyButton slug={slug} className="gth-btn inline-flex items-center justify-center" /><button onClick={share} className={`gth-btn inline-flex items-center justify-center gap-2`}><Share2 size={16} aria-hidden="true" />Share</button><Link className="gth-btn inline-flex items-center justify-center" href={`/real-estate/${encodeURIComponent(slug)}/dossier`}>Export dossier</Link></div>
         </div>
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
         <header className={styles.projectHeader}>
@@ -99,6 +100,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
         </div>
         <nav aria-label="Mobile listing actions" className={styles.mobileEnquiry}>{isRegistryProject ? <><div><span className="text-xs opacity-70">Project status</span><p className="gold-text font-bold text-sm">{hasInventory ? `${inventory.length} active` : "Registry only"}</p></div><a href="#enquiry" className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>{hasInventory ? "Check availability" : "Request details"}</a></> : <><div><span className="text-xs opacity-70">Listed price</span><p className="gold-text font-bold text-sm">{property.formatted_price || "Price on request"}</p></div><a href="#enquiry" className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>Enquire</a></>}</nav>
         {related.length > 0 && <section className="mt-16"><h2 className="text-2xl md:text-3xl font-bold">More in this city</h2><p className="opacity-70 mt-3">Related inventory based on the recorded city.</p><div className="grid gap-5 mt-8 sm:grid-cols-2 xl:grid-cols-3">{related.filter(item => item.slug !== slug).slice(0, 6).map(item => <PropertyCardPro key={item.id} p={item} />)}</div></section>}
+        <SmartSynergy city={property.city || property.location || ""} context="property" />
         <PartnerHandshake footer />
     </main>
 }
