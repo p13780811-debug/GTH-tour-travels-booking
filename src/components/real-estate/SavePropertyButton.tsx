@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
-export default function SavePropertyButton({ slug, className = "gth-btn" }: { slug: string; className?: string }) {
+export default function SavePropertyButton({ slug, className = "" }: { slug: string; className?: string }) {
  const [saved,setSaved] = useState(false)
  const [error,setError] = useState("")
  useEffect(() => {
@@ -10,7 +10,7 @@ export default function SavePropertyButton({ slug, className = "gth-btn" }: { sl
   update(); window.addEventListener("storage",update); window.addEventListener("gth-saved",update)
   return () => { window.removeEventListener("storage",update); window.removeEventListener("gth-saved",update) }
  },[slug])
- return <span><button className={`gth-btn ${className}`} aria-pressed={saved} aria-label={saved ? "Remove from saved on this device" : "Save on this device"} title="Saved on this device only" onClick={event => {
+ return <span><button className={className} aria-pressed={saved} aria-label={saved ? "Remove from saved on this device" : "Save on this device"} title="Saved on this device only" onClick={event => {
   event.stopPropagation(); setError("")
   try {
    const items = normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"))
