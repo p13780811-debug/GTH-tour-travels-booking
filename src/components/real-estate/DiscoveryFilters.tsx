@@ -1,4 +1,5 @@
 "use client"
+import { Check } from "lucide-react"
 import { useEffect, useState } from "react"
 import styles from "./Listing.module.css"
 
@@ -59,10 +60,10 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
     <legend className="px-1 text-sm font-semibold text-[var(--text)]">Property categories</legend>
     <div className="grid grid-cols-1 gap-2" role="group" aria-label="Property categories">
      <button type="button" aria-pressed={!filters.type} onClick={() => chooseCategory("")}
-       className={`flex min-h-11 w-full items-center rounded-lg border px-3 py-2 text-left text-sm ${!filters.type?"border-[var(--gold)] bg-[var(--bg-soft)] font-semibold text-[var(--text)]":"border-[var(--border)] bg-[var(--card)] text-[var(--text)]"}`}>All property categories</button>
+       className="gth-btn inline-flex w-full items-center justify-between gap-2 whitespace-normal text-left">All property categories{!filters.type && <Check size={14} className="shrink-0" aria-hidden="true" />}</button>
      {[...PROJECT_CATEGORIES,...LISTING_CATEGORIES].map(([value,label]) =>
       <button key={value} type="button" aria-pressed={filters.type===value} onClick={() => chooseCategory(value)}
-       className={`flex min-h-11 w-full items-center rounded-lg border px-3 py-2 text-left text-sm ${filters.type===value?"border-[var(--gold)] bg-[var(--bg-soft)] font-semibold text-[var(--text)]":"border-[var(--border)] bg-[var(--card)] text-[var(--text)]"}`}>{label}</button>
+       className="gth-btn inline-flex w-full items-center justify-between gap-2 whitespace-normal text-left">{label}{filters.type===value && <Check size={14} className="shrink-0" aria-hidden="true" />}</button>
      )}
     </div>
     <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">Only matching recorded project types and published listing types appear in results.</p>
@@ -71,7 +72,7 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
    <label>Minimum price<input name="minPrice" type="number" min="1" step="1" inputMode="numeric" value={filters.minPrice} onChange={e => setFilters({...filters,minPrice:e.target.value})} placeholder="5000000" /></label>
    <label>Maximum price<input name="maxPrice" type="number" min="1" step="1" inputMode="numeric" value={filters.maxPrice} onChange={e => setFilters({...filters,maxPrice:e.target.value})} placeholder="20000000" /></label>
    <div className={styles.actions}>
-    <button className="gth-btn-gold">Apply filters</button>
+    <button className="gth-btn gth-btn-gold">Apply filters</button>
     <button type="button" className="gth-btn" onClick={() => { const url = new URL(window.location.href); for (const key of [...Object.keys(initial), "query", "page"]) url.searchParams.delete(key); window.history.replaceState(null,"",url); window.dispatchEvent(new Event("gth-discovery-filters")); onApply() }}>Reset filters</button>
    </div>
    <p className="text-sm opacity-70 col-span-full">Budget filters compare only published inventory in the selected currency; GTH PRO does not apply hidden FX conversion. A currency is required whenever a budget is entered. Registry-only projects without matching inventory are not presented as priced listings.</p>

@@ -20,8 +20,8 @@ export default function PropertyGallery(props: Props) {
     {approved.length > 1 && <div className="flex gap-2 overflow-x-auto p-3">
       {approved.map((url, i) => <button key={url} type="button" aria-label={`View project image ${i + 1}`}
         aria-pressed={i === index} onClick={() => setSelected(i)}
-        className={`h-20 w-28 shrink-0 overflow-hidden rounded-lg border bg-[var(--card)] ${i === index ? "border-[var(--gold)]" : "border-[var(--border)]"}`}>
-        <PropertyImage slug={props.slug} src={url} alt={`${props.title}, photo ${i + 1}`} className="h-full w-full" />
+        className="gth-btn w-40 shrink-0 overflow-hidden">
+        <span className="block h-20"><PropertyImage slug={props.slug} src={url} alt={`${props.title}, photo ${i + 1}`} className="h-full w-full" /></span><span className="block">{i === index ? "Selected photo" : "View photo"} {i + 1}</span>
       </button>)}
     </div>}
     <p className="px-4 py-3 text-xs leading-6 text-[var(--text-muted)]">

@@ -25,13 +25,10 @@ export default function PropertyImage({ slug, src, alt, className = "", district
         {approved?.kind === "render" ? "Approved architectural render" : "Reviewed project photo"}
       </span>
     </> : <div role="img" aria-label={`Project record for ${alt}. An approved project photograph is not available.`}
-      className="flex h-full min-h-40 w-full flex-col justify-between gap-2 border-b border-[var(--border)] bg-[var(--bg-soft)] p-4 text-[var(--text)]">
-      <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-        <Building2 size={17} aria-hidden="true" className="shrink-0 text-[var(--gold)]" /> Project profile
-      </span>
+      className="flex h-full min-h-40 w-full flex-col justify-end gap-2 border-b border-[var(--border)] bg-[var(--bg-soft)] p-4 pt-14 text-[var(--text)]">
       <strong className="line-clamp-2 text-base font-semibold leading-snug tracking-tight">{alt}</strong>
       <span className="line-clamp-1 text-[11px] text-[var(--text-muted)]">{reraId ? `RERA ${reraId}` : locality || district || propertyType || "Property record"}</span>
-      <span className="text-[10px] font-medium text-[var(--text-muted)]">Project photo not available</span>
+      <span className="inline-flex items-center gap-2 text-[10px] font-medium text-[var(--text-muted)]"><Building2 size={14} aria-hidden="true" />Project photo not available</span>
     </div>}
   </div>
 }

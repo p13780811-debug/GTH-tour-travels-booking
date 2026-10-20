@@ -68,7 +68,7 @@ export default function PartnerApplicationForm({defaultType="developer",realEsta
           I agree to be contacted about this enquiry, and I confirm I have permission to share the supplied business information. See our <Link href="/privacy-policy" className="font-semibold text-[var(--gold)] underline">Privacy Policy</Link>.
         </label>
         {error&&<p role="alert" className="rounded-xl border border-[var(--border)] p-3 text-sm sm:col-span-2">{error}</p>}
-        <button className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold disabled:opacity-50 sm:col-span-2" disabled={busy} type="submit">
+        <button className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2 sm:col-span-2" disabled={busy} type="submit">
           <Send size={16}/>{busy?"Sending for review...":"Send application for review"}
         </button>
       </form>

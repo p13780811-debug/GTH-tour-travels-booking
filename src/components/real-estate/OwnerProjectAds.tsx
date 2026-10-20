@@ -12,7 +12,7 @@ export default function OwnerProjectAds() {
    <p className="text-xs opacity-70">{project.category}</p>
    <h3 className="font-bold mt-2">{project.title}</h3>
    <p className="text-sm opacity-70 leading-6 mt-2">{project.description}</p>
-   <Link href={project.href} className={`gth-btn ${styles.action}`} target={project.href.startsWith("https://") ? "_blank" : undefined} rel={project.href.startsWith("https://") ? "noopener noreferrer" : undefined}>Visit website{project.href.startsWith("https://") && <span className="sr-only"> (opens in a new tab)</span>}</Link>
+   <Link href={project.href} className={`gth-btn inline-flex items-center justify-center gap-2`} target={project.href.startsWith("https://") ? "_blank" : undefined} rel={project.href.startsWith("https://") ? "noopener noreferrer" : undefined}>Visit website{project.href.startsWith("https://") && <span className="sr-only"> (opens in a new tab)</span>}</Link>
   </article>)}</div>
   <Link href="/real-estate/portfolio" className="text-sm underline inline-flex items-center min-h-11">View our portfolio</Link>
  </section>

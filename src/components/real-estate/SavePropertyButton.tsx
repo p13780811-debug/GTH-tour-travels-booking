@@ -10,7 +10,7 @@ export default function SavePropertyButton({ slug, className = "gth-btn" }: { sl
   update(); window.addEventListener("storage",update); window.addEventListener("gth-saved",update)
   return () => { window.removeEventListener("storage",update); window.removeEventListener("gth-saved",update) }
  },[slug])
- return <span><button className={className} aria-pressed={saved} aria-label={saved ? "Remove from saved on this device" : "Save on this device"} title="Saved on this device only" onClick={event => {
+ return <span><button className={`gth-btn ${className}`} aria-pressed={saved} aria-label={saved ? "Remove from saved on this device" : "Save on this device"} title="Saved on this device only" onClick={event => {
   event.stopPropagation(); setError("")
   try {
    const items = normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"))
@@ -19,5 +19,5 @@ export default function SavePropertyButton({ slug, className = "gth-btn" }: { sl
    if (!next.includes(slug) && !items.includes(slug)) { setError("Listing cannot be saved"); return }
    localStorage.setItem(SAVED_KEY,JSON.stringify(next)); window.dispatchEvent(new Event("gth-saved"))
   } catch { setError("Device storage unavailable") }
- }}><Heart size={18} className={saved ? "fill-current gold-text" : ""} /></button>{error && <span role="status" className="text-xs">{error}</span>}</span>
+ }}><Heart size={18} className={saved ? "fill-current" : ""} /></button>{error && <span role="status" className="text-xs">{error}</span>}</span>
 }
