@@ -22,8 +22,14 @@ try {
   await drawer.waitFor({state:"hidden"});
   await toggle.click();
   const handle=page.getByRole("button",{name:"Swipe down or tap to close filters"});
-  await handle.dispatchEvent("touchstart",{touches:[{identifier:1,target:handle,clientY:60}],changedTouches:[{identifier:1,target:handle,clientY:60}]});
-  await handle.dispatchEvent("touchend",{touches:[],changedTouches:[{identifier:1,target:handle,clientY:190}]});
+  const rect=await handle.boundingBox();
+  assert.ok(rect,"The swipe handle must be visible");
+  const x=rect.x+rect.width/2,y=rect.y+Math.min(12,rect.height/2);
+  const cdp=await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x,y}]});
+  await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x,y:y+115}]});
+  await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+  await cdp.detach();
   await drawer.waitFor({state:"hidden"});
   await page.close();
  }
