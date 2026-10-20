@@ -11,7 +11,7 @@ Continues the existing GTH PRO `/tender` vertical and its existing public Supaba
 - Download a CSV of the current result page or selected workspace view. Spreadsheet formula-leading strings are escaped. No estimated contract value is called a bid price or converted into a guaranteed award value.
 - Download an `.ics` deadline reminder using the existing calendar generator. Calendar import is a user action; no email-alert or connected calendar subscription is claimed.
 - Detail pages expose full UTC date **and time**, publication date, source reference, estimated value, qualification-review state, Save/Compare and preparation actions. Existing original-document links, document staging/checklists, attendance review and seven-step assistant remain available.
-- Existing optional Gemini extraction/coaching stays consent-gated. The assistant retains owner-authenticated private save/resume and editable draft generation/download. Discovery shortcuts do not bypass any validation, RLS, consent or source-review requirement.
+- Existing optional Gemini extraction/coaching stays consent-gated. Guidance now receives the recorded UTC deadline snapshot with an explicit official-recheck note, rather than omitting it and reporting it missing. Pre-bid/clarification dates are never inferred from the submission deadline. The assistant retains owner-authenticated private save/resume and editable draft generation/download. Discovery shortcuts do not bypass any validation, RLS, consent or source-review requirement.
 
 ## Central styling and scope
 

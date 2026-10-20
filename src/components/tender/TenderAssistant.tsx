@@ -110,7 +110,9 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     setAiBusy(true);setAiReply("");
     try{
       const context={
-        tender:{title:notice.title,buyer:notice.buyer,reference:notice.source_reference},
+        tender:{title:notice.title,buyer:notice.buyer,reference:notice.source_reference,
+          deadline_utc:currentDeadline,
+          deadline_note:"Catalog snapshot only; confirm the latest deadline, timezone and corrigenda on the official portal."},
         requirements:req,screening:report.status,
         bidder:{name:profile.business_name,country:profile.business_country,experience:profile.years_experience,
           turnover:profile.annual_turnover,currency:profile.turnover_currency,
@@ -206,7 +208,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
     const a=document.createElement("a");a.href=url;a.download=`gth-tender-${safeFileName(notice.source_reference)}-draft.txt`;
     a.click();URL.revokeObjectURL(url);
   }
-  return <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-14">
         <Link href="/tender" className="inline-flex min-h-10 items-center gap-2 text-sm text-[var(--text-soft)]">
@@ -477,5 +479,5 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         </section>
       </div>
     </div>
-  </div>;
+  </main>;
 }
