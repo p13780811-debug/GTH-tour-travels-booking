@@ -1,0 +1,64 @@
+name: GTH Hotel Phase 1 — One-Time Source Enrichment
+on:
+  push:
+    branches:
+      - gth-mumbai-thane-rera-ingestion
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: phase1-hotel-source-enrichment
+  cancel-in-progress: false
+jobs:
+  verify-and-enrich:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[phase1-enrichment-run]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Strict Python syntax and offline module tests
+        run: |
+          python -m py_compile scripts/hotels/phase1_enrich_166.py
+          python -m unittest discover -s tests -p 'test_phase1_hotel_enrichment.py' -v
+          python -m unittest discover -s tests -p 'test_phase1_overpass_hotels.py' -v
+      - name: Source-only, one-time 166-record enrichment (no database writes)
+        run: |
+          python scripts/hotels/phase1_enrich_166.py \
+            --input docs/hotels/phase1-existing-osm-catalog-snapshot.json \
+            --refresh-osm-tags \
+            --allow-public-nominatim \
+            --output final_enriched_hotels_166.json
+      - name: Reject duplicate, missing or mutated source records
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.loads(Path("docs/hotels/phase1-existing-osm-catalog-snapshot.json").read_text())
+          output=json.loads(Path("final_enriched_hotels_166.json").read_text())
+          assert output["readiness"]["structurally_valid"],output["readiness"]["issues"]
+          assert output["hotel_count"]==166
+          assert {r["id"]:(r["name"],r["lat"],r["lon"]) for r in output["records"]} == {
+            r["id"]:(r["name"],r["lat"],r["lon"]) for r in source["records"]}
+          for record in output["records"]:
+            assert record["address"],record["id"]
+            assert record["affiliate_url"] is None
+            assert record["thumbnail"] is None or record["thumbnail"] in record["gallery"]
+          print(json.dumps(output["readiness"],indent=2))
+          PY
+      - name: Store verified-source artifact (not a deploy)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-osm-hotels-enrichment-source-report
+          path: |
+            final_enriched_hotels_166.json
+            .cache/hotels/phase1_enrichment.json
+          retention-days: 14
+          if-no-files-found: warn
