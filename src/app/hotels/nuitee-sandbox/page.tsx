@@ -16,10 +16,7 @@ const getPreview = unstable_cache(async () => {
 export default async function NuiteePreview(){
  if(process.env.VERCEL_ENV!=="preview" || process.env.GTH_NUITEE_MODE!=="sandbox" ||
     process.env.GTH_NUITEE_SANDBOX_ENABLED!=="true")return <main className="p-8">Sandbox preview unavailable.</main>;
- try {
-  const data=await getPreview();
-  return <NuiteeSandboxExplorer initialHotels={data.hotels} checkedAt={data.checkedAt}/>;
- } catch {
-  return <NuiteeSandboxExplorer initialHotels={[]} checkedAt={null}/>;
- }
+ let data: { hotels: SupplierHotel[]; checkedAt: string } | null = null;
+ try { data=await getPreview(); } catch { data=null; }
+ return <NuiteeSandboxExplorer initialHotels={data?.hotels ?? []} checkedAt={data?.checkedAt ?? null}/>;
 }
