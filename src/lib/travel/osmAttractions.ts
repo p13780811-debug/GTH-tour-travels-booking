@@ -10,7 +10,7 @@ const SAFE_SEARCH = /^[\p{L}\p{N} .'-]{0,70}$/u;
 export type DirectoryFilters = {country?:string; region?:string; category?:string; city?:string; q?:string; after?:string; limit?:number; page?:number};
 export type Place = {source_id:string;name:string;category:string;region_scope:string;city:string|null;country_code:string|null;country_name:string|null;source_url:string;source_license:string;latitude:number;longitude:number};
 export type CountryCount = {country_code:string;country_name:string;records:number;last_source_write:string};
-export type SyncRun = {run_id:string;source_region:string;country_code:string;country_name:string;accepted:number;completed_at:string};
+export type SyncRun = {run_id:string;source_region:string;country_code:string;country_name:string;accepted:number;next_offset:number;complete:boolean;completed_at:string};
 export function validFilters(f:DirectoryFilters){
   return (!f.country || /^[A-Z]{2}$/.test(f.country)) &&
     (!f.region || ["all","goa","india","world"].includes(f.region)) &&
@@ -54,7 +54,7 @@ export async function sourceProgress(){
       .select("country_code,country_name,records,last_source_write")
       .order("country_name",{ascending:true}).limit(300),
     db.from("gth_osm_attraction_sync_runs")
-      .select("run_id,source_region,country_code,country_name,accepted,completed_at")
+      .select("run_id,source_region,country_code,country_name,accepted,next_offset,complete,completed_at")
       .order("completed_at",{ascending:false}).limit(8),
   ]);
   if(countries.error||runs.error)throw new Error("Source progress unavailable");

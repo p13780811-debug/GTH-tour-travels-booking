@@ -60,12 +60,27 @@ jobs:
           fi
           [[ "$MODE" == import || "$MODE" == dry-run ]] || exit 1
           echo "MODE=$MODE" >> "$GITHUB_ENV"
+          # Read the last successful per-region cursor through the SAME signed
+          # GitHub OIDC identity used for writes. Failure is fail-closed, never
+          # reset a partial region to the beginning without notice.
+          token_json="$(curl --fail --silent --show-error --proto '=https' \
+            --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-osm-attractions:dqprqjmhxjnrllczqyhz")"
+          status_token="$(printf '%s' "$token_json" | \
+            python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$status_token"
+          echo "::add-mask::$status_token"
+          curl --fail --silent --show-error --proto '=https' --max-time 30 \
+            -H "Authorization: Bearer $status_token" \
+            -H 'Content-Type: application/json' \
+            --data '{"status":true}' "$GTH_OSM_ATTRACTIONS_EDGE_URL" \
+            > "$RUNNER_TEMP/gth-osm-region-state.json"
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "$REQUESTED_REGION" ]]; then
             # Manual override still uses strict official index validation.
-            python3 scripts/attractions/geofabrik_registry.py --region "$REQUESTED_REGION" --env-file "$GITHUB_ENV"
+            python3 scripts/attractions/geofabrik_registry.py --region "$REQUESTED_REGION" --state-file "$RUNNER_TEMP/gth-osm-region-state.json" --env-file "$GITHUB_ENV"
           else
             # Automatic push + schedule: source groups follow region-appropriate UTC windows.
-            python3 scripts/attractions/geofabrik_registry.py --auto-window --env-file "$GITHUB_ENV"
+            python3 scripts/attractions/geofabrik_registry.py --auto-window --state-file "$RUNNER_TEMP/gth-osm-region-state.json" --env-file "$GITHUB_ENV"
           fi
       - name: Install open source osmium utility
         run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
@@ -96,7 +111,7 @@ jobs:
           if [[ "$MODE" == dry-run ]]; then
             python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
               --region "$REGION" --country-code "$COUNTRY_CODE" --country-name "$COUNTRY_NAME" \
-              --limit 18000 --dry-run
+              --limit 18000 --start-offset "$START_OFFSET" --dry-run
             exit 0
           fi
           token_json="$(curl --fail --silent --show-error --proto '=https' \
@@ -109,5 +124,5 @@ jobs:
           export GTH_OSM_ATTRACTIONS_OIDC_TOKEN
           python3 scripts/attractions/import_osm_attractions.py mapped-places.geojsonseq \
             --region "$REGION" --country-code "$COUNTRY_CODE" --country-name "$COUNTRY_NAME" \
-            --limit 18000 --run-id "$GITHUB_RUN_ID"
-          echo "© OpenStreetMap contributors · ODbL 1.0 via Geofabrik: region=$REGION country=$COUNTRY_CODE. Authenticated batches paced 5.5s apart; at most 18,000 source IDs per run. Community mapping, not certified venues/ticket stock." >> "$GITHUB_STEP_SUMMARY"
+            --limit 18000 --start-offset "$START_OFFSET" --run-id "$GITHUB_RUN_ID"
+          echo "© OpenStreetMap contributors · ODbL 1.0 via Geofabrik: region=$REGION country=$COUNTRY_CODE. Authenticated batches paced 5.5s apart; at most 18,000 source IDs per run with persisted region resume offsets. Community mapping, not certified venues/ticket stock." >> "$GITHUB_STEP_SUMMARY"

@@ -9,6 +9,8 @@ on:
       - "src/app/attractions/**"
       - "src/app/api/travel/osm-attractions/**"
       - "supabase/migrations/*osm_worldwide_directory.sql"
+      - "supabase/migrations/*osm_sync_resume_and_idempotence.sql"
+      - "supabase/functions/gth-osm-attractions-ingest/**"
       - "tests/test_osm_attractions.py"
       - "tests/osm-attractions-contract.test.mjs"
       - ".github/workflows/gth-osm-attractions-sync.yml"
@@ -23,6 +25,8 @@ on:
       - "src/app/attractions/**"
       - "src/app/api/travel/osm-attractions/**"
       - "supabase/migrations/*osm_worldwide_directory.sql"
+      - "supabase/migrations/*osm_sync_resume_and_idempotence.sql"
+      - "supabase/functions/gth-osm-attractions-ingest/**"
       - "tests/test_osm_attractions.py"
       - ".github/workflows/gth-open-attractions-source-checks.yml"
 permissions:
@@ -30,7 +34,7 @@ permissions:
 jobs:
   validate-source:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,3 +45,9 @@ jobs:
         run: python3 -m unittest discover -s tests -p "test_geofabrik_registry.py"
       - name: Test RLS, route, source-licensed semantics
         run: node --test tests/osm-attractions-contract.test.mjs
+      - name: Set up Deno for protected OSM gateway typecheck
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck OIDC-only OSM source gateway
+        run: deno check --config supabase/functions/gth-osm-attractions-ingest/deno.json supabase/functions/gth-osm-attractions-ingest/index.ts
