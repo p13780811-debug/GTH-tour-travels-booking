@@ -12,15 +12,22 @@ export default function SearchBox() {
         city.toLowerCase().includes(query.toLowerCase())
     )
     const [isOpen, setIsOpen] = useState(false)
-    function handleSearch(cityName?: string) {
-        const finalQuery = cityName || query;
-
-        if (finalQuery.trim()) {
-
-            setIsOpen(false)
-
-            router.push(`/search?q=${encodeURIComponent(finalQuery.toLowerCase())}`)
-        }
+    async function handleSearch(cityName?: string) {
+        const finalQuery = (cityName || query).trim().slice(0, 180)
+        if (!finalQuery) return
+        setIsOpen(false)
+        const fallback = "/search?" + new URLSearchParams({ q: finalQuery }).toString()
+        try {
+            const result = await fetch("/api/smart-search?" + new URLSearchParams({ q: finalQuery }), {
+                cache: "no-store",
+            })
+            if (!result.ok) { router.push(fallback); return }
+            const data: unknown = await result.json()
+            const href = data && typeof data === "object" && "href" in data &&
+                typeof data.href === "string" && data.href.startsWith("/") &&
+                !data.href.startsWith("//") ? data.href : fallback
+            router.push(href)
+        } catch { router.push(fallback) }
     }
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -37,8 +44,9 @@ export default function SearchBox() {
                         setIsOpen(true)
                     }}
                     onKeyDown={handleKeyDown}
+                    maxLength={180}
                     aria-label="Search GTH PRO cities and services"
-                    placeholder="Search cities, hotels..."
+                    placeholder="Try: 2BHK in Andheri under 1.5 Cr"
                     className="w-full min-w-0 rounded-2xl border border-[var(--border)] bg-transparent py-3 pl-4 pr-12 text-sm text-[var(--text)] outline-none transition-all placeholder:text-[var(--muted)] focus:border-[var(--gold)]"
                 />
 

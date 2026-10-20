@@ -1,3 +1,4 @@
+import CrossVerticalLinks from "@/components/synergy/CrossVerticalLinks";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -249,6 +250,7 @@ export default async function DestinationPage({ params }: Props) {
           GTH PRO provides discovery and research. Approved providers independently handle final reservations, fares, bookings, payments and policies.
         </p>
       </section>
+      <CrossVerticalLinks kind="travel" city={destination.name} />
     </main>
   );
 }

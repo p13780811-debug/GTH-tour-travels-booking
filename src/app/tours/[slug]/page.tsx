@@ -1,3 +1,6 @@
+import SaveToTripButton from "@/components/tours/SaveToTripButton";
+import CrossVerticalLinks from "@/components/synergy/CrossVerticalLinks";
+import DossierActions from "@/components/real-estate/DossierActions";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -164,6 +167,11 @@ export default async function TourDetailPage({ params }: Props) {
           <RelatedCarousel related={related} symbolMap={symbolMap} />
         </section>
       )}
+      <section className="mx-auto max-w-7xl px-4 pb-8 md:px-6" aria-label="Save or share this experience">
+        <DossierActions title={String(tour.title)} url={"/tours/" + encodeURIComponent(slug) + "/dossier"} />
+        <div className="mt-3"><SaveToTripButton slug={slug} /></div>
+      </section>
+      <CrossVerticalLinks kind="travel" city={tour.city || tour.city_slug} />
       <nav aria-label="Continue travel planning" className="mx-auto flex max-w-7xl flex-wrap gap-4 px-4 pb-12 text-sm md:px-6">
         <Link href="/flights" className="underline">Flights</Link>
         <Link href="/hotels" className="underline">Hotels</Link>

@@ -1,4 +1,6 @@
 "use client"
+import CrossVerticalLinks from "@/components/synergy/CrossVerticalLinks";
+
 import Link from "next/link"
 import { ArrowUpRight, BedDouble, Check, MapPin, Maximize, ShieldCheck, Sparkles } from "lucide-react"
 import PropertyLeadActions from "@/components/property/PropertyLeadActions"
@@ -25,6 +27,7 @@ export default function ExplorerCard({ property: p, selected, compareFull, onCom
       <button className={styles.rank} onClick={() => onInfo("ranking")}><Sparkles size={14} /><span>Record coverage</span><strong>{score}<small>/100</small></strong><ArrowUpRight size={13} /></button>
       <div className={styles.cardBottom}><label title="Compare up to three properties"><input type="checkbox" aria-label={`Compare ${p.title}`} checked={selected} disabled={!selected && compareFull} onChange={onCompare} /><span>{selected ? <><Check size={13} />Selected</> : "Compare"}</span></label><Link href={url}>View details<ArrowUpRight size={14} /></Link></div>
       <PropertyLeadActions property={{ id: Number(p.id), title: p.title, slug: p.slug, rera_id: p.rera_id }} compact />
+      {["mumbai","goa"].includes((p.city || "").trim().toLowerCase()) && <CrossVerticalLinks kind="property" city={p.city} compact />}
     </div>
   </article>
 }

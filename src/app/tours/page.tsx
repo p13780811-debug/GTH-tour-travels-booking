@@ -1,3 +1,4 @@
+import CrossVerticalLinks from "@/components/synergy/CrossVerticalLinks";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -345,6 +346,8 @@ export default async function ToursPage({ searchParams }: Props) {
         countryName={activeCity ? destinationGeography(activeCity.toLowerCase()).country : null} city={activeCity || null} />
       {(!activeCity || ["goa", "panaji", "margao"].includes(activeCity.toLowerCase())) && <OpenAttractionsRail region="goa" />}
       {(!activeCity || ["mumbai", "pune", "shirdi", "ajanta-ellora"].includes(activeCity.toLowerCase())) && <OpenAttractionsRail region="maharashtra" />}
+
+      {activeCity && <CrossVerticalLinks kind="travel" city={activeCity} />}
 
       <nav aria-label="Explore more travel services" className="mx-auto flex max-w-7xl flex-wrap gap-2 px-4 pb-10 sm:px-6">
         {links.map(({ href, label, Icon }) => (

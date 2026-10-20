@@ -1,3 +1,4 @@
+import { smartSearchTarget } from "@/lib/search/smart-intent";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -50,26 +51,12 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
   const withParam = (route: string, key: string, value: string, hash = "") =>
     route + (value ? "?" + new URLSearchParams({ [key]: value }).toString() : "") + hash;
 
-  if (category === "property") {
-    const type = /\bvillas?\b/i.test(q) ? "Villa" : /\b(apartments?|flats?|[1-9]\s*bhk)\b/i.test(q) ? "Apartment" : "";
-    const area = q.replace(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|for sale|for rent|buy|rent|[1-9]\s*bhk|in|near)\b/gi, " ").replace(/\s+/g, " ").trim();
-    const params = new URLSearchParams();
-    if (area) params.set("query", area);
-    if (type) params.set("type", type);
-    if (/\bfor rent\b|\brental\b/i.test(q)) params.set("listing", "rent");
-    return "/real-estate" + (params.size ? "?" + params.toString() : "") + "#listing-results";
-  }
+  if (category === "property") return smartSearchTarget(q, "property").href;
   if (category === "tender") {
     const subject = q.replace(/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|find|search|for|in)\b/gi, " ").replace(/\s+/g, " ").trim();
     return withParam("/tender", "q", subject || q, "#tender-find");
   }
-  if (category === "hotel") {
-    const cityPhrase = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
-    if (cityPhrase) return withParam("/hotels", "city", cleanPlace(cityPhrase[1]));
-    const hotelName = cleanPlace(q);
-    const knownCity = destinations.some((place) => place.name.toLowerCase() === hotelName.toLowerCase());
-    return withParam("/hotels", knownCity ? "city" : "name", hotelName);
-  }
+  if (category === "hotel") return smartSearchTarget(q, "hotel").href;
   if (category === "tour") return withParam("/tours", "city", cleanPlace(q));
   if (category === "destination") {
     const place = q.replace(/^(?:find|discover|destinations?|travel to|visit|places? to visit|cities in)\s+/i, "").trim();

@@ -1,4 +1,6 @@
 "use client"
+import SearchBox from "@/components/SearchBox"
+
 import { useEffect, useRef, useState, type MouseEvent } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -29,8 +31,9 @@ export default function EstateHeader() {
  return <header className={styles.estateHeader}><div className={`gth-container ${styles.headerRow}`}>
   <Link href="/real-estate" onClick={event => navigate(event,"/real-estate")} className={styles.brand} aria-label="GTH PRO Global Real Estate home"><BrandVideo name="logo-motion" label="GTH PRO animated logo" controls={false} className={styles.brandLogo}/><span><strong>GTH PRO</strong><small>Global Real Estate</small></span></Link>
   <nav aria-label="Primary real estate navigation" className={styles.desktopNav}>{links.map(link => <Link key={link.href} href={link.href} onClick={event => navigate(event,link.href)} aria-current={!link.href.includes("?") && pathname === link.href ? "page" : undefined}>{link.label}</Link>)}<PropertyCategoryMenu navigate={navigate}/></nav>
+  <div className="hidden min-w-0 max-w-[250px] flex-1 2xl:block" aria-label="Universal search"><SearchBox /></div>
   <div className={styles.headerActions}><Link href="/real-estate/post-property" className={`gth-btn-gold ${styles.action}`}>List property</Link><Link href="/real-estate/profile" className={styles.accountLink}>Account</Link><ThemeToggle/><button ref={toggle} type="button" className={`gth-btn ${styles.menuToggle}`} aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="estate-menu" onClick={() => setOpen(value => !value)}>{open ? <X size={20}/> : <Menu size={20}/>}</button></div>
- </div>{open && <nav id="estate-menu" aria-label="Mobile property menu" className={`gth-container ${styles.mobileMenu}`}>{[...links,{href:"/real-estate/post-property",label:"List property"},{href:"/real-estate/profile",label:"Your account"},{href:"/",label:"GTH PRO ecosystem"}].map(link => <Link key={link.href} href={link.href} onClick={event => { setOpen(false); navigate(event,link.href) }}>{link.label}</Link>)}<PropertyCategoryMenu navigate={navigate} onNavigate={() => setOpen(false)}/></nav>}</header>
+ </div>{open && <nav id="estate-menu" aria-label="Mobile property menu" className={`gth-container ${styles.mobileMenu}`}><div className="w-full min-w-0 py-2"><SearchBox /></div>{[...links,{href:"/real-estate/post-property",label:"List property"},{href:"/real-estate/profile",label:"Your account"},{href:"/",label:"GTH PRO ecosystem"}].map(link => <Link key={link.href} href={link.href} onClick={event => { setOpen(false); navigate(event,link.href) }}>{link.label}</Link>)}<PropertyCategoryMenu navigate={navigate} onNavigate={() => setOpen(false)}/></nav>}</header>
 }
 
 
