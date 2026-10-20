@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   if (checkin < new Date().toISOString().slice(0, 10) || nights < 1 || nights > 30)
     return reply({ error: "Stay dates must be future dates, 1–30 nights" }, 400);
   const apiKey = process.env.NUITEE_SANDBOX_API_KEY;
-  if (!apiKey?.startsWith("sandbox_")) return reply({ error: "Sandbox not configured" }, 503);
+  if (!apiKey?.startsWith("sand_")) return reply({ error: "Sandbox not configured" }, 503);
   try {
     const response = await fetch("https://api.liteapi.travel/v3.0/hotels/rates", {
       method: "POST", cache: "no-store", signal: AbortSignal.timeout(15000),
