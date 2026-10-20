@@ -72,9 +72,13 @@ export async function POST(req: Request) {
       media_type: mediaType, supplier, original_url: originalUrl, attribution,
       license_basis: basis, permission_reference: permission, rights_attested: true,
     }).select("id,status,created_at").single();
-    // Without a privileged delete route an upload that fails metadata registration is
-    // retained PRIVATELY, never published. A controlled cleanup is a later RE-08 operation.
-    if (error || !data) throw new RequestError("Media not accepted for review; private orphan cleanup may be required", 409);
+    // On a failed metadata write, remove ONLY this just-created, unregistered object.
+    // The Storage DELETE policy denies deletion when a matching metadata row exists.
+    // A failed cleanup is retained privately for an administrator's orphan audit.
+    if (error || !data) {
+      await client.storage.from(BUCKET).remove([objectKey]).catch(() => {});
+      throw new RequestError("Media could not be queued for review. Please retry with an original file.", 409);
+    }
     return Response.json({ ...data, message: "Private image queued for review; not publicly accessible." },
       { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) { return requestError(error); }
