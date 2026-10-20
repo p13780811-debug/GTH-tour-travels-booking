@@ -124,3 +124,12 @@ test("RE-06: old public upload never used for new project-claim evidence",()=>{
  assert.match(upload,/rights_attested/);
  assert.doesNotMatch(upload,/getPublicUrl/);
 });
+
+test("RE-05: direct Storage JWT cannot upload to a different claimant's pending project", () => {
+ const sql=fs.readFileSync("supabase/migrations/20261020091500_re_master_98_project_media_claims.sql","utf8");
+ const storageInsert=sql.split('create policy "re claim private image inserts"')[1].split('drop policy if exists "re claim private image review downloads"')[0];
+ assert.match(storageInsert,/c\.id=\(\(storage\.foldername\(name\)\)\[3\]\)::uuid/);
+ assert.match(storageInsert,/c\.claimant_id=\(select auth\.uid\(\)\)/);
+ assert.match(storageInsert,/c\.status in \('pending','approved'\)/);
+ assert.match(storageInsert,/else false/);
+});
