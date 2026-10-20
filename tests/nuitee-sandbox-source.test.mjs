@@ -17,7 +17,7 @@ test("all supplier test routes require server-only preview auth", () => {
 });
 test("supplier keys stay server-only and sandbox-scoped", () => {
   assert.match(adapter, /NUITEE_SANDBOX_API_KEY/);
-  assert.match(adapter, /value\.startsWith\("sandbox_"\)/);
+  assert.match(adapter, /\/\^sand_\//);
   assert.doesNotMatch([adapter, search, details, rates].join("\n"), /NEXT_PUBLIC_NUITEE|prod_/);
 });
 test("no booking action or rate charging in preview routes", () => {
