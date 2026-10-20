@@ -42,9 +42,9 @@ test("Mobile sheet uses global theme tokens and handles keyboard and gestures",(
  assert.match(css,/var\(--border\)/);
 });
 test("Real-estate registry and inventory public boundaries preserved",()=>{
- const service=read("src/lib/real-estate/propertyService.ts");
+ const propertyRoute=read("src/app/real-estate/[slug]/page.tsx");
  const detail=read("src/components/real-estate/PropertyDetailClient.tsx");
- assert.match(service,/property_inventory/);
+ assert.match(propertyRoute,/\.from\("property_inventory"\)/);
  assert.match(detail,/registry_only/);
  assert.match(detail,/ProjectInventory/);
 });
