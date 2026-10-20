@@ -62,7 +62,7 @@ The exact tested dependency set is locked. `scripts/requirements-rera.txt` lists
 
 ## Database contract
 
-The additive migration is `supabase/migrations/20261018205239_mumbai_thane_registry_contract.sql`. It adds the requested public fields plus evidence/OSM/illustration metadata. Existing `hero_image`, `rera_id`/`slug` unique indexes, identity-generated IDs, policies and other columns are reused. Apply this migration once through the established migration workflow or Supabase SQL Editor before commit-mode ingestion; do not recreate the table.
+**Migration status for the consolidated release:** The corresponding registry fields and `properties_registry_coverage_check` constraint are already live in Supabase project `dqprqjmhxjnrllczqyhz` under migration `20261018205636_mumbai_thane_registry_contract`. The differently numbered historical `20261018205239` SQL is deliberately omitted from release PR #121 to prevent duplicate schema migrations. Keep the existing live properties table intact, with registry/project data distinct from sale/rent inventory. This does not authorize starting any importer or bypassing source access, rights and operator approval. For a new database, apply its reviewed canonical registry contract; never assume the current live state applies to other databases.
 
 | Requested field | Compatibility and meaning |
 | --- | --- |
