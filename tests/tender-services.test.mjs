@@ -46,8 +46,8 @@ async function handlerWith({insertError=null,existing=null,tender={ok:true,item:
   readJson:async req=>req.json(),RequestError,requestError:error=>Response.json({error:error.message},{status:error.status??502}),
   getPublicTender:async()=>{checks++;return tender;},serviceMessage,sameServiceSubmission,validateServiceRequest,
  };
- const module=await import(`data:text/javascript;base64,${Buffer.from(compiled+`\n// ${crypto.randomUUID()}`).toString('base64')}`);
- return {POST:module.POST,writes,checks:()=>checks};
+ const routeModule=await import(`data:text/javascript;base64,${Buffer.from(compiled+`\n// ${crypto.randomUUID()}`).toString('base64')}`);
+ return {POST:routeModule.POST,writes,checks:()=>checks};
 }
 const post=body=>new Request('https://gth.test/api/tender/services',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const envUrl=process.env.NEXT_PUBLIC_SUPABASE_URL,envKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
