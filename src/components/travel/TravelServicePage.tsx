@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -38,7 +39,7 @@ export default function TravelServicePage({
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={image} alt="" fill priority sizes="100vw" className="absolute inset-0 -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/75" />
         <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
@@ -52,6 +53,7 @@ export default function TravelServicePage({
           )}
         </div>
       </section>
+      <TravelSectionNav />
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]">
         <section>

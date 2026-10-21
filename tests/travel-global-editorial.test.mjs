@@ -48,8 +48,8 @@ test("Destination articles have distinct slugs, matching city assets and complet
 
 test("Five travel hubs show up to 48 real city tags with country-balanced rails", () => {
   for (const route of ["tours", "attractions", "guides", "blog", "destinations"]) {
-    const page=read("src/app/" + route + "/page.tsx");
-    assert.ok(page.includes("listMappedCities({pageSize:48})"), route + " window not expanded");
+    const page=read(route === "tours" ? "src/components/tours/ToursExplorer.tsx" : "src/app/" + route + "/page.tsx");
+    assert.match(page, /listMappedCities\(\{[^}]*pageSize:\s*48[^}]*\}\)/, route + " window not expanded");
     assert.ok(page.includes("MappedCityDiscovery"), route + " mapped discovery missing");
   }
   const rail=read("src/components/travel/MappedCityDiscovery.tsx");

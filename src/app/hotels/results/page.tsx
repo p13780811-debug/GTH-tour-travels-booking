@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import HotelResults from "./HotelResults";
 
@@ -34,10 +35,13 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <main className="min-h-screen bg-[var(--bg)] px-4 py-10 text-[var(--text)]">
       <div className="mx-auto max-w-7xl">
+<header data-travel-hero="true">
         <h1 className="text-2xl font-bold md:text-4xl">Hotel listings</h1>
         <p className="mt-2 text-sm text-[var(--text-soft)]">
           Source-backed listings only. Confirm prices, dates and room availability with the booking partner.
         </p>
+</header>
+<TravelSectionNav />
         {hasScope ? (
           <div className="mt-8">
             <HotelResults scope={{ city, destination, name, country, category, sort, source, checkin, checkout, adults }} />

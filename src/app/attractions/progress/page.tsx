@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Globe2,Database,RefreshCw} from "lucide-react";
@@ -13,10 +14,13 @@ export default async function AttractionsProgress(){
  const [progress,guideStats]=await Promise.all([sourceProgress().catch(()=>null),guidePublicationStats().catch(()=>null)]);
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+<header data-travel-hero="true">
    <Link href="/attractions" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/> Back to global attractions</Link>
    <p className="mt-5 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><RefreshCw size={15}/> Public source transparency</p>
    <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Live attractions import dashboard</h1>
    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">These are actual database records and completed GitHub source syncs—not estimates or promised worldwide coverage. Scheduled extraction moves through the publicly licensed Geofabrik regional index. Source scope is approximate near borders.</p>
+</header>
+<TravelSectionNav />
    {guideStats&&<section className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
     <h2 className="text-lg font-semibold">Editorial guide publishing readiness</h2>
     <p className="mt-2 text-sm text-[var(--text-soft)]">{guideStats.indexableGuides} of {guideStats.candidateGuides} guide candidates have BOTH editorial publication approval and independently approved licensed hero media. {guideStats.awaitingEditorialOrImageReview} remain excluded from SEO indexing.</p>
@@ -42,14 +46,15 @@ export default async function AttractionsProgress(){
      </div>
     </section>
     <section className="mt-9">
-     <h2 className="text-xl font-semibold">Latest completed regional source runs</h2>
+     <h2 className="text-xl font-semibold">Latest completed source runs</h2>
      {progress.runs.length===0?<p className="mt-3 text-sm text-[var(--text-soft)]">The historical India import happened before sync receipts were enabled. New successful worldwide runs will appear here.</p>:
      <div className="mt-4 grid gap-3 sm:grid-cols-2">
       {progress.runs.map(item=><article key={item.run_id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
        <p className="text-sm font-semibold">{item.country_name} · {item.country_code}</p>
        <p className="mt-1 break-all text-xs text-[var(--text-soft)]">{item.source_region}</p>
-       <p className="mt-2 text-sm">{item.accepted.toLocaleString("en-IN")} records accepted/upserted in this run</p>
-       <p className="mt-1 text-xs text-[var(--text-soft)]">Completed {new Date(item.completed_at).toLocaleString("en-IN")}</p>
+       <p className="mt-2 text-sm">{item.accepted.toLocaleString("en-IN")} mapped source IDs submitted in this run</p>
+       <p className="mt-1 text-xs font-semibold">{"Completed source sync receipt"}</p>
+       <p className="mt-1 text-xs text-[var(--text-soft)]">Run completed {new Date(item.completed_at).toLocaleString("en-IN")}</p>
       </article>)}
      </div>}
     </section>

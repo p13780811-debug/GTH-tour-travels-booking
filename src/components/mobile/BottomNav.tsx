@@ -17,7 +17,7 @@ export default function BottomNav(_props: { user?: unknown }) {
     return <nav aria-label="Mobile real estate navigation" className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-[var(--border)] bg-[var(--card)] grid grid-cols-5" style={{ paddingBottom:"env(safe-area-inset-bottom)" }}>
         {items.map(({ href,label,Icon }) => {
             const active = !href.includes("#") && pathname === href
-            return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex flex-col items-center justify-center min-h-[64px] gap-1 text-xs ${active ? "gold-text font-bold" : "opacity-70"}`}><Icon size={20} aria-hidden="true" /><span>{label}</span></Link>
+            return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex flex-col items-center justify-center min-h-[64px] gap-1 text-xs transition-transform duration-150 active:scale-95 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--gold)] ${active ? "gold-text font-bold" : "opacity-70"}`}><Icon size={20} aria-hidden="true" /><span>{label}</span></Link>
         })}
     </nav>
 }

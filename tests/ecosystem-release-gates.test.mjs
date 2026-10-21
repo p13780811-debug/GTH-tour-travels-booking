@@ -60,7 +60,7 @@ test("affiliate application contact and owned-project advertising are truthful",
  const footer=source("src/components/sections/EcosystemFooter.tsx");
  const ads=source("src/components/sections/HousePromotions.tsx");
  const projects=source("src/lib/portfolio/projects.ts");
- for(const content of [about,contact,home,footer]) assert.match(content,/official\.gthpro@gmail\.com/);
+ for(const content of [about,contact,home,footer]) assert.match(content,/SITE_CONFIG\.(supportEmail|contactEmail|legalEmail)/);
  assert.match(ads,/Advertisement · GTH PRO owned projects/);
  assert.match(ads,/prefers-reduced-motion/);
  assert.match(ads,/window\.setInterval/);
@@ -86,7 +86,7 @@ test("public partner inbox stays private, and launch indexing remains gated",()=
  assert.match(api,/enforceRateLimit\(req,"enquiries"\)/);
  assert.match(robots,/if \(!publicLaunch\)/);
  assert.match(sitemap,/if \(!publicLaunch\) return \[\]/);
- assert.match(source("src/app/about/page.tsx"),/mailto:official\.gthpro@gmail\.com/);
+ assert.match(source("src/app/about/page.tsx"),/SITE_CONFIG\.supportEmail/);
 });
 
 
@@ -97,7 +97,7 @@ test("publisher review profile uses existing routes and honest business identifi
  const robots=source("src/app/robots.ts");
  const siteMap=source("src/app/sitemap.ts");
  assert.match(partners,/GTH PRO business and website profile/);
- assert.match(partners,/mailto:official\.gthpro@gmail\.com/);
+ assert.match(partners,/SITE_CONFIG\.supportEmail/);
  assert.match(partners,/https:\/\/gth-pro-portfolio\.pages\.dev\//);
  assert.match(partners,/\/affiliate-disclosure/);
  for (const route of ["/","/travel","/hotels","/blog","/about","/contact",
@@ -132,7 +132,7 @@ test("AI voice receptionist stays inside the existing Contact journey without CS
   assert.match(receptionist,/historyRef\.current\.slice\(-12\)/);
   assert.match(receptionist,/recognized question text|recognised question text/);
   assert.match(receptionist,/AI assistant,[\s\S]*not a human operator/);
-  assert.match(receptionist,/official\.gthpro@gmail\.com/);
+  assert.match(receptionist,/SITE_CONFIG\.(supportEmail|contactEmail|legalEmail)/);
   assert.match(receptionist,/Start voice conversation/);
   assert.match(receptionist,/End voice conversation/);
   assert.doesNotMatch(receptionist,/NEXT_PUBLIC_GEMINI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|callRecording|audioBlob/);

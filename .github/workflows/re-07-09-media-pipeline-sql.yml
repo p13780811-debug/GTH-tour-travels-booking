@@ -1,0 +1,45 @@
+name: GTH RE-07–09 Media Publication Security
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261020091500_re_master_98_project_media_claims.sql'
+      - 'supabase/migrations/20261020123000_re_07_09_media_candidate_publication.sql'
+      - 'tests/re-master-98-rls/**'
+      - '.github/workflows/re-07-09-media-pipeline-sql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-media-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: gth-temporary-ci-only }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap disposable database and exact registry fixtures
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f tests/re-master-98-rls/bootstrap.sql
+      - name: Apply staged parent migration and verify owner and independent review
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261020091500_re_master_98_project_media_claims.sql \
+            -f tests/re-master-98-rls/assertions.sql
+      - name: Apply media pipeline schema then assert RLS, no auto publish and takedown
+        run: |
+          docker run --rm --network host -v "$PWD:/work:ro" -w /work -e PGPASSWORD=gth-temporary-ci-only postgres:17 \
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/20261020123000_re_07_09_media_candidate_publication.sql \
+            -f tests/re-master-98-rls/media-publication.sql

@@ -12,6 +12,8 @@
 
 "use client";
 
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
+
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -277,42 +279,17 @@ function HotelsContent() {
       {city:"Tokyo",slug:"tokyo",image:"/images/cities/tokyo.jpg"},
     ] as const;
 
-    const categories = [
-        { icon: Hotel, label: "Hotels", href: "/hotels", active: true },
-        { icon: Plane, label: "Flights", href: "/flights", active: false },
-        { icon: Mountain, label: "Tours & Activities", href: "/tours", active: false },
-        { icon: Building2, label: "Real Estate", href: "/real-estate", active: false },
-    ];
-
     return (
         <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
             {/* ========================================================================= */}
             {/* HERO */}
             {/* ========================================================================= */}
 
-            <section className="relative gth-glass overflow-hidden border-b border-[var(--border)] bg-[var(--bg)]">
+            <section className="relative gth-glass overflow-hidden border-b border-[var(--border)] bg-[var(--bg)]" data-travel-hero="true">
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 pt-5 pb-7 md:pt-8 md:pb-9">
-                    {/* TOP NAV */}
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                        {categories.map((item, index) => (
-                            <a href={item.href}
-                                key={index}
-                                className={`shrink-0 flex items-center gap-2 px-4 py-3 rounded-full border transition-all ${item.active
-                                    ? "bg-[var(--card)] border-[var(--border)] text-[var(--text)]"
-                                    : "border-transparent text-[var(--text-soft)] hover:bg-[var(--card)]"
-                                    }`}
-                            >
-                                <item.icon size={16} />
-                                <span className="text-xs font-semibold whitespace-nowrap">
-                                    {item.label}
-                                </span>
-                            </a>
-                        ))}
-                    </div>
-
                     {/* TITLE */}
-                    <div className="mt-8">
+                    <div>
                         <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)]">
                             <Orbit size={14} />
                             <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
@@ -392,6 +369,7 @@ function HotelsContent() {
                     </div>
                 </div>
             </section>
+      <TravelSectionNav />
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
               <div className="flex flex-wrap items-center gap-3">
@@ -717,7 +695,7 @@ export default function HotelsPage() {
                 // Searchable, source-honest initial HTML while the client-side
                 // hotel catalog hydrates. No fake hotel cards, prices or reviews.
                 <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-                    <section className="border-b border-[var(--border)] bg-[var(--card)]">
+                    <section className="border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
                         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20">
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                                 GTH PRO · Global stays
@@ -746,6 +724,7 @@ export default function HotelsPage() {
                             </form>
                         </div>
                     </section>
+      <TravelSectionNav />
                     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-label="Hotel catalog loading">
                         <p role="status" className="text-sm text-[var(--text-soft)]">
                             Preparing available hotel listings…

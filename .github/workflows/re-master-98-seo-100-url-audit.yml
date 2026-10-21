@@ -1,0 +1,29 @@
+name: GTH RE Master 98 — SEO Public 100 URL Audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/audit-re-gsc-100-pages.mjs'
+      - '.github/workflows/re-master-98-seo-100-url-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-public-page-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Inspect 100 public property pages from all live existing sitemap shards
+        run: node scripts/audit-re-gsc-100-pages.mjs
+      - name: Preserve complete 100 URL evidence and summary even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: re-master-98-100-property-url-audit
+          path: tmp/re-gsc-100-url-audit.json
+          if-no-files-found: warn
+          retention-days: 30

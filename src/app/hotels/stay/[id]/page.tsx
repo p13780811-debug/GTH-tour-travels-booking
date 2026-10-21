@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import {cache} from "react";
 import JsonLd from "@/components/seo/JsonLd";
@@ -116,10 +117,10 @@ export default async function HotelStay({params,searchParams}:PageProps){
  const adultString=firstSearchValue(requested.adults);
  const adults=/^(?:[1-9]|1[0-9]|20)$/.test(adultString)?Number(adultString):undefined;
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-  return <main className="mx-auto max-w-5xl p-8">Hotel directory currently unavailable.</main>;
+  return <main className="mx-auto max-w-5xl p-8"><header data-travel-hero="true"><h1 className="text-2xl font-semibold">Hotel directory currently unavailable.</h1></header><TravelSectionNav /></main>;
  const hotel=await getHotel(id);
  if(!hotel)return <main className="mx-auto min-h-[60vh] max-w-4xl px-4 py-16">
-   <h1 className="text-2xl font-semibold">Hotel record not available</h1>
+   <header data-travel-hero="true"><h1 className="text-2xl font-semibold">Hotel record not available</h1></header><TravelSectionNav />
    <p className="mt-4 text-sm text-[var(--text-soft)]">This listing may have changed or is not approved for publication.</p>
    <Link className="mt-5 inline-flex gap-2 underline" href="/hotels"><ArrowLeft size={16}/> Back to hotel search</Link>
  </main>;
@@ -148,6 +149,7 @@ export default async function HotelStay({params,searchParams}:PageProps){
    <Link href="/hotels" className="inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-soft)]">
     <ArrowLeft size={17}/> Hotels & stays</Link>
    <div className="mt-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-9">
+<header data-travel-hero="true">
     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO · Source-backed hotel directory</p>
     <h1 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">{hotel.name}</h1>
     <p className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">
@@ -172,6 +174,8 @@ export default async function HotelStay({params,searchParams}:PageProps){
        alt={hotel.name+" — reviewed owner photo "+(index+2)} loading="lazy"
        className="h-36 w-full rounded-xl border border-[var(--border)] object-cover"/>)}
     </div>}
+</header>
+<TravelSectionNav />
     {hotel.description&&<p className="mt-6 text-sm leading-7 text-[var(--text-soft)]">{hotel.description}</p>}
     {hotel.phone&&<p className="mt-3 text-sm text-[var(--text-soft)]">OSM-listed hotel phone (confirm with property):{" "}
       <a className="underline" href={"tel:"+hotel.phone.replace(/[^+0-9]/g,"")}>{hotel.phone}</a>

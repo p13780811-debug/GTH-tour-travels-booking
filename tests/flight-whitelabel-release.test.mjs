@@ -26,8 +26,10 @@ test("flight page includes complete airport journey sections without touching ot
   for (const section of ["Flight protection", "Airport transfers", "Car rentals", "Airport essentials", "At destination"]) {
     assert.ok(services.includes('group: "' + section + '"'), section);
   }
+  const navigation = read("src/components/travel/TravelSectionNav.tsx");
+  assert.match(page, /<TravelSectionNav\s*\/>/);
   for (const route of ["/transfers", "/cars", "/insurance", "/hotels", "/tours", "/destinations"]) {
-    assert.ok(page.includes('href: "' + route + '"') || services.includes('href="' + route + '"'), route);
+    assert.ok(new RegExp('href:\\s*"' + route + '"').test(navigation) || services.includes('href="' + route + '"'), route);
   }
   assert.match(services, /snap-x snap-mandatory/);
   assert.match(services, /rel="noopener noreferrer sponsored"/);

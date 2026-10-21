@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -104,7 +105,7 @@ export default async function DestinationPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData}/>
-      <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={destination.image_url} alt={destination.name} fill priority sizes="100vw"
           className="absolute -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80"/>
@@ -143,6 +144,7 @@ export default async function DestinationPage({ params }: Props) {
           </div>
         </div>
       </section>
+      <TravelSectionNav />
 
       <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}

@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,Camera,ShieldCheck,BadgeCheck} from "lucide-react";
@@ -11,7 +12,7 @@ export const metadata:Metadata={
 };
 export default function ListYourHotel(){
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-  <section className="border-b border-[var(--border)] bg-[var(--card)]">
+  <section className="border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 md:py-16">
     <Link href="/hotels" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text-soft)]">
      <ArrowLeft size={16}/> Browse hotels
@@ -34,6 +35,7 @@ export default function ListYourHotel(){
     </div>
    </div>
   </section>
+      <TravelSectionNav />
   <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 md:py-14">
    <HotelPartnerForm/>
   </section>

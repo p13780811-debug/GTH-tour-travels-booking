@@ -1,3 +1,4 @@
+import { SITE_CONFIG } from "@/lib/site-config";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowRight, Building2, Globe2, Plane, ShieldCheck, BriefcaseBusiness, BadgeCheck, Handshake} from "lucide-react";
@@ -9,6 +10,7 @@ export const metadata:Metadata={
 const pillars=[
  {Icon:Building2,title:"Real Estate Developers",desc:"Introduce properties, developments and approved inventory with evidence for marketplace review.",href:"/real-estate/post-property",action:"Submit a property"},
  {Icon:BadgeCheck,title:"Real Estate Agents",desc:"Request agency onboarding and share your verifiable property listing portfolio.",href:"/partners/apply?type=agent",action:"Agency application"},
+ {Icon:BadgeCheck,title:"Registered Project Claims",desc:"Builders, owners and authorized agents can request a review of exact MahaRERA project identity and privately upload rights-cleared photo evidence.",href:"/real-estate/claim-project",action:"Claim an existing project"},
  {Icon:Plane,title:"Hotel Owners & Managers",desc:"Submit real hotel inventory and original property photos for an administrator-reviewed public listing. No Google billing required.",href:"/hotels/list-your-property",action:"List your hotel"},
  {Icon:Plane,title:"Travel Suppliers",desc:"Tours, transfers and transportation providers can propose source-backed integrations.",href:"/partners/apply?type=travel_supplier",action:"Supplier application"},
  {Icon:BriefcaseBusiness,title:"Affiliate & B2B Partners",desc:"Introduce a travel affiliate or distribution programme; commercial participation is subject to approval.",href:"/partners/apply?type=affiliate",action:"Partnership enquiry"}
@@ -68,7 +70,7 @@ export default function PartnersPage(){
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Official business contact</dt>
-          <dd className="mt-2 text-sm leading-7"><a className="break-all font-semibold text-[var(--gold)] underline" href="mailto:official.gthpro@gmail.com">official.gthpro@gmail.com</a></dd>
+          <dd className="mt-2 text-sm leading-7"><a className="break-all font-semibold text-[var(--gold)] underline" href={`mailto:${SITE_CONFIG.supportEmail}`}>{SITE_CONFIG.supportEmail}</a></dd>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Business model</dt>

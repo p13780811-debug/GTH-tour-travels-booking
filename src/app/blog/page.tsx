@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -55,7 +56,7 @@ export default async function BlogList({ searchParams }: Props) {
 
   return (
     <main style={palette} className="min-h-screen bg-[#061426] text-[#f7f9fd]">
-      <section className="relative isolate overflow-hidden border-b border-[#eac671]/25">
+      <section className="relative isolate overflow-hidden border-b border-[#eac671]/25" data-travel-hero="true">
         <Image src="/images/global-city.jpg" alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#020b1d]/95 via-[#041426]/92 to-[#08213d]/70" />
         <div className="mx-auto grid max-w-[1400px] items-center gap-10 px-5 py-14 sm:px-8 md:py-20 lg:min-h-[470px] lg:grid-cols-[1.1fr_.9fr]">
@@ -87,6 +88,7 @@ export default async function BlogList({ searchParams }: Props) {
           </Link>
         </div>
       </section>
+      <TravelSectionNav />
 
       <MappedCityDiscovery cities={mapped?.items??[]} title="Explore real cities before your next trip"/>
       <section id="journal" className="mx-auto max-w-[1400px] scroll-mt-12 px-5 py-12 sm:px-8 md:py-16">

@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -46,7 +47,7 @@ const faqs = [
 
 export default function CarsPage() {
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+    <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
       <Image src="/images/mega/transfers.jpg" alt="" fill priority sizes="100vw"
         className="absolute inset-0 -z-20 object-cover opacity-25"/>
       <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80"/>
@@ -66,6 +67,7 @@ export default function CarsPage() {
         </nav>
       </div>
     </section>
+      <TravelSectionNav />
 
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-12 sm:px-6 md:py-16">
       <CarRentalPlanner />

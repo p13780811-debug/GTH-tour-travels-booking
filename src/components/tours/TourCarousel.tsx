@@ -26,10 +26,10 @@ export default function TourCarousel({ label, children }: Props) {
     <div className="min-w-0">
       <div className="mb-2 flex items-center justify-end gap-2">
         <button type="button" onClick={() => move(-1)} aria-label={"Scroll " + label + " left"}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="gth-btn inline-flex items-center justify-center"
         ><ChevronLeft size={17} aria-hidden="true" /></button>
         <button type="button" onClick={() => move(1)} aria-label={"Scroll " + label + " right"}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="gth-btn inline-flex items-center justify-center"
         ><ChevronRight size={17} aria-hidden="true" /></button>
       </div>
       <div ref={viewportRef} role="region" aria-label={label} tabIndex={0}

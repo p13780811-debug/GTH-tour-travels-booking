@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,7 +31,7 @@ const additional = [
 
 export default function TravelHomePage() {
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <section className="relative isolate overflow-hidden border-b border-[var(--border)]">
+    <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
       <Image src="/maldives-bg.jpg" fill priority sizes="100vw" alt="Tropical island destination" className="-z-20 object-cover" />
       <div className="absolute inset-0 -z-10 bg-black/70" aria-hidden="true" />
       <div className="mx-auto max-w-7xl px-4 py-16 text-white sm:px-6 md:py-24 lg:py-32">
@@ -44,11 +45,8 @@ export default function TravelHomePage() {
         </div>
       </div>
     </section>
-    <nav aria-label="Travel services" className="border-b border-[var(--border)] bg-[var(--card)]">
-      <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-4 sm:px-6">
-        {services.map(({name, href, Icon}) => <Link key={href} href={href} className="gth-glass inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-[var(--border)] px-4 text-sm font-semibold"><Icon size={16} aria-hidden="true"/> {name}</Link>)}
-      </div>
-    </nav>
+      <TravelSectionNav />
+
     <section aria-labelledby="travel-services" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div><p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--text-soft)]">Explore GTH PRO Travel</p><h2 id="travel-services" className="mt-3 text-3xl font-bold md:text-5xl">Every journey starts here.</h2></div>

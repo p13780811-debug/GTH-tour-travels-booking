@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { SITE_CONFIG } from "@/lib/site-config";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -282,7 +283,7 @@ export default function VoiceReceptionist() {
       </p>
       <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
         Need a human response? Use the enquiry form on this page or email{" "}
-        <a href="mailto:official.gthpro@gmail.com" className="font-semibold text-[var(--gold)] underline">official.gthpro@gmail.com</a>.
+        <a href={`mailto:${SITE_CONFIG.supportEmail}`} className="font-semibold text-[var(--gold)] underline">{SITE_CONFIG.supportEmail}</a>.
         Read our <Link href="/privacy-policy" className="underline">Privacy Policy</Link>.
       </p>
     </section>

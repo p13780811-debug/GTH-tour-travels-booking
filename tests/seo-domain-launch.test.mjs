@@ -47,7 +47,7 @@ test("structured data tells the truth, never fake names, ratings or partner appr
  const home=source("src/components/home/FlagshipHome.tsx");
  assert.match(home,/<SiteIdentitySchema \/>/);
  assert.match(company,/"@type": "Organization"/);
- assert.match(company,/official\.gthpro@gmail\.com/);
+ assert.match(company,/SITE_CONFIG\.contactEmail/);
  assert.match(blog,/"@type": "BlogPosting"/);
  assert.match(destination,/"@type": "BreadcrumbList"/);
  for(const value of [company,legacy])assert.doesNotMatch(value,/Sanjay Basak|200 OK verified live|gthpro\.com|aggregateRating|priceRange/);
