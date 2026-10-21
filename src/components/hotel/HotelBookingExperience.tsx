@@ -107,23 +107,28 @@ export default function HotelBookingExperience() {
         onSearchClick: value => { if (active) search(value); },
       });
       if (!active) return;
-      const destination = doc.querySelector<HTMLInputElement>(".search-input");
-      destination?.setAttribute("aria-label", "Worldwide hotel destination");
-      const controls: [string, string][] = [
-        [".desktop-dates .date-description", "Choose check-in and checkout dates"],
-        [".mobile-checkin .date-description", "Choose check-in date"],
-        [".mobile-checkout .date-description", "Choose checkout date"],
-        [".field.last > span", "Choose guests and rooms; guest counts apply per room"],
-      ];
-      for (const [selector, label] of controls) {
-        const control = doc.querySelector<HTMLElement>(selector);
-        if (!control) continue;
-        control.setAttribute("role", "button"); control.tabIndex = 0;
-        control.setAttribute("aria-label", label);
-        control.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") { event.preventDefault(); control.click(); }
-        });
-      }
+      const enhanced = new WeakSet<HTMLElement>();
+      const enhanceSearchControls = () => {
+        const destination = doc.querySelector<HTMLInputElement>(".search-input");
+        destination?.setAttribute("aria-label", "Worldwide hotel destination");
+        const controls: [string, string][] = [
+          [".desktop-dates .date-description", "Choose check-in and checkout dates"],
+          [".mobile-checkin .date-description", "Choose check-in date"],
+          [".mobile-checkout .date-description", "Choose checkout date"],
+          [".field.last > span", "Choose guests and rooms; guest counts apply per room"],
+        ];
+        for (const [selector, label] of controls) {
+          const control = doc.querySelector<HTMLElement>(selector);
+          if (!control) continue;
+          control.setAttribute("role", "button"); control.tabIndex = 0;
+          control.setAttribute("aria-label", label);
+          if (!enhanced.has(control)) control.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); control.click(); }
+          });
+          enhanced.add(control);
+        }
+      };
+      enhanceSearchControls();
       const labelGuestControls = () => {
         for (const row of doc.querySelectorAll(".guest-control")) {
           const label = row.querySelector("label")?.textContent?.trim();
@@ -134,7 +139,7 @@ export default function HotelBookingExperience() {
           row.querySelector("input")?.setAttribute("aria-label", label);
         }
       };
-      layoutObserver = new MutationObserver(() => { labelGuestControls(); resize(); });
+      layoutObserver = new MutationObserver(() => { enhanceSearchControls(); labelGuestControls(); resize(); });
       layoutObserver.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
       resizeObserver = new ResizeObserver(resize);
       resizeObserver.observe(doc.body);

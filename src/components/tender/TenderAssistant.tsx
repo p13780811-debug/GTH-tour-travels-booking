@@ -229,6 +229,7 @@ export default function TenderAssistant({initialTender}:{initialTender:Notice|nu
         </div>
       </div>
     </section>
+    <aside className="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-label="Optional paid tender assistance"><p className="text-sm leading-7 text-[var(--text-soft)]">Need help reviewing your requirements? <Link className="inline-flex min-h-11 items-center text-[var(--gold)] underline" href={`/tender/services${notice&&UUID.test(notice.id)?`?tenderId=${encodeURIComponent(notice.id)}`:""}`}>Request a paid service quote</Link>. This preparation assistant remains free.</p></aside>
     <div className="mx-auto grid max-w-6xl gap-7 px-4 py-10 sm:px-6 lg:grid-cols-[230px_minmax(0,1fr)]">
       <nav aria-label="Tender assistant steps" className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
         {steps.map((label,i)=><button key={label} type="button" onClick={()=>{setStep(i);setNoticeMessage("");}}
