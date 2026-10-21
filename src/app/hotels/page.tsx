@@ -20,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
@@ -87,6 +88,11 @@ type HotelListing = {
 
 function HotelsContent() {
     const params = useSearchParams();
+    // Preserve existing city/destination directory links. New visits use supplier booking.
+    const directoryRequested = params.get("view") === "directory" ||
+      (params.get("view") !== "booking" && ["city", "destination", "name", "country"].some(key => params.has(key)));
+    const [hotelMode, setHotelMode] = useState<"booking" | "directory">(directoryRequested ? "directory" : "booking");
+    useEffect(() => { setHotelMode(directoryRequested ? "directory" : "booking"); }, [directoryRequested]);
 
     const initialDestination = (params.get("destination")||"").trim().slice(0,80);
     const initialName = (params.get("name") || "").trim().slice(0, 80);
@@ -146,6 +152,7 @@ function HotelsContent() {
     }, [initialCity, initialName,initialDestination]);
 
     useEffect(() => {
+        if (hotelMode !== "directory") return;
         const controller = new AbortController();
         setHotels([]);
         activeQueryRef.current = queryKey;
@@ -183,7 +190,7 @@ function HotelsContent() {
         void loadHotels();
         return () => controller.abort();
     // Query key uniquely identifies a filter combination; it resets paging on every change.
-    }, [queryKey,retryCount]);
+    }, [queryKey,retryCount,hotelMode]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
@@ -297,18 +304,18 @@ function HotelsContent() {
                             </span>
                         </div>
 
-                        <h1 className="mt-5 text-2xl text-[var(--text)] sm:text-4xl md:text-5xl font-bold leading-tight max-w-4xl">
+                        <h1 className="gth-hotel-title mt-5 text-[var(--text)] font-bold leading-tight max-w-4xl">
                             Discover Hotels Around the World
                         </h1>
 
                         <p className="mt-4 text-sm md:text-base text-[var(--text-soft)] max-w-2xl">
-                            Explore available hotel listings worldwide, then confirm
-                            prices, room details and availability with the booking partner.
+                            Search worldwide stays with supplier room availability, photos and amenities,
+                            or explore our source-attributed hotel directory.
                         </p>
                     </div>
 
                     {/* SEARCH */}
-                    <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
+                    {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
@@ -366,10 +373,17 @@ function HotelsContent() {
                         </div>
                         {dateError&&<p role="alert" className="mt-3 text-sm text-[var(--text)]">{dateError}</p>}
                         <p className="mt-2 text-xs text-[var(--text-soft)]">Dates and guests are planning inputs; the provider confirms real prices and availability.</p>
-                    </div>
+                    </div>}
                 </div>
             </section>
       <TravelSectionNav />
+            <div className="gth-hotel-mode-switch" role="group" aria-label="Hotel experience">
+              <button type="button" className="gth-btn" aria-pressed={hotelMode === "booking"}
+                onClick={() => setHotelMode("booking")}>Live hotel booking</button>
+              <button type="button" className="gth-btn" aria-pressed={hotelMode === "directory"}
+                onClick={() => setHotelMode("directory")}>Hotel directory & guides</button>
+            </div>
+            {hotelMode === "booking" ? <HotelBookingExperience /> : <>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
               <div className="flex flex-wrap items-center gap-3">
@@ -680,6 +694,7 @@ function HotelsContent() {
                     </main>
                 </div>
             </section>
+            </>}
         </div>
     );
 }
@@ -700,7 +715,7 @@ export default function HotelsPage() {
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                                 GTH PRO · Global stays
                             </p>
-                            <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
+                            <h1 className="gth-hotel-title mt-4 max-w-4xl font-bold leading-tight">
                                 Discover Hotels Around the World
                             </h1>
                             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">

@@ -1345,3 +1345,51 @@ html.dark ::-webkit-scrollbar-thumb {
     transition-duration: 0.01ms;
   }
 }
+
+/* GTH HOTEL BOOKING SCOPED EXTENSION START */
+/* Hotels: scoped layout only; the existing ecosystem tokens remain authoritative.
+   This same stylesheet is used inside the isolated supplier search document. */
+.gth-hotel-title { font-size: var(--font-xl); }
+.gth-hotel-mode-switch,
+.gth-hotel-booking { width: min(100% - 2rem, 80rem); margin: var(--space-lg) auto; }
+.gth-hotel-mode-switch { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.gth-hotel-mode-switch .gth-btn[aria-pressed="false"] { background: var(--card); color: var(--text); box-shadow: none; border: 1px solid var(--border); }
+.gth-hotel-booking { padding: var(--space-lg); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--card); color: var(--text); }
+.gth-hotel-booking-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md); }
+.gth-hotel-booking-heading > div { flex: 1 1 20rem; min-width: 0; }
+.gth-hotel-booking h2 { font-size: var(--font-xl); font-weight: 750; margin: var(--space-sm) 0; }
+.gth-hotel-booking h3 { font-size: var(--font-lg); font-weight: 700; }
+.gth-hotel-booking p { font-size: var(--font-sm); line-height: 1.7; color: var(--text-soft); }
+.gth-hotel-booking-action { display: inline-flex; justify-content: center; align-items: center; gap: var(--space-sm); padding: 0.75rem 1rem; min-height: 46px; text-align: center; }
+.gth-hotel-eyebrow,
+.gth-hotel-booking-note { display: flex; align-items: flex-start; gap: var(--space-sm); margin: var(--space-md) 0; }
+.gth-hotel-eyebrow svg,
+.gth-hotel-booking-note svg { flex-shrink: 0; margin-top: 0.2rem; }
+.gth-hotel-search-panel { margin-top: var(--space-md); }
+.gth-hotel-search-frame,
+.gth-hotel-results-frame { display: block; width: 100%; max-width: 100%; border: 0; border-radius: var(--radius-sm); }
+.gth-hotel-search-frame { background: var(--card); }
+.gth-hotel-booking-results { scroll-margin-top: 7rem; }
+.gth-hotel-results-frame { margin-top: var(--space-lg); background: var(--bg); }
+.gth-hotel-booking-error { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-md); }
+html.gth-hotel-widget-root { min-height: 0; height: auto; background: var(--card); }
+body.gth-hotel-search-widget { margin: 0; padding: 0.5rem; min-height: 0; height: auto; background: var(--card); color: var(--text); }
+.gth-hotel-search-widget .search-bar { max-width: 100%; background: var(--card); color: var(--text); border-color: var(--border); font-family: inherit; box-shadow: none; }
+.gth-hotel-search-widget .search-bar .label,
+.gth-hotel-search-widget .search-bar .date-description,
+.gth-hotel-search-widget .search-bar input { color: var(--text); }
+.gth-hotel-search-widget .search-bar input { background: transparent; min-width: 0; }
+.gth-hotel-search-widget .search-bar .search-button { background: var(--btn-bg); color: var(--btn-text); min-height: 46px; border-radius: var(--radius-sm); }
+.gth-hotel-search-widget .search-bar .search-button .search-text { width: auto; }
+.gth-hotel-search-widget .search-bar .guests-popup,
+.gth-hotel-search-widget .search-bar .simple-typeahead-list { background: var(--card); color: var(--text); border-color: var(--border); }
+.gth-hotel-search-widget .search-bar .field .simple-typeahead-list .simple-typeahead-list-item { background: var(--card); color: var(--text); }
+.gth-hotel-search-widget .search-bar .field .simple-typeahead-list .simple-typeahead-list-item-active { background: var(--btn-bg); color: var(--btn-text); }
+.gth-hotel-search-widget .search-bar .guests-popup .guest-control input,
+.gth-hotel-search-widget .search-bar .guests-popup .guest-control button { background: var(--card); color: var(--text); }
+@media (max-width: 640px) {
+  .gth-hotel-booking { padding: var(--space-md); }
+  .gth-hotel-booking-heading > .gth-hotel-booking-action { width: 100%; }
+  .gth-hotel-mode-switch > button { flex: 1 1 10rem; }
+  .gth-hotel-search-widget .search-bar { width: 100%; max-width: 100%; }
+}

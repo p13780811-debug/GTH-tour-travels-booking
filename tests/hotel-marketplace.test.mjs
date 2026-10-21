@@ -74,7 +74,7 @@ test("hotel search and result pages recover from API failures without fake recor
   const results=read("src/app/hotels/results/HotelResults.tsx");
   const image=read("src/components/hotel/HotelPropertyImage.tsx");
   assert.match(landing,/Retry hotel search/);
-  assert.match(landing,/\[queryKey,retryCount\]/);
+  assert.match(landing,/\[queryKey,retryCount,hotelMode\]/);
   assert.match(results,/Retry hotel listings/);
   assert.match(results,/effectiveSource,retryCount\]/);
   assert.match(results,/activeKey\.current!==startedFor/);
