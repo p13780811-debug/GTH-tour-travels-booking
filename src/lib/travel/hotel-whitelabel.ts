@@ -83,3 +83,24 @@ export function hotelWidgetSearchParams(value: unknown): URLSearchParams | null 
   const search = parseHotelBookingSearch(params);
   return search ? hotelBookingParams(search) : null;
 }
+
+/** Compatibility for supplier IDs opened on GTH instead of the supplier domain.
+ * City guide slugs, OSM records and reviewed UUID listings keep their own routes.
+ * Unknown query fields (including offer tokens/PII) are never copied.
+ */
+export function hotelSupplierPathRedirect(pathname: string, params: URLSearchParams, now = new Date()): string | null {
+  const match = /^\/hotels\/(?:stay\/)?(lp[0-9a-f]{5,32})\/?$/.exec(pathname);
+  if (!match) return null;
+  const hasStay = ["checkin", "checkout", "occupancies", "adults", "children", "rooms"].some(key => params.has(key));
+  if (hasStay) {
+    const fields = new URLSearchParams(params);
+    fields.delete("hotelId"); fields.set("hotelId", match[1]);
+    const stay = parseHotelBookingSearch(fields, now);
+    return stay ? hotelWhiteLabelUrl(stay) : "/hotels?view=booking&bookingError=invalid-stay";
+  }
+  const url = new URL(`/hotels/${match[1]}`, HOTEL_BOOKING_ORIGIN);
+  url.searchParams.set("language", "en");
+  const currency = params.getAll("currency");
+  url.searchParams.set("currency", currency.length === 1 && currencies.has(currency[0]) ? currency[0] : "INR");
+  return url.toString();
+}

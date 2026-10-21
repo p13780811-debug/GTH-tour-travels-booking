@@ -64,3 +64,25 @@ test('real SDK callback shape is canonicalized without dropping occupancy struct
  assert.equal(parsed.get('currency'),'INR');
  assert.equal(hotelWidgetSearchParams({place:{description:'Mumbai'}}),null);
 });
+
+test('supplier IDs bypass the city slug router without redirecting normal GTH pages',async()=>{
+ const {hotelSupplierPathRedirect}=await import('../src/lib/travel/hotel-whitelabel.ts');
+ for(const pathname of ['/hotels/lp7246c','/hotels/stay/lp7246c']){
+  const url=new URL(hotelSupplierPathRedirect(pathname,query({email:'never-forward@example.invalid',redirect:'https://attacker.invalid',offerId:'never-forward'}),now));
+  assert.equal(url.origin,HOTEL_BOOKING_ORIGIN);assert.equal(url.pathname,'/hotels/lp7246c');
+  assert.equal(url.searchParams.get('checkin'),'2026-10-22');
+  assert.deepEqual(JSON.parse(atob(url.searchParams.get('occupancies'))),canonicalOccupancy);
+  for(const key of ['email','redirect','offerId'])assert.equal(url.searchParams.has(key),false);
+ }
+ for(const path of ['/hotels/mumbai','/hotels/hotels-in-london','/hotels/results','/hotels/list-your-property',
+  '/hotels/stay/osm%3Anode-123','/hotels/stay/edb636b8-1c11-4e70-b0aa-ff38d965c777','/real-estate/lp7246c',
+  '/hotels/lp7246c/other','/hotels/lp7246c%3Fredirect','/hotels/../../lp7246c'])
+  assert.equal(hotelSupplierPathRedirect(path,query(),now),null,path);
+});
+test('stale supplier links recover to search rather than silently changing the stay',async()=>{
+ const {hotelSupplierPathRedirect}=await import('../src/lib/travel/hotel-whitelabel.ts');
+ for(const params of [query({checkin:'2026-10-01'}),query({occupancies:'invalid'}),new URLSearchParams('adults=3')])
+  assert.equal(hotelSupplierPathRedirect('/hotels/lp7246c',params,now),'/hotels?view=booking&bookingError=invalid-stay');
+ const withoutDates=new URL(hotelSupplierPathRedirect('/hotels/lp7246c',new URLSearchParams('currency=USD&email=private&redirect=https://attacker.invalid'),now));
+ assert.equal(withoutDates.hostname,'gthproglobal.nuitee.link');assert.equal(withoutDates.search,'?language=en&currency=USD');
+});

@@ -22,3 +22,11 @@ Run `npx tsc --noEmit`, `npm run test:security`, `npm run lint`, `npm run build`
 Before production promotion: verify actual worldwide autocomplete, date/guest selectors, search-to-provider results, a hotel's stars/amenities/rooms, both GTH modes and phone layout. Stop before guest/payment submission. Build/unit checks alone do not prove embedded supplier behavior.
 
 The feature branch disables automatic Vercel previews. Use one completed candidate for release verification; do not deploy every patch.
+
+## Booking-link routing follow-up
+
+Customer booking buttons and result iframe now use the fixed Nuitee white-label origin directly after the existing strict stay validation. They no longer depend on the local `/api/hotels/booking` redirect endpoint being deployed or passing preview authentication. That endpoint remains available for existing valid URLs.
+
+Supplier paths `/hotels/lp…` and `/hotels/stay/lp…` receive narrowly scoped compatibility redirects before the GTH city-guide route. Valid stay details are preserved; missing/expired stay data returns to GTH search with an explicit recovery message. City guides, OSM records, reviewed UUID listings and other ecosystem pages retain their original routes. Unknown parameters, personal details and offer/prebook tokens are discarded.
+
+The public domain was still on PR #121 while PR #126 was a protected preview; the new booking route was not yet available on that older release. Do not confuse testing the candidate with publishing it. No paid transaction is required to verify the white-label integration.

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
 import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
-  hotelWidgetSearchParams, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
+  hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -32,7 +32,12 @@ export default function HotelBookingExperience() {
   const dispose = useRef<(() => void) | null>(null);
   const resultSection = useRef<HTMLDivElement>(null);
   const scrollToResults = useRef(false);
-  const handoff = bookingQuery ? `/api/hotels/booking?${bookingQuery}` : "";
+  // Public supplier URLs work independently of GTH redirect-route deployment/protection.
+  // The same strict allowlist validates both SDK callbacks and restored query strings.
+  const selectedStay = bookingQuery ? parseHotelBookingSearch(new URLSearchParams(bookingQuery)) : null;
+  const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
+  const invalidStay = query.get("bookingError") === "invalid-stay" ||
+    (["checkin", "checkout", "occupancies"].some(key => query.has(key)) && !restored);
   useEffect(() => {
     setBookingQuery(restoredQuery);
     if (restoredQuery) setShowSearch(false);
@@ -176,6 +181,7 @@ export default function HotelBookingExperience() {
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
         sandbox="allow-scripts allow-same-origin" />
     </div>}
+    {invalidStay && <p role="alert" className="gth-hotel-booking-note">This saved booking link has incomplete or expired stay details. Please choose your destination, dates and guests again.</p>}
     {error && <div role="alert" className="gth-hotel-booking-error"><p>{error}</p>
       <button type="button" className="gth-btn gth-hotel-booking-action" onClick={() => {
         dispose.current?.(); setLoading(true); setError(""); setShowSearch(true); setAttempt(value => value + 1);

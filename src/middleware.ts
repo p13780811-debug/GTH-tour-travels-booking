@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { hotelSupplierPathRedirect } from "@/lib/travel/hotel-whitelabel";
 
 export function middleware(_request: NextRequest) {
+  // Recover supplier hotel IDs before the local city-guide router treats them as slugs.
+  const hotelDestination = hotelSupplierPathRedirect(_request.nextUrl.pathname, _request.nextUrl.searchParams);
+  if (hotelDestination) {
+    const response = NextResponse.redirect(new URL(hotelDestination, _request.url), 307);
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  }
   // Backward compatibility for existing Travelpayouts flight-result links.
   // Prior White Label configuration incorrectly sent ?flightSearch= to /,
   // where the flagship homepage cannot display ticket results. Redirect only
