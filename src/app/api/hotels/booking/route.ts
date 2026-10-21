@@ -9,6 +9,5 @@ export function GET(request: Request) {
   });
   const response = NextResponse.redirect(hotelWhiteLabelUrl(search), 307);
   response.headers.set("Cache-Control", "no-store");
-  response.headers.set("Referrer-Policy", "no-referrer");
   return response;
 }

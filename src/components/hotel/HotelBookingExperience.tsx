@@ -31,12 +31,18 @@ export default function HotelBookingExperience() {
   const searchFrame = useRef<HTMLIFrameElement>(null);
   const dispose = useRef<(() => void) | null>(null);
   const resultSection = useRef<HTMLDivElement>(null);
+  const scrollToResults = useRef(false);
   const handoff = bookingQuery ? `/api/hotels/booking?${bookingQuery}` : "";
   useEffect(() => {
     setBookingQuery(restoredQuery);
     if (restoredQuery) setShowSearch(false);
   }, [restoredQuery]);
   useEffect(() => () => { dispose.current?.(); }, []);
+  useEffect(() => {
+    if (!bookingQuery || showSearch || !scrollToResults.current) return;
+    scrollToResults.current = false;
+    resultSection.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [bookingQuery, showSearch]);
 
   const search = useCallback((payload: unknown) => {
     const params = hotelWidgetSearchParams(payload);
@@ -46,9 +52,9 @@ export default function HotelBookingExperience() {
     }
     const value = params.toString();
     dispose.current?.();
+    scrollToResults.current = true;
     setError(""); setBookingQuery(value); setShowSearch(false);
     router.replace(`/hotels?view=booking&${value}`, { scroll: false });
-    resultSection.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [router]);
 
   const loadSearch = useCallback(async () => {
@@ -65,7 +71,7 @@ export default function HotelBookingExperience() {
     }, 20000);
     const resize = () => {
       // Dynamic content height is layout state. Visual styles stay in globals.css.
-      if (active) frame.height = String(Math.min(1200, Math.max(420, doc.body.scrollHeight + 24)));
+      if (active) frame.height = String(Math.min(1200, Math.max(110, doc.body.scrollHeight + 24)));
     };
     dispose.current = () => {
       active = false; window.clearTimeout(deadline);
@@ -101,8 +107,35 @@ export default function HotelBookingExperience() {
         onSearchClick: value => { if (active) search(value); },
       });
       if (!active) return;
-      layoutObserver = new MutationObserver(resize);
-      layoutObserver.observe(doc.body, { childList: true, subtree: true, attributes: true });
+      const destination = doc.querySelector<HTMLInputElement>(".search-input");
+      destination?.setAttribute("aria-label", "Worldwide hotel destination");
+      const controls: [string, string][] = [
+        [".desktop-dates .date-description", "Choose check-in and checkout dates"],
+        [".mobile-checkin .date-description", "Choose check-in date"],
+        [".mobile-checkout .date-description", "Choose checkout date"],
+        [".field.last > span", "Choose guests and rooms; guest counts apply per room"],
+      ];
+      for (const [selector, label] of controls) {
+        const control = doc.querySelector<HTMLElement>(selector);
+        if (!control) continue;
+        control.setAttribute("role", "button"); control.tabIndex = 0;
+        control.setAttribute("aria-label", label);
+        control.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") { event.preventDefault(); control.click(); }
+        });
+      }
+      const labelGuestControls = () => {
+        for (const row of doc.querySelectorAll(".guest-control")) {
+          const label = row.querySelector("label")?.textContent?.trim();
+          if (!label) continue;
+          const buttons = row.querySelectorAll("button");
+          buttons[0]?.setAttribute("aria-label", `Decrease ${label.toLowerCase()}`);
+          buttons[1]?.setAttribute("aria-label", `Increase ${label.toLowerCase()}`);
+          row.querySelector("input")?.setAttribute("aria-label", label);
+        }
+      };
+      layoutObserver = new MutationObserver(() => { labelGuestControls(); resize(); });
+      layoutObserver.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
       resizeObserver = new ResizeObserver(resize);
       resizeObserver.observe(doc.body);
       win.addEventListener("resize", resize);
@@ -132,9 +165,10 @@ export default function HotelBookingExperience() {
       {showSearch ? "Hide new search" : "Start a new hotel search"}
     </button>}
     {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
+      <p>Guests and child ages apply to each room. For rooms with different guests, use the secure booking site.</p>
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
-        title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="420"
+        title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
         sandbox="allow-scripts allow-same-origin" />
     </div>}
     {error && <div role="alert" className="gth-hotel-booking-error"><p>{error}</p>

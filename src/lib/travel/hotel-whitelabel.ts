@@ -29,7 +29,9 @@ export function normalizeHotelOccupancies(value: unknown): HotelOccupancy[] | nu
         children.some(age => typeof age !== "number" || !Number.isInteger(age) || age < 0 || age > 17)) return null;
     roomCount += rooms;
     guestCount += (adults + children.length) * rooms;
-    result.push({ adults, children: [...children], ...(item.rooms === undefined ? {} : { rooms }) });
+    // Hosted White Label expects one occupancy entry per room. Its parser
+    // ignores the SDK's optional `rooms` count inside a single entry.
+    for (let room = 0; room < rooms; room++) result.push({ adults, children: [...children] });
   }
   return roomCount <= 8 && guestCount <= 40 ? result : null;
 }

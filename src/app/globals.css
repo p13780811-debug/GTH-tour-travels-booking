@@ -1379,7 +1379,7 @@ body.gth-hotel-search-widget { margin: 0; padding: 0.5rem; min-height: 0; height
 .gth-hotel-search-widget .search-bar .date-description,
 .gth-hotel-search-widget .search-bar input { color: var(--text); }
 .gth-hotel-search-widget .search-bar input { background: transparent; min-width: 0; }
-.gth-hotel-search-widget .search-bar .search-button { background: var(--btn-bg); color: var(--btn-text); min-height: 46px; border-radius: var(--radius-sm); }
+.gth-hotel-search-widget .search-bar .search-button { background: var(--btn-bg); color: var(--btn-text); min-height: 46px; min-width: 8rem; flex-shrink: 0; border-radius: var(--radius-sm); }
 .gth-hotel-search-widget .search-bar .search-button .search-text { width: auto; }
 .gth-hotel-search-widget .search-bar .guests-popup,
 .gth-hotel-search-widget .search-bar .simple-typeahead-list { background: var(--card); color: var(--text); border-color: var(--border); }

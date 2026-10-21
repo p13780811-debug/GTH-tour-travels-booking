@@ -4,6 +4,7 @@ import {parseHotelBookingSearch, hotelWhiteLabelUrl, hotelBookingParams, hotelWi
   normalizeHotelOccupancies, HOTEL_BOOKING_ORIGIN} from '../src/lib/travel/hotel-whitelabel.ts';
 const now = new Date('2026-10-21T12:00:00Z');
 const occupancy = [{adults:2,children:[0,8],rooms:2}];
+const canonicalOccupancy = [{adults:2,children:[0,8]},{adults:2,children:[0,8]}];
 const query = (overrides={}) => new URLSearchParams({
   placeId:'ChIJwe1EZjDG5zsRaYxkjY_tpF0',checkin:'2026-10-22',checkout:'2026-10-25',
   occupancies:btoa(JSON.stringify(occupancy)),currency:'INR',...overrides,
@@ -18,7 +19,7 @@ test('supplier handoff keeps exact hotel, dates, currency, rooms and child ages'
  assert.equal(url.searchParams.get('checkout'),'2026-10-25');
  assert.equal(url.searchParams.get('currency'),'INR');
  assert.equal(url.searchParams.get('language'),'en');
- assert.deepEqual(JSON.parse(atob(url.searchParams.get('occupancies'))),occupancy);
+ assert.deepEqual(JSON.parse(atob(url.searchParams.get('occupancies'))),canonicalOccupancy);
  assert.deepEqual(parseHotelBookingSearch(hotelBookingParams(search),now),search);
 });
 test('worldwide destination search never substitutes a guessed supplier hotel ID',()=>{
@@ -59,7 +60,7 @@ test('real SDK callback shape is canonicalized without dropping occupancy struct
  const parsed=hotelWidgetSearchParams({place:{place_id:'ChIJwe1EZjDG5zsRaYxkjY_tpF0'},
   checkin:future,checkout:end,occupancies:btoa(JSON.stringify(occupancy)),query:'Mumbai'});
  assert.ok(parsed);
- assert.deepEqual(JSON.parse(atob(parsed.get('occupancies'))),occupancy);
+ assert.deepEqual(JSON.parse(atob(parsed.get('occupancies'))),canonicalOccupancy);
  assert.equal(parsed.get('currency'),'INR');
  assert.equal(hotelWidgetSearchParams({place:{description:'Mumbai'}}),null);
 });
