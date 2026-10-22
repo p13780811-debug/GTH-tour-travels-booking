@@ -39,9 +39,9 @@ export async function GET(request:Request,{params}:Props){
   const chosen=matches[0];
   if(!chosen){
    // The ordinary GTH directory detail stays available for unlinked OSM hotels.
-   return NextResponse.redirect(new URL("/hotels/stay/"+encodeURIComponent(id),request.url),307,{headers:noCache});
+   return NextResponse.redirect(new URL("/hotels/stay/"+encodeURIComponent(id),request.url),{status:307,headers:noCache});
   }
-  return NextResponse.redirect(chosen.url,307,{headers:{...noCache,"X-Robots-Tag":"noindex, nofollow"}});
+  return NextResponse.redirect(chosen.url,{status:307,headers:{...noCache,"X-Robots-Tag":"noindex, nofollow"}});
  }catch{
   return new NextResponse("Hotel booking lookup temporarily unavailable",{status:503,headers:noCache});
  }
