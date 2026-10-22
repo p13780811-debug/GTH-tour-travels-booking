@@ -174,7 +174,8 @@ export async function GET(req: Request) {
     if(sourceIds.length){
       const {data:links}=await supabase.from("hotel_booking_links")
         .select("catalog_source_id,reviewed_hotel_id,provider,provider_property_id,provider_property_url,affiliate_url,hotel_name_at_provider")
-        .eq("catalog_source","osm").eq("active",true)
+        .eq("catalog_source","osm").eq("active",true).eq("exact_property_verified",true).eq("program_approved",true)
+        .gte("verified_at",new Date(Date.now()-180*86400000).toISOString())
         .in("catalog_source_id",sourceIds.slice(0,PAGE_SIZE)).limit(PAGE_SIZE*3);
       for(const row of (links||[]) as ApprovedMapping[]){
         if(row.catalog_source_id&&safeVerifiedHotelAffiliateUrl(row))bookingReady.add("osm:"+row.catalog_source_id);
@@ -184,7 +185,8 @@ export async function GET(req: Request) {
     if(supplierIds.length){
       const {data:links}=await supabase.from("hotel_booking_links")
         .select("catalog_source_id,reviewed_hotel_id,provider,provider_property_id,provider_property_url,affiliate_url,hotel_name_at_provider")
-        .eq("active",true).in("reviewed_hotel_id",supplierIds.slice(0,PAGE_SIZE)).limit(PAGE_SIZE*3);
+        .eq("active",true).eq("exact_property_verified",true).eq("program_approved",true)
+        .gte("verified_at",new Date(Date.now()-180*86400000).toISOString()).in("reviewed_hotel_id",supplierIds.slice(0,PAGE_SIZE)).limit(PAGE_SIZE*3);
       for(const row of (links||[]) as ApprovedMapping[]){
         if(row.reviewed_hotel_id&&safeVerifiedHotelAffiliateUrl(row))bookingReady.add(row.reviewed_hotel_id);
       }
