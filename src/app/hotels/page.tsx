@@ -383,7 +383,25 @@ function HotelsContent() {
               <button type="button" className="gth-btn" aria-pressed={hotelMode === "directory"}
                 onClick={() => setHotelMode("directory")}>Hotel directory & guides</button>
             </div>
-            {hotelMode === "booking" ? <HotelBookingExperience /> : <>
+            {hotelMode === "booking" ? <div>
+              <section className="mx-auto max-w-7xl px-4 pb-3 pt-5 sm:px-6" aria-labelledby="hotel-inspiration-title">
+                <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                  <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO · Signature destinations</p>
+                    <h2 id="hotel-inspiration-title" className="mt-1 text-2xl font-bold text-[var(--text)] md:text-3xl">Your next extraordinary stay starts here</h2>
+                    <p className="mt-2 text-sm text-[var(--text-soft)]">Browse real booking-provider hotel photographs, room details and prices after selecting a destination and dates.</p>
+                  </div>
+                </div>
+                <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3" aria-label="Featured travel destinations">
+                  {featuredDestinations.map(place=><article key={place.slug} className="group relative h-44 w-48 shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:h-52 sm:w-56">
+                    <Image src={place.image} alt={place.city+" destination scenery, not a hotel photo"} fill sizes="(max-width:640px) 192px,224px" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
+                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"/>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white"><p className="text-lg font-bold">{place.city}</p><p className="text-xs text-slate-200">Explore destination stays</p></div>
+                  </article>)}
+                </div>
+                <p className="text-xs text-[var(--text-soft)]">Images above show destinations, not individual properties. Hotel-specific photos and amenities are provided by Nuitee during booking search.</p>
+              </section>
+              <HotelBookingExperience />
+            </div> : <>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
               <div className="flex flex-wrap items-center gap-3">
@@ -678,7 +696,11 @@ function HotelsContent() {
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                                                     View hotel details <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
-                                                <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.booking_ready ? "Book Now is available inside hotel details." : "Exact hotel partner link not yet connected."}</p>
+                                                {!hotel.booking_ready && <button type="button" onClick={()=>{setHotelMode("booking");window.scrollTo({top:0,behavior:"smooth"});}}
+                                                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold">
+                                                    Search bookable stays <ChevronRight size={14} aria-hidden="true"/>
+                                                  </button>}
+                                                 <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.booking_ready ? "Exact booking partner available in hotel details." : "This OSM record has no verified exact-hotel booking link. Search available stays separately."}</p>
                                             </div>
                                         </div>
                                     </div>
