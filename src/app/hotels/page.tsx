@@ -667,9 +667,9 @@ function HotelsContent() {
                                   className="group gth-glass overflow-hidden rounded-2xl border border-[var(--border)] transition-shadow hover:shadow-lg">
                                     <div className="flex min-w-0 flex-col md:flex-row">
                                         <div className="relative h-44 w-full shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-52 xl:w-56 2xl:w-60">
-                                            <HotelPropertyImage src={hotel.image} name={hotel.name}
+                                            <a className="block h-full w-full" href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} aria-label={hotel.booking_ready?"Open exact verified booking partner for "+hotel.name:"View hotel details for "+hotel.name}><HotelPropertyImage src={hotel.image} name={hotel.name}
                                               className="h-full min-h-44 w-full object-cover md:min-h-52"
-                                              placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/>
+                                              placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/></a>
                                             {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-2 py-1 text-[10px] leading-4">
                                                 <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
                                                 {" · "}<a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.license}</a>
@@ -680,7 +680,7 @@ function HotelsContent() {
                                                 <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 text-[11px] font-semibold capitalize">
                                                     {(hotel.category||"hotel").replaceAll("_"," ")}
                                                 </span>
-                                                <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-[var(--text)] md:text-xl">{hotel.name}</h3>
+                                                <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-[var(--text)] md:text-xl"><a href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="hover:underline focus-visible:underline">{hotel.name}</a></h3>
                                                 <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--text-soft)]">
                                                     <MapPin size={14} className="shrink-0" aria-hidden="true"/>
                                                     <span className="min-w-0 line-clamp-1">{hotel.city}{hotel.country?", "+hotel.country:""}</span>
@@ -692,9 +692,9 @@ function HotelsContent() {
                                             </div>
                                             <div className="flex w-full shrink-0 flex-col justify-end gap-2 border-t border-[var(--border)] pt-3 xl:w-48 xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0">
                                                 <span className="text-xs font-semibold text-[var(--text-soft)]">Price on provider</span>
-                                                <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
+                                                <a href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
-                                                    View hotel details <ChevronRight size={15} aria-hidden="true"/>
+                                                    {hotel.booking_ready?"Open exact hotel on partner":"View hotel details"} <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
                                                 {!hotel.booking_ready && <button type="button" onClick={()=>{setHotelMode("booking");window.scrollTo({top:0,behavior:"smooth"});}}
                                                   className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold">
