@@ -50,7 +50,8 @@ test("No repeated stock property image and no generic partner label on unbookabl
  assert.match(image,/onError=/);
  assert.match(ui,/hotel\.category\|\|"hotel"/);
  assert.match(ui,/hotel\.booking_ready \? "Exact hotel booking on details" : "Directory listing"/);
- assert.match(ui,/href=\{"\/hotels\/stay\/"\+encodeURIComponent/);
+ assert.match(ui,/hotel\.booking_ready\?"\/hotels\/partner\/"\+encodeURIComponent/);
+ assert.match(ui,/"\/hotels\/stay\/"\+encodeURIComponent/);
  const api=read("src/app/api/hotels/route.ts");
  assert.match(api,/if \(category\) catalogCountQuery = catalogCountQuery\.eq\("category",category\)/);
  assert.match(api,/if \(category\) catalogQuery = catalogQuery\.eq\("category",category\)/);
