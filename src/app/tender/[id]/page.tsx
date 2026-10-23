@@ -69,6 +69,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
         className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
         Check eligibility & prepare draft <ArrowUpRight size={17}/>
       </Link>
+      <Link href={`/tender/services?tenderId=${encodeURIComponent(tender.id)}`} className="gth-btn inline-flex items-center justify-center gap-2">Request paid assistance quote</Link>
       <TenderDeadlineDownload tender={tender}/>
       <Link href="/tender/saved?view=compare" className="gth-btn inline-flex items-center justify-center gap-2">Open comparison</Link>
       </div>

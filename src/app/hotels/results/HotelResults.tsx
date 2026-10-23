@@ -79,7 +79,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   
   {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
     className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
-    {items.map((hotel)=><Link key={String(hotel.id)} href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
+    {items.map((hotel)=><Link key={String(hotel.id)} href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined}
       className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
         <HotelPropertyImage src={hotel.image} name={hotel.name}
@@ -90,7 +90,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
         <p className="text-xs capitalize text-[var(--text-soft)]">{(hotel.category||"hotel").replaceAll("_"," ")}</p>
         <h3 className="mt-1 line-clamp-1 text-sm font-semibold">{hotel.name}</h3>
         <p className="mt-1 line-clamp-1 flex items-center gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13} aria-hidden="true"/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
-        <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">View hotel & source <ArrowRight size={15}/></span>
+        <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">{hotel.booking_ready?"Open exact partner hotel":"View hotel & source"} <ArrowRight size={15}/></span>
       </div>
     </Link>)}
   </div>}
@@ -139,19 +139,19 @@ export default function HotelResults({city="",destination="",compactRail=false,s
     <div className="flex min-w-0 flex-col gap-4">
    {items.map((hotel)=><article key={String(hotel.id)} className="gth-glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] md:flex-row">
     <div className="relative h-44 shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-56 lg:w-60">
-     <HotelPropertyImage src={hotel.image} name={hotel.name}
+     <Link prefetch={false} href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} aria-label={hotel.booking_ready?"Open exact partner hotel "+hotel.name:"View hotel details "+hotel.name} className="block h-full w-full">     <HotelPropertyImage src={hotel.image} name={hotel.name}
        className="h-full min-h-44 w-full object-cover md:min-h-48"
-       placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)] md:min-h-48"/>
+       placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)] md:min-h-48"/></Link>
      {(!hotel.image||hotel.image==="/placeholder.jpg")&&<span className="sr-only">No verified property photo</span>}
      <span className="absolute left-3 top-3 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold capitalize">{(hotel.category||"hotel").replaceAll("_"," ")}</span>
     </div>
     <div className="flex flex-1 flex-col p-5">
-     <h3 className="line-clamp-2 text-lg font-semibold md:text-xl">{hotel.name}</h3>
+     <h3 className="line-clamp-2 text-lg font-semibold md:text-xl"><Link prefetch={false} href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="hover:underline focus-visible:underline">{hotel.name}</Link></h3>
      <p className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={15}/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
-      <Link href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">View hotel & source <ArrowRight size={16}/></Link>
-      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "Booking options inside hotel details" : "No direct partner booking link yet"}</p>
+      <Link href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">{hotel.booking_ready?"Open verified partner hotel":"View hotel & source"} <ArrowRight size={16}/></Link>
+      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "This exact hotel has a reviewed booking partner link" : "No exact partner booking link yet"}</p>
      </div>
     </div>
    </article>)}

@@ -44,7 +44,8 @@ test("hotel results always open GTH details before optional provider booking", (
   const detail = read("src/app/hotels/stay/[id]/page.tsx");
   assert.match(result, /View hotel & source/);
   assert.match(result, /\/hotels\/stay\//);
-  assert.match(result, /Booking options inside hotel details/);
+  assert.match(result, /This exact hotel has a reviewed booking partner link/);
+  assert.match(result, /\/hotels\/partner\//);
   assert.doesNotMatch(result, /hotelProviderSearchUrl|Search this hotel on Booking\.com|Continue to booking partner/);
   assert.match(detail, /Book Now\{hotel\.partnerName/);
   assert.match(detail, /href=\{hotel\.partner\}/);
@@ -74,7 +75,7 @@ test("hotel search and result pages recover from API failures without fake recor
   const results=read("src/app/hotels/results/HotelResults.tsx");
   const image=read("src/components/hotel/HotelPropertyImage.tsx");
   assert.match(landing,/Retry hotel search/);
-  assert.match(landing,/\[queryKey,retryCount\]/);
+  assert.match(landing,/\[queryKey,retryCount,hotelMode\]/);
   assert.match(results,/Retry hotel listings/);
   assert.match(results,/effectiveSource,retryCount\]/);
   assert.match(results,/activeKey\.current!==startedFor/);
@@ -125,4 +126,19 @@ test("dedicated hotel results maintain source-backed sidebar and mobile category
  assert.match(code,/filterHref\(\{source:value\}\)/);
  assert.match(code,/filterHref\(\{sort:value\}\)/);
  assert.match(code,/lg:grid-cols-\[240px_minmax\(0,1fr\)\]/);
+});
+
+test("OSM exact partner route requires an approved verified property and never guesses a Klook hotel from its name",()=>{
+ const exit=read("src/app/hotels/partner/[id]/route.ts");
+ const api=read("src/app/api/hotels/route.ts");
+ const cards=read("src/app/hotels/page.tsx");
+ assert.match(exit,/exact_property_verified/);
+ assert.match(exit,/program_approved/);
+ assert.match(exit,/safeVerifiedHotelAffiliateUrl/);
+ assert.match(exit,/catalog_source_id/);
+ assert.doesNotMatch(exit,/searchByName|hotelNameToUrl|encodeURIComponent\(hotel\.name\)/);
+ assert.match(api,/exact_property_verified/);
+ assert.match(api,/program_approved/);
+ assert.match(cards,/\/hotels\/partner\//);
+ assert.match(cards,/\/hotels\/stay\//);
 });

@@ -20,6 +20,7 @@ import Image from "next/image";
 import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
@@ -87,6 +88,11 @@ type HotelListing = {
 
 function HotelsContent() {
     const params = useSearchParams();
+    // Preserve existing city/destination directory links. New visits use supplier booking.
+    const directoryRequested = params.get("view") === "directory" ||
+      (params.get("view") !== "booking" && ["city", "destination", "name", "country"].some(key => params.has(key)));
+    const [hotelMode, setHotelMode] = useState<"booking" | "directory">(directoryRequested ? "directory" : "booking");
+    useEffect(() => { setHotelMode(directoryRequested ? "directory" : "booking"); }, [directoryRequested]);
 
     const initialDestination = (params.get("destination")||"").trim().slice(0,80);
     const initialName = (params.get("name") || "").trim().slice(0, 80);
@@ -146,6 +152,7 @@ function HotelsContent() {
     }, [initialCity, initialName,initialDestination]);
 
     useEffect(() => {
+        if (hotelMode !== "directory") return;
         const controller = new AbortController();
         setHotels([]);
         activeQueryRef.current = queryKey;
@@ -183,7 +190,7 @@ function HotelsContent() {
         void loadHotels();
         return () => controller.abort();
     // Query key uniquely identifies a filter combination; it resets paging on every change.
-    }, [queryKey,retryCount]);
+    }, [queryKey,retryCount,hotelMode]);
 
     async function loadMoreHotels() {
         if (loadingMore || loading || !hasMore) return;
@@ -297,18 +304,18 @@ function HotelsContent() {
                             </span>
                         </div>
 
-                        <h1 className="mt-5 text-2xl text-[var(--text)] sm:text-4xl md:text-5xl font-bold leading-tight max-w-4xl">
+                        <h1 className="gth-hotel-title mt-5 text-[var(--text)] font-bold leading-tight max-w-4xl">
                             Discover Hotels Around the World
                         </h1>
 
                         <p className="mt-4 text-sm md:text-base text-[var(--text-soft)] max-w-2xl">
-                            Explore available hotel listings worldwide, then confirm
-                            prices, room details and availability with the booking partner.
+                            Search worldwide stays with supplier room availability, photos and amenities,
+                            or explore our source-attributed hotel directory.
                         </p>
                     </div>
 
                     {/* SEARCH */}
-                    <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
+                    {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
                                 <MapPin
@@ -366,10 +373,35 @@ function HotelsContent() {
                         </div>
                         {dateError&&<p role="alert" className="mt-3 text-sm text-[var(--text)]">{dateError}</p>}
                         <p className="mt-2 text-xs text-[var(--text-soft)]">Dates and guests are planning inputs; the provider confirms real prices and availability.</p>
-                    </div>
+                    </div>}
                 </div>
             </section>
       <TravelSectionNav />
+            <div className="gth-hotel-mode-switch" role="group" aria-label="Hotel experience">
+              <button type="button" className="gth-btn" aria-pressed={hotelMode === "booking"}
+                onClick={() => setHotelMode("booking")}>Live hotel booking</button>
+              <button type="button" className="gth-btn" aria-pressed={hotelMode === "directory"}
+                onClick={() => setHotelMode("directory")}>Hotel directory & guides</button>
+            </div>
+            {hotelMode === "booking" ? <div>
+              <section className="mx-auto max-w-7xl px-4 pb-3 pt-5 sm:px-6" aria-labelledby="hotel-inspiration-title">
+                <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                  <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO · Signature destinations</p>
+                    <h2 id="hotel-inspiration-title" className="mt-1 text-2xl font-bold text-[var(--text)] md:text-3xl">Your next extraordinary stay starts here</h2>
+                    <p className="mt-2 text-sm text-[var(--text-soft)]">Browse real booking-provider hotel photographs, room details and prices after selecting a destination and dates.</p>
+                  </div>
+                </div>
+                <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3" aria-label="Featured travel destinations">
+                  {featuredDestinations.map(place=><article key={place.slug} className="group relative h-44 w-48 shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:h-52 sm:w-56">
+                    <Image src={place.image} alt={place.city+" destination scenery, not a hotel photo"} fill sizes="(max-width:640px) 192px,224px" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
+                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"/>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white"><p className="text-lg font-bold">{place.city}</p><p className="text-xs text-slate-200">Explore destination stays</p></div>
+                  </article>)}
+                </div>
+                <p className="text-xs text-[var(--text-soft)]">Images above show destinations, not individual properties. Hotel-specific photos and amenities are provided by Nuitee during booking search.</p>
+              </section>
+              <HotelBookingExperience />
+            </div> : <>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
               <div className="flex flex-wrap items-center gap-3">
@@ -635,9 +667,9 @@ function HotelsContent() {
                                   className="group gth-glass overflow-hidden rounded-2xl border border-[var(--border)] transition-shadow hover:shadow-lg">
                                     <div className="flex min-w-0 flex-col md:flex-row">
                                         <div className="relative h-44 w-full shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-52 xl:w-56 2xl:w-60">
-                                            <HotelPropertyImage src={hotel.image} name={hotel.name}
+                                            <a className="block h-full w-full" href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} aria-label={hotel.booking_ready?"Open exact verified booking partner for "+hotel.name:"View hotel details for "+hotel.name}><HotelPropertyImage src={hotel.image} name={hotel.name}
                                               className="h-full min-h-44 w-full object-cover md:min-h-52"
-                                              placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/>
+                                              placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/></a>
                                             {hotel.image_attribution&&<div className="absolute bottom-2 left-2 right-2 rounded-lg bg-[var(--card)] px-2 py-1 text-[10px] leading-4">
                                                 <a href={hotel.image_attribution.commons_page} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.author} · Wikimedia Commons</a>
                                                 {" · "}<a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.license}</a>
@@ -648,7 +680,7 @@ function HotelsContent() {
                                                 <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 text-[11px] font-semibold capitalize">
                                                     {(hotel.category||"hotel").replaceAll("_"," ")}
                                                 </span>
-                                                <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-[var(--text)] md:text-xl">{hotel.name}</h3>
+                                                <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-[var(--text)] md:text-xl"><a href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="hover:underline focus-visible:underline">{hotel.name}</a></h3>
                                                 <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--text-soft)]">
                                                     <MapPin size={14} className="shrink-0" aria-hidden="true"/>
                                                     <span className="min-w-0 line-clamp-1">{hotel.city}{hotel.country?", "+hotel.country:""}</span>
@@ -660,11 +692,15 @@ function HotelsContent() {
                                             </div>
                                             <div className="flex w-full shrink-0 flex-col justify-end gap-2 border-t border-[var(--border)] pt-3 xl:w-48 xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0">
                                                 <span className="text-xs font-semibold text-[var(--text-soft)]">Price on provider</span>
-                                                <a href={"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
+                                                <a href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix}
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
-                                                    View hotel details <ChevronRight size={15} aria-hidden="true"/>
+                                                    {hotel.booking_ready?"Open exact hotel on partner":"View hotel details"} <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
-                                                <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.booking_ready ? "Book Now is available inside hotel details." : "Exact hotel partner link not yet connected."}</p>
+                                                {!hotel.booking_ready && <button type="button" onClick={()=>{setHotelMode("booking");window.scrollTo({top:0,behavior:"smooth"});}}
+                                                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold">
+                                                    Search bookable stays <ChevronRight size={14} aria-hidden="true"/>
+                                                  </button>}
+                                                 <p className="text-[11px] leading-4 text-[var(--text-soft)]">{hotel.booking_ready ? "Exact booking partner available in hotel details." : "This OSM record has no verified exact-hotel booking link. Search available stays separately."}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -680,6 +716,7 @@ function HotelsContent() {
                     </main>
                 </div>
             </section>
+            </>}
         </div>
     );
 }
@@ -700,7 +737,7 @@ export default function HotelsPage() {
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                                 GTH PRO · Global stays
                             </p>
-                            <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
+                            <h1 className="gth-hotel-title mt-4 max-w-4xl font-bold leading-tight">
                                 Discover Hotels Around the World
                             </h1>
                             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">

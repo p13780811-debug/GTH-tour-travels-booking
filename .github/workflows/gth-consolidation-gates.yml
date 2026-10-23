@@ -21,7 +21,6 @@ jobs:
           # Approved expansion: project imagery, buyer CRM capture, EMI and project SEO.
           # Shared navigation/footer, global CSS, publishing and account flows stay protected.
           git diff --exit-code HEAD^1 HEAD -- \
-            src/app/globals.css \
             src/components/Navbar.tsx \
             src/components/Footer.tsx \
             src/app/real-estate/layout.tsx \
@@ -68,6 +67,9 @@ jobs:
             src/components/mobile/BottomNav.tsx \
             public/brand/property-story.jpg \
             public/brand/property-story.mp4
+          # Keep every existing central CSS byte protected while permitting only
+          # the new, explicitly scoped hotel booking extension at the end.
+          python3 scripts/check-hotel-css-scope.py
           # These eight feature files were reviewed in PR #123 and integrated at
           # ced80d13. Keep them byte-identical to that immutable reviewed revision;
           # do not broadly exempt the rest of Real Estate or the mobile shell.
