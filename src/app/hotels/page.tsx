@@ -294,21 +294,21 @@ function HotelsContent() {
 
             <section className="relative gth-glass overflow-hidden border-b border-[var(--border)] bg-[var(--bg)]" data-travel-hero="true">
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-5 pb-7 md:pt-8 md:pb-9">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-2 pb-2 md:pt-8 md:pb-9">
                     {/* TITLE */}
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)]">
+                        <div className="hidden items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)] sm:inline-flex">
                             <Orbit size={14} />
                             <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
                                 GTH GLOBAL STAYS
                             </span>
                         </div>
 
-                        <h1 className="gth-hotel-title mt-5 text-[var(--text)] font-bold leading-tight max-w-4xl">
+                        <h1 className="gth-hotel-title mt-1 text-[var(--text)] sm:mt-5 font-bold leading-tight max-w-4xl">
                             Discover Hotels Around the World
                         </h1>
 
-                        <p className="mt-4 text-sm md:text-base text-[var(--text-soft)] max-w-2xl">
+                        <p className="mt-2 hidden text-sm md:text-base text-[var(--text-soft)] max-w-2xl sm:mt-4 sm:block">
                             Search worldwide stays with supplier room availability, photos and amenities,
                             or explore our source-attributed hotel directory.
                         </p>
@@ -378,12 +378,15 @@ function HotelsContent() {
             </section>
       <TravelSectionNav />
             <div className="gth-hotel-mode-switch" role="group" aria-label="Hotel experience">
+              <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:gap-3">
               <button type="button" className="gth-btn" aria-pressed={hotelMode === "booking"}
                 onClick={() => setHotelMode("booking")}>Live hotel booking</button>
               <button type="button" className="gth-btn" aria-pressed={hotelMode === "directory"}
                 onClick={() => setHotelMode("directory")}>Hotel directory & guides</button>
+              </div>
             </div>
             {hotelMode === "booking" ? <div>
+              <HotelBookingExperience />
               <section className="mx-auto max-w-7xl px-4 pb-3 pt-5 sm:px-6" aria-labelledby="hotel-inspiration-title">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO · Signature destinations</p>
@@ -400,7 +403,6 @@ function HotelsContent() {
                 </div>
                 <p className="text-xs text-[var(--text-soft)]">Images above show destinations, not individual properties. Hotel-specific photos and amenities are provided by Nuitee during booking search.</p>
               </section>
-              <HotelBookingExperience />
             </div> : <>
 
             <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
@@ -733,7 +735,7 @@ export default function HotelsPage() {
                 // hotel catalog hydrates. No fake hotel cards, prices or reviews.
                 <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
                     <section className="border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
-                        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20">
+                        <div className="mx-auto max-w-7xl px-4 pt-2 pb-2 sm:px-6 md:py-20">
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                                 GTH PRO · Global stays
                             </p>

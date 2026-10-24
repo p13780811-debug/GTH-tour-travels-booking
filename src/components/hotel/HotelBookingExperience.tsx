@@ -160,26 +160,21 @@ export default function HotelBookingExperience() {
 
   return <section className="gth-hotel-booking" aria-labelledby="hotel-booking-heading">
     <div className="gth-hotel-booking-heading">
-      <div><p className="gth-hotel-eyebrow"><Globe2 size={16} aria-hidden="true" /> GTH PRO worldwide hotel booking</p>
+      <div><div className="hidden sm:block"><p className="gth-hotel-eyebrow"><Globe2 size={16} aria-hidden="true" /> GTH PRO worldwide hotel booking</p></div>
         <h2 id="hotel-booking-heading">Find your next stay</h2>
-        <p>Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
+        <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
-      <a className="gth-btn gth-hotel-booking-action" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
-        target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>
     </div>
-    <p className="gth-hotel-booking-note"><ShieldCheck size={16} aria-hidden="true" />
-      Hotel content and rates are supplied by our booking provider. Review taxes, room inclusions and cancellation terms before paying.
-    </p>
     {bookingQuery && <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
       aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>
       {showSearch ? "Hide new search" : "Start a new hotel search"}
     </button>}
     {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
-      <p>Guests and child ages apply to each room. For rooms with different guests, use the secure booking site.</p>
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
-        sandbox="allow-scripts allow-same-origin" />
+        aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin" />
+      <p id="hotel-room-occupancy-help">Guests and child ages apply to each room. For rooms with different guests, use the secure booking site.</p>
     </div>}
     {invalidStay && <p role="alert" className="gth-hotel-booking-note">This saved booking link has incomplete or expired stay details. Please choose your destination, dates and guests again.</p>}
     {error && <div role="alert" className="gth-hotel-booking-error"><p>{error}</p>
@@ -187,6 +182,11 @@ export default function HotelBookingExperience() {
         dispose.current?.(); setLoading(true); setError(""); setShowSearch(true); setAttempt(value => value + 1);
       }}><RotateCcw size={16} aria-hidden="true" /> Retry hotel search</button>
     </div>}
+    <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
+      target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>
+    <p className="gth-hotel-booking-note"><ShieldCheck size={16} aria-hidden="true" />
+      Hotel content and rates are supplied by our booking provider. Review taxes, room inclusions and cancellation terms before paying.
+    </p>
     <div ref={resultSection} className="gth-hotel-booking-results">
       {handoff && <>
         <div className="gth-hotel-booking-heading"><div><h3>Your stay, rooms and booking options</h3>
