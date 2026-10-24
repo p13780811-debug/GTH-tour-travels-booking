@@ -28,8 +28,8 @@ export default function TransfersPage() {
         { name: "Welcome Pickups · Affiliate", url: "https://tpo.lv/GFuzmgYk", description: "Explore airport pickup services with the supplied affiliate link; final availability and booking conditions are determined by the provider." },
       ]}
     >
-      <AirportJourneyServices />
       <TransferProviderWidgets />
+      <AirportJourneyServices />
       <div className="mb-5">
         <h2 className="text-xl font-bold">Optional journey checklist</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">If you are still planning, review pickup details below. This checklist does not transfer your answers into the supplier widgets.</p>

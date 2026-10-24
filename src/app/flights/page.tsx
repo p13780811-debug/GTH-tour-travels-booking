@@ -23,28 +23,28 @@ export default async function FlightsPage({ searchParams }: Props) {
           <Image src="/images/mega/flights.jpg" alt="" fill priority
             sizes="(max-width: 1024px) 35vw, 580px" className="object-cover object-center" />
         </div>
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:py-14">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 sm:py-12 lg:py-14">
           <div className="max-w-2xl">
-            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+            <p className="hidden sm:block text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
               GTH PRO · Worldwide travel
             </p>
-            <h1 className="mt-3 text-[var(--text)]">Find your next flight</h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
+            <h1 className="mt-1 sm:mt-3 text-[var(--text)]">Find your next flight</h1>
+            <p className="hidden sm:block mt-3 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
               Search flights with Aviasales, then explore airport transfers, car rentals and travel essentials
               in one connected GTH PRO journey.
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-[var(--text-soft)]">
+            <div className="hidden sm:flex mt-5 flex-wrap items-center gap-3 text-xs text-[var(--text-soft)]">
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> International destinations</span>
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> Provider-operated checkout</span>
             </div>
           </div>
-          <Link href="#flight-search" className="gth-btn-gold mt-6 inline-flex items-center gap-2">Search flights <ArrowUpRight size={14}/></Link>
+          <Link href="#flight-search" className="gth-btn-gold mt-6 hidden sm:inline-flex items-center gap-2">Search flights <ArrowUpRight size={14}/></Link>
 
         </div>
       </section>
       <TravelSectionNav />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-9">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-9">
         {destination && origin !== destination && (
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
             <PlaneTakeoff size={18} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />

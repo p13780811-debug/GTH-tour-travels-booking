@@ -51,16 +51,16 @@ export default function CarsPage() {
       <Image src="/images/mega/transfers.jpg" alt="" fill priority sizes="100vw"
         className="absolute inset-0 -z-20 object-cover opacity-25"/>
       <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80"/>
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24">
-        <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:py-16 sm:px-6 md:py-24">
+        <p className="hidden sm:inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
           <Globe2 size={16}/> GTH PRO · Worldwide Travel
         </p>
-        <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight md:text-6xl">Rent a car. Explore more of the world.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
+        <h1 className="mt-1 sm:mt-5 max-w-4xl text-2xl sm:text-4xl font-bold tracking-tight md:text-6xl">Rent a car. Explore more of the world.</h1>
+        <p className="hidden sm:block mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
           Plan airport pickup, self-drive holidays, city car hire and one-way journeys.
           Switch between QEEQ and Localrent partner tools and confirm actual vehicle availability, full prices and policies directly with the booking partner.
         </p>
-        <nav aria-label="Car rental quick links" className="mt-8 flex flex-wrap gap-3">
+        <nav aria-label="Car rental quick links" className="hidden sm:flex mt-8 flex-wrap gap-3">
           <a href="#rental-planner-heading" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 font-semibold">Plan your rental <ArrowRight size={16}/></a>
           <a href="#car-rental-offers" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 font-semibold">Partner car offers <ArrowUpRight size={16}/></a>
           <Link href="/transfers" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 font-semibold">Chauffeured airport transfers</Link>
@@ -69,9 +69,9 @@ export default function CarsPage() {
     </section>
       <TravelSectionNav />
 
-    <div className="mx-auto max-w-7xl space-y-12 px-4 py-12 sm:px-6 md:py-16">
-      <CarRentalPlanner />
+    <div className="mx-auto max-w-7xl space-y-12 px-4 py-3 sm:py-12 sm:px-6 md:py-16">
       <TravelpayoutsCarWidget />
+      <CarRentalPlanner />
 
       <section aria-labelledby="worldwide-search-heading">
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Global rental provider handoff</p>

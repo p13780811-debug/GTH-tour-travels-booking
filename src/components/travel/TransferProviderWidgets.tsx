@@ -71,10 +71,7 @@ export default function TransferProviderWidgets() {
           <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Compare airport transfers</h2>
         </div>
       </div>
-      <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-        Search using Travelpayouts partner widgets. Supplier results, locations, prices, availability,
-        payments and confirmations are handled by the external provider, not by GTH PRO.
-      </p>
+
 
       <div role="group" aria-label="Transfer search view" className="mt-5 flex flex-wrap gap-2">
         <button type="button" aria-pressed={active === "airport"} onClick={() => select("airport")}
@@ -135,6 +132,10 @@ export default function TransferProviderWidgets() {
           Alternative: Welcome Pickups <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </div>
+      <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
+        Search using Travelpayouts partner widgets. Supplier results, locations, prices, availability,
+        payments and confirmations are handled by the external provider, not by GTH PRO.
+      </p>
     </section>
   );
 }

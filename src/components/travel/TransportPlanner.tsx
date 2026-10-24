@@ -68,7 +68,7 @@ export default function TransportPlanner({ mode }: { mode: Mode }) {
       <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
         Prepare your journey here, then check current schedules, prices, availability and payment terms directly with the provider. This is not a live availability search or a reservation.
       </p>
-      <form onSubmit={submit} className="mt-6 grid gap-4 sm:grid-cols-2">
+      <form onSubmit={submit} className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4">
         <label className="block text-sm font-semibold">
           {field.origin}
           <input name="origin" type="text" required minLength={2} maxLength={100} autoComplete="off"

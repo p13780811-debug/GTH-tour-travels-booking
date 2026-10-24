@@ -64,12 +64,9 @@ export default function TravelpayoutsCarWidget() {
   return (
     <section id="car-rental-offers" aria-labelledby="car-widget-heading"
       className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
-      <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Travelpayouts rental partners</p>
-      <h2 id="car-widget-heading" className="mt-3 text-2xl font-semibold">Compare rental-car providers</h2>
-      <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-        Choose the QEEQ or Localrent partner search. Only the selected provider widget loads,
-        avoiding duplicate third-party tools. Bookings, vehicle availability, payment and support remain with the supplier.
-      </p>
+      <p className="hidden sm:block text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Travelpayouts rental partners</p>
+      <h2 id="car-widget-heading" className="mt-0 sm:mt-3 text-xl sm:text-2xl font-semibold">Compare rental-car providers</h2>
+
 
       <div role="group" aria-label="Car rental suppliers" className="mt-5 flex flex-wrap gap-2">
         {(["qeeq", "localrent"] as const).map((key) => (
@@ -84,7 +81,7 @@ export default function TravelpayoutsCarWidget() {
 
       <div className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3 sm:p-5">
         <h3 className="font-semibold">{suppliers[active].title}</h3>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{suppliers[active].description}</p>
+
         {status === "loading" && <p role="status" className="mt-3 text-sm text-[var(--text-soft)]">Loading supplier tool…</p>}
         {status === "failed" && (
           <p role="alert" className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
@@ -94,12 +91,18 @@ export default function TravelpayoutsCarWidget() {
         )}
         <div ref={mountRef} className="mt-5 min-h-24 min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full"
           aria-label={suppliers[active].title} />
+        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{suppliers[active].description}</p>
         <a href={suppliers[active].website} target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
           Open {suppliers[active].label} website <ExternalLink size={15} aria-hidden="true" />
         </a>
         <p className="mt-2 text-xs text-[var(--text-soft)]">The website link is a direct provider link, not an affiliate-tracked handoff.</p>
       </div>
+
+      <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+        Choose the QEEQ or Localrent partner search. Only the selected provider widget loads,
+        avoiding duplicate third-party tools. Bookings, vehicle availability, payment and support remain with the supplier.
+      </p>
 
       <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
         <ShieldCheck size={17} className="mt-1 shrink-0" aria-hidden="true" />

@@ -42,22 +42,23 @@ export default function TravelServicePage({
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={image} alt="" fill priority sizes="100vw" className="absolute inset-0 -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/75" />
-        <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">{eyebrow}</p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-base">{description}</p>
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:py-16 md:px-6 md:py-24">
+          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">{eyebrow}</p>
+          <h1 className="mt-1 sm:mt-4 max-w-4xl text-2xl sm:text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
+          <p className="hidden sm:block mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-base">{description}</p>
+
+        </div>
+      </section>
+      <TravelSectionNav />
+
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-3 sm:py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]">
+        <section>
+          {children}
           {noLiveDataNotice && (
             <p role="status" className="gth-glass mt-6 max-w-3xl rounded-2xl border border-[var(--border)] p-5 text-sm leading-6">
               {noLiveDataNotice}
             </p>
           )}
-        </div>
-      </section>
-      <TravelSectionNav />
-
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]">
-        <section>
-          {children}
           <h2 className="text-2xl font-bold">What to check before booking</h2>
           <ul className="mt-5 space-y-3">
             {whatToCheck.map((item) => (
