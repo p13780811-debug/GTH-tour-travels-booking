@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
 import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
@@ -18,8 +18,20 @@ type WidgetWindow = Window & { LiteAPI?: SearchSDK };
 // Vendor styles/listeners are confined to a disposable document, not the GTH shell.
 const searchDocument = '<!doctype html><html lang="en" class="gth-hotel-widget-root"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Search worldwide hotels</title></head><body class="gth-hotel-search-widget"><main id="gth-hotel-search"></main></body></html>';
 
+// A hosted cross-origin booking page cannot inherit our responsive card styles.
+// Keep it embedded only when the viewport has room for the supplier layout.
+const embeddedResultsMedia = "(min-width: 1024px)";
+function subscribeResultsViewport(onChange: () => void) {
+  const media = window.matchMedia(embeddedResultsMedia);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+function resultsViewportSnapshot() { return window.matchMedia(embeddedResultsMedia).matches; }
+function serverResultsViewportSnapshot() { return false; }
+
 export default function HotelBookingExperience() {
   const router = useRouter();
+  const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
   const query = useSearchParams();
   const restored = parseHotelBookingSearch(new URLSearchParams(query.toString()));
   const restoredQuery = restored ? hotelBookingParams(restored).toString() : "";
@@ -53,6 +65,14 @@ export default function HotelBookingExperience() {
     const params = hotelWidgetSearchParams(payload);
     if (!params) {
       setError("Please select a destination, valid stay dates and guest ages, then search again.");
+      return;
+    }
+    const stay = parseHotelBookingSearch(params);
+    if (!stay) return;
+    if (!window.matchMedia(embeddedResultsMedia).matches) {
+      // Same-tab navigation gives the supplier the actual phone viewport and
+      // leaves Back pointing to the search, rather than a redirect loop.
+      window.location.assign(hotelWhiteLabelUrl(stay));
       return;
     }
     const value = params.toString();
@@ -158,6 +178,11 @@ export default function HotelBookingExperience() {
     }
   }, [search]);
 
+  const searchToggle = bookingQuery ? <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
+      aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>
+      {showSearch ? "Hide new search" : "Start a new hotel search"}
+    </button> : null;
+
   return <section className="gth-hotel-booking" aria-labelledby="hotel-booking-heading">
     <div className="gth-hotel-booking-heading">
       <div><div className="hidden sm:block"><p className="gth-hotel-eyebrow"><Globe2 size={16} aria-hidden="true" /> GTH PRO worldwide hotel booking</p></div>
@@ -165,10 +190,7 @@ export default function HotelBookingExperience() {
         <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
     </div>
-    {bookingQuery && <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
-      aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>
-      {showSearch ? "Hide new search" : "Start a new hotel search"}
-    </button>}
+    {showSearch && searchToggle}
     {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
@@ -182,22 +204,24 @@ export default function HotelBookingExperience() {
         dispose.current?.(); setLoading(true); setError(""); setShowSearch(true); setAttempt(value => value + 1);
       }}><RotateCcw size={16} aria-hidden="true" /> Retry hotel search</button>
     </div>}
-    <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
-      target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>
+    {!handoff && <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
+      target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>}
+
+    <div ref={resultSection} className="gth-hotel-booking-results">
+      {handoff && <>
+        <div className="gth-hotel-booking-heading"><div><h3>{embedResults ? "Your stay, rooms and booking options" : "Your hotel results"}</h3>
+          <p>{embedResults ? "Explore hotel details below. Use the secure booking site for a full-window experience and payment." : "View hotels, total prices and room options on our secure booking site."}</p></div>
+          <a className="gth-btn-gold gth-hotel-booking-action" href={handoff} target={embedResults ? "_blank" : undefined} rel="noopener noreferrer">
+            Continue on secure booking site <ExternalLink size={16} aria-hidden="true" /></a>
+        </div>
+        {embedResults && <iframe key={handoff} src={handoff} title="GTH PRO hotel availability, amenities and room booking"
+          className="gth-hotel-results-frame" height="1000" referrerPolicy="no-referrer" />}
+        {embedResults && <p className="gth-hotel-booking-note">If results are blocked by your browser, use “Continue on secure booking site”. This link keeps the dates and guests from your GTH search.</p>}
+      </>}
+    </div>
+    {!showSearch && searchToggle}
     <p className="gth-hotel-booking-note"><ShieldCheck size={16} aria-hidden="true" />
       Hotel content and rates are supplied by our booking provider. Review taxes, room inclusions and cancellation terms before paying.
     </p>
-    <div ref={resultSection} className="gth-hotel-booking-results">
-      {handoff && <>
-        <div className="gth-hotel-booking-heading"><div><h3>Your stay, rooms and booking options</h3>
-          <p>Explore hotel details below. Use the secure booking site for a full-window experience and payment.</p></div>
-          <a className="gth-btn-gold gth-hotel-booking-action" href={handoff} target="_blank" rel="noopener noreferrer">
-            Continue on secure booking site <ExternalLink size={16} aria-hidden="true" /></a>
-        </div>
-        <iframe key={handoff} src={handoff} title="GTH PRO hotel availability, amenities and room booking"
-          className="gth-hotel-results-frame" height="1000" referrerPolicy="no-referrer" />
-        <p className="gth-hotel-booking-note">If results are blocked by your browser, use “Continue on secure booking site”. This link keeps the dates and guests from your GTH search.</p>
-      </>}
-    </div>
   </section>;
 }
