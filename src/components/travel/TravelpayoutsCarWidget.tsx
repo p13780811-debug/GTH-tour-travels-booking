@@ -82,6 +82,10 @@ export default function TravelpayoutsCarWidget() {
       <div className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3 sm:p-5">
         <h3 className="font-semibold">{suppliers[active].title}</h3>
 
+        <a href={suppliers[active].website} target="_blank" rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+          Open {suppliers[active].label} search <ExternalLink size={15} aria-hidden="true" />
+        </a>
         {status === "loading" && <p role="status" className="mt-3 text-sm text-[var(--text-soft)]">Loading supplier tool…</p>}
         {status === "failed" && (
           <p role="alert" className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
@@ -92,10 +96,6 @@ export default function TravelpayoutsCarWidget() {
         <div ref={mountRef} className="mt-5 min-h-24 min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full"
           aria-label={suppliers[active].title} />
         <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{suppliers[active].description}</p>
-        <a href={suppliers[active].website} target="_blank" rel="noopener noreferrer"
-          className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
-          Open {suppliers[active].label} website <ExternalLink size={15} aria-hidden="true" />
-        </a>
         <p className="mt-2 text-xs text-[var(--text-soft)]">The website link is a direct provider link, not an affiliate-tracked handoff.</p>
       </div>
 

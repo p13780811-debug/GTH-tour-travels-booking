@@ -65,7 +65,7 @@ export default function TransportPlanner({ mode }: { mode: Mode }) {
   return (
     <div className="gth-glass mb-12 rounded-2xl border border-[var(--border)] p-5 md:p-7">
       <h2 className="text-xl font-bold">Plan your route</h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+      <p className="mt-2 text-xs leading-5 sm:text-sm sm:leading-6 text-[var(--text-soft)]">
         Prepare your journey here, then check current schedules, prices, availability and payment terms directly with the provider. This is not a live availability search or a reservation.
       </p>
       <form onSubmit={submit} className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4">
@@ -102,12 +102,12 @@ export default function TransportPlanner({ mode }: { mode: Mode }) {
               className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" />
           </label>
         )}
-        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <div className="grid grid-cols-2 items-center gap-2 col-span-2">
           <button type="button" onClick={() => { setFrom(to); setTo(from); invalidate(); }}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm">
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-2 text-xs sm:px-4 sm:text-sm">
             <ArrowRightLeft size={17} /> Swap route
           </button>
-          <button type="submit" className="gth-btn-gold min-h-11 rounded-xl px-6 text-sm font-bold">
+          <button type="submit" className="gth-btn-gold min-h-11 rounded-xl px-2 text-xs sm:px-6 sm:text-sm font-bold">
             Review journey
           </button>
         </div>
