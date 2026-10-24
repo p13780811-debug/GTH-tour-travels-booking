@@ -185,12 +185,20 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
   return (
     <section id="flight-search" aria-labelledby="flight-white-label-heading"
       className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">
+      <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">
         Aviasales · Travelpayouts White Label
       </p>
-      <h2 id="flight-white-label-heading" className="mt-2 text-xl font-bold sm:text-2xl">
+      <h2 id="flight-white-label-heading" className="mt-0 sm:mt-2 text-xl font-bold sm:text-2xl">
         {isResultsView ? "Flight results" : "Find flights for your trip"}
       </h2>
+
+      <div id="tpwl-search"
+        className="mt-2 sm:mt-5 min-h-24 min-w-0 max-w-full [&_iframe]:max-w-full"
+        aria-label="Live Aviasales flight search form" />
+      <div id="tpwl-tickets"
+        className="mt-4 min-w-0 max-w-full [&_iframe]:max-w-full"
+        aria-label="Live Aviasales flight search results" />
+
       {!isResultsView && (
         <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
           Select your departure airport, destination, travel dates and passengers.
@@ -210,13 +218,6 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
           <span className="rounded-lg border border-[var(--border)] px-3 py-2">3. Compare & book</span>
         </div>
       )}
-
-      <div id="tpwl-search"
-        className="mt-5 min-h-24 min-w-0 max-w-full [&_iframe]:max-w-full"
-        aria-label="Live Aviasales flight search form" />
-      <div id="tpwl-tickets"
-        className="mt-4 min-w-0 max-w-full [&_iframe]:max-w-full"
-        aria-label="Live Aviasales flight search results" />
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border)] pt-4">
         <p className="flex max-w-2xl items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">

@@ -11,7 +11,8 @@
       "release/gth-one-shot-pending-20261020": false,
       "feature/gth-smart-synergy-five-upgrades": false,
       "fix/tours-hero-navigation-20261021": false,
-      "feat/hotels-global-whitelabel-20261021": false
+      "feat/hotels-global-whitelabel-20261021": false,
+      "fix/hotels-search-first-20261024": false
     }
   }
 }

@@ -166,21 +166,21 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section data-travel-hero="true" className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--bg-soft)]">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:items-center lg:py-12">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-3 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:items-center lg:py-12">
           <div className="min-w-0">
-            <nav aria-label="Tours breadcrumb" className="mb-5 flex items-center gap-2 text-xs text-[var(--text-soft)]">
+            <nav aria-label="Tours breadcrumb" className="hidden sm:flex mb-5 items-center gap-2 text-xs text-[var(--text-soft)]">
               <Link href="/mega-aggregator" className="inline-flex items-center gap-1 hover:underline"><Home size={14} /> Home</Link>
               <span aria-hidden="true">/</span><span aria-current="page">{basePath==="/activities"?"Activities":"Tours Explorer"}</span>
             </nav>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO • Global experiences</p>
+            <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO • Global experiences</p>
             <h1 className="mt-3 max-w-2xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
               Find your next experience. Know the details.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">
+            <p className="hidden sm:block mt-4 max-w-2xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">
               Discover tours, attraction tickets and local experiences from source-backed listings. Compare the available information and confirm dates, inclusions and final prices with the booking provider.
             </p>
             <form key={tourUrl(basePath,filters,sort,view)} action={basePath+"#discover"} method="GET" role="search" aria-label="Quick tour city search"
-              className="mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
+              className="mt-3 sm:mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
               {typeof filters.category === "string" && filters.category && <input type="hidden" name="category" value={filters.category} />}
               {typeof filters.minPrice === "string" && filters.minPrice && <input type="hidden" name="minPrice" value={filters.minPrice} />}
               {typeof filters.maxPrice === "string" && filters.maxPrice && <input type="hidden" name="maxPrice" value={filters.maxPrice} />}

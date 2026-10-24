@@ -63,18 +63,15 @@ export default function TransferProviderWidgets() {
   return (
     <section aria-labelledby="transfer-provider-heading" className="gth-glass mb-8 min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
+        <span className="hidden sm:inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <CarFront size={21} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
+          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
           <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Compare airport transfers</h2>
         </div>
       </div>
-      <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-        Search using Travelpayouts partner widgets. Supplier results, locations, prices, availability,
-        payments and confirmations are handled by the external provider, not by GTH PRO.
-      </p>
+
 
       <div role="group" aria-label="Transfer search view" className="mt-5 flex flex-wrap gap-2">
         <button type="button" aria-pressed={active === "airport"} onClick={() => select("airport")}
@@ -99,7 +96,7 @@ export default function TransferProviderWidgets() {
 
       <div className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
         <h3 className="font-semibold">{widgets[active].title}</h3>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{widgets[active].description}</p>
+
         {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading provider search…</p>}
         {loadState === "error" && (
           <p role="alert" className="mt-4 text-sm text-[var(--text-soft)]">
@@ -125,6 +122,8 @@ export default function TransferProviderWidgets() {
         )}
       </div>
 
+        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{widgets[active].description}</p>
+
       <div className="mt-5 flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-6 text-[var(--text-soft)]">
           Affiliate disclosure: GTH PRO may earn a commission when you book through a partner.
@@ -135,6 +134,10 @@ export default function TransferProviderWidgets() {
           Alternative: Welcome Pickups <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </div>
+      <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
+        Search using Travelpayouts partner widgets. Supplier results, locations, prices, availability,
+        payments and confirmations are handled by the external provider, not by GTH PRO.
+      </p>
     </section>
   );
 }
