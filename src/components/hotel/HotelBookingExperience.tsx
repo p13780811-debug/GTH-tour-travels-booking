@@ -178,6 +178,11 @@ export default function HotelBookingExperience() {
     }
   }, [search]);
 
+  const searchToggle = bookingQuery ? <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
+      aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>
+      {showSearch ? "Hide new search" : "Start a new hotel search"}
+    </button> : null;
+
   return <section className="gth-hotel-booking" aria-labelledby="hotel-booking-heading">
     <div className="gth-hotel-booking-heading">
       <div><div className="hidden sm:block"><p className="gth-hotel-eyebrow"><Globe2 size={16} aria-hidden="true" /> GTH PRO worldwide hotel booking</p></div>
@@ -185,10 +190,7 @@ export default function HotelBookingExperience() {
         <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
     </div>
-    {bookingQuery && <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
-      aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>
-      {showSearch ? "Hide new search" : "Start a new hotel search"}
-    </button>}
+    {showSearch && searchToggle}
     {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
@@ -204,9 +206,7 @@ export default function HotelBookingExperience() {
     </div>}
     {!handoff && <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
       target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>}
-    <p className="gth-hotel-booking-note"><ShieldCheck size={16} aria-hidden="true" />
-      Hotel content and rates are supplied by our booking provider. Review taxes, room inclusions and cancellation terms before paying.
-    </p>
+
     <div ref={resultSection} className="gth-hotel-booking-results">
       {handoff && <>
         <div className="gth-hotel-booking-heading"><div><h3>{embedResults ? "Your stay, rooms and booking options" : "Your hotel results"}</h3>
@@ -219,5 +219,9 @@ export default function HotelBookingExperience() {
         {embedResults && <p className="gth-hotel-booking-note">If results are blocked by your browser, use “Continue on secure booking site”. This link keeps the dates and guests from your GTH search.</p>}
       </>}
     </div>
+    {!showSearch && searchToggle}
+    <p className="gth-hotel-booking-note"><ShieldCheck size={16} aria-hidden="true" />
+      Hotel content and rates are supplied by our booking provider. Review taxes, room inclusions and cancellation terms before paying.
+    </p>
   </section>;
 }
