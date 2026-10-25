@@ -1,17 +1,22 @@
 "use client";
 import {useId,useState} from "react";
 import Link from "next/link";
-import {Bookmark,BriefcaseBusiness,Building2,Calculator,CarFront,Compass,FileCheck2,Globe2,Heart,Hotel,LayoutGrid,Plane,Route,Search,ShieldCheck,Smartphone} from "lucide-react";
+import {BriefcaseBusiness,Building2,LayoutGrid,Plane,Search} from "lucide-react";
 import AppPromoCarousel from "@/components/mobile/AppPromoCarousel";
 import AppInstall from "@/components/mobile/AppInstall";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
 import {filterAppServices,type AppPillar} from "@/lib/mobile/app-dashboard";
 import type {MobileDiscoveryData} from "@/lib/mobile/discovery";
-const icons={plane:Plane,hotel:Hotel,building:Building2,briefcase:BriefcaseBusiness,transfer:Route,car:CarFront,compass:Compass,shield:ShieldCheck,globe:Globe2,sim:Smartphone,heart:Heart,calculator:Calculator,bookmark:Bookmark,file:FileCheck2};
+import AppServiceGrid,{AppRecentServices} from "./AppServiceGrid";
+import useAppServicePreferences from "./useAppServicePreferences";
+import {recordAppService,toggleAppFavourite} from "@/lib/mobile/app-preferences";
 const tabs=[{id:"all",name:"All",Icon:LayoutGrid},{id:"travel",name:"Travel",Icon:Plane},{id:"property",name:"Property",Icon:Building2},{id:"tender",name:"Tenders",Icon:BriefcaseBusiness}] as const;
 export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
  const [pillar,setPillar]=useState<AppPillar>("all"),[query,setQuery]=useState(""),[expanded,setExpanded]=useState(false);
- const id=useId(),services=filterAppServices(pillar,query),shown=query||expanded?services:services.slice(0,8);
+ const [editing,setEditing]=useState(false);
+ const {preferences,update}=useAppServicePreferences();
+ const select=(id:string)=>update(value=>recordAppService(value,id));
+ const id=useId(),services=filterAppServices(pillar,query).sort((a,b)=>{const ai=preferences.favourites.indexOf(a.id),bi=preferences.favourites.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi);}),shown=query||expanded||editing?services:services.slice(0,8);
  return <div className="mx-auto w-full max-w-6xl">
   <div className="px-4 pt-4 sm:px-6">
    <h1 className="text-xl font-bold tracking-tight">Your world. One app.</h1>
@@ -31,13 +36,11 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
     <div className="flex min-h-11 items-center justify-between gap-3"><h2 className="text-sm font-semibold">{query?"Matching services":"What would you like to do?"}</h2>
      {!query&&services.length>8&&<button type="button" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)} className="min-h-11 px-1 text-xs font-semibold text-[var(--gold)]">{expanded?"Show less":"See all"}</button>}
     </div>
-    {shown.length?<div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6">
-     {shown.map(service=>{const Icon=icons[service.icon];return <Link key={service.id} href={service.href} className="group flex min-h-24 min-w-0 flex-col items-center gap-2 rounded-2xl py-2 text-center focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
-      <span className="gth-glass flex size-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-transform duration-200 group-active:scale-95 motion-reduce:transform-none"><Icon size={30} strokeWidth={1.7} className="text-[var(--gold)]" aria-hidden="true"/></span>
-      <span className="max-w-full text-[11px] font-semibold leading-4">{service.label}</span>
-     </Link>;})}
-    </div>:<p role="status" className="py-6 text-sm text-[var(--text-soft)]">No matching service here. Try another category or search term.</p>}
+    <button type="button" aria-pressed={editing} onClick={()=>setEditing(value=>!value)} className="min-h-11 text-xs font-semibold text-[var(--gold)]">{editing?"Done":"Edit favourites"}</button>
+    {editing&&<p className="pb-3 text-xs text-[var(--text-soft)]">{preferences.favourites.length}/8 favourites. Pinned services appear first on this device.</p>}
+    {shown.length?<AppServiceGrid services={shown} favourites={preferences.favourites} editing={editing} onToggle={id=>update(value=>toggleAppFavourite(value,id))} onSelect={select}/>:<p role="status" className="py-6 text-sm text-[var(--text-soft)]">No matching service here. Try another category or search term.</p>}
    </section>
+   {!editing&&!query&&<AppRecentServices recent={preferences.recent} onSelect={select} onClear={()=>update(value=>({...value,recent:[]}))}/>}
    <AppPromoCarousel key={pillar} pillar={pillar}/>
    <div className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"><AppInstall /></div>
    {(pillar==="all"||pillar==="travel")&&<>
