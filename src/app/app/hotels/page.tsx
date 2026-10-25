@@ -13,10 +13,10 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
  if(directory)return <MobileAppSection params={Promise.resolve({section:"hotels"})} searchParams={Promise.resolve(query)}/>;
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <div className="mx-auto max-w-7xl px-4 pt-3 sm:px-6">
-   <h1 className="mb-3 text-xl font-semibold">Hotels</h1>
+  <div className="mx-auto w-full max-w-7xl pt-3">
+   <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Hotels</h1>
    <Suspense fallback={<p role="status">Loading hotel search…</p>}><HotelBookingExperience searchPath="/app/hotels"/></Suspense>
-   <Link href="/app/hotels?directory=1" className="my-4 inline-flex min-h-11 items-center text-sm underline">Explore hotel guides</Link>
+   <Link href="/app/hotels?directory=1" className="mx-4 my-4 inline-flex min-h-11 items-center text-sm underline sm:mx-6">Explore hotel guides</Link>
   </div>
  </main>;
 }

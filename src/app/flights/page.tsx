@@ -17,7 +17,7 @@ export default async function FlightsPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
-      <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
+      <section className={"relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" + (isResultsView ? " hidden sm:block" : "")} data-travel-hero="true">
         <div aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
           <Image src="/images/mega/flights.jpg" alt="" fill priority
@@ -44,9 +44,9 @@ export default async function FlightsPage({ searchParams }: Props) {
       </section>
       <TravelSectionNav />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-2 sm:px-6 sm:pt-9">
+      <div className="mx-auto w-full max-w-7xl pb-16 pt-2 sm:pt-9">
         {destination && origin !== destination && (
-          <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
+          <div className="mx-4 mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
             <PlaneTakeoff size={18} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
             <p>
               Route inspiration: <strong>{origin} → {destination}</strong>. Choose these airports and
@@ -55,17 +55,19 @@ export default async function FlightsPage({ searchParams }: Props) {
           </div>
         )}
         <AviasalesWhiteLabel isResultsView={isResultsView} />
-        <FlightJourneyServices />
-        <PopularDestinations destinations={flightDestinations} origin={origin} />
+        <div className="px-4 sm:px-6">
+          <FlightJourneyServices />
+          <PopularDestinations destinations={flightDestinations} origin={origin} />
 
-        <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-sm">
-          <h2 className="flex items-center gap-2"><Compass size={18} aria-hidden="true" /> About flight bookings</h2>
-          <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
-            Search and results are operated by Aviasales/Travelpayouts. The GTH PRO historical fare
-            API is not displayed as live bookable inventory. Final availability, fares, baggage,
-            payment and support are determined by the chosen provider.
-          </p>
-        </section>
+          <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-sm">
+            <h2 className="flex items-center gap-2"><Compass size={18} aria-hidden="true" /> About flight bookings</h2>
+            <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
+              Search and results are operated by Aviasales/Travelpayouts. The GTH PRO historical fare
+              API is not displayed as live bookable inventory. Final availability, fares, baggage,
+              payment and support are determined by the chosen provider.
+            </p>
+          </section>
+        </div>
       </div>
     </main>
   );
