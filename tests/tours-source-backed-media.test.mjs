@@ -45,3 +45,18 @@ test("source rail uses public OSM identity and only exact Commons source photos"
   const listings=read("src/lib/tours.ts");
   assert.match(listings,/eq\("is_public", true\)\.eq\("media_rights_verified", true\)/);
 });
+
+test("individual tour booking never points to generic partner homepage or mismatched item",async()=>{
+  const {verifiedTourProductHandoff}=await import("../src/lib/tours/product-handoff.ts");
+  const source="https://www.klook.com/en-IN/activity/12345-paris-eiffel-tower/";
+  assert.equal(verifiedTourProductHandoff(source,source),source);
+  assert.equal(verifiedTourProductHandoff("https://klook.tpo.lv/IKb6eSUe",source),null);
+  assert.equal(verifiedTourProductHandoff("https://www.klook.com/",source),null);
+  assert.equal(verifiedTourProductHandoff("https://www.klook.com/en-IN/activity/54321-other/",source),null);
+  assert.equal(verifiedTourProductHandoff("https://tp.media/r?marker=417668",source),null);
+  const tracked="https://tp.media/r?marker=417668&u="+encodeURIComponent(source);
+  assert.equal(verifiedTourProductHandoff(tracked,source),tracked);
+  assert.equal(verifiedTourProductHandoff(tracked,null),null);
+  const detail=read("src/app/tours/[slug]/page.tsx");
+  assert.match(detail,/publicPartnerLink\(tour\.affiliate_link, tour\.source_url\)/);
+});
