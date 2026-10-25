@@ -58,6 +58,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
   {section==="flights"?<MobileFlightSearch/>:
    <form action={"/app/"+section} method="get"
      className="mx-4 mt-3 grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6" role="search">
+     {section==="hotels"&&<input type="hidden" name="directory" value="1"/>}
      <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3">
        <Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
        <input name="q" defaultValue={q.q} maxLength={70} aria-label={"Search "+current.name}

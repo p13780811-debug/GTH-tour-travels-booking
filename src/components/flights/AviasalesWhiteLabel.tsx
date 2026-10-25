@@ -36,7 +36,7 @@ function isSupplierHeadAsset(node: HTMLElement): boolean {
   return false;
 }
 
-export default function AviasalesWhiteLabel({ isResultsView = false }: { isResultsView?: boolean }) {
+export default function AviasalesWhiteLabel({ isResultsView = false, resultsPath = "/flights" }: { isResultsView?: boolean; resultsPath?: "/flights" | "/app/flights" }) {
   useEffect(() => {
     let disposed = false;
     let currentScript: HTMLScriptElement | null = null;
@@ -47,7 +47,7 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
       TPWL_CONFIGURATION?: Record<string, unknown>;
     };
     const initialConfiguration = configuredWindow.TPWL_CONFIGURATION;
-    const configuredResultsUrl = new URL("/flights", window.location.origin).href;
+    const configuredResultsUrl = new URL(resultsPath, window.location.origin).href;
     configuredWindow.TPWL_CONFIGURATION = {
       ...initialConfiguration,
       resultsURL: configuredResultsUrl,
@@ -180,7 +180,7 @@ export default function AviasalesWhiteLabel({ isResultsView = false }: { isResul
               (asset as HTMLLinkElement).rel === "stylesheet"))) asset.remove();
       }
     };
-  }, []);
+  }, [resultsPath]);
 
   return (
     <section id="flight-search" aria-labelledby="flight-white-label-heading"

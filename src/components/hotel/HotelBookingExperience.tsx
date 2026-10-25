@@ -29,7 +29,7 @@ function subscribeResultsViewport(onChange: () => void) {
 function resultsViewportSnapshot() { return window.matchMedia(embeddedResultsMedia).matches; }
 function serverResultsViewportSnapshot() { return false; }
 
-export default function HotelBookingExperience() {
+export default function HotelBookingExperience({ searchPath = "/hotels" }: { searchPath?: "/hotels" | "/app/hotels" }) {
   const router = useRouter();
   const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
   const query = useSearchParams();
@@ -42,6 +42,7 @@ export default function HotelBookingExperience() {
   const [attempt, setAttempt] = useState(0);
   const searchFrame = useRef<HTMLIFrameElement>(null);
   const dispose = useRef<(() => void) | null>(null);
+  const initializedDocument = useRef<Document | null>(null);
   const resultSection = useRef<HTMLDivElement>(null);
   const scrollToResults = useRef(false);
   // Public supplier URLs work independently of GTH redirect-route deployment/protection.
@@ -79,14 +80,15 @@ export default function HotelBookingExperience() {
     dispose.current?.();
     scrollToResults.current = true;
     setError(""); setBookingQuery(value); setShowSearch(false);
-    router.replace(`/hotels?view=booking&${value}`, { scroll: false });
-  }, [router]);
+    router.replace(`${searchPath}?view=booking&${value}`, { scroll: false });
+  }, [router, searchPath]);
 
   const loadSearch = useCallback(async () => {
-    dispose.current?.();
     const frame = searchFrame.current, doc = frame?.contentDocument;
     const win = frame?.contentWindow as WidgetWindow | null;
-    if (!frame || !doc || !win) return;
+    if (!frame || !doc || !win || initializedDocument.current === doc) return;
+    dispose.current?.();
+    initializedDocument.current = doc;
     let active = true;
     let layoutObserver: MutationObserver | undefined;
     let themeObserver: MutationObserver | undefined;
@@ -177,6 +179,13 @@ export default function HotelBookingExperience() {
       }
     }
   }, [search]);
+
+  // A streamed srcDoc can finish loading before React hydrates on a direct
+  // visit. Bootstrap the already-ready document as well as listening to load.
+  // The document guard makes those two paths share one SDK initialization.
+  useEffect(() => {
+    if (showSearch && searchFrame.current?.contentDocument?.readyState === "complete") void loadSearch();
+  }, [loadSearch, showSearch, attempt]);
 
   const searchToggle = bookingQuery ? <button type="button" className="gth-btn gth-hotel-booking-action" aria-expanded={showSearch}
       aria-controls="hotel-live-search" onClick={() => setShowSearch(value => !value)}>

@@ -13,7 +13,7 @@ test("All app main sections keep standalone app layout, horizontal rails and bra
  assert.match(section,/MobileDiscoveryRail appLinks/);
  assert.match(rail,/snap-x snap-mandatory/);
  assert.match(rail,/<Link href=\{destination\} className="flex w-\[116px\]/);
- assert.match(header,/\/gth-app-brand\.svg/);
+ assert.match(header,/\/app-brand\/wordmark\.png/);
 });
 test("App detail and workflow stay within mobile route; full website only via explicit external handoff",()=>{
  const detail=file("src/app/app/[section]/[id]/page.tsx");

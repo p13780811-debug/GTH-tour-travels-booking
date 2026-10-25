@@ -48,6 +48,7 @@ export function normalizeAppQuery(query:Record<string,string|string[]|undefined>
 }
 export function appQueryHref(section:MobileSection,query:AppQuery,overrides:Partial<AppQuery>={}):string{
  const all={...query,...overrides},params=new URLSearchParams();
+ if(section==="hotels")params.set("directory","1");
  if(all.q)params.set("q",all.q);
  if(all.country)params.set("country",all.country);
  if(all.category)params.set("category",all.category);

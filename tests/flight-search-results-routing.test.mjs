@@ -7,7 +7,8 @@ const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("TPWL flight search results route is explicitly /flights on the active host",()=>{
   const s=read("src/components/flights/AviasalesWhiteLabel.tsx");
   assert.match(s,/TPWL_CONFIGURATION/);
-  assert.match(s,/new URL\("\/flights", window\.location\.origin\)\.href/);
+  assert.match(s,/resultsPath = "\/flights"/);
+  assert.match(s,/new URL\(resultsPath, window\.location\.origin\)\.href/);
   assert.match(s,/resultsURL: configuredResultsUrl/);
   assert.ok(s.indexOf("resultsURL: configuredResultsUrl") < s.indexOf("document.head.appendChild(script)"),
     "Results route must be configured before the vendor script initializes");
@@ -59,7 +60,7 @@ test("real flightSearch results suppress the host's fake loading/Retry card but 
   assert.match(page, /flightSearch\?: string/);
   assert.match(page, /const isResultsView = typeof query\.flightSearch === "string"/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
-  assert.match(component, /export default function AviasalesWhiteLabel\(\{ isResultsView = false \}/);
+  assert.match(component, /export default function AviasalesWhiteLabel\(\{ isResultsView = false, resultsPath = "\/flights" \}/);
   assert.doesNotMatch(component, /Loading flight search|Flight search is unavailable|Reload flight search|setStatus/);
   assert.match(component, /isResultsView \? "Flight results" : "Find flights for your trip"/);
   assert.match(component, /id="tpwl-search"/);
