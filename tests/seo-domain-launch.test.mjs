@@ -29,7 +29,7 @@ test("indexable public content is canonicalized and private results excluded",()
   for(const p of ["/partners/apply","/hotels/results","/search","/real-estate/saved"]) {
     assert.ok(!sitemap.includes('"'+p+'"'),p);
   }
-  assert.match(source("src/app/activities/page.tsx"),/canonical: "\/tours"/);
+  assert.match(source("src/app/activities/page.tsx"),/canonical: "\/activities"/);
   for(const p of ["src/app/hotels/results/page.tsx","src/app/ai-trip/page.tsx",
     "src/app/owners/layout.tsx","src/app/gth-kitchen/layout.tsx"]) {
     assert.match(source(p),/index: false/);

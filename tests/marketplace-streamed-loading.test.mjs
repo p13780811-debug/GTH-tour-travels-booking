@@ -8,9 +8,10 @@ test("Tours loading renders useful, source-honest route-level feedback",()=>{
  assert.match(s,/export default function ToursLoading/);
  assert.match(s,/role="status"/);
  assert.match(s,/aria-live="polite"/);
- assert.match(s,/Preparing available experiences/);
- assert.match(s,/href="\/travel"/);
- assert.match(s,/animate-pulse/);
+ assert.match(s,/<TourSearchHero basePath="\/tours"/);
+ const hero=read("src/components/tours/TourSearchHero.tsx");
+ assert.match(hero,/role="search"/);
+ assert.match(hero,/mode.action/);
  assert.doesNotMatch(s,/\$\d|available tickets today|confirmed booking/);
 });
 test("Tenders loading is accessible and doesn't fabricate public opportunities",()=>{

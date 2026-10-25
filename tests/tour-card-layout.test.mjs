@@ -39,7 +39,8 @@ test("partner strip precedes category strip and Tiqets, followed by real listing
   const second = source.indexOf('<TourCarousel label="Tour experience categories">');
   const third = source.indexOf("<TiqetsPartnerWidgets />");
   assert.ok(first >= 0 && first < second && second < third);
-  assert.ok(page.indexOf("<TourAffiliateMarketplace ") < page.indexOf("Discover experiences"));
+  const landing=read("src/components/tours/TourLanding.tsx");
+  assert.ok(landing.indexOf("<TourAffiliateMarketplace ") < landing.indexOf("<ToursExplorer "));
   assert.match(page, /<TourCarousel label="Source-backed tour listings">/);
   assert.match(page, /w-\[190px\]/);
   assert.match(page, /sm:w-\[216px\]/);

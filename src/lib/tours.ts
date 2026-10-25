@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { parseTourFilters, TOUR_PAGE_SIZE, type TourFilters } from "@/lib/tours/discovery";
+import { parseTourFilters, TOUR_PAGE_SIZE, EXPERIENCE_MODES, type ExperiencePath, type TourFilters } from "@/lib/tours/discovery";
 export type { TourFilters } from "@/lib/tours/discovery";
 
 export type PublicTour = {
@@ -28,7 +28,7 @@ export type TourSearchResult = {
   items: PublicTour[]; error: string | null; status: number;
   total: number; catalogTotal: number; page: number; pageSize: number;
 };
-export async function searchTours(filters: TourFilters): Promise<TourSearchResult> {
+export async function searchTours(filters: TourFilters, mode?: ExperiencePath): Promise<TourSearchResult> {
   const parsed = parseTourFilters(filters);
   const empty = { items: [] as PublicTour[], total: 0, catalogTotal: 0,
     page: parsed.ok ? parsed.filters.page : 1, pageSize: TOUR_PAGE_SIZE };
@@ -39,9 +39,13 @@ export async function searchTours(filters: TourFilters): Promise<TourSearchResul
   if (!url || !key) return { ...empty, error: "Tour listings are not configured", status: 503 };
   try {
     const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-    const base = (head = false) => client.from("tours")
-      .select("id,title,city,city_slug,country,price_numeric,currency,tags,image_url", { count: "exact", head })
-      .eq("is_public", true).eq("media_rights_verified", true);
+    const base = (head = false) => {
+      const query = client.from("tours")
+        .select("id,title,city,city_slug,country,price_numeric,currency,tags,image_url", { count: "exact", head })
+        .eq("is_public", true).eq("media_rights_verified", true);
+      // Old explicit-category links remain valid; unfiltered pages have distinct intent.
+      return mode && !f.category ? query.overlaps("tags", [...EXPERIENCE_MODES[mode].categories]) : query;
+    };
     const matching = (head = false) => {
       let query = base(head);
       if (f.city) {

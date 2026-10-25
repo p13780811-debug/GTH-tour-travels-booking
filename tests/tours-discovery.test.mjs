@@ -45,6 +45,7 @@ function harness(rows=fixtures,{fail=false}={}) {
     const query={
       select(columns,options){assert.ok(!columns.includes("*"));head=Boolean(options?.head);call.head=head;return query;},
       eq(key,value){conditions.push(["eq",key,value]);return query;},
+      overlaps(key,value){conditions.push(["overlaps",key,value]);return query;},
       contains(key,value){conditions.push(["contains",key,value]);return query;},
       gte(key,value){conditions.push(["gte",key,value]);return query;},
       lte(key,value){conditions.push(["lte",key,value]);return query;},
@@ -57,6 +58,7 @@ function harness(rows=fixtures,{fail=false}={}) {
       if(fail)return {error:{message:"sensitive backend detail"},data:null,count:null};
       let visible=rows.filter(row=>conditions.every(([op,key,value])=>
         op==="eq"?row[key]===value:op==="contains"?value.every(v=>row[key]?.includes(v)):
+        op==="overlaps"?value.some(v=>row[key]?.includes(v)):
         op==="gte"?row[key]>=value:row[key]<=value));
       if(or) {
         const match=or.match(/^city\.ilike\.%(.*)%,city_slug\.eq\.(.*)$/);
@@ -169,4 +171,30 @@ test("invalid search UI has a recovery action and never creates a provider query
   const html=renderToStaticMarkup(React.createElement(Handoff,{search:defaults,error:"Invalid filters",status:400,catalogTotal:0,basePath:"/activities"}));
   assert.match(html,/role="alert"/);assert.match(html,/Reset search/);assert.match(html,/\/activities#discover/);
   assert.doesNotMatch(html,/klook\.com/);
+});
+
+test("route intent separates default tour and activity catalogs without losing explicit legacy categories",async()=>{
+ const rows=[{...fixtures[0],id:"tour",tags:["day-trip"]},{...fixtures[0],id:"activity",tags:["outdoor"]},{...fixtures[0],id:"private-activity",tags:["outdoor"],is_public:false}];
+ const h=harness(rows);
+ assert.deepEqual((await h.search({},"/tours")).items.map(x=>x.id),["tour"]);
+ assert.deepEqual((await h.search({},"/activities")).items.map(x=>x.id),["activity"]);
+ assert.deepEqual((await h.search({category:"outdoor"},"/tours")).items.map(x=>x.id),["activity"]);
+});
+const Hero=compile("src/components/tours/TourSearchHero.tsx",{
+ "react/jsx-runtime":jsxRuntime,"lucide-react":icons,
+ "next/link":{default:({children,...props})=>React.createElement("a",props,children)},
+ "next/image":{default:()=>null},
+ "@/components/travel/TravelSectionNav":{default:()=>React.createElement("nav",{"aria-label":"Travel categories"})},
+ "@/lib/tours/discovery":discovery,
+}).default;
+test("server-rendered hero offers distinct destination search and route-safe category choices before loading",()=>{
+ const tours=renderToStaticMarkup(React.createElement(Hero,{basePath:"/tours",filters:{...defaults,city:"Dubai"}}));
+ const activities=renderToStaticMarkup(React.createElement(Hero,{basePath:"/activities",filters:defaults}));
+ assert.match(tours,/Discover Tours Around the World/);assert.match(activities,/Discover Activities &amp; Attraction Tickets/);
+ assert.match(tours,/action="\/tours#discover"/);assert.match(activities,/action="\/activities#discover"/);
+ assert.match(tours,/value="day-trip"/);assert.doesNotMatch(tours,/value="outdoor"/);
+ assert.match(activities,/value="outdoor"/);assert.doesNotMatch(activities,/value="day-trip"/);
+ assert.match(tours,/href="\/activities\?city=Dubai"/);
+ assert.ok(tours.indexOf('Find tours')<tours.indexOf('Travel categories'));
+ assert.doesNotMatch(tours+activities,/type="date"|name="guests"|Guaranteed Price|Instant Booking/);
 });

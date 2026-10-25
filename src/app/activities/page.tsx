@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import ToursExplorer from "@/components/tours/ToursExplorer";
+import TourLanding from "@/components/tours/TourLanding";
 
 export const metadata: Metadata = {
-  alternates: { canonical: "/tours" },
+  alternates: { canonical: "/activities" },
   title: "Activities & Experiences | GTH PRO Travel",
   description: "Explore destination experiences and activities. Verify current availability and final prices with each booking provider.",
 };
 
-// Share the validated real-inventory experience marketplace rather than
-// silently redirecting customers to an unrelated external service.
+// Activities has its own route identity and experience categories.
 export default function ActivitiesPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string,unknown>>;
 }) {
-  return <ToursExplorer searchParams={searchParams} basePath="/activities" />;
+  return <TourLanding searchParams={searchParams} basePath="/activities" />;
 }
