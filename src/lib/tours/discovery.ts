@@ -97,3 +97,16 @@ export function experienceCategories(basePath:ExperiencePath){
  const ids:readonly string[]=EXPERIENCE_MODES[basePath].categories;
  return TOUR_CATEGORIES.filter(item=>ids.includes(item.value));
 }
+
+/** Identity-preserving provider SEARCH; never labelled exact product booking. */
+export function directExperienceSearch(placeName: string, city?: string | null): string | null {
+  const normalize = (value: string) => value.normalize("NFKC").replace(/\s+/g," ").trim();
+  const name = normalize(placeName);
+  const destination = city ? normalize(city) : "";
+  if (!name || name.length>120 || destination.length>80 ||
+      /[\u0000-\u001f\u007f<>?=&/:\\]/.test(name) ||
+      /[\u0000-\u001f\u007f<>?=&/:\\]/.test(destination)) return null;
+  const url = new URL("https://www.klook.com/en-IN/search/result/");
+  url.searchParams.set("query", [name,destination].filter(Boolean).join(" "));
+  return url.toString();
+}

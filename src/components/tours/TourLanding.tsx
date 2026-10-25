@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import TourSearchHero from "./TourSearchHero";
 import ToursExplorer from "./ToursExplorer";
+import SourceMappedExperiences from "./SourceMappedExperiences";
 import TourAffiliateMarketplace from "./TourAffiliateMarketplace";
 import {EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,parseTourFilters,tourDiscoveryHref,type ExperiencePath} from "@/lib/tours/discovery";
 const destinations=[{city:"Dubai",image:"/images/cities/dubai.jpg"},{city:"London",image:"/images/cities/london.jpg"},{city:"Tokyo",image:"/images/cities/tokyo.jpg"},{city:"Bali",image:"/images/cities/bali.jpg"}];
@@ -19,6 +20,7 @@ export default async function TourLanding({searchParams,basePath}:{searchParams:
   </section>
   <div id="discover" className="scroll-mt-24">
    <TourAffiliateMarketplace search={filters} basePath={basePath}/>
+   <Suspense fallback={null}><SourceMappedExperiences city={filters.city} basePath={basePath}/></Suspense>
    <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)] sm:px-6">Loading source-backed listings. Search and booking partners above are ready to use.</p>}>
     <ToursExplorer searchParams={Promise.resolve(raw)} basePath={basePath}/>
    </Suspense>
