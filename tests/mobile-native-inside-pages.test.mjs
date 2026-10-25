@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const file=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("All app main sections keep standalone app layout, horizontal rails and brand logo",()=>{
- const home=file("src/app/app/page.tsx");
+ const home=file("src/app/app/page.tsx")+file("src/components/mobile/MobileAppDashboard.tsx");
  const section=file("src/app/app/[section]/page.tsx");
  const rail=file("src/components/mobile/MobileDiscoveryRail.tsx");
  const header=file("src/components/mobile/MobileAppHeader.tsx");
@@ -13,7 +13,7 @@ test("All app main sections keep standalone app layout, horizontal rails and bra
  assert.match(section,/MobileDiscoveryRail appLinks/);
  assert.match(rail,/snap-x snap-mandatory/);
  assert.match(rail,/<Link href=\{destination\} className="flex w-\[116px\]/);
- assert.match(header,/\/app-brand\/wordmark\.png/);
+ assert.match(header,/name="logo-motion"/);
 });
 test("App detail and workflow stay within mobile route; full website only via explicit external handoff",()=>{
  const detail=file("src/app/app/[section]/[id]/page.tsx");
