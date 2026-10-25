@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { verifiedTourProductHandoff } from "@/lib/tours/product-handoff";
 import { ArrowLeft, ArrowUpRight, Compass, ShieldCheck } from "lucide-react";
 import RelatedCarousel from "@/components/RelatedCarousel";
 import JsonLd from "@/components/seo/JsonLd";
@@ -14,19 +15,8 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
 const fields = "id,title,city,city_slug,country,price_numeric,currency,tags,image_url,affiliate_link,provider,source_name,source_url,is_public,media_rights_verified";
 
-function publicPartnerLink(value: unknown): string | null {
-  if (typeof value !== "string" || value.length > 2048) return null;
-  try {
-    const url = new URL(value);
-    const domains = ["klook.com", "trip.com", "booking.com", "hotellook.com", "viator.com",
-      "getyourguide.com", "expedia.com", "tiqets.com", "wegotrip.com", "gocity.com", "kkday.com", "tp.media", "tpo.lv"];
-    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
-    const host = url.hostname.toLowerCase();
-    return domains.some((domain) => host === domain || host.endsWith(`.${domain}`))
-      ? url.toString() : null;
-  } catch {
-    return null;
-  }
+function publicPartnerLink(value: unknown, source: unknown): string | null {
+  return verifiedTourProductHandoff(value, source);
 }
 
 function imageUrl(value: unknown): string {
@@ -82,7 +72,7 @@ export default async function TourDetailPage({ params }: Props) {
   const tour = await getTour(slug);
   if (!tour) notFound();
 
-  const partner = publicPartnerLink(tour.affiliate_link);
+  const partner = publicPartnerLink(tour.affiliate_link, tour.source_url);
   const shownPrice = quote(tour.price_numeric, tour.currency);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

@@ -5,7 +5,7 @@ import dotenv from "dotenv"
 
 dotenv.config({ path: ".env.local" })
 
-console.log("PEXELS KEY:", process.env.PEXELS_KEY)
+// Never print API credentials or provider secrets to workflow logs.
 
 
 const API_KEY = process.env.PEXELS_KEY
