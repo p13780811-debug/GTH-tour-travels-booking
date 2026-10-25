@@ -1,0 +1,39 @@
+name: GTH Original Tour Source Engine
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/lib/tours/**'
+      - 'src/components/tours/**'
+      - 'scripts/tours/**'
+      - 'backend/import_activities_tours.py'
+      - 'backend/import_travel_data.py'
+      - 'scripts/update-images.ts'
+      - 'tests/tour-supplier*'
+      - 'tests/test_tour_catalog_engine.py'
+      - '.github/workflows/gth-tour-source-engine.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 21 * * *'
+permissions:
+  contents: read
+jobs:
+  original-source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate original products, identity and exact-link conversion
+        run: python3 -m unittest discover -s tests -p 'test_tour_catalog_engine.py'
+      - name: Read-only supplier catalogue and image smoke
+        run: python3 scripts/tours/catalog_engine.py fetch --city Edinburgh --limit 4 --output /tmp/original-tour-candidates.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-supplier-tour-candidates
+          path: /tmp/original-tour-candidates.json
+          retention-days: 7
