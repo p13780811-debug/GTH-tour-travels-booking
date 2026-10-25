@@ -4,9 +4,9 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 const source=readFileSync(new URL('../src/lib/mobile/app-dashboard.ts',import.meta.url),'utf8');
-const module={exports:{}};
-vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:module.exports,module},{timeout:2000});
-const {filterAppServices,appServices}=module.exports;
+const mod={exports:{}};
+vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:mod.exports,module:mod},{timeout:2000});
+const {filterAppServices,appServices}=mod.exports;
 test('service category selection does not mix property records with travel bookings',()=>{
  const result=filterAppServices('property','');
  assert.ok(result.some(service=>service.href==='/app/property'));
