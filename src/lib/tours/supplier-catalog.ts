@@ -1,15 +1,23 @@
 import "server-only";
+import {unstable_cache} from "next/cache";
 import {parseTourFilters,type ExperiencePath,type TourFilters} from "./discovery";
 import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,uniqueSupplierProducts,type SupplierCity,type SupplierProduct} from "./supplier-products";
 const MAX_BYTES=1_500_000;
-async function readSupplier(path:string,params:Record<string,string>,ttl:number):Promise<Record<string,unknown>>{
+async function fetchSupplier(path:string,params:Record<string,string>):Promise<Record<string,unknown>>{
  const url=new URL(WEGOTRIP_API+path);for(const [key,value] of Object.entries(params))url.searchParams.set(key,value);
- const response=await fetch(url,{headers:{Accept:"application/json","Accept-Language":"en"},redirect:"error",signal:AbortSignal.timeout(8000),next:{revalidate:ttl}});
+ const response=await fetch(url,{headers:{Accept:"application/json","Accept-Language":"en"},redirect:"error",signal:AbortSignal.timeout(8000),cache:"no-store"});
  if(!response.ok||!response.headers.get("content-type")?.includes("application/json")||Number(response.headers.get("content-length"))>MAX_BYTES||!response.body)throw Error("Supplier unavailable");
  const reader=response.body.getReader();let size=0;const chunks:Uint8Array[]=[];
  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>MAX_BYTES)throw Error("Supplier response too large");chunks.push(part.value);}}finally{await reader.cancel();}
  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
  return object(object(JSON.parse(new TextDecoder().decode(bytes))).data);
+}
+async function readSupplier(path:string,params:Record<string,string>,ttl:number):Promise<Record<string,unknown>>{
+ const read=unstable_cache(async()=>({data:await fetchSupplier(path,params),fetchedAt:Date.now()}),["wegotrip-public-v1",path,JSON.stringify(params)],{revalidate:ttl});
+ const cached=await read();
+ // Keep an outage from turning an old supplier selection into permanent inventory.
+ if(Date.now()-cached.fetchedAt>Math.max(ttl*2000,86400000))throw Error("Supplier snapshot expired");
+ return cached.data;
 }
 function list(value:unknown){return Array.isArray(value)?value.slice(0,100):[];}
 export type SupplierCatalog={items:SupplierProduct[];status:"ready"|"empty"|"unavailable"|"invalid"};
