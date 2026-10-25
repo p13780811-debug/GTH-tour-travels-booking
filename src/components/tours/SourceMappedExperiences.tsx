@@ -2,6 +2,7 @@ import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {ArrowUpRight, Compass, ImageOff, MapPin, ShieldCheck} from "lucide-react";
 import TourCarousel from "./TourCarousel";
+import TourImage from "./TourImage";
 import {directExperienceSearch, type ExperiencePath} from "@/lib/tours/discovery";
 import {licensedCommonsPhotos} from "@/lib/travel/commons-place-media";
 
@@ -62,8 +63,7 @@ export default async function SourceMappedExperiences({city,basePath}:{
         return <article key={place.source_id}
           className="flex w-[205px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] sm:w-[230px]">
           <div className="relative h-[126px] w-full shrink-0 overflow-hidden bg-[var(--bg-soft)] sm:h-[144px]">
-            {photo?<img src={photo.url} alt={place.name+" — source-linked Commons photograph"}
-              loading="lazy" decoding="async" width={photo.width} height={photo.height}
+            {photo?<TourImage src={photo.url} title={place.name+" — source-linked Commons photograph"}
               className="h-full w-full object-cover"/>:
               <div role="img" aria-label={"No licensed exact photo for "+place.name}
                 className="flex h-full flex-col items-center justify-center gap-2 text-xs text-[var(--text-soft)]">
