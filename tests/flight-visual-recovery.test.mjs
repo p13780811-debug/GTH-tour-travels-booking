@@ -40,8 +40,10 @@ test("flight search stays primary with human-readable premium hero and scoped na
 test("five illustrated categories use compact horizontal cards and active provider selection", () => {
   const s = read("src/components/flights/FlightJourneyServices.tsx");
   assert.match(s, /^"use client"/);
+  const categories = read("src/lib/flights/service-categories.ts");
+  assert.match(s, /flightServiceCategories as categories/);
   for (const group of ["Flight protection","Airport transfers","Car rentals","Airport essentials","At destination"]) {
-    assert.ok(s.includes('group: "' + group + '"'), group);
+    assert.ok(categories.includes('group: "' + group + '"'), group);
   }
   assert.match(s, /w-\[166px\]/);
   assert.match(s, /sm:w-\[194px\]/);
@@ -51,7 +53,7 @@ test("five illustrated categories use compact horizontal cards and active provid
   assert.match(s, /activeProviders\.map/);
   assert.match(s, /rel="noopener noreferrer sponsored"/);
   assert.doesNotMatch(s, /<details|Math\.random|fake fare/);
-  const images = [...s.matchAll(/image: "(\/images\/[^"]+\.jpg)"/g)].map(match=>match[1]);
+  const images = [...categories.matchAll(/image: "(\/images\/[^"]+\.jpg)"/g)].map(match=>match[1]);
   assert.equal(images.length,5);
   for(const img of images) assert.ok(statSync(new URL("../public" + img,import.meta.url)).size > 30000, img);
 });

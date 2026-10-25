@@ -23,8 +23,9 @@ test("real Travelpayouts White Label Web 23459 is the Flights primary UI", () =>
 test("flight page includes complete airport journey sections without touching other modules", () => {
   const page = read("src/app/flights/page.tsx");
   const services = read("src/components/flights/FlightJourneyServices.tsx");
+  const categories = read("src/lib/flights/service-categories.ts");
   for (const section of ["Flight protection", "Airport transfers", "Car rentals", "Airport essentials", "At destination"]) {
-    assert.ok(services.includes('group: "' + section + '"'), section);
+    assert.ok(categories.includes('group: "' + section + '"'), section);
   }
   const navigation = read("src/components/travel/TravelSectionNav.tsx");
   assert.match(page, /<TravelSectionNav\s*\/>/);
