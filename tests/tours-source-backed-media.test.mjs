@@ -7,6 +7,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("obsolete synthetic importer is removed",()=>{
   assert.throws(()=>read("backend/import_activities_tours.py"));
+  assert.throws(()=>read("backend/import_travel_data.py"));
 });
 test("exact matching requires secure Commons identity and full media rights",()=>{
   const info={thumburl:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Example.jpg/960px-Example.jpg",
