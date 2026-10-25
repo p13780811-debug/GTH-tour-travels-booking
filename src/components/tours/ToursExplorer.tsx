@@ -1,12 +1,9 @@
-import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import { parseTourFilters, EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, TOUR_CURRENCIES, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
+import { parseTourFilters, EMPTY_TOUR_SEARCH, experienceCategories, EXPERIENCE_MODES, TOUR_CURRENCIES, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
 import TourSearchHandoff from "./TourSearchHandoff";
 import TourImage from "./TourImage";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BookOpen, Compass, Home, LayoutGrid, List, MapPin, Plane, RotateCcw, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, LayoutGrid, List, MapPin, Plane, RotateCcw, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { searchTours, type TourFilters, type PublicTour } from "@/lib/tours";
-import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
 import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
 import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import {destinationGeography} from "@/lib/destinations/geography";
@@ -56,8 +53,8 @@ function TourFilterForm({ filters, sort, view, basePath, id }: {
         Category
         <select id={id+"-category"} name="category" defaultValue={filters.category} className="gth-input mt-2 w-full">
           <option value="">All categories</option>
-          {TOUR_CATEGORIES.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
-          {filters.category&&!TOUR_CATEGORIES.some(item=>item.value===filters.category)&&<option value={filters.category}>{filters.category}</option>}
+          {experienceCategories(basePath).map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+          {filters.category&&!experienceCategories(basePath).some(item=>item.value===filters.category)&&<option value={filters.category}>{filters.category}</option>}
         </select>
       </label>
       <label htmlFor={id+"-currency"} className="block text-xs font-semibold">Listed currency
@@ -144,13 +141,14 @@ function TourListingCard({ tour, view }: { tour: PublicTour; view: ExplorerView 
 
 export default async function ToursExplorer({ searchParams, basePath }: Props) {
   const raw = await searchParams;
+  const mode = EXPERIENCE_MODES[basePath];
   const parsed = parseTourFilters(raw);
   const filters = parsed.ok ? parsed.filters : EMPTY_TOUR_SEARCH;
   const view: ExplorerView = raw.view === "grid" || raw.view === "list" ? raw.view : "rail";
   const sort = filters.sort, activeCity = filters.city;
   const query = { ...filters, page: String(filters.page) };
   const [response, cityData] = await Promise.all([
-    searchTours(parsed.ok ? query : raw as TourFilters),
+    searchTours(parsed.ok ? query : raw as TourFilters, basePath),
     listMappedCities({search:activeCity.slice(0,60),pageSize:48}).catch(() => null),
   ]);
   const tours = response.items;
@@ -164,69 +162,17 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
   ];
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <section data-travel-hero="true" className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--bg-soft)]">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-3 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:items-center lg:py-12">
-          <div className="min-w-0">
-            <nav aria-label="Tours breadcrumb" className="hidden sm:flex mb-5 items-center gap-2 text-xs text-[var(--text-soft)]">
-              <Link href="/mega-aggregator" className="inline-flex items-center gap-1 hover:underline"><Home size={14} /> Home</Link>
-              <span aria-hidden="true">/</span><span aria-current="page">{basePath==="/activities"?"Activities":"Tours Explorer"}</span>
-            </nav>
-            <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO • Global experiences</p>
-            <h1 className="mt-3 max-w-2xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-              Find your next experience. Know the details.
-            </h1>
-            <p className="hidden sm:block mt-4 max-w-2xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">
-              Discover tours, attraction tickets and local experiences from source-backed listings. Compare the available information and confirm dates, inclusions and final prices with the booking provider.
-            </p>
-            <form key={tourUrl(basePath,filters,sort,view)} action={basePath+"#discover"} method="GET" role="search" aria-label="Quick tour city search"
-              className="mt-3 sm:mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
-              {typeof filters.category === "string" && filters.category && <input type="hidden" name="category" value={filters.category} />}
-              {typeof filters.minPrice === "string" && filters.minPrice && <input type="hidden" name="minPrice" value={filters.minPrice} />}
-              {typeof filters.maxPrice === "string" && filters.maxPrice && <input type="hidden" name="maxPrice" value={filters.maxPrice} />}
-              <input type="hidden" name="sort" value={sort} />
-              {view !== "rail" && <input type="hidden" name="view" value={view} />}
-              {filters.currency && <input type="hidden" name="currency" value={filters.currency} />}
-              <label className="flex min-w-0 flex-1 items-center gap-2 px-3">
-                <Search size={18} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true" />
-                <span className="sr-only">Search destination city</span>
-                <input type="search" name="city" maxLength={80} defaultValue={activeCity}
-                  placeholder="Search a destination, e.g. Dubai"
-                  className="min-h-11 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none" />
-              </label>
-              <button type="submit" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold">
-                Explore <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </form>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--text-soft)]">
-              <span className="inline-flex items-center gap-1"><BadgeCheck size={15} /> Source-aware listings</span>
-              <span className="inline-flex items-center gap-1"><Compass size={15} /> Global tour discovery</span>
-              <span className="inline-flex items-center gap-1"><ShieldCheck size={15} /> Provider-operated checkout</span>
-            </div>
-          </div>
-          <div className="relative hidden min-h-[270px] overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm lg:block">
-            <Image src="/images/mega/tours.jpg" alt="Illustrative global travel experience scenery" fill priority
-              sizes="(max-width: 1280px) 36vw, 440px" className="object-cover" />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-5 pt-16 text-white">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">Explore with context</p>
-              <p className="mt-1 text-sm">Tour discovery • independent booking partners</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <TravelSectionNav />
-
-      <section id="discover" className="scroll-mt-24">
+    <div className="bg-[var(--bg)] text-[var(--text)]">
+      <section aria-label="Experience search results">
         <TourSearchHandoff search={filters} error={response.error} status={response.status}
           catalogTotal={response.catalogTotal} basePath={basePath} />
-        <TourAffiliateMarketplace search={filters} basePath={basePath} />
       </section>
 
       {response.catalogTotal > 0 && <section aria-label="Reviewed tour listings" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">Your research, in focus</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Discover experiences</h2>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{mode.label} directory</h2>
             <p className="mt-2 text-sm text-[var(--text-soft)]">
               {response.error ? "Tour catalog could not be loaded" :
                 "Showing " + tours.length + " of " + response.total + " reviewed listings · Page " + response.page + " of " + pages + "."}
@@ -359,6 +305,6 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
         ))}
       </nav>
     <SmartSynergy city={activeCity} context="travel" />
-  </main>
+  </div>
   );
 }

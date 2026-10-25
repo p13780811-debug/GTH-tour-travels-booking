@@ -86,3 +86,14 @@ export function directTourSearch(filters: TourSearch): string | null {
   url.searchParams.set("query", [parsed.filters.city, category].filter(Boolean).join(" "));
   return url.href;
 }
+
+/** Page intent is fixed by the route, never by an arbitrary database expression. */
+export const EXPERIENCE_MODES = {
+ "/tours": {label:"Tours", title:"Discover Tours Around the World", description:"Explore guided city tours, audio walks and day trips.", action:"Find tours", categories:["city-tour","audio-tour","day-trip"]},
+ "/activities": {label:"Activities", title:"Discover Activities & Attraction Tickets", description:"Find museums, city passes and outdoor experiences.", action:"Find activities", categories:["attraction-ticket","city-pass","outdoor"]},
+} as const;
+export type ExperiencePath = keyof typeof EXPERIENCE_MODES;
+export function experienceCategories(basePath:ExperiencePath){
+ const ids:readonly string[]=EXPERIENCE_MODES[basePath].categories;
+ return TOUR_CATEGORIES.filter(item=>ids.includes(item.value));
+}

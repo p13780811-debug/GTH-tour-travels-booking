@@ -7,6 +7,7 @@ type Props = {
   catalogTotal: number; basePath: "/tours" | "/activities";
 };
 export default function TourSearchHandoff({ search, error, status, catalogTotal, basePath }: Props) {
+  const isActivity=basePath==="/activities";
   const direct = status === 400 ? null : directTourSearch(search);
   const category = TOUR_CATEGORIES.find(item => item.value === search.category)?.label;
   const filtered = Boolean(search.city || search.category || search.currency || search.minPrice || search.maxPrice || search.page > 1);
@@ -37,7 +38,7 @@ export default function TourSearchHandoff({ search, error, status, catalogTotal,
         Our reviewed listings are temporarily unavailable. You can still browse the independent provider options below.
       </p> : catalogTotal === 0 ? <p role="status" className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
         Explore the provider options below for current tours and tickets{search.city ? " in " + search.city : ""}.
-        Individual GTH PRO tour offers are not published yet; this does not mean the destination is sold out.
+        Individual GTH PRO {isActivity?"activity":"tour"} offers are not published yet; this does not mean the destination is sold out.
       </p> : null}
     </>}
   </section>;

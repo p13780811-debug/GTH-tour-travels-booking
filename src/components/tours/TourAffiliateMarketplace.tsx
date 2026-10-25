@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import TiqetsPartnerWidgets from "./TiqetsPartnerWidgets";
 import TourCarousel from "./TourCarousel";
-import { EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
+import { EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, EXPERIENCE_MODES, experienceCategories, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
 
 // All destination photography comes from existing GTH PRO local assets.
 // It illustrates travel themes; it does not represent a verified supplier
@@ -118,25 +118,27 @@ function TourImageCard({ item }: { item: CardItem }) {
 }
 
 export default function TourAffiliateMarketplace({search=EMPTY_TOUR_SEARCH,basePath="/tours"}:{search?:TourSearch;basePath?:"/tours"|"/activities"}) {
+  const mode=EXPERIENCE_MODES[basePath];
+  const allowed=experienceCategories(basePath);
   return (
     <section aria-labelledby="tours-partners-heading" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
-            Tours · Tickets · Experiences
+            {basePath==="/tours"?"Guided tours · Audio walks · Day trips":"Tickets · City passes · Outdoor experiences"}
           </p>
           <h2 id="tours-partners-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
-            Explore with global tour partners
+            Explore with global {mode.label.toLowerCase()} partners
           </h2>
           <p className="mt-2 max-w-3xl text-xs leading-5 text-[var(--text-soft)]">
-            Browse five travel partners. Supplier bookings and availability are managed outside GTH PRO.
+            Browse established travel partners. Supplier bookings and availability are managed outside GTH PRO.
           </p>
         </div>
         <Link href="/affiliate-disclosure" className="text-xs text-[var(--text-soft)] underline">Affiliate disclosure</Link>
       </div>
 
       <TourCarousel label="Tour booking partners">
-        {partners.map((item) => <TourImageCard key={item.name} item={item} />)}
+        {partners.filter(item=>basePath==="/activities"||item.name!=="Tiqets"&&item.name!=="Go City").map((item) => <TourImageCard key={item.name} item={item} />)}
       </TourCarousel>
 
       <div className="mb-3 mt-7">
@@ -144,14 +146,14 @@ export default function TourAffiliateMarketplace({search=EMPTY_TOUR_SEARCH,baseP
         <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Choose an experience type{search.city?" for "+search.city:""}. Your destination stays selected.</p>
       </div>
       <TourCarousel label="Tour experience categories">
-        {categories.map((item,index) => <TourImageCard key={item.name} item={{
+        {categories.flatMap((item,index) => allowed.some(category=>category.value===TOUR_CATEGORIES[index].value)?[{item,index}]:[]).map(({item,index}) => <TourImageCard key={item.name} item={{
           ...item, external:false,
           href:tourDiscoveryHref(basePath,search,"rail",{category:TOUR_CATEGORIES[index].value,page:1}),
           current:search.category===TOUR_CATEGORIES[index].value, action:"Choose this experience type",
         }} />)}
       </TourCarousel>
 
-      <TiqetsPartnerWidgets />
+      {basePath==="/activities"&&<TiqetsPartnerWidgets />}
 
       <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
         <ShieldCheck size={17} className="mt-1 shrink-0" aria-hidden="true" />

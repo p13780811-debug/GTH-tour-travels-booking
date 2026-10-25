@@ -17,7 +17,8 @@
       "feat/mobile-app-brand-booking-20261025": false,
       "fix/travel-full-page-mobile-20261025": false,
       "feat/app-dashboard-20261025": false,
-      "feat/app-personal-shortcuts-20261025": false
+      "feat/app-personal-shortcuts-20261025": false,
+      "fix/tours-search-first-20261025": false
     }
   }
 }
