@@ -4,15 +4,15 @@ import {readFileSync} from "node:fs";
 const f=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
 test("Mobile home is source-backed and hero is compact, without 3 giant vertical pillars",()=>{
- const page=f("src/app/app/page.tsx");
+ const page=f("src/app/app/page.tsx")+f("src/components/mobile/MobileAppDashboard.tsx");
  assert.match(page,/loadMobileDiscovery\(\)/);
  assert.match(page,/MobileDiscoveryRail kind="destination"/);
  assert.match(page,/MobileDiscoveryRail kind="hotel"/);
  assert.match(page,/MobileDiscoveryRail kind="property"/);
  assert.match(page,/MobileDiscoveryRail kind="tender"/);
  assert.match(page,/MobileAppHeader/);
- assert.match(readFileSync(new URL("../src/components/mobile/MobileAppHeader.tsx",import.meta.url),"utf8"),/\/app-brand\/wordmark\.png/);
- assert.match(page,/Discover more\. Scroll less\./);
+ assert.match(readFileSync(new URL("../src/components/mobile/MobileAppHeader.tsx",import.meta.url),"utf8"),/name="logo-motion"/);
+ assert.match(page,/Your world\. One app\./);
  assert.doesNotMatch(page,/One app\. Three worlds\./);
  assert.doesNotMatch(page,/h-44 overflow-hidden sm:h-52/);
 });

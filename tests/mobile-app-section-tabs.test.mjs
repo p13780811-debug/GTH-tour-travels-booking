@@ -37,6 +37,6 @@ test("All five app sections use real source-backed filters, horizontal cards and
 test("GTH brand is visible in both home and detail mastheads",()=>{
  const header=f("src/components/mobile/MobileAppHeader.tsx");
  assert.match(f("src/app/app/page.tsx"),/MobileAppHeader/);
- assert.match(header,/\/app-brand\/wordmark\.png/);
+ assert.match(header,/name="logo-motion"/);
  assert.match(header,/href="\/app"/);
 });

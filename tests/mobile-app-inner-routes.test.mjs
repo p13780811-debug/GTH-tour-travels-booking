@@ -29,7 +29,7 @@ test("All app cards stay inside app-only screens, no normal website card handoff
  assert.equal(isMobileSection("admin"),false);
 });
 test("Home rail enables app-only destinations across every content pillar",()=>{
- const home=read("src/app/app/page.tsx");
+ const home=read("src/app/app/page.tsx")+read("src/components/mobile/MobileAppDashboard.tsx")+read("src/lib/mobile/app-dashboard.ts");
  const rail=read("src/components/mobile/MobileDiscoveryRail.tsx");
  for(const type of ["destination","hotel","property","tender"])
    assert.match(home,new RegExp('kind="'+type+'"[\\s\\S]*?appLinks'));
