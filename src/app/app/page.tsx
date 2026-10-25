@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowUpRight,BriefcaseBusiness,Building2,Compass,Hotel,Plane,ShieldCheck} from "lucide-react";
+import AppBrandMotion from "@/components/mobile/AppBrandMotion";
 import AppInstall from "@/components/mobile/AppInstall";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
@@ -25,6 +26,7 @@ export default async function MobileAppHome(){
   <MobileAppHeader />
 
   <section className="mx-4 mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6 sm:p-5" aria-labelledby="mobile-app-headline">
+   <div className="flex items-center gap-3"><AppBrandMotion/><div className="min-w-0">
    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One connected global ecosystem</p>
    <h1 id="mobile-app-headline" className="mt-1.5 text-[clamp(1.35rem,6vw,1.9rem)] font-bold leading-tight tracking-tight">
     Discover more. Scroll less.
@@ -32,6 +34,7 @@ export default async function MobileAppHome(){
    <p className="mt-2 max-w-lg text-xs leading-5 text-[var(--text-soft)]">
     Travel, stays, property and worldwide tenders—all in one mobile hub.
    </p>
+   </div></div>
    <div className="mt-3 max-w-sm"><AppInstall /></div>
   </section>
 
@@ -45,8 +48,8 @@ export default async function MobileAppHome(){
   <div className="mx-auto max-w-6xl">
    <MobileDiscoveryRail kind="destination" heading="Destinations" description="City guides · travel ideas"
     href="/app/destinations" items={data.destinations} appLinks/>
-   <MobileDiscoveryRail kind="hotel" heading="Hotels & stays" description="Source-backed accommodation · no invented prices"
-    href="/app/hotels" items={data.hotels} appLinks/>
+   <MobileDiscoveryRail kind="hotel" heading="Hotel guides" description="Source-backed accommodation directory"
+    href="/app/hotels?directory=1" items={data.hotels} appLinks/>
    <MobileDiscoveryRail kind="property" heading="Properties" description="Real projects · source-aware details"
     href="/app/property" items={data.properties} appLinks/>
    <MobileDiscoveryRail kind="tender" heading="Open tenders" description="Published notices · official documents"

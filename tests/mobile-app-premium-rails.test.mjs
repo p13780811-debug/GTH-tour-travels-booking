@@ -11,7 +11,7 @@ test("Mobile home is source-backed and hero is compact, without 3 giant vertical
  assert.match(page,/MobileDiscoveryRail kind="property"/);
  assert.match(page,/MobileDiscoveryRail kind="tender"/);
  assert.match(page,/MobileAppHeader/);
- assert.match(readFileSync(new URL("../src/components/mobile/MobileAppHeader.tsx",import.meta.url),"utf8"),/\/gth-app-brand\.svg/);
+ assert.match(readFileSync(new URL("../src/components/mobile/MobileAppHeader.tsx",import.meta.url),"utf8"),/\/app-brand\/wordmark\.png/);
  assert.match(page,/Discover more\. Scroll less\./);
  assert.doesNotMatch(page,/One app\. Three worlds\./);
  assert.doesNotMatch(page,/h-44 overflow-hidden sm:h-52/);
@@ -28,14 +28,17 @@ test("All app card categories use same compact size and functional horizontal na
  assert.match(rail,/aria-label/);
  assert.match(rail,/No licensed photo/);
 });
-test("Mobile PWA icon derives from actual GTH PRO shield, not platform placeholder",()=>{
+test("Mobile PWA icons contain valid actual branded PNG assets",()=>{
  const manifest=f("src/app/manifest.ts");
- const svg=f("public/gth-app-brand.svg");
- assert.match(manifest,/\/gth-app-brand\.svg/);
  assert.match(manifest,/start_url: "\/app"/);
- assert.match(svg,/M50 10 L85 30 V70 L50 90 L15 70 V30 Z/);
- assert.match(svg,/>GTH<\/text>/);
- assert.match(svg,/>PRO<\/text>/);
+ for(const size of [192,512]){
+  assert.ok(manifest.includes(`/app-brand/icon-${size}.png`));
+  const png=readFileSync(new URL(`../public/app-brand/icon-${size}.png`,import.meta.url));
+  assert.equal(png.subarray(0,8).toString("hex"),"89504e470d0a1a0a");
+  assert.equal(png.readUInt32BE(16),size);
+  assert.equal(png.readUInt32BE(20),size);
+ }
+ assert.match(manifest,/icon-maskable-512\.png/);
 });
 test("No fake hotels, real estate images or tender images get filled with stock photography",()=>{
  const source=f("src/lib/mobile/discovery.ts");

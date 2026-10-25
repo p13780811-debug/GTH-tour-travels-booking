@@ -38,7 +38,7 @@ test("the installed app routes all three pillars with real 64px touch targets",(
 test("app home does not duplicate web chatbot/footer and retains Real Estate/flagship routing",()=>{
  const wrapper=read("src/components/LayoutWrapper.tsx");
  const navbar=read("src/components/Navbar.tsx");
- assert.match(wrapper,/isRealEstate \|\| isFlagship \? 'pb-0'/);
+ assert.match(wrapper,/isRealEstate \|\| isFlagship \|\| isAppHome \? 'pb-0'/);
  assert.match(wrapper,/!isRealEstate && !isFlagship && <MobileNav \/>/);
  assert.match(wrapper,/!isRealEstate && !isFlagship && !isAppHome/);
  assert.match(navbar,/pathname === "\/app"/);

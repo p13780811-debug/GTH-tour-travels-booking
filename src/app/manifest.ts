@@ -15,10 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#061426",
     prefer_related_applications: false,
     icons: [
-      // Same branded shield artwork used by the GTH PRO site logo.
-      { src: "/gth-app-brand.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/app-icon/192", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/app-icon/512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/app-brand/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/app-brand/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/app-brand/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       { name: "Flights", short_name: "Flights", url: "/app/flights" },
