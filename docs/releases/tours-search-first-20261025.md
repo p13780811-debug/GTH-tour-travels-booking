@@ -6,7 +6,7 @@ Tours focuses on guided city tours, audio walks and day trips. Activities focuse
 
 Search validation, public-only/media-rights filters, pagination, currencies and supplier handoffs remain in place. No inventory is fabricated; dates, guests and final prices are selected with the provider. A read-only query confirmed the live tags column is text[] and both scoped public/media-verified catalog counts are currently zero. Existing partner links therefore remain the primary booking route. No schema, RLS, credentials, protected Real Estate UI or global CSS changes.
 
-Search and partner content render before streamed catalog results, with functional route-loading search forms and a no-JavaScript GET fallback. Five-width browser, day/night, search round-trip, route-switch, invalid-filter and exact-head CI outcomes are recorded in the release PR before merge.
+Search and partner content render before streamed catalog results, with a functional no-JavaScript GET form. The old outer route-loading boundary is removed so it cannot hide server-rendered search and partner content when JavaScript is disabled. Five-width browser, day/night, search round-trip, route-switch, invalid-filter and exact-head CI outcomes are recorded in the release PR before merge.
 
 Release through one Git merge to main only; feature branch deployments disabled. Owner's continuing instruction authorizes completion and release. No submitted review, physical-phone QA, supplier payment or authenticated admin testing is claimed.
 

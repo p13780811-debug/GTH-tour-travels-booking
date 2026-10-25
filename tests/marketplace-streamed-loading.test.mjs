@@ -4,11 +4,11 @@ import {readFileSync} from "node:fs";
 const read = (p) => readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Tours loading renders useful, source-honest route-level feedback",()=>{
- const s=read("src/app/tours/loading.tsx");
- assert.match(s,/export default function ToursLoading/);
+ const s=read("src/components/tours/TourLanding.tsx");
+ assert.match(s,/<Suspense fallback=/);
  assert.match(s,/role="status"/);
- assert.match(s,/aria-live="polite"/);
- assert.match(s,/<TourSearchHero basePath="\/tours"/);
+ assert.ok(s.indexOf("<TourSearchHero ")<s.indexOf("<Suspense "));
+ assert.ok(s.indexOf("<TourAffiliateMarketplace ")<s.indexOf("<Suspense "));
  const hero=read("src/components/tours/TourSearchHero.tsx");
  assert.match(hero,/role="search"/);
  assert.match(hero,/mode.action/);
