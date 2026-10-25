@@ -1,6 +1,7 @@
 import {Suspense} from "react";
 import Image from "next/image";
 import Link from "next/link";
+import SupplierTourCatalog from "./SupplierTourCatalog";
 import TourSearchHero from "./TourSearchHero";
 import ToursExplorer from "./ToursExplorer";
 import TourAffiliateMarketplace from "./TourAffiliateMarketplace";
@@ -18,6 +19,7 @@ export default async function TourLanding({searchParams,basePath}:{searchParams:
    </div>
   </section>
   <div id="discover" className="scroll-mt-24">
+   {parsed.ok&&<Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-4 text-xs text-[var(--text-soft)]">Loading original supplier tours and photos…</p>}><SupplierTourCatalog search={filters} basePath={basePath}/></Suspense>}
    <TourAffiliateMarketplace search={filters} basePath={basePath}/>
    <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)] sm:px-6">Loading source-backed listings. Search and booking partners above are ready to use.</p>}>
     <ToursExplorer searchParams={Promise.resolve(raw)} basePath={basePath}/>

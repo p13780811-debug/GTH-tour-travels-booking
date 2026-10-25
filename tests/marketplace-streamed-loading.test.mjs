@@ -8,7 +8,9 @@ test("Tours loading renders useful, source-honest route-level feedback",()=>{
  assert.match(s,/<Suspense fallback=/);
  assert.match(s,/role="status"/);
  assert.ok(s.indexOf("<TourSearchHero ")<s.indexOf("<Suspense "));
- assert.ok(s.indexOf("<TourAffiliateMarketplace ")<s.indexOf("<Suspense "));
+ const inventory=s.indexOf("<ToursExplorer ");
+ assert.ok(s.indexOf("<TourAffiliateMarketplace ")<inventory);
+ assert.ok(s.lastIndexOf("<Suspense ",inventory)>s.indexOf("<TourAffiliateMarketplace "));
  const hero=read("src/components/tours/TourSearchHero.tsx");
  assert.match(hero,/role="search"/);
  assert.match(hero,/mode.action/);
