@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type {Metadata} from "next";
 import {createClient} from "@supabase/supabase-js";
-import RegistryTable,{type ReraProjectRow} from "@/components/real-estate/RegistryTable";
+import RegistryTable,{type ReraProjectRow} from "./RegistryTable";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {isIndexableProperty} from "@/lib/real-estate/property-seo";
-import {officialMahaReraUrl} from "@/lib/real-estate/explorer-presentation";
+import {officialMahaReraUrl} from "./explorer-presentation";
 
 export const dynamic="force-dynamic";
 const PAGE_SIZE=35;

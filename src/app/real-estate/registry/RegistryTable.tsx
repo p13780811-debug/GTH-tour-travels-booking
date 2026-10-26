@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {known} from "@/lib/real-estate/explorer";
-import {officialMahaReraUrl} from "@/lib/real-estate/explorer-presentation";
+import {officialMahaReraUrl} from "./explorer-presentation";
 
 export type ReraProjectRow={
  slug:string;title:string;rera_id?:string|null;developer?:string|null;

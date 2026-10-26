@@ -1,5 +1,5 @@
-import {approvedMedia} from "./approved-media";
-import type {ExplorerProperty} from "./explorer";
+import {approvedMedia} from "@/lib/real-estate/approved-media";
+import type {ExplorerProperty} from "@/lib/real-estate/explorer";
 
 /** Government registry records are not for-sale offers. Approved photos are essential
  * for visual sale/rent cards, but never required for a documentary registry table. */

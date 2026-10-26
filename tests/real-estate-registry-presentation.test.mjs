@@ -6,10 +6,10 @@ import ts from "typescript";
 function source(p){return readFileSync(new URL("../"+p,import.meta.url),"utf8");}
 function harness(){
  const mod={exports:{}};
- const stub=source("src/lib/real-estate/explorer-presentation.ts").replace(
-  'import {approvedMedia} from "./approved-media";',
+ const stub=source("src/app/real-estate/registry/explorer-presentation.ts").replace(
+  'import {approvedMedia} from "@/lib/real-estate/approved-media";',
   'const approvedMedia = (slug, image) => slug==="rights-approved" && image==="https://approved.example/photo.jpg";'
- ).replace('import type {ExplorerProperty} from "./explorer";',"");
+ ).replace('import type {ExplorerProperty} from "@/lib/real-estate/explorer";',"");
  vm.runInNewContext(ts.transpileModule(stub,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
   module:mod,exports:mod.exports,URL,
  });
