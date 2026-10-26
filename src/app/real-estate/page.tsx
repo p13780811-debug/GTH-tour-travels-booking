@@ -11,6 +11,8 @@ import DiscoveryFilters from "@/components/real-estate/DiscoveryFilters"
 import SavedSearches from "@/components/real-estate/SavedSearches"
 import ExplorerHero from "@/components/real-estate/ExplorerHero"
 import ExplorerCard from "@/components/real-estate/ExplorerCard"
+import RegistryTable from "@/components/real-estate/RegistryTable"
+import {splitPropertyPresentation} from "@/lib/real-estate/explorer-presentation"
 import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-estate/ExplorerDialog"
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import { getPublishedProjectMedia } from "@/lib/property-media/published-media"
@@ -153,6 +155,7 @@ export default function RealEstatePage() {
         load(1)
     }
     const changePage = (next:number) => { load(next); document.getElementById("listing-results")?.scrollIntoView({block:"start"}) }
+    const presented = splitPropertyPresentation(properties)
     const coordinates = properties.filter(property => typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180)
 
     const showInfo = (kind: "ranking" | "verification", property?: ExplorerProperty) => setDialog({ kind, property })
@@ -166,7 +169,7 @@ export default function RealEstatePage() {
     }
     return <main className={`gth-container ${styles.page}`}>
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || ""} onIntent={applyIntent} onInfo={showInfo} /></div>
-        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
+        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/registry">MahaRERA Project Status</Link><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
         <button type="button" aria-label="Close property filters" tabIndex={filtersOpen ? 0 : -1} className={styles.scrim} data-open={filtersOpen} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} />
         <div className={styles.workspace}>
@@ -188,7 +191,19 @@ export default function RealEstatePage() {
                 {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
                 {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : "No results match this search"}</h3><p>Try a broader location or remove a filter. Inventory reflects the records currently available.</p><button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search and filters</button></div>}
                 {!loading && !error && view === "map" && <div className={styles.empty}><p>{coordinates.length} results on this page have stored coordinates. Map pins are not location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to the grid to explore the available records.</p>}</div>}
-                {!loading && !error && view === "list" && <div className={styles.grid}>{properties.map(property => <ExplorerCard key={property.id} property={property} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
+                {!loading && !error && view === "list" && <div className="space-y-7">
+                    <section aria-labelledby="approved-listings-heading">
+                        <h3 id="approved-listings-heading" className="mb-3 text-base font-semibold">Listings with approved project media</h3>
+                        {presented.cards.length>0?<div className={styles.grid}>{presented.cards.map(property=><ExplorerCard key={property.id} property={property} selected={compared.some(item=>item.slug===property.slug)} compareFull={compared.length>=3} onCompare={()=>setCompared(previous=>compareSelection(previous,property))} onInfo={kind=>showInfo(kind,property)}/>)}</div>
+                         :<p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">No photo-approved marketplace cards on this results page. Unreviewed images and generic placeholders are never substituted.</p>}
+                    </section>
+                    {presented.registry.length>0&&<section aria-labelledby="registry-table-heading">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h3 id="registry-table-heading" className="text-base font-semibold">MahaRERA project registry records</h3><Link href="/real-estate/registry" className="text-sm underline underline-offset-2">Search the dedicated registry</Link></div>
+                        <RegistryTable rows={presented.registry}/>
+                        <p className="mt-2 text-xs text-[var(--text-soft)]">Recorded project data, not offered sale/rent inventory. Verify all current status and dates at the official source.</p>
+                    </section>}
+                    {presented.withheld>0&&<p className="text-xs text-[var(--text-soft)]">{presented.withheld} unphotographed or unverified non-registry records withheld from visual property cards pending source/media review.</p>}
+                </div>}
                 <nav aria-label="Property result pages" className={styles.pagination}><button disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button disabled={loading || Boolean(error) || properties.length < PAGE_SIZE} onClick={() => changePage(page + 1)}>Next</button></nav>
                 <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link></div></section>
             </section>

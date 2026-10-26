@@ -6,10 +6,11 @@ import { publishedMediaUrl, type PublishedMedia } from "@/lib/property-media/pub
 
 type Props = {
  slug: string; src?: string; published?: PublishedMedia; alt: string; className?: string;
+ onMediaError?: () => void;
  district?: string; locality?: string; propertyType?: string; reraId?: string;
 }
 /** Project ID bound, independently published media only. Never infer approval from a CDN URL. */
-export default function PropertyImage({slug,src,published,alt,className="",district="",locality="",propertyType="",reraId}:Props) {
+export default function PropertyImage({slug,src,published,alt,className="",district="",locality="",propertyType="",reraId,onMediaError}:Props) {
  const [failed,setFailed]=useState<string[]>([])
  const reviewed=approvedMedia(slug,src)
  const url=published ? publishedMediaUrl(published.id) : reviewed?.url||""
@@ -21,7 +22,7 @@ export default function PropertyImage({slug,src,published,alt,className="",distr
   {visible ? <>
    <img key={url} src={url} alt={alt} loading="lazy" decoding="async"
     className="block h-full w-full object-cover"
-    onError={()=>setFailed(old=>[...old,url])}/>
+    onError={()=>{setFailed(old=>[...old,url]);onMediaError?.()}}/>
    <span className="absolute bottom-2 left-2 z-10 max-w-[calc(100%-16px)] rounded bg-[var(--card)] px-2 py-1 text-[10px] leading-4 text-[var(--text)]">{label}</span>
   </> : <div role="img" aria-label={`Project record for ${alt}. No approved photograph available.`}
    className="flex h-full min-h-40 w-full flex-col justify-end gap-2 border-b border-[var(--border)] bg-[var(--bg-soft)] p-4 pt-14 text-[var(--text)]">
