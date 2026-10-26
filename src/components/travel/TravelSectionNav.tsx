@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import scroll from "./TravelScroll.module.css";
 import {usePathname} from "next/navigation";
 import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark, ShieldCheck} from "lucide-react";
 
@@ -36,7 +37,7 @@ export default function TravelSectionNav(){
         GTH PRO Travel
       </span>
       <nav aria-label="Browse GTH PRO travel categories"
-        className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain">
+        className={"min-w-0 flex-1 overflow-x-auto overscroll-x-contain "+scroll.strip}>
         <div className="flex w-max min-w-full items-center gap-1.5">
           {TRAVEL_SECTIONS.map(({href,label,Icon})=>{
             const isActive=active?.href===href;

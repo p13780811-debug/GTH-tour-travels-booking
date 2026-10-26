@@ -1,5 +1,6 @@
 import {Suspense} from "react";
 import Image from "next/image";
+import scroll from "@/components/travel/TravelScroll.module.css";
 import Link from "next/link";
 import SupplierTourCatalog from "./SupplierTourCatalog";
 import ReviewedPartnerCatalog from "./ReviewedPartnerCatalog";
@@ -15,7 +16,7 @@ export default async function TourLanding({searchParams,basePath}:{searchParams:
   {!parsed.ok&&<p role="alert" className="mx-auto max-w-7xl px-4 py-4 text-sm sm:px-6">{parsed.error} <Link href={basePath} className="underline">Reset search</Link></p>}
   <section aria-label={EXPERIENCE_MODES[basePath].label+" destination inspiration"} className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
    <h2 className="text-base font-semibold">Where would you like to explore?</h2>
-   <div className="mt-3 flex gap-3 overflow-x-auto overscroll-x-contain pb-2">
+   <div className={"mt-3 flex gap-3 overflow-x-auto overscroll-x-contain pb-2 "+scroll.strip}>
     {destinations.map(item=><Link key={item.city} href={tourDiscoveryHref(basePath,filters,"rail",{city:item.city,page:1})} className="flex min-h-16 shrink-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] pr-4 text-sm font-semibold"><span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-l-xl"><Image src={item.image} alt="" fill sizes="64px" className="object-cover"/></span>{item.city}</Link>)}
    </div>
   </section>

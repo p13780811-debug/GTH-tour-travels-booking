@@ -4,6 +4,7 @@ import {firstAvailableSupplierCatalog} from "@/lib/tours/catalog-selection";
 import {WEGOTRIP_CARD_DOCUMENTATION,uniqueSupplierProducts,type SupplierProduct} from "@/lib/tours/supplier-products";
 import {tourDiscoveryHref,type ExperiencePath,type TourSearch} from "@/lib/tours/discovery";
 import SupplierTourCard from "./SupplierTourCard";
+import {getUsdInrReference} from "@/lib/tours/reference-fx";
 
 const FEATURED_PAGE_SIZE=24;
 
@@ -39,12 +40,14 @@ export default async function SupplierTourCatalog({search,basePath}:{search:Tour
  if(search.sort==="price"&&search.currency)all.sort((a,b)=>(a.price??Infinity)-(b.price??Infinity));
  const pages=Math.max(1,Math.ceil(all.length/FEATURED_PAGE_SIZE));
  const items=all.slice((search.page-1)*FEATURED_PAGE_SIZE,search.page*FEATURED_PAGE_SIZE);
+ const indiaUsdProducts=items.some(product=>product.currency==="USD" && product.city.country.toLocaleLowerCase()==="india" && product.price!==null);
+ const inrReference=indiaUsdProducts?await getUsdInrReference():null;
  if(!all.length&&(result.status==="invalid"||result.status==="empty"))return null;
  return <section aria-label="Original WeGoTrip products" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
   <h2 className="text-xl font-bold">{basePath==="/tours"?"Original supplier tours":"Supplier tickets and experiences"}</h2>
   {result.status==="unavailable"&&!all.length?<p role="status" className="mt-3 text-sm text-[var(--text-soft)]">The original supplier catalogue is temporarily unavailable. Search independent booking partners below, or try again later.</p>:<>
-   <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Verified supplier products{search.city?" for "+search.city:" from India and worldwide"} · {all.length} currently in this selection. This is not the complete provider inventory. New eligible imports become visible without a redeploy. Original photos, listed prices and booking details remain with the supplier.</p>
-   {items.length?<div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(product=><SupplierTourCard key={product.provider+":"+product.id} product={product}/>)}</div>:
+   <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Verified supplier products{search.city?" for "+search.city:" from India and worldwide"}. Browse a curated selection, not the provider’s complete inventory. New eligible imports become visible without a redeploy. Original photos, listed prices and booking details remain with the supplier.</p>
+   {items.length?<div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(product=><SupplierTourCard key={product.provider+":"+product.id} product={product} inrReference={inrReference}/>)}</div>:
     <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">No additional verified products on this page. Try page one or another city.</p>}
    {pages>1&&<nav aria-label="Supplier tour pages" className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
     <span className="text-[var(--text-soft)]">Page {Math.min(search.page,pages)} of {pages} · verified featured selection</span>
