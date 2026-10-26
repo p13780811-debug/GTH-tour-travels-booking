@@ -36,7 +36,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Typecheck isolated signed Edge function
-        run: deno check supabase/functions/gth-tour-supplier-ingest/index.ts
+        run: deno check --node-modules-dir=auto supabase/functions/gth-tour-supplier-ingest/index.ts
       - name: India supplier source smoke (never writes in PR)
         run: python3 scripts/tours/india_first_sync.py --scope india
       - name: India + worldwide rotating sync on merged main only
