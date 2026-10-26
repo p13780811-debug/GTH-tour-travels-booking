@@ -6,58 +6,91 @@ import ts from "typescript";
 
 function harness(){
  const timers=new Map();let next=0;
- const compiledModule={exports:{}};
+ const supplierModule={exports:{}};
+ const supplierSource=readFileSync(new URL("../src/lib/tours/supplier-products.ts",import.meta.url),"utf8");
+ vm.runInNewContext(ts.transpileModule(supplierSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
+  module:supplierModule,exports:supplierModule.exports,URL,
+ });
+ const mod={exports:{}};
  const source=readFileSync(new URL("../src/lib/tours/catalog-selection.ts",import.meta.url),"utf8");
  vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
-  module:compiledModule,exports:compiledModule.exports,
+  module:mod,exports:mod.exports,
+  require:name=>{if(name==="./supplier-products")return supplierModule.exports;throw Error("Unexpected import "+name);},
   setTimeout:(callback,ms)=>{const id=++next;timers.set(id,{callback,ms});return id;},
   clearTimeout:id=>timers.delete(id),
  });
- return {select:compiledModule.exports.firstAvailableSupplierCatalog,timers};
+ return {select:mod.exports.firstAvailableSupplierCatalog,timers};
 }
-const product={provider:"wegotrip",id:26568,title:"Original supplier walk"};
+const mumbai={provider:"wegotrip",id:26568,title:"Original Mumbai supplier walk",city:{id:11,name:"Mumbai"}};
+const agra={provider:"wegotrip",id:6196,title:"Original Agra supplier walk",city:{id:12,name:"Agra"}};
 const never=()=>new Promise(()=>{});
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+async function expire(h,ms){
+ await flush();
+ const match=[...h.timers.values()].find(t=>t.ms===ms);
+ assert.ok(match,"expected timeout "+ms);
+ match.callback();
+ await flush();
+}
 
-test("London/Barcelona live cards render while the saved-inventory read never completes",async()=>{
- const h=harness();
- const live={status:"ready",items:[product]};
- const result=await h.select(Promise.resolve(live),never());
- assert.equal(result,live);
+test("live supplier selection survives an indefinitely stalled saved-inventory read",async()=>{
+ const h=harness(),live={status:"ready",items:[mumbai]};
+ const pending=h.select(Promise.resolve(live),never());
+ await expire(h,5200);
+ const result=await pending;
+ assert.equal(result.status,"ready");
  assert.equal(result.items[0].id,26568);
 });
 
-test("fresh imported India cards render while the external supplier never responds",async()=>{
+test("fresh approved database items render when the supplier never responds",async()=>{
  const h=harness();
- const result=await h.select(never(),Promise.resolve([product]));
- assert.equal(result.status,"ready");
- assert.equal(result.items[0],product);
-});
-
-test("an empty or rejected faster source cannot hide products from the other source",async()=>{
- for(const live of [Promise.resolve({status:"empty",items:[]}),Promise.reject(Error("private supplier error"))]){
-  const h=harness();
-  const result=await h.select(live,Promise.resolve([product]));
-  assert.equal(result.status,"ready");assert.equal(result.items[0],product);
- }
- const h=harness(),live={status:"ready",items:[product]};
- assert.equal(await h.select(Promise.resolve(live),Promise.reject(Error("private DB detail"))),live);
-});
-
-test("both stalled sources finish with an honest unavailable state within their budgets",async()=>{
- const h=harness();
- const pending=h.select(never(),never());
- assert.deepEqual([...h.timers.values()].map(timer=>timer.ms).sort((a,b)=>a-b),[5000,20000]);
- for(const timer of [...h.timers.values()])timer.callback();
+ const pending=h.select(never(),Promise.resolve([mumbai]));
+ await expire(h,9000);
  const result=await pending;
- assert.equal(result.status,"unavailable");assert.equal(result.items.length,0);
+ assert.equal(result.status,"ready");
+ assert.equal(result.items[0].id,26568);
+});
+
+test("merge distinct city products instead of silently choosing the first nonempty source",async()=>{
+ const h=harness();
+ const result=await h.select(Promise.resolve({status:"ready",items:[mumbai]}),Promise.resolve([agra]));
+ assert.equal(result.status,"ready");
+ assert.deepEqual(Array.from(result.items,item=>item.id),[6196,26568]);
  assert.equal(h.timers.size,0);
 });
 
-test("empty catalogues stay empty and upstream errors do not leak into public results",async()=>{
+test("same supplier product from API and database appears only once",async()=>{
  const h=harness();
- const empty=await h.select(Promise.resolve({status:"empty",items:[]}),Promise.resolve([]));
- assert.equal(empty.status,"empty");assert.equal(h.timers.size,0);
- const failed=await h.select(Promise.reject(Error("private service URL")),Promise.reject(Error("private DB detail")));
- assert.equal(failed.status,"unavailable");assert.equal(failed.items.length,0);
- assert.doesNotMatch(JSON.stringify(failed),/private/);assert.equal(h.timers.size,0);
+ const result=await h.select(Promise.resolve({status:"ready",items:[mumbai]}),Promise.resolve([{...mumbai}]));
+ assert.deepEqual(Array.from(result.items,item=>item.id),[26568]);
+});
+
+test("empty or rejected sources cannot hide valid inventory or leak backend errors",async()=>{
+ for(const live of [Promise.resolve({status:"empty",items:[]}),Promise.reject(Error("private supplier error"))]){
+  const h=harness();
+  const result=await h.select(live,Promise.resolve([mumbai]));
+  assert.equal(result.status,"ready");assert.equal(result.items[0].id,26568);
+ }
+ const h=harness(),live={status:"ready",items:[mumbai]};
+ const result=await h.select(Promise.resolve(live),Promise.reject(Error("private DB detail")));
+ assert.equal(result.status,"ready");
+ assert.doesNotMatch(JSON.stringify(result),/private/);
+});
+
+test("both stalled sources fail closed with bounded timeouts",async()=>{
+ const h=harness(),pending=h.select(never(),never());
+ assert.deepEqual([...h.timers.values()].map(t=>t.ms).sort((a,b)=>a-b),[5000,17000]);
+ for(const t of [...h.timers.values()])t.callback();
+ const result=await pending;
+ assert.equal(result.status,"unavailable");
+ assert.equal(result.items.length,0);
+ assert.equal(h.timers.size,0);
+});
+
+test("empty catalogs remain empty and rejected sources return an unavailable status",async()=>{
+ const h=harness();
+ assert.equal((await h.select(Promise.resolve({status:"empty",items:[]}),Promise.resolve([]))).status,"empty");
+ const failed=await h.select(Promise.reject(Error("private API")),Promise.reject(Error("private DB")));
+ assert.equal(failed.status,"unavailable");
+ assert.doesNotMatch(JSON.stringify(failed),/private/);
 });
