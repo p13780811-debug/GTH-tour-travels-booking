@@ -5,11 +5,11 @@ import vm from "node:vm";
 import ts from "typescript";
 
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const module={exports:{}};
+const testModule={exports:{}};
 vm.runInNewContext(ts.transpileModule(read("src/lib/tours/discovery.ts"),{
  compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}
-}).outputText,{module,exports:module.exports,URL,URLSearchParams},{timeout:2000});
-const {parseTourFilters,directTourSearch}=module.exports;
+}).outputText,{module:testModule,exports:testModule.exports,URL,URLSearchParams},{timeout:2000});
+const {parseTourFilters,directTourSearch}=testModule.exports;
 
 test("first Tours submit builds the validated London Klook search",()=>{
  const parsed=parseTourFilters({city:"  London  ",category:"audio-tour",sort:"name"});
