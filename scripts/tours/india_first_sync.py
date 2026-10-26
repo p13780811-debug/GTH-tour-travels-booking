@@ -283,7 +283,8 @@ def run(scope, *, reader=read_api, photo_validator=image_check, sleeper=time.sle
     written = writer(products) if write else 0
     return {"scope":scope, "supplier_countries":len(mapping),
         "countries_checked":len(selected), "verified_products":len(products),
-        "upserted":written, "dry_run":not write,"countries":summaries,\n        "india_city_checks":city_status}
+        "upserted":written, "dry_run":not write,"countries":summaries,
+        "india_city_checks":city_status}
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
