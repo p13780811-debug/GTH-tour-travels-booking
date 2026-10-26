@@ -64,3 +64,8 @@ class Tests(TestCase):
   self.assertFalse(engine.image_check("https://images.pexels.com/photo.jpg"))
   self.assertIsNone(engine.safe_url("https://evil.test/path",{"wegotrip.com"}))
 if __name__=="__main__":main()
+
+ def test_oidc_edge_requires_exact_fixed_endpoint(self):
+  valid={"provider":"wegotrip","provider_product_id":"1","source_verified":True,"image_verified":True}
+  with self.assertRaises(ValueError):
+   engine.upsert([valid],env={"GTH_TOURS_EDGE_URL":"https://evil.example/steal","GTH_TOURS_OIDC_TOKEN":"test"})

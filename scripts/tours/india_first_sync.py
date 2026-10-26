@@ -159,6 +159,27 @@ def collect_country(country, *, reader=read_api, photo_validator=image_check,
 def upsert(rows, *, opener=urlopen, env=os.environ):
     if not rows:
         return 0
+    edge = env.get("GTH_TOURS_EDGE_URL", "")
+    oidc = env.get("GTH_TOURS_OIDC_TOKEN", "")
+    if oidc:
+        exact = "https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-tour-supplier-ingest"
+        if edge != exact or len(oidc)>6000:
+            raise ValueError("Invalid protected tour gateway")
+        count = 0
+        for offset in range(0,len(rows),30):
+            data = json.dumps({"rows":rows[offset:offset+30]}).encode("utf-8")
+            request = Request(exact, method="POST", data=data, headers={
+                "Content-Type":"application/json","Authorization":"Bearer "+oidc,
+                "User-Agent":"GTHPRO-SignedTourIngestion/1.0"})
+            with opener(request,timeout=25) as response:
+                if response.geturl()!=exact or response.status!=200:
+                    raise ValueError("Signed tour inventory write rejected")
+                result=json.loads(response.read(6000))
+                if result.get("accepted")!=len(rows[offset:offset+30]):
+                    raise ValueError("Signed tour write count mismatch")
+            count+=len(rows[offset:offset+30])
+        return count
+    # Manual protected service-role path; scheduled cloud sync uses GitHub OIDC.
     origin = (env.get("SUPABASE_URL") or env.get("NEXT_PUBLIC_SUPABASE_URL") or "").rstrip("/")
     key = env.get("SUPABASE_SERVICE_ROLE_KEY", "")
     u = safe_url(origin, {urlparse(origin).hostname} if origin else set())
