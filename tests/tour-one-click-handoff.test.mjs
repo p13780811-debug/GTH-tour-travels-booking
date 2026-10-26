@@ -35,6 +35,6 @@ test("Tours first button launches Klook and navigates natively to filtered cards
  assert.match(hero,/window\.open\(providerUrl,"_blank","noopener,noreferrer"\)/);
  assert.match(hero,/action=\{basePath\+"#discover"\} method="GET"/);
  assert.doesNotMatch(hero,/event\.preventDefault\(/);
- assert.match(hero,/basePath==="/activities"&&direct&&<a/);
+ assert.ok(hero.includes('basePath==="/activities"&&direct&&<a'));
  assert.match(landing,/id="discover" className="scroll-mt-24"/);
 });
