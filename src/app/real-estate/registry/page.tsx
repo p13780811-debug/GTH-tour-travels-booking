@@ -37,7 +37,7 @@ async function readRegistry(q:string,page:number):Promise<{rows:DbRow[];error:bo
    .abortSignal(AbortSignal.timeout(5_000));
   if(error||!Array.isArray(data))return {rows:[],error:true};
   // Exact SEO gate: invalid or unsourced records must not look verified.
-  const rows=(data as DbRow[]).filter(item=>isIndexableProperty(item)&&Boolean(officialMahaReraUrl(item.official_source_url)));
+  const rows=(data as DbRow[]).filter(item=>isIndexableProperty({title:item.title,slug:item.slug,rera_id:item.rera_id??undefined,official_source_url:item.official_source_url??undefined,city:item.city??undefined,district:item.district??undefined,status:item.status??undefined})&&Boolean(officialMahaReraUrl(item.official_source_url)));
   return {rows,error:false};
  }catch{return {rows:[],error:true};}
 }
