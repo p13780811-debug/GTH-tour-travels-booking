@@ -19,9 +19,10 @@ test("GTH booking starts only on hotel details after the source-to-property mapp
  assert.match(detail,/safeVerifiedHotelAffiliateUrl/);
  assert.match(detail,/href=\{hotel\.partner\}/);
  assert.match(detail,/Book Now\{hotel\.partnerName/);
- assert.match(detail,/Exact-property booking is not yet connected/);
+ assert.match(detail,/Exact-property booking is not connected/);
  assert.match(detail,/hotelProviderSearchUrl/);
- assert.match(detail,/Find this hotel on Booking.com/);
+ assert.match(detail,/Search stays using Nuitee white-label/);
+ assert.doesNotMatch(detail,/Find this hotel on Booking.com/);
  assert.match(detail,/!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
  for(const page of [list,results])assert.doesNotMatch(page,/hotelProviderSearchUrl|Search this hotel on Booking\.com/);
 });
@@ -33,4 +34,13 @@ test("travel stay scope carries unchanged through results, navigation and detail
  assert.match(page,/checkin, checkout, adults/);
  assert.match(list,/staySuffix/);
  assert.match(list,/encodeURIComponent\(String\(hotel\.id\)\)\+staySuffix/);
+});
+
+test("hotel directory fallback never invents Booking.com partner status or a matching hotel",()=>{
+ const source=read("src/lib/travel/hotel-provider-search.ts");
+ const detail=read("src/app/hotels/stay/[id]/page.tsx");
+ assert.match(source,/\/hotels\?view=booking/);
+ assert.doesNotMatch(source,/booking\.com/i);
+ assert.match(detail,/exact hotel match or rate is not guaranteed/);
+ assert.match(detail,/hotelProviderSearchUrl/);
 });
