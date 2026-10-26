@@ -39,25 +39,25 @@ function toCard(row:SourceRow):SupplierProduct|null{
 export async function loadPersistedSupplierProducts(search:TourSearch,mode:ExperiencePath):Promise<SupplierProduct[]>{
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL, key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  if(!url || !key)return [];
- const currency=search.currency||"USD";
+ const currency=search.currency;
  if(search.category && !["audio-tour","attraction-ticket"].includes(search.category))return [];
  try{
   const client=createClient(url,key,{auth:{autoRefreshToken:false,persistSession:false}});
   let request=client.from("tour_supplier_products")
    .select("provider,provider_product_id,title,country_code,country_name,city_id,city_name,city_slug,product_slug,product_type,source_url,image_url,currency,price_numeric,source_verified,image_verified,available,last_verified_at")
    .eq("provider","wegotrip").eq("available",true).eq("source_verified",true)
-   .eq("image_verified",true).eq("currency",currency)
+   .eq("image_verified",true)
    .gte("last_verified_at",new Date(Date.now()-14*86400000).toISOString());
-  request=search.city?request.ilike("city_name",search.city):request.eq("country_code","IN");
-  const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(80)
+  // Empty city means all approved global imports, not only IN. An optional currency\n  // filter must not silently hide valid INR/EUR rows on the default Tours page.\n  if(currency)request=request.eq("currency",currency);\n  if(search.city)request=request.ilike("city_name",search.city);
+  const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(96)
    .abortSignal(AbortSignal.timeout(4_000));
   if(error || !data)return [];
   const results=(data as SourceRow[]).map(toCard).filter((r):r is SupplierProduct=>r!==null);
   // Same-city strings in multiple countries must never be silently conflated.
   if(search.city&&new Set(results.map(r=>r.city.country)).size>1)return [];
   const category=search.category||(mode==="/activities"?"attraction-ticket":"audio-tour");
-  return uniqueSupplierProducts(results.filter(r=>r.kind===category &&
+  const valid=uniqueSupplierProducts(results.filter(r=>r.kind===category &&
     (!search.minPrice || r.price!==null&&r.price>=Number(search.minPrice)) &&
-    (!search.maxPrice || r.price!==null&&r.price<=Number(search.maxPrice)))).slice(0,12);
+    (!search.maxPrice || r.price!==null&&r.price<=Number(search.maxPrice))));\n  // Deterministic India-first featured inventory; worldwide rows remain discoverable.\n  const indiaFirst=new Set(["mumbai","agra","jaipur"]);\n  return valid.sort((a,b)=>Number(indiaFirst.has(b.city.name.toLocaleLowerCase()))-\n    Number(indiaFirst.has(a.city.name.toLocaleLowerCase()))).slice(0,24);
  }catch{return [];}
 }
