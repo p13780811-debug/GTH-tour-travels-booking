@@ -6,8 +6,9 @@ import { readApiJson } from "@/lib/api-response";
 
 type Approved={id:string;project_id:number;media_type:string;supplier:string;attribution:string|null;
  license_basis:string;permission_reference:string;status:string;reviewed_at:string};
-type Published={id:string;claim_media_id:string;project_id:number;media_type:string;is_primary:boolean;published_at:string};
-type Queue={eligible:Approved[];published:Published[]};
+type Published={id:string;claim_media_id:string;source_submission_id?:string;submission_media_index?:number;project_id:number;media_type:string;is_primary:boolean;published_at:string};
+type Submission={id:string;title:string;property_id:number;media_urls:(string|null)[]};
+type Queue={eligible:Approved[];published:Published[];submissions?:Submission[]};
 type Candidate={id:string;project_id:number;rera_reference:string;source_key:string;source_url:string;
  media_type:string;agreement_reference:string;permission_reference:string;status:string};
 async function adminToken(){
@@ -34,13 +35,13 @@ export default function MediaPublicationReview(){
    setError(e instanceof Error?e.message:"Review unavailable")}
  },[]);
  useEffect(()=>{void load()},[load]);
- const submit=async(id:string,action:"publish"|"take_down")=>{
+ const submit=async(id:string,action:"publish"|"take_down",photoIndex?:number)=>{
   setBusy(true);setError("");setNotice("");
   try{
    const token=await adminToken();
    await readApiJson(await fetch("/api/admin/property-media-publication",{
     method:"POST",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
-    body:JSON.stringify({media_id:id,action,notes:notes[id]||""}),
+    body:JSON.stringify(photoIndex===undefined?{media_id:id,action,notes:notes[id]||""}:{submission_id:id,photo_index:photoIndex,action,notes:notes[`${id}:${photoIndex}`]||""}),
    }));
    setNotice(action==="publish"?"Publication approved: original project photo now eligible for display.":"Media taken down; public delivery access revoked.");
    await load();
@@ -63,6 +64,14 @@ export default function MediaPublicationReview(){
      <a className="mt-2 block break-all text-xs underline" href={item.source_url} target="_blank" rel="noopener noreferrer">Inspect external source manually</a>
     </article>)}</div>
    </section>
+   <section className="mt-9"><h2 className="text-xl font-semibold">Owner, developer & partner photo review</h2>
+    <p className="mt-3 text-sm opacity-70">Listing approval does not approve photographs. Inspect the exact property match and written rights evidence before each publication. The uploader cannot publish their own photos.</p>
+    {(queue.submissions||[]).map(item=><article key={item.id} className="gth-glass mt-4 rounded-xl p-5"><h3 className="font-semibold">{item.title} · Project #{item.property_id}</h3><div className="mt-4 grid gap-4 sm:grid-cols-2">{item.media_urls.map((url,index)=>{
+      const key=`${item.id}:${index}`,published=queue.published.some(p=>p.source_submission_id===item.id&&p.submission_media_index===index);
+      if(!url)return <p key={key} className="text-sm opacity-70">Photo {index+1}: invalid account-owned storage reference; publication withheld.</p>;
+      return <div key={key}><a href={url} target="_blank" rel="noopener noreferrer" className="text-sm underline">Inspect submitted photograph {index+1}</a><label className="mt-3 block text-sm">Property match & rights evidence / takedown notes<textarea className="gth-glass mt-2 min-h-20 w-full rounded-lg p-3" maxLength={1000} value={notes[key]||""} onChange={e=>setNotes(prev=>({...prev,[key]:e.target.value}))}/></label><button className="gth-btn mt-3" disabled={busy||(notes[key]||"").trim().length<20} onClick={()=>void submit(item.id,published?"take_down":"publish",index)}>{published?"Revoke photo publication":"Approve & publish photograph"}</button></div>
+    })}</div></article>)}
+   </section>
    <section className="mt-9"><h2 className="text-xl font-semibold">Rights-reviewed, not yet published</h2>
     <div className="mt-4 grid gap-4">{queue.eligible.filter(m=>!queue.published.some(p=>p.claim_media_id===m.id)).map(item=>
      <article key={item.id} className="gth-glass rounded-xl p-5">
@@ -80,7 +89,7 @@ export default function MediaPublicationReview(){
      </article>)}</div>
    </section>
    <section className="mt-9"><h2 className="text-xl font-semibold">Published — takedown controls</h2>
-    <div className="mt-4 grid gap-4">{queue.published.map(item=><article className="gth-glass rounded-xl p-5" key={item.id}>
+    <div className="mt-4 grid gap-4">{queue.published.filter(item=>item.claim_media_id).map(item=><article className="gth-glass rounded-xl p-5" key={item.id}>
      <h3 className="font-semibold">Project #{item.project_id} · {item.media_type}</h3>
      <a href={`/api/property-media/${item.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 block text-xs underline">Open reviewed public image</a>
      <label className="mt-4 block text-sm">Takedown reason

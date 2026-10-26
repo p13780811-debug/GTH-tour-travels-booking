@@ -19,9 +19,10 @@ export async function POST(req: Request) {
     const inventoryId = typeof body.inventory_id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.inventory_id)
       ? body.inventory_id
       : null;
+    if (body.inventory_id && (source!=="inventory_enquiry" || !inventoryId)) throw new RequestError("Invalid inventory enquiry",400);
     if (!propertyId || !phone || digits.length < 8 || digits.length > 15) throw new RequestError("Invalid enquiry", 400);
     await enforceRateLimit(req, "enquiries");
-    const { data, error: lookupError } = await supabase.from("properties").select("id").eq("id", propertyId).limit(1);
+    const { data, error: lookupError } = await supabase.from("properties").select("id").eq("id", propertyId).limit(1).abortSignal(AbortSignal.timeout(5000));
     if (lookupError) throw new RequestError("Enquiries temporarily unavailable", 503);
     if (!data?.length) throw new RequestError("Property unavailable", 404);
     if (source === "inventory_enquiry") {
@@ -32,11 +33,11 @@ export async function POST(req: Request) {
         .eq("id", inventoryId)
         .eq("project_id", propertyId)
         .eq("status", "published")
-        .limit(1);
+        .limit(1).abortSignal(AbortSignal.timeout(5000));
       if (inventoryError) throw new RequestError("Enquiries temporarily unavailable", 503);
       if (!inventory?.length) throw new RequestError("Inventory unavailable", 404);
     }
-    const { error } = await supabase.from("leads").insert({ property_id: propertyId, inventory_id: inventoryId, phone, source });
+    const { error } = await supabase.from("leads").insert({ property_id: propertyId, inventory_id: inventoryId, phone, source }).abortSignal(AbortSignal.timeout(8000));
     if (error) throw new RequestError("Enquiry could not be sent", 503);
     return NextResponse.json({ success: true }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

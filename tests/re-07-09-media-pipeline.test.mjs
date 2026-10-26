@@ -34,12 +34,12 @@ test("Independent review is required for publishing and takedown",()=>{
  assert.match(migration,/status='taken_down'/);
  assert.doesNotMatch(migration,/update public\.properties set/i);
 });
-test("Registry records retain truthful placeholders until approved project media exists",()=>{
+test("Marketplace cards require approved photographs; registry galleries retain truthful placeholders",()=>{
  const card=read("src/components/real-estate/ExplorerCard.tsx");
  const gallery=read("src/components/property/PropertyGallery.tsx");
  const image=read("src/components/real-estate/PropertyImage.tsx");
  const details=read("src/app/real-estate/[slug]/page.tsx");
- assert.match(card,/projectCover\(p\.publishedMedia\|\|\[\]\)/);
+ assert.match(card,/projectPhoto\(p\.publishedMedia\|\|\[\]\)/);
  assert.match(gallery,/publishedMedia/);
  assert.match(gallery,/Image attribution/);
  assert.match(image,/Project photo not available/);

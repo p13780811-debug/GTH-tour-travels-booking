@@ -8,7 +8,7 @@ import { readApiJson } from "@/lib/api-response"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import styles from "@/components/real-estate/Listing.module.css"
 
-type Submission = { id:string; title:string; country:string; city:string; location:string; description:string; property_type:string; listing_type:string; created_at:string; target_project_id:number|null; registry_reference:string|null; price_amount:number|null; currency:string|null; bedrooms:number|null; bathrooms:number|null; area_sqft:number|null; submitter_role:string|null; media_urls:string[]|null }
+type Submission = { possession_status?:string; is_new_launch?:boolean;area_basis?:string;agent_registration?:string;media_rights_confirmed?:boolean; id:string; title:string; country:string; city:string; location:string; description:string; property_type:string; listing_type:string; created_at:string; target_project_id:number|null; registry_reference:string|null; price_amount:number|null; currency:string|null; bedrooms:number|null; bathrooms:number|null; area_sqft:number|null; submitter_role:string|null; media_urls:string[]|null }
 type Decision = { id:string; title:string; value:"approved" | "rejected" }
 
 export default function ReviewPage() {
@@ -69,7 +69,7 @@ export default function ReviewPage() {
 
     return <main className="gth-container min-h-screen pt-10 pb-20 px-4">
         <Link href="/real-estate" className="opacity-70">← Back to properties</Link>
-        <header className="mt-8 mb-8"><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Administration</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Listing review workspace</h1><p className="opacity-70 leading-7 mt-4 max-w-3xl">Check submitted details before publication. Approval does not verify property claims or authorize images.</p></header>
+        <Link href="/real-estate/media-review" className="gth-btn ml-4">Independent photo publication review</Link><header className="mt-8 mb-8"><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Administration</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Listing review workspace</h1><p className="opacity-70 leading-7 mt-4 max-w-3xl">Check submitted details before publication. Approval does not verify property claims or authorize images.</p></header>
         {authLoading ? <p role="status">Checking administrator access…</p> : !user ? <section className="gth-glass rounded-3xl p-8"><h2 className="text-xl font-bold">Administrator sign-in required</h2><button className={`gth-btn-gold ${styles.action} mt-5`} onClick={() => setLogin(true)}>Sign in</button></section> : !isAdmin ? <section className="gth-glass rounded-3xl p-8"><h2 className="text-xl font-bold">Administrator access required</h2><p className="opacity-70 mt-3">This account cannot review or publish submissions.</p><Link href="/real-estate/profile" className={`gth-btn ${styles.action} mt-5`}>Your account</Link></section> : <>
             <div className="flex items-center justify-between gap-4 flex-wrap mb-6"><p>{loading ? "Loading review queue…" : `${items.length} pending submissions shown`}</p><button className={`gth-btn ${styles.action}`} disabled={loading || reviewing} onClick={() => { setDecision(null); load() }}>Refresh queue</button></div>
             <p className="text-sm opacity-70 mb-6">Up to 50 oldest pending submissions. Review is restricted by the server and database permissions.</p>
@@ -83,6 +83,11 @@ export default function ReviewPage() {
                     ["Property type",item.property_type],
                     ["Purpose",item.listing_type === "rent" ? "For rent" : "For sale"],
                     ["Submitter relationship", item.submitter_role || "Not supplied"],
+                    ["Partner registration (unverified)",item.agent_registration || "Not supplied"],
+                    ["Possession (submitted)",item.possession_status || "Not supplied"],
+                    ["New launch (submitted)",item.is_new_launch ? "Yes" : "No"],
+                    ["Area basis",item.area_basis || "Not supplied"],
+                    ["Photo rights declared",item.media_rights_confirmed ? "Yes; check written evidence" : "No"],
                     ["Price", item.price_amount ? `${item.currency || "INR"} ${Number(item.price_amount).toLocaleString("en-IN")}` : "Not supplied"],
                     ["Bedrooms", item.bedrooms ?? "Not supplied"],
                     ["Bathrooms", item.bathrooms ?? "Not supplied"],

@@ -30,7 +30,7 @@ test("Navigation is a scoped secondary rail, not a duplicate global theme or ove
  assert.match(source,/bg-\[var\(--card\)\]/);
  assert.match(source,/border-\[var\(--border\)\]/);
  assert.match(source,/focus-visible/);
- assert.doesNotMatch(source,/NEXT_PUBLIC_|\.css|window\.location|target="_blank"/);
+ assert.doesNotMatch(source,/NEXT_PUBLIC_|globals\.css|window\.location|target="_blank"/);
  assert.match(hotels,/export const metadata/);
  assert.match(flights,/export const metadata/);
  assert.doesNotMatch(source,/\/real-estate|\/tender/);

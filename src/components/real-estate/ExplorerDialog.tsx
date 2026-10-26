@@ -28,6 +28,8 @@ export default function ExplorerDialog({ state, onClose }: { state: ExplorerDial
     ["Listed price", p => p.registry_only || p.data_quality_limited ? "Price on request" : p.formatted_price || "Price on request"],
     ["Reported bedrooms", p => recordedNumber(p.beds)], ["Reported bathrooms", p => recordedNumber(p.baths)],
     ["Reported area", p => recordedNumber(p.sqft, " sq ft")],
+    ["Area basis",p=>p.area_basis || "Not recorded"],
+    ["Possession",p=>p.possession_status?.replace(/_/g," ") || "Not recorded"],
     ["Record coverage", p => `${coverage(p).score}/100`],
     ["GTH verification", p => p.verified ? "Recorded as GTH Verified" : "Review pending"],
   ]

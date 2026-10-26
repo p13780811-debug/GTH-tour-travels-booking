@@ -22,13 +22,14 @@ export default function ProjectInventory({ items = [] }: { items?: any[] }) {
             </div>
             <span className="gth-badge">{item.verified ? "GTH Verified" : "Reviewed listing"}</span>
           </div>
-          {Array.isArray(item.media_urls) && item.media_urls.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">{item.media_urls.slice(0,6).map((url:string,index:number) => <figure key={url} className="gth-glass rounded-2xl overflow-hidden"><img src={url} alt={`Reviewed listing photo ${index + 1}`} className="w-full h-36 object-cover" loading="lazy" /><figcaption className="text-xs opacity-70 p-2">Reviewed listing photo</figcaption></figure>)}</div>}
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
             {[
               ["Beds", item.bedrooms ?? "—"],
               ["Baths", item.bathrooms ?? "—"],
               ["Area", item.area_sqft ? `${item.area_sqft} ft² · ${Math.round(Number(item.area_sqft) * 0.092903)} m²` : "—"],
               ["Stated role", item.submitter_role || "Not stated"],
+              ["Possession",item.possession_status?.replace(/_/g," ") || "Not documented"],
+              ["Area basis",item.area_basis || "Not documented"],
             ].map(([label,value]) => <div key={String(label)}><dt className="text-xs opacity-70">{label}</dt><dd className="font-medium mt-1">{String(value)}</dd></div>)}
           </dl>
           {item.description && <p className="text-sm opacity-70 leading-7 mt-4">{item.description}</p>}

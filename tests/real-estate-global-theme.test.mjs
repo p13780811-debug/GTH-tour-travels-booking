@@ -30,12 +30,12 @@ function neutralControl(tag){
  assert.doesNotMatch(tag,/<button\b[^>]*class="[^"]*\bgth-btn\b/);
 }
 
-test('all eleven categories remain visible as neutral filter selections, not conversion buttons',()=>{
+test('all marketplace categories remain visible as neutral filter selections, not conversion buttons',()=>{
  const {default:Filters}=load('src/components/real-estate/DiscoveryFilters.tsx');
  const html=renderToStaticMarkup(React.createElement(Filters,{expanded:true,onApply(){}}));
  const tags=buttons(html);
- assert.equal(tags.length,13); // All, ten categories, Apply and Reset
- for(const name of ['All property categories','Residential / Group Housing','Mixed-use development','Commercial','Penthouse','Individual plot']){
+ assert.equal(tags.length,8); // All, five inventory types, Apply and Reset
+ for(const name of ['All property categories','Apartment','Villa','Commercial','Penthouse','Individual plot']){
   neutralControl(findButton(tags,name));
   assert.ok(html.includes(name));
  }
@@ -49,8 +49,8 @@ test('hero purpose tabs and info links stay neutral; Explore properties is the b
  const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'next/link':link});
  const html=renderToStaticMarkup(React.createElement(Hero,{query:'',onQuery(){},onSearch(){},loading:false,intent:'',onIntent(){},onInfo(){}}));
  const tags=buttons(html);
- assert.equal(tags.length,7);
- for(const label of ['Smart Ranked','AI Verified insights','All properties','Buy','Rent','About this data'])neutralControl(findButton(tags,label));
+ assert.equal(tags.length,18);
+ for(const label of ['Ranking explained','Source &amp; review status','Buy','Rent','New Launches','Commercial','Plots','Registry Lookup','About this data'])neutralControl(findButton(tags,label));
  globalCta(findButton(tags,'Explore properties'));
  assert.match(html,/aria-label="Property search purpose"/);
 });

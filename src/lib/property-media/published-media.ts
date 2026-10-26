@@ -14,7 +14,7 @@ export async function getPublishedProjectMedia(projectIds:readonly number[]):Pro
  try {
   const {data,error}=await supabase.from("property_published_media")
    .select("id,project_id,media_type,attribution,is_primary,published_at")
-   .in("project_id",ids).order("published_at",{ascending:false}).limit(100);
+   .in("project_id",ids).order("published_at",{ascending:false}).abortSignal(AbortSignal.timeout(5000)).limit(800);
   if(error||!data)return [];
   return (data as PublishedMedia[]).filter(m=>ids.includes(Number(m.project_id)));
  }catch{return []}
@@ -23,4 +23,9 @@ export async function getPublishedProjectMedia(projectIds:readonly number[]):Pro
 export function projectCover(media:readonly PublishedMedia[]):PublishedMedia|undefined{
  return media.find(m=>m.is_primary && m.media_type!=="floor_plan")||
   media.find(m=>m.media_type==="photo")||media.find(m=>m.media_type==="render");
+}
+
+/** Marketplace cards require photographs; renders remain labelled in project galleries. */
+export function projectPhoto(media: readonly PublishedMedia[]): PublishedMedia | undefined {
+ return media.find(m=>m.media_type==="photo"&&m.is_primary)||media.find(m=>m.media_type==="photo");
 }
