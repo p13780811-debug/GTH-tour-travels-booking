@@ -57,7 +57,7 @@ test("public registry is dynamic, RLS scoped and does not invent delay verdicts"
  assert.ok(page.includes('force-dynamic'));
  assert.ok(page.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
  assert.ok(page.includes('AbortSignal.timeout'));
- assert.ok(page.includes('delay certifications'));
+ assert.ok(page.includes('does not certify live status, delay or possession'));
  assert.ok(!page.includes('SERVICE_ROLE_KEY'));
  assert.ok(page.includes('Math.min(Number(rawPage),1000)'));
  assert.ok(!page.includes('isIndexableProperty(item)'));
