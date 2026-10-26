@@ -54,16 +54,16 @@ test("registry titles do not claim that unpublished prices or floor plans exist"
 
 test("public registry is dynamic, RLS scoped and does not invent delay verdicts",()=>{
  const page=source("src/app/real-estate/registry/page.tsx");
- assert.match(page,/force-dynamic/);
- assert.match(page,/NEXT_PUBLIC_SUPABASE_ANON_KEY/);
- assert.match(page,/AbortSignal\.timeout/);
- assert.match(page,/Recorded date; no delay verdict|delay certifications/);
- assert.doesNotMatch(page,/SERVICE_ROLE_KEY/);
- assert.match(page,/Math\\.min\\(Number\\(rawPage\\),1000\\)/);
- assert.doesNotMatch(page,/isIndexableProperty\\(item\\)/);
- assert.match(page,/Missing official project URLs are marked clearly/);
- assert.match(page,/\\/hotels\\?view=booking/);
- assert.doesNotMatch(page,/booking\\.com/i);
+ assert.ok(page.includes('force-dynamic'));
+ assert.ok(page.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+ assert.ok(page.includes('AbortSignal.timeout'));
+ assert.ok(page.includes('delay certifications'));
+ assert.ok(!page.includes('SERVICE_ROLE_KEY'));
+ assert.ok(page.includes('Math.min(Number(rawPage),1000)'));
+ assert.ok(!page.includes('isIndexableProperty(item)'));
+ assert.ok(page.includes('Missing official project URLs are marked clearly'));
+ assert.ok(page.includes('/hotels?view=booking'));
+ assert.ok(!page.toLowerCase().includes('booking.com'));
 });
 
 test("historic registry visibility is independent of photo and missing official-link restrictions",()=>{
