@@ -51,7 +51,7 @@ test("hotel results always open GTH details before optional provider booking", (
   assert.match(detail, /href=\{hotel\.partner\}/);
   assert.match(detail, /rel="noopener noreferrer sponsored"/);
   assert.match(detail, /hotelProviderSearchUrl/);
-  assert.match(detail, /Find this hotel on Booking.com/);
+  assert.match(detail, /Search stays using Nuitee white-label/);
   assert.match(detail, /!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
 });
 
@@ -66,7 +66,7 @@ test("hotel search retains validated guest and date planning across details", ()
   assert.match(detail,/searchParams\?:Promise/);
   assert.match(detail,/Your selected stay is/);
   assert.match(detail,/The partner confirms availability/);
-  assert.match(detail,/Exact-property booking is not yet connected/);
+  assert.match(detail,/Exact-property booking is not connected/);
   assert.match(list,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
 });
 

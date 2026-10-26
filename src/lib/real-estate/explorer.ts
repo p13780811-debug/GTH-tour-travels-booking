@@ -5,7 +5,7 @@ export type ExplorerProperty = {
   sqft?: number; verified?: boolean; last_verified_at?: string; registry_only?: boolean;
   data_quality_limited?: boolean; active_inventory_count?: number; inventory_min_price?: number;
   inventory_currency?: string; official_source_url?: string; ai_score?: number;
-  lat?: number; lng?: number;
+  lat?: number; lng?: number; completion_date?: string;
   publishedMedia?: import("../property-media/published-media").PublishedMedia[];
 }
 

@@ -23,17 +23,11 @@ test("Hotel city discovery does not match arbitrary hotel names or addresses",()
   assert.doesNotMatch(where,/name\.ilike|address\.ilike|latitude/);
   assert.match(read("src/app/api/hotels/route.ts"),/Region: /);
 });
-test("Hotel external search validates dates and adults without invented affiliate codes",()=>{
-  const u=new URL(hotelProviderSearchUrl("Hilton Mumbai",{checkin:"2099-01-12",checkout:"2099-01-15",adults:3}));
-  assert.equal(u.hostname,"www.booking.com");
-  assert.equal(u.searchParams.get("ss"),"Hilton Mumbai");
-  assert.equal(u.searchParams.get("checkin"),"2099-01-12");
-  assert.equal(u.searchParams.get("checkout"),"2099-01-15");
-  assert.equal(u.searchParams.get("group_adults"),"3");
-  assert.equal(u.searchParams.has("aid"),false);
-  const invalid=new URL(hotelProviderSearchUrl("Paris",{checkin:"2020-01-01",checkout:"2020-01-02",adults:500}));
-  assert.equal(invalid.searchParams.has("checkin"),false);
-  assert.equal(invalid.searchParams.has("group_adults"),false);
+test("Unknown hotel identity cannot create a fabricated supplier search or affiliate deep link",()=>{
+ const link=hotelProviderSearchUrl("Hilton Mumbai",{checkin:"2099-01-12",checkout:"2099-01-15",adults:3});
+ assert.equal(link,"/hotels?view=booking");
+ const invalid=hotelProviderSearchUrl("Paris",{checkin:"2020-01-01",checkout:"2020-01-02",adults:500});
+ assert.equal(invalid,link);
 });
 test("Hotels planning controls and fallback routes work without changing global styling",()=>{
   const page=read("src/app/hotels/page.tsx");
