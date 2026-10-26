@@ -65,6 +65,6 @@ export async function loadPersistedSupplierProducts(search:TourSearch,mode:Exper
   // Deterministic India-first featured inventory; worldwide rows remain discoverable.
   const indiaFirst=new Set(["mumbai","agra","jaipur"]);
   return valid.sort((a,b)=>Number(indiaFirst.has(b.city.name.toLocaleLowerCase()))-
-    Number(indiaFirst.has(a.city.name.toLocaleLowerCase()))).slice(0,24);
+    Number(indiaFirst.has(a.city.name.toLocaleLowerCase())));
  }catch{return [];}
 }
