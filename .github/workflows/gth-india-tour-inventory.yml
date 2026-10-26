@@ -1,5 +1,15 @@
 name: GTH India-First Supplier Inventory
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/tours/india_first_sync.py'
+      - 'tests/test_india_first_sync.py'
+      - 'src/lib/tours/supplier-products.ts'
+      - 'supabase/functions/gth-tour-supplier-ingest/**'
+      - 'src/lib/tours/persisted-inventory.ts'
+      - 'src/components/tours/SupplierTourCatalog.tsx'
+      - '.github/workflows/gth-india-tour-inventory.yml'
   pull_request:
     branches: [main]
     paths:

@@ -79,3 +79,6 @@ before one-shot production merge. Never label an untested supplier link
 
 ## Existing GTH PRO OIDC workflow compatibility
 Cloud sync uses the same GitHub OIDC design already used by GTH hotels and open attractions. `GTH_TOURS_OIDC_TOKEN` is requested with exact `gth-tours-inventory:dqprqjmhxjnrllczqyhz` audience on the **main-only** schedule/dispatch; `supabase/functions/gth-tour-supplier-ingest/index.ts` verifies GitHub RS256 JWKS, exact repository ID, main workflow ref, event and freshness before any service-role upsert. GitHub has no static Supabase key. The Edge Function's project URL/key remain server-only. Deploy the Edge Function and SQL migration together at the single approved release gate. The importer retains an explicit manual protected-key fallback for isolated operator testing; automated GH Actions does not use it.
+
+## One-shot release activation
+The signed main-only supplier sync also runs exactly once on the **initial merge push** touching this workflow, immediately after the migration and Edge gateway are deployed. This avoids waiting until the next daily scheduler. A PR run is strictly no-write. GitHub main ref and workflow identity are independently enforced by the Edge function, including push. Follow-up data refresh is scheduled without further Vercel deployments.

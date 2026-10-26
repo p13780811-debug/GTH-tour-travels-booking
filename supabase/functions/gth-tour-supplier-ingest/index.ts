@@ -59,7 +59,7 @@ async function authorise(req:Request){
   String(payload.repository_id)!=="1169920747"||
   payload.ref!=="refs/heads/main"||payload.workflow_ref!==WF||
   payload.sub!=="repo:"+REPO+":ref:refs/heads/main"||
-  !["schedule","workflow_dispatch"].includes(String(payload.event_name)))
+  !["push","schedule","workflow_dispatch"].includes(String(payload.event_name)))
     throw Error("Untrusted workflow");
 }
 Deno.serve(async(req)=>{
