@@ -1,0 +1,46 @@
+name: GTH India-First Supplier Inventory
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/tours/india_first_sync.py'
+      - 'tests/test_india_first_sync.py'
+      - 'src/lib/tours/supplier-products.ts'
+      - 'src/lib/tours/persisted-inventory.ts'
+      - 'src/components/tours/SupplierTourCatalog.tsx'
+      - '.github/workflows/gth-india-tour-inventory.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '40 20 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: gth-original-tour-inventory
+  cancel-in-progress: false
+jobs:
+  source-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test source identity, pagination, photo and safe upsert
+        run: python3 -m unittest discover -s tests -p 'test_india_first_sync.py'
+      - name: India supplier source smoke (never writes in PR)
+        run: python3 scripts/tours/india_first_sync.py --scope india
+      - name: India + worldwide rotating sync on merged main only
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "Protected writer credentials unavailable; supplier source checks only, no database writes."
+            exit 0
+          fi
+          python3 scripts/tours/india_first_sync.py --scope india --write
+          python3 scripts/tours/india_first_sync.py --scope world --write
