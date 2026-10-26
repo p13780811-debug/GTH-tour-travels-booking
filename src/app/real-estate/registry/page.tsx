@@ -19,9 +19,9 @@ type DbRow=ReraProjectRow&{status?:string|null;source_type?:string|null;ingestio
 function safeQuery(value:unknown){
  return typeof value==="string"?value.normalize("NFKC").replace(/[^\p{L}\p{N} -]/gu,"").trim().slice(0,70):"";
 }
-async function readRegistry(q:string,page:number):Promise<{rows:DbRow[];error:boolean}>{
+async function readRegistry(q:string,page:number):Promise<{rows:DbRow[];error:boolean;hasNext:boolean}>{
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
- if(!url||!key)return {rows:[],error:true};
+ if(!url||!key)return {rows:[],error:true,hasNext:false};
  try{
   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
   let request=db.from("properties")
@@ -35,17 +35,17 @@ async function readRegistry(q:string,page:number):Promise<{rows:DbRow[];error:bo
   const {data,error}=await request.order("slug",{ascending:true})
    .range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1)
    .abortSignal(AbortSignal.timeout(5_000));
-  if(error||!Array.isArray(data))return {rows:[],error:true};
+  if(error||!Array.isArray(data))return {rows:[],error:true,hasNext:false};
   // Exact SEO gate: invalid or unsourced records must not look verified.
   const rows=(data as DbRow[]).filter(item=>isIndexableProperty({title:item.title,slug:item.slug,rera_id:item.rera_id??undefined,official_source_url:item.official_source_url??undefined,city:item.city??undefined,district:item.district??undefined,status:item.status??undefined})&&Boolean(officialMahaReraUrl(item.official_source_url)));
-  return {rows,error:false};
- }catch{return {rows:[],error:true};}
+  return {rows,error:false,hasNext:data.length===PAGE_SIZE};
+ }catch{return {rows:[],error:true,hasNext:false};}
 }
 export default async function RegistryExplorer({searchParams}:Props){
  const params=await searchParams,q=safeQuery(params.q);
  const rawPage=typeof params.page==="string"?params.page:"1";
  const page=/^[1-9][0-9]{0,2}$/.test(rawPage)?Math.min(Number(rawPage),100):1;
- const {rows,error}=await readRegistry(q,page);
+ const {rows,error,hasNext}=await readRegistry(q,page);
  const path=(next:number)=>"/real-estate/registry"+(q||next>1?"?"+new URLSearchParams({
   ...(q?{q}:{}),...(next>1?{page:String(next)}:{})
  }).toString():"");
@@ -64,7 +64,7 @@ export default async function RegistryExplorer({searchParams}:Props){
    {!error&&<nav aria-label="Registry results pages" className="mt-5 flex items-center gap-4 text-sm">
     {page>1&&<Link href={path(page-1)} className="gth-btn">Previous</Link>}
     <span>Page {page}</span>
-    {rows.length===PAGE_SIZE&&<Link href={path(page+1)} className="gth-btn">Next</Link>}
+    {hasNext&&<Link href={path(page+1)} className="gth-btn">Next</Link>}
    </nav>}
   </section>
   <p className="mt-6 text-xs leading-6 text-[var(--text-soft)]">A recorded completion date is not proof that a project is delayed, completed, occupied or currently available. The registry is informational; official portal updates control. No property photos or asking prices are inferred from these records.</p>
