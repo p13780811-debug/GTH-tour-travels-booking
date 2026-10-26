@@ -48,7 +48,10 @@ export async function loadPersistedSupplierProducts(search:TourSearch,mode:Exper
    .eq("provider","wegotrip").eq("available",true).eq("source_verified",true)
    .eq("image_verified",true)
    .gte("last_verified_at",new Date(Date.now()-14*86400000).toISOString());
-  // Empty city means all approved global imports, not only IN. An optional currency\n  // filter must not silently hide valid INR/EUR rows on the default Tours page.\n  if(currency)request=request.eq("currency",currency);\n  if(search.city)request=request.ilike("city_name",search.city);
+  // Empty city means all approved global imports, not only IN. An optional currency
+  // filter must not silently hide valid INR/EUR rows on the default Tours page.
+  if(currency)request=request.eq("currency",currency);
+  if(search.city)request=request.ilike("city_name",search.city);
   const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(96)
    .abortSignal(AbortSignal.timeout(4_000));
   if(error || !data)return [];
@@ -58,6 +61,10 @@ export async function loadPersistedSupplierProducts(search:TourSearch,mode:Exper
   const category=search.category||(mode==="/activities"?"attraction-ticket":"audio-tour");
   const valid=uniqueSupplierProducts(results.filter(r=>r.kind===category &&
     (!search.minPrice || r.price!==null&&r.price>=Number(search.minPrice)) &&
-    (!search.maxPrice || r.price!==null&&r.price<=Number(search.maxPrice))));\n  // Deterministic India-first featured inventory; worldwide rows remain discoverable.\n  const indiaFirst=new Set(["mumbai","agra","jaipur"]);\n  return valid.sort((a,b)=>Number(indiaFirst.has(b.city.name.toLocaleLowerCase()))-\n    Number(indiaFirst.has(a.city.name.toLocaleLowerCase()))).slice(0,24);
+    (!search.maxPrice || r.price!==null&&r.price<=Number(search.maxPrice))));
+  // Deterministic India-first featured inventory; worldwide rows remain discoverable.
+  const indiaFirst=new Set(["mumbai","agra","jaipur"]);
+  return valid.sort((a,b)=>Number(indiaFirst.has(b.city.name.toLocaleLowerCase()))-
+    Number(indiaFirst.has(a.city.name.toLocaleLowerCase()))).slice(0,24);
  }catch{return [];}
 }
