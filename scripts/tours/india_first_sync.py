@@ -132,11 +132,12 @@ def normalize(row, detail, country, checked_at, photo_validator=image_check):
         "available":True, "last_verified_at":checked_at,
     }
 
-def collect_country(country, *, reader=read_api, photo_validator=image_check,
-                    sleeper=time.sleep, max_products=20, max_pages=3, checked_at=None):
+def collect_products(country, filters, *, reader=read_api,
+                     photo_validator=image_check, sleeper=time.sleep,
+                     max_products=20, max_pages=3, checked_at=None):
     checked_at = checked_at or datetime.now(timezone.utc).isoformat()
-    candidates = pages("/products/popular/", {"country":str(country["id"]), "lang":"en",
-        "currency":"USD"}, max_pages, reader, sleeper)
+    candidates = pages("/products/popular/", {**filters, "lang":"en", "currency":"USD"},
+                       max_pages, reader, sleeper)
     results, seen = [], set()
     for row in candidates:
         if len(results) >= max_products:
@@ -155,6 +156,36 @@ def collect_country(country, *, reader=read_api, photo_validator=image_check,
         except (OSError, ValueError, TimeoutError, KeyError):
             continue
     return results, len(candidates)
+
+
+def collect_country(country, *, reader=read_api, photo_validator=image_check,
+                    sleeper=time.sleep, max_products=20, max_pages=3, checked_at=None):
+    return collect_products(country, {"country":str(country["id"])}, reader=reader,
+        photo_validator=photo_validator, sleeper=sleeper,
+        max_products=max_products, max_pages=max_pages, checked_at=checked_at)
+
+
+def collect_city(country, name, *, reader=read_api, photo_validator=image_check,
+                 sleeper=time.sleep, max_products=8, checked_at=None):
+    """Only use an exact available city belonging to the selected supplier country."""
+    data=reader("/search/", {"query":name,"currency":"USD"})
+    results=data.get("results")
+    if not isinstance(results,list) or len(results)>100:
+        raise ValueError("Invalid city search response")
+    matches=[]
+    for row in results:
+        if not isinstance(row,dict) or row.get("type")!="city" or row.get("available") is not True:
+            continue
+        parent=row.get("country")
+        if (isinstance(parent,dict) and parent.get("name")==country["name"]
+                and row.get("name","").casefold()==name.casefold()
+                and type(row.get("id")) is int and row["id"]>0):
+            matches.append(row)
+    if len(matches)!=1:
+        return [],0
+    return collect_products(country, {"city":str(matches[0]["id"])},reader=reader,
+        photo_validator=photo_validator,sleeper=sleeper,
+        max_products=max_products,max_pages=2,checked_at=checked_at)
 
 def upsert(rows, *, opener=urlopen, env=os.environ):
     if not rows:
@@ -227,13 +258,31 @@ def run(scope, *, reader=read_api, photo_validator=image_check, sleeper=time.sle
         except (OSError, ValueError, TimeoutError, KeyError):
             summaries.append({"country":country["code"], "error":"supplier_unavailable"})
         sleeper(0.5)
-    # A failed/empty run never deletes or demotes previously reviewed supplier data.
-    if not any("verified_products" in s for s in summaries):
+    # Country-wide popular products are not a complete city inventory.
+    # Revisit key Indian cities daily without fabricating products or depending on
+    # the vendor's worldwide popularity ordering. Only approved detail/photos upsert.
+    city_status=[]
+    if scope=="india":
+        for city in ("Mumbai","Agra","Jaipur"):
+            try:
+                found, seen = collect_city(mapping["IN"],city,reader=reader,
+                    photo_validator=photo_validator,sleeper=sleeper,
+                    max_products=min(8,per_country))
+                products.extend(found)
+                city_status.append({"city":city,"supplier_candidates":seen,
+                    "verified_products":len(found)})
+            except (OSError,ValueError,TimeoutError,KeyError):
+                city_status.append({"city":city,"error":"supplier_unavailable"})
+            sleeper(0.4)
+    # Distinct supplier ID is the upsert identity, even when country and city
+    # requests return the same valid item. An outage never deletes previous rows.
+    products=list({(p["provider"],p["provider_product_id"]):p for p in products}.values())
+    if not any("verified_products" in s for s in summaries+city_status):
         raise ValueError("All supplier countries failed")
     written = writer(products) if write else 0
     return {"scope":scope, "supplier_countries":len(mapping),
         "countries_checked":len(selected), "verified_products":len(products),
-        "upserted":written, "dry_run":not write,"countries":summaries}
+        "upserted":written, "dry_run":not write,"countries":summaries,\n        "india_city_checks":city_status}
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
