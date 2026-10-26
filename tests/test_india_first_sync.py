@@ -32,6 +32,7 @@ class Tests(TestCase):
   def reader(path,params):
    calls.append((path,params))
    if path=="/countries/":return {"results":[{"code":"IN","name":"India","id":1269750},{"code":"GB","name":"United Kingdom","id":1}],"next":None}
+   if path=="/search/":return {"results":[],"next":None}
    if path=="/products/popular/":return {"results":[ROW,ROW],"next":None}
    if path=="/products/26568/":return DETAIL
    raise AssertionError(path)
@@ -42,6 +43,45 @@ class Tests(TestCase):
   self.assertEqual(result["upserted"],1)
   self.assertEqual(len(rows),1)
   self.assertEqual(result["countries_checked"],1)
+ def test_city_focus_ingests_genuine_supplier_products_and_deduplicates(self):
+  calls=[]
+  def reader(path, params):
+   calls.append((path,params))
+   if path=="/countries/":
+    return {"results":[COUNTRY],"next":None}
+   if path=="/search/":
+    name=params["query"]
+    if name=="Mumbai":
+     return {"results":[{**CITY,"available":True,"type":"city",
+                          "country":{"name":"India","id":COUNTRY["id"]}}]}
+    return {"results":[]}
+   if path=="/products/popular/":
+    # Country and Mumbai city can return the same supplier product.
+    return {"results":[ROW] if params.get("city")==str(CITY["id"]) else [],"next":None}
+   if path=="/products/26568/":return DETAIL
+   raise AssertionError(path)
+  saved=[]
+  result=engine.run("india",reader=reader,photo_validator=lambda _:True,
+   sleeper=lambda _:None,writer=lambda rows:saved.extend(rows) or len(rows),write=True)
+  self.assertEqual(result["verified_products"],1)
+  self.assertEqual(result["upserted"],1)
+  self.assertEqual(saved[0]["city_name"],"Mumbai")
+  self.assertEqual([entry["city"] for entry in result["india_city_checks"]],["Mumbai","Agra","Jaipur"])
+  self.assertTrue(any(path=="/products/popular/" and params.get("city")==str(CITY["id"])
+                      for path,params in calls))
+
+ def test_city_lookup_requires_exact_country_and_unique_supplier_city(self):
+  for countries in [
+    [{"name":"France","id":2}],
+    [{"name":"India","id":COUNTRY["id"]},{"name":"India","id":COUNTRY["id"]}]
+  ]:
+   def reader(path, params):
+    if path=="/search/":return {"results":[{**CITY,"type":"city","available":True,"country":other} for other in countries]}
+    raise AssertionError("Must not query products for wrong or ambiguous city")
+   rows,count=engine.collect_city(COUNTRY,"Mumbai",reader=reader,sleeper=lambda _:None)
+   self.assertEqual(rows,[])
+   self.assertEqual(count,0)
+
  def test_no_import_on_missing_supplier(self):
   def reader(path,params):
    if path=="/countries/":return {"results":[{"code":"IN","name":"India","id":1269750},{"code":"GB","name":"UK","id":1}],"next":None}

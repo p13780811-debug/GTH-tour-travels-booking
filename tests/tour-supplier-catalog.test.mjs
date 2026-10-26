@@ -21,3 +21,46 @@ test('WeGoTrip admission-only ticket is an activity, not an invented audio tour'
  assert.equal(value.kind,'attraction-ticket');assert.equal(value.admissionOnly,true);
  assert.equal(products.normalizeSupplierProduct({...row,type:4},city),null);
 });
+
+
+test('unfiltered Tours prioritize verified Mumbai, Agra, Jaipur over globally ordered first-page cities',async()=>{
+ const india=[
+  {id:101,name:'Mumbai',slug:'mumbai',country:'India'},
+  {id:102,name:'Agra',slug:'agra',country:'India'},
+  {id:103,name:'Jaipur',slug:'jaipur',country:'India'},
+ ];
+ const international={id:104,name:'Barcelona',slug:'barcelona',country:'Spain'};
+ const found=[...india,international];
+ const h=harness(url=>{
+  if(url.pathname.endsWith('/search/')){
+   const needle=url.searchParams.get('query');
+   const city=found.find(c=>c.name===needle);
+   return json({results:city?[{...city,type:'city',available:true}]:[]});
+  }
+  if(url.pathname.endsWith('/cities/'))return json({results:[{...international,itemsCount:8}]});
+  if(url.pathname.endsWith('/products/popular/')){
+   const city=found.find(c=>String(c.id)===url.searchParams.get('city'));
+   return json({results:city?[{...row,id:city.id+500,title:'Original '+city.name+' audio tour',
+    slug:'original-audio-tour',city:{id:city.id,slug:city.slug}}]:[]});
+  }
+  throw Error('Unexpected supplier endpoint');
+ });
+ const out=await h.search({},'/tours');
+ assert.equal(out.status,'ready');
+ assert.deepEqual(Array.from(out.items,x=>x.city.name),['Mumbai','Agra','Jaipur','Barcelona']);
+ assert(h.calls.filter(([url])=>url.includes('/search/')).length===3);
+ assert(h.calls.every(([url])=>new URL(url).hostname==='app.wegotrip.com'));
+});
+
+test('failed India city lookups do not erase valid international supplier products',async()=>{
+ const h=harness(url=>{
+  if(url.pathname.endsWith('/search/'))throw Error('Provider city temporarily unavailable');
+  if(url.pathname.endsWith('/cities/'))return json({results:[{id:104,name:'Barcelona',slug:'barcelona',country:'Spain',itemsCount:8}]});
+  if(url.pathname.endsWith('/products/popular/'))return json({results:[{...row,id:604,
+   title:'Barcelona audio walk',slug:'barcelona-audio-walk',city:{id:104,slug:'barcelona'}}]});
+  throw Error('Unexpected supplier endpoint');
+ });
+ const out=await h.search({},'/tours');
+ assert.equal(out.status,'ready');
+ assert.deepEqual(Array.from(out.items,x=>x.city.name),['Barcelona']);
+});

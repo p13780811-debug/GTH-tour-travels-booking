@@ -7,7 +7,7 @@ import TourSearchHero from "./TourSearchHero";
 import ToursExplorer from "./ToursExplorer";
 import TourAffiliateMarketplace from "./TourAffiliateMarketplace";
 import {EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,parseTourFilters,tourDiscoveryHref,type ExperiencePath} from "@/lib/tours/discovery";
-const destinations=[{city:"Dubai",image:"/images/cities/dubai.jpg"},{city:"London",image:"/images/cities/london.jpg"},{city:"Tokyo",image:"/images/cities/tokyo.jpg"},{city:"Bali",image:"/images/cities/bali.jpg"}];
+const destinations=[{city:"Mumbai",image:"/images/cities/mumbai.jpg"},{city:"Agra",image:"/images/cities/agra.jpg"},{city:"Jaipur",image:"/images/cities/jaipur.jpg"},{city:"Dubai",image:"/images/cities/dubai.jpg"},{city:"London",image:"/images/cities/london.jpg"},{city:"Tokyo",image:"/images/cities/tokyo.jpg"},{city:"Bali",image:"/images/cities/bali.jpg"}];
 export default async function TourLanding({searchParams,basePath}:{searchParams:Promise<Record<string,unknown>>;basePath:ExperiencePath}){
  const raw=await searchParams,parsed=parseTourFilters(raw),filters=parsed.ok?parsed.filters:EMPTY_TOUR_SEARCH;
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
