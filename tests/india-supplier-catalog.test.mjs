@@ -1,0 +1,19 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+test("India original supplier supplement keeps PR134/136 approved pages and no demo inventory",()=>{
+ const view=readFileSync(new URL("../src/components/tours/SupplierTourCatalog.tsx",import.meta.url),"utf8");
+ const model=readFileSync(new URL("../src/lib/tours/persisted-inventory.ts",import.meta.url),"utf8");
+ const contracts=readFileSync(new URL("../src/lib/tours/supplier-products.ts",import.meta.url),"utf8");
+ assert.match(view,/loadPersistedSupplierProducts/);
+ assert.match(view,/uniqueSupplierProducts/);
+ assert.match(model,/eq\("country_code","IN"\)/);
+ assert.match(model,/14\*86400000/);
+ assert.match(model,/source_verified/);
+ assert.match(contracts, /\[1,2,3\]\.includes/);
+ assert.doesNotMatch(model,/SERVICE_ROLE_KEY/);
+ const landing=readFileSync(new URL("../src/components/tours/TourLanding.tsx",import.meta.url),"utf8");
+ assert.match(landing,/<TourSearchHero/);
+ assert.match(landing,/<SupplierTourCatalog/);
+ assert.match(landing,/<ReviewedPartnerCatalog/);
+});

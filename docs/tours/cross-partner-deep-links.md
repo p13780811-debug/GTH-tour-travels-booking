@@ -66,3 +66,13 @@ no main deploy. Verify TypeScript, regressions, Python ingestion tests,
 browser city-preserving handoff and provider-specific real product landing
 before one-shot production merge. Never label an untested supplier link
 "affiliate converted" or claim supplier bookings/commission.
+
+## India-first original supplier sync (Viator excluded)
+- Original WeGoTrip country API exposes 87 countries; India currently returns 5 country-level products across Agra (3), Mumbai (1), Jaipur (1). Do not promise every country or city has 3 products. Other providers' catalog access is separate.
+- `scripts/tours/india_first_sync.py --scope india` is safe read-only discovery by default; `--scope world` rotates through other supplier countries so every country is revisited over multiple days.
+- It validates supplier product detail, approved/published status, exact city/product IDs, source URL, original supplier photo response, type 1 audio/type 2 admission/type 3 ticket+audio, and deduplicates by supplier product ID.
+- Strict `--write` upserts only validated products into the isolated `public.tour_supplier_products` table. Legacy 110 Tours/218 Activities and their publication flags are untouched. The additive migration `supabase/migrations/20261026062000_tour_supplier_inventory.sql` must be reviewed/applied first at release; the new table is read-only under RLS for public users.
+- Daily cloud workflow `.github/workflows/gth-india-tour-inventory.yml` runs importer tests and India smoke; on merged main with protected Supabase URL/service-role credentials it also upserts India daily + a rotating worldwide batch. Missing secrets produce an explicit no-write skip. Feature branch never writes or deploys.
+- Tours/Activities server section uses live supplier results plus recent RLS-approved persisted inventory (14-day freshness), no fake filler. No customer information/secret is exposed to the browser. An original supplier photo is used under the supplier affiliate API's display integration; this is not a blanket licence to redistribute its bytes.
+- Provider price and availability are indicative; confirm on supplier page. The global Travelpayouts Drive continues to handle eligible exact-product handoffs. No new Emerald script is added.
+- Conservative default: max 12 verified products per country per sync, max 8 non-India countries/day; no mass fan-out or scraper. No Viator integration.
