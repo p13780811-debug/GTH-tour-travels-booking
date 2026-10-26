@@ -59,4 +59,28 @@ test("public registry is dynamic, RLS scoped and does not invent delay verdicts"
  assert.match(page,/AbortSignal\.timeout/);
  assert.match(page,/Recorded date; no delay verdict|delay certifications/);
  assert.doesNotMatch(page,/SERVICE_ROLE_KEY/);
+ assert.match(page,/Math\\.min\\(Number\\(rawPage\\),1000\\)/);
+ assert.doesNotMatch(page,/isIndexableProperty\\(item\\)/);
+ assert.match(page,/Missing official project URLs are marked clearly/);
+ assert.match(page,/\\/hotels\\?view=booking/);
+ assert.doesNotMatch(page,/booking\\.com/i);
+});
+
+test("historic registry visibility is independent of photo and missing official-link restrictions",()=>{
+ const page=source("src/app/real-estate/registry/page.tsx");
+ assert.match(page,/\.in\("source_type",\["registry","rera"\]\)/);
+ assert.match(page,/\.ilike\("ingestion_source","%maharera%"\)/);
+ assert.match(page,/item\.rera_id/);
+ assert.doesNotMatch(page,/Boolean\(officialMahaReraUrl\(item\.official_source_url\)\)/);
+ const table=source("src/app/real-estate/registry/RegistryTable.tsx");
+ assert.match(table,/Not linked/);
+ assert.match(table,/no delay verdict/);
+});
+
+test("accommodation handoff explicitly follows existing Nuitee white-label, never assumed Booking.com affiliate",()=>{
+ const page=source("src/app/real-estate/registry/page.tsx");
+ const provider=source("src/lib/travel/hotel-whitelabel.ts");
+ assert.match(page,/\/hotels\?view=booking/);
+ assert.match(page,/Nuitee white-label search/);
+ assert.match(provider,/https:\/\/gthproglobal\.nuitee\.link/);
 });
