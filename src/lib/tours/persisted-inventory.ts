@@ -49,7 +49,8 @@ export async function loadPersistedSupplierProducts(search:TourSearch,mode:Exper
    .eq("image_verified",true).eq("currency",currency)
    .gte("last_verified_at",new Date(Date.now()-14*86400000).toISOString());
   request=search.city?request.ilike("city_name",search.city):request.eq("country_code","IN");
-  const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(80);
+  const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(80)
+   .abortSignal(AbortSignal.timeout(4_000));
   if(error || !data)return [];
   const results=(data as SourceRow[]).map(toCard).filter((r):r is SupplierProduct=>r!==null);
   // Same-city strings in multiple countries must never be silently conflated.

@@ -41,7 +41,7 @@ export async function listMappedCities(filters:MappedCityFilters={}):Promise<{it
   .range((page-1)*pageSize,page*pageSize-1);
  if(filters.country)query=query.eq("country_code",filters.country);
  if(filters.search)query=query.ilike("city","%"+filters.search.trim()+"%");
- const {data,error,count}=await query;
+ const {data,error,count}=await query.abortSignal(AbortSignal.timeout(5_000));
  if(error)throw new Error("Mapped-city index temporarily unavailable");
  return {items:(data??[]).map(x=>({...x,records:Number(x.records)||0})) as MappedCity[],
   total:count||0,page,pageSize};

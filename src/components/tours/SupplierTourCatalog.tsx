@@ -1,13 +1,15 @@
 import {getSupplierCatalog} from "@/lib/tours/supplier-catalog";
 import {loadPersistedSupplierProducts} from "@/lib/tours/persisted-inventory";
+import {firstAvailableSupplierCatalog} from "@/lib/tours/catalog-selection";
 import {WEGOTRIP_CARD_DOCUMENTATION,uniqueSupplierProducts} from "@/lib/tours/supplier-products";
 import type {ExperiencePath,TourSearch} from "@/lib/tours/discovery";
 import SupplierTourCard from "./SupplierTourCard";
 export default async function SupplierTourCatalog({search,basePath}:{search:TourSearch;basePath:ExperiencePath}){
- const [live,saved]=await Promise.allSettled([getSupplierCatalog({...search,page:String(search.page)},basePath),loadPersistedSupplierProducts(search,basePath)]);
- const result=live.status==="fulfilled"?live.value:{items:[],status:"unavailable" as const};
- const persisted=saved.status==="fulfilled"?saved.value:[];
- const items=uniqueSupplierProducts([...persisted,...result.items]).slice(0,12);
+ const result=await firstAvailableSupplierCatalog(
+  getSupplierCatalog({...search,page:String(search.page)},basePath),
+  loadPersistedSupplierProducts(search,basePath),
+ );
+ const items=uniqueSupplierProducts(result.items).slice(0,12);
  if(!items.length&&(result.status==="invalid"||result.status==="empty"))return null;
  return <section aria-label="Original WeGoTrip products" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
   <h2 className="text-xl font-bold">{basePath==="/tours"?"Audio tours from WeGoTrip":"Tickets and experiences from WeGoTrip"}</h2>

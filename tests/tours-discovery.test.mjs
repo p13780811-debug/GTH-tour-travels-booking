@@ -14,7 +14,7 @@ function compile(path,dependencies={}) {
     module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,
   }}).outputText;
   const compiledModule={exports:{}};
-  vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,URL,URLSearchParams,Intl,
+  vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,URL,URLSearchParams,Intl,AbortSignal,
     require:name=>{if(name in dependencies)return dependencies[name];throw Error("Unexpected dependency "+name);},
     process:{env:{NEXT_PUBLIC_SUPABASE_URL:"https://test.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"ci-public-test-key"}},
   },{timeout:2000});
@@ -51,8 +51,9 @@ function harness(rows=fixtures,{fail=false}={}) {
       lte(key,value){conditions.push(["lte",key,value]);return query;},
       or(value){or=value;return query;},
       order(key,options){orders.push([key,options]);return query;},
-      range(start,end){call.range=[start,end];return Promise.resolve(result(start,end));},
-      then(resolve,reject){return Promise.resolve(result()).then(resolve,reject);},
+      range(start,end){call.range=[start,end];return query;},
+      abortSignal(signal){assert.ok(signal instanceof AbortSignal);call.signal=signal;return query;},
+      then(resolve,reject){return Promise.resolve(result(...(call.range||[]))).then(resolve,reject);},
     };
     function result(start=0,end=rows.length-1) {
       if(fail)return {error:{message:"sensitive backend detail"},data:null,count:null};

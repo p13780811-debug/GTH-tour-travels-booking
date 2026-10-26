@@ -59,7 +59,8 @@ export async function searchTours(filters: TourFilters, mode?: ExperiencePath): 
       if (f.maxPrice) query = query.lte("price_numeric", Number(f.maxPrice));
       return query;
     };
-    const [catalog, counted] = await Promise.all([base(true), matching(true)]);
+    const signal = AbortSignal.timeout(5_000);
+    const [catalog, counted] = await Promise.all([base(true).abortSignal(signal), matching(true).abortSignal(signal)]);
     if (catalog.error || counted.error) return { ...empty, error: "Tour listings are unavailable", status: 502 };
     const catalogTotal = catalog.count ?? 0, total = counted.count ?? 0;
     const offset = (f.page - 1) * TOUR_PAGE_SIZE;
@@ -67,7 +68,8 @@ export async function searchTours(filters: TourFilters, mode?: ExperiencePath): 
     let query = matching();
     if (f.sort === "price") query = query.order("price_numeric", { ascending: true, nullsFirst: false });
     const { data, error } = await query.order("title", { ascending: true })
-      .order("id", { ascending: true }).range(offset, Math.min(total - 1, offset + TOUR_PAGE_SIZE - 1));
+      .order("id", { ascending: true }).range(offset, Math.min(total - 1, offset + TOUR_PAGE_SIZE - 1))
+      .abortSignal(signal);
     if (error) return { ...empty, catalogTotal, total, error: "Tour listings are unavailable", status: 502 };
     const items = (data || []).filter((tour) =>
       (typeof tour.id === "string" || typeof tour.id === "number") &&

@@ -10,7 +10,8 @@ export default async function OpenAttractionsRail({region}:{region:"goa"|"mahara
  if(!url||!key)return null;
  const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data,error}=await db.from("gth_open_attractions").select("wikidata_qid,name,category,region_slug,image_url,commons_page,image_author,image_license,image_license_url")
-  .eq("region_slug",region).eq("is_public",true).order("name",{ascending:true}).limit(16);
+  .eq("region_slug",region).eq("is_public",true).order("name",{ascending:true}).limit(16)
+  .abortSignal(AbortSignal.timeout(5_000));
  if(error||!data?.length)return null;
  const places=data as Card[];
  return <section aria-label={"Source-backed attractions in "+region} className="border-y border-[var(--border)] bg-[var(--bg-soft)]">

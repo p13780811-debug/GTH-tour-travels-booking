@@ -41,7 +41,7 @@ export async function listPlaces(filters:DirectoryFilters){
   if(filters.q)query=query.ilike("name","%"+filters.q.trim()+"%");
   if(filters.after)query=query.gt("source_id",filters.after);
   if(filters.page&&filters.page>1)query=query.range((filters.page-1)*limit,filters.page*limit);
-  const {data,error}=await query;
+  const {data,error}=await query.abortSignal(AbortSignal.timeout(5_000));
   if(error)throw new Error("Public source query unavailable");
   const rows=(data??[]) as Place[];
   const items=rows.slice(0,limit);
