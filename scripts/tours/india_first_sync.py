@@ -178,7 +178,8 @@ def collect_city(country, name, *, reader=read_api, photo_validator=image_check,
             continue
         parent=row.get("country")
         if (isinstance(parent,dict) and parent.get("name")==country["name"]
-                and row.get("name","").casefold()==name.casefold()
+                and isinstance(row.get("name"),str)
+                and row["name"].casefold()==name.casefold()
                 and type(row.get("id")) is int and row["id"]>0):
             matches.append(row)
     if len(matches)!=1:
