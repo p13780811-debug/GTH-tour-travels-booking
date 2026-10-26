@@ -80,8 +80,9 @@ export function knownSeoKind(x:string):x is SeoKind{
 export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:number}[]>{
  if(!isPublicLaunch())return [];
  const client=db();
+ const signal=AbortSignal.timeout(5_000);
  const output=await Promise.all(SEO_KINDS.map(async kind=>{
-  const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"});
+  const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"}).abortSignal(signal);
   if(error)throw new Error("SEO count unavailable: "+kind);
   const total=Math.max(0,count||0);
   return {kind,count:total,pages:Math.min(SEO_MAX_PAGES,Math.ceil(total/SEO_PAGE_SIZE))};
@@ -92,7 +93,8 @@ export async function seoShard(kind:SeoKind,page:number):Promise<MetadataRoute.S
  if(!isPublicLaunch()||!Number.isInteger(page)||page<0||page>=SEO_MAX_PAGES)return [];
  const cfg=CONFIG[kind],start=page*SEO_PAGE_SIZE;
  const {data,error}=await db().from(cfg.view).select(cfg.fields)
-  .order(cfg.key,{ascending:true}).range(start,start+SEO_PAGE_SIZE-1);
+  .order(cfg.key,{ascending:true}).range(start,start+SEO_PAGE_SIZE-1)
+  .abortSignal(AbortSignal.timeout(5_000));
  if(error)throw new Error("SEO approved source query unavailable");
  const origin=siteOrigin();
  return ((data||[]) as unknown as Record<string,unknown>[]).filter(row=>eligibleSeoRow(kind,row))

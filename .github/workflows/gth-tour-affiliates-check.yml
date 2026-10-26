@@ -47,4 +47,7 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Production build (no deploy)
+        env:
+          VERCEL_ENV: production
+          GTH_PUBLIC_LAUNCH_ENABLED: 'true'
         run: npm run build

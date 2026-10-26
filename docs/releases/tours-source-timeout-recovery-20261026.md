@@ -45,3 +45,24 @@ this loading dependency.
 - Exact-head GitHub checks and post-merge live city/card verification must
   succeed before declaring the production incident resolved.
 - No supplier checkout, payment, commission or physical-device QA claim.
+
+## Production-only sitemap blocker
+
+The PR #139 Git deployment `dpl_CHbfDDwwYnWiL446syrrvww61UEr` failed before
+domain assignment: production-launch `/sitemap.xml` prerendering exceeded 60
+seconds on all three attempts. The earlier CI/local build used launch-disabled
+defaults and did not exercise that DB-backed branch. The old production
+deployment therefore continued to serve the site.
+
+The follow-up bounds every database source on that sitemap path: published
+hotels/tenders/attractions, property SEO shard and approved guide media. SEO
+shard counts also have a deadline. Preserve all existing publication, rights,
+RLS, canonical, launch and failure policies; unverified dynamic URLs are never
+substituted. Independent static navigation remains available through the
+existing sitemap fallback. No schema or protected Real Estate code changes.
+
+Two regression tests explicitly run with the public launch gate enabled and
+expired database deadlines; all 518 JS/TS regressions pass. The Tours CI build
+step now enables production-launch behavior, so the previously missed branch
+is exercised before merge. A real production-launch local build and final Git
+production deployment must pass before this incident is called resolved.

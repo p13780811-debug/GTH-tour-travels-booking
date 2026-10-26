@@ -21,7 +21,8 @@
       "fix/tours-search-first-20261025": false,
       "feat/tour-source-media-audit-20261026": false,
       "feat/partner-product-deep-links-20261026": false,
-      "fix/tours-independent-source-loading-20261026": false
+      "fix/tours-independent-source-loading-20261026": false,
+      "fix/seo-discovery-read-deadlines-20261026": false
     }
   }
 }
