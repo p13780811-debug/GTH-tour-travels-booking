@@ -7,7 +7,9 @@ test("India original supplier supplement keeps PR134/136 approved pages and no d
  const contracts=readFileSync(new URL("../src/lib/tours/supplier-products.ts",import.meta.url),"utf8");
  assert.match(view,/loadPersistedSupplierProducts/);
  assert.match(view,/uniqueSupplierProducts/);
- assert.doesNotMatch(model,/eq\("country_code","IN"\)/);\n assert.match(model,/if\(currency\)request=request.eq\("currency",currency\)/);\n assert.match(model,/if\(search.city\)request=request.ilike\("city_name",search.city\)/);
+ assert.doesNotMatch(model,/eq\("country_code","IN"\)/);
+ assert.match(model,/if\(currency\)request=request.eq\("currency",currency\)/);
+ assert.match(model,/if\(search.city\)request=request.ilike\("city_name",search.city\)/);
  assert.match(model,/14\*86400000/);
  assert.match(model,/source_verified/);
  assert.match(contracts, /\[1,2,3\]\.includes/);
