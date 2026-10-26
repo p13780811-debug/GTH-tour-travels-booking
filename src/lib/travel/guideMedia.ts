@@ -23,11 +23,12 @@ export async function publishedMedia(slugs:readonly string[]):Promise<Map<string
  const safe=[...new Set(slugs)].filter(s=>/^[a-z]+(?:-[a-z]+)*(?:\/[a-z]+(?:-[a-z]+)*)?$/.test(s)).slice(0,30);
  if(!db||safe.length===0)return out;
  try{
+  const signal=AbortSignal.timeout(5_000);
   const [p,m]=await Promise.all([
    db.from("gth_travel_guide_publications").select("slug,content_version").eq("status","published")
-     .not("editorial_reviewed_at","is",null).in("slug",safe).limit(30),
+     .not("editorial_reviewed_at","is",null).in("slug",safe).limit(30).abortSignal(signal),
    db.from("gth_travel_guide_media").select("guide_slug,image_url,source_page,source_name,license_type,license_url,attribution_text,alt_text,width,height")
-     .eq("editorial_approved",true).eq("is_hero",true).in("guide_slug",safe).order("priority",{ascending:false}).limit(60)
+     .eq("editorial_approved",true).eq("is_hero",true).in("guide_slug",safe).order("priority",{ascending:false}).limit(60).abortSignal(signal)
   ]);
   if(p.error||m.error)return out;
   const reviewed=new Set(((p.data??[]) as Publish[]).filter(x=>x.content_version===GUIDE_CONTENT_VERSION).map(x=>x.slug));

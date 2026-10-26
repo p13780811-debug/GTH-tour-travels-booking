@@ -27,6 +27,7 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
   if (!url || !key) return [];
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const now = new Date().toISOString();
+  const signal = AbortSignal.timeout(5_000);
   // Public anon/RLS-scoped reads only, with explicit, narrow published-source filters.
   // Bounded query sizes keep sitemap requests responsive; never leak private columns.
   const [hotels, tenders, attractions] = await Promise.allSettled([
@@ -34,18 +35,18 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
       .select("id,name,city,country_code,category,source_name,source_url,affiliate_link")
       .eq("is_public", true).eq("media_rights_verified", true)
       .not("source_name", "is", null).not("source_url", "is", null)
-      .order("id", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE),
+      .order("id", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE).abortSignal(signal),
     db.from("tenders")
       .select("id,title,buyer,country_code,sector,summary,deadline_at,source_name,source_reference,source_url,updated_at")
       .eq("is_public", true).eq("source_verified", true).eq("status", "published")
       .gt("deadline_at", now)
       .not("summary", "is", null)
-      .order("deadline_at", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE),
+      .order("deadline_at", { ascending: true }).limit(MAX_APPROVED_PER_SOURCE).abortSignal(signal),
     db.from("gth_open_attractions")
       .select("wikidata_qid,name,description,source_license,wikidata_url")
       .eq("is_public",true).eq("source_license","CC0-1.0")
       .not("description","is",null)
-      .order("wikidata_qid",{ascending:true}).limit(500),
+      .order("wikidata_qid",{ascending:true}).limit(500).abortSignal(signal),
   ]);
   const output: DynamicEntry[] = [];
   if (hotels.status === "fulfilled" && !hotels.value.error) {
