@@ -60,7 +60,7 @@ export default async function MegaAggregator() {
         .from("destinations")
         .select("name, slug, image_url")
         .order("name")
-        .limit(5)
+        .limit(5).abortSignal(AbortSignal.timeout(5_000))
 
 
 

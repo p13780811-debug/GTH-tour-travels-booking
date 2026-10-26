@@ -36,7 +36,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
       .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
       .eq("slug", slug)
       .eq("is_active", true)
-      .maybeSingle();
+      .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
 
     if (error || !data) return editorial;
     const approved=isIndexableDestination(data as unknown as Record<string,unknown>);

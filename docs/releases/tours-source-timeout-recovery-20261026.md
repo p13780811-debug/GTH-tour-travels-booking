@@ -61,6 +61,10 @@ RLS, canonical, launch and failure policies; unverified dynamic URLs are never
 substituted. Independent static navigation remains available through the
 existing sitemap fallback. No schema or protected Real Estate code changes.
 
+The real-configuration local build also exposed unbounded destination lookups
+on prerendered destination pages and the ecosystem hub. Those reads now have
+the same five-second budget and retain their existing editorial fallback.
+
 Two regression tests explicitly run with the public launch gate enabled and
 expired database deadlines; all 518 JS/TS regressions pass. The Tours CI build
 step now enables production-launch behavior, so the previously missed branch
