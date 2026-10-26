@@ -13,7 +13,7 @@ export default function SupplierTourCard({product}:{product:SupplierProduct}){
   <div className="flex min-w-0 flex-1 flex-col p-4">
    <p className="text-xs text-[var(--text-soft)]">{product.city.name}{product.city.country?", "+product.city.country:""}</p>
    <h3 className="mt-2 text-sm font-bold leading-5">{product.title}</h3>
-   <p className="mt-2 text-xs text-[var(--text-soft)]">{product.kind==="audio-tour"?"Self-guided audio tour":"Ticket / audio experience"} · WeGoTrip</p>
+   <p className="mt-2 text-xs text-[var(--text-soft)]">{product.kind==="audio-tour"?"Self-guided audio tour":product.admissionOnly?"Attraction admission ticket":"Ticket / audio experience"} · WeGoTrip</p>
    <div className="mt-auto pt-4"><p className="break-words text-base font-bold">{price}</p><p className="mt-1 text-[11px] leading-5 text-[var(--text-soft)]">Supplier-listed price · confirm date and total</p>
     <a href={product.href} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 px-3 text-xs font-semibold">View on WeGoTrip<ArrowUpRight size={15} aria-hidden="true"/></a>
    </div>

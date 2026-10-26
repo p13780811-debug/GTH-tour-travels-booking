@@ -11,6 +11,8 @@ on:
       - 'scripts/update-images.ts'
       - 'tests/tour-supplier*'
       - 'tests/test_tour_catalog_engine.py'
+      - 'tests/test_reviewed_partner_feed.py'
+      - 'tests/partner-product-deeplinks.test.mjs'
       - '.github/workflows/gth-tour-source-engine.yml'
   workflow_dispatch:
   schedule:
@@ -30,6 +32,8 @@ jobs:
           python-version: '3.12'
       - name: Validate original products, identity and exact-link conversion
         run: python3 -m unittest discover -s tests -p 'test_tour_catalog_engine.py'
+      - name: Validate reviewed Klook KKday and Tiqets feed gates
+        run: python3 -m unittest discover -s tests -p 'test_reviewed_partner_feed.py'
       - name: Read-only supplier catalogue and image smoke
         run: python3 scripts/tours/catalog_engine.py fetch --city Edinburgh --limit 4 --output /tmp/original-tour-candidates.json
       - uses: actions/upload-artifact@v4
