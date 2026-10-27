@@ -45,8 +45,8 @@ test("activity vs tour and exact city filtering, duplicates, and no demo invento
 test("approved PR134 search stays and Klook destination card preserves selected city",()=>{
  const market=readFileSync(new URL("../src/components/tours/TourAffiliateMarketplace.tsx",import.meta.url),"utf8");
  const landing=readFileSync(new URL("../src/components/tours/TourLanding.tsx",import.meta.url),"utf8");
- assert.match(market,/directTourSearch\(search\)/);
- assert.match(market,/Search "\+search\.city\+" on Klook/);
+ assert.match(market,/partnerSearchHref\(basePath==="\/tours"\?"tours":"activities",search.city\)/);
+ assert.match(market,/Explore "\+search\.city\+" experiences/);
  assert.match(landing,/<SupplierTourCatalog/);
  assert.match(landing,/<ReviewedPartnerCatalog/);
  assert.match(landing,/<TourAffiliateMarketplace/);

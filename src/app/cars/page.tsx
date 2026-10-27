@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight, ArrowUpRight, BadgeInfo, BriefcaseBusiness, CalendarCheck, CarFront, CircleHelp, CreditCard, Fuel, Globe2, KeyRound, Luggage, MapPinned, Route, ShieldCheck, Users } from "lucide-react";
 import CarRentalPlanner from "@/components/travel/CarRentalPlanner";
 import TravelpayoutsCarWidget from "@/components/travel/TravelpayoutsCarWidget";
+import TravelPartnerSearch from "@/components/travel/TravelPartnerSearch";
 
 export const metadata: Metadata = {
   title: "Worldwide Car Rental & Self-Drive Booking | GTH PRO Travel",
@@ -39,7 +40,7 @@ const providers = [
 ] as const;
 const faqs = [
   {q:"Can I book a rental car directly with GTH PRO?",a:"No. GTH PRO provides a planning interface, affiliate partner widgets and links to independent booking suppliers. A rental provider confirms the vehicle and completes the reservation."},
-  {q:"Do the search fields automatically transfer to a partner?",a:"Not yet. The GTH PRO rental planner keeps your entered locations and times in the browser. Enter them again within the partner widget or provider website to get actual availability."},
+  {q:"How does the destination search work?",a:"Find car rentals opens your destination's Klook search directly through our affiliate link. Choose dates, exact pickup and return details on the provider. The separate optional checklist stays in your browser and does not transfer dates or driving details."},
   {q:"Can I rent in a different country or city?",a:"The planner supports international locations. The Localrent widget has a preset country and city, while QEEQ has its own search form. Supported locations depend on the individual supplier."},
   {q:"Can I return the car at another location?",a:"Some suppliers allow one-way returns, subject to availability and possible additional charges. Confirm return location and fees on the supplier website."},
   {q:"Is airport transfer the same as car rental?",a:"No. A car rental generally involves driving yourself; an airport transfer typically includes a driver. You can explore both options through GTH PRO."},
@@ -70,6 +71,7 @@ export default function CarsPage() {
       <TravelSectionNav />
 
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-3 sm:py-12 sm:px-6 md:py-16">
+      <TravelPartnerSearch kind="cars" />
       <TravelpayoutsCarWidget />
       <CarRentalPlanner />
 

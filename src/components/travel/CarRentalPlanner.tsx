@@ -52,9 +52,9 @@ export default function CarRentalPlanner() {
 
   return <section aria-labelledby="rental-planner-heading" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
     <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">Worldwide trip planning</p>
-    <h2 id="rental-planner-heading" className="mt-3 text-2xl font-semibold">Plan a car rental</h2>
+    <h2 id="rental-planner-heading" className="mt-3 text-2xl font-semibold">Optional rental checklist</h2>
     <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-      Prepare your pickup and return details. This planner is not an inventory or price search:
+      Use the destination search above to open partner results directly. This optional checklist helps prepare pickup and return details; it is not an inventory or price search:
       a rental provider will show actual cars, eligibility, availability and booking prices.
     </p>
     <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={submit} onFocus={()=>{if(!today)setToday(localToday());}}>

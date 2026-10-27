@@ -20,6 +20,7 @@ import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
 import AreaConverter from "@/components/real-estate/AreaConverter"
 import { isPropertyVisualCard } from "@/app/real-estate/registry/explorer-presentation"
 import TrustStandard from "@/components/real-estate/TrustStandard"
+import RegistryPhotoProjects from "@/components/real-estate/RegistryPhotoProjects"
 import BottomNav from "@/components/mobile/BottomNav"
 import styles from "@/components/real-estate/Explorer.module.css"
 
@@ -197,6 +198,8 @@ export default function RealEstatePage() {
                 <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link></div></section>
             </section>
         </div>
+        <nav aria-label="Buyer research tools" className="mt-8 flex flex-wrap gap-3"><Link href="/real-estate/registry" className="gth-btn inline-flex min-h-11 items-center">Search & compare registry projects</Link><Link href="/real-estate/saved#research-workspace" className="gth-btn inline-flex min-h-11 items-center">Private buyer workspace</Link><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn inline-flex min-h-11 items-center">Ownership cost & affordability</Link></nav>
+        <RegistryPhotoProjects />
         <section id="buyer-tools" className="mt-10 scroll-mt-24"><p className="gold-text text-xs uppercase tracking-widest">Buyer planning</p><div className="mt-4 grid items-start gap-6 lg:grid-cols-2"><HomeLoanCalculator /><AreaConverter /></div></section>
         <div className={styles.support}><GlobalMarkets /><TrustStandard /></div>
         <section className={styles.submit}><div><h2>Owners, developers & channel partners</h2><p>List a resale home, rental, new launch, commercial space or plot. Add real photographs, specifications and your asking price for independent review.</p><p className="mt-3 text-xs">Create your account → Submit property & rights evidence → Listing and photo review → Publication. Registration is checked separately; a submission is never an automatic verification.</p></div><Link href="/real-estate/post-property" className={`gth-btn gth-btn-gold ${styles.button}`}>List your property<ArrowUpRight size={15} /></Link></section>
