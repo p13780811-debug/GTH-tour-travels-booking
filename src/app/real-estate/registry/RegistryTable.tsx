@@ -26,7 +26,7 @@ export default function RegistryTable({rows,caption="Recorded MahaRERA projects"
      const timeline=typeof p.completion_date==="string"&&/^\d{4}-\d{2}-\d{2}/.test(p.completion_date)
        ?p.completion_date.slice(0,10):"Not recorded";
      return <tr key={p.slug} className="align-top hover:bg-[var(--bg-soft)]">
-      <td className="p-3 font-medium"><Link href={"/real-estate/"+encodeURIComponent(p.slug)} className="underline-offset-2 hover:underline">{p.title}</Link></td>
+      <td className="p-3 font-medium"><Link href={"/real-estate/"+encodeURIComponent(p.slug)} className="underline-offset-2 hover:underline">{p.title}</Link>{p.rera_id && /^P[0-9]{11}$/.test(p.rera_id) && <Link href={"/real-estate/claim-project?rera="+encodeURIComponent(p.rera_id)} className="mt-2 block text-[11px] font-normal underline underline-offset-2 text-[var(--text-soft)]">Builder or authorized agent? Request a project claim</Link>}</td>
       <td className="p-3 font-mono">{p.rera_id||"Not recorded"}</td>
       <td className="p-3">{known(p.developer)||known(p.builder_name)||"Developer not recorded"}<span className="mt-1 block text-[var(--text-soft)]">{[known(p.city),known(p.district)].filter(Boolean).join(" · ")||"Location not recorded"}</span></td>
       <td className="p-3"><span>{timeline}</span><span className="mt-1 block text-[11px] text-[var(--text-soft)]">Recorded date; no delay verdict</span></td>

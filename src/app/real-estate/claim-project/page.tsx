@@ -26,6 +26,14 @@ export default function ClaimProjectPage() {
   const [notice, setNotice] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploads, setUploads] = useState<MediaReceipt[]>([]);
+  const [reraReference, setReraReference] = useState("");
+
+  // Convenience only: the existing authenticated API revalidates the exact
+  // project identity, proof of authority and rights acknowledgements.
+  useEffect(() => {
+    const requested = new URL(window.location.href).searchParams.get("rera") || "";
+    if (/^P[0-9]{11}$/i.test(requested)) setReraReference(requested.toUpperCase());
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -94,7 +102,7 @@ export default function ClaimProjectPage() {
       <form onSubmit={submitClaim} className="gth-glass rounded-3xl p-5 sm:p-8 mt-8 grid gap-5">
         <h2 className="text-xl font-bold">1. Request project authorization review</h2>
         <label className="grid gap-2">MahaRERA registration number
-          <input required name="rera_reference" pattern="[Pp][0-9]{11}" maxLength={12} placeholder="P51800000000" className="gth-glass rounded-xl p-3 w-full uppercase" />
+          <input required name="rera_reference" pattern="[Pp][0-9]{11}" maxLength={12} value={reraReference} onChange={event => setReraReference(event.target.value.toUpperCase())} placeholder="P51800000000" className="gth-glass rounded-xl p-3 w-full uppercase" />
         </label>
         <label className="grid gap-2">Your relationship
           <select required name="claimant_role" defaultValue="developer" className="gth-glass rounded-xl p-3 w-full bg-[var(--card)]">
