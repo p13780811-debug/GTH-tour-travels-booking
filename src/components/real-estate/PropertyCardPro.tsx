@@ -1,5 +1,8 @@
 "use client"
 
+import {useState} from "react"
+import {isPropertyVisualCard} from "@/app/real-estate/registry/explorer-presentation"
+import {projectPhoto} from "@/lib/property-media/published-media"
 import Link from "next/link"
 import { MapPin, BedDouble, Bath, Maximize, BadgeCheck, FileCheck2 } from "lucide-react"
 import SavePropertyButton from "./SavePropertyButton"
@@ -7,12 +10,14 @@ import PropertyImage from "./PropertyImage"
 import styles from "./Listing.module.css"
 
 export default function PropertyCardPro({ p }: any) {
+ const [failed,setFailed]=useState(false)
+ if(failed || !isPropertyVisualCard(p))return null
  const detailUrl = `/real-estate/${encodeURIComponent(p.slug)}`
  const registryOnly = Boolean(p.registry_only)
  const activeInventory = Number(p.active_inventory_count) || 0
  const officialSource = typeof p.official_source_url === "string" ? p.official_source_url : ""
  return <article className={`gth-glass ${styles.card}`}>
-  <div className={`${styles.media} h-52 md:h-60`}><Link href={detailUrl} aria-label={`View ${p.title || "property listing"}`} className="block h-full"><PropertyImage slug={p.slug} src={p.image} alt={p.title || "Property"} reraId={p.rera_id} locality={p.location || p.city} district={p.district} propertyType={p.property_type} className="h-full w-full" /></Link><SavePropertyButton slug={p.slug} className={`${styles.save} gth-btn inline-flex items-center justify-center`} />{registryOnly && <span className="gth-badge absolute bottom-3 left-3">Registry record</span>}{!registryOnly && activeInventory > 0 && <span className="gth-badge absolute bottom-3 left-3">Reviewed inventory</span>}</div>
+  <div className={`${styles.media} h-52 md:h-60`}><Link href={detailUrl} aria-label={`View ${p.title || "property listing"}`} className="block h-full"><PropertyImage published={projectPhoto(p.publishedMedia||[])} onMediaError={()=>setFailed(true)} slug={p.slug} src={p.image} alt={p.title || "Property"} reraId={p.rera_id} locality={p.location || p.city} district={p.district} propertyType={p.property_type} className="h-full w-full" /></Link><SavePropertyButton slug={p.slug} className={`${styles.save} gth-btn inline-flex items-center justify-center`} />{registryOnly && <span className="gth-badge absolute bottom-3 left-3">Registry record</span>}{!registryOnly && activeInventory > 0 && <span className="gth-badge absolute bottom-3 left-3">Reviewed inventory</span>}</div>
   <div className={styles.cardBody}>
    <p className="text-xs opacity-70 mb-3">{registryOnly ? "MahaRERA registry record" : ([p.property_type, p.listing_type === "buy" ? "For sale" : p.listing_type === "rent" ? "For rent" : ""].filter(Boolean).join(" · ") || "Property listing")}</p>
    <h2 className={styles.cardTitle}><Link href={detailUrl} className="hover:underline">{p.title || "Property listing"}</Link></h2>

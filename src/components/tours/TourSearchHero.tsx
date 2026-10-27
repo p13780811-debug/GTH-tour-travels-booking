@@ -1,12 +1,24 @@
+"use client";
+
+import type {FormEvent} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,Compass,Search} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import {directTourSearch,EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,experienceCategories,type ExperiencePath,type TourSearch} from "@/lib/tours/discovery";
+import {directTourSearch,parseTourFilters,EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,experienceCategories,type ExperiencePath,type TourSearch} from "@/lib/tours/discovery";
 
-/** Search is server-rendered before any inventory or mapped-city request. */
+/** Pre-rendered search progressively enhances the native GET form on the client. */
 export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{basePath:ExperiencePath;filters?:TourSearch}){
  const mode=EXPERIENCE_MODES[basePath],categories=experienceCategories(basePath),direct=directTourSearch(filters);
+ function handleSearch(event:FormEvent<HTMLFormElement>){
+  if(basePath!=="/tours")return;
+  const parsed=parseTourFilters(Object.fromEntries(new FormData(event.currentTarget).entries()));
+  if(!parsed.ok)return;
+  const providerUrl=directTourSearch(parsed.filters);
+  // User-initiated Klook tab + native GET navigation to filtered #discover cards.
+  // Do not preventDefault: local search still works when a popup is blocked.
+  if(providerUrl)window.open(providerUrl,"_blank","noopener,noreferrer");
+ }
  return <>
   <section data-travel-hero="true" className="border-b border-[var(--border)] bg-[var(--bg)] text-[var(--text)]">
    <div className="mx-auto max-w-7xl px-4 pb-4 pt-3 sm:px-6 sm:py-8">
@@ -25,7 +37,7 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
     </div>
     <section aria-labelledby="experience-search-title" className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4">
      <h2 id="experience-search-title" className="text-sm font-bold">{basePath==="/tours"?"Find your next tour":"Find something to do"}</h2>
-     <form key={JSON.stringify(filters)} action={basePath+"#discover"} method="GET" role="search" aria-label={mode.label+" destination search"} className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto] sm:items-end">
+     <form key={JSON.stringify(filters)} action={basePath+"#discover"} method="GET" onSubmit={handleSearch} role="search" aria-label={mode.label+" destination search"} className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto] sm:items-end">
       <label className="block min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-xs font-medium">Where are you going?
        <span className="flex items-center gap-2"><Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/><input name="city" type="search" maxLength={80} defaultValue={filters.city} placeholder="City or destination worldwide" className="min-h-9 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-offset-2"/></span>
       </label>
@@ -38,7 +50,7 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
      </form>
      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <p>Choose dates, guests and final prices on the booking provider.</p>
-      {direct&&<a href={direct} target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex min-h-11 items-center gap-2">Search {filters.city} on Klook<ArrowRight size={14} aria-hidden="true"/></a>}
+      {basePath==="/activities"&&direct&&<a href={direct} target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex min-h-11 items-center gap-2">Search {filters.city} on Klook<ArrowRight size={14} aria-hidden="true"/></a>}
      </div>
     </section>
    </div>

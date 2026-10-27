@@ -28,9 +28,9 @@ test('registry-linked submission resolves master project and stores inventory fa
  const registryQuery = {
   select() { return this },
   eq() { return this },
-  async limit() { return { data: [{ id: 21064, title: 'MANHAR RESIDENCY', country: 'India', city: 'Mumbai', location: 'Mumbai', rera_id: 'P51800002057', source_type: 'registry' }], error: null } },
+  limit(){return this}, async abortSignal() { return { data: [{ id: 21064, title: 'MANHAR RESIDENCY', country: 'India', city: 'Mumbai', location: 'Mumbai', rera_id: 'P51800002057', source_type: 'registry' }], error: null } },
  };
- const submissionsQuery = { async insert(payload) { inserted = payload; return { error: null } } };
+ const submissionsQuery = { insert(payload) { inserted = payload; return this }, async abortSignal(){return {error:null}} };
  const route = load('src/app/api/real-estate/submissions/route.ts', {
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: table => table === 'properties' ? registryQuery : submissionsQuery } }) },
   '@/lib/security/request': request,
@@ -42,7 +42,7 @@ test('registry-linked submission resolves master project and stores inventory fa
   body: JSON.stringify({
    title: 'User typed title', country: 'India', city: 'Mumbai', location: 'Andheri',
    description: 'Current two bedroom inventory submitted for administrator review.',
-   property_type: 'Apartment', listing_type: 'buy', submitter_role: 'agent',
+   property_type: 'Apartment', listing_type: 'buy', submitter_role: 'agent', agent_registration:'A51800000001',
    registry_reference: 'p51800002057', price_amount: '17500000',
    bedrooms: '2', bathrooms: '2', area_sqft: '710',
   }),
@@ -59,8 +59,8 @@ test('registry-linked submission resolves master project and stores inventory fa
 
 test('unknown registry reference is rejected without creating a duplicate submission', async () => {
  let inserted = false;
- const registryQuery = { select() { return this }, eq() { return this }, async limit() { return { data: [], error: null } } };
- const submissionsQuery = { async insert() { inserted = true; return { error: null } } };
+ const registryQuery = { select() { return this }, eq() { return this }, limit(){return this}, async abortSignal() { return { data: [], error: null } } };
+ const submissionsQuery = { insert() { inserted = true; return this }, async abortSignal(){return {error:null}} };
  const route = load('src/app/api/real-estate/submissions/route.ts', {
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: table => table === 'properties' ? registryQuery : submissionsQuery } }) },
   '@/lib/security/request': request,
@@ -72,7 +72,7 @@ test('unknown registry reference is rejected without creating a duplicate submis
   body: JSON.stringify({
    title: 'Unknown Project', country: 'India', city: 'Mumbai', location: 'Mumbai',
    description: 'Enough description for administrator review without publication.',
-   property_type: 'Apartment', listing_type: 'buy', submitter_role: 'agent',
+   property_type: 'Apartment', listing_type: 'buy', submitter_role: 'agent', agent_registration:'A51800000001',
    registry_reference: 'P51899999999',
   }),
  }));
@@ -83,7 +83,7 @@ test('unknown registry reference is rejected without creating a duplicate submis
 
 test('global submission preserves currency and normalizes square metres to square feet', async () => {
  let inserted;
- const submissionsQuery = { async insert(payload) { inserted = payload; return { error: null } } };
+ const submissionsQuery = { insert(payload) { inserted = payload; return this }, async abortSignal(){return {error:null}} };
  const route = load('src/app/api/real-estate/submissions/route.ts', {
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: () => submissionsQuery } }) },
   '@/lib/security/request': request,

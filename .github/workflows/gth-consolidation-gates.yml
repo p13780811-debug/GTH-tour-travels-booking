@@ -18,7 +18,8 @@ jobs:
       - name: Preserve ecosystem shell and Real Estate workflows around the approved explorer redesign
         run: |
           set -euo pipefail
-          # Approved expansion: project imagery, buyer CRM capture, EMI and project SEO.
+          # Owner-authorized hybrid portal: preserve all central CSS and unrelated workflows.
+          # Only these exact onboarding/search/publication files extend the existing scope.
           # Shared navigation/footer, global CSS, publishing and account flows stay protected.
           git diff --exit-code HEAD^1 HEAD -- \
             src/components/Navbar.tsx \
@@ -42,11 +43,25 @@ jobs:
             ':!src/components/real-estate/PropertyImage.tsx' \
             ':!src/components/real-estate/SavedSearches.tsx' \
             ':!src/components/real-estate/SavePropertyButton.tsx' \
+            ':!src/components/real-estate/ProjectInventory.tsx' \
             ':!src/components/real-estate/PropertyCardPro.tsx' \
             ':!src/components/real-estate/EnquiryForm.tsx' \
             ':!src/components/real-estate/OwnerProjectAds.tsx' \
             ':!src/components/real-estate/LeadsDashboard.tsx' \
             ':(exclude,literal)src/app/real-estate/[slug]/page.tsx' \
+            ':!src/app/real-estate/post-property/page.tsx' \
+            ':!src/app/real-estate/tools/page.tsx' \
+            ':!src/app/real-estate/saved/page.tsx' \
+            ':!src/app/real-estate/admin/page.tsx' \
+            ':!src/lib/real-estate/propertyService.ts' \
+            ':!src/lib/real-estate/hybrid-search.ts' \
+            ':!src/lib/real-estate/area.ts' \
+            ':!src/lib/real-estate/listing-schema.ts' \
+            ':!src/components/real-estate/AreaConverter.tsx' \
+            ':!src/app/api/real-estate/search/route.ts' \
+            ':!src/app/api/real-estate/enquiries/route.ts' \
+            ':!src/app/api/real-estate/submissions/route.ts' \
+            ':!src/app/api/admin/submissions/route.ts' \
             ':!src/lib/real-estate/buyer-leads.ts' \
             ':!src/lib/real-estate/emi.ts' \
             ':!src/lib/real-estate/lead-server.ts' \

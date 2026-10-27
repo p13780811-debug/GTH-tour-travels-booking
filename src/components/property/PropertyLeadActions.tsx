@@ -15,9 +15,9 @@ export default function PropertyLeadActions({ property, compact = false }: { pro
         <MessageSquare size={14} />{compact ? "Price & project enquiry" : "Request price breakup"}
         {compact && <ArrowUpRight size={13} />}
       </button>
+      <><button type="button" className={`gth-btn ${button}`} onClick={() => setIntent("site_visit")}><CalendarDays size={14} />Schedule site visit</button></>
       {!compact && <>
         <button type="button" className={`gth-btn ${button}`} onClick={() => setIntent("brochure_download")}><FileText size={14} />Brochure & floor plans</button>
-        <button type="button" className={`gth-btn ${button}`} onClick={() => setIntent("site_visit")}><CalendarDays size={14} />Request a site visit</button>
       </>}
     </div>
     {intent && <LeadModal property={property} initialIntent={intent} onClose={() => setIntent(null)} />}

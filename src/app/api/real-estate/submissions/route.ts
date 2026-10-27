@@ -44,10 +44,12 @@ function optionalAreaSqft(body: Record<string, unknown>) {
 function cleanMediaUrls(value: unknown, userId: string) {
   const projectHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "https://invalid.local").hostname;
   const prefix = `/storage/v1/object/public/property-images/properties/${userId}/`;
+  if (value !== undefined && (!Array.isArray(value) || value.length > 8 || value.some(item => typeof item !== "string" || item.length > 800)))
+    throw new RequestError("Invalid property photos", 400);
   return cleanStringArray(value, { maxItems: 8, maxLength: 800 }).map(raw => {
     try {
       const url = new URL(raw);
-      if (url.protocol !== "https:" || url.hostname !== projectHost || !url.pathname.startsWith(prefix) || !url.pathname.endsWith(".webp")) {
+      if (url.protocol !== "https:" || url.hostname !== projectHost || url.username || url.password || url.port || url.search || url.hash || !url.pathname.startsWith(prefix) || !/^[0-9a-f-]{36}\.webp$/i.test(url.pathname.slice(prefix.length))) {
         throw new Error("invalid");
       }
       return url.toString();
@@ -77,9 +79,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const { client, user } = await authenticatedStorage(req);
+    await enforceRateLimit(req, "submissions", user.id);
     const body = await readJson(req, 14000);
 
     const base: Record<string, string> = {};
+    // Plain-text submission fields only; reject markup and control characters.
+    for (const key of ["title","country","city","location","description"])
+      if (typeof body[key] === "string" && /[<>\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(body[key] as string))
+        throw new RequestError("Use plain text for property details", 400);
     for (const [key, min, max] of [
       ["title", 3, 180],
       ["country", 2, 80],
@@ -124,7 +131,7 @@ export async function POST(req: Request) {
         .select("id,title,country,city,location,rera_id,source_type")
         .eq("rera_id", registryReference)
         .eq("source_type", "registry")
-        .limit(1);
+        .limit(1).abortSignal(AbortSignal.timeout(5000));
 
       if (registryError) throw new RequestError("Registry lookup unavailable", 503);
       const project = projects?.[0];
@@ -137,6 +144,17 @@ export async function POST(req: Request) {
       base.location = String(project.location || base.location);
     }
 
+    const possession = body.possession_status || null;
+    if (possession !== null && !["ready_to_move","under_construction","off_plan"].includes(String(possession))) throw new RequestError("Invalid possession status",400);
+    const basis = body.area_basis || null;
+    if (basis !== null && !["carpet","built_up","plot"].includes(String(basis))) throw new RequestError("Invalid area basis",400);
+    const agentRegistration = body.agent_registration ? cleanString(body.agent_registration,{min:3,max:80,pattern:/^[A-Za-z0-9 /-]+$/}) : null;
+    if (body.agent_registration && !agentRegistration) throw new RequestError("Invalid partner registration",400);
+    if (submitterRole === "agent" && base.country.toLowerCase() === "india" && !/^A[0-9]{11}$/.test(agentRegistration || "")) throw new RequestError("Provide the channel partner's MahaRERA agent registration (A followed by 11 digits)",400);
+    const photos = cleanMediaUrls(body.media_urls, user.id);
+    if (photos.length && body.media_rights_confirmed !== true) throw new RequestError("Confirm permission to publish these property photographs",400);
+    if (body.is_new_launch !== undefined && typeof body.is_new_launch !== "boolean") throw new RequestError("Invalid launch selection",400);
+    if (body.is_new_launch === true && body.listing_type !== "buy") throw new RequestError("New launch inventory must be offered for sale",400);
     const payload = {
       ...base,
       property_type: String(body.property_type),
@@ -149,11 +167,12 @@ export async function POST(req: Request) {
       bedrooms: optionalInteger(body.bedrooms, { min: 0, max: 20 }),
       bathrooms: optionalInteger(body.bathrooms, { min: 0, max: 20 }),
       area_sqft: optionalAreaSqft(body as Record<string, unknown>),
-      media_urls: cleanMediaUrls(body.media_urls, user.id),
+      media_urls: photos,
+      possession_status: possession, area_basis: basis, agent_registration: agentRegistration,
+      is_new_launch: body.is_new_launch === true, media_rights_confirmed: body.media_rights_confirmed === true,
     };
 
-    await enforceRateLimit(req, "submissions", user.id);
-    const { error } = await client.from("listing_submissions").insert(payload);
+    const { error } = await client.from("listing_submissions").insert(payload).abortSignal(AbortSignal.timeout(8000));
     if (error) throw new RequestError("Submission service unavailable. No listing was published.", 503);
 
     return Response.json(

@@ -3,16 +3,11 @@ import { Check } from "lucide-react"
 import { useEffect, useState } from "react"
 import styles from "./Listing.module.css"
 
-const initial = { country:"", city:"", type:"", listing:"", bedrooms:"", currency:"", minPrice:"", maxPrice:"", sort:"latest" }
-/** Source-backed registry categories first; unit-level categories remain available for owner listings. */
-const PROJECT_CATEGORIES = [
- ["Residential","Residential"],["Residential / Group Housing","Residential / Group Housing"],
- ["Commercial","Commercial"],["Plotted","Plotted development"],
- ["Mixed","Mixed-use development"],["Others","Other registered projects"]
-] as const
+const initial = { country:"", city:"", type:"", listing:"buy", bedrooms:"", currency:"", minPrice:"", maxPrice:"", sort:"latest", possession:"" }
+/** Marketplace filters use the same unit types accepted by seller submissions. */
 const LISTING_CATEGORIES = [
  ["Apartment","Apartment"],["Villa","Villa"],["Penthouse","Penthouse"],
- ["Plot","Individual plot"]
+ ["Commercial","Commercial"],["Plot","Individual plot"]
 ] as const
 
 export default function DiscoveryFilters({ onApply, expanded = false }: { onApply: () => void; expanded?: boolean }) {
@@ -21,7 +16,7 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
  useEffect(() => {
   const sync = () => {
    const params = new URLSearchParams(window.location.search)
-   setFilters(Object.fromEntries(Object.keys(initial).map(key => [key, params.get(key) || (key === "sort" ? "latest" : "")])))
+   setFilters(Object.fromEntries(Object.keys(initial).map(key => [key, params.get(key) || (key === "sort" ? "latest" : key === "listing" ? "buy" : "")])))
   }
   sync()
   window.addEventListener("gth-discovery-filters", sync)
@@ -61,14 +56,14 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
     <div className="grid grid-cols-1 gap-2" role="group" aria-label="Property categories">
      <button type="button" aria-pressed={!filters.type} onClick={() => chooseCategory("")}
        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-left text-xs leading-5 text-[var(--text)] shadow-none aria-pressed:border-[var(--gold)] aria-pressed:bg-[var(--bg-soft)] aria-pressed:font-semibold">All property categories{!filters.type && <Check size={14} className="shrink-0" aria-hidden="true" />}</button>
-     {[...PROJECT_CATEGORIES,...LISTING_CATEGORIES].map(([value,label]) =>
+     {LISTING_CATEGORIES.map(([value,label]) =>
       <button key={value} type="button" aria-pressed={filters.type===value} onClick={() => chooseCategory(value)}
        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-left text-xs leading-5 text-[var(--text)] shadow-none aria-pressed:border-[var(--gold)] aria-pressed:bg-[var(--bg-soft)] aria-pressed:font-semibold">{label}{filters.type===value && <Check size={14} className="shrink-0" aria-hidden="true" />}</button>
      )}
     </div>
-    <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">Only matching recorded project types and published listing types appear in results.</p>
+    <p className="mt-3 text-xs leading-5 text-[var(--text-muted)]">Only matching published listing types appear here. Research registered project categories through Registry lookup.</p>
    </fieldset>
-   {[{ key:"listing",label:"Listing purpose",options:[["buy","For sale"],["rent","For rent"]] },{ key:"bedrooms",label:"Bedrooms",options:["1","2","3","4","5"].map(v=>[v,v]) },{ key:"currency",label:"Currency",options:[["INR","INR · Indian rupee"],["AED","AED · UAE dirham"],["USD","USD · US dollar"],["GBP","GBP · Pound sterling"],["EUR","EUR · Euro"],["SGD","SGD · Singapore dollar"]] },{ key:"sort",label:"Sort",options:[["latest","Latest"],["ai","Smart rank"],["price_low","Price: low to high"],["price_high","Price: high to low"]] }].map(field => <label key={field.key}>{field.label}<select value={filters[field.key]} required={field.key === "currency" && Boolean(filters.minPrice || filters.maxPrice)} onChange={e => setFilters({...filters,[field.key]:e.target.value})}><option value="">Any</option>{field.options.map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>)}
+   {[{ key:"listing",label:"Listing purpose",options:[["buy","For sale"],["rent","For rent"],["new_launch","New launches"],["commercial","Commercial"],["plots","Plots"]] },{ key:"bedrooms",label:"Bedrooms",options:["1","2","3","4+"].map(v=>[v,`${v} BHK`]) },{ key:"possession",label:"Possession status",options:[["ready_to_move","Ready to move"],["under_construction","Under construction"],["off_plan","Off plan"]] },{ key:"currency",label:"Currency",options:[["INR","INR · Indian rupee"],["AED","AED · UAE dirham"],["USD","USD · US dollar"],["GBP","GBP · Pound sterling"],["EUR","EUR · Euro"],["SGD","SGD · Singapore dollar"]] },{ key:"sort",label:"Sort",options:[["latest","Latest"],["ai","Smart rank"],["price_low","Price: low to high"],["price_high","Price: high to low"]] }].map(field => <label key={field.key}>{field.label}<select value={filters[field.key]} required={field.key === "currency" && Boolean(filters.minPrice || filters.maxPrice)} onChange={e => setFilters({...filters,[field.key]:e.target.value})}>{field.key !== "listing" && <option value="">Any</option>}{field.options.map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>)}
    <label>Minimum price<input name="minPrice" type="number" min="1" step="1" inputMode="numeric" value={filters.minPrice} onChange={e => setFilters({...filters,minPrice:e.target.value})} placeholder="5000000" /></label>
    <label>Maximum price<input name="maxPrice" type="number" min="1" step="1" inputMode="numeric" value={filters.maxPrice} onChange={e => setFilters({...filters,maxPrice:e.target.value})} placeholder="20000000" /></label>
    <div className={styles.actions}>

@@ -499,7 +499,7 @@ export const PropertyService = {
                 .from("properties")
                 .select(PUBLIC_PROPERTY_FIELDS)
                 .eq("slug", slug)
-                .limit(1)
+                .limit(1).abortSignal(AbortSignal.timeout(5000))
 
         if (error) {
 

@@ -11,9 +11,18 @@ function load(path, deps = {}) {
 const validators = load('src/lib/security/validators.ts');
 const request = load('src/lib/security/request.ts', { './validators': validators });
 function route(client, limit = async () => {}) {
- return load('src/app/api/real-estate/enquiries/route.ts', { 'next/server': { NextResponse: Response }, '@/lib/supabase': { supabase: client }, '@/lib/security/request': request, '@/lib/security/validators': validators, '@/lib/security/rate-limit': { enforceRateLimit: limit } });
+ return load('src/app/api/real-estate/enquiries/route.ts', { 'next/server': { NextResponse: Response }, '@/lib/supabase': { supabase: withDeadlines(client) }, '@/lib/security/request': request, '@/lib/security/validators': validators, '@/lib/security/rate-limit': { enforceRateLimit: limit } });
 }
 const req = body => new Request('http://localhost/api/real-estate/enquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+function withDeadlines(client) {
+ function wrap(value){
+  if(value && typeof value.then==='function')return {abortSignal:()=>value,then:value.then.bind(value)};
+  if(!value||typeof value!=='object')return value;
+  return new Proxy(value,{get(target,key){const v=target[key];return typeof v==='function'?(...args)=>wrap(v.apply(target,args)):v}});
+ }
+ return wrap(client);
+}
 test('invalid phone rejected before rate store or database access', async () => {
  const api = route({ from() { throw new Error('must not run'); } }, async () => { throw new Error('must not run'); });
  assert.equal((await api.POST(req({ property_id: 1, phone: '<script>bad</script>' }))).status, 400);

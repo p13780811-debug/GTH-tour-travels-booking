@@ -49,6 +49,8 @@ export default function PostPropertyPage() {
                     }
                     setUploading(false)
                 }
+                payload.is_new_launch = payload.is_new_launch === "yes"
+                payload.media_rights_confirmed = payload.media_rights_confirmed === "yes"
                 payload.media_urls = mediaUrls
                 await readApiJson(await fetch("/api/real-estate/submissions", { method:"POST", headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`}, body:JSON.stringify(payload) }))
                 setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription(""); setFiles([])
@@ -65,9 +67,15 @@ export default function PostPropertyPage() {
                 <div><label htmlFor="listing-description" className="block font-medium mb-2">Property description</label><textarea id="listing-description" name="description" required minLength={20} maxLength={5000} rows={6} value={description} onChange={event => setDescription(event.target.value)} aria-describedby="listing-description-help" className="gth-glass rounded-xl p-3 w-full" /><p id="listing-description-help" className="opacity-70 text-sm mt-2">Describe recorded facts without unsupported guarantees. {description.length}/5000 characters; minimum 20.</p></div>
                 <div className="grid sm:grid-cols-2 gap-5"><label>Property type<select name="property_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2">{["Apartment","Villa","Penthouse","Commercial","Plot"].map(type => <option key={type}>{type}</option>)}</select></label><label>Listing purpose<select name="listing_type" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="buy">For sale</option><option value="rent">For rent</option></select></label></div>
                 <div className="grid sm:grid-cols-3 gap-5">
-                    <label>Your relationship<select name="submitter_role" required defaultValue="agent" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="agent">Agent / channel partner</option><option value="developer">Developer / promoter</option><option value="owner">Property owner</option><option value="other">Other authorized submitter</option></select></label>
+                    <label>Your relationship<select name="submitter_role" required defaultValue="owner" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2"><option value="agent">RERA channel partner / agent</option><option value="developer">Developer / promoter</option><option value="owner">Property owner</option><option value="other">Other authorized submitter</option></select></label>
                     <label>Currency<select name="currency" defaultValue="INR" className="gth-glass bg-[var(--card)] rounded-xl p-3 w-full mt-2">{["INR","AED","USD","GBP","EUR","SGD"].map(value => <option key={value}>{value}</option>)}</select></label>
                     <label>Current asking price<input name="price_amount" type="number" min="1" step="0.01" inputMode="decimal" placeholder="17500000" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-5">
+                    <label>Possession status<select name="possession_status" className="gth-glass rounded-xl p-3 w-full mt-2"><option value="">Not documented</option><option value="ready_to_move">Ready to move</option><option value="under_construction">Under construction</option><option value="off_plan">Off plan</option></select></label>
+                    <label>Area basis<select name="area_basis" className="gth-glass rounded-xl p-3 w-full mt-2"><option value="">Not documented</option><option value="carpet">Carpet area</option><option value="built_up">Built-up area</option><option value="plot">Plot area</option></select></label>
+                    <label>Partner registration (agents)<input name="agent_registration" maxLength={80} placeholder="MahaRERA: A followed by 11 digits" className="gth-glass rounded-xl p-3 w-full mt-2" /><span className="text-xs opacity-70">Required for India channel partners. Registration evidence is reviewed; entry alone does not verify you.</span></label>
+                    <label className="flex items-center gap-3"><input type="checkbox" name="is_new_launch" value="yes" />This is a documented new launch</label>
                 </div>
                 <div className="grid sm:grid-cols-4 gap-5">
                     <label>Bedrooms<input name="bedrooms" type="number" min="0" max="20" step="1" inputMode="numeric" className="gth-glass rounded-xl p-3 w-full mt-2" /></label>
@@ -79,11 +87,13 @@ export default function PostPropertyPage() {
                     <label htmlFor="listing-media" className="block font-medium mb-2">Property photos <span className="opacity-60">(optional, max 8)</span></label>
                     <input id="listing-media" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={event => {
                         const selected = Array.from(event.target.files || []).slice(0, 8)
+                        if (selected.some(file => !["image/jpeg","image/png","image/webp"].includes(file.type) || file.size <= 0 || file.size > 8 * 1024 * 1024)) { setFiles([]); event.target.value = ""; setError("Choose JPEG, PNG or WebP photos up to 8 MB each."); return }
                         setFiles(selected)
                         if ((event.target.files?.length || 0) > 8) setError("Only the first 8 photos will be used.")
                     }} className="gth-glass rounded-xl p-3 w-full" />
                     <p className="text-sm opacity-70 mt-2">{files.length ? `${files.length} photo${files.length === 1 ? "" : "s"} selected. Photos remain subject to administrator review.` : "Uploaded photos are stored under your account path and are not treated as approved listing media until review."}</p>
                 </div>
+                <label className="flex items-start gap-3 text-sm"><input className="mt-1" type="checkbox" name="media_rights_confirmed" value="yes" required={files.length > 0} /><span>I own these photographs or have written permission to publish them for this exact property. I can provide the rights evidence for independent review.</span></label>
                 <p className="text-sm opacity-70">Submitting these fields does not make them verified. GTH PRO publishes inventory only after administrator review.</p>
                 <button className={`gth-btn-gold ${styles.action} justify-self-start`} type="submit">{uploading ? "Uploading photos…" : busy ? "Submitting…" : "Submit for review"}</button>
             </fieldset>

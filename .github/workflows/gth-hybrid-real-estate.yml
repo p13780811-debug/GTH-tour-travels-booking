@@ -1,0 +1,52 @@
+name: GTH Hybrid Real Estate Security
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**/real-estate/**'
+      - 'src/lib/property-media/**'
+      - 'src/app/api/property-media/**'
+      - 'src/app/api/admin/property-media-publication/**'
+      - 'supabase/migrations/*hybrid_real_estate_portal.sql'
+      - 'supabase/migrations/*hybrid_portal_permissions.sql'
+      - 'tests/hybrid-real-estate/**'
+      - '.github/workflows/gth-hybrid-real-estate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory-photo-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: gth-temporary-ci-only }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing claims and hybrid inventory in disposable PostgreSQL
+        env:
+          PGPASSWORD: gth-temporary-ci-only
+        run: |
+          set -euo pipefail
+          for sql in \
+            tests/re-master-98-rls/bootstrap.sql \
+            tests/hybrid-real-estate/bootstrap.sql \
+            supabase/migrations/20261011215736_property_inventory_onboarding_v1.sql \
+            supabase/migrations/20261011223843_inventory_media_and_lead_fields.sql \
+            supabase/migrations/20261020091500_re_master_98_project_media_claims.sql \
+            tests/re-master-98-rls/assertions.sql \
+            supabase/migrations/20261020123000_re_07_09_media_candidate_publication.sql \
+            tests/re-master-98-rls/media-publication.sql \
+            supabase/migrations/20261026224030_hybrid_real_estate_portal.sql \
+            tests/hybrid-real-estate/assertions.sql \
+            supabase/migrations/20261027063921_hybrid_portal_permissions.sql \
+            tests/hybrid-real-estate/permissions.sql; do
+            psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
+          done
