@@ -27,3 +27,14 @@ test("phone header keeps theme and menu while hiding redundant large links",()=>
   assert.match(header,/<ThemeToggle\/>/);
   assert.match(header,/aria-label=\{open \? "Close navigation" : "Open navigation"\}/);
 });
+
+test("registry project rows offer only a protected claim-request path",()=>{
+  const table=fs.readFileSync("src/app/real-estate/registry/RegistryTable.tsx","utf8");
+  const claim=fs.readFileSync("src/app/real-estate/claim-project/page.tsx","utf8");
+  assert.match(table,/href=\{"\/real-estate\/claim-project\?rera="/);
+  assert.match(table,/Builder or authorized agent\? Request a project claim/);
+  assert.match(claim,/searchParams\.get\("rera"\)/);
+  assert.match(claim,/value=\{reraReference\}/);
+  assert.match(claim,/authority_attested: values\.authority_attested === "on"/);
+  assert.match(claim,/rights_attested: values\.rights_attested === "on"/);
+});
