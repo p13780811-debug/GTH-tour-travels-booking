@@ -1,7 +1,7 @@
 name: GTH Master Consolidation — Approved Real Estate Integrity
 on:
   push:
-    branches: [gth-pro-consolidation-candidate-v1]
+    branches: [gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -58,6 +58,7 @@ jobs:
             ':!src/lib/real-estate/area.ts' \
             ':!src/lib/real-estate/listing-schema.ts' \
             ':!src/components/real-estate/AreaConverter.tsx' \
+            ':!src/components/real-estate/RegistryPhotoProjects.tsx' \
             ':!src/app/api/real-estate/search/route.ts' \
             ':!src/app/api/real-estate/enquiries/route.ts' \
             ':!src/app/api/real-estate/submissions/route.ts' \

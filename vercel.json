@@ -24,7 +24,8 @@
       "fix/tours-independent-source-loading-20261026": false,
       "fix/seo-discovery-read-deadlines-20261026": false,
       "feat/hybrid-real-estate-portal": false,
-      "release/gth-pr142-143-tours-oneclick-20261027": false
+      "release/gth-pr142-143-tours-oneclick-20261027": false,
+      "fix/travel-consistent-outbound": false
     }
   }
 }

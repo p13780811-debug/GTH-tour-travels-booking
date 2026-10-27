@@ -5,16 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,Compass,Search} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import {directTourSearch,parseTourFilters,EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,experienceCategories,type ExperiencePath,type TourSearch} from "@/lib/tours/discovery";
+import {partnerSearchHref} from "@/lib/travel/partner-search";
+import {TOUR_CATEGORIES,parseTourFilters,EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,experienceCategories,type ExperiencePath,type TourSearch} from "@/lib/tours/discovery";
 
 /** Pre-rendered search progressively enhances the native GET form on the client. */
 export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{basePath:ExperiencePath;filters?:TourSearch}){
- const mode=EXPERIENCE_MODES[basePath],categories=experienceCategories(basePath),direct=directTourSearch(filters);
+ const mode=EXPERIENCE_MODES[basePath],categories=experienceCategories(basePath);
  function handleSearch(event:FormEvent<HTMLFormElement>){
-  if(basePath!=="/tours")return;
   const parsed=parseTourFilters(Object.fromEntries(new FormData(event.currentTarget).entries()));
   if(!parsed.ok)return;
-  const providerUrl=directTourSearch(parsed.filters);
+  const category=TOUR_CATEGORIES.find(item=>item.value===parsed.filters.category)?.label || "";
+  const providerUrl=partnerSearchHref(basePath==="/tours"?"tours":"activities",parsed.filters.city,category);
   // User-initiated Klook tab + native GET navigation to filtered #discover cards.
   // Do not preventDefault: local search still works when a popup is blocked.
   if(providerUrl)window.open(providerUrl,"_blank","noopener,noreferrer");
@@ -49,8 +50,7 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
       <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold">{mode.action}<ArrowRight size={16} aria-hidden="true"/></button>
      </form>
      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[var(--text-soft)]">
-      <p>Choose dates, guests and final prices on the booking provider.</p>
-      {basePath==="/activities"&&direct&&<a href={direct} target="_blank" rel="noopener noreferrer nofollow" className="gth-btn inline-flex min-h-11 items-center gap-2">Search {filters.city} on Klook<ArrowRight size={14} aria-hidden="true"/></a>}
+      <p>Search opens Klook in a new tab through our affiliate link and filters the original supplier cards below. Confirm dates, guests and final prices with the provider.</p>
      </div>
     </section>
    </div>
