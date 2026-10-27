@@ -33,7 +33,7 @@ export default function GlobalMarkets() {
         return countError ? null : { ...row, result_count:count || 0 }
       }))
       if (active) { setMarkets(verified.filter((row):row is Market => Boolean(row && row.result_count > 0))); setLoading(false) }
-    }).catch(() => { if (active) setLoading(false) })
+    }, () => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
 
