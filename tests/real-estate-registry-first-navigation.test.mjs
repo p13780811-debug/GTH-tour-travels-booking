@@ -8,11 +8,11 @@ const header=fs.readFileSync("src/components/real-estate/EstateHeader.tsx","utf8
 const presentation=fs.readFileSync("src/app/real-estate/registry/explorer-presentation.ts","utf8");
 
 test("research-market city links open documented registry, never empty sale/rent results",()=>{
-  assert.match(markets,/href=\{\`\/real-estate\/registry\?q=\$\{encodeURIComponent\(market\.city\)\}\`\}/);
-  assert.doesNotMatch(markets,/href=\{\`\/real-estate\?city=/);
-  assert.match(markets,/\.in\("source_type", \["registry", "rera"\]\)/);
-  assert.match(markets,/\.ilike\("ingestion_source", "%maharera%"\)/);
-  assert.match(markets,/Not live sale\/rent inventory/);
+  assert.match(markets,/href=\\{\\`\\/real-estate\\/registry\\?q=\\$\\{encodeURIComponent\\(city\\)\\}\\`\\}/);
+  assert.doesNotMatch(markets,/href=\\{\\`\\/real-estate\\?city=/);
+  assert.doesNotMatch(markets,/supabase\\.rpc|supabase\\.from/);
+  assert.match(markets,/not counts or currently available property offers/i);
+  assert.match(markets,/Not live sale\\/rent inventory/);
 });
 test("empty marketplace advertises separate registry research and consent-based onboarding",()=>{
   assert.match(explorer,/Verified property offers are coming to this marketplace/);
