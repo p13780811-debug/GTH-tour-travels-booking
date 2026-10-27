@@ -8,6 +8,7 @@ on:
       - 'src/app/api/property-media/**'
       - 'src/app/api/admin/property-media-publication/**'
       - 'supabase/migrations/*hybrid_real_estate_portal.sql'
+      - 'supabase/migrations/*hybrid_portal_permissions.sql'
       - 'tests/hybrid-real-estate/**'
       - '.github/workflows/gth-hybrid-real-estate.yml'
   workflow_dispatch:
@@ -44,6 +45,8 @@ jobs:
             supabase/migrations/20261020123000_re_07_09_media_candidate_publication.sql \
             tests/re-master-98-rls/media-publication.sql \
             supabase/migrations/20261026224030_hybrid_real_estate_portal.sql \
-            tests/hybrid-real-estate/assertions.sql; do
+            tests/hybrid-real-estate/assertions.sql \
+            supabase/migrations/20261027063921_hybrid_portal_permissions.sql \
+            tests/hybrid-real-estate/permissions.sql; do
             psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
           done

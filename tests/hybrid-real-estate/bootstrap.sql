@@ -18,3 +18,10 @@ grant select on public.listing_submissions to authenticated;
 create table public.leads(id bigint generated always as identity primary key);
 grant usage on schema auth,public to anon;
 grant select on public.properties to anon;
+-- Mirror deployed column privileges and owner-only pending submission policy.
+create policy submission_insert on public.listing_submissions for insert to authenticated
+ with check(owner_id=(select auth.uid()) and status='review' and property_id is null and reviewed_at is null);
+grant insert(title,country,city,location,description,property_type,listing_type) on public.listing_submissions to authenticated;
+create table public.cities(id bigint primary key,name text not null);
+insert into public.cities values(1,'Public city fixture');
+grant all on public.cities to anon,authenticated,service_role;
