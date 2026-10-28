@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import MobileNav from "./MobileNav";
 import ChatBot from "./ChatBot";
 import EcosystemFooter from "./sections/EcosystemFooter";
@@ -16,6 +17,16 @@ export default function LayoutWrapper({
     const isRealEstate = pathname?.startsWith("/real-estate");
     const isFlagship = pathname === "/";
     const isAppHome = pathname === "/app" || Boolean(pathname?.startsWith("/app/"));
+    const previousAppMode = useRef<boolean | null>(null);
+    useEffect(() => {
+        const previous = previousAppMode.current;
+        previousAppMode.current = isAppHome;
+        // Root's third-party script is chosen once per document. A full
+        // navigation only when crossing the app/site boundary prevents
+        // stale affiliate popups inside app mode and restores Drive on the
+        // website. Internal app navigation remains an uninterrupted SPA.
+        if (previous !== null && previous !== isAppHome) window.location.reload();
+    }, [isAppHome]);
 
     return (
         <>
