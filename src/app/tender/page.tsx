@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowUpRight, Building2, ClipboardCheck, FileSearch,
   Globe2, Plane, Search, ShieldCheck
 } from "lucide-react";
-import { parseTenderFilters, searchPublicTenders, getTenderDiscoveryStats, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import { parseTenderFilters, searchPublicTenders, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
 import {TenderMarketOverview, TenderMarketCard} from "@/components/tender/TenderMarketplacePanels";
 import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
@@ -76,9 +76,8 @@ export default async function TenderPage({searchParams}: Props) {
   const searchFilters={...filters,
     country:filters.scope==="world"?filters.country:homeCountry,
     nearby:filters.scope==="local"&&homeCountry?nearbyCountries(homeCountry):[]};
-  const [result,marketStats]=parsed.ok
-    ? await Promise.all([searchPublicTenders(searchFilters),getTenderDiscoveryStats(searchFilters)])
-    : [null,null];
+  const result=parsed.ok ? await searchPublicTenders(searchFilters) : null;
+  const marketStats=result?.ok ? result.stats??null : null;
   const countries=Array.from(COUNTRY_CODES).sort((a,b)=>countryLabel(a,language).localeCompare(countryLabel(b,language),language));
   const visibleSources=sources.filter(source=>{
     if(filters.scope==="world")return true;

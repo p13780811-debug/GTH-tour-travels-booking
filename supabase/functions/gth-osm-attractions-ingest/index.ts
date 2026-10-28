@@ -48,6 +48,8 @@ async function authorised(req:Request){
 }
 Deno.serve(async req=>{
  if(req.method!=="POST")return Response.json({error:"Method not allowed"},{status:405,headers:H});
+ if(Deno.env.get("GTH_OSM_ATTRACTIONS_WRITES_ENABLED")!=="true")
+  return Response.json({error:"Attraction ingestion paused for database stabilization",writes_disabled:true},{status:503,headers:H});
  let workflowRun="";
  try{workflowRun=await authorised(req);}catch{return Response.json({error:"Unauthorized workflow"},{status:401,headers:H});}
  try{
@@ -71,7 +73,11 @@ Deno.serve(async req=>{
     headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
     body:JSON.stringify({...s,source_license:"ODbL-1.0"}),signal:AbortSignal.timeout(20000)});
    if(!response.ok)return Response.json({error:"Sync audit DB write failed"},{status:502,headers:H});
-   return Response.json({recorded:true},{headers:H});
+   const refresh=await fetch(PROJECT_URL+"/rest/v1/rpc/gth_refresh_osm_attraction_summary",{method:"POST",
+    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
+    body:JSON.stringify({p_country_code:s.country_code}),signal:AbortSignal.timeout(20000)});
+   if(!refresh.ok)return Response.json({error:"Source summary refresh failed"},{status:502,headers:H});
+   return Response.json({recorded:true,summary_refreshed:true},{headers:H});
   }
   if(Object.keys(payload).some(k=>k!=="rows"))throw Error("Invalid payload");
   const rows=payload.rows;

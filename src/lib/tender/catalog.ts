@@ -15,7 +15,7 @@ export type PublicTender = {
 };
 export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[] };
 export type TenderResult =
- | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean }
+ | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean; stats?: TenderDiscoveryStats }
  | { ok: false; status: number; error: string };
 
 export function parseTenderFilters(params: URLSearchParams):
@@ -65,17 +65,86 @@ function publicClient() {
   }) : null;
 }
 
+
+export type TenderDiscoveryStats = {
+  sectors: Record<TenderSector, number>;
+  closingSoon7: number;
+  latestImportedAt: string | null;
+};
+
+type TenderMarketSnapshot = TenderDiscoveryStats & {
+  totalFiltered: number;
+  homeCount: number;
+  nearbyCount: number;
+};
+
+function asNonNegativeInteger(value: unknown) {
+  const n=Number(value);
+  return Number.isFinite(n)&&n>=0?Math.trunc(n):0;
+}
+
+async function getTenderMarketSnapshot(filters:TenderFilters):Promise<TenderMarketSnapshot|null>{
+  const db=publicClient();
+  if(!db) return null;
+  if(filters.scope==="local"&&!filters.country) {
+    return {
+      totalFiltered:0,homeCount:0,nearbyCount:0,
+      sectors:{works:0,goods:0,services:0,consultancy:0,other:0},
+      closingSoon7:0,latestImportedAt:null
+    };
+  }
+  const nearby=filters.scope==="local"
+    ? (filters.nearby??[]).filter(c=>c!==filters.country&&/^[A-Z]{2}$/.test(c)).slice(0,12)
+    : [];
+  const closingBefore=filters.closingBefore
+    ? filters.closingBefore+"T23:59:59.999Z"
+    : null;
+  const closingWithin=filters.closingWithin==="7"
+    ? new Date(Date.now()+7*86400000).toISOString()
+    : null;
+  try{
+    const {data,error}=await db.rpc("gth_tender_market_metrics",{
+      p_home_country:filters.country||null,
+      p_nearby:nearby,
+      p_sector:filters.sector||null,
+      p_query:filters.q||null,
+      p_closing_before:closingBefore,
+      p_closing_within:closingWithin
+    });
+    if(error||!data||typeof data!=="object"||Array.isArray(data)) return null;
+    const row=data as Record<string,unknown>;
+    const rawSectors=(row.sectors&&typeof row.sectors==="object"&&!Array.isArray(row.sectors))
+      ? row.sectors as Record<string,unknown>
+      : {};
+    return {
+      totalFiltered:asNonNegativeInteger(row.total_filtered),
+      homeCount:asNonNegativeInteger(row.home_count),
+      nearbyCount:asNonNegativeInteger(row.nearby_count),
+      sectors:{
+        works:asNonNegativeInteger(rawSectors.works),
+        goods:asNonNegativeInteger(rawSectors.goods),
+        services:asNonNegativeInteger(rawSectors.services),
+        consultancy:asNonNegativeInteger(rawSectors.consultancy),
+        other:asNonNegativeInteger(rawSectors.other)
+      },
+      closingSoon7:asNonNegativeInteger(row.closing_soon_7),
+      latestImportedAt:typeof row.latest_imported_at==="string"?row.latest_imported_at:null
+    };
+  }catch{return null;}
+}
+
 export async function searchPublicTenders(filters: TenderFilters): Promise<TenderResult> {
   const db = publicClient();
   if (!db) return {ok:false,status:503,error:"Tender catalog is not configured"};
-  // Local mode requires either a user-selected ISO country or a Vercel-detected country.
-  // No location does NOT mean 'show random global inventory'.
   if (filters.scope === "local" && !filters.country) {
-    return {ok:true,items:[],total:0,page:filters.page,size:PAGE_SIZE,countryRequired:true};
+    return {ok:true,items:[],total:0,page:filters.page,size:PAGE_SIZE,countryRequired:true,
+      stats:{sectors:{works:0,goods:0,services:0,consultancy:0,other:0},closingSoon7:0,latestImportedAt:null}};
   }
   try {
-    const makeQuery = (head=false) => {
-      let query = db.from("tenders").select(PUBLIC_COLUMNS,{count:"exact",head})
+    const snapshot=await getTenderMarketSnapshot(filters);
+    if(!snapshot) throw new Error("Tender metrics unavailable");
+    const makeQuery = () => {
+      let query = db.from("tenders").select(PUBLIC_COLUMNS)
         .eq("status","published").eq("source_verified",true).eq("is_public",true)
         .gt("deadline_at",new Date().toISOString());
       if(filters.sector) query=query.eq("sector",filters.sector);
@@ -87,119 +156,55 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       }
       return query;
     };
+    const stats:TenderDiscoveryStats={
+      sectors:snapshot.sectors,closingSoon7:snapshot.closingSoon7,latestImportedAt:snapshot.latestImportedAt
+    };
     const offset=(filters.page-1)*PAGE_SIZE;
     const sorting=(q:ReturnType<typeof makeQuery>)=> filters.sort==="newest"
       ? q.order("imported_at",{ascending:false}).order("id",{ascending:true})
       : q.order("deadline_at",{ascending:true}).order("id",{ascending:true});
-    // World search is an *explicit* user choice. Legacy callers without a
-    // scope continue to work; the tender page/API always provide one.
+
     if(filters.scope==="world" || !filters.scope) {
       let query=makeQuery();
       if(filters.country) query=query.eq("country_code",filters.country);
-      const {data,error,count}=await sorting(query).range(offset,offset+PAGE_SIZE-1);
-      // PostgREST returns 416/PGRST103 for offsets beyond the last record.
-      // A stale or manually entered page is an empty result, not a catalog outage.
-      if(error?.code==="PGRST103"){
-        let countQuery=makeQuery(true);
-        if(filters.country)countQuery=countQuery.eq("country_code",filters.country);
-        const totals=await countQuery;
-        if(totals.error)throw totals.error;
-        return {ok:true,items:[],total:totals.count??0,page:filters.page,size:PAGE_SIZE};
-      }
+      const {data,error}=await sorting(query).range(offset,offset+PAGE_SIZE-1);
+      if(error?.code==="PGRST103")
+        return {ok:true,items:[],total:snapshot.totalFiltered,page:filters.page,size:PAGE_SIZE,stats};
       if(error) throw error;
-      return {ok:true,items:(data??[]) as PublicTender[],total:count??0,page:filters.page,size:PAGE_SIZE};
+      return {ok:true,items:(data??[]) as PublicTender[],total:snapshot.totalFiltered,page:filters.page,size:PAGE_SIZE,stats};
     }
+
     const home=filters.country;
     const neighbours=(filters.nearby??[]).filter(c=>c!==home&&/^[A-Z]{2}$/.test(c)).slice(0,12);
-    // Count each group first: after the home group is exhausted, sending its
-    // global page offset to PostgREST would produce a 416 before nearby loads.
-    // Both count and row queries retain exactly the same public/RLS filters.
-    const [homeCountResult,nearCountResult]=await Promise.all([
-      makeQuery(true).eq("country_code",home),
-      neighbours.length?makeQuery(true).in("country_code",neighbours)
-        :Promise.resolve({count:0,error:null})
-    ]);
-    if(homeCountResult.error)throw homeCountResult.error;
-    if(nearCountResult.error) throw nearCountResult.error;
-    const homeCount=homeCountResult.count??0;
-    const nearCount=nearCountResult.count??0;
+    const homeCount=snapshot.homeCount;
+    const nearCount=snapshot.nearbyCount;
     let homeItems:PublicTender[]=[];
     if(offset<homeCount){
       const h=await sorting(makeQuery().eq("country_code",home))
         .range(offset,Math.min(homeCount-1,offset+PAGE_SIZE-1));
-      if(h.error)throw h.error;
+      if(h.error&&h.error.code!=="PGRST103")throw h.error;
       homeItems=(h.data??[]) as PublicTender[];
     }
     const remaining=PAGE_SIZE-homeItems.length;
     const nearOffset=Math.max(0,offset-homeCount);
     let extra:PublicTender[]=[];
-    if(remaining>0 && offset+homeItems.length>=homeCount && nearOffset<nearCount){
+    if(remaining>0 && offset+homeItems.length>=homeCount && nearOffset<nearCount && neighbours.length){
       const nearbyRows=await sorting(makeQuery().in("country_code",neighbours))
         .range(nearOffset,Math.min(nearCount-1,nearOffset+remaining-1));
-      if(nearbyRows.error) throw nearbyRows.error;
+      if(nearbyRows.error&&nearbyRows.error.code!=="PGRST103") throw nearbyRows.error;
       extra=(nearbyRows.data??[]) as PublicTender[];
     }
-    return {ok:true,items:[...homeItems,...extra],total:homeCount+nearCount,
-      primaryCount:homeCount,nearbyCount:nearCount,page:filters.page,size:PAGE_SIZE};
+    return {ok:true,items:[...homeItems,...extra],total:snapshot.totalFiltered,
+      primaryCount:homeCount,nearbyCount:nearCount,page:filters.page,size:PAGE_SIZE,stats};
   } catch {
     return {ok:false,status:503,error:"Tender catalog unavailable"};
   }
 }
 
-export type TenderDiscoveryStats = {
-  sectors: Record<TenderSector, number>;
-  closingSoon7: number;
-  latestImportedAt: string | null;
-};
-
-/**
- * Public/RLS-scoped, live query-backed marketplace facets. These are true
- * approved ACTIVE notice counts in the selected geographic area; never demo
- * numbers, estimated totals or claimed real-time stream event counts.
- * A separate latest-imported timestamp is deliberately NOT called "last sync":
- * duplicate-only ingestion jobs do not update imported_at.
- */
 export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<TenderDiscoveryStats | null> {
-  const db=publicClient();
-  if(!db) return null;
-  if(filters.scope==="local" && !filters.country) return null;
-  const countries=filters.scope==="local"
-    ? Array.from(new Set([filters.country,...(filters.nearby??[])]))
-        .filter(c=>/^[A-Z]{2}$/.test(c)).slice(0,13)
-    : filters.country?[filters.country]:[];
-  const base = () => {
-    let query=db.from("tenders")
-      .select("id",{count:"exact",head:true})
-      .eq("status","published").eq("source_verified",true).eq("is_public",true)
-      .gt("deadline_at",new Date().toISOString());
-    if(countries.length) query=query.in("country_code",countries);
-    return query;
-  };
-  try {
-    const cutoff=new Date(Date.now()+7*86400000).toISOString();
-    const sectorJobs=TENDER_SECTORS.map(sector=>base().eq("sector",sector));
-    const newest=db.from("tenders").select("imported_at")
-      .eq("status","published").eq("source_verified",true).eq("is_public",true)
-      .gt("deadline_at",new Date().toISOString())
-      .order("imported_at",{ascending:false}).limit(1);
-    if(countries.length) newest.in("country_code",countries);
-    const results=await Promise.all([
-      ...sectorJobs,
-      base().lte("deadline_at",cutoff),
-      newest
-    ]);
-    if(results.some(r=>r.error)) return null;
-    const sectors=Object.fromEntries(
-      TENDER_SECTORS.map((sector,index)=>[sector,results[index].count??0])
-    ) as Record<TenderSector,number>;
-    const latest=results[results.length-1];
-    const lastRow=Array.isArray(latest.data)?latest.data[0]:null;
-    return {
-      sectors,
-      closingSoon7:results[TENDER_SECTORS.length].count??0,
-      latestImportedAt:lastRow && "imported_at" in lastRow && typeof lastRow.imported_at==="string"?lastRow.imported_at:null
-    };
-  } catch {return null;}
+  const snapshot=await getTenderMarketSnapshot(filters);
+  if(!snapshot)return null;
+  return {sectors:snapshot.sectors,closingSoon7:snapshot.closingSoon7,latestImportedAt:snapshot.latestImportedAt};
 }
 
 export async function getPublicTender(id: string):
