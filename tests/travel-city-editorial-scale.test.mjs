@@ -33,7 +33,12 @@ test("Tours, Attractions, Guides, Blogs and Destinations surface actual mapped c
  ];
  for(const page of pages){
   const content=read(page);
-  assert.match(content,/listMappedCities/,"Mapped source missing: "+page);
+  if(["src/app/attractions/page.tsx","src/app/guides/page.tsx","src/app/destinations/page.tsx"].includes(page)){
+   assert.match(content,/cachedHomepageCities\(\)/,"Mapped source cache missing: "+page);
+   assert.match(read("src/lib/travel/cachedDiscovery.ts"),/listMappedCities\(\{pageSize:48\}\)/);
+  }else{
+   assert.match(content,/listMappedCities/,"Mapped source missing: "+page);
+  }
   assert.match(content,/MappedCityDiscovery/,"Rail missing: "+page);
  }
  const explorer=read("src/app/attractions/cities/page.tsx");
