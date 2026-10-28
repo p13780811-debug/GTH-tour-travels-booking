@@ -5,8 +5,8 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import * as jsx from 'react/jsx-runtime';
 function load(path,imports={},globals={}) {
- const module={exports:{}};
- vm.runInNewContext(ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module,exports:module.exports,require:n=>{if(n in imports)return imports[n];throw Error(n)},URL,URLSearchParams,Response,AbortSignal,...globals});return module.exports;
+ const testModule={exports:{}};
+ vm.runInNewContext(ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module:testModule,exports:testModule.exports,require:n=>{if(n in imports)return imports[n];throw Error(n)},URL,URLSearchParams,Response,AbortSignal,...globals});return testModule.exports;
 }
 function find(tree,predicate){if(!tree||typeof tree!=='object')return [];if(Array.isArray(tree))return tree.flatMap(n=>find(n,predicate));return [...(predicate(tree)?[tree]:[]),...find(tree.props?.children,predicate)];}
 const search=load('src/lib/real-estate/registry-search.ts');
