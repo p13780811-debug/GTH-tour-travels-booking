@@ -49,7 +49,7 @@ test('hero purpose tabs and info links stay neutral; Explore properties is the b
  const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'next/link':link});
  const html=renderToStaticMarkup(React.createElement(Hero,{query:'',onQuery(){},onSearch(){},loading:false,intent:'',onIntent(){},onInfo(){}}));
  const tags=buttons(html);
- assert.equal(tags.length,18);
+ assert.equal(tags.length,19); // Adds one quick budget/filter control.
  for(const label of ['Ranking explained','Source &amp; review status','Buy','Rent','New Launches','Commercial','Plots','Registry Lookup','About this data'])neutralControl(findButton(tags,label));
  globalCta(findButton(tags,'Explore properties'));
  assert.match(html,/aria-label="Property search purpose"/);

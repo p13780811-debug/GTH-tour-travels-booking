@@ -61,6 +61,8 @@ jobs:
             ':!src/lib/real-estate/listing-schema.ts' \
             ':!src/components/real-estate/AreaConverter.tsx' \
             ':!src/components/real-estate/RegistryPhotoProjects.tsx' \
+            ':!src/components/real-estate/RegistryDiscovery.tsx' \
+            ':!src/app/api/real-estate/registry-preview/route.ts' \
             ':!src/components/real-estate/BuyerPlanningStudio.tsx' \
             ':!src/components/real-estate/ResearchWorkspace.tsx' \
             ':!src/components/real-estate/ShareRegistryComparison.tsx' \

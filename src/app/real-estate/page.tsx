@@ -20,6 +20,8 @@ import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
 import AreaConverter from "@/components/real-estate/AreaConverter"
 import { isPropertyVisualCard } from "@/app/real-estate/registry/explorer-presentation"
 import TrustStandard from "@/components/real-estate/TrustStandard"
+import { parseRegistryFilters } from "@/lib/real-estate/registry-search"
+import RegistryDiscovery from "@/components/real-estate/RegistryDiscovery"
 import RegistryPhotoProjects from "@/components/real-estate/RegistryPhotoProjects"
 import BottomNav from "@/components/mobile/BottomNav"
 import styles from "@/components/real-estate/Explorer.module.css"
@@ -27,6 +29,11 @@ import styles from "@/components/real-estate/Explorer.module.css"
 const MapWrapper = dynamic(() => import("@/components/MapWrapper"), { ssr: false, loading: () => <p role="status">Loading map…</p> })
 
 export default function RealEstatePage() {
+    const [discovery, setDiscovery] = useState<"offers" | "registry">("registry")
+    const [registryDraft,setRegistryDraft] = useState("")
+    const [registryQuery,setRegistryQuery] = useState("")
+    const [registryAttempt,setRegistryAttempt] = useState(0)
+    const [registryValidation,setRegistryValidation] = useState("")
     const [user, setUser] = useState<User | null>(null)
     const [properties, setProperties] = useState<ExplorerProperty[]>([])
     const [activeFilters, setActiveFilters] = useState<[string, string][]>([])
@@ -79,7 +86,8 @@ export default function RealEstatePage() {
         load()
         supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
-        const onHistory = () => { setFiltersOpen(false); load() }
+        const onHistory = () => { setDiscovery("offers"); setFiltersOpen(false); load() }
+        if (["listing","query","city","country","type","bedrooms","minPrice","maxPrice","possession"].some(key => new URLSearchParams(window.location.search).has(key))) setDiscovery("offers")
         window.addEventListener("popstate", onHistory)
         window.addEventListener("gth-search-load", onHistory)
         const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_published_media" }, () => { clearPropertyCache(); load() }).subscribe()
@@ -120,6 +128,12 @@ export default function RealEstatePage() {
     }, [filtersOpen])
 
     const updateSearch = (term: string) => {
+        if (discovery === "registry") {
+            const parsed = parseRegistryFilters({q:term})
+            if (!parsed.ok) {setRegistryValidation(parsed.error);return}
+            setRegistryValidation("");setRegistryQuery(parsed.filters.q);setRegistryAttempt(value => value+1)
+            return
+        }
         const url = new URL(window.location.href)
         if (term.trim()) url.searchParams.set("query", term.trim().slice(0, 120))
         else url.searchParams.delete("query")
@@ -129,7 +143,8 @@ export default function RealEstatePage() {
         document.getElementById("listing-results")?.scrollIntoView({ block:"start" })
     }
     const applyIntent = (value: string) => {
-        if (value === "registry") { window.location.assign("/real-estate/registry"); return }
+        if (value === "registry") {setDiscovery("registry");setFiltersOpen(false);return}
+        setDiscovery("offers")
         const url = new URL(window.location.href)
         url.searchParams.delete("page")
         url.searchParams.delete("type")
@@ -141,8 +156,19 @@ export default function RealEstatePage() {
         load(1)
     }
     const openFilters = () => {
+        setDiscovery("offers")
         if (window.innerWidth <= 960) setFiltersOpen(previous => !previous)
-        else sidebar.current?.querySelector<HTMLInputElement>("input")?.focus()
+        else requestAnimationFrame(() => sidebar.current?.querySelector<HTMLInputElement>("input")?.focus())
+    }
+    const refine = (values:Record<string,string>) => {
+        setDiscovery("offers")
+        const url = new URL(window.location.href)
+        for (const [key,value] of Object.entries(values)) if (["bedrooms","possession"].includes(key)) {
+            if (value) url.searchParams.set(key,value); else url.searchParams.delete(key)
+        }
+        url.searchParams.delete("page")
+        window.history.replaceState(null,"",url)
+        window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
     }
     const removeFilter = (key: string) => {
         const url = new URL(window.location.href)
@@ -170,8 +196,10 @@ export default function RealEstatePage() {
         window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
     }
     return <main className={`gth-container ${styles.page}`}>
-        <div id="property-search" className="scroll-mt-24"><ExplorerHero query={query} onQuery={setQuery} onSearch={updateSearch} loading={loading} intent={activeFilters.find(([key]) => key === "listing")?.[1] || "buy"} onIntent={applyIntent} onInfo={showInfo} /></div>
-        <nav className={styles.workspaceNav} aria-label="Property workspace"><a href="#listing-results">Discover</a><Link href="/real-estate/registry">Registry lookup</Link><a href="#buyer-tools">Buyer tools</a><Link href="/real-estate/saved"><Heart size={14} />Shortlist<span>{savedCount}</span></Link><button onClick={() => setDialog({ kind:"compare", properties:compared })}><GitCompareArrows size={14} />Compare<span>{compared.length}</span></button><Link href="/real-estate/post-property">Submit a property<ArrowUpRight size={14} /></Link></nav>
+        <div id="property-search" className="scroll-mt-24"><ExplorerHero query={discovery === "registry" ? registryDraft : query} onQuery={discovery === "registry" ? setRegistryDraft : setQuery} onSearch={updateSearch} loading={discovery === "offers" && loading} intent={discovery === "registry" ? "registry" : activeFilters.find(([key]) => key === "listing")?.[1] || "buy"} onIntent={applyIntent} onInfo={showInfo} filters={Object.fromEntries(activeFilters)} onRefine={refine} onFilters={openFilters} /></div>
+        <nav className="scrollbar-hide mt-4 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => setDiscovery("offers")}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
+        {discovery === "registry" && <>{registryValidation && <p role="alert" className="mt-3 text-sm">{registryValidation}</p>}<RegistryDiscovery query={registryQuery} attempt={registryAttempt}/></>}
+        <div hidden={discovery !== "offers"}>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
         <button type="button" aria-label="Close property filters" tabIndex={filtersOpen ? 0 : -1} className={styles.scrim} data-open={filtersOpen} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} />
         <div className={styles.workspace}>
@@ -188,15 +216,16 @@ export default function RealEstatePage() {
                     <div className={styles.resultActions}><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} />{view === "list" && <Check size={12} aria-hidden="true" />}</button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} />{view === "map" && <Check size={12} aria-hidden="true" />}</button></div>
                 </header>
                 {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button className="inline-flex items-center gap-2" key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
-                <div className={styles.rankingLine}><Sparkles size={14} /><button onClick={() => showInfo("ranking")}>Understand the signals. Inspect record coverage and stored ranking details.<Info size={13} /></button></div>
+                <details className="mb-3 text-xs"><summary>How property ranking works</summary><button className="mt-2 min-h-11" onClick={() => showInfo("ranking")}><Sparkles size={14}/>Inspect record coverage and ranking details<Info size={13}/></button></details>
                 {loading && <div className={styles.grid} aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={styles.skeleton} />)}</div>}
                 {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
-                {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : activeFilters.length === 0 ? "Verified property offers are coming to this marketplace" : "No reviewed property offers match these filters"}</h3><p>New sale and rental listings appear here only after owner submission and independent media review. Existing MahaRERA project records are available for research in a separate registry directory; a registered project is not an available property offer.</p><div className="flex flex-wrap gap-3"><Link href={"/real-estate/registry" + ((activeFilters.find(([key]) => key === "city" || key === "query")?.[1]) ? "?q=" + encodeURIComponent((activeFilters.find(([key]) => key === "city" || key === "query")?.[1] || "").slice(0,70)) : "")} className={`gth-btn gth-btn-gold ${styles.button}`}>Research registered projects</Link><Link href="/real-estate/post-property" className={`gth-btn ${styles.button}`}>Submit a property for review</Link>{activeFilters.length > 0 && <button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search filters</button>}</div></div>}
+                {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : activeFilters.length === 0 ? "Verified property offers are coming to this marketplace" : "No reviewed property offers match these filters"}</h3><p>Sale and rental offers appear after submission and photo review. Explore registered projects separately or be among the first to list your property.</p><div className="flex flex-wrap gap-3"><Link href={"/real-estate/registry" + ((activeFilters.find(([key]) => key === "city" || key === "query")?.[1]) ? "?q=" + encodeURIComponent((activeFilters.find(([key]) => key === "city" || key === "query")?.[1] || "").slice(0,70)) : "")} className={`gth-btn gth-btn-gold ${styles.button}`}>Research registered projects</Link><Link href="/real-estate/post-property" className={`gth-btn ${styles.button}`}>Submit a property for review</Link>{activeFilters.length > 0 && <button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search filters</button>}</div></div>}
                 {!loading && !error && view === "map" && <div className={styles.empty}><p>{coordinates.length} results on this page have stored coordinates. Map pins are not location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to the grid to explore the available records.</p>}</div>}
                 {!loading && !error && view === "list" && <div className={styles.grid}>{properties.map(property => <ExplorerCard key={property.id} property={property} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
                 <nav aria-label="Property result pages" className={styles.pagination}><button disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button disabled={loading || Boolean(error) || !hasNext} onClick={() => changePage(page + 1)}>Next</button></nav>
                 <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link></div></section>
             </section>
+        </div>
         </div>
         <nav aria-label="Buyer research tools" className="mt-8 flex flex-wrap gap-3"><Link href="/real-estate/registry" className="gth-btn inline-flex min-h-11 items-center">Search & compare registry projects</Link><Link href="/real-estate/saved#research-workspace" className="gth-btn inline-flex min-h-11 items-center">Private buyer workspace</Link><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn inline-flex min-h-11 items-center">Ownership cost & affordability</Link></nav>
         <RegistryPhotoProjects />

@@ -16,7 +16,14 @@ try{
  const outage=html.includes('data service did not respond');
  if(outage)assert.ok(html.includes('Retry registry lookup'));
  console.log(JSON.stringify({path:'/real-estate/registry',status:200,shellMs,outage,recordRowsVerified:!outage&&html.includes('<tbody')}));
+ const rejected=await fetch(root+'/api/real-estate/registry-preview?q=a&q=b');assert.equal(rejected.status,400);
+ const preview=await fetch(root+'/api/real-estate/registry-preview?q=Thane',{signal:AbortSignal.timeout(20000)}),projectData=await preview.json();
+ assert.ok([200,503].includes(preview.status));
+ if(preview.status===200){assert.ok(Array.isArray(projectData.items)&&projectData.items.length<=6);for(const row of projectData.items)assert.deepEqual(Object.keys(row).sort(),['city','developer','rera_id','slug','title']);}
+ else assert.equal(projectData.items,undefined);
+ console.log(JSON.stringify({path:'/api/real-estate/registry-preview',status:preview.status,rows:projectData.items?.length}));
  for(const [path,expected] of [
+  ['/real-estate','Your next property starts here.'],
   ['/real-estate/registry?q=Lake%2Cor%28id.gt.0%29','Use a valid project search'],
   ['/real-estate/registry/compare?projects=one','Select two or three distinct projects'],
   ['/real-estate/tools','Plan the complete cost of your next property'],
