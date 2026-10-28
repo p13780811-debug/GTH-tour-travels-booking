@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const source=fs.readFileSync("src/app/real-estate/registry/page.tsx","utf8");
+const source=fs.readFileSync("src/app/real-estate/registry/page.tsx","utf8")+fs.readFileSync("src/lib/real-estate/registry-reader.ts","utf8");
 const markets=fs.readFileSync("src/components/real-estate/GlobalMarkets.tsx","utf8");
 
 test("registry caches only successful source-backed anonymous reads",()=>{

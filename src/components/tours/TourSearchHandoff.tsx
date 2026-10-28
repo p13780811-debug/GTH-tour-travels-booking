@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Search } from "lucide-react";
-import { directTourSearch, TOUR_CATEGORIES, type TourSearch } from "@/lib/tours/discovery";
+import { TOUR_CATEGORIES, type TourSearch } from "@/lib/tours/discovery";
 
 type Props = {
   search: TourSearch; error: string | null; status: number;
@@ -8,7 +7,6 @@ type Props = {
 };
 export default function TourSearchHandoff({ search, error, status, catalogTotal, basePath }: Props) {
   const isActivity=basePath==="/activities";
-  const direct = status === 400 ? null : directTourSearch(search);
   const category = TOUR_CATEGORIES.find(item => item.value === search.category)?.label;
   const filtered = Boolean(search.city || search.category || search.currency || search.minPrice || search.maxPrice || search.page > 1);
   return <section aria-label="Tour search summary" className="mx-auto max-w-7xl px-4 pt-7 sm:px-6">
@@ -25,15 +23,6 @@ export default function TourSearchHandoff({ search, error, status, catalogTotal,
     {status === 400 ? <p role="alert" className="mt-4 rounded-xl border border-[var(--border)] p-4 text-sm">
       {error} <Link href={basePath+"#discover"} className="underline">Reset search</Link>
     </p> : <>
-      {direct && <div className="mt-4 flex flex-wrap items-center gap-3">
-        <a href={direct} target="_blank" rel="noopener noreferrer nofollow" className="gth-btn-gold inline-flex items-center gap-2">
-          <Search size={16} aria-hidden="true"/>Search {search.city} on Klook<ArrowUpRight size={15} aria-hidden="true"/>
-        </a>
-        <p className="max-w-xl text-xs leading-6 text-[var(--text-soft)]">
-          Opens a direct destination search. Confirm dates and budget on Klook.
-          The provider cards below retain their existing affiliate program links.
-        </p>
-      </div>}
       {error ? <p role="status" className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
         Our reviewed listings are temporarily unavailable. You can still browse the independent provider options below.
       </p> : catalogTotal === 0 ? <p role="status" className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">

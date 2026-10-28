@@ -21,6 +21,7 @@ function compile(path,dependencies={}) {
   return compiledModule.exports;
 }
 const discovery=compile("src/lib/tours/discovery.ts");
+const partnerSearch=compile("src/lib/travel/partner-search.ts");
 const defaults=discovery.EMPTY_TOUR_SEARCH;
 const fixtures=Array.from({length:26},(_,i)=>({
   id:"12345678-1234-4123-8123-"+String(i).padStart(12,"0"),
@@ -165,7 +166,7 @@ const Handoff=compile("src/components/tours/TourSearchHandoff.tsx",{
 }).default;
 test("empty catalog UI offers useful choices and does not equate unpublished tours with sold out",()=>{
   const html=renderToStaticMarkup(React.createElement(Handoff,{search:{...defaults,city:"Dubai"},error:null,status:200,catalogTotal:0,basePath:"/tours"}));
-  assert.match(html,/Search Dubai on Klook/);assert.match(html,/not published yet/);
+  assert.doesNotMatch(html,/Search Dubai on Klook/);assert.match(html,/not published yet/);
   assert.match(html,/does not mean the destination is sold out/);assert.doesNotMatch(html,/No matching tour listings found/);
 });
 test("invalid search UI has a recovery action and never creates a provider query",()=>{
@@ -187,6 +188,7 @@ const Hero=compile("src/components/tours/TourSearchHero.tsx",{
  "next/image":{default:()=>null},
  "@/components/travel/TravelSectionNav":{default:()=>React.createElement("nav",{"aria-label":"Travel categories"})},
  "@/lib/tours/discovery":discovery,
+ "@/lib/travel/partner-search":partnerSearch,
 }).default;
 test("server-rendered hero offers distinct destination search and route-safe category choices before loading",()=>{
  const tours=renderToStaticMarkup(React.createElement(Hero,{basePath:"/tours",filters:{...defaults,city:"Dubai"}}));

@@ -3,6 +3,7 @@ import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransferProviderWidgets from "@/components/travel/TransferProviderWidgets";
 import AirportJourneyServices from "@/components/travel/AirportJourneyServices";
+import TravelPartnerSearch from "@/components/travel/TravelPartnerSearch";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/transfers" },
@@ -28,6 +29,7 @@ export default function TransfersPage() {
         { name: "Welcome Pickups · Affiliate", url: "https://tpo.lv/GFuzmgYk", description: "Explore airport pickup services with the supplied affiliate link; final availability and booking conditions are determined by the provider." },
       ]}
     >
+      <TravelPartnerSearch kind="transfers" />
       <TransferProviderWidgets />
       <AirportJourneyServices />
       <div className="mb-5">

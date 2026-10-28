@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import TiqetsPartnerWidgets from "./TiqetsPartnerWidgets";
 import TourCarousel from "./TourCarousel";
-import { EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, EXPERIENCE_MODES, experienceCategories, tourDiscoveryHref, directTourSearch, type TourSearch } from "@/lib/tours/discovery";
+import { EMPTY_TOUR_SEARCH, TOUR_CATEGORIES, EXPERIENCE_MODES, experienceCategories, tourDiscoveryHref, type TourSearch } from "@/lib/tours/discovery";
+import {partnerSearchHref} from "@/lib/travel/partner-search";
 
 // All destination photography comes from existing GTH PRO local assets.
 // It illustrates travel themes; it does not represent a verified supplier
@@ -138,7 +139,7 @@ export default function TourAffiliateMarketplace({search=EMPTY_TOUR_SEARCH,baseP
       </div>
 
       <TourCarousel label="Tour booking partners">
-        {partners.filter(item=>basePath==="/activities"||item.name!=="Tiqets"&&item.name!=="Go City").map((item) => <TourImageCard key={item.name} item={item.name==="Klook"&&search.city&&directTourSearch(search) ? {...item,href:directTourSearch(search)!,action:"Search "+search.city+" on Klook"} : item} />)}
+        {partners.filter(item=>basePath==="/activities"||item.name!=="Tiqets"&&item.name!=="Go City").map((item) => <TourImageCard key={item.name} item={item.name==="Klook"&&partnerSearchHref(basePath==="/tours"?"tours":"activities",search.city) ? {...item,href:partnerSearchHref(basePath==="/tours"?"tours":"activities",search.city)!,action:"Explore "+search.city+" experiences"} : item} />)}
       </TourCarousel>
 
       <div className="mb-3 mt-7">

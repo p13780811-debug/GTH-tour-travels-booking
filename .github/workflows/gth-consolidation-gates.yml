@@ -1,7 +1,7 @@
 name: GTH Master Consolidation — Approved Real Estate Integrity
 on:
   push:
-    branches: [gth-pro-consolidation-candidate-v1]
+    branches: [gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound, feat/hybrid-portal-buyer-upgrade-20261027]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -60,6 +60,17 @@ jobs:
             ':!src/lib/real-estate/area.ts' \
             ':!src/lib/real-estate/listing-schema.ts' \
             ':!src/components/real-estate/AreaConverter.tsx' \
+            ':!src/components/real-estate/RegistryPhotoProjects.tsx' \
+            ':!src/components/real-estate/RegistryDiscovery.tsx' \
+            ':!src/app/api/real-estate/registry-preview/route.ts' \
+            ':!src/components/real-estate/BuyerPlanningStudio.tsx' \
+            ':!src/components/real-estate/ResearchWorkspace.tsx' \
+            ':!src/components/real-estate/ShareRegistryComparison.tsx' \
+            ':!src/lib/real-estate/buyer-planning.ts' \
+            ':!src/lib/real-estate/browser-download.ts' \
+            ':!src/lib/real-estate/research-notes.ts' \
+            ':!src/lib/real-estate/registry-search.ts' \
+            ':!src/lib/real-estate/registry-reader.ts' \
             ':!src/app/api/real-estate/search/route.ts' \
             ':!src/app/api/real-estate/enquiries/route.ts' \
             ':!src/app/api/real-estate/submissions/route.ts' \
@@ -163,3 +174,5 @@ jobs:
       - run: npm run lint
       - name: Production build (no deployment or promotion)
         run: npm run build
+      - name: Verify registry streaming and buyer tools over HTTP
+        run: node scripts/check-hybrid-buyer-http.mjs
