@@ -62,3 +62,14 @@ test("Real Estate portal keeps distinct registry, offers, filtering, compare, pa
  assert.ok(page.includes('const applyIntent = (value: string) =>'));
  assert.ok(page.includes('const updateSearch = (term: string) =>'));
 });
+
+test("hero remains a three-image swipe/autoplay gallery with no visible arrows or brand label",()=>{
+ const media=read("src/components/real-estate/HeroMedia.tsx");
+ assert.match(media,/label="Property inspiration" showControls=\{false\}/);
+ assert.match(media,/const scenes=\[/);
+ assert.equal((media.match(/id:"(architecture|property-story|city-living)"/g)||[]).length,3);
+ assert.match(media,/<p className="sr-only">Brand imagery · Not listed properties<\/p>/);
+ assert.doesNotMatch(media,/overlayControls/);
+ assert.match(carousel,/setInterval/);
+ assert.match(carousel,/onScroll=/);
+});
