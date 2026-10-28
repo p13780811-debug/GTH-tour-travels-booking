@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-function load(file,imports={}){const module={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,require:n=>{if(n in imports)return imports[n];throw Error(n)},Date,URL});return module.exports;}
+function load(file,imports={}){const testModule={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:testModule,exports:testModule.exports,require:n=>{if(n in imports)return imports[n];throw Error(n)},Date,URL});return testModule.exports;}
 const repayment=load('src/lib/real-estate/repayment.ts');
 const tools=load('src/lib/real-estate/decision-tools.ts',{'./repayment':repayment});
 const scenario={price:120000,down:12000,buyingFees:0,annualRate:0,loanYears:10,monthlyRent:900,annualRentGrowth:0,monthlyOwnerCosts:0,annualAppreciation:0,annualInvestmentReturn:0,sellingPercent:0,years:10};
