@@ -27,6 +27,7 @@ test("footer ad is distinct and placed immediately above the page footer without
  for(const id of ["worldwide-hotels","airport-transfers","car-rentals"])assert.ok(campaign.includes(`id:"${id}"`));
  assert.match(campaign,/href=isHotel\?"\/hotels":partnerSearchHref\(item.kind,item.destination\)/);
  assert.match(campaign,/sponsored nofollow noopener noreferrer/);
+ assert.match(campaign,/id:"airport-transfers",title:"Explore Singapore airport transfers"/);
  assert.ok(page.indexOf('<CampaignPromotions slot="planning"/>')>page.indexOf('className={styles.submit}'));
  assert.ok(page.indexOf('<CampaignPromotions slot="planning"/>')<page.indexOf('<BottomNav user={user} />'));
  assert.equal(page.split('<CampaignPromotions slot="discovery"/>').length,2);

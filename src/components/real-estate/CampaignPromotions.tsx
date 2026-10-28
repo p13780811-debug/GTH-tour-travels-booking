@@ -16,7 +16,7 @@ const discoveryPromotions=[
 
 const footerPromotions=[
   {id:"worldwide-hotels",title:"Discover hotels & stays",description:"Search accommodation through GTH PRO's existing hotel booking experience.",kind:"hotels",destination:"Worldwide",image:"/images/travel.jpg"},
-  {id:"airport-transfers",title:"Explore airport transfers",description:"Compare transfer options for your Dubai arrival or departure.",kind:"transfers",destination:"Dubai",image:"/images/cities/dubai.jpg"},
+  {id:"airport-transfers",title:"Explore Singapore airport transfers",description:"Compare transfer options for your Singapore arrival or departure.",kind:"transfers",destination:"Singapore",image:"/images/cities/singapore.jpg"},
   {id:"car-rentals",title:"Find a rental car",description:"Explore rental car options for your London journey.",kind:"cars",destination:"London",image:"/images/cities/london.jpg"},
 ] as const
 
