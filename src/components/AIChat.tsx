@@ -275,7 +275,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
 
 
     return (
-        <div className="w-full h-full flex flex-col text-white">
+        <div className="flex h-full w-full min-w-0 flex-col text-white">
 
             <div className="p-3 border-b border-white/10 font-bold">
                 GTH AI HUB
@@ -296,20 +296,20 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 {loading && <div>⚡ AI Thinking...</div>}
             </div>
 
-            <div className="flex items-center border-t border-white/10 bg-black sticky bottom-0 p-2 gap-2">
+            <div className="sticky bottom-0 flex w-full min-w-0 items-center gap-2 border-t border-white/10 bg-black p-2">
 
                 {/* INPUT */}
                 <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="flex-1 p-2 bg-transparent outline-none text-white"
+                    className="min-w-0 flex-1 bg-transparent p-2 text-white outline-none"
                     placeholder={listening ? "Listening..." : "Ask anything..."}
                 />
 
                 {/* MIC */}
                 <button
                     onClick={startVoice}
-                    className={`p-2 rounded-full transition ${listening ? "bg-red-500 animate-pulse" : "bg-white/10"
+                    className={`shrink-0 p-2 rounded-full transition ${listening ? "bg-red-500 animate-pulse" : "bg-white/10"
                         }`}
                 >
                     <Mic size={16} />
@@ -318,7 +318,7 @@ function AIChat({ properties, setFiltered, setActive }: any) {
                 {/* SEND */}
                 <button
                     onClick={sendMessage}
-                    className="gth-btn-gold px-4 py-2 text-black font-bold rounded"
+                    className="gth-btn-gold inline-flex min-w-[72px] shrink-0 items-center justify-center whitespace-nowrap rounded px-3 py-2 font-bold text-black sm:px-4"
                 >
                     Send
                 </button>

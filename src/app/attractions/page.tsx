@@ -2,11 +2,11 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowLeft,ArrowRight,Compass,ExternalLink,Globe2,MapPin,Search,BarChart3} from "lucide-react";
-import {ATTRACTION_TYPES,directoryHref,listPlaces,sourceProgress,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
+import {ATTRACTION_TYPES,directoryHref,listPlaces,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
 import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
-import {listMappedCities} from "@/lib/travel/mappedCities";
+import {cachedSourceProgress,cachedHomepageCities} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const dynamic="force-dynamic";
@@ -24,7 +24,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
   q:one(raw.q).trim(),city:one(raw.city).trim(),after:one(raw.after),limit:24
  };
  const valid=validFilters(f);
- const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),sourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),listMappedCities({pageSize:48})]);
+ const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),cachedSourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),cachedHomepageCities()]);
  const result=places.status==="fulfilled"?places.value:null;
  const stats=progress.status==="fulfilled"?progress.value:null;
  const media=guidePhotos.status==="fulfilled"?guidePhotos.value:new Map();

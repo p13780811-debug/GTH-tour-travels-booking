@@ -51,7 +51,11 @@ test("Tours index, API and directory include ODbL attribution; no false tickets"
  assert.match(read("src/lib/travel/osmAttractions.ts"),/nextCursor/);
  assert.match(api,/\.\.\.result/);
  assert.doesNotMatch(api,/pageRaw|Number\(pageRaw\)>100/);
- assert.match(page,/sourceProgress/);
+ assert.match(page,/cachedSourceProgress\(\)/);
+ const cache=read("src/lib/travel/cachedDiscovery.ts");
+ assert.match(cache,/sourceProgress\(\)/);
+ assert.match(cache,/revalidate:300/);
+ assert.match(cache,/server-only/);
  assert.match(page,/Next 24/);
  assert.match(read("src/app/attractions/progress/page.tsx"),/countriesWithRecords/);
  assert.match(read("src/app/destinations\/[slug]\/page.tsx"),/countryName=\{destination.country\}/);

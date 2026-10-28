@@ -8,7 +8,7 @@ import DestinationExplorerResults from "@/components/destination/DestinationExpl
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
-import {listMappedCities} from "@/lib/travel/mappedCities";
+import {cachedHomepageCities} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const revalidate = 60;
@@ -115,7 +115,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
+  const mapped=await cachedHomepageCities().catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;

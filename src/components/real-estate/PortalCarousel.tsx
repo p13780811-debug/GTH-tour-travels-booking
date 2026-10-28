@@ -5,7 +5,7 @@ import {ChevronLeft,ChevronRight,Pause,Play} from "lucide-react"
 
 type Slide={id:string;label:string;content:ReactNode}
 /** Native swipe carousel; pauses for interaction, reduced motion, hidden pages and offscreen slots. */
-export default function PortalCarousel({label,slides,overlayControls=false}:{label:string;slides:readonly Slide[];overlayControls?:boolean}) {
+export default function PortalCarousel({label,slides,overlayControls=false,showControls=true}:{label:string;slides:readonly Slide[];overlayControls?:boolean;showControls?:boolean}) {
   const viewport=useRef<HTMLDivElement>(null)
   const [index,setIndex]=useState(0),[paused,setPaused]=useState(false),[hovered,setHovered]=useState(false),[focused,setFocused]=useState(false)
   const [reduced,setReduced]=useState(true),[visible,setVisible]=useState(false),[hidden,setHidden]=useState(false)
@@ -47,7 +47,7 @@ export default function PortalCarousel({label,slides,overlayControls=false}:{lab
       onKeyDown={event=>{if(event.target!==event.currentTarget)return;if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();go(index+(event.key==="ArrowRight"?1:-1))}}}>
       {slides.map((slide,i)=><div key={slide.id} role="group" aria-roledescription="slide" aria-label={`${i+1} of ${count}: ${slide.label}`} aria-hidden={i!==index} inert={i!==index} className="relative w-full min-w-0 shrink-0 snap-center">{slide.content}</div>)}
     </div>
-    {count>1&&<div role="group" aria-label={`${label} controls`} className={overlayControls?"gth-glass !absolute right-2 top-2 z-10 flex items-center gap-1 rounded-full px-1":"mt-2 flex items-center justify-end gap-1"}>
+    {count>1&&showControls&&<div role="group" aria-label={`${label} controls`} className={overlayControls?"gth-glass !absolute right-2 top-2 z-10 flex items-center gap-1 rounded-full px-1":"mt-2 flex items-center justify-end gap-1"}>
       <span className="px-2 text-xs" aria-live={paused||focused?"polite":"off"}>{index+1} / {count}</span>
       <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full" aria-label={`Previous ${label} slide`} onClick={()=>go(index-1)}><ChevronLeft size={17}/></button>
       <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full" disabled={reduced} aria-label={reduced?`${label} auto-play disabled for reduced motion`:paused?`Play ${label}`:`Pause ${label}`} aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused||reduced?<Play size={15}/>:<Pause size={15}/>}</button>
