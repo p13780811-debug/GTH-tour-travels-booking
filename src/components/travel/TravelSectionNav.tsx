@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import {useState} from "react";
 import scroll from "./TravelScroll.module.css";
 import {usePathname} from "next/navigation";
 import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark, ShieldCheck} from "lucide-react";
@@ -27,6 +28,8 @@ export const TRAVEL_SECTIONS = [
 
 export default function TravelSectionNav(){
  const pathname=usePathname()||"";
+ const [opening,setOpening]=useState<{href:string;from:string}|null>(null);
+ const inProgress=opening?.from===pathname?opening:null;
  const active=TRAVEL_SECTIONS.find(section=>
    pathname===section.href||pathname.startsWith(section.href+"/")
  );
@@ -41,7 +44,7 @@ export default function TravelSectionNav(){
         <div className="flex w-max min-w-full items-center gap-1.5">
           {TRAVEL_SECTIONS.map(({href,label,Icon})=>{
             const isActive=active?.href===href;
-            return <Link key={href} href={href} aria-current={isActive?"page":undefined}
+            return <Link key={href} href={href} onClick={()=>{if(!isActive)setOpening({href,from:pathname});}} aria-current={isActive?"page":undefined}
               className={"inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+
                 (isActive?"border-[var(--gold)] bg-[var(--bg)] text-[var(--text)]":"border-transparent text-[var(--text-soft)] hover:border-[var(--border)] hover:bg-[var(--bg)]")}>
               <Icon size={15} aria-hidden="true"/>{label}
@@ -53,6 +56,7 @@ export default function TravelSectionNav(){
         All services
       </Link>
     </div>
+    {inProgress&&<p role="status" aria-live="polite" className="mx-auto max-w-7xl px-4 pb-2 text-xs text-[var(--text-soft)] sm:px-6">Opening {TRAVEL_SECTIONS.find(item=>item.href===inProgress.href)?.label||"travel page"}…</p>}
   </div>
  );
 }
