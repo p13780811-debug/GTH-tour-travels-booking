@@ -24,7 +24,7 @@ test('homepage projection limits records, excludes private data and preserves ou
 });
 test('compact command search keeps all intents, routes submitted query once and binds quick filters',()=>{
  const icons=new Proxy({},{get:()=> 'icon'}),styles=new Proxy({},{get:(_,k)=>k});const events=[];
- const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'react/jsx-runtime':jsx,'next/link':{default:'a'},'lucide-react':icons,'./Explorer.module.css':{default:styles}});
+ const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'react/jsx-runtime':jsx,'next/link':{default:'a'},'lucide-react':icons,'./HeroMedia':{default:'hero-media'},'./Explorer.module.css':{default:styles}});
  const props={query:'  Thane  ',intent:'buy',loading:false,onQuery(){},onIntent:v=>events.push(['intent',v]),onSearch:v=>events.push(['search',v]),onRefine:v=>events.push(['filter',v]),onFilters:()=>events.push(['open']),onInfo(){}};
  let tree=Hero(props);assert.equal(find(tree,n=>n.type==='img').length,0);assert.equal(find(tree,n=>n.type==='h1').length,1);
  const buttons=find(tree,n=>n.type==='button');for(const value of ['buy','rent','new_launch','commercial','plots','registry']){const button=buttons.find(n=>n.key===value);assert.ok(button);button.props.onClick();}
