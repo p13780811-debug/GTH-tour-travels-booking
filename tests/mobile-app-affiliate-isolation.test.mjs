@@ -5,6 +5,7 @@ import fs from "node:fs";
 const layout=fs.readFileSync("src/app/layout.tsx","utf8");
 const dashboard=fs.readFileSync("src/components/mobile/MobileAppDashboard.tsx","utf8");
 const appLayout=fs.readFileSync("src/app/app/layout.tsx","utf8");
+const wrapper=fs.readFileSync("src/components/LayoutWrapper.tsx","utf8");
 
 test("globally injected Travelpayouts Drive is suppressed only on GTH PRO app routes",()=>{
  const guard='if (window.location.pathname === "/app" || window.location.pathname.startsWith("/app/")) return;';
@@ -23,4 +24,11 @@ test("mobile app footer is inside dashboard and bottom navigation remains outsid
  assert.ok(dashboard.includes('Website'));
  assert.ok(dashboard.includes('<footer className='));
  assert.ok(!dashboard.includes('Pick-up at'));
+});
+
+test("app-to-website client navigation resets root affiliate script once",()=>{
+ assert.ok(wrapper.includes('previousAppMode.current = isAppHome;'));
+ assert.ok(wrapper.includes('previous !== null && previous !== isAppHome'));
+ assert.ok(wrapper.includes('window.location.reload();'));
+ assert.ok(wrapper.includes('}, [isAppHome]);'));
 });
