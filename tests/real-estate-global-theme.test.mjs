@@ -91,3 +91,18 @@ test('scoped Real Estate control styling uses existing global theme tokens and p
   assert.ok(declarations.some(([p,v])=>p==='color'&&v==='var(--btn-text)'));
  }
 });
+
+test('real estate header and footer provide direct routes to the three-pillar ecosystem',()=>{
+ const {default:Header}=load('src/components/real-estate/EstateHeader.tsx',{'next/link':link,'next/navigation':{usePathname:()=>'/real-estate'},'@/components/brand/BrandVideo':{default:()=>null},'@/components/ThemeToggle':{default:()=>null}});
+ const {default:Footer}=load('src/components/real-estate/RealEstateFooter.tsx',{'next/link':link});
+ for(const Component of [Header,Footer]){const html=renderToStaticMarkup(React.createElement(Component));for(const href of ['/','/travel','/tender'])assert.ok(html.includes(`href="${href}"`),`Missing platform route ${href}`);}
+ const header=renderToStaticMarkup(React.createElement(Header));assert.match(header,/aria-label="GTH PRO platforms"/);assert.match(header,/aria-current="location"/);
+});
+
+test('cross-pillar promotions are labelled in-house and link to real platform routes',()=>{
+ const {default:Promotions}=load('src/components/real-estate/EcosystemPromotions.tsx',{'next/link':link,'next/image':{default:({src,alt})=>React.createElement('img',{src,alt})}});
+ const html=renderToStaticMarkup(React.createElement(Promotions));assert.match(html,/In-house promotion/);
+ for(const href of ['/travel','/tender','/hotels','/tours','/activities'])assert.ok(html.includes(`href="${href}"`));
+ assert.match(html,/travel destination brand visual/);assert.match(html,/infrastructure brand visual/);
+ assert.doesNotMatch(html,/RealEstateListing|OfferCatalog|SoldOut|InStock/);
+});

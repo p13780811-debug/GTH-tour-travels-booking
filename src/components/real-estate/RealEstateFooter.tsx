@@ -34,6 +34,11 @@ export default function RealEstateFooter() {
           </div>
         </nav>
       </div>
+      <nav aria-label="GTH PRO ecosystem footer" className="mt-6 flex flex-wrap gap-4 text-sm">
+        <Link href="/" className="inline-flex min-h-11 items-center">GTH PRO home</Link>
+        <Link href="/travel" className="inline-flex min-h-11 items-center">Tours & travels</Link>
+        <Link href="/tender" className="inline-flex min-h-11 items-center">Tender opportunities</Link>
+      </nav>
       <p className="text-xs opacity-70 mt-8 pt-6 border-t border-[var(--border)]">Registry data, reviewed listings and GTH verification are separate statuses. Property information does not replace legal, financial or technical due diligence. Market coverage varies with available sources and inventory.</p>
     </div>
   </footer>
