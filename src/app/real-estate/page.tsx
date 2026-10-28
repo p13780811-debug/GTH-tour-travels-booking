@@ -52,6 +52,8 @@ export default function RealEstatePage() {
     const closeFilter = useRef<HTMLButtonElement>(null)
     const touchStartY = useRef<number | null>(null)
     const request = useRef(0)
+    const activeDiscovery = useRef(discovery)
+    useEffect(() => {activeDiscovery.current = discovery},[discovery])
 
     const load = useCallback(async (requestedPage?: number) => {
         const current = ++request.current
@@ -83,14 +85,15 @@ export default function RealEstatePage() {
 
     useEffect(() => {
         let active = true
-        load()
+        const hasOfferFilters = ["listing","query","city","country","type","bedrooms","minPrice","maxPrice","possession"].some(key => new URLSearchParams(window.location.search).has(key))
+        if (hasOfferFilters) {setDiscovery("offers");load()} else setLoading(false)
         supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
         const onHistory = () => { setDiscovery("offers"); setFiltersOpen(false); load() }
-        if (["listing","query","city","country","type","bedrooms","minPrice","maxPrice","possession"].some(key => new URLSearchParams(window.location.search).has(key))) setDiscovery("offers")
         window.addEventListener("popstate", onHistory)
         window.addEventListener("gth-search-load", onHistory)
-        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, () => { clearPropertyCache(); load() }).on("postgres_changes", { event:"*", schema:"public", table:"property_published_media" }, () => { clearPropertyCache(); load() }).subscribe()
+        const refreshInventory = () => { if(activeDiscovery.current === "offers") {clearPropertyCache();load()} }
+        const channel = supabase.channel("estate-inventory").on("postgres_changes", { event:"*", schema:"public", table:"properties" }, refreshInventory).on("postgres_changes", { event:"*", schema:"public", table:"property_inventory" }, refreshInventory).on("postgres_changes", { event:"*", schema:"public", table:"property_published_media" }, refreshInventory).subscribe()
         return () => { active = false; request.current += 1; auth.subscription.unsubscribe(); window.removeEventListener("popstate", onHistory); window.removeEventListener("gth-search-load", onHistory); supabase.removeChannel(channel) }
     }, [load])
 
@@ -197,7 +200,7 @@ export default function RealEstatePage() {
     }
     return <main className={`gth-container ${styles.page}`}>
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={discovery === "registry" ? registryDraft : query} onQuery={discovery === "registry" ? setRegistryDraft : setQuery} onSearch={updateSearch} loading={discovery === "offers" && loading} intent={discovery === "registry" ? "registry" : activeFilters.find(([key]) => key === "listing")?.[1] || "buy"} onIntent={applyIntent} onInfo={showInfo} filters={Object.fromEntries(activeFilters)} onRefine={refine} onFilters={openFilters} /></div>
-        <nav className="scrollbar-hide mt-4 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => setDiscovery("offers")}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
+        <nav className="scrollbar-hide mt-4 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => {setDiscovery("offers");load(1)}}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
         {discovery === "registry" && <>{registryValidation && <p role="alert" className="mt-3 text-sm">{registryValidation}</p>}<RegistryDiscovery query={registryQuery} attempt={registryAttempt}/></>}
         <div hidden={discovery !== "offers"}>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
