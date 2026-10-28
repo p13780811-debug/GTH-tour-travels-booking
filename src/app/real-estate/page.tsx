@@ -85,7 +85,7 @@ export default function RealEstatePage() {
 
     useEffect(() => {
         let active = true
-        const hasOfferFilters = ["listing","query","city","country","type","bedrooms","minPrice","maxPrice","possession"].some(key => new URLSearchParams(window.location.search).has(key))
+        const hasOfferFilters = ["listing","query","city","country","type","bedrooms","currency","minPrice","maxPrice","sort","possession","page"].some(key => new URLSearchParams(window.location.search).has(key))
         if (hasOfferFilters) {setDiscovery("offers");load()} else setLoading(false)
         supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
