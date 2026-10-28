@@ -17,3 +17,16 @@ export const cachedHomepageCities=unstable_cache(
   ["gth-osm-top-city-index-v1"],
   {revalidate:300,tags:["gth-osm-discovery"]}
 );
+
+/** A hard navigation budget, even when the remote PostgREST network promise never settles.
+ * Reject rather than cache fabricated empty records; callers render editorial-only fallbacks.
+ * The underlying Supabase queries also have AbortSignal timeouts.
+ */
+export async function withDiscoveryDeadline<T>(work:Promise<T>,ms=6_500):Promise<T>{
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{
+    return await Promise.race([work,new Promise<never>((_resolve,reject)=>{
+      timer=setTimeout(()=>reject(new Error("public_discovery_timeout")),ms);
+    })]);
+  }finally{if(timer)clearTimeout(timer)}
+}

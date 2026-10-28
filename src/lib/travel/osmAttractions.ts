@@ -52,10 +52,10 @@ export async function sourceProgress(){
   const [countries,runs]=await Promise.all([
     db.from("gth_osm_attraction_country_counts")
       .select("country_code,country_name,records,last_source_write")
-      .order("country_name",{ascending:true}).limit(300),
+      .order("country_name",{ascending:true}).limit(300).abortSignal(AbortSignal.timeout(5_000)),
     db.from("gth_osm_attraction_sync_runs")
       .select("run_id,source_region,country_code,country_name,accepted,completed_at")
-      .order("completed_at",{ascending:false}).limit(8),
+      .order("completed_at",{ascending:false}).limit(8).abortSignal(AbortSignal.timeout(5_000)),
   ]);
   if(countries.error||runs.error)throw new Error("Source progress unavailable");
   const items=(countries.data??[]) as CountryCount[];

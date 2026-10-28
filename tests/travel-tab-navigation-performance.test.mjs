@@ -31,3 +31,19 @@ test("public OSM summaries are cached, not mocked or fetched for each page visit
  assert.ok(read("src/app/guides/page.tsx").includes("cachedSourceProgress()"));
  assert.ok(!cached.includes("service_role"));
 });
+
+test("live source progress has a bounded request and each travel page has a hard navigation deadline",()=>{
+ const osm=read("src/lib/travel/osmAttractions.ts");
+ assert.match(osm,/gth_osm_attraction_country_counts[\\s\\S]*?\\.abortSignal\\(AbortSignal\\.timeout\\(5_000\\)\\)/);
+ assert.match(osm,/gth_osm_attraction_sync_runs[\\s\\S]*?\\.abortSignal\\(AbortSignal\\.timeout\\(5_000\\)\\)/);
+ assert.match(cached,/export async function withDiscoveryDeadline/);
+ assert.match(cached,/Promise\\.race/);
+ assert.match(cached,/clearTimeout/);
+ const guides=read("src/app/guides/page.tsx"),attractions=read("src/app/attractions/page.tsx"),destinations=read("src/app/destinations/page.tsx");
+ for(const route of [guides,attractions,destinations])assert.ok(route.includes("withDiscoveryDeadline("));
+ assert.match(guides,/withDiscoveryDeadline\\(cachedSourceProgress\\(\\)\\)\\.catch/);
+ assert.match(attractions,/withDiscoveryDeadline\\(listPlaces\\(f\\)\\)/);
+ assert.match(destinations,/withDiscoveryDeadline\\(loadDestinations\\(\\)\\)/);
+ assert.match(destinations,/\.abortSignal\\(AbortSignal\\.timeout\\(4_500\\)\\)/);
+ assert.ok(!osm.includes("service_role"),"read only with anonymous permissions");
+});

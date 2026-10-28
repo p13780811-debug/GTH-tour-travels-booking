@@ -6,7 +6,7 @@ import {ATTRACTION_TYPES,directoryHref,listPlaces,validFilters,type DirectoryFil
 import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
-import {cachedSourceProgress,cachedHomepageCities} from "@/lib/travel/cachedDiscovery";
+import {cachedSourceProgress,cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const dynamic="force-dynamic";
@@ -24,7 +24,12 @@ export default async function AttractionsDirectory({searchParams}:Props){
   q:one(raw.q).trim(),city:one(raw.city).trim(),after:one(raw.after),limit:24
  };
  const valid=validFilters(f);
- const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([valid?listPlaces(f):Promise.reject(new Error("Invalid filters")),cachedSourceProgress(),publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),cachedHomepageCities()]);
+ const [places,progress,guidePhotos,mappedCities]=await Promise.allSettled([
+  valid?withDiscoveryDeadline(listPlaces(f)):Promise.reject(new Error("Invalid filters")),
+  withDiscoveryDeadline(cachedSourceProgress()),
+  withDiscoveryDeadline(publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]))),
+  withDiscoveryDeadline(cachedHomepageCities()),
+ ]);
  const result=places.status==="fulfilled"?places.value:null;
  const stats=progress.status==="fulfilled"?progress.value:null;
  const media=guidePhotos.status==="fulfilled"?guidePhotos.value:new Map();
