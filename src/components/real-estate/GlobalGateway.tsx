@@ -1,0 +1,26 @@
+"use client";
+import {useRef,useState} from "react";
+import Link from "next/link";
+import {parseHybridSearch} from "@/lib/real-estate/hybrid-search";
+import {downloadResearchText} from "@/lib/real-estate/browser-download";
+
+const countries=['India','United Arab Emirates','United States','United Kingdom','Singapore','Canada','Australia','France','Spain','Portugal','Italy','Germany','Switzerland','New Zealand','South Africa','Thailand','Malaysia','Indonesia','Japan','Saudi Arabia'];
+export default function GlobalGateway(){
+ const form=useRef<HTMLFormElement>(null),[message,setMessage]=useState('');
+ const field="mt-2 block min-h-11 w-full rounded-xl border px-3 py-2";
+ return <section aria-labelledby="global-search-title" className="gth-glass mt-6 rounded-3xl p-5 sm:p-8"><h2 id="global-search-title" className="text-2xl font-bold">Choose your market and property journey</h2><p className="mt-3 text-sm leading-7">Search submitted, reviewed inventory by recorded country and city. Results depend on inventory actually published; selecting a market does not imply current stock or local representation. The official registry directory currently covers recorded Maharashtra projects separately.</p>
+ <form ref={form} action="/real-estate" method="GET" aria-label="Worldwide property search" className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" onSubmit={()=>setMessage('Opening matching property search…')}>
+  <label className="text-sm">Country<input name="country" list="property-countries" required maxLength={80} className={field} placeholder="Enter a country"/><datalist id="property-countries">{countries.map(country=><option key={country} value={country}/>)}</datalist></label>
+  <label className="text-sm">City or locality<input name="city" maxLength={80} className={field}/></label>
+  <label className="text-sm">Purpose<select name="listing" className={field}>{[['buy','Buy'],['rent','Rent'],['new_launch','New launches'],['commercial','Commercial'],['plots','Plots']].map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
+  <label className="text-sm">Property type<select name="type" className={field}><option value="">Any type</option>{['Apartment','Villa','Penthouse','Commercial','Plot'].map(value=><option key={value}>{value}</option>)}</select></label>
+  <label className="text-sm">Bedrooms<select name="bedrooms" className={field}><option value="">Any bedrooms</option>{['1','2','3','4+'].map(value=><option key={value} value={value}>{value} BHK</option>)}</select></label>
+  <label className="text-sm">Asking-price currency<select name="currency" className={field}>{['INR','AED','USD','GBP','EUR','SGD'].map(code=><option key={code}>{code}</option>)}</select></label>
+  <label className="text-sm">Minimum asking price<input name="minPrice" type="number" min="1" max="999999999999" step="0.01" className={field}/></label>
+  <label className="text-sm">Maximum asking price<input name="maxPrice" type="number" min="1" max="999999999999" step="0.01" className={field}/></label>
+  <label className="text-sm">Possession<select name="possession" className={field}><option value="">Any status</option><option value="ready_to_move">Ready to move</option><option value="under_construction">Under construction</option><option value="off_plan">Off plan</option></select></label>
+  <div className="flex flex-wrap items-end gap-3 sm:col-span-2 lg:col-span-3"><button className="gth-btn min-h-11">Explore this market</button><button type="button" className="gth-btn min-h-11" onClick={()=>{if(!form.current?.reportValidity())return;try{const params=new URLSearchParams();for(const [key,value] of new FormData(form.current))if(typeof value==='string'&&value.trim())params.set(key,value.trim());const filters=parseHybridSearch(params);const brief={version:1,filters,searchPath:'/real-estate?'+params.toString(),note:'Personal search requirements; not submitted to a seller or agent.'};setMessage(downloadResearchText(JSON.stringify(brief,null,2),'application/json','gth-property-search-brief.json')?'Your search brief downloaded. It has not been sent to anyone.':'Download unavailable.');}catch{setMessage('Check the country, city and budget range before downloading.');}}}>Download my search brief</button></div>
+ </form><p className="mt-3 text-xs leading-6 opacity-70">Amounts are compared in the selected asking-price currency. Currency selection never converts your budget. Blank budgets are unrestricted.</p>
+ <nav aria-label="Property journeys" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[['/real-estate/post-property','Owner · list a property'],['/real-estate/post-property','Developer · submit inventory'],['/real-estate/claim-project','Partner · claim a project'],['/real-estate/portfolio','Seller · manage submissions'],['/real-estate/registry','Research registry records'],['/real-estate/saved','Shortlist & compare'],['/real-estate/tools#decision-tools','Decision calculators'],['/real-estate/market-intelligence','Recorded market intelligence']].map(([href,label])=><Link key={label} className="gth-btn inline-flex min-h-11 items-center justify-center text-center text-sm" href={href}>{label}</Link>)}</nav>{message&&<p role="status" className="mt-4 text-sm">{message}</p>}
+ </section>;
+}

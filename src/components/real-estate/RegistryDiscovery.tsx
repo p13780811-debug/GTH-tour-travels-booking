@@ -24,7 +24,7 @@ export default function RegistryDiscovery({query:applied = "", attempt = 0}:{que
     return () => {active=false;clearTimeout(timeout);controller.abort()}
   },[applied,attempt,retry])
   const href = `/real-estate/registry${applied ? `?q=${encodeURIComponent(applied)}` : ""}`
-  return <section id="registry-discovery" aria-labelledby="registry-discovery-title" className="mt-5 scroll-mt-24">
+  return <section id="registry-discovery" aria-labelledby="registry-discovery-title" className="mt-3 scroll-mt-24">
     <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="gold-text text-xs font-semibold">PROJECT RESEARCH</p><h2 id="registry-discovery-title" className="mt-1 text-xl font-semibold">Explore registered projects</h2></div><Link href={href} className="inline-flex min-h-11 items-center gap-1 text-sm underline">Full directory<ArrowUpRight size={14}/></Link></div>
     <p className="mt-2 text-sm leading-6">MahaRERA records · Registration is separate from sale availability, pricing and GTH verification.</p>
     <div aria-live="polite" aria-busy={state==="loading"}>
@@ -33,6 +33,6 @@ export default function RegistryDiscovery({query:applied = "", attempt = 0}:{que
       {state==="ready" && items.length===0 && <p className="gth-glass mt-3 rounded-xl p-5 text-sm">No registered projects matched this search. Try another locality or use the directory filters.</p>}
       {state==="ready" && <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map(project=><article key={project.slug} className="gth-glass min-w-0 rounded-xl p-4"><div className="flex items-start justify-between gap-2"><span className="gth-badge inline-flex items-center gap-1 text-xs"><Building2 size={13}/>Registry record</span><SavePropertyButton slug={project.slug} className="inline-flex min-h-11 min-w-11 items-center justify-center"/></div><h3 className="mt-2 break-words font-semibold"><Link href={`/real-estate/${encodeURIComponent(project.slug)}`}>{project.title}</Link></h3><dl className="mt-3 space-y-2 text-sm"><div><dt className="text-xs opacity-70">Location</dt><dd>{project.city || "Not recorded"}</dd></div><div><dt className="text-xs opacity-70">Promoter</dt><dd className="break-words">{project.developer || "Not recorded"}</dd></div><div><dt className="text-xs opacity-70">RERA reference</dt><dd>{project.rera_id}</dd></div></dl><Link href={`/real-estate/${encodeURIComponent(project.slug)}`} className="mt-3 inline-flex min-h-11 items-center gap-1 text-sm underline">Research project<ArrowUpRight size={14}/></Link></article>)}</div>}
     </div>
-    <Link href={href} className="gth-btn mt-4 inline-flex min-h-11 items-center">Search, filter & compare registry projects<ArrowUpRight size={14}/></Link>
+    <Link href={href} className="gth-btn mt-2 inline-flex min-h-11 items-center">Search, filter & compare registry projects<ArrowUpRight size={14}/></Link>
   </section>
 }

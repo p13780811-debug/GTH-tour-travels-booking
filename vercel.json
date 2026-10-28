@@ -28,7 +28,8 @@
       "fix/travel-consistent-outbound": false,
       "fix/real-estate-registry-first-discovery-20261027": false,
       "fix/real-estate-registry-resilience-20261027": false,
-      "feat/hybrid-portal-buyer-upgrade-20261027": false
+      "feat/hybrid-portal-buyer-upgrade-20261027": false,
+      "fix/mobile-app-drive-widget-isolation-20261028": false
     }
   }
 }

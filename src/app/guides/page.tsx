@@ -7,8 +7,7 @@ import { blogs } from "@/data/blogs";
 import {discoveryRows} from "@/lib/travel/guideCatalog";
 import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
-import {sourceProgress} from "@/lib/travel/osmAttractions";
-import {listMappedCities} from "@/lib/travel/mappedCities";
+import {cachedSourceProgress,cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const metadata: Metadata = {
@@ -19,7 +18,11 @@ export const metadata: Metadata = {
 
 export const dynamic="force-dynamic";
 export default async function GuidesPage() {
-  const [media,progress,cities]=await Promise.all([publishedMedia(discoveryRows.flatMap(r=>[...r.slugs])),sourceProgress().catch(()=>null),listMappedCities({pageSize:48}).catch(()=>null)]);
+  const [media,progress,cities]=await Promise.all([
+    withDiscoveryDeadline(publishedMedia(discoveryRows.flatMap(r=>[...r.slugs]))).catch(()=>new Map()),
+    withDiscoveryDeadline(cachedSourceProgress()).catch(()=>null),
+    withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null),
+  ]);
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24" data-travel-hero="true">

@@ -8,7 +8,7 @@ import DestinationExplorerResults from "@/components/destination/DestinationExpl
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
-import {listMappedCities} from "@/lib/travel/mappedCities";
+import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const revalidate = 60;
@@ -55,7 +55,7 @@ async function loadDestinations(): Promise<Destination[]> {
         .select("name,slug,description,country")
         .eq("is_active", true)
         .order("name", { ascending: true })
-        .range(offset, offset + 199);
+        .range(offset, offset + 199).abortSignal(AbortSignal.timeout(4_500));
       if (error || !data) break;
       for (const item of data) {
       if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) || item.slug.length > 80
@@ -115,11 +115,18 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
+  const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
-  const allDestinations = await loadDestinations();
+  const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
+    slug:item.slug,title:item.name,image:item.image_url,description:item.description,
+    location:"Editorial destination guide",...destinationGeography(item.slug),
+  }));
+  const [mapped,allDestinations]=await Promise.all([
+    mappedPromise,
+    withDiscoveryDeadline(loadDestinations()).catch(()=>fallbackDestinations),
+  ]);
   const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
   const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
   const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";

@@ -7,6 +7,7 @@ import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { getPublishedProjectMedia, projectCover, publishedMediaUrl } from "@/lib/property-media/published-media"
 import { PropertyService } from "@/lib/real-estate/propertyService"
 import { supabase } from "@/lib/supabase"
+import {RecordPropertyView} from "@/components/real-estate/RecentlyViewed"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site"
 
@@ -80,6 +81,7 @@ export default async function PropertyPage({ params }: PageProps) {
     } : null
     return <>
         {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
+        <RecordPropertyView slug={slug} title={property.title} city={property.city||""}/>
         <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} publishedMedia={publishedMedia} />
     </>
 }

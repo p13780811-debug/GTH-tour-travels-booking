@@ -58,6 +58,7 @@ jobs:
             ':(exclude,literal)src/app/real-estate/[slug]/page.tsx' \
             ':!src/app/real-estate/post-property/page.tsx' \
             ':!src/app/real-estate/tools/page.tsx' \
+            ':!src/app/real-estate/tools/layout.tsx' \
             ':!src/app/real-estate/saved/page.tsx' \
             ':!src/app/real-estate/admin/page.tsx' \
             ':!src/lib/real-estate/propertyService.ts' \
@@ -72,6 +73,11 @@ jobs:
             ':!src/components/real-estate/ResearchWorkspace.tsx' \
             ':!src/components/real-estate/ShareRegistryComparison.tsx' \
             ':!src/lib/real-estate/buyer-planning.ts' \
+            ':!src/components/real-estate/DecisionTools.tsx' \
+            ':!src/components/real-estate/GlobalGateway.tsx' \
+            ':!src/components/real-estate/RecentlyViewed.tsx' \
+            ':!src/lib/real-estate/decision-tools.ts' \
+            ':!src/lib/real-estate/recently-viewed.ts' \
             ':!src/lib/real-estate/browser-download.ts' \
             ':!src/lib/real-estate/research-notes.ts' \
             ':!src/lib/real-estate/registry-search.ts' \
@@ -117,9 +123,15 @@ jobs:
             src/lib/real-estate/dossier-pdf.ts
           # Root metadata may change for SEO, but approved rendered layout/navbar is byte-identical.
           git show HEAD^1:src/app/layout.tsx \
-            | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui
-          sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx > /tmp/gth-candidate-root-ui
+            | sed -n '/^export default function RootLayout/,$p' \
+            | sed '/^            if (window.location.pathname === "\/app" || window.location.pathname.startsWith("\/app\/")) return;$/d' > /tmp/gth-approved-root-ui
+          # The explicitly scoped app-only affiliate guard is the sole allowed
+          # difference to the global shell: preserve every other RootLayout byte.
+          grep -Fqx '            if (window.location.pathname === "/app" || window.location.pathname.startsWith("/app/")) return;' src/app/layout.tsx
+          sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx \
+            | sed '/^            if (window.location.pathname === "\/app" || window.location.pathname.startsWith("\/app\/")) return;$/d' > /tmp/gth-candidate-root-ui
           diff -u /tmp/gth-approved-root-ui /tmp/gth-candidate-root-ui
+          node --test tests/mobile-app-affiliate-isolation.test.mjs
       - name: Verify narrowly scoped registry-first onboarding and header controls
         run: |
           set -euo pipefail
