@@ -29,7 +29,8 @@ test("Four horizontal destination rails are additive and existing importer remai
  const rail=read("src/components/travel/GuideDiscoveryRails.tsx");
  const details=read("src/components/travel/GuideDetail.tsx");
  assert.match(page,/GuideDiscoveryRails/);
- assert.match(page,/sourceProgress/);
+ assert.match(page,/cachedSourceProgress\(\)/);
+ assert.match(read("src/lib/travel/cachedDiscovery.ts"),/sourceProgress\(\)/);
  assert.match(page,/robots:\{index:false,follow:true\}/);
  assert.match(rail,/TourCarousel/);
  assert.match(details,/affiliate-disclosure/);
@@ -48,7 +49,10 @@ test("Commons review automation proposes images but cannot publish, with no secr
 test("guide discovery shows actual imported source counts and sorts by source coverage",()=>{
  const guides=read("src/app/guides/page.tsx");
  const rail=read("src/components/travel/GuideDiscoveryRails.tsx");
- assert.match(guides,/sourceProgress\(\)/);
+ assert.match(guides,/cachedSourceProgress\(\)/);
+ const cache=read("src/lib/travel/cachedDiscovery.ts");
+ assert.match(cache,/sourceProgress\(\)/);
+ assert.match(cache,/revalidate:300/);
  assert.match(guides,/countries=\{progress\?\.countries\?\?\[\]\}/);
  assert.match(rail,/counts\.get\(second\.countryCode\)/);
  assert.match(rail,/Country directory: /);
