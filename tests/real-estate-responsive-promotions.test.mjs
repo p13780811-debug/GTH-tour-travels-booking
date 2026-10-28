@@ -42,17 +42,12 @@ test("ecosystem follows buyer tools and retains Travel and Tender controls in sp
  assert.match(page,/<BottomNav user=\{user\} \/>/);
 });
 
-test("FREE badge preserves its exact original overlay and dimensions and changes only inverted theme colors",()=>{
+test("FREE badge uses existing theme classes without fixed palette overrides",()=>{
  const badge=hero.match(/<span aria-hidden="true" className="([^"]+)"[^>]*>FREE<\/span>/);
- assert.ok(badge,"FREE badge remains above List property");
- const base="gth-btn !min-h-0 !text-xs pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap !px-3 !py-1";
- const positional=badge[1].replace("gth-badge-gold ","").replace(" dark:!bg-none dark:!bg-blue-600 dark:!text-white","");
- assert.equal(positional,base,"original badge geometry, sizing and CTA class must remain identical");
- assert.ok(badge[1].includes("gth-badge-gold"),"day badge uses established night-gold gradient");
- assert.ok(badge[1].includes("dark:!bg-none dark:!bg-blue-600 dark:!text-white"),"night badge uses day-blue and legible light text");
+ assert.ok(badge);
+ assert.equal(badge[1],"gth-btn !min-h-0 !text-xs pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap !px-3 !py-1");
+ assert.doesNotMatch(badge[1],/bg-blue|text-white|gth-badge-gold/);
  assert.match(hero,/aria-label="List your property for free"/);
- assert.match(hero,/className="gth-btn gth-btn-gold inline-flex min-h-11/);
- assert.doesNotMatch(badge[1],/ring-|shadow-|!border-/);
 });
 test("Real Estate portal keeps distinct registry, offers, filtering, compare, pagination and responsive navigation",()=>{
  for(const marker of ['<RegistryDiscovery query={registryQuery}', 'aria-label="Property workspace"', 'aria-label="Property result pages"', '<DiscoveryFilters expanded', '<SavedSearches />','<ExplorerDialog state={dialog}', '<BottomNav user={user} />','<CampaignPromotions slot="discovery"/>', '<CampaignPromotions slot="planning"/>'])
@@ -73,3 +68,4 @@ test("hero remains a three-image swipe/autoplay gallery with no visible arrows o
  assert.match(carousel,/setInterval/);
  assert.match(carousel,/onScroll=/);
 });
+

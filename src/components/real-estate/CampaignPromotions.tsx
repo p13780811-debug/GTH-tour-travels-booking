@@ -41,6 +41,6 @@ export default function CampaignPromotions({slot}:{slot:"discovery"|"planning"})
   })
   return <section aria-label={`Travel promotions ${slot}`} className="mt-8">
     <PortalCarousel label={`Travel offers ${slot}`} showControls={false} slides={slides}/>
-    <p className="mt-2 text-xs opacity-70">GTH PRO travel promotions. Some links are tracked affiliate referrals and may earn a commission. Partner prices, availability and terms apply.</p>
+    <p className="sr-only">GTH PRO travel promotions. Some links are tracked affiliate referrals and may earn a commission. Partner prices, availability and terms apply.</p>
   </section>
 }
