@@ -102,8 +102,13 @@ jobs:
           # Root metadata may change for SEO, but approved rendered layout/navbar is byte-identical.
           git show HEAD^1:src/app/layout.tsx \
             | sed -n '/^export default function RootLayout/,$p' > /tmp/gth-approved-root-ui
-          sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx > /tmp/gth-candidate-root-ui
+          # The explicitly scoped app-only affiliate guard is the sole allowed
+          # difference to the global shell: preserve every other RootLayout byte.
+          grep -Fqx '            if (window.location.pathname === "/app" || window.location.pathname.startsWith("/app/")) return;' src/app/layout.tsx
+          sed -n '/^export default function RootLayout/,$p' src/app/layout.tsx \
+            | sed '/^            if (window.location.pathname === "\/app" || window.location.pathname.startsWith("\/app\/")) return;$/d' > /tmp/gth-candidate-root-ui
           diff -u /tmp/gth-approved-root-ui /tmp/gth-candidate-root-ui
+          node --test tests/mobile-app-affiliate-isolation.test.mjs
       - name: Verify narrowly scoped registry-first onboarding and header controls
         run: |
           set -euo pipefail

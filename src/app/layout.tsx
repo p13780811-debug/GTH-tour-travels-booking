@@ -73,6 +73,7 @@ export default function RootLayout({
       <head>
         <Script id="gth-travelpayouts-drive" strategy="beforeInteractive">
           {`(function () {
+            if (window.location.pathname === "/app" || window.location.pathname.startsWith("/app/")) return;
             if (document.querySelector('script[src^="https://emrldtp.com/NTA0MzQy.js"]')) return;
             var script = document.createElement("script");
             script.async = true;
