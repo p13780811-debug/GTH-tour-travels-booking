@@ -42,6 +42,9 @@ jobs:
             ':!src/components/real-estate/EstateHeader.tsx' \
             ':!src/components/real-estate/RealEstateFooter.tsx' \
             ':!src/components/real-estate/EcosystemPromotions.tsx' \
+            ':!src/components/real-estate/PortalCarousel.tsx' \
+            ':!src/components/real-estate/HeroMedia.tsx' \
+            ':!src/components/real-estate/CampaignPromotions.tsx' \
             ':!src/components/real-estate/GlobalMarkets.tsx' \
             ':!src/components/real-estate/PropertyDetailClient.tsx' \
             ':!src/components/real-estate/PropertyImage.tsx' \

@@ -46,7 +46,7 @@ test('all marketplace categories remain visible as neutral filter selections, no
 });
 
 test('hero purpose tabs and info links stay neutral; Explore properties is the branded CTA',()=>{
- const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'next/link':link});
+ const {default:Hero}=load('src/components/real-estate/ExplorerHero.tsx',{'next/link':link,'./HeroMedia':{default:()=>null}});
  const html=renderToStaticMarkup(React.createElement(Hero,{query:'',onQuery(){},onSearch(){},loading:false,intent:'',onIntent(){},onInfo(){}}));
  const tags=buttons(html);
  assert.equal(tags.length,19); // Adds one quick budget/filter control.

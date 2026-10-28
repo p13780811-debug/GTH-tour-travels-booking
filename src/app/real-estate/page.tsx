@@ -21,6 +21,7 @@ import AreaConverter from "@/components/real-estate/AreaConverter"
 import { isPropertyVisualCard } from "@/app/real-estate/registry/explorer-presentation"
 import TrustStandard from "@/components/real-estate/TrustStandard"
 import { parseRegistryFilters } from "@/lib/real-estate/registry-search"
+import CampaignPromotions from "@/components/real-estate/CampaignPromotions"
 import EcosystemPromotions from "@/components/real-estate/EcosystemPromotions"
 import RegistryDiscovery from "@/components/real-estate/RegistryDiscovery"
 import RegistryPhotoProjects from "@/components/real-estate/RegistryPhotoProjects"
@@ -231,11 +232,13 @@ export default function RealEstatePage() {
             </section>
         </div>
         </div>
-        <nav aria-label="Buyer research tools" className="mt-8 flex flex-wrap gap-3"><Link href="/real-estate/registry" className="gth-btn inline-flex min-h-11 items-center">Search & compare registry projects</Link><Link href="/real-estate/saved#research-workspace" className="gth-btn inline-flex min-h-11 items-center">Private buyer workspace</Link><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn inline-flex min-h-11 items-center">Ownership cost & affordability</Link></nav>
+        <CampaignPromotions slot="discovery"/>
+        <section aria-labelledby="private-workspace-title" className="gth-glass mt-8 rounded-2xl p-5"><h2 id="private-workspace-title" className="text-lg font-semibold">Keep your property research together</h2><p className="mt-2 text-sm">Save questions, plan a personal visit reminder and track your research on this device.</p><Link href="/real-estate/saved#research-workspace" className="gth-btn mt-4 inline-flex min-h-11 items-center">Private buyer workspace</Link></section>
         <RegistryPhotoProjects />
         <EcosystemPromotions />
-        <section id="buyer-tools" className="mt-10 scroll-mt-24"><p className="gold-text text-xs uppercase tracking-widest">Buyer planning</p><div className="mt-4 grid items-start gap-6 lg:grid-cols-2"><HomeLoanCalculator /><AreaConverter /></div></section>
-        <div className={styles.support}><GlobalMarkets /><TrustStandard /></div>
+        <section id="buyer-tools" className="mt-10 scroll-mt-24"><div className="flex flex-wrap items-center justify-between gap-3"><p className="gold-text text-xs uppercase tracking-widest">Buyer planning</p><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn inline-flex min-h-11 items-center">Ownership cost & affordability</Link></div><div className="mt-4 grid items-start gap-6 lg:grid-cols-2"><HomeLoanCalculator /><AreaConverter /></div></section>
+        <CampaignPromotions slot="planning"/>
+        <div className={styles.support}><GlobalMarkets /><Link href="/real-estate/registry" className="gth-btn mt-4 inline-flex min-h-11 items-center">Search & compare registry projects</Link><TrustStandard /></div>
         <section className={styles.submit}><div><h2>Owners, developers & channel partners</h2><p>List a resale home, rental, new launch, commercial space or plot. Add real photographs, specifications and your asking price for independent review.</p><p className="mt-3 text-xs">Create your account → Submit property & rights evidence → Listing and photo review → Publication. Registration is checked separately; a submission is never an automatic verification.</p></div><Link href="/real-estate/post-property" className={`gth-btn gth-btn-gold ${styles.button}`}>List your property<ArrowUpRight size={15} /></Link></section>
         {compared.length > 0 && <section className={styles.compareTray} aria-label="Selected property comparison"><strong><GitCompareArrows size={17} />{compared.length} selected</strong><div className={styles.compareNames}>{compared.map(property => <button key={property.slug} onClick={() => setCompared(previous => previous.filter(item => item.slug !== property.slug))} aria-label={`Remove ${property.title} from comparison`}><span>{property.title}</span><X size={12} /></button>)}</div><button className={styles.compareClear} onClick={() => setCompared([])}>Clear</button><button className={`gth-btn gth-btn-gold ${styles.button}`} disabled={compared.length < 2} onClick={() => setDialog({ kind:"compare", properties:compared })}>Compare<ArrowUpRight size={14} /></button></section>}
         {dialog && <ExplorerDialog state={dialog} onClose={() => setDialog(null)} />}
