@@ -17,6 +17,7 @@ export default function RealEstateFooter() {
           <h2 className="font-bold mb-4">Property journey</h2>
           <div className="grid gap-4 text-sm">
             <Link href="/real-estate">Explore markets</Link>
+            <Link href="/real-estate/worldwide">Worldwide property gateway</Link>
             <Link href="/real-estate/saved">Saved & compare</Link>
             <Link href="/real-estate/post-property">Submit a property</Link>
             <Link href="/real-estate/profile">Your account</Link>

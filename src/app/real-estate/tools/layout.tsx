@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
-const title = "Repayment calculator & property checklist | GTH PRO"
-const description = "Estimate monthly repayments from your own loan figures and prepare a property buying checklist. Estimates are not lender offers."
+const title = "Property decision calculators & buying checklist | GTH PRO"
+const description = "Compare rent versus buy, loan prepayment, sale proceeds, ownership costs and affordability using your own assumptions. Includes area conversion and a buying checklist."
 const url = "/real-estate/tools"
 
 export const metadata: Metadata = {

@@ -26,7 +26,8 @@ try{
   ['/real-estate','Your next property starts here.'],
   ['/real-estate/registry?q=Lake%2Cor%28id.gt.0%29','Use a valid project search'],
   ['/real-estate/registry/compare?projects=one','Select two or three distinct projects'],
-  ['/real-estate/tools','Plan the complete cost of your next property'],
+  ['/real-estate/tools','Rent, buy, repay or sell'],
+  ['/real-estate/worldwide','Your worldwide property gateway'],
   ['/real-estate/saved','Your private property research workspace'],
  ]){const r=await fetch(root+path,{signal:AbortSignal.timeout(10000)});const body=await r.text();assert.equal(r.status,200);assert.ok(body.includes(expected),path);console.log(JSON.stringify({path,status:r.status}));}
 } catch(error){console.error(error);console.error(output.slice(-2500));process.exitCode=1;}finally{server.kill('SIGTERM');}
