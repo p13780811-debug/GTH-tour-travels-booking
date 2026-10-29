@@ -1,7 +1,7 @@
 name: GTH Master Consolidation — Approved Real Estate Integrity
 on:
   push:
-    branches: [gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound, feat/hybrid-portal-buyer-upgrade-20261027]
+    branches: [feat/estate-market-workspace-20261029, gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound, feat/hybrid-portal-buyer-upgrade-20261027]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -34,6 +34,20 @@ jobs:
             src/app/real-estate/tools/ \
             src/components/real-estate/ \
             src/lib/real-estate/ \
+            ':!src/components/real-estate/EstateAnalyticsConsent.tsx' \
+            ':!src/components/real-estate/ListingViewEvent.tsx' \
+            ':!src/components/real-estate/LocalityPriceExplorer.tsx' \
+            ':!src/components/real-estate/PropertyEvidence.tsx' \
+            ':!src/components/real-estate/PropertyWorkspace.tsx' \
+            ':!src/components/real-estate/RegionMapPicker.tsx' \
+            ':!src/components/real-estate/RegionSearch.tsx' \
+            ':!src/components/real-estate/WorkspaceForm.tsx' \
+            ':!src/lib/real-estate/market-evidence.ts' \
+            ':!src/lib/real-estate/search-region.ts' \
+            ':!src/lib/real-estate/workspace-contract.ts' \
+            ':!src/app/api/real-estate/intelligence/route.ts' \
+            ':!src/app/api/real-estate/listing-events/route.ts' \
+            ':!src/app/api/real-estate/workspace/route.ts' \
             ':!src/components/real-estate/Explorer.module.css' \
             ':!src/components/real-estate/ExplorerCard.tsx' \
             ':!src/components/real-estate/ExplorerDialog.tsx' \

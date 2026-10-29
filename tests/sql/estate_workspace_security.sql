@@ -45,6 +45,31 @@ do $$begin
  if not public.property_region_valid('[[72,19],[73,19],[73,20],[72,20]]') or public.property_region_valid('[[0,0],[2,2],[0,2],[2,0]]') or not public.property_region_contains('[[179,10],[-179,10],[-179,12],[179,12]]',180,11) or public.property_region_contains('[[179,10],[-179,10],[-179,12],[179,12]]',0,11) then raise exception 'REGION_VALIDATION';end if;
 end$$;
 reset role;
+set local role anon;
+do $$declare r jsonb;begin
+ r:=public.search_hybrid_properties(jsonb_build_object('mode','buy','query','Rollback evidence fixture','region','[[72,19],[73,19],[73,20],[72,20]]'::jsonb));
+ if not exists(select 1 from jsonb_array_elements(r->'items') item where (item->>'id')::bigint=current_setting('estate_test.project')::bigint) then raise exception 'DRAWN_SEARCH_MISSING';end if;
+ r:=public.search_hybrid_properties(jsonb_build_object('mode','buy','query','Rollback evidence fixture','region','[[70,19],[71,19],[71,20],[70,20]]'::jsonb));
+ if exists(select 1 from jsonb_array_elements(r->'items') item where (item->>'id')::bigint=current_setting('estate_test.project')::bigint) then raise exception 'DRAWN_SEARCH_OUTSIDE';end if;
+ begin perform public.search_hybrid_properties('{"region":[[0,0],[2,2],[0,2],[2,0]]}');raise exception 'INVALID_REGION_ACCEPTED';exception when sqlstate '22023' then null;end;
+end$$;
+reset role;
+select set_config('request.jwt.claim.sub',current_setting('estate_test.admin'),true),set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('estate_test.admin'),'role','authenticated','app_metadata',jsonb_build_object('role','admin'))::text,true);
+set local role authenticated;
+insert into public.property_market_reports(project_id,kind,title,source_url,provider_name,credential_reference,observed_on,amount,currency,property_type,area_sqft,area_basis,rights_verified)
+ values(current_setting('estate_test.project')::bigint,'transaction','Rollback reviewed source','https://example.invalid/public-report','Rollback source authority','Rollback public reference',current_date,95,'INR','Apartment',100,'carpet',true);
+reset role;
+set local role anon;
+do $$begin
+ if not exists(select 1 from public.property_market_reports where project_id=current_setting('estate_test.project')::bigint) then raise exception 'REVIEWED_SOURCE_UNAVAILABLE';end if;
+ if exists(select 1 from public.property_locality_price_series('India','Mumbai','INR','Apartment','carpet','transaction')) then raise exception 'INSUFFICIENT_PROJECT_SAMPLE_PUBLISHED';end if;
+end$$;
+reset role;
+do $$begin
+ if exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('property_price_events','property_search_alerts','property_notifications','property_offers','property_offer_messages','property_saved_items','property_service_requests','property_crm_tasks','property_market_reports','property_resident_reviews','property_review_publications','property_listing_events') and not c.relrowsecurity) then raise exception 'WORKSPACE_RLS_DISABLED';end if;
+ if has_schema_privilege('authenticated','estate_workspace_private','USAGE') or has_schema_privilege('anon','estate_workspace_private','USAGE') then raise exception 'PRIVATE_TRIGGER_SCHEMA_EXPOSED';end if;
+end$$;
+reset role;
 update public.property_inventory set status='withdrawn' where id=current_setting('estate_test.unit')::uuid;
 set local role anon;
 do $$begin if exists(select 1 from public.property_price_events where inventory_id=current_setting('estate_test.unit')::uuid) then raise exception 'WITHDRAWN_PRICE_EXPOSED';end if;end$$;

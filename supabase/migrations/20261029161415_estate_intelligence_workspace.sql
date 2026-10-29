@@ -106,6 +106,7 @@ create index estate_listing_event_unit on public.property_listing_events(invento
 revoke all on public.property_listing_events from anon,authenticated;
 grant insert,select on public.property_listing_events to service_role;
 alter table public.property_listing_events enable row level security;
+create policy estate_service_events on public.property_listing_events for all to service_role using(true) with check(true);
 alter table public.property_search_alerts enable row level security;
 revoke all on public.property_search_alerts from anon,authenticated;
 alter table public.property_notifications enable row level security;
@@ -132,7 +133,7 @@ create policy estate_own_insert on public.property_search_alerts for insert to a
 create policy estate_own_delete on public.property_search_alerts for delete to authenticated using(owner_id=(select auth.uid()));
 grant select,insert,delete on public.property_saved_items to authenticated;
 create policy estate_own_read on public.property_saved_items for select to authenticated using(owner_id=(select auth.uid()));
-create policy estate_own_insert on public.property_saved_items for insert to authenticated with check(owner_id=(select auth.uid()));
+create policy estate_own_insert on public.property_saved_items for insert to authenticated with check(owner_id=(select auth.uid()) and exists(select 1 from public.properties p where p.id=project_id and coalesce(p.status,'')<>'archived'));
 create policy estate_own_delete on public.property_saved_items for delete to authenticated using(owner_id=(select auth.uid()));
 grant update(active) on public.property_search_alerts to authenticated;
 create policy estate_own_update on public.property_search_alerts for update to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
@@ -167,7 +168,9 @@ grant select on public.property_review_publications to anon,authenticated;
 create policy estate_published_reviews on public.property_review_publications for select to anon,authenticated using(exists(select 1 from public.properties p where p.id=project_id and coalesce(p.status,'')<>'archived'));
 grant select,insert,update on public.property_market_reports,public.property_crm_tasks to authenticated;
 create policy estate_report_admin on public.property_market_reports for all to authenticated using((select auth.jwt()->'app_metadata'->>'role')='admin') with check((select auth.jwt()->'app_metadata'->>'role')='admin' and reviewed_by=(select auth.uid()));
-create policy estate_crm_admin on public.property_crm_tasks for all to authenticated using((select auth.jwt()->'app_metadata'->>'role')='admin') with check((select auth.jwt()->'app_metadata'->>'role')='admin' and created_by=(select auth.uid()));
+create policy estate_crm_admin_read on public.property_crm_tasks for select to authenticated using((select auth.jwt()->'app_metadata'->>'role')='admin');
+create policy estate_crm_admin_insert on public.property_crm_tasks for insert to authenticated with check((select auth.jwt()->'app_metadata'->>'role')='admin' and created_by=(select auth.uid()));
+create policy estate_crm_admin_update on public.property_crm_tasks for update to authenticated using((select auth.jwt()->'app_metadata'->>'role')='admin') with check((select auth.jwt()->'app_metadata'->>'role')='admin');
 grant select on public.property_market_reports to anon;
 create policy estate_public_reports on public.property_market_reports for select to anon,authenticated using(status='approved' and rights_verified and reviewed_at is not null and (expires_on is null or expires_on>=current_date) and exists(select 1 from public.properties p where p.id=project_id and coalesce(p.status,'')<>'archived'));
 grant update(status) on public.property_leads to authenticated;
@@ -260,6 +263,13 @@ begin
 end;$$;
 create trigger estate_inventory_price after insert or update of price_amount,currency,status on public.property_inventory for each row execute function estate_workspace_private.capture_price();
 create trigger estate_media_price after insert or update on public.property_published_media for each row execute function estate_workspace_private.capture_price();
+create function estate_workspace_private.service_notice() returns trigger language plpgsql security definer set search_path='' as $$
+begin
+ if new.response is distinct from old.response and new.response is not null then
+ if auth.uid() is null or coalesce(auth.jwt()->'app_metadata'->>'role','')<>'admin' then raise exception 'Administrator required';end if;
+ insert into public.property_notifications(owner_id,title,href) values(new.owner_id,'Your property support request has an update','/real-estate/workspace?tab=services');end if;return new;
+end;$$;
+create trigger estate_service_notice after update on public.property_service_requests for each row execute function estate_workspace_private.service_notice();
 revoke all on all functions in schema estate_workspace_private from public,anon,authenticated;
 -- Public analytics retain RLS and minimum independent project samples.
 create function public.property_locality_price_series(p_country text,p_city text,p_currency text,p_type text,p_basis text,p_source text default 'asking')
@@ -421,5 +431,6 @@ end;
 $function$;
 
 
+grant all on public.property_price_events,public.property_search_alerts,public.property_notifications,public.property_offers,public.property_offer_messages,public.property_saved_items,public.property_service_requests,public.property_crm_tasks,public.property_market_reports,public.property_resident_reviews,public.property_review_publications,public.property_listing_events to service_role;
 notify pgrst,'reload schema';
 commit;
