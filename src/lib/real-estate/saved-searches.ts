@@ -1,9 +1,11 @@
+import {parseSearchRegion} from "./search-region"
 export const SEARCHES_KEY = "gth-property-searches-v1"
 const keys = ["query", "country", "city", "type", "listing", "bedrooms", "possession", "currency", "minPrice", "maxPrice", "sort"]
 export type SavedSearch = { query: string; label: string }
 export function normalizeSearchQuery(raw: string): string {
- const source = new URLSearchParams(raw.slice(0, 2048))
+ const source = new URLSearchParams(raw.slice(0, 8192))
  const output = new URLSearchParams()
+ try{const region=parseSearchRegion(source.get("region"));if(region)output.set("region",JSON.stringify(region));}catch{}
  for (const key of keys) {
   const value = (source.get(key) || "").normalize("NFKC").trim().slice(0, key === "query" ? 120 : 80)
   if (!value) continue
@@ -30,7 +32,7 @@ export function normalizeSearches(raw: unknown): SavedSearch[] {
   seen.add(query)
   const params = new URLSearchParams(query)
  const budget = params.get("minPrice") || params.get("maxPrice") ? `${params.get("currency") || ""} ${params.get("minPrice") || "0"}–${params.get("maxPrice") || "any"}`.trim() : ""
- const label = [params.get("query"),params.get("city"),params.get("country"),params.get("listing")?.replaceAll("_"," "),params.get("type"),params.get("bedrooms") ? `${params.get("bedrooms")} beds` : "",params.get("possession")?.replaceAll("_"," "),budget].filter(Boolean).join(" · ") || "All properties"
+ const label = [params.has("region") ? "Drawn map region" : "",params.get("query"),params.get("city"),params.get("country"),params.get("listing")?.replaceAll("_"," "),params.get("type"),params.get("bedrooms") ? `${params.get("bedrooms")} beds` : "",params.get("possession")?.replaceAll("_"," "),budget].filter(Boolean).join(" · ") || "All properties"
   return [{query,label}]
  }).slice(0,10)
 }

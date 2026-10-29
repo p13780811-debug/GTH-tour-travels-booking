@@ -1,3 +1,4 @@
+import {parseSearchRegion} from "./search-region"
 import { RequestError } from "@/lib/security/request"
 
 export const SEARCH_MODES = ["buy", "rent", "new_launch", "commercial", "plots"] as const
@@ -23,6 +24,7 @@ export function parseHybridSearch(params: URLSearchParams) {
     if (!/^\d{1,13}(?:\.\d{1,2})?$/.test(raw) || !Number.isFinite(Number(raw)) || Number(raw) < 1 || Number(raw) > max) throw new RequestError("Invalid numeric filter", 400)
     return Number(raw)
   }
+  let region;try{region=parseSearchRegion(params.get("region"));}catch{throw new RequestError("Invalid map region",400)}
   const minPrice = number("minPrice", 999999999999), maxPrice = number("maxPrice", 999999999999)
   const currency = choice("currency", ["INR", "AED", "USD", "GBP", "EUR", "SGD"])
   if ((minPrice || maxPrice) && !currency) throw new RequestError("Choose a currency for budget filters", 400)
@@ -30,6 +32,7 @@ export function parseHybridSearch(params: URLSearchParams) {
   const page = number("page", 10000, 1)!
   if (!Number.isInteger(page)) throw new RequestError("Invalid result page", 400)
   return {
+    ...(region?{region}:{}),
     query: text("query", 120), city: text("city"), country: text("country"),
     mode: choice("listing", SEARCH_MODES, "buy"),
     type: choice("type", ["Apartment", "Villa", "Penthouse", "Commercial", "Plot", "Residential", "Residential / Group Housing", "Plotted", "Mixed", "Others"]),

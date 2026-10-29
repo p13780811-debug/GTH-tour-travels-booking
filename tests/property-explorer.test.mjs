@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import ts from 'typescript';
 import fs from 'node:fs';
-function readModule(path) {
+function readModule(path,deps={}) {
  const exports = {};
- new Function('exports', ts.transpileModule(fs.readFileSync(path,'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(exports);
+ new Function('exports','require', ts.transpileModule(fs.readFileSync(path,'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(exports,n=>{if(!(n in deps))throw Error(n);return deps[n];});
  return exports;
 }
 const {coverage,compareSelection,recordedNumber} = readModule('src/lib/real-estate/explorer.ts');
-const {normalizeSearchQuery,normalizeSearches} = readModule('src/lib/real-estate/saved-searches.ts');
+const {normalizeSearchQuery,normalizeSearches} = readModule('src/lib/real-estate/saved-searches.ts',{'./search-region':readModule('src/lib/real-estate/search-region.ts')});
 const fixture = {id:1,slug:'record-one',title:'Project one',rera_id:'P51800000001',city:'Mumbai',registry_only:true,official_source_url:'https://maharera.maharashtra.gov.in/projects-search-result'};
 test('registry-only coverage counts source facts without inventing verification or inventory',()=>{
  assert.equal(coverage(fixture).score,60);

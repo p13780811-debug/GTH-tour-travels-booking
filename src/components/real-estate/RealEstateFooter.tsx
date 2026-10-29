@@ -1,3 +1,4 @@
+import EstateAnalyticsConsent from "./EstateAnalyticsConsent"
 import Link from "next/link"
 import styles from "./Listing.module.css"
 
@@ -18,6 +19,8 @@ export default function RealEstateFooter() {
           <div className="grid gap-4 text-sm">
             <Link href="/real-estate">Explore markets</Link>
             <Link href="/real-estate/worldwide">Worldwide property gateway</Link>
+            <Link href="/real-estate/workspace">Private property workspace</Link>
+            <Link href="/real-estate/market-intelligence">Recorded market evidence</Link>
             <Link href="/real-estate/saved">Saved & compare</Link>
             <Link href="/real-estate/post-property">Submit a property</Link>
             <Link href="/real-estate/profile">Your account</Link>
@@ -35,6 +38,7 @@ export default function RealEstateFooter() {
           </div>
         </nav>
       </div>
+      <EstateAnalyticsConsent />
       <nav aria-label="GTH PRO ecosystem footer" className="mt-6 flex flex-wrap gap-4 text-sm">
         <Link href="/" className="inline-flex min-h-11 items-center">GTH PRO home</Link>
         <Link href="/travel" className="inline-flex min-h-11 items-center">Tours & travels</Link>

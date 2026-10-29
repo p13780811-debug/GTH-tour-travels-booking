@@ -63,7 +63,7 @@ export default function RealEstatePage() {
         const storedPage = Number(url.searchParams.get("page"))
         const nextPage = requestedPage ?? (Number.isInteger(storedPage) && storedPage > 0 && storedPage <= 10000 ? storedPage : 1)
         const params = url.searchParams
-        setActiveFilters([...params.entries()].filter(([key,value]) => ["query","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort","possession"].includes(key) && Boolean(value)))
+        setActiveFilters([...params.entries()].filter(([key,value]) => ["query","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort","possession","region"].includes(key) && Boolean(value)))
         setLoading(true)
         setError("")
         setQuery((params.get("query") || "").slice(0, 120))
@@ -87,7 +87,7 @@ export default function RealEstatePage() {
 
     useEffect(() => {
         let active = true
-        const hasOfferFilters = ["listing","query","city","country","type","bedrooms","currency","minPrice","maxPrice","sort","possession","page"].some(key => new URLSearchParams(window.location.search).has(key))
+        const hasOfferFilters = ["listing","query","city","country","type","bedrooms","currency","minPrice","maxPrice","sort","possession","region","page"].some(key => new URLSearchParams(window.location.search).has(key))
         if (hasOfferFilters) {setDiscovery("offers");load()} else setLoading(false)
         supabase.auth.getUser().then(({ data }) => { if (active) setUser(data.user) }).catch(() => { /* Public discovery stays available without a session. */ })
         const { data: auth } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
@@ -183,7 +183,7 @@ export default function RealEstatePage() {
     }
     const reset = () => {
         const url = new URL(window.location.href)
-        for (const key of ["query","page","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort","possession"]) url.searchParams.delete(key)
+        for (const key of ["query","page","country","city","type","listing","bedrooms","currency","minPrice","maxPrice","sort","possession","region"]) url.searchParams.delete(key)
         window.history.replaceState(null, "", url)
         window.dispatchEvent(new Event("gth-discovery-filters"))
         load(1)
@@ -220,7 +220,7 @@ export default function RealEstatePage() {
                 <header className={styles.resultsHeader}><div><p className={styles.eyebrow}>PROPERTY DISCOVERY</p><h2>Properties with approved photographs</h2><p role="status">{loading ? "Finding reviewed property listings…" : error ? "Inventory temporarily unavailable" : `${properties.length} results on page ${page}`}</p></div>
                     <div className={styles.resultActions}><label><span className="sr-only">Sort properties</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">Recently added</option><option value="ai">Smart Ranked</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label><button className={styles.iconButton} aria-pressed={view === "list"} aria-label="Property grid" onClick={() => setView("list")}><LayoutGrid size={16} />{view === "list" && <Check size={12} aria-hidden="true" />}</button><button className={styles.iconButton} aria-pressed={view === "map"} aria-label="Map view" onClick={() => setView("map")}><Map size={16} />{view === "map" && <Check size={12} aria-hidden="true" />}</button></div>
                 </header>
-                {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button className="inline-flex items-center gap-2" key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key}: {value.slice(0,120)}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
+                {activeFilters.length > 0 && <div className={styles.chips} aria-label="Active filters">{activeFilters.map(([key,value]) => <button className="inline-flex items-center gap-2" key={key} onClick={() => removeFilter(key)} aria-label={`Remove ${key} filter: ${value.slice(0,120)}`}>{key === "region" ? "Drawn map region" : `${key}: ${value.slice(0,120)}`}<X size={11} /></button>)}<button onClick={reset}>Clear all</button></div>}
                 <details className="mb-3 text-xs"><summary>How property ranking works</summary><button className="mt-2 min-h-11" onClick={() => showInfo("ranking")}><Sparkles size={14}/>Inspect record coverage and ranking details<Info size={13}/></button></details>
                 {loading && <div className={styles.grid} aria-hidden="true">{Array.from({length:6},(_,index) => <div key={index} className={styles.skeleton} />)}</div>}
                 {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}

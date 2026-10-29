@@ -1,3 +1,5 @@
+import Link from "next/link"
+import ListingViewEvent from "./ListingViewEvent"
 import EnquiryForm from "./EnquiryForm"
 
 export default function ProjectInventory({ items = [] }: { items?: any[] }) {
@@ -14,7 +16,7 @@ export default function ProjectInventory({ items = [] }: { items?: any[] }) {
           ? new Intl.NumberFormat("en", { style:"currency", currency:item.currency || "INR", maximumFractionDigits:0 }).format(amount)
           : "Price on request"
 
-        return <article key={item.id} className="gth-glass rounded-2xl p-5">
+        return <article key={item.id} className="gth-glass rounded-2xl p-5"><ListingViewEvent inventoryId={item.id} />
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs uppercase tracking-widest opacity-70">{item.listing_type === "rent" ? "For rent" : "For sale"} · {item.property_type || "Property"}</p>
@@ -33,7 +35,7 @@ export default function ProjectInventory({ items = [] }: { items?: any[] }) {
             ].map(([label,value]) => <div key={String(label)}><dt className="text-xs opacity-70">{label}</dt><dd className="font-medium mt-1">{String(value)}</dd></div>)}
           </dl>
           {item.description && <p className="text-sm opacity-70 leading-7 mt-4">{item.description}</p>}
-          <div className="mt-5"><EnquiryForm propertyId={item.project_id || item.property_id} inventoryId={item.id} mode="inventory" /></div>
+          <div className="mt-5 flex flex-wrap gap-3"><Link className="gth-btn" href={`/real-estate/workspace?tab=offers&inventory=${item.id}`}>Make a non-binding offer</Link><Link className="gth-btn" href={`/real-estate/workspace?tab=alerts&inventory=${item.id}`}>Watch price changes</Link></div><div className="mt-5"><EnquiryForm propertyId={item.project_id || item.property_id} inventoryId={item.id} mode="inventory" /></div>
         </article>
       })}
     </div>
