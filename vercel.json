@@ -30,7 +30,8 @@
       "fix/real-estate-registry-resilience-20261027": false,
       "feat/hybrid-portal-buyer-upgrade-20261027": false,
       "fix/mobile-app-drive-widget-isolation-20261028": false,
-      "feat/estate-market-workspace-20261029": false
+      "feat/estate-market-workspace-20261029": false,
+      "feat/estate-discovery-quality-20261030": false
     }
   }
 }

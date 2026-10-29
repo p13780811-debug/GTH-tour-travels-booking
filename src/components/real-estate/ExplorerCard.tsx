@@ -1,4 +1,5 @@
 "use client"
+import HidePropertyButton from "./HidePropertyButton"
 import Link from "next/link"
 import {isPropertyVisualCard} from "@/app/real-estate/registry/explorer-presentation"
 import {useState} from "react"
@@ -29,6 +30,7 @@ export default function ExplorerCard({ property: p, selected, compareFull, onCom
       <div className={styles.cardNumbers}><strong>{registry ? "Price on request" : p.formatted_price || "Price on request"}</strong><div><span><BedDouble size={14} />{p.beds || "—"}<small>beds</small></span><span><Maximize size={14} />{p.sqft ? p.sqft.toLocaleString("en-IN") : "—"}<small>sq ft</small></span></div></div>
       <button className={styles.rank} onClick={() => onInfo("ranking")}><Sparkles size={14} /><span>Record coverage</span><strong>{score}<small>/100</small></strong><ArrowUpRight size={13} /></button>
       <div className={styles.cardBottom}><label title="Compare up to three properties"><input type="checkbox" aria-label={`Compare ${p.title}`} checked={selected} disabled={!selected && compareFull} onChange={onCompare} /><span>{selected ? <><Check size={13} />Selected</> : "Compare"}</span></label><Link href={url}>View details<ArrowUpRight size={14} /></Link></div>
+      <HidePropertyButton slug={p.slug} title={p.title} />
       <PropertyLeadActions property={{ id: Number(p.id), title: p.title, slug: p.slug, rera_id: p.rera_id }} compact />
     </div>
   </article>

@@ -1,7 +1,7 @@
 name: GTH Master Consolidation — Approved Real Estate Integrity
 on:
   push:
-    branches: [feat/estate-market-workspace-20261029, gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound, feat/hybrid-portal-buyer-upgrade-20261027]
+    branches: [feat/estate-discovery-quality-20261030, feat/estate-market-workspace-20261029, gth-pro-consolidation-candidate-v1, fix/travel-consistent-outbound, feat/hybrid-portal-buyer-upgrade-20261027]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -34,6 +34,10 @@ jobs:
             src/app/real-estate/tools/ \
             src/components/real-estate/ \
             src/lib/real-estate/ \
+            ':!src/components/real-estate/HidePropertyButton.tsx' \
+            ':!src/components/real-estate/HiddenProperties.tsx' \
+            ':!src/lib/real-estate/discovery-quality.ts' \
+            ':!src/app/real-estate/profile/page.tsx' \
             ':!src/components/real-estate/EstateAnalyticsConsent.tsx' \
             ':!src/components/real-estate/ListingViewEvent.tsx' \
             ':!src/components/real-estate/LocalityPriceExplorer.tsx' \

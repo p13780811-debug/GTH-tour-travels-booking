@@ -1,7 +1,7 @@
 name: GTH Hybrid Real Estate Security
 on:
   push:
-    branches: [feat/estate-market-workspace-20261029, main]
+    branches: [feat/estate-discovery-quality-20261030, feat/estate-market-workspace-20261029, main]
   pull_request:
     branches: [main]
     paths:
@@ -51,8 +51,11 @@ jobs:
             supabase/migrations/20261027063921_hybrid_portal_permissions.sql \
             tests/hybrid-real-estate/permissions.sql \
             tests/estate-workspace/bootstrap.sql \
-            supabase/migrations/20261029161415_estate_intelligence_workspace.sql; do
+            supabase/migrations/20261029161415_estate_intelligence_workspace.sql \
+            supabase/migrations/20261029230929_estate_discovery_quality.sql; do
             psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
           done
           # The workspace fixture is always rolled back, including all test users and data.
-          (printf 'begin;\n'; cat tests/sql/estate_workspace_security.sql; printf '\nrollback;\n') | psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1
+          for fixture in tests/sql/estate_workspace_security.sql tests/sql/estate_workspace_quality.sql; do
+            (printf 'begin;\n'; cat "$fixture"; printf '\nrollback;\n') | psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1
+          done

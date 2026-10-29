@@ -7,6 +7,8 @@ export type HybridSearch = ReturnType<typeof parseHybridSearch>
 
 /** Parse once on the server; never interpolate untrusted PostgREST expressions. */
 export function parseHybridSearch(params: URLSearchParams) {
+  const known=['query','city','country','listing','type','bedrooms','possession','currency','minPrice','maxPrice','sort','page','region','minArea','maxArea','areaBasis','minBathrooms','sellerRole','publishedWithin','verifiedOnly','withTour'];
+  if(known.some(key=>params.getAll(key).length>1))throw new RequestError("Duplicate property filter",400)
   const text = (key: string, max = 80) => {
     const value = params.get(key)?.normalize("NFKC").trim() || ""
     if (value.length > max || (value && !/^[\p{L}\p{N} ./'&-]+$/u.test(value))) throw new RequestError("Invalid search text", 400)
@@ -29,10 +31,17 @@ export function parseHybridSearch(params: URLSearchParams) {
   const currency = choice("currency", ["INR", "AED", "USD", "GBP", "EUR", "SGD"])
   if ((minPrice || maxPrice) && !currency) throw new RequestError("Choose a currency for budget filters", 400)
   if (minPrice && maxPrice && minPrice > maxPrice) throw new RequestError("Minimum budget exceeds maximum budget", 400)
+  const minArea=number("minArea",1000000),maxArea=number("maxArea",1000000),areaBasis=choice("areaBasis",["carpet","built_up","plot"])
+  if((minArea||maxArea)&&!areaBasis)throw new RequestError("Choose an area basis for area filters",400)
+  if(minArea&&maxArea&&minArea>maxArea)throw new RequestError("Minimum area exceeds maximum area",400)
+  const yes=(key:string)=>{const value=params.get(key);if(!value)return null;if(value!=="1")throw new RequestError("Invalid property filter",400);return true;}
+  const minBathrooms=choice("minBathrooms",["1","2","3","4"]),publishedWithin=choice("publishedWithin",["7","30","90"])
+  const sellerRole=choice("sellerRole",["owner","developer","agent","other"]),verifiedOnly=yes("verifiedOnly"),withTour=yes("withTour")
   const page = number("page", 10000, 1)!
   if (!Number.isInteger(page)) throw new RequestError("Invalid result page", 400)
   return {
     ...(region?{region}:{}),
+    ...(minArea?{minArea}:{}),...(maxArea?{maxArea}:{}),...(areaBasis?{areaBasis}:{}),...(minBathrooms?{minBathrooms:Number(minBathrooms)}:{}),...(publishedWithin?{publishedWithin:Number(publishedWithin)}:{}),...(sellerRole?{sellerRole}:{}),...(verifiedOnly?{verifiedOnly}:{}),...(withTour?{withTour}:{}),
     query: text("query", 120), city: text("city"), country: text("country"),
     mode: choice("listing", SEARCH_MODES, "buy"),
     type: choice("type", ["Apartment", "Villa", "Penthouse", "Commercial", "Plot", "Residential", "Residential / Group Housing", "Plotted", "Mixed", "Others"]),

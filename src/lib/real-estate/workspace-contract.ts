@@ -1,6 +1,6 @@
 import {RequestError} from '@/lib/security/request';
 export const ESTATE_CURRENCIES=['INR','AED','USD','GBP','EUR','SGD'] as const;
-export const SERVICE_KINDS=['valuation','legal','moving','interiors','crm_feed','virtual_tour','translation','registry','open_house','loan_consultation'] as const;
+export const SERVICE_KINDS=['valuation','legal','moving','interiors','crm_feed','virtual_tour','translation','registry','open_house','loan_consultation','listing_report'] as const;
 const invalid=(name:string):never=>{throw new RequestError('Invalid '+name,400);};
 export function plain(value:unknown,name:string,min=1,max=2000):string {if(typeof value!=='string')return invalid(name);const text=value.normalize('NFKC').replace(/\s+/g,' ').trim();if(text.length<min||text.length>max||/[<>\u0000-\u001f\u007f]/.test(text))return invalid(name);return text;}
 export function uuid(value:unknown):string {const s=String(value||'');if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s))return invalid('record reference');return s;}
@@ -25,6 +25,7 @@ export function parseWorkspaceCreate(resource:string,b:Record<string,unknown>):R
 }
 export function parseWorkspacePatch(resource:string,b:Record<string,unknown>):Record<string,unknown> {
  const id=uuid(b.id);
+ if(resource==='inventory'){exact(b,['id','action']);if(b.action!=='withdraw')invalid('inventory action');return {id,status:'withdrawn'};}
  if(resource==='notifications'){exact(b,['id']);return {id,read_at:new Date().toISOString()};}
  if(resource==='alerts'){exact(b,['id','active']);if(typeof b.active!=='boolean')invalid('alert state');return {id,active:b.active};}
  if(resource==='offers'){exact(b,['id','version','status','counter_amount']);return {id,version:integer(b.version,'offer version',10000),status:choice(b.status,['under_review','countered','declined','withdrawn','discussion_agreed'],'offer state'),counter_amount:optionalNumber(b.counter_amount,'counter amount')};}
