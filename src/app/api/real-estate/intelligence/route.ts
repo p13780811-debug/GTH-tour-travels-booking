@@ -1,0 +1,15 @@
+import {createClient} from '@supabase/supabase-js';
+import {RequestError,requestError} from '@/lib/security/request';
+import {plain,ESTATE_CURRENCIES} from '@/lib/real-estate/workspace-contract';
+export async function GET(req:Request){try{
+ const p=new URL(req.url).searchParams;if([...p.keys()].some(k=>!['slug','country','city','currency','type','basis','source'].includes(k))||[...p.keys()].some(k=>p.getAll(k).length!==1))throw new RequestError('Invalid evidence query',400);
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;if(!url||!key)throw new RequestError('Evidence unavailable',503);
+ const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}),signal=AbortSignal.timeout(12000);
+ const run=async(q:any)=>{const r=await q.abortSignal(signal);if(r.error)throw new RequestError('Evidence temporarily unavailable. Please retry.',503);return r.data||[];};
+ if(p.has('slug')){const slug=plain(p.get('slug'),'project slug',1,180);if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw new RequestError('Invalid project',400);const row=await run(db.from('properties').select('id,city,country').eq('slug',slug).or('status.is.null,status.neq.archived').limit(1));if(!row[0])throw new RequestError('Project unavailable',404);const project=row[0];
+ const [prices,reports,reviews]=await Promise.all([run(db.from('property_price_events').select('id,inventory_id,amount,previous_amount,currency,event_type,listing_type,recorded_at').eq('project_id',project.id).order('recorded_at',{ascending:false}).limit(100)),run(db.from('property_market_reports').select('id,kind,title,source_url,provider_name,credential_reference,observed_on,expires_on,amount,currency,area_sqft,area_basis').eq('project_id',project.id).order('observed_on',{ascending:false}).limit(30)),run(db.from('property_review_publications').select('id,display_name,rating,review_text,published_at').eq('project_id',project.id).order('published_at',{ascending:false}).limit(30))]);
+ return Response.json({project,prices,reports,reviews},{headers:{'Cache-Control':'no-store'}});
+ }
+ const country=plain(p.get('country'),'country',1,80),city=plain(p.get('city'),'city',1,80),currency=String(p.get('currency')),type=String(p.get('type')),basis=String(p.get('basis')),source=String(p.get('source')||'asking');if(!ESTATE_CURRENCIES.includes(currency as any)||!['Apartment','Villa','Penthouse','Commercial','Plot'].includes(type)||!['carpet','built_up','plot'].includes(basis)||!['asking','transaction'].includes(source))throw new RequestError('Invalid evidence filters',400);
+ const items=await run(db.rpc('property_locality_price_series',{p_country:country,p_city:city,p_currency:currency,p_type:type,p_basis:basis,p_source:source}));return Response.json({items,source,currency,method:'For-sale evidence only. A month needs at least five separate projects. Asking prices are seller requests, not sold prices or an appraisal. No currency or area-basis conversion.'},{headers:{'Cache-Control':'no-store'}});
+}catch(e){return requestError(e);}}

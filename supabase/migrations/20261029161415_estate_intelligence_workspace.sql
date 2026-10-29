@@ -180,9 +180,9 @@ begin
  if tg_op='INSERT' then
   perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text,71));
   if (select count(*) from public.property_offers where buyer_id=auth.uid() and created_at>now()-interval '1 day')>=20 then raise exception 'Daily offer limit';end if;
-  select * into u from public.property_inventory where id=new.inventory_id and status='published';
+  select owner_id,project_id,currency into u.owner_id,u.project_id,u.currency from public.property_inventory where id=new.inventory_id and status='published';
   if not found or u.owner_id is null or u.owner_id=auth.uid() or u.currency<>new.currency then raise exception 'Listing unavailable for this offer';end if;
-  select * into p from public.properties where id=u.project_id and coalesce(status,'')<>'archived' and slug is not null;
+  select id,title,slug into p.id,p.title,p.slug from public.properties where id=u.project_id and coalesce(status,'')<>'archived' and slug is not null;
   if not found or not exists(select 1 from public.property_published_media m where m.project_id=p.id and m.media_type='photo') then raise exception 'Approved listing photos required';end if;
   if new.expires_at<=now() or new.expires_at>now()+interval '31 days' then raise exception 'Invalid offer expiry';end if;
   new.buyer_id:=auth.uid();new.seller_id:=u.owner_id;new.project_id:=p.id;new.project_title:=p.title;new.project_slug:=p.slug;new.status:='submitted';new.counter_amount:=null;new.version:=1;
@@ -266,14 +266,14 @@ create function public.property_locality_price_series(p_country text,p_city text
 returns table(month date,median_price_per_sqft numeric,listing_sample bigint,project_sample bigint)
 language sql stable security invoker set search_path='' as $$
  with samples as (
- select e.project_id,e.inventory_id::text sample_id,date_trunc('month',e.recorded_at)::date month,e.amount/e.area_sqft value
+ select e.project_id,e.inventory_id::text sample_id,date_trunc('month',e.recorded_at)::date as month,e.amount/e.area_sqft value,e.recorded_at stamp
  from public.property_price_events e where p_source='asking' and e.listing_type='buy' and e.country=p_country and e.city=p_city and e.currency=p_currency and e.property_type=p_type and e.area_basis=p_basis and e.area_sqft>0
  union all
- select r.project_id,r.id::text,date_trunc('month',r.observed_on)::date,r.amount/r.area_sqft
+ select r.project_id,r.id::text,date_trunc('month',r.observed_on)::date,r.amount/r.area_sqft,r.observed_on::timestamptz
  from public.property_market_reports r join public.properties p on p.id=r.project_id
  where p_source='transaction' and r.kind='transaction' and r.status='approved' and r.rights_verified and r.reviewed_at is not null and (r.expires_on is null or r.expires_on>=current_date) and coalesce(p.status,'')<>'archived'
  and p.country=p_country and p.city=p_city and r.currency=p_currency and r.property_type=p_type and r.area_basis=p_basis and r.area_sqft>0
- ), dedup as (select distinct on(sample_id,month) * from samples order by sample_id,month)
+ ), dedup as (select distinct on(sample_id,month) * from samples order by sample_id,month,stamp desc)
  select month,percentile_cont(0.5) within group(order by value)::numeric,count(*),count(distinct project_id) from dedup group by month having count(distinct project_id)>=5 order by month desc limit 36;
 $$;
 revoke all on function public.property_locality_price_series(text,text,text,text,text,text) from public;
@@ -284,7 +284,7 @@ returns table(inventory_id uuid,project_id bigint,asking_price numeric,currency 
 language sql stable security invoker set search_path='' as $$
  select i.id,i.project_id,i.price_amount,i.currency,
  (select count(*) from public.property_listing_events e where e.inventory_id=i.id and e.created_at>=now()-interval '30 days'),
- (select count(*) from public.property_leads l where l.inventory_id=i.id and l.created_at>=now()-interval '30 days'),
+ (select count(*) from public.property_leads l join public.leads legacy on legacy.id=l.legacy_lead_id where legacy.inventory_id=i.id and l.created_at>=now()-interval '30 days'),
  (select count(*) from public.property_offers o where o.inventory_id=i.id and o.created_at>=now()-interval '30 days')
  from public.property_inventory i where i.owner_id=p_owner order by i.created_at desc limit 100;
 $$;
@@ -295,5 +295,131 @@ do $$begin
 end$$;
 -- First observation is today, never a reconstructed registry or sold-price history.
 do $$declare unit uuid;begin for unit in select id from public.property_inventory where status='published' loop perform estate_workspace_private.capture_unit_price(unit);end loop;end$$;
+create function public.estate_unwrap(x double precision,a double precision) returns double precision language sql immutable strict parallel safe set search_path='' as $$select a+(x-a+540-floor((x-a+540)/360)*360)-180$$;
+create function public.estate_cross(ax double precision,ay double precision,bx double precision,by_ double precision,cx double precision,cy double precision) returns double precision language sql immutable strict parallel safe set search_path='' as $$select (bx-ax)*(cy-ay)-(by_-ay)*(cx-ax)$$;
+create function public.property_region_valid(region jsonb) returns boolean language plpgsql immutable security invoker set search_path='' as $$
+declare n int; i int;j int;k int;l int; xs double precision[]:='{}';ys double precision[]:='{}';area double precision:=0; a double precision;b double precision;c double precision;d double precision;
+begin
+ if region is null or jsonb_typeof(region)<>'array' then return false;end if;n:=jsonb_array_length(region);if n<3 or n>50 then return false;end if;
+ for i in 0..n-1 loop
+  if jsonb_typeof(region->i)<>'array' or jsonb_array_length(region->i)<>2 or jsonb_typeof(region->i->0)<>'number' or jsonb_typeof(region->i->1)<>'number' then return false;end if;
+  a:=(region->i->>0)::double precision;b:=(region->i->>1)::double precision;if abs(a)>180 or abs(b)>90 then return false;end if;
+  xs:=array_append(xs,public.estate_unwrap(a,(region->0->>0)::double precision));ys:=array_append(ys,b);
+ end loop;
+ if (select max(x)-min(x) from unnest(xs) x)>180 then return false;end if;
+ for i in 1..n loop
+  k:=i%n+1;area:=area+xs[i]*ys[k]-xs[k]*ys[i];
+  for j in i+1..n loop
+   if xs[i]=xs[j] and ys[i]=ys[j] then return false;end if;
+   if j=k or (i=1 and j=n) then continue;end if;l:=j%n+1;
+   a:=public.estate_cross(xs[i],ys[i],xs[k],ys[k],xs[j],ys[j]);b:=public.estate_cross(xs[i],ys[i],xs[k],ys[k],xs[l],ys[l]);
+   c:=public.estate_cross(xs[j],ys[j],xs[l],ys[l],xs[i],ys[i]);d:=public.estate_cross(xs[j],ys[j],xs[l],ys[l],xs[k],ys[k]);
+   if a*b<0 and c*d<0 then return false;end if;
+   if abs(a)<1e-9 and xs[j] between least(xs[i],xs[k])-1e-9 and greatest(xs[i],xs[k])+1e-9 and ys[j] between least(ys[i],ys[k])-1e-9 and greatest(ys[i],ys[k])+1e-9 then return false;end if;
+   if abs(b)<1e-9 and xs[l] between least(xs[i],xs[k])-1e-9 and greatest(xs[i],xs[k])+1e-9 and ys[l] between least(ys[i],ys[k])-1e-9 and greatest(ys[i],ys[k])+1e-9 then return false;end if;
+   if abs(c)<1e-9 and xs[i] between least(xs[j],xs[l])-1e-9 and greatest(xs[j],xs[l])+1e-9 and ys[i] between least(ys[j],ys[l])-1e-9 and greatest(ys[j],ys[l])+1e-9 then return false;end if;
+   if abs(d)<1e-9 and xs[k] between least(xs[j],xs[l])-1e-9 and greatest(xs[j],xs[l])+1e-9 and ys[k] between least(ys[j],ys[l])-1e-9 and greatest(ys[j],ys[l])+1e-9 then return false;end if;
+  end loop;
+ end loop;return abs(area)>1e-9;
+ exception when invalid_text_representation or numeric_value_out_of_range then return false;
+end;$$;
+create function public.property_region_contains(region jsonb,longitude double precision,latitude double precision) returns boolean language plpgsql immutable security invoker set search_path='' as $$
+declare n int;i int;j int;x double precision;ax double precision;ay double precision;bx double precision;by_ double precision;inside boolean:=false;
+begin
+ if longitude is null or latitude is null or abs(longitude)>180 or abs(latitude)>90 or not public.property_region_valid(region) then return false;end if;
+ n:=jsonb_array_length(region);x:=public.estate_unwrap(longitude,(region->0->>0)::double precision);j:=n-1;
+ for i in 0..n-1 loop
+  ax:=public.estate_unwrap((region->j->>0)::double precision,(region->0->>0)::double precision);ay:=(region->j->>1)::double precision;
+  bx:=public.estate_unwrap((region->i->>0)::double precision,(region->0->>0)::double precision);by_:=(region->i->>1)::double precision;
+  if abs(public.estate_cross(ax,ay,bx,by_,x,latitude))<1e-9 and x between least(ax,bx)-1e-9 and greatest(ax,bx)+1e-9 and latitude between least(ay,by_)-1e-9 and greatest(ay,by_)+1e-9 then return true;end if;
+  if (ay>latitude)<>(by_>latitude) then if x<(bx-ax)*(latitude-ay)/(by_-ay)+ax then inside:=not inside;end if;end if;j:=i;
+ end loop;return inside;
+end;$$;
+revoke all on function public.estate_unwrap(double precision,double precision),public.estate_cross(double precision,double precision,double precision,double precision,double precision,double precision),public.property_region_valid(jsonb),public.property_region_contains(jsonb,double precision,double precision) from public;
+grant execute on function public.estate_unwrap(double precision,double precision),public.estate_cross(double precision,double precision,double precision,double precision,double precision,double precision),public.property_region_valid(jsonb),public.property_region_contains(jsonb,double precision,double precision) to anon,authenticated;
+
+CREATE OR REPLACE FUNCTION public.search_hybrid_properties(filters jsonb DEFAULT '{}'::jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO ''
+AS $function$
+declare
+ mode text := coalesce(filters->>'mode','buy');
+ page_num integer := coalesce((filters->>'page')::integer,1);
+ lo numeric := (filters->>'minPrice')::numeric;
+ hi numeric := (filters->>'maxPrice')::numeric;
+ cur text := filters->>'currency';
+ result jsonb;
+begin
+ if (filters->'region' is not null and filters->'region'<>'null'::jsonb and not public.property_region_valid(filters->'region')) then raise exception 'Invalid map region' using errcode='22023';end if;
+ if jsonb_typeof(filters)<>'object' or mode not in ('buy','rent','new_launch','commercial','plots')
+  or page_num<1 or page_num>10000
+  or coalesce(filters->>'bedrooms','1') not in ('1','2','3','4+')
+  or coalesce(filters->>'possession','ready_to_move') not in ('ready_to_move','under_construction','off_plan')
+  or coalesce(filters->>'sort','latest') not in ('latest','ai','price_low','price_high')
+  or (cur is not null and cur not in ('INR','AED','USD','GBP','EUR','SGD'))
+  or ((lo is not null or hi is not null) and cur is null)
+  or lo<=0 or hi<=0 or lo>999999999999 or hi>999999999999 or lo>hi
+  or length(coalesce(filters->>'query',''))>120
+  or length(coalesce(filters->>'city',''))>80 or length(coalesce(filters->>'country',''))>80 then
+  raise exception 'Invalid property search' using errcode='22023';
+ end if;
+ with matched as (
+  select i.* from public.property_inventory i
+  where i.status='published'
+   and (mode<>'buy' or i.listing_type='buy') and (mode<>'rent' or i.listing_type='rent')
+   and (mode<>'new_launch' or (i.is_new_launch and i.listing_type='buy'))
+   and (mode<>'commercial' or i.property_type='Commercial')
+   and (mode<>'plots' or i.property_type='Plot')
+   and (filters->>'type' is null or i.property_type=filters->>'type')
+   and (filters->>'bedrooms' is null or
+    (filters->>'bedrooms'='4+' and i.bedrooms>=4) or i.bedrooms::text=filters->>'bedrooms')
+   and (filters->>'possession' is null or i.possession_status=filters->>'possession')
+   and (cur is null or i.currency=cur)
+   and (lo is null or i.price_amount>=lo) and (hi is null or i.price_amount<=hi)
+ ), projects as (
+  select p.id,p.slug,p.title,p.location,p.city,p.country,p.district,p.rera_id,p.developer,p.builder_name,
+   p.official_source_url,p.lat,p.lng,p.final_score,
+   count(i.id) as active_inventory_count,min(i.price_amount) as inventory_min_price,
+   max(i.price_amount) as inventory_max_price,
+   case when count(distinct i.currency)=1 then min(i.currency) end as inventory_currency,
+   min(i.bedrooms) as beds,min(i.area_sqft) as sqft,
+   case when count(distinct i.property_type)=1 then min(i.property_type) else 'Multiple unit types' end as property_type,
+   max(i.published_at) as published_at,
+   case when count(distinct i.possession_status)=1 then min(i.possession_status) end as possession_status,
+   case when count(distinct i.area_basis)=1 then min(i.area_basis) end as area_basis,
+   (select jsonb_agg(jsonb_build_object('id',m.id,'project_id',m.project_id,'media_type',m.media_type,
+     'attribution',m.attribution,'is_primary',m.is_primary,'published_at',m.published_at))
+    from public.property_published_media m where m.project_id=p.id and m.media_type='photo') as "publishedMedia"
+  from public.properties p join matched i on i.project_id=p.id
+  where coalesce(p.status,'')<>'archived' and p.slug is not null
+   and (filters->'region' is null or filters->'region'='null'::jsonb or public.property_region_contains(filters->'region',p.lng::double precision,p.lat::double precision))
+   and exists (select 1 from public.property_published_media m where m.project_id=p.id and m.media_type='photo')
+   and (filters->>'query' is null or p.title ilike '%'||(filters->>'query')||'%'
+    or p.location ilike '%'||(filters->>'query')||'%' or p.city ilike '%'||(filters->>'query')||'%'
+    or p.district ilike '%'||(filters->>'query')||'%' or p.rera_id ilike '%'||(filters->>'query')||'%')
+   and (filters->>'city' is null or p.city ilike '%'||(filters->>'city')||'%' or p.location ilike '%'||(filters->>'city')||'%')
+   and (filters->>'country' is null or p.country ilike '%'||(filters->>'country')||'%')
+  group by p.id
+ ), selected as (
+  select * from projects
+  order by
+   case when filters->>'sort'='price_low' then inventory_min_price end asc nulls last,
+   case when filters->>'sort'='price_high' then inventory_max_price end desc nulls last,
+   case when filters->>'sort'='ai' then final_score end desc nulls last,
+   published_at desc nulls last,id desc
+  limit 25 offset (page_num-1)*24
+ ), numbered as (select *, row_number() over (order by
+  case when filters->>'sort'='price_low' then inventory_min_price end asc nulls last,
+  case when filters->>'sort'='price_high' then inventory_max_price end desc nulls last,
+  case when filters->>'sort'='ai' then final_score end desc nulls last,published_at desc nulls last,id desc) as row_no from selected)
+ select jsonb_build_object('items',coalesce(jsonb_agg(to_jsonb(n)-'row_no' order by row_no) filter(where row_no<=24),'[]'::jsonb),
+  'hasNext',count(*)>24,'page',page_num) into result from numbered n;
+ return result;
+end;
+$function$;
+
+
 notify pgrst,'reload schema';
 commit;

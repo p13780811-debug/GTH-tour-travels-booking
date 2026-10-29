@@ -18,6 +18,7 @@ import RegistryDetails from "./RegistryDetails"
 import EnquiryForm from "./EnquiryForm"
 import OwnerProjectAds from "./OwnerProjectAds"
 import PropertyCardPro from "./PropertyCardPro"
+import PropertyEvidence from "./PropertyEvidence"
 import ProjectInventory from "./ProjectInventory"
 import styles from "./Listing.module.css"
 import explorer from "./Explorer.module.css"
@@ -88,7 +89,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
                     {!isRegistryProject && <p className="text-sm opacity-70 mt-4">Measurements reflect stored listing data; confirm them against project documents.</p>}
                     {Array.isArray(property.amenities) && property.amenities.length > 0 && <div className="mt-6"><h3 className="font-bold">Reported amenities</h3><ul className="grid gap-3 sm:grid-cols-2 mt-3 list-disc pl-5">{property.amenities.filter((item: unknown) => typeof item === "string").map((item: string, index: number) => <li className="text-sm leading-6" key={`${item}-${index}`}>{item}</li>)}</ul></div>}
                 </section>
-                <ProjectInventory items={inventory} />
+                <ProjectInventory items={inventory} /><PropertyEvidence slug={slug} projectId={property.id} />
                 <div id="recorded-details" className="scroll-mt-24"><RegistryDetails property={property} /></div>
                 <section id="location" className="gth-glass rounded-3xl p-6 md:p-8 mt-6 scroll-mt-24"><h2 className="text-2xl font-bold">Location</h2><p className="opacity-70 mt-3">{[property.location || property.city, property.state, property.country].filter((value:any) => value && !/not provided/i.test(String(value))).join(" · ") || "Address not provided"}</p>{hasCoordinates ? <><div className="h-80 mt-6 rounded-2xl overflow-hidden"><MapWrapper data={[property]} active={{ coords: [property.lat, property.lng] }} /></div><p className="text-sm opacity-70 mt-3">Map uses stored coordinates. Confirm the precise project address.</p><LocalityIntelligence slug={slug} /></> : <p className="gth-glass rounded-2xl p-6 mt-6 opacity-70">Project coordinates have not been provided. No approximate pin is shown.</p>}</section>
             </div>

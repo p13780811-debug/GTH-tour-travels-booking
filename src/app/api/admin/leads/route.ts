@@ -11,10 +11,10 @@ export async function GET(req: Request) {
     if (error) throw new RequestError("Lead data unavailable", 503);
     const rows = data || [];
     const details = rows.length ? await client.from("property_leads")
-      .select("legacy_lead_id,project_name,full_name,email,preferred_unit,budget_range,intent_type")
+      .select("legacy_lead_id,project_name,full_name,email,preferred_unit,budget_range,intent_type,status")
       .in("legacy_lead_id", rows.map(row => row.id)) : { data: [], error: null };
     if (details.error) throw new RequestError("Lead details unavailable", 503);
     const byId = new Map((details.data || []).map(row => [row.legacy_lead_id, row]));
-    return Response.json(rows.map(row => ({ ...row, buyer: byId.get(row.id) || null })), { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(rows.map(row => ({ ...row, status: byId.get(row.id)?.status || row.status, buyer: byId.get(row.id) || null })), { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return requestError(error); }
 }

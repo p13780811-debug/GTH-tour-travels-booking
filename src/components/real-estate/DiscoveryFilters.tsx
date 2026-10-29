@@ -1,9 +1,10 @@
 "use client"
+import RegionSearch from "./RegionSearch"
 import { Check } from "lucide-react"
 import { useEffect, useState } from "react"
 import styles from "./Listing.module.css"
 
-const initial = { country:"", city:"", type:"", listing:"buy", bedrooms:"", currency:"", minPrice:"", maxPrice:"", sort:"latest", possession:"" }
+const initial = { country:"", city:"", type:"", listing:"buy", bedrooms:"", currency:"", minPrice:"", maxPrice:"", sort:"latest", possession:"", region:"" }
 /** Marketplace filters use the same unit types accepted by seller submissions. */
 const LISTING_CATEGORIES = [
  ["Apartment","Apartment"],["Villa","Villa"],["Penthouse","Penthouse"],
@@ -72,5 +73,6 @@ export default function DiscoveryFilters({ onApply, expanded = false }: { onAppl
    </div>
    <p className="text-sm opacity-70 col-span-full">Budget filters compare only published inventory in the selected currency; GTH PRO does not apply hidden FX conversion. A currency is required whenever a budget is entered. Registry-only projects without matching inventory are not presented as priced listings.</p>
   </form>
+  <RegionSearch />
  </details>
 }
