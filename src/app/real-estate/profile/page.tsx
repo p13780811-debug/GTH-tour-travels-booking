@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import {workspaceReturn} from "@/lib/real-estate/discovery-quality"
 import JourneyNav from "@/components/real-estate/JourneyNav"
 import type { User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
@@ -22,6 +23,7 @@ export default function ProfilePage() {
     const [historyLoading, setHistoryLoading] = useState(false)
     const [signingOut, setSigningOut] = useState(false)
     const request = useRef(0)
+    const authOwner=useRef<string|null|undefined>(undefined)
 
     const loadHistory = useCallback(async () => {
         const current = ++request.current
@@ -37,15 +39,16 @@ export default function ProfilePage() {
     }, [])
 
     useEffect(() => {
-        let active = true
-        supabase.auth.getUser().then(({ data }) => { if (active) { setUser(data.user); setLoading(false) } }).catch(() => { if (active) { setError("Account could not be loaded."); setLoading(false) } })
-        const { data } = supabase.auth.onAuthStateChange((_event, session) => { if (active) setUser(session?.user ?? null) })
+        let active = true,version=0
+        const applyUser=(next:User|null)=>{if(!active)return;if(authOwner.current!==(next?.id||null)){request.current++;setHistory([]);setHistoryError("");authOwner.current=next?.id||null}setUser(next);setLoading(false)}
+        supabase.auth.getUser().then(({data})=>{if(version===0)applyUser(data.user)}).catch(()=>{if(active&&version===0){setError("Account could not be loaded.");setLoading(false)}})
+        const {data}=supabase.auth.onAuthStateChange((_event,session)=>{version++;applyUser(session?.user??null)})
         return () => { active = false; request.current += 1; data.subscription.unsubscribe() }
     }, [])
     useEffect(() => {
         request.current += 1
         setHistory([])
-        if (user) { setLogin(false); loadHistory() }
+        if (user) { const target=workspaceReturn(new URLSearchParams(window.location.search).get("returnTo"));if(target){window.location.assign(target);return}setLogin(false); loadHistory() }
     }, [user?.id, loadHistory])
 
     return <main className="gth-container min-h-screen pt-10 pb-28 px-4">

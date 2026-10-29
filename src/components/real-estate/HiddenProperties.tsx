@@ -1,0 +1,8 @@
+"use client";
+import {useState} from "react";
+import {HIDDEN_PROPERTIES_KEY,normalizeHidden,type HiddenProperty} from '@/lib/real-estate/discovery-quality';
+export default function HiddenProperties({items,onChanged}:{items:HiddenProperty[];onChanged:()=>void}){
+ const [message,setMessage]=useState('');
+ const restore=(slug?:string)=>{try{const next=slug?normalizeHidden(JSON.parse(localStorage.getItem(HIDDEN_PROPERTIES_KEY)||'[]')).filter(r=>r.slug!==slug):[];localStorage.setItem(HIDDEN_PROPERTIES_KEY,JSON.stringify(next));window.dispatchEvent(new Event('gth-hidden'));setMessage('Hidden preferences updated.');onChanged();}catch{setMessage('Browser preferences could not be updated.');}};
+ return <details className="mt-3 rounded-xl border p-3"><summary className="min-h-11 cursor-pointer text-sm">Hidden homes on this browser · {items.length}</summary><p className="mt-2 text-xs leading-6 opacity-70">Hide homes you have ruled out without deleting your shortlist. Preferences stay on this browser for 90 days, up to 200 homes. Server pagination continues normally; hidden homes can leave fewer visible results on a page.</p>{items.length?<><button type="button" className="gth-btn mt-3" onClick={()=>restore()}>Restore all hidden homes</button><ul className="mt-3 space-y-3">{items.map(r=><li className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 text-sm" key={r.slug}><span>{r.title}</span><button type="button" className="gth-btn" onClick={()=>restore(r.slug)}>Restore this home</button></li>)}</ul></>:<p className="mt-2 text-sm">No homes hidden.</p>}{message&&<p role="status" className="mt-3 text-xs">{message}</p>}</details>;
+}
