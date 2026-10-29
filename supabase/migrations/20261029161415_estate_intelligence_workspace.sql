@@ -9,7 +9,7 @@ create table public.property_price_events(
  project_id bigint not null references public.properties(id) on delete cascade,
  amount numeric(14,2) not null check(amount>0),previous_amount numeric(14,2),currency text not null check(currency~'^[A-Z]{3}$'),
  event_type text not null check(event_type in ('published','price_changed')),listing_type text not null check(listing_type in ('buy','rent')),
- property_type text,area_sqft numeric,area_basis text,city text,country text,recorded_at timestamptz not null default now()
+ property_type text,area_sqft numeric,area_basis text,city text,country text,recorded_at timestamptz not null default clock_timestamp()
 );
 create index estate_prices_unit_time on public.property_price_events(inventory_id,recorded_at desc);
 create index estate_prices_locality on public.property_price_events(country,city,currency,recorded_at desc);

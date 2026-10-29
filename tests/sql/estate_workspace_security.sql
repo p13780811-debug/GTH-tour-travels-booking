@@ -25,6 +25,8 @@ reset role;
 update public.property_inventory set price_amount=90 where id=current_setting('estate_test.unit')::uuid;
 do $$begin if (select count(*) from public.property_price_events where inventory_id=current_setting('estate_test.unit')::uuid)<>2 then raise exception 'PRICE_HISTORY_COUNT';end if;
  if not exists(select 1 from public.property_notifications where owner_id=current_setting('estate_test.buyer')::uuid and price_event_id is not null) then raise exception 'MISSING_PRICE_DROP_ALERT';end if;end$$;
+update public.property_inventory set price_amount=80 where id=current_setting('estate_test.unit')::uuid;
+do $$begin if (select previous_amount from public.property_price_events where inventory_id=current_setting('estate_test.unit')::uuid order by recorded_at desc limit 1)<>90 then raise exception 'SAME_TRANSACTION_PRICE_ORDER';end if;end$$;
 set local role authenticated;
 select set_config('request.jwt.claim.sub',current_setting('estate_test.stranger'),true),set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('estate_test.stranger'),'role','authenticated')::text,true);
 do $$begin
