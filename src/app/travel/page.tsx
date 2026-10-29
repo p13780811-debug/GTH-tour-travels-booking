@@ -24,6 +24,7 @@ const additional = [
   { name: "Bus Travel", href: "/bus", Icon: BusFront, detail: "Road connections and operator booking handoffs." },
   { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and official booking resources." },
   { name: "Experiences", href: "/activities", Icon: Sparkles, detail: "Destination activities and discovery." },
+  { name: "Deals & offers", href: "/travel/deals", Icon: Sparkles, detail: "Browse destination experiences and provider-managed deals, without invented discount claims." },
   { name: "Travel Guides", href: "/guides", Icon: BookOpen, detail: "Research and booking checklists." },
   { name: "Travel Blog", href: "/blog", Icon: Compass, detail: "Articles for thoughtful travel planning." },
   { name: "Global Marketplace", href: "/mega-aggregator", Icon: MapPinned, detail: "The GTH PRO travel aggregator and providers." },
