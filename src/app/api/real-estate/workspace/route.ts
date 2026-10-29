@@ -16,7 +16,7 @@ export async function GET(req:Request){try{
  if(resource==='analytics'){const result=await propertyLeadWriter().rpc('property_seller_analytics',{p_owner:user.id}).abortSignal(AbortSignal.timeout(8000));if(result.error)throw failure();return Response.json({items:result.data||[]},{headers});}
  if(resource==='offer_context'){const id=uuid(params.get('inventory_id'));const result=await client.from('property_inventory').select('id,project_id,price_amount,currency,listing_type,properties(title,slug,country,city)').eq('id',id).eq('status','published').abortSignal(AbortSignal.timeout(8000)).maybeSingle();if(result.error)throw failure();return Response.json({unit:result.data},{headers});}
  const table=tables[resource];if(!table)throw new RequestError('Unknown workspace section',400);
- let query=client.from(table).select(resource==='saved'?'project_id,created_at,properties(title,slug)':resource==='crm'?'id,project_name,full_name,phone,email,preferred_unit,budget_range,intent_type,status,created_at':'*');
+ let query=client.from(table).select(resource==='saved'?'project_id,created_at,properties(title,slug)':resource==='crm'?'id,project_name,full_name,phone,email,preferred_unit,budget_range,intent_type,status,created_at':['services','service_admin'].includes(resource)?'*,properties(title,slug)':'*');
  if(['alerts','notifications','services','reviews','saved'].includes(resource))query=query.eq('owner_id',user.id);
  if(resource==='offers')query=query.or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
  if(resource==='messages')query=query.eq('offer_id',uuid(params.get('offer_id')));
