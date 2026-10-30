@@ -15,7 +15,7 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   title: "Thali Treats Palava",
   category: "Food business website",
   description: "Explore the Thali Treats Palava kitchen website.",
-  href: "https://thali-treats-palava.lovable.app/",
+  href: "/gth-kitchen",
   advertise: true,
  },
  {
