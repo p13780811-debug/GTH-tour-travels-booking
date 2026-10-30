@@ -4,9 +4,9 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 const source=readFileSync(new URL('../src/lib/real-estate/property-seo.ts',import.meta.url),'utf8');
-const module={exports:{}};
-vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,URL});
-const {propertySeo}=module.exports;
+const compiledModule={exports:{}};
+vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:compiledModule,exports:compiledModule.exports,URL});
+const {propertySeo}=compiledModule.exports;
 const long={title:'1771 EWS AND 88 LIG TENEMENTS AT SURVEY NO 13 BHANDARLI TAL DIST THANE PMAY PROJECT '.repeat(4),location:'Mumbai Metropolitan Region '.repeat(5),rera_id:'P51800012345'};
 test('long registry metadata fits search bounds without changing full source identity or its caveats',()=>{
  const before=JSON.stringify(long),meta=propertySeo(long);
