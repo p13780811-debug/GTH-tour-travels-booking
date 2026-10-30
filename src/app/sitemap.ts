@@ -15,7 +15,7 @@ const pages = [
   "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/bus", "/train", "/transfers", "/cars", "/hotels/list-your-property",
   "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender",
-  "/partners", "/contact", "/about", "/affiliate-disclosure",
+  "/partners", "/contact", "/about", "/affiliate-disclosure", "/gth-kitchen",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
   
 ];

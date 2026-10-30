@@ -31,9 +31,13 @@ test("indexable public content is canonicalized and private results excluded",()
   }
   assert.match(source("src/app/activities/page.tsx"),/canonical: "\/activities"/);
   for(const p of ["src/app/hotels/results/page.tsx","src/app/ai-trip/page.tsx",
-    "src/app/owners/layout.tsx","src/app/gth-kitchen/layout.tsx"]) {
+    "src/app/owners/layout.tsx"]) {
     assert.match(source(p),/index: false/);
   }
+  const kitchenLayout=source("src/app/gth-kitchen/layout.tsx");
+  assert.match(kitchenLayout,/canonical: "\/gth-kitchen"/);
+  assert.match(kitchenLayout,/index: true, follow: true/);
+  assert.ok(sitemap.includes('"/gth-kitchen"'));
   assert.match(source("src/app/hotels/[slug]/page.tsx"),/canonical: `\/hotels\/\$\{parsed\.citySlug\}`/);
   assert.match(source("src/app/tours/[slug]/page.tsx"),/canonical: `\/tours\/\$\{encodeURIComponent\(slug\)\}`/);
   assert.match(source("src/app/real-estate/[slug]/page.tsx"),/isPublicLaunch\(\)/);
@@ -90,4 +94,13 @@ test("destination, hotel and tour social metadata and factual breadcrumbs use se
  }
  assert.match(detail,/rel="noopener noreferrer sponsored"/);
  assert.match(hotels,/canonical: `\/hotels\/\$\{parsed\.citySlug\}`/);
+});
+
+
+test("GTH kitchen embeds the verified Thali Treats full-stack app without legacy unverifiable claims",()=>{
+ const page=source("src/app/gth-kitchen/page.tsx");
+ assert.match(page,/thali-treats-preview\.gaminggaming93039\.workers\.dev/);
+ assert.match(page,/<iframe/);
+ assert.match(page,/GTH PRO ecosystem/);
+ assert.doesNotMatch(page,/FSSAI Certified|4\.9 family rating|GTH Pro Certified/);
 });
