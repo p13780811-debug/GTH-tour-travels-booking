@@ -3,6 +3,15 @@ import type { NextRequest } from "next/server";
 import { hotelSupplierPathRedirect } from "@/lib/travel/hotel-whitelabel";
 
 export function middleware(_request: NextRequest) {
+  // Thali Treats is a separate full-stack app. The GTH PRO Vercel project only
+  // acts as the public subdomain edge proxy because gthproglobal.com DNS is
+  // managed here. No GTH route/page is used for the kitchen application.
+  const hostname = _request.headers.get("host")?.split(":")[0]?.toLowerCase();
+  if (hostname === "thali.gthproglobal.com") {
+    const upstream = new URL(_request.nextUrl.pathname + _request.nextUrl.search, "https://thali-treats-preview.gaminggaming93039.workers.dev");
+    return NextResponse.rewrite(upstream);
+  }
+
   // Recover supplier hotel IDs before the local city-guide router treats them as slugs.
   const hotelDestination = hotelSupplierPathRedirect(_request.nextUrl.pathname, _request.nextUrl.searchParams);
   if (hotelDestination) {
@@ -47,6 +56,6 @@ export function middleware(_request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
