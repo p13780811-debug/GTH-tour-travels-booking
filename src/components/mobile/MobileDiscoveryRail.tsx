@@ -6,6 +6,7 @@ import Link from "next/link";
 import {ArrowUpRight,Building2,ChevronLeft,ChevronRight,FileSearch,Hotel,MapPin} from "lucide-react";
 import type {MobileDiscoveryItem,MobileDiscoveryKind} from "@/lib/mobile/discovery";
 import {mobileAppHref} from "@/lib/mobile/routes";
+import AppSaveRecord from "@/components/mobile/AppSaveRecord";
 
 const PLACEHOLDER={
   destination:MapPin,hotel:Hotel,property:Building2,tender:FileSearch
@@ -70,6 +71,10 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
                 <p className="mt-auto line-clamp-1 pt-2 text-[11px] leading-4 text-[var(--text-soft)]">{item.detail}</p>
               </div>
             </Link>
+            {appLinks&&<div className="px-2 pb-2">
+              <AppSaveRecord kind={kind}
+               href={mobileAppHref(item.href)} title={item.title} subtitle={item.subtitle||item.detail}/>
+            </div>}
            </article>)}
          <Link href={destination} className="flex w-[116px] shrink-0 snap-start flex-col items-center justify-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 text-center text-xs font-semibold">
            <ArrowUpRight size={25} className="text-[var(--gold)]" aria-hidden="true"/> View all {heading.toLowerCase()}
