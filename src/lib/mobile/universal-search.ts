@@ -18,7 +18,7 @@ export function normalizeUniversalCategory(raw:unknown):UniversalCategory {
 }
 function detectedKind(text:string):UniversalCategory{
  if(/\b(tenders?|procurement|e-?procurement|rfp|bids?|bid notices?|gem)\b/i.test(text))return "tender";
- if(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|housing|[1-9]\s*bhk|rera)\b/i.test(text))return "property";
+ if(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|housing|[1-9]\s*bhk|(?:maha)?rera|registry|registration)\b/i.test(text))return "property";
  if(/\b(hotels?|resorts?|stays?|accommodations?|lodging|guest\s*houses?|hostels?|motels?|rooms?)\b/i.test(text))return "hotel";
  if(/\b(flights?|airfares?|airlines?|air\s*tickets?)\b/i.test(text))return "flight";
  if(/\b(tours?|activities|attractions?|sightseeing|excursions?|experiences|things to do)\b/i.test(text))return "tour";
@@ -52,7 +52,7 @@ function hotelTarget(query:string):string{
   return "/hotels/results?"+queryString({city:place});
  }
  const beforeHotel=query.match(/^([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})\s+(?:hotels?|resorts?|stays?)$/iu);
- if(beforeHotel)return "/hotels/results?"+queryString({city:clean(beforeHotel[1])});
+ if(beforeHotel&&beforeHotel[1].trim().split(/\s+/).length<=2)return "/hotels/results?"+queryString({city:clean(beforeHotel[1])});
  // The hotel's *name* search comes from the established app directory.
  return "/app/hotels?"+queryString({directory:"1",...(cleaned?{q:cleaned}:{})});
 }
