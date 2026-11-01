@@ -21,6 +21,20 @@ try{
  }
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  const page=await ctx.newPage();
+ // The same existing service engines must handle global search: no endless
+ // Explore re-render and no hotel name search for "Goa hotel".
+ await page.goto(base+"/app/search?q=Goa+hotel",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/app/hotels?directory=1&destination=goa"),page.url());
+ await page.goto(base+"/app/explore?q=hotels+in+Goa",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("destination=goa"),page.url());
+ await page.goto(base+"/app/search?q=road+construction+tender",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Open tenders"}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/app/tenders?q=road+construction"),page.url());
+ await page.goto(base+"/app/search?q=Lodha+project&category=property",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Properties"}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/app/property?q=Lodha+project"),page.url());
  await page.goto(base+"/app/explore",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Find the next opportunity. Anywhere."}).waitFor({timeout:25000});
  const search=page.getByRole("searchbox",{name:"Search global destinations, property and tenders"});
@@ -51,5 +65,5 @@ try{
  assert.equal(await external.getAttribute("target"),"_blank");
  assert.equal(await external.getAttribute("href"),"/transfers");
  await ctx.close();
- console.log("PASS: four Android widths, universal Goa search, device save/revisit/delete and intentional website handoff");
+ console.log("PASS: app search routes directly to hotels/tenders/property, four Android widths, federated Goa search, save/revisit/delete and safe handoff");
 }finally{await browser.close();}

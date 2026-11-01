@@ -83,7 +83,8 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
    if(destination){
     const match=destinations.find(d=>d.slug===destination);
     if(!match)return empty(page,"Destination not found");
-    const hint=escapeLike(match.name);
+    const hint="%"+escapeLike(match.name)+"%";
+    // Match published regional names such as North Goa / South Goa as well as Goa.
     list=list.or("city.ilike."+hint+",region.ilike."+hint);
    }
    const {data,error,count}=await list.order("name",{ascending:true}).order("source_id",{ascending:true})

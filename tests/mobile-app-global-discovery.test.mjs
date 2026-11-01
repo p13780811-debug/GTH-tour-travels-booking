@@ -69,7 +69,8 @@ test("app is an actual search-to-record-to-research journey, not cloned service 
  const rail=read("src/components/mobile/MobileDiscoveryRail.tsx");
  const detail=read("src/app/app/[section]/[id]/page.tsx");
  const desk=read("src/components/mobile/MobileResearchDesk.tsx");
- for(const source of [home,header,desk])assert.match(source,/\/app\/explore/);
+ for(const source of [header,desk])assert.match(source,/\/app\/explore/);
+ assert.match(home,/action="\/app\/search"/);
  for(const source of [home,header,explorer])assert.match(source,/\/app\/board/);
  assert.match(explorer,/searchGlobalRecords\(q,pillar\)/);
  assert.match(explorer,/MobileDiscoveryRail/);
