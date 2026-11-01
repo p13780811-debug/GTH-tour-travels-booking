@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "GTH PRO",
+    "slug": "gth-pro-native",
+    "scheme": "gthpro",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.gthpro.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#060b12"
+      },
+      "permissions": []
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "extra": {
+      "websiteOrigin": "https://www.gthproglobal.com"
+    }
+  }
+}
