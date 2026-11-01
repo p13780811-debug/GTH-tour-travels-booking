@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowUpRight,Building2,Globe2,Hotel,BriefcaseBusiness} from "lucide-react";
+import {ArrowUpRight,Building2,Globe2,BriefcaseBusiness} from "lucide-react";
 
 /** Editorial journeys only; imagery is never presented as a specific verified listing. */
 const journeys=[
