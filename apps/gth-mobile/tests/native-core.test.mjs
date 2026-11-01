@@ -13,13 +13,13 @@ function load(path,imports={}){
   reportDiagnostics:true,
  }).outputText;
  const exports={};
- const module={exports};
+ const loadedModule={exports};
  const fn=new Function("module","exports","require",js);
- fn(module,exports,(id)=>{
+ fn(loadedModule,exports,(id)=>{
   if(!(id in imports))throw Error("Unexpected import: "+id);
   return imports[id];
  });
- return module.exports;
+ return loadedModule.exports;
 }
 const routing=load("src/core/routing.ts");
 const catalog=load("src/core/catalog.ts",{"./routing":routing});
