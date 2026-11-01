@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {
  ActivityIndicator,Alert,BackHandler,Image,ImageBackground,Keyboard,Linking,Pressable,
- ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,
+ Platform,ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,
 } from "react-native";
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
@@ -192,6 +192,7 @@ function NativeApp(){
  const bookmarks=useNativeBookmarks();
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
  useEffect(()=>{
+  if(Platform.OS==="web")return;
   const listener=BackHandler.addEventListener("hardwareBackPress",()=>{
    if(detail){setDetail(null);return true;}
    if(tab!=="home"){setTab("home");Keyboard.dismiss();return true;}
