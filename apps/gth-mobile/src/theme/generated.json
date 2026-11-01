@@ -6,7 +6,8 @@
     "text": "#111827",
     "muted": "rgba(17, 24, 39, 0.83)",
     "border": "#f2f5fa",
-    "accent": "#d4af37"
+    "accent": "#d4af37",
+    "onAccent": "#111827"
   },
   "dark": {
     "bg": "#060b12",
@@ -15,6 +16,7 @@
     "text": "#f3f4f6",
     "muted": "rgba(255, 255, 255, 0.74)",
     "border": "rgba(255, 255, 255, 0.08)",
-    "accent": "#d4af37"
+    "accent": "#d4af37",
+    "onAccent": "#060b12"
   }
 }
