@@ -128,10 +128,13 @@ function RecordCard({item,theme,bookmarked,onOpen,onToggle}:{item:DiscoveryCard;
   <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={"Details for "+item.title}
    style={{flexDirection:"row",alignItems:"center",gap:12,flex:1}}>
    <View style={[styles.recordIcon,{backgroundColor:theme.surfaceSoft}]}>
-    {item.kind==="hotel"?<Hotel size={23} color={theme.accent}/>:
-     item.kind==="property"?<Building2 size={23} color={theme.accent}/>:
-     item.kind==="tender"?<FileText size={23} color={theme.accent}/>:
-     <MapPin size={23} color={theme.accent}/>}
+    {item.image?<Image source={{uri:item.image}} resizeMode="cover"
+      accessible accessibilityLabel={"Editorial image for "+item.title}
+      style={{height:64,width:64,borderRadius:13}}/>:
+     item.kind==="hotel"?<Hotel size={25} color={theme.accent}/>:
+     item.kind==="property"?<Building2 size={25} color={theme.accent}/>:
+     item.kind==="tender"?<FileText size={25} color={theme.accent}/>:
+     <MapPin size={25} color={theme.accent}/>}
    </View>
    <View style={{flex:1,gap:4}}>
     <Text numberOfLines={2} style={{fontSize:14,fontWeight:"800",color:theme.text}}>{item.title}</Text>
@@ -238,6 +241,8 @@ function NativeApp(){
      <ArrowLeft size={19} color={theme.accent}/><Text style={{color:theme.accent,fontWeight:"800"}}>Back to {tab==="saved"?"saved records":"results"}</Text>
     </Pressable>
     <View style={[styles.detail,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+     {activeItem.image&&<Image source={{uri:activeItem.image}} resizeMode="cover"
+       accessibilityLabel={activeItem.title} style={{height:180,width:"100%",borderRadius:15,marginBottom:18}}/>}
      <TextLabel text={activeItem.kind+" · SOURCE RECORD"} theme={theme}/>
      <Text style={[styles.h1,{color:theme.text,marginTop:9}]}>{activeItem.title}</Text>
      <Text style={[styles.lead,{color:theme.muted}]}>{activeItem.subtitle}</Text>
@@ -420,7 +425,7 @@ const styles=StyleSheet.create({
  tab:{height:55,flex:1,alignItems:"center",justifyContent:"center",gap:3},
  chip:{borderWidth:1,paddingHorizontal:14,minHeight:42,borderRadius:24,alignItems:"center",justifyContent:"center"},
  record:{padding:12,borderWidth:1,borderRadius:17,marginBottom:10,flexDirection:"row",alignItems:"center",gap:8},
- recordIcon:{height:47,width:47,borderRadius:14,alignItems:"center",justifyContent:"center"},
+ recordIcon:{height:64,width:64,borderRadius:14,alignItems:"center",justifyContent:"center",overflow:"hidden"},
  bookmarkButton:{width:44,height:44,borderRadius:13,borderWidth:1,alignItems:"center",justifyContent:"center"},
  empty:{padding:23,borderWidth:1,borderRadius:20,alignItems:"center",gap:13,marginTop:8},
  detail:{padding:20,borderWidth:1,borderRadius:21,marginTop:5},
