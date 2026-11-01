@@ -5,12 +5,14 @@ const CHANGE="gth-app-research-changed";
 
 export default function useAppResearch(){
  const [items,setItems]=useState<ResearchEntry[]>([]);
+ const [ready,setReady]=useState(false);
  useEffect(()=>{
   const sync=()=>{
    try{setItems(parseResearch(window.localStorage.getItem(RESEARCH_KEY)));}
    catch{setItems([]);}
   };
   sync();
+  setReady(true);
   window.addEventListener("storage",sync);
   window.addEventListener(CHANGE,sync);
   return ()=>{
@@ -30,7 +32,7 @@ export default function useAppResearch(){
   }catch{/* Personal records remain local and navigation still works. */}
  },[items]);
  return {
-  items,
+  items,ready,
   save:(value:Omit<ResearchEntry,"addedAt">)=>update(current=>saveResearch(current,value)),
   remove:(href:string)=>update(current=>removeResearch(current,href)),
   clear:()=>update(()=>[]),
