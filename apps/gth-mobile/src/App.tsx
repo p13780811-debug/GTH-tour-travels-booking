@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {
- ActivityIndicator,Alert,Image,ImageBackground,Keyboard,Linking,Pressable,
+ ActivityIndicator,Alert,BackHandler,Image,ImageBackground,Keyboard,Linking,Pressable,
  ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,
 } from "react-native";
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
@@ -9,7 +9,8 @@ import {
  FileText,Globe2,Home,Hotel,MapPin,Plane,Search,ShieldCheck,Sparkles,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
-import {getSourceCards,type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
+import {type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
+import {searchNativeSources,type SearchSlice} from "./core/unified-search";
 import {detectPillar,firstPartyUrl,normalizeQuery,serviceDestination,type Pillar} from "./core/routing";
 import {useNativeBookmarks} from "./core/bookmarks";
 
@@ -170,6 +171,8 @@ function NativeApp(){
  const [term,setTerm]=useState("");
  const [kind,setKind]=useState<NativeChoice>("all");
  const [results,setResults]=useState<DiscoveryCard[]>([]);
+ const [slices,setSlices]=useState<SearchSlice[]>([]);
+ const [warnings,setWarnings]=useState<string[]>([]);
  const [total,setTotal]=useState(0);
  const [pending,setPending]=useState(false);
  const [error,setError]=useState("");
@@ -177,6 +180,14 @@ function NativeApp(){
  const [refresh,setRefresh]=useState(0);
  const bookmarks=useNativeBookmarks();
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
+ useEffect(()=>{
+  const listener=BackHandler.addEventListener("hardwareBackPress",()=>{
+   if(detail){setDetail(null);return true;}
+   if(tab!=="home"){setTab("home");Keyboard.dismiss();return true;}
+   return false;
+  });
+  return ()=>listener.remove();
+ },[detail,tab]);
  function openSite(path:string){
   const target=firstPartyUrl(path);
   if(!target){Alert.alert("Link unavailable","Only official GTH PRO destinations are supported.");return;}
@@ -197,17 +208,21 @@ function NativeApp(){
   setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
  }
  useEffect(()=>{
-  if(tab!=="discover"||kind==="all"||kind==="travel"){
-   setResults([]);setTotal(0);setPending(false);setError("");return;
+  if(tab!=="discover"||(kind==="all"&&!term.trim())){
+   setResults([]);setTotal(0);setSlices([]);setWarnings([]);setPending(false);setError("");
+   return;
   }
   const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),11000);
+  const timer=setTimeout(()=>ctrl.abort(),11_000);
   let mounted=true;
-  setPending(true);setError("");setResults([]);
-  getSourceCards(kind,term,ctrl.signal).then(data=>{
-   if(mounted){setResults(data.items);setTotal(data.total);}
+  setPending(true);setError("");setResults([]);setSlices([]);setWarnings([]);
+  searchNativeSources(kind,term,ctrl.signal).then(data=>{
+   if(!mounted)return;
+   setResults(data.items);setTotal(data.total);setSlices(data.slices);setWarnings(data.warnings);
+   if(data.slices.every(s=>s.error))
+    setError("The published sources are temporarily unavailable. Please retry.");
   }).catch(()=>{
-   if(mounted)setError("This source could not load. Check your connection and retry.");
+   if(mounted)setError("Unable to load these records. Check your connection and retry.");
   }).finally(()=>{clearTimeout(timer);if(mounted)setPending(false);});
   return ()=>{mounted=false;clearTimeout(timer);ctrl.abort();};
  },[tab,kind,term,refresh]);
@@ -286,10 +301,10 @@ function NativeApp(){
       </Pressable>)}
      </ScrollView>
     </View>
-    {kind==="all"?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+    {kind==="all"&&!term?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
       <Compass size={32} color={theme.accent}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>One search. Trusted specialist sources.</Text>
-      <Text style={{textAlign:"center",lineHeight:20,fontSize:13,color:theme.muted}}>Choose Hotels, Property, Tenders or Tours above to search existing GTH PRO records. No duplicate inventory.</Text>
+      <Text style={{textAlign:"center",lineHeight:20,fontSize:13,color:theme.muted}}>Try Goa, Mumbai, a project or a tender keyword. Search combines existing public sources without creating duplicate inventory.</Text>
      </View>:kind==="travel"?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
       <Plane size={33} color={theme.accent}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>Where to next?</Text>
@@ -297,10 +312,30 @@ function NativeApp(){
       <Action label="Search flights" theme={theme} onPress={()=>openSite("/app/flights")}/>
      </View>:<>
       <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-       <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
-       <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":total+" source records"}</Text>
+       <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
+       <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":total+" source matches"}</Text>
       </View>
-      {pending&&<View style={{padding:25,alignItems:"center"}}><ActivityIndicator color={theme.accent} accessibilityLabel="Loading source records"/></View>}
+      {kind==="all"&&slices.length>0&&<ScrollView horizontal showsHorizontalScrollIndicator={false}
+       contentContainerStyle={{gap:8,marginBottom:12}}>
+       {slices.map(slice=><Pressable key={slice.kind} accessibilityRole="button"
+         accessibilityLabel={slice.kind+" "+slice.total+" matches"}
+         onPress={()=>{setKind(slice.kind);setTerm(normalizeQuery(query));}}
+         style={[styles.chip,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+         <Text style={{color:theme.text,fontSize:12,fontWeight:"700"}}>
+          {slice.kind==="hotel"?"Hotels":slice.kind==="property"?"Property":slice.kind==="tender"?"Tenders":"Tours"} · {slice.total}
+         </Text>
+        </Pressable>)}
+       </ScrollView>}
+      {warnings.length>0&&!pending&&<View accessibilityRole="alert" style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border,marginBottom:12}]}>
+       <ShieldCheck color={theme.accent} size={18}/>
+       <Text style={{fontSize:12,lineHeight:18,flex:1,color:theme.muted}}>
+        {warnings.length} {warnings.length===1?"source is":"sources are"} unavailable. Available results remain visible.
+       </Text>
+      </View>}
+      {pending&&<View accessibilityLiveRegion="polite" style={{padding:20,gap:12}}>
+       <ActivityIndicator color={theme.accent} accessibilityLabel="Loading source records"/>
+       {[0,1,2].map(i=><View key={i} style={{height:76,borderRadius:16,backgroundColor:theme.surface,borderWidth:1,borderColor:theme.border}}/>)}
+      </View>}
       {!!error&&<View style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border}]}>
        <Text style={{flex:1,color:theme.muted,fontSize:12}}>{error}</Text>
        <Pressable accessibilityRole="button" onPress={()=>setRefresh(v=>v+1)}><Text style={{color:theme.accent,fontWeight:"800"}}>Retry</Text></Pressable>
