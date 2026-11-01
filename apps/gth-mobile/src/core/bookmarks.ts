@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {useCallback,useEffect,useState} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 import {approvedRecordPath} from "./routing";
 import type {DiscoveryCard} from "./catalog";
 
@@ -38,21 +38,27 @@ export function removeBookmark(items:DiscoveryCard[],path:string):DiscoveryCard[
 export function useNativeBookmarks(){
  const [items,setItems]=useState<DiscoveryCard[]>([]);
  const [ready,setReady]=useState(false);
+ const current=useRef<DiscoveryCard[]>([]);
+ const writeQueue=useRef<Promise<void>>(Promise.resolve());
  useEffect(()=>{
   let mounted=true;
   AsyncStorage.getItem(BOOKMARKS_KEY).then(raw=>{
-   if(mounted)setItems(parseBookmarks(raw));
+   if(!mounted)return;
+   const restored=parseBookmarks(raw);
+   current.current=restored;
+   setItems(restored);
   }).catch(()=>{}).finally(()=>{if(mounted)setReady(true);});
   return ()=>{mounted=false;};
  },[]);
  const apply=useCallback((fn:(value:DiscoveryCard[])=>DiscoveryCard[])=>{
-  setItems(previous=>{
-   const next=fn(previous);
-   // Saving is local-only. Failures never compromise browsing or create server data.
-   void AsyncStorage.setItem(BOOKMARKS_KEY,JSON.stringify(next)).catch(()=>{});
-   return next;
-  });
- },[]);
+  if(!ready)return;
+  const next=fn(current.current);
+  current.current=next;
+  setItems(next);
+  // Serialize writes: tapping Save/Remove quickly cannot resurrect old data.
+  writeQueue.current=writeQueue.current.catch(()=>{}).then(()=>
+   AsyncStorage.setItem(BOOKMARKS_KEY,JSON.stringify(next)));
+ },[ready]);
  return {items,ready,
   save:(item:DiscoveryCard)=>apply(existing=>addBookmark(existing,item)),
   remove:(path:string)=>apply(existing=>removeBookmark(existing,path)),
