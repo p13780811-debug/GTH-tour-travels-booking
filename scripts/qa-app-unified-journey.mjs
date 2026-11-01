@@ -31,7 +31,9 @@ try{
  await page.screenshot({path:folder+"unified-goa-results.png",fullPage:true});
  const save=page.getByRole("button",{name:"Save Goa to Research Desk"});
  await save.click();
- assert.equal(await save.getAttribute("aria-pressed"),"true");
+ const unsave=page.getByRole("button",{name:"Remove Goa from Research Desk"});
+ await unsave.waitFor({state:"visible",timeout:10000});
+ assert.equal(await unsave.getAttribute("aria-pressed"),"true");
  await page.getByRole("link",{name:"Open my Research Desk"}).click();
  await page.getByRole("heading",{name:"Everything you saved. One place."}).waitFor();
  await page.getByRole("link",{name:/Goa/}).waitFor();
