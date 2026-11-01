@@ -70,7 +70,7 @@ test("native app remains separate from website and handles native navigation",()
  assert.match(app,/function BottomBar/);
  assert.match(app,/tab==="discover"/);
  assert.match(app,/tab==="saved"/);
- assert.match(app,/tab==="services"/);
+ assert.match(app,/type Tab="home"\|"discover"\|"saved"\|"services"/);
  assert.match(app,/getSourceCards/);
  assert.match(app,/Linking\.openURL\(target\)/);
  assert.match(bookmarks,/AsyncStorage/);
