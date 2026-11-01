@@ -1,0 +1,387 @@
+import React,{useEffect,useMemo,useState} from "react";
+import {
+ ActivityIndicator,Alert,Image,ImageBackground,Keyboard,Linking,Pressable,
+ ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,
+} from "react-native";
+import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
+import {
+ ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Compass,ExternalLink,
+ FileText,Globe2,Home,Hotel,MapPin,Plane,Search,ShieldCheck,Sparkles,
+} from "lucide-react-native";
+import colors from "./theme/generated.json";
+import {getSourceCards,type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
+import {detectPillar,firstPartyUrl,normalizeQuery,serviceDestination,type Pillar} from "./core/routing";
+import {useNativeBookmarks} from "./core/bookmarks";
+
+type Theme=typeof colors.light;
+type Tab="home"|"discover"|"saved"|"services";
+type NativeChoice=DiscoveryKind|"all"|"travel";
+const filters:{kind:NativeChoice;title:string}[]=[
+ {kind:"all",title:"All"},{kind:"hotel",title:"Hotels"},{kind:"property",title:"Property"},
+ {kind:"tender",title:"Tenders"},{kind:"tour",title:"Tours"},
+];
+const panel:{kind:Pillar;heading:string;caption:string;image:string}[]=[
+ {kind:"travel",heading:"Go further.",caption:"Flights, destinations and experiences.",image:"/images/mega/welcome.jpg"},
+ {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:"/images/real-estate.jpg"},
+ {kind:"tender",heading:"Build what is next.",caption:"Find published business opportunities.",image:"/images/tender.jpg"},
+];
+const serviceLinks=[
+ {label:"Flights",path:"/app/flights",kind:"travel" as Pillar,description:"Search flights with dates and real provider results"},
+ {label:"Hotels",path:"/app/hotels",kind:"hotel" as Pillar,description:"Explore stays and published hotel records"},
+ {label:"Transfers",path:"/transfers",kind:"travel" as Pillar,description:"Airport pickup and transfer partners"},
+ {label:"Tours & activities",path:"/tours",kind:"tour" as Pillar,description:"Original experience and attraction suppliers"},
+ {label:"Real Estate",path:"/app/property",kind:"property" as Pillar,description:"Property projects and registry details"},
+ {label:"Property tools",path:"/real-estate/tools",kind:"property" as Pillar,description:"Existing financial and project tools"},
+ {label:"Public tenders",path:"/app/tenders",kind:"tender" as Pillar,description:"Open notices and official sources"},
+ {label:"Tender services",path:"/tender/services",kind:"tender" as Pillar,description:"Assistance and supporting workflows"},
+];
+const imageUrl=(path:string)=>"https://www.gthproglobal.com"+path;
+
+function TextLabel({text,theme}:{text:string;theme:Theme}){
+ return <Text style={[styles.eyebrow,{color:theme.accent}]}>{text.toUpperCase()}</Text>;
+}
+function Action({label,onPress,theme,secondary=false}:{label:string;onPress:()=>void;theme:Theme;secondary?:boolean}){
+ return <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
+  style={({pressed})=>[styles.action,{backgroundColor:secondary?theme.surfaceSoft:theme.accent,opacity:pressed?0.78:1}]}>
+  <Text style={{fontSize:13,fontWeight:"800",color:secondary?theme.text:theme.bg}}>{label}</Text>
+  <ArrowRight size={16} color={secondary?theme.text:theme.bg}/>
+ </Pressable>;
+}
+function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
+ return <View style={[styles.header,{borderColor:theme.border}]}>
+  <View style={{flexDirection:"row",alignItems:"center",gap:9}}>
+   <View style={[styles.brandMark,{borderColor:theme.accent}]}><Globe2 size={23} color={theme.accent}/></View>
+   <View><Text style={[styles.brandName,{color:theme.text}]}>GTH <Text style={{color:theme.accent}}>PRO</Text></Text>
+    <Text style={{fontSize:10,color:theme.muted}}>THE GLOBAL EXPERIENCE</Text>
+   </View>
+  </View>
+  <Pressable accessibilityRole="button" accessibilityLabel="Open saved records" onPress={openSaved}
+   style={[styles.roundIcon,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+   <Bookmark size={20} color={theme.accent}/>
+  </Pressable>
+ </View>;
+}
+function Hero({theme,onSearch,onExplore,query,setQuery}:{theme:Theme;onSearch:()=>void;onExplore:()=>void;query:string;setQuery:(v:string)=>void}){
+ return <View style={[styles.hero,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+  <View style={{flexDirection:"row",alignItems:"center",gap:7}}>
+   <Sparkles size={15} color={theme.accent}/>
+   <TextLabel text="ONE WORLD · LIMITLESS POSSIBILITIES" theme={theme}/>
+  </View>
+  <Text style={[styles.h1,{color:theme.text}]}>Your world.{"\n"}One brilliant app.</Text>
+  <Text style={[styles.lead,{color:theme.muted}]}>
+   Travel, discover places and find business opportunities in a space designed around you.
+  </Text>
+  <View style={[styles.searchRow,{backgroundColor:theme.bg,borderColor:theme.border}]}>
+   <Search size={20} color={theme.accent}/>
+   <TextInput placeholder="Goa hotels, Mumbai homes, tenders…"
+    placeholderTextColor={theme.muted} value={query} onChangeText={setQuery}
+    onSubmitEditing={onSearch} returnKeyType="search" autoCorrect={false}
+    accessibilityLabel="Universal search" style={[styles.searchInput,{color:theme.text}]}/>
+   <Pressable onPress={onSearch} accessibilityRole="button" accessibilityLabel="Search GTH PRO"
+    style={[styles.searchGo,{backgroundColor:theme.accent}]}>
+    <ArrowRight size={21} color={theme.bg}/>
+   </Pressable>
+  </View>
+  <Pressable accessibilityRole="button" onPress={onExplore} style={{paddingVertical:7,alignSelf:"flex-start"}}>
+   <Text style={{fontSize:12,fontWeight:"700",color:theme.accent}}>Explore all services  ↗</Text>
+  </Pressable>
+ </View>;
+}
+function Journey({theme,onOpen}:{theme:Theme;onOpen:(kind:Pillar)=>void}){
+ return <View style={{marginTop:24}}>
+  <TextLabel text="CURATED FOR YOUR NEXT MOVE" theme={theme}/>
+  <Text style={[styles.sectionTitle,{color:theme.text}]}>Explore your possibilities</Text>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} snapToInterval={270} decelerationRate="fast"
+   contentContainerStyle={{gap:12,paddingRight:18,paddingBottom:3}}>
+   {panel.map(card=><Pressable key={card.kind} onPress={()=>onOpen(card.kind)}
+     accessibilityRole="button" accessibilityLabel={card.heading+" "+card.caption}
+     style={[styles.journeyCard,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+    <ImageBackground source={{uri:imageUrl(card.image)}} imageStyle={{borderTopLeftRadius:19,borderTopRightRadius:19}}
+     style={{height:132,justifyContent:"flex-end",padding:12}}>
+     <View style={[styles.journeyBadge,{backgroundColor:theme.surface}]}>
+      {card.kind==="travel"?<Plane size={17} color={theme.accent}/>:
+       card.kind==="property"?<Building2 size={17} color={theme.accent}/>:
+       <FileText size={17} color={theme.accent}/>}
+     </View>
+    </ImageBackground>
+    <View style={{padding:14,gap:5}}>
+     <Text style={{fontSize:18,fontWeight:"800",color:theme.text}}>{card.heading}</Text>
+     <Text style={{fontSize:12,lineHeight:18,color:theme.muted}}>{card.caption}</Text>
+     <View style={{flexDirection:"row",alignItems:"center",gap:6,marginTop:4}}>
+      <Text style={{color:theme.accent,fontSize:12,fontWeight:"800"}}>Discover</Text>
+      <ArrowRight size={15} color={theme.accent}/>
+     </View>
+    </View>
+   </Pressable>)}
+  </ScrollView>
+ </View>;
+}
+function RecordCard({item,theme,bookmarked,onOpen,onToggle}:{item:DiscoveryCard;theme:Theme;bookmarked:boolean;onOpen:()=>void;onToggle:()=>void}){
+ return <View style={[styles.record,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+  <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={"Details for "+item.title}
+   style={{flexDirection:"row",alignItems:"center",gap:12,flex:1}}>
+   <View style={[styles.recordIcon,{backgroundColor:theme.surfaceSoft}]}>
+    {item.kind==="hotel"?<Hotel size={23} color={theme.accent}/>:
+     item.kind==="property"?<Building2 size={23} color={theme.accent}/>:
+     item.kind==="tender"?<FileText size={23} color={theme.accent}/>:
+     <MapPin size={23} color={theme.accent}/>}
+   </View>
+   <View style={{flex:1,gap:4}}>
+    <Text numberOfLines={2} style={{fontSize:14,fontWeight:"800",color:theme.text}}>{item.title}</Text>
+    <Text numberOfLines={1} style={{fontSize:12,color:theme.muted}}>{item.subtitle}</Text>
+    <Text numberOfLines={1} style={{fontSize:11,color:theme.accent}}>{item.tag||item.source}</Text>
+   </View>
+   <ArrowRight size={18} color={theme.muted}/>
+  </Pressable>
+  {item.webPath&&<Pressable onPress={onToggle} accessibilityRole="button"
+    accessibilityLabel={(bookmarked?"Remove saved ":"Save ")+item.title} accessibilityState={{selected:bookmarked}}
+    style={[styles.bookmarkButton,{borderColor:theme.border}]}>
+    {bookmarked?<BookmarkCheck size={19} color={theme.accent}/>:<Bookmark size={19} color={theme.muted}/>}
+   </Pressable>}
+ </View>;
+}
+function BottomBar({tab,setTab,theme}:{tab:Tab;setTab:(v:Tab)=>void;theme:Theme}){
+ const tabs=[
+  {id:"home" as Tab,title:"Home",Icon:Home},
+  {id:"discover" as Tab,title:"Discover",Icon:Search},
+  {id:"saved" as Tab,title:"Saved",Icon:Bookmark},
+  {id:"services" as Tab,title:"Services",Icon:Compass},
+ ];
+ return <SafeAreaView edges={["bottom"]} style={{borderTopWidth:1,borderColor:theme.border,backgroundColor:theme.surface}}>
+  <View style={styles.tabbar}>{tabs.map(({id,title,Icon})=><Pressable key={id} onPress={()=>setTab(id)}
+    accessibilityRole="tab" accessibilityState={{selected:tab===id}}
+    accessibilityLabel={title+" tab"} style={styles.tab}>
+    <Icon size={22} color={tab===id?theme.accent:theme.muted} strokeWidth={tab===id?2.5:1.7}/>
+    <Text style={{fontSize:10,fontWeight:tab===id?"800":"600",color:tab===id?theme.accent:theme.muted}}>{title}</Text>
+   </Pressable>)}</View>
+ </SafeAreaView>;
+}
+function NativeApp(){
+ const dark=useColorScheme()==="dark";
+ const theme=dark?colors.dark:colors.light;
+ const [tab,setTab]=useState<Tab>("home");
+ const [query,setQuery]=useState("");
+ const [term,setTerm]=useState("");
+ const [kind,setKind]=useState<NativeChoice>("all");
+ const [results,setResults]=useState<DiscoveryCard[]>([]);
+ const [total,setTotal]=useState(0);
+ const [pending,setPending]=useState(false);
+ const [error,setError]=useState("");
+ const [detail,setDetail]=useState<DiscoveryCard|null>(null);
+ const [refresh,setRefresh]=useState(0);
+ const bookmarks=useNativeBookmarks();
+ const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
+ function openSite(path:string){
+  const target=firstPartyUrl(path);
+  if(!target){Alert.alert("Link unavailable","Only official GTH PRO destinations are supported.");return;}
+  Alert.alert("Continue to GTH PRO","This opens the existing verified website service. Bookings, payments and provider details are confirmed there.",[
+   {text:"Stay in app",style:"cancel"},
+   {text:"Continue",onPress:()=>{void Linking.openURL(target).catch(()=>Alert.alert("Unable to open link","Check your connection and try again."));}},
+  ]);
+ }
+ function enterSearch(preferred:NativeChoice="all",input=query){
+  const cleaned=normalizeQuery(input);
+  Keyboard.dismiss();
+  const detected=detectPillar(cleaned);
+  const category=preferred!=="all"?preferred:detected;
+  setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
+ }
+ function openPillar(pillar:Pillar){
+  if(pillar==="travel"){openSite("/app/flights");return;}
+  setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
+ }
+ useEffect(()=>{
+  if(tab!=="discover"||kind==="all"||kind==="travel"){
+   setResults([]);setTotal(0);setPending(false);setError("");return;
+  }
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),11000);
+  let mounted=true;
+  setPending(true);setError("");setResults([]);
+  getSourceCards(kind,term,ctrl.signal).then(data=>{
+   if(mounted){setResults(data.items);setTotal(data.total);}
+  }).catch(()=>{
+   if(mounted)setError("This source could not load. Check your connection and retry.");
+  }).finally(()=>{clearTimeout(timer);if(mounted)setPending(false);});
+  return ()=>{mounted=false;clearTimeout(timer);ctrl.abort();};
+ },[tab,kind,term,refresh]);
+ const activeItem=detail;
+ return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
+  <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
+  <Header theme={theme} openSaved={()=>{setTab("saved");setDetail(null);}}/>
+  <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:18,paddingBottom:28}}
+   style={{flex:1}} key={tab+(activeItem?"-detail":"")}>
+   {activeItem?<>
+    <Pressable onPress={()=>setDetail(null)} accessibilityRole="button" accessibilityLabel="Back to results"
+     style={{flexDirection:"row",alignItems:"center",gap:8,minHeight:50}}>
+     <ArrowLeft size={19} color={theme.accent}/><Text style={{color:theme.accent,fontWeight:"800"}}>Back to {tab==="saved"?"saved records":"results"}</Text>
+    </Pressable>
+    <View style={[styles.detail,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+     <TextLabel text={activeItem.kind+" · SOURCE RECORD"} theme={theme}/>
+     <Text style={[styles.h1,{color:theme.text,marginTop:9}]}>{activeItem.title}</Text>
+     <Text style={[styles.lead,{color:theme.muted}]}>{activeItem.subtitle}</Text>
+     <Text style={{fontSize:13,color:theme.muted,marginTop:8}}>Source: {activeItem.source}</Text>
+     {activeItem.tag&&<Text style={{fontSize:12,color:theme.accent,marginTop:8}}>{activeItem.tag}</Text>}
+     <View style={[styles.info,{borderColor:theme.border,backgroundColor:theme.surfaceSoft}]}>
+      <ShieldCheck size={19} color={theme.accent}/>
+      <Text style={{flex:1,fontSize:12,lineHeight:19,color:theme.muted}}>
+       This is a public source record, not a guaranteed booking, approved property transaction or confirmed tender eligibility. Verify all current details with the original provider.
+      </Text>
+     </View>
+     {activeItem.webPath?
+      <Action label="Open original record" theme={theme} onPress={()=>openSite(activeItem.webPath!)}/>:
+      <Action label="Open original service" theme={theme} onPress={()=>openSite(serviceDestination[activeItem.kind])}/>}
+     {activeItem.webPath&&<View style={{marginTop:12}}>
+      <Action label={savedPaths.has(activeItem.webPath)?"Remove from saved":"Save to my desk"} theme={theme} secondary
+       onPress={()=>savedPaths.has(activeItem.webPath!)?bookmarks.remove(activeItem.webPath!):bookmarks.save(activeItem)}/>
+     </View>}
+    </View>
+   </>:tab==="home"?<>
+    <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onExplore={()=>{setTab("discover");setKind("all");setTerm("");}}/>
+    <Journey theme={theme} onOpen={openPillar}/>
+    <View style={[styles.info,{marginTop:24,backgroundColor:theme.surface,borderColor:theme.border}]}>
+     <Bookmark size={22} color={theme.accent}/>
+     <View style={{flex:1}}><Text style={{color:theme.text,fontWeight:"800"}}>Your Research Desk</Text>
+      <Text style={{color:theme.muted,fontSize:12,marginTop:4}}>
+       {bookmarks.ready&&bookmarks.items.length?bookmarks.items.length+" saved source records on this device":"Save real discoveries to revisit them anytime."}
+      </Text></View>
+     <Pressable onPress={()=>setTab("saved")} accessibilityRole="button" accessibilityLabel="Open Research Desk">
+      <ArrowRight color={theme.accent} size={22}/>
+     </Pressable>
+    </View>
+    <View style={{marginTop:25,gap:10}}>
+     <TextLabel theme={theme} text="YOUR EVERYDAY SHORTCUTS"/>
+     <Text style={[styles.sectionTitle,{color:theme.text}]}>Essential services, one tap.</Text>
+     {serviceLinks.slice(0,4).map(item=><Pressable key={item.label} onPress={()=>item.kind==="hotel"?openPillar("hotel"):openSite(item.path)}
+       accessibilityRole="button" style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+       <Globe2 size={20} color={theme.accent}/><Text style={{color:theme.text,fontWeight:"700",flex:1}}>{item.label}</Text>
+       <ArrowRight size={16} color={theme.muted}/>
+      </Pressable>)}
+    </View>
+   </>:tab==="discover"?<>
+    <View style={{paddingTop:12}}>
+     <TextLabel theme={theme} text="SEARCH THE GLOBAL ECOSYSTEM"/>
+     <Text style={[styles.sectionTitle,{color:theme.text,marginTop:6}]}>Discover what matters.</Text>
+     <View style={[styles.searchRow,{backgroundColor:theme.surface,borderColor:theme.border,marginTop:13}]}>
+      <Search size={20} color={theme.accent}/>
+      <TextInput value={query} onChangeText={setQuery} onSubmitEditing={()=>enterSearch(kind)}
+       returnKeyType="search" accessibilityLabel="Search source records" autoCorrect={false}
+       placeholder="Search a city, project or notice…" placeholderTextColor={theme.muted}
+       style={[styles.searchInput,{color:theme.text}]}/>
+      <Pressable accessibilityRole="button" accessibilityLabel="Submit source search" onPress={()=>enterSearch(kind)}
+       style={[styles.searchGo,{backgroundColor:theme.accent}]}><ArrowRight size={20} color={theme.bg}/></Pressable>
+     </View>
+     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingVertical:15}}>
+      {filters.map(filter=><Pressable key={filter.kind} accessibilityRole="button"
+        accessibilityState={{selected:kind===filter.kind}}
+        onPress={()=>{setKind(filter.kind);setTerm(normalizeQuery(query));}}
+        style={[styles.chip,{borderColor:kind===filter.kind?theme.accent:theme.border,backgroundColor:theme.surface}]}>
+       <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accent:theme.text}}>{filter.title}</Text>
+      </Pressable>)}
+     </ScrollView>
+    </View>
+    {kind==="all"?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+      <Compass size={32} color={theme.accent}/>
+      <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>One search. Trusted specialist sources.</Text>
+      <Text style={{textAlign:"center",lineHeight:20,fontSize:13,color:theme.muted}}>Choose Hotels, Property, Tenders or Tours above to search existing GTH PRO records. No duplicate inventory.</Text>
+     </View>:kind==="travel"?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+      <Plane size={33} color={theme.accent}/>
+      <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>Where to next?</Text>
+      <Text style={{textAlign:"center",fontSize:12,color:theme.muted}}>Flight fares require an origin, destination and travel dates. Continue to the existing search.</Text>
+      <Action label="Search flights" theme={theme} onPress={()=>openSite("/app/flights")}/>
+     </View>:<>
+      <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+       <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
+       <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":total+" source records"}</Text>
+      </View>
+      {pending&&<View style={{padding:25,alignItems:"center"}}><ActivityIndicator color={theme.accent} accessibilityLabel="Loading source records"/></View>}
+      {!!error&&<View style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+       <Text style={{flex:1,color:theme.muted,fontSize:12}}>{error}</Text>
+       <Pressable accessibilityRole="button" onPress={()=>setRefresh(v=>v+1)}><Text style={{color:theme.accent,fontWeight:"800"}}>Retry</Text></Pressable>
+      </View>}
+      {!pending&&!error&&results.length===0&&<View style={[styles.empty,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+       <Search color={theme.accent} size={28}/>
+       <Text style={{color:theme.text,fontSize:16,fontWeight:"800"}}>No published results found</Text>
+       <Text style={{color:theme.muted,textAlign:"center",fontSize:12,lineHeight:18}}>Try another city or term. GTH PRO never fabricates availability or records.</Text>
+      </View>}
+      {results.map((item,index)=><RecordCard key={item.id+"-"+index} theme={theme} item={item}
+       bookmarked={!!item.webPath&&savedPaths.has(item.webPath)}
+       onToggle={()=>item.webPath&&(savedPaths.has(item.webPath)?bookmarks.remove(item.webPath):bookmarks.save(item))}
+       onOpen={()=>setDetail(item)}/>)}
+      <Text style={{marginTop:12,color:theme.muted,fontSize:11,lineHeight:17}}>
+       Results come from existing public GTH PRO APIs. Open original details to confirm sources, prices, deadlines or provider availability.
+      </Text>
+     </>}
+   </>:tab==="saved"?<>
+    <View style={{paddingTop:13,marginBottom:12}}>
+     <TextLabel theme={theme} text="YOUR PRIVATE SPACE"/>
+     <Text style={[styles.sectionTitle,{color:theme.text,marginTop:6}]}>My Research Desk</Text>
+     <Text style={{fontSize:12,color:theme.muted,marginTop:5}}>Saved only on this phone · no account sync or automatic sharing</Text>
+    </View>
+    {!bookmarks.ready&&<ActivityIndicator color={theme.accent}/>}
+    {bookmarks.ready&&bookmarks.items.length===0&&<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+     <Bookmark size={36} color={theme.accent}/>
+     <Text style={[styles.sectionTitle,{color:theme.text}]}>Your next discovery belongs here.</Text>
+     <Text style={{fontSize:12,lineHeight:19,textAlign:"center",color:theme.muted}}>Save an original hotel, property or tender record to revisit it without searching again.</Text>
+     <Action label="Start exploring" theme={theme} onPress={()=>setTab("discover")}/>
+    </View>}
+    {bookmarks.items.map((item,index)=><RecordCard key={item.id+"-"+index} theme={theme} item={item} bookmarked
+     onOpen={()=>setDetail(item)} onToggle={()=>item.webPath&&bookmarks.remove(item.webPath)}/>)}
+   </>:<>
+    <View style={{paddingTop:13,marginBottom:12}}>
+     <TextLabel theme={theme} text="ALL THREE ECOSYSTEMS"/>
+     <Text style={[styles.sectionTitle,{color:theme.text,marginTop:6}]}>Explore every service</Text>
+     <Text style={{fontSize:12,lineHeight:19,color:theme.muted,marginTop:5}}>Native browsing first. Original booking, registry and tender actions when you choose them.</Text>
+    </View>
+    {serviceLinks.map(item=><Pressable key={item.label} onPress={()=>item.kind==="hotel"?openPillar("hotel"):item.kind==="property"?openPillar("property"):item.kind==="tender"?openPillar("tender"):openSite(item.path)}
+     accessibilityRole="button" style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+     {item.kind==="travel"?<Plane size={24} color={theme.accent}/>:
+      item.kind==="hotel"?<Hotel size={24} color={theme.accent}/>:
+      item.kind==="property"?<Building2 size={24} color={theme.accent}/>:
+      item.kind==="tender"?<FileText size={24} color={theme.accent}/>:
+      <Compass size={24} color={theme.accent}/>}
+     <View style={{flex:1}}><Text style={{fontSize:14,fontWeight:"800",color:theme.text}}>{item.label}</Text>
+      <Text style={{fontSize:11,lineHeight:17,color:theme.muted}}>{item.description}</Text>
+     </View>
+     <ExternalLink size={18} color={theme.muted}/>
+    </Pressable>)}
+    <View style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border,marginTop:15}]}>
+     <ShieldCheck size={22} color={theme.accent}/>
+     <Text style={{flex:1,color:theme.muted,lineHeight:18,fontSize:12}}>
+      GTH PRO respects original sources. We do not claim live prices, supplier bookings or tender eligibility without confirmation.
+     </Text>
+    </View>
+   </>}
+  </ScrollView>
+  <BottomBar tab={tab} setTab={next=>{setTab(next);setDetail(null);}} theme={theme}/>
+ </SafeAreaView>;
+}
+export default function App(){return <SafeAreaProvider><NativeApp/></SafeAreaProvider>;}
+
+const styles=StyleSheet.create({
+ header:{height:65,paddingHorizontal:18,borderBottomWidth:1,alignItems:"center",flexDirection:"row",justifyContent:"space-between"},
+ brandMark:{width:43,height:43,borderRadius:15,borderWidth:1.25,alignItems:"center",justifyContent:"center"},
+ brandName:{fontSize:18,fontWeight:"900",letterSpacing:0.4},
+ roundIcon:{height:44,width:44,borderWidth:1,borderRadius:14,alignItems:"center",justifyContent:"center"},
+ eyebrow:{fontSize:10,fontWeight:"900",letterSpacing:1.5},
+ hero:{marginTop:17,padding:18,borderWidth:1,borderRadius:26},
+ h1:{fontSize:31,lineHeight:36,fontWeight:"900",letterSpacing:-0.7},
+ lead:{fontSize:13,lineHeight:21,marginTop:9},
+ searchRow:{borderWidth:1,borderRadius:15,minHeight:55,flexDirection:"row",alignItems:"center",paddingLeft:12,paddingRight:5,marginTop:18,gap:9},
+ searchInput:{height:45,flex:1,fontSize:13,minWidth:0},
+ searchGo:{width:43,height:43,alignItems:"center",justifyContent:"center",borderRadius:12},
+ sectionTitle:{fontSize:20,fontWeight:"900",marginTop:5,letterSpacing:-0.3},
+ journeyCard:{width:255,borderRadius:19,borderWidth:1,overflow:"hidden"},
+ journeyBadge:{height:36,width:36,alignItems:"center",justifyContent:"center",borderRadius:12},
+ info:{padding:15,borderRadius:17,borderWidth:1,flexDirection:"row",alignItems:"center",gap:12},
+ serviceRow:{minHeight:65,padding:12,borderRadius:15,borderWidth:1,flexDirection:"row",alignItems:"center",gap:13,marginBottom:9},
+ tabbar:{height:57,flexDirection:"row",alignItems:"center",justifyContent:"space-around"},
+ tab:{height:55,flex:1,alignItems:"center",justifyContent:"center",gap:3},
+ chip:{borderWidth:1,paddingHorizontal:14,minHeight:42,borderRadius:24,alignItems:"center",justifyContent:"center"},
+ record:{padding:12,borderWidth:1,borderRadius:17,marginBottom:10,flexDirection:"row",alignItems:"center",gap:8},
+ recordIcon:{height:47,width:47,borderRadius:14,alignItems:"center",justifyContent:"center"},
+ bookmarkButton:{width:44,height:44,borderRadius:13,borderWidth:1,alignItems:"center",justifyContent:"center"},
+ empty:{padding:23,borderWidth:1,borderRadius:20,alignItems:"center",gap:13,marginTop:8},
+ detail:{padding:20,borderWidth:1,borderRadius:21,marginTop:5},
+ action:{minHeight:47,borderRadius:13,paddingHorizontal:15,flexDirection:"row",alignItems:"center",justifyContent:"center",gap:9},
+});
