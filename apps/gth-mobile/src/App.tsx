@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {
  ActivityIndicator,Alert,BackHandler,Image,ImageBackground,Keyboard,Linking,Pressable,
- Platform,ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,
+ Platform,ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,type ImageSourcePropType,
 } from "react-native";
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
@@ -9,6 +9,10 @@ import {
  FileText,Globe2,Home,Hotel,MapPin,Plane,Search,ShieldCheck,Sparkles,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
+import travelHero from "../assets/hero/travel.jpg";
+import propertyHero from "../assets/hero/property.jpg";
+import tenderHero from "../assets/hero/tender.jpg";
+import brandLogo from "../assets/branding/logo.png";
 import {type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
 import {searchNativeSources,type SearchSlice} from "./core/unified-search";
 import {detectPillar,firstPartyUrl,normalizeQuery,serviceDestination,type Pillar} from "./core/routing";
@@ -21,10 +25,10 @@ const filters:{kind:NativeChoice;title:string}[]=[
  {kind:"all",title:"All"},{kind:"hotel",title:"Hotels"},{kind:"property",title:"Property"},
  {kind:"tender",title:"Tenders"},{kind:"tour",title:"Tours"},
 ];
-const panel:{kind:Pillar;heading:string;caption:string;image:string}[]=[
- {kind:"travel",heading:"Go further.",caption:"Flights, destinations and experiences.",image:"/images/mega/welcome.jpg"},
- {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:"/images/real-estate.jpg"},
- {kind:"tender",heading:"Build what is next.",caption:"Find published business opportunities.",image:"/images/tender.jpg"},
+const panel:{kind:Pillar;heading:string;caption:string;image:ImageSourcePropType}[]=[
+ {kind:"travel",heading:"Go further.",caption:"Flights, destinations and experiences.",image:travelHero},
+ {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:propertyHero},
+ {kind:"tender",heading:"Build what is next.",caption:"Find published business opportunities.",image:tenderHero},
 ];
 const serviceLinks:{label:string;path:string;kind:Pillar;mode:"native"|"web";description:string}[]=[
  {label:"Flights",path:"/app/flights",kind:"travel",mode:"web",description:"Real flight search, dates and suppliers"},
@@ -42,7 +46,6 @@ const serviceLinks:{label:string;path:string;kind:Pillar;mode:"native"|"web";des
  {label:"Saved tenders",path:"/tender/saved",kind:"tender",mode:"web",description:"Original tender watchlist and account access"},
  {label:"Tender services",path:"/tender/services",kind:"tender",mode:"web",description:"Original assistance and document workflows"},
 ];
-const imageUrl=(path:string)=>"https://www.gthproglobal.com"+path;
 
 function TextLabel({text,theme}:{text:string;theme:Theme}){
  return <Text style={[styles.eyebrow,{color:theme.accent}]}>{text.toUpperCase()}</Text>;
@@ -57,7 +60,7 @@ function Action({label,onPress,theme,secondary=false}:{label:string;onPress:()=>
 function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
  return <View style={[styles.header,{borderColor:theme.border}]}>
   <View style={{flexDirection:"row",alignItems:"center",gap:9}}>
-   <View style={[styles.brandMark,{borderColor:theme.accent}]}><Image source={{uri:imageUrl("/app-brand/icon-192.png")}} resizeMode="cover" accessibilityLabel="GTH PRO logo" style={{width:37,height:37,borderRadius:11}}/></View>
+   <View style={[styles.brandMark,{borderColor:theme.accent}]}><Image source={brandLogo} resizeMode="cover" accessibilityLabel="GTH PRO logo" style={{width:37,height:37,borderRadius:11}}/></View>
    <View><Text style={[styles.brandName,{color:theme.text}]}>GTH <Text style={{color:theme.accent}}>PRO</Text></Text>
     <Text style={{fontSize:10,color:theme.muted}}>THE GLOBAL EXPERIENCE</Text>
    </View>
@@ -111,7 +114,7 @@ function Journey({theme,onOpen}:{theme:Theme;onOpen:(kind:Pillar)=>void}){
    {panel.map(card=><Pressable key={card.kind} onPress={()=>onOpen(card.kind)}
      accessibilityRole="button" accessibilityLabel={card.heading+" "+card.caption}
      style={[styles.journeyCard,{borderColor:theme.border,backgroundColor:theme.surface}]}>
-    <ImageBackground source={{uri:imageUrl(card.image)}} imageStyle={{borderTopLeftRadius:19,borderTopRightRadius:19}}
+    <ImageBackground source={card.image} imageStyle={{borderTopLeftRadius:19,borderTopRightRadius:19}}
      style={{height:132,justifyContent:"flex-end",padding:12}}>
      <View style={[styles.journeyBadge,{backgroundColor:theme.surface}]}>
       {card.kind==="travel"?<Plane size={17} color={theme.accent}/>:
