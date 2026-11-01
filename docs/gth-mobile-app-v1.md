@@ -15,6 +15,28 @@ No duplicate database, hardcoded provider token, invented listing or second CSS 
 - Installed scope is the same HTTPS origin as GTH PRO, so links and cookies stay on the same origin.
 - Browser external booking and official tender links remain governed by existing routes and warnings.
 
+## 1 November 2026 targeted app audit: customer navigation and reliability
+
+This change improves the **existing** /app PWA, not a second or native app:
+- All 14 dashboard services now open a route under /app first. The 9 services
+  whose tools are website-only have allowlisted /app/services/[id] screens
+  which transparently explain the service and require an explicit user click
+  before opening the original GTH PRO website/provider handoff in a new tab.
+- The five already-native app services retain their original in-app pages.
+- The Recent Services row uses the same in-scope links, including direct visits.
+- Optional dashboard hotel/property/tender Supabase reads have a shared 4.5 s
+  abort deadline. On optional-data failure, the existing curated destinations
+  and app actions remain usable instead of waiting indefinitely.
+- Existing source filters, Real Estate, Tender, hotel/flight suppliers, theme
+  tokens, root desktop layout, manifest identity and approved app bottom nav
+  are not reimplemented or modified.
+- App gateway pages do not create bookings, authenticate customers, cache
+  personal data, or claim verified supplier availability. External actions
+  remain explicit, not an embedded third-party checkout.
+
+Passing CI confirms builds and source regressions, **not** full physical Android
+testing, all upstream supplier availability, or signed APK/AAB publication.
+
 ## Installation and phone testing
 
 After a passing build and approved deployment (do not assume main is deployed):

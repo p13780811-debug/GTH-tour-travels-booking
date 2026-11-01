@@ -41,15 +41,24 @@ export async function loadMobileDiscovery():Promise<MobileDiscoveryData>{
   const fallback:MobileDiscoveryData={destinations:appDestinations,hotels:[],properties:[],tenders:[]};
   const db=publicClient();
   if(!db)return fallback;
-  const results=await Promise.allSettled([
-    db.from("hotel_catalog").select("source_id,name,city,region,category,extract_country_hint")
-      .not("city","is",null).order("imported_at",{ascending:false}).limit(14),
-    db.from("properties").select("slug,title,city,location,property_type,image")
-      .not("slug","is",null).order("id",{ascending:false}).limit(12),
-    db.from("tenders").select("id,title,country_code,sector,deadline_at,source_name")
-      .eq("status","published").eq("source_verified",true).eq("is_public",true)
-      .gt("deadline_at",new Date().toISOString()).order("deadline_at",{ascending:true}).limit(12),
-  ]);
+  // The hub is a first screen, not a long-running importer. Cancel slow optional
+  // discovery reads so a stalled database never blocks the entire app launch.
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),4500);
+  const results=await (async()=>{
+    try{
+      return await Promise.allSettled([
+        db.from("hotel_catalog").select("source_id,name,city,region,category,extract_country_hint")
+          .not("city","is",null).order("imported_at",{ascending:false}).limit(14).abortSignal(controller.signal),
+        db.from("properties").select("slug,title,city,location,property_type,image")
+          .not("slug","is",null).order("id",{ascending:false}).limit(12).abortSignal(controller.signal),
+        db.from("tenders").select("id,title,country_code,sector,deadline_at,source_name")
+          .eq("status","published").eq("source_verified",true).eq("is_public",true)
+          .gt("deadline_at",new Date().toISOString()).order("deadline_at",{ascending:true}).limit(12)
+          .abortSignal(controller.signal),
+      ]);
+    }finally{clearTimeout(timer);}
+  })();
   const validData=(index:number):Array<Record<string,unknown>>=>{
     const result=results[index];
     if(result.status!=="fulfilled"||result.value.error||!Array.isArray(result.value.data))return [];

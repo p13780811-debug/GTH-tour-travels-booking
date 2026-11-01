@@ -68,7 +68,8 @@ test("affiliate application contact and owned-project advertising are truthful",
  assert.match(ads,/noopener noreferrer/);
  assert.match(ads,/portfolioProjects/);
  assert.match(projects,/https:\/\/gth-pro-portfolio\.pages\.dev\//);
- assert.match(projects,/https:\/\/thali-treats-palava\.lovable\.app\//);
+ assert.match(projects,/https:\/\/thali\.gthproglobal\.com\//);
+ assert.doesNotMatch(projects,/https:\/\/thali-treats-palava\.lovable\.app\//);
  assert.doesNotMatch(ads,/Google Ads sponsored placement|Guaranteed results/);
  assert.match(footer,/<HousePromotions \/>/);
  assert.match(home,/<HousePromotions flagship \/>/);

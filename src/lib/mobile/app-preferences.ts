@@ -1,4 +1,4 @@
-import {appServices} from "./app-dashboard";
+import {appServices,mobileWebService} from "./app-dashboard";
 export const APP_SERVICE_PREFERENCES_KEY="gth.app.services.v1";
 export const MAX_FAVOURITES=8;
 export type AppPreferences={version:1;favourites:string[];recent:string[]};
@@ -19,5 +19,7 @@ export function recordAppService(value:AppPreferences,id:string):AppPreferences{
  return known(id)?{...value,recent:[id,...value.recent.filter(item=>item!==id)].slice(0,4)}:value;
 }
 export function appServiceForPath(path:string):string|undefined{
+ const gateway=/^\/app\/services\/([a-z0-9-]+)$/.exec(path);
+ if(gateway)return mobileWebService(gateway[1])?.id;
  return appServices.find(service=>service.href.startsWith("/app/")&&(path===service.href||path.startsWith(`${service.href}/`)))?.id;
 }
