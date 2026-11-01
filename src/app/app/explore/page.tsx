@@ -1,5 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
+import {redirect} from "next/navigation";
+import {resolveUniversalTarget} from "@/lib/mobile/universal-search";
 import {ArrowLeft,ArrowRight,Bookmark,Building2,FileSearch,Globe2,Hotel,Search,ShieldCheck} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
@@ -28,15 +30,24 @@ const meta:Record<"destinations"|"hotels"|"property"|"tenders",{kind:MobileDisco
  tenders:{kind:"tender",heading:"Open procurement notices",description:"Source-verified published notices; confirm deadlines with the authority"},
 };
 function exploreHref(q:string,pillar:ExplorePillar){
- const params=new URLSearchParams();
- if(q)params.set("q",q);
- if(pillar!=="all")params.set("pillar",pillar);
- const suffix=params.toString();
- return "/app/explore"+(suffix?"?"+suffix:"");
+ // Category tiles must go to working specialist engines, not reload the same page.
+ if(pillar!=="all"){
+  const params=new URLSearchParams({category:pillar});
+  if(q)params.set("q",q);
+  return "/app/search?"+params.toString();
+ }
+ return "/app/explore"+(q?"?"+new URLSearchParams({q}).toString()+"#search-results":"");
 }
 
 export default async function GlobalAppExplore({searchParams}:Props){
  const {q,pillar}=normalizeExploreQuery(await searchParams);
+ // Existing saved/bookmarked Explore links must also resolve specialist intents.
+ // The generic city search stays federated; hotel/property/tender intent goes
+ // directly to its working results page.
+ if(q.length>=2){
+  const target=resolveUniversalTarget(q,pillar);
+  if(target.category!=="all")redirect(target.href);
+ }
  const searched=q.length>=2;
  const results=searched?await searchGlobalRecords(q,pillar):[];
  const total=results.reduce((sum,result)=>sum+result.data.total,0);
@@ -62,13 +73,13 @@ export default async function GlobalAppExplore({searchParams}:Props){
       Search real destination guides, accommodation directories, property research and public tender notices.
       Save relevant records together; continue in their original specialist tools.
      </p>
-     <form action="/app/explore" method="get" role="search" className="mt-5">
-      {pillar!=="all"&&<input type="hidden" name="pillar" value={pillar}/>}
+     <form action="/app/search" method="get" role="search" className="mt-5">
+      {pillar!=="all"&&<input type="hidden" name="category" value={pillar}/>}
       <div className="flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
        <Search size={20} aria-hidden="true" className="ml-2 shrink-0 text-[var(--gold)]"/>
        <input name="q" aria-label="Search global destinations, property and tenders"
         type="search" minLength={2} maxLength={70} required defaultValue={q}
-        placeholder="City, project or tender keyword"
+        placeholder="Goa hotel, property or tender"
         className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
        <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-4 text-sm font-bold">
         Search <ArrowRight size={15} aria-hidden="true"/>
@@ -103,7 +114,7 @@ export default async function GlobalAppExplore({searchParams}:Props){
       </Link>)}
      </div>
     </section>:
-    <section className="pt-6" aria-label="Live public-source search results">
+    <section id="search-results" className="scroll-mt-24 pt-6" aria-label="Live public-source search results">
      <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
       <h2 className="text-lg font-semibold">Results for “{q}”</h2>
       <span className="text-xs text-[var(--text-soft)]">{total.toLocaleString("en-IN")} records reported by sources</span>
