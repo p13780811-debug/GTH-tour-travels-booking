@@ -54,7 +54,7 @@ test("native service cards are source-backed and never invent suppliers or prici
  const hotels=catalog.mapSourceRows("hotel",[{id:"osm:node-123",name:"Test Hotel",city:"Goa",booking_ready:false,source:"OpenStreetMap"}]);
  assert.equal(hotels.items.length,1);
  assert.equal(hotels.items[0].webPath,"/app/hotels/osm:node-123");
- assert.equal(hotels.items[0].tag,"Directory record");
+ assert.equal(hotels.items[0].tag,"Accommodation record");
  assert.equal(hotels.items[0].image,undefined);
  const tender=catalog.mapSourceRows("tender",{items:[{id:"12345678-1234-1234-1234-123456789abc",title:"Sample notice",deadline_at:"2026-12-01",source_name:"Government source"}],total:1});
  assert.equal(tender.items[0].webPath,"/app/tenders/12345678-1234-1234-1234-123456789abc");
@@ -71,7 +71,7 @@ test("native app remains separate from website and handles native navigation",()
  assert.match(app,/tab==="discover"/);
  assert.match(app,/tab==="saved"/);
  assert.match(app,/type Tab="home"\|"discover"\|"saved"\|"services"/);
- assert.match(app,/getSourceCards/);
+ assert.match(app,/searchNativeSources/);
  assert.match(app,/Linking\.openURL\(target\)/);
  assert.match(bookmarks,/AsyncStorage/);
  assert.match(bookmarks,/BOOKMARK_LIMIT=30/);
