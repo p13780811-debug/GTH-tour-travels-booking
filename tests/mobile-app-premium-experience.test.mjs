@@ -33,8 +33,8 @@ test("editorial images and navigation come from already existing app assets and 
   ["/images/tender.jpg","/app/tenders"],
  ];
  for(const [src,href] of cards){
-  assert.match(journeys,new RegExp(src.replace(/[.*+?^$\\{}()|[\]\\]/g,"\\$&")));
-  assert.match(journeys,new RegExp(href.replace(/[.*+?^$\\{}()|[\]\\]/g,"\\$&")));
+  assert.ok(journeys.includes(src));
+  assert.ok(journeys.includes(href));
   assert.doesNotThrow(()=>readFileSync(new URL("../public"+src,import.meta.url)));
  }
  assert.match(journeys,/alt=""/);
