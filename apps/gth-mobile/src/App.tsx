@@ -275,14 +275,27 @@ function NativeApp(){
       <ArrowRight color={theme.accent} size={22}/>
      </Pressable>
     </View>
-    <View style={{marginTop:25,gap:10}}>
+    <View style={{marginTop:24,gap:10}}>
      <TextLabel theme={theme} text="YOUR EVERYDAY SHORTCUTS"/>
-     <Text style={[styles.sectionTitle,{color:theme.text}]}>Essential services, one tap.</Text>
-     {serviceLinks.slice(0,4).map(item=><Pressable key={item.label} onPress={()=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}
-       accessibilityRole="button" style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border}]}>
-       <Globe2 size={20} color={theme.accent}/><Text style={{color:theme.text,fontWeight:"700",flex:1}}>{item.label}</Text>
-       <ArrowRight size={16} color={theme.muted}/>
-      </Pressable>)}
+     <Text style={[styles.sectionTitle,{color:theme.text}]}>Everything, one tap away.</Text>
+     <View style={{flexDirection:"row",flexWrap:"wrap",gap:12}}>
+      {serviceLinks.slice(0,4).map(item=><Pressable key={item.label}
+        onPress={()=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}
+        accessibilityRole="button" accessibilityLabel={"Open "+item.label}
+        style={({pressed})=>[styles.quickTile,{backgroundColor:theme.surface,borderColor:theme.border,opacity:pressed?.84:1}]}>
+        <View style={{width:42,height:42,borderRadius:14,alignItems:"center",justifyContent:"center",backgroundColor:theme.surfaceSoft}}>
+         {item.kind==="travel"?<Plane size={24} color={theme.accent}/>:
+          item.kind==="hotel"?<Hotel size={24} color={theme.accent}/>:
+          item.kind==="property"?<Building2 size={24} color={theme.accent}/>:
+          <FileText size={24} color={theme.accent}/>}
+        </View>
+        <View style={{flexDirection:"row",alignItems:"center",gap:4}}>
+         <Text numberOfLines={1} style={{flex:1,color:theme.text,fontSize:13,fontWeight:"800"}}>{item.label}</Text>
+         <ArrowRight size={15} color={theme.accent}/>
+        </View>
+        <Text numberOfLines={2} style={{fontSize:11,lineHeight:16,color:theme.muted}}>{item.description}</Text>
+       </Pressable>)}
+     </View>
     </View>
    </>:tab==="discover"?<>
     <View style={{paddingTop:12}}>
@@ -421,6 +434,7 @@ const styles=StyleSheet.create({
  journeyBadge:{height:36,width:36,alignItems:"center",justifyContent:"center",borderRadius:12},
  info:{padding:15,borderRadius:17,borderWidth:1,flexDirection:"row",alignItems:"center",gap:12},
  serviceRow:{minHeight:65,padding:12,borderRadius:15,borderWidth:1,flexDirection:"row",alignItems:"center",gap:13,marginBottom:9},
+ quickTile:{width:"47%",minHeight:140,flexGrow:1,maxWidth:"49%",padding:13,borderRadius:18,borderWidth:1,justifyContent:"space-between",gap:9},
  tabbar:{height:57,flexDirection:"row",alignItems:"center",justifyContent:"space-around"},
  tab:{height:55,flex:1,alignItems:"center",justifyContent:"center",gap:3},
  chip:{borderWidth:1,paddingHorizontal:14,minHeight:42,borderRadius:24,alignItems:"center",justifyContent:"center"},
