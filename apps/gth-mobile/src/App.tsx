@@ -68,7 +68,7 @@ function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
   </Pressable>
  </View>;
 }
-function Hero({theme,onSearch,onExplore,query,setQuery}:{theme:Theme;onSearch:()=>void;onExplore:()=>void;query:string;setQuery:(v:string)=>void}){
+function Hero({theme,onSearch,onExplore,onQuick,query,setQuery}:{theme:Theme;onSearch:()=>void;onExplore:()=>void;onQuick:(query:string)=>void;query:string;setQuery:(v:string)=>void}){
  return <View style={[styles.hero,{backgroundColor:theme.surface,borderColor:theme.border}]}>
   <View style={{flexDirection:"row",alignItems:"center",gap:7}}>
    <Sparkles size={15} color={theme.accent}/>
@@ -89,7 +89,15 @@ function Hero({theme,onSearch,onExplore,query,setQuery}:{theme:Theme;onSearch:()
     <ArrowRight size={21} color={theme.onAccent}/>
    </Pressable>
   </View>
-  <Pressable accessibilityRole="button" onPress={onExplore} style={{paddingVertical:7,alignSelf:"flex-start"}}>
+  <View style={{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:12,alignItems:"center"}}>
+   <Text style={{fontSize:11,fontWeight:"700",color:theme.muted}}>Try:</Text>
+   {[{q:"Goa hotels",label:"Goa hotels"},{q:"Mumbai property",label:"Mumbai homes"},{q:"construction tender",label:"Tenders"}].map(item=>
+    <Pressable key={item.q} accessibilityRole="button" accessibilityLabel={"Search "+item.q}
+     onPress={()=>onQuick(item.q)} style={[styles.chip,{backgroundColor:theme.surfaceSoft,borderColor:theme.border,minHeight:37,paddingHorizontal:12}]}>
+     <Text style={{fontSize:11,fontWeight:"700",color:theme.text}}>{item.label}</Text>
+    </Pressable>)}
+  </View>
+  <Pressable accessibilityRole="button" accessibilityLabel="Explore all services" onPress={onExplore} style={{paddingVertical:7,alignSelf:"flex-start",marginTop:5}}> 
    <Text style={{fontSize:12,fontWeight:"700",color:theme.accent}}>Explore all services  ↗</Text>
   </Pressable>
  </View>;
@@ -263,7 +271,7 @@ function NativeApp(){
      </View>}
     </View>
    </>:tab==="home"?<>
-    <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onExplore={()=>{setTab("discover");setKind("all");setTerm("");}}/>
+    <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)} onExplore={()=>{setTab("discover");setKind("all");setTerm("");}}/>
     <Journey theme={theme} onOpen={openPillar}/>
     <View style={[styles.info,{marginTop:24,backgroundColor:theme.surface,borderColor:theme.border}]}>
      <Bookmark size={22} color={theme.accent}/>
