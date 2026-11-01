@@ -66,6 +66,7 @@ test("all entry points use the same dispatcher; old Explore URLs redirect on spe
  assert.match(hotelPage,/query.directory==="1"/);
  assert.match(catalog,/if\(destination\)/);
  assert.match(catalog,/city\.ilike\./);
+ assert.match(catalog,/const hint="%"+escapeLike\(match.name\)+"%"/);
  assert.match(catalog,/href:"\/app\/hotels\/osm:"/);
  assert.match(rail,/mobileAppHref\(item.href\)/);
  assert.doesNotMatch(dispatcher,/createClient|service_role|SUPABASE_SERVICE_ROLE/);
