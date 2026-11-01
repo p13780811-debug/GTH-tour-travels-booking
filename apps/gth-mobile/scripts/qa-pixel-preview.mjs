@@ -17,6 +17,10 @@ try {
   await page.getByText("Explore your possibilities").waitFor({timeout:10000});
   await page.getByRole("tab",{name:"Home tab"}).waitFor();
   await page.getByRole("button",{name:"Search Goa hotels"}).waitFor();
+  // Pixel evidence must contain loaded real editorial images, not blank cards.
+  const images=await page.locator("img").evaluateAll(elements=>
+   elements.filter(element=>element.complete&&element.naturalWidth>0).length);
+  assert.ok(images>=3,`Expected logo and bundled real journey photos at ${width}px; loaded only ${images}`);
   const overflow=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));
   assert.ok(overflow.document<=overflow.viewport+3,
    `Unexpected horizontal page overflow at ${width}px: ${JSON.stringify(overflow)}`);
