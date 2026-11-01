@@ -25,15 +25,21 @@ const panel:{kind:Pillar;heading:string;caption:string;image:string}[]=[
  {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:"/images/real-estate.jpg"},
  {kind:"tender",heading:"Build what is next.",caption:"Find published business opportunities.",image:"/images/tender.jpg"},
 ];
-const serviceLinks=[
- {label:"Flights",path:"/app/flights",kind:"travel" as Pillar,description:"Search flights with dates and real provider results"},
- {label:"Hotels",path:"/app/hotels",kind:"hotel" as Pillar,description:"Explore stays and published hotel records"},
- {label:"Transfers",path:"/transfers",kind:"travel" as Pillar,description:"Airport pickup and transfer partners"},
- {label:"Tours & activities",path:"/tours",kind:"tour" as Pillar,description:"Original experience and attraction suppliers"},
- {label:"Real Estate",path:"/app/property",kind:"property" as Pillar,description:"Property projects and registry details"},
- {label:"Property tools",path:"/real-estate/tools",kind:"property" as Pillar,description:"Existing financial and project tools"},
- {label:"Public tenders",path:"/app/tenders",kind:"tender" as Pillar,description:"Open notices and official sources"},
- {label:"Tender services",path:"/tender/services",kind:"tender" as Pillar,description:"Assistance and supporting workflows"},
+const serviceLinks:{label:string;path:string;kind:Pillar;mode:"native"|"web";description:string}[]=[
+ {label:"Flights",path:"/app/flights",kind:"travel",mode:"web",description:"Real flight search, dates and suppliers"},
+ {label:"Hotels",path:"/app/hotels",kind:"hotel",mode:"native",description:"Browse published accommodation records"},
+ {label:"Real Estate",path:"/app/property",kind:"property",mode:"native",description:"Discover property projects and registry data"},
+ {label:"Public tenders",path:"/app/tenders",kind:"tender",mode:"native",description:"Explore official notices and deadlines"},
+ {label:"Airport transfers",path:"/transfers",kind:"travel",mode:"web",description:"Existing airport pickup and transfer partners"},
+ {label:"Car rentals",path:"/cars",kind:"travel",mode:"web",description:"Original car rental search and providers"},
+ {label:"Tours & activities",path:"/tours",kind:"tour",mode:"native",description:"Discover listed tours and activities"},
+ {label:"Travel protection",path:"/insurance",kind:"travel",mode:"web",description:"Read actual policy terms from approved providers"},
+ {label:"Destinations",path:"/app/destinations",kind:"travel",mode:"web",description:"Existing city guides and attractions"},
+ {label:"Travel eSIM",path:"/flights/out/yesim",kind:"travel",mode:"web",description:"Existing connectivity partner handoff"},
+ {label:"Saved properties",path:"/real-estate/saved",kind:"property",mode:"web",description:"Website property workspace and sign-in"},
+ {label:"Property tools",path:"/real-estate/tools",kind:"property",mode:"web",description:"Existing finance and project calculators"},
+ {label:"Saved tenders",path:"/tender/saved",kind:"tender",mode:"web",description:"Original tender watchlist and account access"},
+ {label:"Tender services",path:"/tender/services",kind:"tender",mode:"web",description:"Original assistance and document workflows"},
 ];
 const imageUrl=(path:string)=>"https://www.gthproglobal.com"+path;
 
@@ -50,7 +56,7 @@ function Action({label,onPress,theme,secondary=false}:{label:string;onPress:()=>
 function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
  return <View style={[styles.header,{borderColor:theme.border}]}>
   <View style={{flexDirection:"row",alignItems:"center",gap:9}}>
-   <View style={[styles.brandMark,{borderColor:theme.accent}]}><Globe2 size={23} color={theme.accent}/></View>
+   <View style={[styles.brandMark,{borderColor:theme.accent}]}><Image source={{uri:imageUrl("/app-brand/icon-192.png")}} resizeMode="cover" accessibilityLabel="GTH PRO logo" style={{width:37,height:37,borderRadius:11}}/></View>
    <View><Text style={[styles.brandName,{color:theme.text}]}>GTH <Text style={{color:theme.accent}}>PRO</Text></Text>
     <Text style={{fontSize:10,color:theme.muted}}>THE GLOBAL EXPERIENCE</Text>
    </View>
@@ -252,7 +258,7 @@ function NativeApp(){
     <View style={{marginTop:25,gap:10}}>
      <TextLabel theme={theme} text="YOUR EVERYDAY SHORTCUTS"/>
      <Text style={[styles.sectionTitle,{color:theme.text}]}>Essential services, one tap.</Text>
-     {serviceLinks.slice(0,4).map(item=><Pressable key={item.label} onPress={()=>item.kind==="hotel"?openPillar("hotel"):openSite(item.path)}
+     {serviceLinks.slice(0,4).map(item=><Pressable key={item.label} onPress={()=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}
        accessibilityRole="button" style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border}]}>
        <Globe2 size={20} color={theme.accent}/><Text style={{color:theme.text,fontWeight:"700",flex:1}}>{item.label}</Text>
        <ArrowRight size={16} color={theme.muted}/>
@@ -333,7 +339,7 @@ function NativeApp(){
      <Text style={[styles.sectionTitle,{color:theme.text,marginTop:6}]}>Explore every service</Text>
      <Text style={{fontSize:12,lineHeight:19,color:theme.muted,marginTop:5}}>Native browsing first. Original booking, registry and tender actions when you choose them.</Text>
     </View>
-    {serviceLinks.map(item=><Pressable key={item.label} onPress={()=>item.kind==="hotel"?openPillar("hotel"):item.kind==="property"?openPillar("property"):item.kind==="tender"?openPillar("tender"):openSite(item.path)}
+    {serviceLinks.map(item=><Pressable key={item.label} onPress={()=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}
      accessibilityRole="button" style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border}]}>
      {item.kind==="travel"?<Plane size={24} color={theme.accent}/>:
       item.kind==="hotel"?<Hotel size={24} color={theme.accent}/>:
