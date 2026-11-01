@@ -64,40 +64,40 @@ export default async function GlobalAppExplore({searchParams}:Props){
       <Bookmark size={16} className="text-[var(--gold)]" aria-hidden="true"/> Research Desk
      </Link>
     </div>
-    <div className="mt-3 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow)] sm:p-7">
-     <p className="text-xs font-bold uppercase tracking-[.16em] text-[var(--gold)]">One search · Three ecosystems</p>
-     <h1 className="mt-2 max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl">
+    <div className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-6">
+     <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--gold)]">GTH PRO · Discover everywhere</p>
+     <h1 className="mt-2 max-w-xl text-xl font-bold leading-snug tracking-tight sm:text-3xl">
       Find the next opportunity. Anywhere.
      </h1>
-     <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">
-      Search real destination guides, accommodation directories, property research and public tender notices.
-      Save relevant records together; continue in their original specialist tools.
+     <p className="mt-2 max-w-xl text-xs leading-5 text-[var(--text-soft)] sm:text-sm">
+      One starting point for travel, property and public tenders. Real records, their original specialist tools.
      </p>
-     <form action="/app/search" method="get" role="search" className="mt-5">
+     <form action="/app/search" method="get" role="search" className="mt-4">
       {pillar!=="all"&&<input type="hidden" name="category" value={pillar}/>}
-      <div className="flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
-       <Search size={20} aria-hidden="true" className="ml-2 shrink-0 text-[var(--gold)]"/>
+      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
+       <Search size={19} aria-hidden="true" className="ml-2 shrink-0 text-[var(--gold)]"/>
        <input name="q" aria-label="Search global destinations, property and tenders"
         type="search" minLength={2} maxLength={70} required defaultValue={q}
-        placeholder="Goa hotel, property or tender"
+        placeholder="Goa hotels, Mumbai flats, tenders…"
         className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
-       <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-4 text-sm font-bold">
+       <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-4 text-xs font-bold sm:text-sm">
         Search <ArrowRight size={15} aria-hidden="true"/>
        </button>
       </div>
      </form>
-     <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">
-      Try Mumbai, Kolkata or a project / procurement keyword. Public records only; not a live inventory promise.
+     <p className="mt-2 text-[11px] leading-5 text-[var(--text-soft)]">
+      Searches use existing GTH PRO service engines; prices and availability require source confirmation.
      </p>
     </div>
-    <nav aria-label="Choose a discovery ecosystem" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <nav aria-label="Choose a discovery ecosystem" className="-mx-4 mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:px-0">
      {choices.map(({id,title,Icon,description})=><Link key={id} href={exploreHref(q,id)}
        aria-current={pillar===id?"page":undefined}
-       className={"flex min-h-24 flex-col items-start justify-center gap-1 rounded-2xl border p-4 "+
+       className={"flex min-h-14 min-w-[118px] shrink-0 snap-start items-center gap-2 rounded-xl border px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] sm:min-w-0 "+
        (pillar===id?"border-[var(--gold)] bg-[var(--card)]":"border-[var(--border)] bg-[var(--bg-soft)]")}>
-       <Icon size={20} className="text-[var(--gold)]" aria-hidden="true"/>
-       <span className="text-sm font-semibold">{title}</span>
-       <span className="text-[11px] leading-4 text-[var(--text-soft)]">{description}</span>
+       <Icon size={18} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
+       <span className="min-w-0"><span className="block">{title}</span>
+        <span className="hidden text-[10px] font-normal text-[var(--text-soft)] sm:block">{description}</span>
+       </span>
       </Link>)}
     </nav>
    </header>

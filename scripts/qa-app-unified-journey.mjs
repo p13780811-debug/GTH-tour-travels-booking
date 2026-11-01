@@ -11,6 +11,11 @@ try{
   const page=await context.newPage();
   await page.goto(base+"/app",{waitUntil:"domcontentloaded",timeout:60000});
   await page.getByRole("heading",{name:"One world. Your next move."}).waitFor({timeout:25000});
+  await page.getByRole("heading",{name:"Your world, beautifully connected."}).waitFor({timeout:25000});
+  assert.ok(await page.getByRole("link",{name:"Go somewhere extraordinary"}).isVisible());
+  assert.ok(await page.getByRole("link",{name:"Find your next address"}).isVisible());
+  assert.ok(await page.getByRole("link",{name:"Turn opportunity into progress"}).isVisible());
+  assert.equal(await page.locator('form[action="/app/search"]').count(),1);
   assert.ok(await page.getByRole("link",{name:"Open my Research Desk"}).isVisible());
   assert.ok(await page.getByRole("link",{name:"Search all GTH PRO ecosystems"}).isVisible());
   assert.ok(await page.getByRole("searchbox",{name:"Search destinations, properties and tenders"}).isVisible());

@@ -1,7 +1,9 @@
 "use client";
 import {useId,useState} from "react";
 import Link from "next/link";
-import {BriefcaseBusiness,Building2,LayoutGrid,Plane,Search} from "lucide-react";
+import {ArrowUpRight,Bookmark,BriefcaseBusiness,Building2,LayoutGrid,Plane,Search,Sparkles} from "lucide-react";
+import AppJourneyCards from "@/components/mobile/AppJourneyCards";
+import AppResearchQuickAccess from "@/components/mobile/AppResearchQuickAccess";
 import AppPromoCarousel from "@/components/mobile/AppPromoCarousel";
 import AppInstall from "@/components/mobile/AppInstall";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
@@ -19,46 +21,62 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
  const id=useId(),services=filterAppServices(pillar,query).sort((a,b)=>{const ai=preferences.favourites.indexOf(a.id),bi=preferences.favourites.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi);}),shown=query||expanded||editing?services:services.slice(0,8);
  return <div className="mx-auto w-full max-w-6xl">
   <div className="px-4 pt-4 sm:px-6">
-   <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--gold)]">GTH PRO · Global command centre</p>
-   <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">One world. Your next move.</h1>
-   <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)]">
-    Discover global opportunities across travel, properties and tenders — then keep your research together.
-   </p>
-   <div className="mt-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-5">
+   <section aria-labelledby="app-home-heading" className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-7">
     <div className="flex flex-wrap items-center justify-between gap-2">
-     <h2 className="text-sm font-semibold">Explore everywhere</h2>
-     <Link href="/app/board" className="inline-flex min-h-10 items-center rounded-xl border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
-      My Research Desk
+     <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-[var(--gold)]">
+      <Sparkles size={15} aria-hidden="true"/> GTH PRO · Global platform
+     </span>
+     <Link href="/app/board" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 text-xs font-semibold">
+      <Bookmark size={15} className="text-[var(--gold)]" aria-hidden="true"/> My Research Desk <ArrowUpRight size={14} aria-hidden="true"/>
      </Link>
     </div>
-    <form action="/app/search" method="get" role="search" className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
-     <Search size={19} className="ml-2 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
+    <h1 id="app-home-heading" className="mt-2 text-[1.65rem] font-bold leading-[1.13] tracking-tight sm:mt-3 sm:text-4xl">
+     One world. Your next move.
+    </h1>
+    <p className="mt-2 max-w-xl text-xs leading-5 text-[var(--text-soft)] sm:text-sm sm:leading-6">
+     Explore journeys, discover property and grow your business — all connected to trusted GTH PRO tools.
+    </p>
+    <form action="/app/search" method="get" role="search" className="mt-4 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
+     <Search size={20} className="ml-2 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
      <input name="q" type="search" minLength={2} maxLength={70} required
       aria-label="Search destinations, properties and tenders"
-      placeholder="Goa hotels, Mumbai flats, tenders…"
-      className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
-     <button type="submit" className="gth-btn-gold min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold">Search</button>
+      placeholder="Where to next? Hotels, homes, tenders…"
+      className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm text-[var(--text)] outline-none"/>
+     <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-xl px-4 text-xs font-bold sm:text-sm">
+      Search <ArrowUpRight size={16} aria-hidden="true"/>
+     </button>
     </form>
-    <div className="mt-3 flex flex-wrap gap-2 text-xs">
-     <Link href="/app/destinations" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Travel</Link>
-     <Link href="/app/property" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Property</Link>
-     <Link href="/app/tenders" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
+    <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-[11px]">
+     <span className="mr-1 font-semibold text-[var(--text-soft)]">Popular:</span>
+     <Link href="/app/search?q=Goa+hotel" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Goa hotels</Link>
+     <Link href="/app/search?q=Mumbai+property" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Mumbai homes</Link>
+     <Link href="/app/search?q=construction+tender" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
     </div>
+   </section>
+  </div>
+  <AppJourneyCards />
+  <AppResearchQuickAccess />
+  <div className="px-4 pt-3 sm:px-6">
+   <div className="flex flex-wrap items-center justify-between gap-2">
+    <div>
+     <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[var(--gold)]">Your toolbox</p>
+     <h2 className="mt-1 text-lg font-bold tracking-tight">Everything you need, in reach.</h2>
+    </div>
+    <Link href="/app/explore" className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-[var(--gold)]">Discover <ArrowUpRight size={15} aria-hidden="true"/></Link>
    </div>
-   <h2 className="mt-6 text-sm font-semibold">Quick service shortcuts</h2>
    <label className="mt-3 flex min-h-12 items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4">
     <Search size={20} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
     <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Filter quick service shortcuts" placeholder="Filter services: flights, hotels…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
    </label>
-   <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-4 gap-1 border-b border-[var(--border)]">
+   <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-4 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1">
     {tabs.map(({id:tab,name,Icon},index)=><button key={tab} id={`${id}-${tab}`} type="button" role="tab" aria-selected={pillar===tab} aria-controls={`${id}-panel`} tabIndex={pillar===tab?0:-1}
      onClick={()=>{setPillar(tab);setExpanded(false);}}
      onKeyDown={event=>{let next=index;if(event.key==="ArrowRight")next=(index+1)%tabs.length;else if(event.key==="ArrowLeft")next=(index+tabs.length-1)%tabs.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=tabs.length-1;else return;event.preventDefault();setPillar(tabs[next].id);setExpanded(false);document.getElementById(`${id}-${tabs[next].id}`)?.focus();}}
-     className={`flex min-h-14 flex-col items-center justify-center gap-1 border-b-2 py-2 text-[11px] font-semibold ${pillar===tab?"border-[var(--gold)] text-[var(--text)]":"border-transparent text-[var(--text-soft)]"}`}><Icon size={23} aria-hidden="true"/>{name}</button>)}
+     className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] ${pillar===tab?"bg-[var(--bg-soft)] text-[var(--gold)]":"text-[var(--text-soft)]"}`}><Icon size={23} aria-hidden="true"/>{name}</button>)}
    </div>
   </div>
   <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${pillar}`}>
-   <section aria-label="App services" className="px-4 pt-2 sm:px-6">
+   <section aria-label="App services" className="px-4 pt-3 sm:px-6">
     <div className="flex min-h-11 items-center justify-between gap-3"><h2 className="text-sm font-semibold">{query?"Matching services":"What would you like to do?"}</h2>
      {!query&&services.length>8&&<button type="button" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)} className="min-h-11 px-1 text-xs font-semibold text-[var(--gold)]">{expanded?"Show less":"See all"}</button>}
     </div>
@@ -67,7 +85,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
     {shown.length?<AppServiceGrid services={shown} favourites={preferences.favourites} editing={editing} onToggle={id=>update(value=>toggleAppFavourite(value,id))} onSelect={select}/>:<p role="status" className="py-6 text-sm text-[var(--text-soft)]">No matching service here. Try another category or search term.</p>}
    </section>
    {!editing&&!query&&<AppRecentServices recent={preferences.recent} onSelect={select} onClear={()=>update(value=>({...value,recent:[]}))}/>}
-   <AppPromoCarousel key={pillar} pillar={pillar}/>
+   {pillar!=="all"&&<AppPromoCarousel key={pillar} pillar={pillar}/>}
    <div className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"><AppInstall /></div>
    {(pillar==="all"||pillar==="travel")&&<>
     <MobileDiscoveryRail kind="destination" heading="Places to explore" description="Swipe for destination guides" href="/app/destinations" items={data.destinations} appLinks/>
