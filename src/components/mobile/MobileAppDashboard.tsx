@@ -19,10 +19,36 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
  const id=useId(),services=filterAppServices(pillar,query).sort((a,b)=>{const ai=preferences.favourites.indexOf(a.id),bi=preferences.favourites.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi);}),shown=query||expanded||editing?services:services.slice(0,8);
  return <div className="mx-auto w-full max-w-6xl">
   <div className="px-4 pt-4 sm:px-6">
-   <h1 className="text-xl font-bold tracking-tight">Your world. One app.</h1>
+   <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--gold)]">GTH PRO · Global command centre</p>
+   <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">One world. Your next move.</h1>
+   <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)]">
+    Discover global opportunities across travel, properties and tenders — then keep your research together.
+   </p>
+   <div className="mt-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-5">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+     <h2 className="text-sm font-semibold">Explore everywhere</h2>
+     <Link href="/app/board" className="inline-flex min-h-10 items-center rounded-xl border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
+      My Research Desk
+     </Link>
+    </div>
+    <form action="/app/explore" method="get" role="search" className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
+     <Search size={19} className="ml-2 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
+     <input name="q" type="search" minLength={2} maxLength={70} required
+      aria-label="Search destinations, properties and tenders"
+      placeholder="City, project or tender…"
+      className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
+     <button type="submit" className="gth-btn-gold min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold">Search</button>
+    </form>
+    <div className="mt-3 flex flex-wrap gap-2 text-xs">
+     <Link href="/app/explore?pillar=travel" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Travel</Link>
+     <Link href="/app/explore?pillar=property" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Property</Link>
+     <Link href="/app/explore?pillar=tender" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
+    </div>
+   </div>
+   <h2 className="mt-6 text-sm font-semibold">Quick service shortcuts</h2>
    <label className="mt-3 flex min-h-12 items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4">
     <Search size={20} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
-    <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Find a service" placeholder="Search flights, hotels, property…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
+    <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Filter quick service shortcuts" placeholder="Filter services: flights, hotels…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
    </label>
    <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-4 gap-1 border-b border-[var(--border)]">
     {tabs.map(({id:tab,name,Icon},index)=><button key={tab} id={`${id}-${tab}`} type="button" role="tab" aria-selected={pillar===tab} aria-controls={`${id}-panel`} tabIndex={pillar===tab?0:-1}
