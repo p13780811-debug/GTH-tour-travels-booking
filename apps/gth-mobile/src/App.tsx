@@ -50,8 +50,8 @@ function TextLabel({text,theme}:{text:string;theme:Theme}){
 function Action({label,onPress,theme,secondary=false}:{label:string;onPress:()=>void;theme:Theme;secondary?:boolean}){
  return <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
   style={({pressed})=>[styles.action,{backgroundColor:secondary?theme.surfaceSoft:theme.accent,opacity:pressed?0.78:1}]}>
-  <Text style={{fontSize:13,fontWeight:"800",color:secondary?theme.text:theme.bg}}>{label}</Text>
-  <ArrowRight size={16} color={secondary?theme.text:theme.bg}/>
+  <Text style={{fontSize:13,fontWeight:"800",color:secondary?theme.text:theme.onAccent}}>{label}</Text>
+  <ArrowRight size={16} color={secondary?theme.text:theme.onAccent}/>
  </Pressable>;
 }
 function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
@@ -86,7 +86,7 @@ function Hero({theme,onSearch,onExplore,query,setQuery}:{theme:Theme;onSearch:()
     accessibilityLabel="Universal search" style={[styles.searchInput,{color:theme.text}]}/>
    <Pressable onPress={onSearch} accessibilityRole="button" accessibilityLabel="Search GTH PRO"
     style={[styles.searchGo,{backgroundColor:theme.accent}]}>
-    <ArrowRight size={21} color={theme.bg}/>
+    <ArrowRight size={21} color={theme.onAccent}/>
    </Pressable>
   </View>
   <Pressable accessibilityRole="button" onPress={onExplore} style={{paddingVertical:7,alignSelf:"flex-start"}}>
@@ -295,7 +295,7 @@ function NativeApp(){
        placeholder="Search a city, project or notice…" placeholderTextColor={theme.muted}
        style={[styles.searchInput,{color:theme.text}]}/>
       <Pressable accessibilityRole="button" accessibilityLabel="Submit source search" onPress={()=>enterSearch(kind)}
-       style={[styles.searchGo,{backgroundColor:theme.accent}]}><ArrowRight size={20} color={theme.bg}/></Pressable>
+       style={[styles.searchGo,{backgroundColor:theme.accent}]}><ArrowRight size={20} color={theme.onAccent}/></Pressable>
      </View>
      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingVertical:15}}>
       {filters.map(filter=><Pressable key={filter.kind} accessibilityRole="button"
