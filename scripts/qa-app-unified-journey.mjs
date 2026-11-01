@@ -42,7 +42,7 @@ try{
  await page.getByRole("link",{name:/Goa/}).click();
  await page.getByRole("heading",{name:"Goa"}).waitFor();
  assert.ok(await page.getByRole("button",{name:"Remove Goa from Research Desk"}).isVisible());
- await page.getByRole("link",{name:"My Research Desk"}).click();
+ await page.getByRole("link",{name:"My Research Desk",exact:true}).click();
  await page.getByRole("button",{name:"Remove Goa"}).click();
  assert.ok((await page.locator("main").innerText()).includes("0 of 24 saved"));
  await page.goto(base+"/app/services/transfers",{waitUntil:"domcontentloaded",timeout:60000});
