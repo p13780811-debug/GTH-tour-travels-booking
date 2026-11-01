@@ -1,6 +1,6 @@
 import BrandVideo from "@/components/brand/BrandVideo";
 import Link from "next/link";
-import {ArrowUpRight} from "lucide-react";
+import {Bookmark,Search} from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 /** Same circular motion logo and brand identity as the approved website header. */
 export default function MobileAppHeader(){
@@ -11,8 +11,13 @@ export default function MobileAppHeader(){
    </Link>
    <div className="flex shrink-0 items-center gap-2">
     <ThemeToggle/>
-    <Link href="/app/destinations" className="inline-flex min-h-11 items-center gap-1 rounded-xl border border-[var(--border)] px-3 text-xs font-semibold">
-     Discover <ArrowUpRight size={15} aria-hidden="true"/>
+    <Link href="/app/explore" aria-label="Search all GTH PRO ecosystems"
+     className="inline-flex size-11 items-center justify-center rounded-xl border border-[var(--border)]">
+     <Search size={19} aria-hidden="true"/>
+    </Link>
+    <Link href="/app/board" aria-label="Open my Research Desk"
+     className="inline-flex size-11 items-center justify-center rounded-xl border border-[var(--border)]">
+     <Bookmark size={19} aria-hidden="true"/>
     </Link>
    </div>
   </header>;
