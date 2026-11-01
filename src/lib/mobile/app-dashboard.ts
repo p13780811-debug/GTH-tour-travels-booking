@@ -15,6 +15,20 @@ export const appServices=[
  {id:"saved-tenders",label:"Saved tenders",href:"/tender/saved",pillar:"tender",icon:"bookmark",keywords:"shortlist watchlist"},
  {id:"tender-help",label:"Tender services",href:"/tender/services",pillar:"tender",icon:"file",keywords:"help assistance document quote"},
 ] as const;
+/**
+ * Keep dashboard taps inside the installed /app scope. Existing website and
+ * affiliate destinations are opened only through an explicit customer action.
+ * This list is fixed at build time; no arbitrary URL or provider ID is accepted.
+ */
+export function mobileServiceHref(service: typeof appServices[number]): string {
+ return service.href.startsWith("/app/") ? service.href : "/app/services/" + service.id;
+}
+export function mobileWebServices() {
+ return appServices.filter(service => !service.href.startsWith("/app/"));
+}
+export function mobileWebService(id: string) {
+ return mobileWebServices().find(service => service.id === id);
+}
 export const appPromotions=[
  {id:"stay",pillar:"travel",eyebrow:"Plan your stay",title:"A new place. A better break.",description:"Find hotels, rooms and stay options worldwide.",action:"Find a stay",href:"/app/hotels",image:"/images/mega/hotels.jpg"},
  {id:"fly",pillar:"travel",eyebrow:"Your next journey",title:"Take your plans further.",description:"Search flights, then arrange your airport transfer.",action:"Search flights",href:"/app/flights",image:"/images/mega/flights.jpg"},
