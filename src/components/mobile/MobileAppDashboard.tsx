@@ -31,18 +31,18 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
       My Research Desk
      </Link>
     </div>
-    <form action="/app/explore" method="get" role="search" className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
+    <form action="/app/search" method="get" role="search" className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5">
      <Search size={19} className="ml-2 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
      <input name="q" type="search" minLength={2} maxLength={70} required
       aria-label="Search destinations, properties and tenders"
-      placeholder="City, project or tender…"
+      placeholder="Goa hotels, Mumbai flats, tenders…"
       className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
      <button type="submit" className="gth-btn-gold min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold">Search</button>
     </form>
     <div className="mt-3 flex flex-wrap gap-2 text-xs">
-     <Link href="/app/explore?pillar=travel" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Travel</Link>
-     <Link href="/app/explore?pillar=property" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Property</Link>
-     <Link href="/app/explore?pillar=tender" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
+     <Link href="/app/destinations" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Travel</Link>
+     <Link href="/app/property" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Property</Link>
+     <Link href="/app/tenders" className="inline-flex min-h-10 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
     </div>
    </div>
    <h2 className="mt-6 text-sm font-semibold">Quick service shortcuts</h2>
