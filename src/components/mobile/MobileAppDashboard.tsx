@@ -3,6 +3,7 @@ import {useId,useState} from "react";
 import Link from "next/link";
 import {ArrowUpRight,Bookmark,BriefcaseBusiness,Building2,LayoutGrid,Plane,Search,Sparkles} from "lucide-react";
 import AppJourneyCards from "@/components/mobile/AppJourneyCards";
+import AppResearchQuickAccess from "@/components/mobile/AppResearchQuickAccess";
 import AppPromoCarousel from "@/components/mobile/AppPromoCarousel";
 import AppInstall from "@/components/mobile/AppInstall";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
@@ -54,6 +55,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </section>
   </div>
   <AppJourneyCards />
+  <AppResearchQuickAccess />
   <div className="px-4 pt-3 sm:px-6">
    <div className="flex flex-wrap items-center justify-between gap-2">
     <div>
@@ -83,7 +85,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
     {shown.length?<AppServiceGrid services={shown} favourites={preferences.favourites} editing={editing} onToggle={id=>update(value=>toggleAppFavourite(value,id))} onSelect={select}/>:<p role="status" className="py-6 text-sm text-[var(--text-soft)]">No matching service here. Try another category or search term.</p>}
    </section>
    {!editing&&!query&&<AppRecentServices recent={preferences.recent} onSelect={select} onClear={()=>update(value=>({...value,recent:[]}))}/>}
-   <AppPromoCarousel key={pillar} pillar={pillar}/>
+   {pillar!=="all"&&<AppPromoCarousel key={pillar} pillar={pillar}/>}
    <div className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"><AppInstall /></div>
    {(pillar==="all"||pillar==="travel")&&<>
     <MobileDiscoveryRail kind="destination" heading="Places to explore" description="Swipe for destination guides" href="/app/destinations" items={data.destinations} appLinks/>
