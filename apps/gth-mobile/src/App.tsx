@@ -23,7 +23,7 @@ type Theme=typeof colors.light;
 type Tab="home"|"discover"|"saved"|"services";
 type NativeChoice=DiscoveryKind|"all"|"travel";
 const filters:{kind:NativeChoice;title:string}[]=[
- {kind:"all",title:"All"},{kind:"hotel",title:"Hotels"},{kind:"property",title:"Property"},
+ {kind:"all",title:"All"},{kind:"travel",title:"Travel"},{kind:"hotel",title:"Hotels"},{kind:"property",title:"Property"},
  {kind:"tender",title:"Tenders"},{kind:"tour",title:"Tours"},
 ];
 const panel:{kind:Pillar;heading:string;caption:string;image:ImageSourcePropType}[]=[
@@ -397,10 +397,10 @@ function NativeApp(){
       </View>
      </View>:<>
       <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-       <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
+       <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="travel"?"Travel experiences & stays":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
        <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":total+" source matches"}</Text>
       </View>
-      {kind==="all"&&slices.length>0&&<ScrollView horizontal showsHorizontalScrollIndicator={false}
+      {(kind==="all"||kind==="travel")&&slices.length>0&&<ScrollView horizontal showsHorizontalScrollIndicator={false}
        contentContainerStyle={{gap:8,marginBottom:12}}>
        {slices.map(slice=><Pressable key={slice.kind} accessibilityRole="button"
          accessibilityLabel={slice.kind+" "+slice.total+" matches"}
