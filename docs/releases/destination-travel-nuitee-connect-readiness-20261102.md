@@ -23,19 +23,35 @@ This change fixes previously general/no-op destination actions on **existing pag
 - Experiences end-to-end flow: https://docs.liteapi.travel/docs/build-an-experiences-booking-flow
 - Whitelabel configuration: https://docs.liteapi.travel/docs/configuring-your-liteapi-powered-white-label-booking-site
 
-### Request Assistance message to submit in Nuitee Connect dashboard
-Subject: GTH PRO — enable Flights and Experiences (sandbox, production evaluation and Whitelabel)
+### Provider activation blocker — exact owner-approved scope (verified from Nuitee docs 2026-11-03)
 
-We operate GTH PRO (https://www.gthproglobal.com/), a Travel/Real Estate/Tender discovery platform, with an existing Nuitee hotel Whitelabel: https://gthproglobal.nuitee.link/.
+**Hotels are finished. Do not modify or reconfigure the existing Hotel Whitelabel.**
 
-Please confirm the enabled products and commercial terms on our Nuitee Connect account and request:
-1. Flights sandbox endpoint access and recommended Nuitee Air E2E test credentials/data; guidance for production review and enablement.
-2. Flights on our existing Whitelabel, including any route/deeplink, supplier checkout and branding configuration requirements.
-3. Experiences sandbox search and booking-flow access; production approval criteria.
-4. Experiences on our existing Whitelabel, including destination/product search, booking/Stripe flow, cancellations and callback support.
-5. API limits, fees, partner payout obligations, activation prerequisites, scope restrictions and allowed environment separation.
+GTH PRO's requested business flow for Flights and Experiences is **discovery and selection on GTH PRO, final traveller booking and payment exclusively at a Nuitee- or partner-operated hosted checkout**. The business does not currently want to implement local passenger payment/Stripe capture, prebooking, ticketing, cancellation or refund operations.
 
-We will not claim production bookability or substitute sandbox data for current offers. Please share the specific next steps for both products.
+Nuitee documentation confirms:
+- Flights sandbox access is generally enabled by default, with limited non-live test data; production Flights and **Flights in Whitelabel** require separate provider approval. See [Getting Access to Flights](https://docs.liteapi.travel/docs/getting-access-to-flights).
+- Experiences sandbox may require explicit activation; Experiences production and **Experiences in Whitelabel** each require approval. See [Getting Access to Experiences](https://docs.liteapi.travel/docs/getting-access-to-experiences).
+- The published Flights/Experiences **REST booking flows** include prebook and Stripe checkout orchestration. Those are **not** confirmation that a provider-hosted **deep link from a selected live flight offer or selected tour slot** exists. See [Build a Flight Booking Experience](https://docs.liteapi.travel/docs/build-a-flight-booking-experience) and [Build an Experiences Booking Flow](https://docs.liteapi.travel/docs/build-an-experiences-booking-flow).
+- MCP enables agent access but does **not** itself activate account products, remove production onboarding, or turn the API into a hosted partner checkout.
+
+**Hard gate before implementation:** Obtain a provider-confirmed Flights and Experiences Whitelabel/hosted-checkout entry URL or a documented deep-link contract including attribution and whether selected flights/tours/dates are carried over. If only an on-site API/Stripe checkout is offered, **do not implement it** under the current owner-approved model. Preserve the currently operational Aviasales/Travelpayouts and existing tour partners. Do not invent selected-offer redirects, live data, approval, booked status or merchant-of-record claims.
+
+### Focused Request Assistance message (no Hotels changes)
+Subject: GTH PRO — Flights & Experiences partner-hosted checkout enablement (Hotels unchanged)
+
+We operate GTH PRO (https://www.gthproglobal.com/), an Indian sole-proprietor travel discovery platform. Our existing Nuitee Hotel Whitelabel is already configured. **Please do not change our Hotels or Hotel Whitelabel.**
+
+For only **Flights and Experiences**, users should research and select on our GTH PRO website and complete final traveller details, booking, payment and after-sales actions on a **partner-operated hosted site**. We do not wish to run our own payment gateway or agency-side booking/Stripe flow.
+
+Please confirm:
+1. Are Flights sandbox and Experiences sandbox enabled on our account? What non-production endpoints/testing are permitted?
+2. Can Flights and Experiences be activated **for the existing Whitelabel without modifying Hotels**, and can customers complete **all payments/bookings** there?
+3. Is there a documented **deep-link/redirect** from a GTH PRO selected flight offer or tour/time slot into the partner's hosted checkout? What booking context is transferred, and how is referral attribution retained?
+4. What additional separate approval, commercial charges, supported countries/currencies, merchant-of-record responsibilities and support/refund obligations apply for both products?
+5. We are an Indian **sole proprietor without GSTIN**: may we use an applicable PAN/other tax identifier for production verification? Please specify actual accepted documents; we will not enter invented business identifiers.
+
+We can continue the existing Aviasales and third-party tour handoffs until the supported partner-checkout route is verified. We request no changes to Hotels.
 
 ## QA and release
 Run the isolated destination routing tests and the existing Travel, property and global-theme CI before merge. Test mobile links for Mumbai, Goa, Dubai, Paris and multiword destination names. **Do not merge into main or trigger production deployment without separate owner approval.**
