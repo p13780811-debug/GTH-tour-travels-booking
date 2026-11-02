@@ -32,7 +32,7 @@ export default function LayoutWrapper({
         <>
             {/* React 19 hoists this static ownership meta tag to document head.
                 Keep RootLayout JSX byte-identical for Real Estate protection. */}
-            <meta name="impact-site-verification" {...{value:"94cbf0e7-14b4-445d-94c5-8edd0ef466a2"}} />
+            <meta name="impact-site-verification" {...{value:"b278f4c3-d7d0-40c0-8b21-e42687ec206d"}} />
             {/* ✅ CONTENT */}
             <div className={`min-h-screen ${isRealEstate || isFlagship || isAppHome ? 'pb-0' : 'pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-0'}`}>
                 {children}
