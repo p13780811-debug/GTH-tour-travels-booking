@@ -235,11 +235,10 @@ function NativeApp(){
   setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
  }
  function openPillar(pillar:Pillar){
-  if(pillar==="travel"){openSite("/app/flights");return;}
   setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
  }
  useEffect(()=>{
-  if(tab!=="discover"||(kind==="all"&&!term.trim())){
+  if(tab!=="discover"||((kind==="all"||kind==="travel")&&!term.trim())){
    setResults([]);setTotal(0);setSlices([]);setWarnings([]);setPending(false);setError("");
    return;
   }
@@ -391,7 +390,11 @@ function NativeApp(){
       <Plane size={33} color={theme.accent}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>Where to next?</Text>
       <Text style={{textAlign:"center",fontSize:12,color:theme.muted}}>Flight fares require an origin, destination and travel dates. Continue to the existing search.</Text>
-      <Action label="Search flights" theme={theme} onPress={()=>openSite("/app/flights")}/>
+      <View style={{width:"100%",gap:10}}>
+       <Action label="Explore hotels & stays" theme={theme} onPress={()=>{setKind("hotel");setTerm("");}}/>
+       <Action label="Discover tours & activities" theme={theme} secondary onPress={()=>{setKind("tour");setTerm("");}}/>
+       <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/app/flights")}/>
+      </View>
      </View>:<>
       <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
        <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
