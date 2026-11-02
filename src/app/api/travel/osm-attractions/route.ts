@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
-import {listPlaces,sourceProgress,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
+import {listPlaces,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
+import {cachedSourceProgress} from "@/lib/travel/cachedDiscovery";
 export const dynamic="force-dynamic";
 const HEADERS={"Cache-Control":"public, s-maxage=120, stale-while-revalidate=240","X-Content-Type-Options":"nosniff"};
 const ALLOWED=new Set(["country","region","category","q","city","after","limit","view","page"]);
@@ -9,7 +10,7 @@ export async function GET(req:Request){
     return NextResponse.json({error:"Invalid filters"},{status:400});
   if(p.get("view")==="progress"){
     if(p.size>1)return NextResponse.json({error:"Invalid filters"},{status:400});
-    try{return NextResponse.json({...await sourceProgress(),attribution:"© OpenStreetMap contributors · ODbL 1.0",verified_places:0},{headers:HEADERS});}
+    try{return NextResponse.json({...await cachedSourceProgress(),attribution:"© OpenStreetMap contributors · ODbL 1.0",verified_places:0},{headers:HEADERS});}
     catch{return NextResponse.json({error:"Progress currently unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
   }
   if(p.has("view")||(p.has("limit")&&!/^(?:[1-9]|[1-3][0-9]|4[0-8])$/.test(p.get("limit")||"")))
