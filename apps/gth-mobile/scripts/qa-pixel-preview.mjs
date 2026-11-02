@@ -30,6 +30,10 @@ try {
    await page.getByRole("button",{name:"Search Goa hotels"}).click();
    await page.getByText("Stays & hotels").waitFor({timeout:15000});
    await page.screenshot({path:`${capture}/native-discover-390.png`,fullPage:true});
+   await page.getByRole("button",{name:"Tenders",exact:true}).click();
+   await page.getByText("Tender search region").waitFor({timeout:10000});
+   await page.getByRole("button",{name:"Tender region Worldwide"}).click();
+   await page.screenshot({path:`${capture}/native-tenders-worldwide-390.png`,fullPage:true});
    await page.getByRole("tab",{name:"Saved tab"}).click();
    await page.getByText("My Research Desk").waitFor({timeout:10000});
    await page.screenshot({path:`${capture}/native-saved-390.png`,fullPage:true});
