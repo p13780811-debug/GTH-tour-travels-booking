@@ -31,6 +31,8 @@ try {
    await page.getByText("Stays & hotels").waitFor({timeout:15000});
    await page.screenshot({path:`${capture}/native-discover-390.png`,fullPage:true});
    await page.getByRole("button",{name:"Tenders",exact:true}).click();
+   assert.equal(await page.getByRole("textbox",{name:"Search source records"}).inputValue(),"",
+    "Switching away from hotel intent must clear stale hotel search from tenders");
    await page.getByText("Tender search region").waitFor({timeout:10000});
    await page.getByRole("button",{name:"Tender region Worldwide"}).click();
    await page.screenshot({path:`${capture}/native-tenders-worldwide-390.png`,fullPage:true});
