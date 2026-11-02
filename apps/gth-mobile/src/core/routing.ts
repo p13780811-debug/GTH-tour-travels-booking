@@ -19,6 +19,14 @@ export function detectPillar(query:string):Pillar|"all"{
  if(words.tour.test(q))return "tour";
  return "all";
 }
+/** Keep generic queries when switching filters, but never reuse an explicit hotel/tender/property/tour query in an unrelated filter. */
+export function queryForCategory(raw:string,selected:Pillar|"all"):string{
+ const query=normalizeQuery(raw);
+ const detected=detectPillar(query);
+ if(selected==="all"||detected==="all"||selected===detected||
+  (selected==="travel"&&(detected==="hotel"||detected==="tour")))return query;
+ return "";
+}
 export function searchTerm(raw:string,kind:Pillar):string {
  const query=normalizeQuery(raw);
  const replace={
