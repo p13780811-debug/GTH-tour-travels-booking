@@ -88,7 +88,7 @@ test("published API payloads map only to factual IDs, slugs and licensed images"
  assert.equal(u.searchParams.get("name"),"Taj");
  const tours=catalog.mapSourceRows("tour",[{id:45,title:"Goa boat tour",city:"Goa",image_url:"/placeholder.jpg"}]);
  assert.equal(tours.items.length,1);
- assert.equal(tours.items[0].webPath,null);
+ assert.equal(tours.items[0].webPath,"/tours/45");
 });
 test("native interface uses original GTH CSS theme and meaningful Android navigation",()=>{
  const app=source("src/App.tsx");
