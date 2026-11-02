@@ -101,6 +101,7 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  assert.match(app,/Discover tours & activities/);
  assert.match(app,/Search flights on GTH PRO/);
  assert.match(app,/kind:"travel",title:"Travel"/);
+ assert.match(app,/kind==="travel"&&!term\?<View/);
  assert.match(app,/Travel experiences & stays/);
  assert.match(app,/kind==="all"\|\|kind==="travel"\)\&\&slices\.length/);
  assert.match(app,/\(kind==="all"\|\|kind==="travel"\)/);
