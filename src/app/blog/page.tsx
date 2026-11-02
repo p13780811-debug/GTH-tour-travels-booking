@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { blogs, type Blog } from "@/data/blogs";
+import { groundTransportBlogs } from "@/data/blogGroundTransport";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
@@ -91,6 +92,32 @@ export default async function BlogList({ searchParams }: Props) {
       <TravelSectionNav />
 
       <MappedCityDiscovery cities={mapped?.items??[]} title="Explore real cities before your next trip"/>
+
+      <section aria-labelledby="ground-travel-guides" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
+        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
+          <h2 id="ground-travel-guides" className="text-2xl font-bold sm:text-3xl">New: Bus & Rail Travel Guides</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+            Original route-by-route research, station and boarding checks, and safer partner booking handoffs.
+            No imaginary ticket prices, seats or live departure claims.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {groundTransportBlogs.map((guide) => (
+              <Link key={guide.slug} href={"/blog/" + guide.slug}
+                className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 transition hover:underline">
+                <span className="text-base font-semibold">{guide.title}</span>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">
+                  Read guide <ArrowRight size={16} aria-hidden="true" />
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/bus" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Bus Routes</Link>
+            <Link href="/train" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">Explore Rail Routes</Link>
+          </div>
+        </div>
+      </section>
+
       <section id="journal" className="mx-auto max-w-[1400px] scroll-mt-12 px-5 py-12 sm:px-8 md:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
