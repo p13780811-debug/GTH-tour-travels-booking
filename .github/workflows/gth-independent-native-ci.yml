@@ -104,15 +104,18 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Generate local Android project without touching website
         run: npx expo prebuild --platform android --non-interactive --clean
-      - name: Compile self-contained QA APK with bundled Hermes JavaScript
+      - name: Compile self-contained QA APK and test AAB with bundled Hermes JavaScript
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+          ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
       - name: Verify signed APK, bundle and immutable package identity
         run: |
           apk="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
+          aab="android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$aab"
+          unzip -Z1 "$aab" | grep -qx 'base/manifest/AndroidManifest.xml'
           unzip -Z1 "$apk" | grep -qx 'assets/index.android.bundle'
           test "$(unzip -Z1 "$apk" | grep -c '^classes[0-9]*\.dex$')" -gt 0
           apksigner_bin="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
@@ -125,4 +128,48 @@ jobs:
           name: gth-pro-native-standalone-qa-apk-not-play-store
           path: apps/gth-mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload test AAB (NOT Play Store signed)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-pro-native-aab-test-only
+          path: apps/gth-mobile/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 7
+
+  android-emulator-smoke:
+    name: Android emulator — native install and home screen
+    needs: android-standalone-qa-apk
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download isolated standalone QA APK
+        uses: actions/download-artifact@v4
+        with:
+          name: gth-pro-native-standalone-qa-apk-not-play-store
+          path: /tmp/gth-native-installable
+      - name: Enable Linux KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install and verify on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: bash apps/gth-mobile/scripts/qa-android-emulator.sh /tmp/gth-native-installable/app-release.apk
+      - name: Upload Android emulator QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-pro-native-android-emulator-qa
+          path: /tmp/gth-native-android-emulator/
+          if-no-files-found: ignore
           retention-days: 7
