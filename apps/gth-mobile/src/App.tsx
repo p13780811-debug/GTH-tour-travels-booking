@@ -26,6 +26,12 @@ const filters:{kind:NativeChoice;title:string}[]=[
  {kind:"all",title:"All"},{kind:"travel",title:"Travel"},{kind:"hotel",title:"Hotels"},{kind:"property",title:"Property"},
  {kind:"tender",title:"Tenders"},{kind:"tour",title:"Tours"},
 ];
+const tenderRegions=[
+ {code:"IN",label:"India"},{code:"WORLD",label:"Worldwide"},
+ {code:"US",label:"United States"},{code:"GB",label:"United Kingdom"},
+ {code:"AE",label:"UAE"},{code:"SG",label:"Singapore"},
+ {code:"AU",label:"Australia"},
+] as const;
 const panel:{kind:Pillar;heading:string;caption:string;image:ImageSourcePropType}[]=[
  {kind:"travel",heading:"Go further.",caption:"Flights, destinations and experiences.",image:travelHero},
  {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:propertyHero},
@@ -185,6 +191,7 @@ function NativeApp(){
  const [query,setQuery]=useState("");
  const [term,setTerm]=useState("");
  const [kind,setKind]=useState<NativeChoice>("all");
+ const [tenderRegion,setTenderRegion]=useState<string>("IN");
  const [results,setResults]=useState<DiscoveryCard[]>([]);
  const [slices,setSlices]=useState<SearchSlice[]>([]);
  const [warnings,setWarnings]=useState<string[]>([]);
@@ -246,7 +253,7 @@ function NativeApp(){
   const timer=setTimeout(()=>ctrl.abort(),11_000);
   let mounted=true;
   setPending(true);setError("");setResults([]);setSlices([]);setWarnings([]);
-  searchNativeSources(kind,term,ctrl.signal).then(data=>{
+  searchNativeSources(kind,term,ctrl.signal,tenderRegion).then(data=>{
    if(!mounted)return;
    setResults(data.items);setTotal(data.total);setSlices(data.slices);setWarnings(data.warnings);
    if(data.slices.every(s=>s.error))
@@ -255,7 +262,7 @@ function NativeApp(){
    if(mounted)setError("Unable to load these records. Check your connection and retry.");
   }).finally(()=>{clearTimeout(timer);if(mounted)setPending(false);});
   return ()=>{mounted=false;clearTimeout(timer);ctrl.abort();};
- },[tab,kind,term,refresh]);
+ },[tab,kind,term,refresh,tenderRegion]);
  const activeItem=detail;
  return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
   <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
@@ -371,6 +378,21 @@ function NativeApp(){
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accent:theme.text}}>{filter.title}</Text>
       </Pressable>)}
      </ScrollView>
+     {kind==="tender"&&<View style={{marginBottom:14,gap:8}}>
+      <Text style={{fontSize:12,fontWeight:"800",color:theme.text}}>Tender search region</Text>
+      <Text style={{fontSize:11,lineHeight:17,color:theme.muted}}>
+       Choose your country or select Worldwide. Location is never taken from your phone.
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingVertical:2}}>
+       {tenderRegions.map(region=><Pressable key={region.code} accessibilityRole="button"
+        accessibilityLabel={"Tender region "+region.label}
+        accessibilityState={{selected:tenderRegion===region.code}}
+        onPress={()=>{setTenderRegion(region.code);setDetail(null);}}
+        style={[styles.chip,{borderColor:tenderRegion===region.code?theme.accent:theme.border,backgroundColor:theme.surface,minHeight:41}]}>
+        <Text style={{fontSize:12,fontWeight:"700",color:tenderRegion===region.code?theme.accent:theme.text}}>{region.label}</Text>
+       </Pressable>)}
+      </ScrollView>
+     </View>}
      {kind==="all"&&!term&&recent.ready&&recent.items.length>0&&<View style={{gap:9,paddingBottom:14}}>
       <Text style={{fontSize:12,fontWeight:"800",color:theme.muted}}>Your recent searches</Text>
       {recent.items.slice(0,5).map(item=><Pressable key={item} onPress={()=>enterSearch("all",item)}
