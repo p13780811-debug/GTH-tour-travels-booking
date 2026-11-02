@@ -96,6 +96,11 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  const script=source("scripts/sync-theme.mjs");
  const extras=source("src/core/bookmarks.ts");
  assert.match(app,/BackHandler\.addEventListener/);
+ assert.match(app,/setKind\(pillar\);setDetail\(null\)/);
+ assert.match(app,/Explore hotels & stays/);
+ assert.match(app,/Discover tours & activities/);
+ assert.match(app,/Search flights on GTH PRO/);
+ assert.match(app,/\(kind==="all"\|\|kind==="travel"\)/);
  assert.match(app,/searchNativeSources/);
  assert.match(app,/warnings\.length/);
  assert.match(app,/kind==="all"&&!term/);
