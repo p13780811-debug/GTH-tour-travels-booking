@@ -12,11 +12,11 @@ export function searchChoice(raw:string,selected:SearchChoice="all"):SearchChoic
  return detected==="all"?"all":detected;
 }
 /** Query each *existing* public API; no app-only duplicate index or unverified data. */
-export async function searchNativeSources(choice:SearchChoice,raw:string,signal:AbortSignal):Promise<SearchOutcome>{
+export async function searchNativeSources(choice:SearchChoice,raw:string,signal:AbortSignal,tenderRegion="IN"):Promise<SearchOutcome>{
  const query=normalizeQuery(raw);
  const sources:DiscoveryKind[]=choice==="all"? [...SOURCE_KINDS] :
   choice==="travel"?["hotel","tour"]:[choice];
- const results=await Promise.allSettled(sources.map(kind=>getSourceCards(kind,query,signal)));
+ const results=await Promise.allSettled(sources.map(kind=>getSourceCards(kind,query,signal,tenderRegion)));
  const slices:SearchSlice[]=sources.map((kind,index)=>{
   const result=results[index];
   return result.status==="fulfilled"
