@@ -93,6 +93,10 @@ test("published API payloads map only to factual IDs, slugs and licensed images"
 test("native interface uses original GTH CSS theme and meaningful Android navigation",()=>{
  const app=source("src/App.tsx");
  const theme=JSON.parse(source("src/theme/generated.json"));
+ const config=JSON.parse(source("app.json"));
+ assert.equal(config.expo.icon,"./assets/branding/logo.png");
+ assert.equal(config.expo.android.adaptiveIcon.foregroundImage,config.expo.icon);
+ assert.equal(readFileSync(new URL("assets/branding/logo.png",root)).subarray(0,8).toString("hex"),"89504e470d0a1a0a");
  const script=source("scripts/sync-theme.mjs");
  const extras=source("src/core/bookmarks.ts");
  assert.match(app,/BackHandler\.addEventListener/);
