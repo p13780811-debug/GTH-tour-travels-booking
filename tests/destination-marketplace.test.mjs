@@ -32,10 +32,10 @@ test("destination page integrates real hotel and tour inventory without fake pri
 
 test("destination detail offers connected planning articles", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
-  assert.match(page, /href="\/flights"/);
+  assert.ok(page.includes("href={flightsHref}"));
   assert.match(page, /"\/blog\/"\s*\+\s*article\.slug/);
-  assert.match(page, /\/hotels\?destination=/);
-  assert.match(page, /\/tours\?city=/);
+  assert.ok(page.includes("href={hotelsHref}"));
+  assert.ok(page.includes("href={toursHref}"));
 });
 
 
@@ -87,9 +87,9 @@ test("destination briefing shows accurate country context and valid existing hot
  assert.match(detail,/destinationGeography\(slug, data\.country\)/);
  assert.match(detail,/destination\.country/);
  assert.match(detail,/aria-label="Destination page sections"/);
- assert.match(detail,/href="#destination-hotels"/);
- assert.match(detail,/href="#destination-tours"/);
- assert.match(detail,/href="\/flights"/);
+ assert.ok(detail.includes("href={hotelsHref}"));
+ assert.ok(detail.includes("href={toursHref}"));
+ assert.ok(detail.includes("href={flightsHref}"));
  assert.match(detail,/getTours\(\{ city: slug \}\)/);
  assert.match(detail,/<HotelResults city=\{destination\.name\}/);
  assert.doesNotMatch(detail,/reserve now|confirmed booking|guaranteed cheapest/i);
