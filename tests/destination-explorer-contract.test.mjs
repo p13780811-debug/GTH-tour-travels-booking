@@ -24,7 +24,9 @@ test("destination shortlist, 3-item comparison, private notes and grid/list have
  assert.match(client,/dialog\.current\?\.showModal\(\)/);
  assert.match(client,/overflow-x-auto p-4 sm:p-6/);
  assert.match(client,/encodeURIComponent\(item\.slug\)/);
- for(const route of ['/hotels/results?city=','/tours?city=','/flights'])assert.ok(client.includes(route),route);
+ for(const route of ['/hotels/results?city=','/tours?city=','destinationFlightHref(item.title)'])assert.ok(client.includes(route),route);
+ assert.match(client,/encodeURIComponent\\(item\\.title\\)\\+"#discover"/);
+ assert.doesNotMatch(client,/href="\\/flights"/);
 });
 
 test("mobile sidebar, honest data labels, region rails and public SEO stay intact",()=>{
