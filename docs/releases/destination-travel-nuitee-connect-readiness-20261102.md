@@ -76,3 +76,13 @@ Authoritative references:
 - https://docs.liteapi.travel/docs/getting-access-to-experiences
 
 Release rule: no provider/payment/production credentials or external checkout integration changes until Nuitee confirms the exact account-specific entitlement and owner explicitly authorizes the release.
+
+## Verified Nuitee MCP entitlement and published commercial rates (2026-11-03)
+
+Direct Nuitee Connect MCP, **account-specific read-only checks**:
+- Flight airport lookup works. A POST /flights/rates sandbox test for BOM to DEL on 2026-11-24, one adult, INR returned offers. This proves only sandbox search response, NOT real fares, ticketing approval, production access or hosted checkout.
+- Experiences tour search for Mumbai returned HTTP 403, code 40301: 'Experiences API access is not enabled for this account. Please contact support to get access'. This is a per-product entitlement gate, not general MCP failure.
+- [Experiences access guide](https://docs.liteapi.travel/docs/getting-access-to-experiences): Experiences API sandbox, production and Whitelabel each need explicit activation. Request Experiences **Whitelabel** via Request Assistance; do not modify existing Hotels.
+- [Flights access guide](https://docs.liteapi.travel/docs/getting-access-to-flights): sandbox is generally enabled by default; production and Whitelabel Flights require separate activation.
+- [API pricing](https://docs.liteapi.travel/reference/api-pricing-usage-costs): core requests are free subject to fair usage; Flights ticketing fee 1% of total transaction value, min EUR 2 and max EUR 10 per booking; voluntary flight modification EUR 25; flights search surcharge EUR 0.005 per request above 1,500:1 searches to bookings during the billing period. Specific hosted checkout merchant, attribution, and who pays fees remain unconfirmed. Never advertise zero production costs.
+- Preserve existing Aviasales, partner tours, Nuitee Hotel Whitelabel and production website. Do not create bookings or payments or ship a guessed Whitelabel Experiences redirect. Wait for exact provider-approved URL and commercial confirmation.
