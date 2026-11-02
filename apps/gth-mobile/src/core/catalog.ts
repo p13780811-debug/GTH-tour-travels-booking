@@ -65,7 +65,7 @@ const cityAndName=(query:string):{city:string;name:string}|null=>{
  return {city,name};
 };
 /** Existing validated endpoints; never copy Supabase connection or secrets to native. */
-export function endpointFor(kind:DiscoveryKind,raw:string):string{
+export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN"):string{
  const query=normalizeQuery(raw);
  const term=searchTerm(query,kind)||query;
  const params=new URLSearchParams();
@@ -85,16 +85,19 @@ export function endpointFor(kind:DiscoveryKind,raw:string):string{
   if(term)params.set("query",term);
  }else if(kind==="tender"){
   if(term)params.set("q",term);
-  // No implied worldwide list. The server resolves a real audience for local scope.
-  params.set("scope","local");
+  // Mobile requests have no reliable Vercel visitor-country header.
+  // Always show an explicit user-selected region; worldwide is opt-in.
+  const region=/^[A-Z]{2}$/.test(tenderRegion)?tenderRegion:"IN";
+  if(tenderRegion==="WORLD")params.set("scope","world");
+  else {params.set("scope","local");params.set("country",region);}
  }else if(term)params.set("city",term);
  params.set("page","1");
  const routes:Record<DiscoveryKind,string>={hotel:"/api/hotels",property:"/api/real-estate/search",
   tender:"/api/tender",tour:"/api/tours"};
  return SITE_ORIGIN+routes[kind]+"?"+params.toString();
 }
-export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal):Promise<DiscoveryResponse>{
- const result=await fetch(endpointFor(kind,query),{method:"GET",signal,headers:{"Accept":"application/json"}});
+export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal,tenderRegion="IN"):Promise<DiscoveryResponse>{
+ const result=await fetch(endpointFor(kind,query,tenderRegion),{method:"GET",signal,headers:{"Accept":"application/json"}});
  if(!result.ok)throw Error("Source temporarily unavailable.");
  if(!(result.headers.get("content-type")||"").toLowerCase().includes("json"))
   throw Error("Unexpected source response.");
