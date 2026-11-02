@@ -41,6 +41,11 @@ test("one native intent router reuses site public search endpoints",()=>{
  assert.equal(routing.detectPillar("Mumbai property"),"property");
  assert.equal(routing.detectPillar("construction tender"),"tender");
  assert.equal(routing.detectPillar("Mumbai sightseeing tours"),"tour");
+ assert.equal(routing.queryForCategory("Goa hotels","tender"),"");
+ assert.equal(routing.queryForCategory("construction tender","hotel"),"");
+ assert.equal(routing.queryForCategory("Mumbai","tender"),"Mumbai");
+ assert.equal(routing.queryForCategory("Goa hotels","travel"),"Goa hotels");
+ assert.equal(routing.queryForCategory("Goa hotels","hotel"),"Goa hotels");
  const hotel=new URL(catalog.endpointFor("hotel","Goa hotels"));
  assert.equal(hotel.pathname,"/api/hotels");
  assert.equal(hotel.searchParams.get("city"),"Goa");
