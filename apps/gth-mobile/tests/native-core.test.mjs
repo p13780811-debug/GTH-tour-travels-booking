@@ -51,6 +51,16 @@ test("one native intent router reuses site public search endpoints",()=>{
  assert.equal(tender.pathname,"/api/tender");
  assert.equal(tender.searchParams.get("q"),"road construction");
  assert.equal(tender.searchParams.get("scope"),"local");
+ assert.equal(tender.searchParams.get("country"),"IN");
+ const world=new URL(catalog.endpointFor("tender","construction tender","WORLD"));
+ assert.equal(world.searchParams.get("scope"),"world");
+ assert.equal(world.searchParams.has("country"),false);
+ const uk=new URL(catalog.endpointFor("tender","construction tender","GB"));
+ assert.equal(uk.searchParams.get("scope"),"local");
+ assert.equal(uk.searchParams.get("country"),"GB");
+ const invalid=new URL(catalog.endpointFor("tender","construction tender","bad&scope=world"));
+ assert.equal(invalid.searchParams.get("country"),"IN");
+ assert.equal(invalid.searchParams.get("scope"),"local");
 });
 test("native service cards are source-backed and never invent suppliers or pricing",()=>{
  const hotels=catalog.mapSourceRows("hotel",[{id:"osm:node-123",name:"Test Hotel",city:"Goa",booking_ready:false,source:"OpenStreetMap"}]);
