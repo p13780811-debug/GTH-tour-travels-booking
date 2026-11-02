@@ -54,8 +54,8 @@ test("every ecosystem link points to an existing app route; country-filtered ten
  assert.match(service,/if\(country\)tender\.set\("country",country\)/);
  assert.match(service,/new URLSearchParams\(\{city:place\.name\}\)/);
  assert.match(service,/href:"\/hotels\?destination="\+slug/);
- assert.match(service,/href:"\/tours\?city="\+slug/);
- assert.match(service,/href:"\/activities\?city="\+slug/);
+ assert.match(service,/href:"\\/tours\\?"\\+new URLSearchParams\\(\\{city:place\\.name\\}\\)/);
+ assert.match(service,/href:"\\/activities\\?"\\+new URLSearchParams\\(\\{city:place\\.name\\}\\)/);
 });
 
 test("live hotel and tour data, SEO and source honesty preserved",()=>{
