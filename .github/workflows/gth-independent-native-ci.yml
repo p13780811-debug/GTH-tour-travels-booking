@@ -98,6 +98,8 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - name: Install isolated native application
         run: npm install --no-audit --no-fund
       - name: Generate local Android project without touching website
