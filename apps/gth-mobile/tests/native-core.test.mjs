@@ -90,4 +90,8 @@ test("native app remains separate from website and handles native navigation",()
  assert.doesNotMatch(app,/WebView|SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_.*SECRET/);
  assert.ok(pkg.dependencies["react-native"]);
  assert.ok(pkg.dependencies.expo);
+ const appConfig=JSON.parse(source("app.json"));
+ assert.equal(appConfig.expo.android.package,"com.gthpro.mobile");
+ assert.equal(appConfig.expo.android.versionCode,1);
+ assert.equal(appConfig.expo.extra.websiteOrigin,routing.SITE_ORIGIN);
 });
