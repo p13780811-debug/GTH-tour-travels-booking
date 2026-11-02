@@ -104,6 +104,10 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  assert.match(app,/Explore hotels & stays/);
  assert.match(app,/Discover tours & activities/);
  assert.match(app,/Search flights on GTH PRO/);
+ assert.match(app,/Tender search region/);
+ assert.match(app,/Tender region /);
+ assert.match(app,/searchNativeSources\(kind,term,ctrl\.signal,tenderRegion\)/);
+ assert.match(app,/code:"WORLD",label:"Worldwide"/);
  assert.match(app,/kind:"travel",title:"Travel"/);
  assert.match(app,/kind==="travel"&&!term\?<View/);
  assert.match(app,/Travel experiences & stays/);
