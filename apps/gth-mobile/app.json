@@ -9,6 +9,7 @@
     "newArchEnabled": true,
     "android": {
       "package": "com.gthpro.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#060b12",
         "foregroundImage": "./assets/branding/logo.png"
