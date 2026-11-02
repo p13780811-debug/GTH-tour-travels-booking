@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
- ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Compass,ExternalLink,
+ ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Clock3,Compass,ExternalLink,
  FileText,Globe2,Home,Hotel,MapPin,Plane,Search,ShieldCheck,Sparkles,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
@@ -17,6 +17,7 @@ import {type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
 import {searchNativeSources,type SearchSlice} from "./core/unified-search";
 import {detectPillar,firstPartyUrl,normalizeQuery,serviceDestination,type Pillar} from "./core/routing";
 import {useNativeBookmarks} from "./core/bookmarks";
+import {useRecentSearches} from "./core/recent-searches";
 
 type Theme=typeof colors.light;
 type Tab="home"|"discover"|"saved"|"services";
@@ -193,6 +194,7 @@ function NativeApp(){
  const [detail,setDetail]=useState<DiscoveryCard|null>(null);
  const [refresh,setRefresh]=useState(0);
  const bookmarks=useNativeBookmarks();
+ const recent=useRecentSearches();
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
  useEffect(()=>{
   if(Platform.OS==="web")return;
@@ -216,6 +218,7 @@ function NativeApp(){
   Keyboard.dismiss();
   const detected=detectPillar(cleaned);
   const category=preferred!=="all"?preferred:detected;
+  if(cleaned.length>=2)recent.remember(cleaned);
   setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
  }
  function openPillar(pillar:Pillar){
@@ -276,6 +279,27 @@ function NativeApp(){
     </View>
    </>:tab==="home"?<>
     <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)} onExplore={()=>{setTab("discover");setKind("all");setTerm("");}}/>
+    {recent.ready&&recent.items.length>0&&<View style={[styles.recent,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+     <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:12}}>
+      <View style={{flexDirection:"row",alignItems:"center",gap:8}}>
+       <Clock3 size={17} color={theme.accent}/>
+       <Text style={{fontSize:13,fontWeight:"800",color:theme.text}}>Continue searching</Text>
+      </View>
+      <Pressable onPress={recent.clear} accessibilityRole="button" accessibilityLabel="Clear recent searches"
+       style={{minHeight:44,justifyContent:"center",paddingHorizontal:8}}>
+       <Text style={{fontSize:12,fontWeight:"700",color:theme.muted}}>Clear</Text>
+      </Pressable>
+     </View>
+     <ScrollView horizontal showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="always" contentContainerStyle={{gap:8,paddingBottom:2}}>
+      {recent.items.map(item=><Pressable key={item} accessibilityRole="button"
+       accessibilityLabel={"Repeat search "+item} onPress={()=>enterSearch("all",item)}
+       style={[styles.chip,{backgroundColor:theme.surfaceSoft,borderColor:theme.border,minHeight:42}]}>
+       <Text style={{fontSize:12,fontWeight:"700",color:theme.text}}>{item}</Text>
+      </Pressable>)}
+     </ScrollView>
+     <Text style={{fontSize:10,lineHeight:15,color:theme.muted}}>Only on this device · clear any time</Text>
+    </View>}
     <Journey theme={theme} onOpen={openPillar}/>
     <View style={[styles.info,{marginTop:24,backgroundColor:theme.surface,borderColor:theme.border}]}>
      <Bookmark size={22} color={theme.accent}/>
@@ -330,6 +354,16 @@ function NativeApp(){
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accent:theme.text}}>{filter.title}</Text>
       </Pressable>)}
      </ScrollView>
+     {kind==="all"&&!term&&recent.ready&&recent.items.length>0&&<View style={{gap:9,paddingBottom:14}}>
+      <Text style={{fontSize:12,fontWeight:"800",color:theme.muted}}>Your recent searches</Text>
+      {recent.items.slice(0,5).map(item=><Pressable key={item} onPress={()=>enterSearch("all",item)}
+       accessibilityRole="button" accessibilityLabel={"Repeat search "+item}
+       style={[styles.serviceRow,{backgroundColor:theme.surface,borderColor:theme.border,marginBottom:0}]}>
+       <Clock3 size={18} color={theme.accent}/>
+       <Text style={{color:theme.text,fontSize:13,fontWeight:"700",flex:1}} numberOfLines={1}>{item}</Text>
+       <ArrowRight size={17} color={theme.accent}/>
+      </Pressable>)}
+     </View>}
     </View>
     {kind==="all"&&!term?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
       <Compass size={32} color={theme.accent}/>
@@ -446,6 +480,7 @@ const styles=StyleSheet.create({
  journeyBadge:{height:36,width:36,alignItems:"center",justifyContent:"center",borderRadius:12},
  info:{padding:15,borderRadius:17,borderWidth:1,flexDirection:"row",alignItems:"center",gap:12},
  serviceRow:{minHeight:65,padding:12,borderRadius:15,borderWidth:1,flexDirection:"row",alignItems:"center",gap:13,marginBottom:9},
+ recent:{borderWidth:1,borderRadius:18,marginTop:14,paddingHorizontal:14,paddingVertical:8,gap:4},
  quickTile:{width:"47%",minHeight:140,flexGrow:1,maxWidth:"49%",padding:13,borderRadius:18,borderWidth:1,justifyContent:"space-between",gap:9},
  tabbar:{height:57,flexDirection:"row",alignItems:"center",justifyContent:"space-around"},
  tab:{height:55,flex:1,alignItems:"center",justifyContent:"center",gap:3},
