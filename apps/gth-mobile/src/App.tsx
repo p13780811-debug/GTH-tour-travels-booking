@@ -1,12 +1,12 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {
  ActivityIndicator,Alert,BackHandler,Image,ImageBackground,Keyboard,Linking,Pressable,
- Platform,ScrollView,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,type ImageSourcePropType,
+ Platform,ScrollView,Share,StatusBar,StyleSheet,Text,TextInput,useColorScheme,View,type ImageSourcePropType,
 } from "react-native";
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
  ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Clock3,Compass,ExternalLink,
- FileText,Globe2,Home,Hotel,MapPin,Plane,Search,ShieldCheck,Sparkles,
+ FileText,Globe2,Home,Hotel,MapPin,Plane,Search,Share2,ShieldCheck,Sparkles,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
 import travelHero from "../assets/hero/travel.jpg";
@@ -213,6 +213,19 @@ function NativeApp(){
    {text:"Continue",onPress:()=>{void Linking.openURL(target).catch(()=>Alert.alert("Unable to open link","Check your connection and try again."));}},
   ]);
  }
+ async function shareRecord(item:DiscoveryCard){
+  if(!item.webPath)return;
+  const url=firstPartyUrl(item.webPath);
+  if(!url)return;
+  try{
+   await Share.share({
+    title:item.title,
+    message:item.title+" · GTH PRO source record\n"+url,
+   });
+  }catch{
+   Alert.alert("Sharing unavailable","Your phone could not open the share sheet.");
+  }
+ }
  function enterSearch(preferred:NativeChoice="all",input=query){
   const cleaned=normalizeQuery(input);
   Keyboard.dismiss();
@@ -272,9 +285,14 @@ function NativeApp(){
      {activeItem.webPath?
       <Action label="Open original record" theme={theme} onPress={()=>openSite(activeItem.webPath!)}/>:
       <Action label="Open original service" theme={theme} onPress={()=>openSite(serviceDestination[activeItem.kind])}/>}
-     {activeItem.webPath&&<View style={{marginTop:12}}>
+     {activeItem.webPath&&<View style={{marginTop:12,gap:10}}>
       <Action label={savedPaths.has(activeItem.webPath)?"Remove from saved":"Save to my desk"} theme={theme} secondary
        onPress={()=>savedPaths.has(activeItem.webPath!)?bookmarks.remove(activeItem.webPath!):bookmarks.save(activeItem)}/>
+      <Pressable accessibilityRole="button" accessibilityLabel={"Share public record "+activeItem.title}
+       onPress={()=>void shareRecord(activeItem)} style={[styles.action,{backgroundColor:theme.surfaceSoft}]}>
+       <Share2 size={17} color={theme.text}/>
+       <Text style={{fontSize:13,fontWeight:"800",color:theme.text}}>Share public record</Text>
+      </Pressable>
      </View>}
     </View>
    </>:tab==="home"?<>
