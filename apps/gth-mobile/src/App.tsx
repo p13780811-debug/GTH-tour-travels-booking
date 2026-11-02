@@ -15,7 +15,7 @@ import tenderHero from "../assets/hero/tender.jpg";
 import brandLogo from "../assets/branding/logo.png";
 import {type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
 import {searchNativeSources,type SearchSlice} from "./core/unified-search";
-import {detectPillar,firstPartyUrl,normalizeQuery,serviceDestination,type Pillar} from "./core/routing";
+import {detectPillar,firstPartyUrl,normalizeQuery,queryForCategory,serviceDestination,type Pillar} from "./core/routing";
 import {useNativeBookmarks} from "./core/bookmarks";
 import {useRecentSearches} from "./core/recent-searches";
 
@@ -373,7 +373,7 @@ function NativeApp(){
      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingVertical:15}}>
       {filters.map(filter=><Pressable key={filter.kind} accessibilityRole="button"
         accessibilityState={{selected:kind===filter.kind}}
-        onPress={()=>{setKind(filter.kind);setTerm(normalizeQuery(query));}}
+        onPress={()=>{const next=queryForCategory(query,filter.kind);setQuery(next);setTerm(next);setKind(filter.kind);setDetail(null);}}
         style={[styles.chip,{borderColor:kind===filter.kind?theme.accent:theme.border,backgroundColor:theme.surface}]}>
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accent:theme.text}}>{filter.title}</Text>
       </Pressable>)}
