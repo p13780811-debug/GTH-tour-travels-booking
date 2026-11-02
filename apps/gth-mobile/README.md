@@ -17,6 +17,9 @@ Supabase policies, importers, or global CSS.
 - Device day/night appearance based on **generated tokens from the existing**
   `src/app/globals.css`; the website theme remains the source of truth.
 - 11-second network cancellation and retry UI; no fabricated records or prices.
+- Explicit Tender country selector (India, US, UK, UAE, Singapore, Australia) and opt-in Worldwide search; no GPS inference.
+- Isolated CI compiles an installable, self-contained Android QA APK and a test-only AAB; emulator launch smoke and phone-width visual QA are automated.
+- See [RELEASE_QA.md](./RELEASE_QA.md) for the physical-device and Play Store release gates.
 
 ## Local development
 ```bash
@@ -39,8 +42,8 @@ npm run theme:sync
 - No service-role key or provider secrets. Native code reads existing public APIs.
 - Original booking, payment, seller contact, official tender eligibility and
   private workflows remain on the original service, with explicit customer approval.
-- This is not yet an independently tested signed APK/AAB or Play Store release.
-- Physical-device QA and packaging are a later stage; no fake claims.
+- A **QA APK** can be built and package-signature verified in GitHub Actions. The output is not Play Store signed; the separate AAB is test-only.
+- Physical-device QA, Play signing with an owner's protected upload key and Play Console publishing remain unverified and must not be claimed complete.
 - The provisional Android application ID in `app.json` must be checked for
   ownership before publishing. Avoid changing it casually after release.
 - App changes remain in **one PR** until the owner reviews the full native build.
