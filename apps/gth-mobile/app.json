@@ -10,7 +10,8 @@
     "android": {
       "package": "com.gthpro.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#060b12"
+        "backgroundColor": "#060b12",
+        "foregroundImage": "./assets/branding/logo.png"
       },
       "permissions": []
     },
@@ -19,6 +20,7 @@
     },
     "extra": {
       "websiteOrigin": "https://www.gthproglobal.com"
-    }
+    },
+    "icon": "./assets/branding/logo.png"
   }
 }
