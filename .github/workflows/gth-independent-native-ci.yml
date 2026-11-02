@@ -77,8 +77,8 @@ jobs:
           path: apps/gth-mobile/dist
           retention-days: 3
 
-  android-debug-apk:
-    name: Unsigned-store / local-debug Android installable APK
+  android-standalone-qa-apk:
+    name: Standalone QA Android APK — no Metro required, not Play Store
     needs: mobile
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -104,19 +104,25 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Generate local Android project without touching website
         run: npx expo prebuild --platform android --non-interactive --clean
-      - name: Build test-installable debug APK (not Play Store)
+      - name: Compile self-contained QA APK with bundled Hermes JavaScript
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew :app:assembleDebug --no-daemon --stacktrace
-      - name: Confirm debug APK exists
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify signed APK, bundle and immutable package identity
         run: |
-          test -s android/app/build/outputs/apk/debug/app-debug.apk
-          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
-      - name: Upload debug APK for physical Android testing
+          apk="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          unzip -Z1 "$apk" | grep -qx 'assets/index.android.bundle'
+          test "$(unzip -Z1 "$apk" | grep -c '^classes[0-9]*\.dex$')" -gt 0
+          apksigner_bin="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -n "$apksigner_bin"
+          "$apksigner_bin" verify "$apk"
+          ls -lh "$apk"
+      - name: Upload self-contained QA APK (NOT Play Store-signed)
         uses: actions/upload-artifact@v4
         with:
-          name: gth-pro-native-debug-apk-not-play-store
-          path: apps/gth-mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          name: gth-pro-native-standalone-qa-apk-not-play-store
+          path: apps/gth-mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 7
