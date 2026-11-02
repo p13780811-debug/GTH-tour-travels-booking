@@ -33,6 +33,8 @@ test("GTH PRO native app opens only original first-party service URLs",()=>{
  assert.equal(routing.approvedRecordPath("property","valid-project"),"/app/property/valid-project");
  assert.equal(routing.approvedRecordPath("tender","12345678-1234-1234-1234-123456789abc"),"/app/tenders/12345678-1234-1234-1234-123456789abc");
  assert.equal(routing.approvedRecordPath("hotel","javascript:bad"),null);
+ assert.equal(routing.approvedRecordPath("tour","45"),"/tours/45");
+ assert.equal(routing.approvedRecordPath("tour","javascript:bad"),null);
 });
 test("one native intent router reuses site public search endpoints",()=>{
  assert.equal(routing.detectPillar("Goa hotels"),"hotel");
