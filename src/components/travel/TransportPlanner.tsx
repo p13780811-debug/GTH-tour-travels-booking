@@ -20,9 +20,9 @@ function todayLocal(): string {
   return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
 }
 
-export default function TransportPlanner({ mode }: { mode: Mode }) {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+export default function TransportPlanner({ mode, initialFrom = "", initialTo = "" }: { mode: Mode; initialFrom?: string; initialTo?: string }) {
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const [date, setDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [travellers, setTravellers] = useState(1);
@@ -63,7 +63,7 @@ export default function TransportPlanner({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="gth-glass mb-12 rounded-2xl border border-[var(--border)] p-5 md:p-7">
+    <div id="journey-planner" className="gth-glass mb-12 scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 md:p-7">
       <h2 className="text-xl font-bold">Plan your route</h2>
       <p className="mt-2 text-xs leading-5 sm:text-sm sm:leading-6 text-[var(--text-soft)]">
         Prepare your journey here, then check current schedules, prices, availability and payment terms directly with the provider. This is not a live availability search or a reservation.

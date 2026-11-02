@@ -1,5 +1,6 @@
 import {expandedBlogs} from "./blogExpansion";
 import {globalRouteBlogs} from "./blogGlobalRoutes";
+import {groundTransportBlogs} from "./blogGroundTransport";
 export interface Blog {
   slug: string;
   title: string;
@@ -203,4 +204,5 @@ Use [Destinations](/destinations) for inspiration, then arrange [Flights](/fligh
   },
   ...expandedBlogs,
   ...globalRouteBlogs,
+  ...groundTransportBlogs,
 ];

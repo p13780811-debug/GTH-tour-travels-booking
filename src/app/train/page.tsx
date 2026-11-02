@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
+import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/train" },
@@ -8,7 +9,14 @@ export const metadata: Metadata = {
   description: "Prepare a rail route and continue to official Indian Railways services for train schedules, ticketing and status checks.",
 };
 
-export default function TrainPage() {
+type RouteSearch = { from?: string | string[]; to?: string | string[] };
+type Props = { searchParams: Promise<RouteSearch> };
+function verifiedRouteValue(value: unknown): string {
+  return typeof value === "string" && /^[\p{L} .'-]{2,80}$/u.test(value) ? value : "";
+}
+
+export default async function TrainPage({ searchParams }: Props) {
+  const query = await searchParams;
   return (
     <TravelServicePage
       eyebrow="GTH PRO · Rail journeys"
@@ -25,9 +33,12 @@ export default function TrainPage() {
       partners={[
         { name: "IRCTC ticket booking", url: "https://www.irctc.co.in/nget/train-search", description: "Official Indian Railways online ticketing service." },
         { name: "National Train Enquiry System", url: "https://enquiry.indianrail.gov.in/ntes/", description: "Official running-train and schedule enquiries (not a ticket booking service)." },
+        { name: "12Go regional train and ground transport", url: "https://12go.asia/en", description: "Compare supported regional ground-transport services on the partner site. Independent ticketing; no affiliate tracking is configured." },
+        { name: "Busbud intercity buses and trains", url: "https://www.busbud.com/en", description: "Explore bus and rail bookings in supported markets; confirm actual route and date with Busbud." },
       ]}
     >
-      <TransportPlanner mode="train" />
+      <TransportPlanner mode="train" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
+      <TransportRouteDiscovery mode="train" />
     </TravelServicePage>
   );
 }
