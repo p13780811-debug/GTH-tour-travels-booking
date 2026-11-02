@@ -386,7 +386,7 @@ function NativeApp(){
       <Compass size={32} color={theme.accent}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>One search. Trusted specialist sources.</Text>
       <Text style={{textAlign:"center",lineHeight:20,fontSize:13,color:theme.muted}}>Try Goa, Mumbai, a project or a tender keyword. Search combines existing public sources without creating duplicate inventory.</Text>
-     </View>:kind==="travel"?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
+     </View>:kind==="travel"&&!term?<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
       <Plane size={33} color={theme.accent}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>Where to next?</Text>
       <Text style={{textAlign:"center",fontSize:12,color:theme.muted}}>Flight fares require an origin, destination and travel dates. Continue to the existing search.</Text>
