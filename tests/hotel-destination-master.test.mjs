@@ -6,7 +6,9 @@ const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("Destination pages link their hotel section and marketplace to destination slugs",()=>{
  const page=read("src/app/destinations/[slug]/page.tsx");
  assert.match(page,/<HotelResults city=\{destination\.name\} destination=\{slug\} compactRail/);
- assert.match(page,/\/hotels\?destination=/);
+ assert.match(page,/href=\\{hotelsHref\\}/);
+ const service=read("src/lib/destinations/ecosystem.ts");
+ assert.match(service,/href:"\\/hotels\\?destination="\\+slug/);
 });
 test("Master hotel API validates destination slugs, resolves real active source name and queries source regions",()=>{
  const api=read("src/app/api/hotels/route.ts");
