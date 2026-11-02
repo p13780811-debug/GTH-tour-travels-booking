@@ -7,13 +7,13 @@ const require=createRequire(import.meta.url);
 const ts=require("typescript");
 const source=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 function load(path,imports={}){
- const js=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- const module={exports:{}};
- new Function("module","exports","require",js)(module,module.exports,id=>{
+ const js=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}} ).outputText;
+ const holder={exports:{}};
+ new Function("module","exports","require",js)(holder,holder.exports,id=>{
   if(!(id in imports))throw Error("Unexpected import "+id);
   return imports[id];
  });
- return module.exports;
+ return holder.exports;
 }
 const flights=load("src/data/flight/destinations.ts");
 const links=load("src/lib/destinations/ecosystem.ts",{"@/data/flight/destinations":flights});
