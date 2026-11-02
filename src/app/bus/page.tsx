@@ -37,7 +37,7 @@ export default async function BusPage({ searchParams }: Props) {
         { name: "Busbud global bus and rail booking", url: "https://www.busbud.com/en", description: "Explore operators and routes in supported countries; check live departures with the partner." },
       ]}
     >
-      <TransportPlanner mode="bus" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
+      <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="bus" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
       <TransportRouteDiscovery mode="bus" />
     </TravelServicePage>
   );

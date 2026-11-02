@@ -6,7 +6,7 @@ const load = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf
 
 test("ground transport guides are original substantial content with unique SEO slugs", () => {
   const file = load("src/data/blogGroundTransport.ts");
-  const guides = JSON.parse(file.slice(file.indexOf("["), file.lastIndexOf("]") + 1));
+  const guides = JSON.parse(file.slice(file.indexOf("= [") + 2, file.lastIndexOf("]") + 1));
   assert.equal(guides.length, 5);
   assert.equal(new Set(guides.map((x) => x.slug)).size, guides.length);
   for (const guide of guides) {
