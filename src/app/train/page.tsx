@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
+import TwelveGoSearchWidget from "@/components/travel/TwelveGoSearchWidget";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/train" },
@@ -38,6 +39,7 @@ export default async function TrainPage({ searchParams }: Props) {
       ]}
     >
       <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="train" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
+      <TwelveGoSearchWidget mode="train" />
       <TransportRouteDiscovery mode="train" />
     </TravelServicePage>
   );
