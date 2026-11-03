@@ -6,7 +6,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {parseRegistryFilters,registryHref,type RegistryFilters} from "@/lib/real-estate/registry-search";
 import {readRegistryRecords} from "@/lib/real-estate/registry-reader";
 export const dynamic="force-dynamic";
-export const metadata:Metadata={title:"MahaRERA Project Registration & Timeline Explorer | GTH PRO",description:"Search source-backed Maharashtra project records by district, developer and recorded timeline. Compare recorded facts and check current details on MahaRERA.",alternates:{canonical:siteUrl("/real-estate/registry")},robots:{index:isPublicLaunch(),follow:isPublicLaunch()}};
+export const metadata:Metadata={title:"Mumbai & Thane MahaRERA Project Registry | GTH PRO",description:"Research source-tagged MahaRERA project records across Thane, Mumbai Suburban and Mumbai City. Compare recorded registration details and verify current status on the official authority portal.",alternates:{canonical:siteUrl("/real-estate/registry")},robots:{index:isPublicLaunch(),follow:isPublicLaunch()}};
 async function RegistryResults({filters}:{filters:RegistryFilters}){
  const {rows,error,hasNext}=await readRegistryRecords(filters);
  return <section className="mt-8" aria-label="MahaRERA records">
@@ -22,6 +22,12 @@ export default async function RegistryExplorer({searchParams}:{searchParams:Prom
   <nav className="mb-7 text-sm"><Link href="/real-estate" className="underline">Real Estate</Link> / Project Registry</nav>
   <p className="gold-text text-xs font-semibold uppercase tracking-wider">Official-source research</p><h1 className="mt-3 text-3xl font-bold">MahaRERA Project Status & Timeline Explorer</h1>
   <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Search recorded registrations, developer identities and historical completion dates, including imported MahaRERA CSV snapshots. This registry research table is not a sale/rent inventory and does not certify live status, delay or possession. Missing official project URLs are marked clearly; verify current details on MahaRERA.</p>
+  <nav aria-label="Browse recorded MahaRERA districts" className="mt-5 flex flex-wrap items-center gap-3">
+    <span className="text-xs font-semibold text-[var(--text-soft)]">Browse registered projects:</span>
+    <Link href="/real-estate/registry?district=Thane" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Thane</Link>
+    <Link href="/real-estate/registry?district=Mumbai%20Suburban" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Mumbai Suburban</Link>
+    <Link href="/real-estate/registry?district=Mumbai%20City" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Mumbai City</Link>
+  </nav>
   <form method="get" action="/real-estate/registry" role="search" aria-label="Advanced registry search" className="mt-6 grid gap-4 rounded-2xl border border-[var(--border)] p-4 sm:grid-cols-2 lg:grid-cols-3">
    <label className="min-w-0 text-sm">Project name, city or RERA reference<input name="q" type="search" defaultValue={f.q} maxLength={70} placeholder="Project name or RERA number" className={input}/></label>
    <label className="min-w-0 text-sm">District<input name="district" type="search" defaultValue={f.district} maxLength={70} placeholder="e.g. Thane" className={input}/></label>
