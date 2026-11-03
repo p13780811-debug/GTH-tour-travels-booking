@@ -6,7 +6,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {parseRegistryFilters,registryHref,type RegistryFilters} from "@/lib/real-estate/registry-search";
 import {readRegistryRecords} from "@/lib/real-estate/registry-reader";
 export const dynamic="force-dynamic";
-export const metadata:Metadata={title:"MahaRERA Project Registration & Timeline Explorer | GTH PRO",description:"Search source-backed Maharashtra project records by district, developer and recorded timeline. Compare recorded facts and check current details on MahaRERA.",alternates:{canonical:siteUrl("/real-estate/registry")},robots:{index:isPublicLaunch(),follow:isPublicLaunch()}};
+export const metadata:Metadata={title:"MahaRERA Project Registry & Worldwide Property Research | GTH PRO",description:"GTH PRO is a worldwide real-estate discovery platform. Explore currently available Maharashtra MahaRERA project records, with global property research and verified listings expanding as new sources are reviewed.",alternates:{canonical:siteUrl("/real-estate/registry")},robots:{index:isPublicLaunch(),follow:isPublicLaunch()}};
 async function RegistryResults({filters}:{filters:RegistryFilters}){
  const {rows,error,hasNext}=await readRegistryRecords(filters);
  return <section className="mt-8" aria-label="MahaRERA records">
@@ -22,6 +22,13 @@ export default async function RegistryExplorer({searchParams}:{searchParams:Prom
   <nav className="mb-7 text-sm"><Link href="/real-estate" className="underline">Real Estate</Link> / Project Registry</nav>
   <p className="gold-text text-xs font-semibold uppercase tracking-wider">Official-source research</p><h1 className="mt-3 text-3xl font-bold">MahaRERA Project Status & Timeline Explorer</h1>
   <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Search recorded registrations, developer identities and historical completion dates, including imported MahaRERA CSV snapshots. This registry research table is not a sale/rent inventory and does not certify live status, delay or possession. Missing official project URLs are marked clearly; verify current details on MahaRERA.</p>
+  <p className="mt-4 max-w-3xl text-xs leading-6 text-[var(--text-soft)]">Current registry records cover selected Maharashtra districts. This is the current data coverage, not a geographic restriction on GTH PRO Real Estate. More Indian and worldwide sources can be added as they are verified.</p>
+  <nav aria-label="Browse recorded MahaRERA districts" className="mt-5 flex flex-wrap items-center gap-3">
+    <span className="text-xs font-semibold text-[var(--text-soft)]">Browse registered projects:</span>
+    <Link href="/real-estate/registry?district=Thane" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Thane</Link>
+    <Link href="/real-estate/registry?district=Mumbai%20Suburban" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Mumbai Suburban</Link>
+    <Link href="/real-estate/registry?district=Mumbai%20City" className="gth-btn inline-flex min-h-11 items-center rounded-lg px-4 text-sm">Mumbai City</Link>
+  </nav>
   <form method="get" action="/real-estate/registry" role="search" aria-label="Advanced registry search" className="mt-6 grid gap-4 rounded-2xl border border-[var(--border)] p-4 sm:grid-cols-2 lg:grid-cols-3">
    <label className="min-w-0 text-sm">Project name, city or RERA reference<input name="q" type="search" defaultValue={f.q} maxLength={70} placeholder="Project name or RERA number" className={input}/></label>
    <label className="min-w-0 text-sm">District<input name="district" type="search" defaultValue={f.district} maxLength={70} placeholder="e.g. Thane" className={input}/></label>
@@ -33,6 +40,6 @@ export default async function RegistryExplorer({searchParams}:{searchParams:Prom
   </form>
   {parsed.ok?<Suspense key={registryHref(f)} fallback={<p role="status" className="mt-8 rounded-xl border border-[var(--border)] p-4">Loading source-backed registry records… Search and research tools remain available while the data service responds.</p>}><RegistryResults filters={f}/></Suspense>:<p role="alert" className="mt-5">{parsed.error} <Link href="/real-estate/registry" className="underline">Reset search</Link></p>}
   <p className="mt-6 text-xs leading-6 text-[var(--text-soft)]">A recorded completion date is not proof that a project is delayed, completed, occupied or currently available. The registry is informational; official portal updates control. No property photos or asking prices are inferred from these records.</p>
-  <div className="mt-6 flex flex-wrap gap-3"><Link href="/real-estate/saved#research-workspace" className="gth-btn">Private research workspace</Link><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn">Ownership cost & affordability</Link><Link href="/real-estate/post-property" className="gth-btn">List your property</Link></div>
+  <div className="mt-6 flex flex-wrap gap-3"><Link href="/real-estate/saved#research-workspace" className="gth-btn">Private research workspace</Link><Link href="/real-estate/tools#buyer-planning-studio" className="gth-btn">Ownership cost & affordability</Link><Link href="/real-estate/post-property" className="gth-btn">Submit real sale / rental listing</Link><Link href="/real-estate/claim-project" className="gth-btn-gold">Builder or authorized agent? Claim your project & submit original photos</Link></div>
  </main>;
 }
