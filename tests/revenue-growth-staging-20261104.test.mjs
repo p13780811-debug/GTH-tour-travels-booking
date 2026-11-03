@@ -19,6 +19,11 @@ test("registry research and sale/rent submissions stay separate", () => {
   const page = source("src/app/real-estate/registry/page.tsx");
   assert.match(page, /Builder or authorized agent\? Claim your project/);
   assert.match(page, /Submit real sale \/ rental listing/);
+  assert.match(page, /Mumbai & Thane MahaRERA Project Registry/);
+  assert.match(page, /district=Thane/);
+  assert.match(page, /district=Mumbai%20Suburban/);
+  assert.match(page, /district=Mumbai%20City/);
+  assert.doesNotMatch(page, /11,747|5,661|4,988|1,098/); // Avoid stale static record counts.
   assert.match(page, /not a sale\/rent inventory/);
   assert.match(page, /No property photos or asking prices are inferred/);
 });
