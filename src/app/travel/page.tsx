@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const services = [
   { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Explore international fare observations and verify current total prices and availability with the ticket provider." },
-  { name: "Hotels", label: "HOTEL DISCOVERY", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search destination hotel listings, check available details and continue to approved external booking links." },
+  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays through the existing Nuitee White Label; the supplier confirms availability, rates, payment and booking terms." },
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
   { name: "Destinations", label: "EXPLORE THE WORLD", href: "/destinations", img: "/images/cities/paris.jpg", Icon: Globe2, detail: "Discover international destinations, city highlights and helpful planning information." },
   { name: "Airport Transfers", label: "GROUND TRANSPORT", href: "/transfers", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Plan a journey from airport to accommodation and verify pickup terms with external providers." },
@@ -40,7 +40,7 @@ export default function TravelHomePage() {
         <p className="mt-6 max-w-2xl text-base leading-8 text-white/85 md:text-lg">Explore global flights, hotels, experiences and destinations with GTH PRO. Each travel module has its own searchable page and clear external booking handoff.</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/flights" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold">Search flights <ArrowRight size={16}/></Link>
-          <Link href="/hotels" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Explore hotels</Link>
+          <Link href="/hotels?view=booking" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Search hotels</Link>
           <Link href="/destinations" className="inline-flex min-h-12 items-center rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Discover destinations</Link>
         </div>
       </div>
