@@ -34,7 +34,7 @@ export default async function TrainPage({ searchParams }: Props) {
       partners={[
         { name: "IRCTC ticket booking", url: "https://www.irctc.co.in/nget/train-search", description: "Official Indian Railways online ticketing service." },
         { name: "National Train Enquiry System", url: "https://enquiry.indianrail.gov.in/ntes/", description: "Official running-train and schedule enquiries (not a ticket booking service)." },
-        { name: "12Go regional train and ground transport", url: "https://12go.asia/en", description: "Compare supported regional ground-transport services on the partner site. Independent ticketing; no affiliate tracking is configured." },
+        { name: "12Go regional train and ground transport", url: "https://12go.asia/?z=17380992", description: "Use our official 12Go affiliate link to explore supported regional rail and ground transport. Availability, checkout and tickets are handled by 12Go." },
         { name: "Busbud intercity buses and trains", url: "https://www.busbud.com/en", description: "Explore bus and rail bookings in supported markets; confirm actual route and date with Busbud." },
       ]}
     >
