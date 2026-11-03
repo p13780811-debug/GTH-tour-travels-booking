@@ -19,7 +19,8 @@ test("registry research and sale/rent submissions stay separate", () => {
   const page = source("src/app/real-estate/registry/page.tsx");
   assert.match(page, /Builder or authorized agent\? Claim your project/);
   assert.match(page, /Submit real sale \/ rental listing/);
-  assert.match(page, /Mumbai & Thane MahaRERA Project Registry/);
+  assert.match(page, /MahaRERA Project Registry & Worldwide Property Research/);
+  assert.match(page, /not a geographic restriction on GTH PRO Real Estate/);
   assert.match(page, /district=Thane/);
   assert.match(page, /district=Mumbai%20Suburban/);
   assert.match(page, /district=Mumbai%20City/);
