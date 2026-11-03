@@ -24,7 +24,7 @@ test("train and bus pages keep the provider checkout and existing planner", () =
     const file = load("src/app/" + mode + "/page.tsx");
     assert.match(file, /TransportPlanner/);
     assert.match(file, /TransportRouteDiscovery/);
-    assert.match(file, /12go\.asia\/en/);
+    assert.match(file, /12go\.asia\/\?z=17380992/);
     assert.match(file, /busbud\.com\/en/);
     assert.match(file, /verifiedRouteValue/);
     assert.match(file, /noLiveDataNotice=/);
