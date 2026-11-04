@@ -1,0 +1,50 @@
+name: GTH PRO Approved Telegram Broker Outreach
+
+on:
+  schedule:
+    # Mondays 11:30 AM IST (06:00 UTC); 14-day cooldown in Python.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only; do not connect to Telegram or send"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gth-telegram-broker-outreach
+  cancel-in-progress: false
+
+jobs:
+  broker-outreach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' || vars.BROKER_OUTREACH_ENABLED == 'true' }}
+    env:
+      BROKER_OUTREACH_ENABLED: ${{ vars.BROKER_OUTREACH_ENABLED }}
+      BROKER_APPROVED_GROUP_IDS: ${{ vars.BROKER_APPROVED_GROUP_IDS }}
+      TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+      TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+      TELEGRAM_SESSION_STRING: ${{ secrets.TELEGRAM_SESSION_STRING }}
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned Telethon
+        if: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+        run: python -m pip install --disable-pip-version-check 'Telethon==1.45.0'
+      - name: Safe preview, no Telegram access
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+        run: python scripts/telegram_broker_outreach.py --dry-run
+      - name: Approved group posting only
+        if: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+        run: python scripts/telegram_broker_outreach.py
