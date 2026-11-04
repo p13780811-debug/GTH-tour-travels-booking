@@ -87,7 +87,8 @@ function validateRow(row:Row,role:string,agentId:string|null):Parsed {
     agent_registration:agentId,is_new_launch:false,media_rights_confirmed:false,
   };
 }
-function duplicateKey(row:Parsed):string {
+type DedupeRow = Pick<Parsed, "registry_reference" | "title" | "country" | "city" | "location" | "property_type" | "listing_type" | "bedrooms" | "area_sqft" | "price_amount">;
+function duplicateKey(row:DedupeRow):string {
   // Conservatively distinguish multiple apartment units in the same project.
   const values=[row.registry_reference||"",row.title,row.country,row.city,row.location,
     row.property_type,row.listing_type,String(row.bedrooms??""),
@@ -145,7 +146,7 @@ export async function POST(req:Request) {
     const prior=new Set((old||[]).map(item=>duplicateKey({
       ...item,
       registry_reference:item.registry_reference||null,
-    } as Parsed)));
+    })));
     const incoming=new Set<string>();
     const clean:Parsed[]=[];let skipped=0;
     for(const row of parsed){
