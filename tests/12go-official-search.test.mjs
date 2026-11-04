@@ -40,6 +40,31 @@ test("GTH PRO pages show their own brand, never provider names, embeds or extern
   assert.throws(() => readFileSync(widgetSource, "utf8"), /ENOENT/);
 });
 
+test("bus and rail match Flight search full-width responsive layout, without changing flights or transfers", () => {
+  const flight = source("src/app/flights/page.tsx");
+  const flightWidget = source("src/components/flights/AviasalesWhiteLabel.tsx");
+  const shell = source("src/components/travel/TravelServicePage.tsx");
+  const planner = source("src/components/travel/TransportPlanner.tsx");
+  assert.match(flight, /mx-auto w-full max-w-7xl pb-16 pt-2 sm:pt-9/);
+  assert.match(flightWidget, /w-full min-w-0 scroll-mt-24/);
+  assert.match(shell, /searchFirstLayout\?: boolean/);
+  assert.match(shell, /searchFirstLayout = false/);
+  assert.match(shell, /max-w-7xl min-w-0 px-4 pb-16 pt-2 sm:px-6 sm:pt-9/);
+  assert.match(shell, /!searchFirstLayout && <aside/);
+  assert.match(planner, /lg:grid-cols-4/);
+  assert.match(planner, /grid-cols-1 gap-3 sm:grid-cols-2/);
+  assert.match(planner, /min-w-0 max-w-full rounded-xl/);
+  assert.match(planner, /sm:grid-cols-\[minmax\(0,10rem\)_minmax\(0,17rem\)\]/);
+  assert.match(planner, /mode === "transfer"\s*\?\s*"gth-glass mb-12 scroll-mt-24 rounded-2xl border border-\[var\(--border\)\] p-5 md:p-7"/);
+  assert.match(planner, /\? "mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4"/);
+  for (const mode of ["bus", "train"]) {
+    const page = source("src/app/" + mode + "/page.tsx");
+    assert.match(page, /<TravelServicePage\s+searchFirstLayout/);
+  }
+  const transfers = source("src/app/transfers/page.tsx");
+  assert.doesNotMatch(transfers, /searchFirstLayout/);
+});
+
 test("global rail presentation does not imply any Indian Railways integration", () => {
   const train = source("src/app/train/page.tsx");
   assert.match(train, /Global Train & Rail Journey Planning/);
