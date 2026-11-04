@@ -38,6 +38,7 @@ export default function GTHTransportSearchWidget({ mode }: { mode: Mode }) {
     let activeScript: HTMLScriptElement | undefined;
     let observer: ResizeObserver | undefined;
     let checkTimer: number | undefined;
+    let loadTimer: number | undefined;
 
     const mount = () => {
       if (disposed) return;
@@ -51,6 +52,7 @@ export default function GTHTransportSearchWidget({ mode }: { mode: Mode }) {
       lastWidth = width;
       lastCategory = category;
       window.clearTimeout(checkTimer);
+      window.clearTimeout(loadTimer);
       host.replaceChildren();
       setStatus("loading");
 
@@ -64,12 +66,20 @@ export default function GTHTransportSearchWidget({ mode }: { mode: Mode }) {
       script.dataset.height = String(height);
       script.dataset.border = "0";
       script.dataset.domain = "12go.asia";
+      let failed = false;
       script.onerror = () => {
+        failed = true;
         if (!disposed && script === activeScript) setStatus("error");
       };
       script.onload = () => {
-        if (!disposed && script === activeScript) setStatus("ready");
+        if (!disposed && script === activeScript && !failed) setStatus("ready");
       };
+      // Some script bundles load successfully but get blocked before rendering.
+      loadTimer = window.setTimeout(() => {
+        if (disposed || script !== activeScript || failed) return;
+        const rendered = host.querySelector("iframe, form, input, [data-one2go]");
+        if (!rendered && host.children.length <= 1) setStatus("error");
+      }, 12000);
       activeScript = script;
       host.appendChild(script);
     };
@@ -86,6 +96,7 @@ export default function GTHTransportSearchWidget({ mode }: { mode: Mode }) {
       disposed = true;
       observer?.disconnect();
       window.clearTimeout(checkTimer);
+      window.clearTimeout(loadTimer);
       if (activeScript) {
         activeScript.onerror = null;
         activeScript.onload = null;
