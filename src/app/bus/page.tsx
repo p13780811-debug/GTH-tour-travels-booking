@@ -34,7 +34,7 @@ export default async function BusPage({ searchParams }: Props) {
       partners={[
         { name: "redBus India", url: "https://www.redbus.in/", description: "Search Indian bus routes and book directly with redBus." },
         { name: "redBus International", url: "https://www.redbus.com/", description: "Explore supported international bus routes; coverage depends on region." },
-        { name: "12Go bus and regional transport", url: "https://12go.asia/?z=17380992", description: "Use our official 12Go affiliate link to browse supported bus, train and ferry journeys. 12Go handles availability, checkout and ticketing." },
+        { name: "12Go bus and regional transport", url: "/go/12go", description: "Use the GTH PRO 12Go White Label when its HTTPS is ready, or automatically continue through the official tracked affiliate link. 12Go handles availability, checkout and tickets." },
         { name: "Busbud global bus and rail booking", url: "https://www.busbud.com/en", description: "Explore operators and routes in supported countries; check live departures with the partner." },
       ]}
     >
