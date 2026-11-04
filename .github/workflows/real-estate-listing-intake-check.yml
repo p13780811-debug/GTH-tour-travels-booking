@@ -35,3 +35,5 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Lint touched UI and extraction code
         run: npx eslint src/lib/real-estate/listing-intake.ts src/components/real-estate/ListingIntakeAssistant.tsx src/app/real-estate/post-property/page.tsx
+      - name: Compile Next.js production build (does not deploy)
+        run: npm run build
