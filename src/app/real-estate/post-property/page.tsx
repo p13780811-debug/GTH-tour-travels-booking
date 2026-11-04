@@ -8,6 +8,7 @@ import { readApiJson } from "@/lib/api-response"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
 import ListingIntakeAssistant from "@/components/real-estate/ListingIntakeAssistant"
+import BulkListingUpload from "@/components/real-estate/BulkListingUpload"
 import type { IntakeFields } from "@/lib/real-estate/listing-intake"
 import styles from "@/components/real-estate/Listing.module.css"
 
@@ -51,6 +52,7 @@ export default function PostPropertyPage() {
         <JourneyNav />
         <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
         <section className="gth-glass rounded-3xl p-6 mt-6"><h2 className="font-bold">Before you start</h2><p className="opacity-70 leading-7 mt-3">Use details you can substantiate. If you know the MahaRERA number, add it so this submission can be linked to the existing registry project instead of creating a duplicate project. Pricing and unit facts remain subject to administrator review.</p><button className={`gth-btn ${styles.action} mt-4`} onClick={() => setLogin(true)}>Sign in with email</button></section>
+        <BulkListingUpload onNeedLogin={() => setLogin(true)} />
         <form ref={formRef} className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onChange={event => { if (event.target instanceof HTMLSelectElement) manuallySelected.current.add(event.target.name) }} onSubmit={async event => {
             event.preventDefault(); if (busy) return
             const form = event.currentTarget
