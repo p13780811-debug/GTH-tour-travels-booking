@@ -1,2 +1,4 @@
-/** GTH PRO's brand-neutral booking gateway, reusing the existing validated provider handoff. */
-export { GET, runtime, dynamic } from "../12go/route";
+/** GTH PRO booking gateway reuses the approved provider handoff. */
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export { GET } from "../12go/route";
