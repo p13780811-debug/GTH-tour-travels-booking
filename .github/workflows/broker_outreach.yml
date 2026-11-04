@@ -1,13 +1,22 @@
-name: GTH PRO Approved Telegram Broker Outreach
+name: GTH PRO One-Time Broker Invitations
 
+# Independent GitHub Actions runner. No Vercel, site build, or database writes.
 on:
+  push:
+    branches:
+      - feature/gth-approved-telegram-broker-outreach-20261105
+      - main
+    paths:
+      - scripts/telegram_broker_outreach.py
+      - tests/test_telegram_broker_outreach.py
+      - .github/workflows/broker_outreach.yml
   schedule:
-    # Mondays 11:30 AM IST (06:00 UTC); 14-day cooldown in Python.
-    - cron: "0 6 * * 1"
+    # Daily at 11:30 IST. Each group is invited ONLY ONCE ever.
+    - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Preview only; do not connect to Telegram or send"
+        description: "Preview only: never send any messages"
         required: true
         type: boolean
         default: true
@@ -16,37 +25,45 @@ permissions:
   contents: read
 
 concurrency:
-  group: gth-telegram-broker-outreach
+  group: gth-telegram-broker-invitations
   cancel-in-progress: false
 
 jobs:
-  broker-outreach:
+  safety-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Offline safety tests
+        run: python -m unittest discover -s tests -p "test_telegram_broker_outreach.py" -v
+      - name: Preview invite on manual dry-run
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+        run: python scripts/telegram_broker_outreach.py --dry-run
+
+  send-once-to-joined-groups:
+    needs: safety-tests
     if: >-
-      ${{ github.event_name == 'workflow_dispatch' || vars.BROKER_OUTREACH_ENABLED == 'true' }}
+      ${{ vars.BROKER_OUTREACH_ENABLED == 'true' &&
+        (github.event_name == 'schedule' ||
+         (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       BROKER_OUTREACH_ENABLED: ${{ vars.BROKER_OUTREACH_ENABLED }}
-      BROKER_APPROVED_GROUP_IDS: ${{ vars.BROKER_APPROVED_GROUP_IDS }}
+      BROKER_EXTRA_APPROVED_GROUPS: ${{ vars.BROKER_EXTRA_APPROVED_GROUPS }}
       TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
       TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
       TELEGRAM_SESSION_STRING: ${{ secrets.TELEGRAM_SESSION_STRING }}
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install pinned Telethon
-        if: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
-        run: python -m pip install --disable-pip-version-check 'Telethon==1.45.0'
-      - name: Safe preview, no Telegram access
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
-        run: python scripts/telegram_broker_outreach.py --dry-run
-      - name: Run offline safety tests
-        run: python -m unittest discover -s tests -p 'test_telegram_broker_outreach.py' -v
-      - name: Approved group posting only
-        if: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+      - name: Install reviewed version of Telethon
+        run: python -m pip install --disable-pip-version-check "Telethon==1.45.0"
+      - name: Invite only not-yet-invited groups
         run: python scripts/telegram_broker_outreach.py
