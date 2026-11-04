@@ -12,7 +12,7 @@ function found(source:string,terms:readonly string[]):string|undefined {
 }
 function priceFrom(text:string):{value:string;currency:string}|null {
   // Treat compound Indian prices as one figure; never silently drop lakhs.
-  const compound=text.match(/\\b(\\d{1,5}(?:\\.\\d+)?)\\s*(?:crores?|cr)\\s*(\\d{1,5}(?:\\.\\d+)?)\\s*(?:lakhs?|lacs?|lac|l)\\b/i);
+  const compound=text.match(/\b(\d{1,5}(?:\.\d+)?)\s*(?:crores?|cr)\s*(\d{1,5}(?:\.\d+)?)\s*(?:lakhs?|lacs?|lac|l)\b/i);
   if(compound){
     const amount=Number(compound[1])*1e7+Number(compound[2])*1e5;
     if(!Number.isFinite(amount)||amount<=0||amount>999999999999)return null;
