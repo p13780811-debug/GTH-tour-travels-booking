@@ -57,7 +57,7 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
     } else {
       setError("");
       if (mode === "bus" || mode === "train") {
-        // A real user gesture opens the existing 12Go gateway immediately.
+        // A real user gesture opens the approved GTH PRO booking gateway immediately.
         // Do not fabricate supplier route/departure IDs or silently forward PII.
         window.location.assign(provider.url);
         return;
