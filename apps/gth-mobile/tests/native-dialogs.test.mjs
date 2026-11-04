@@ -40,6 +40,7 @@ test('appearance exposes one checked radio choice and a working native selection
  const choices=renderer.root.findAllByType('Pressable').filter(x=>x.props.accessibilityRole==='radio');
  assert.equal(choices.length,3);
  assert.deepEqual(choices.map(x=>x.props.accessibilityState.checked),[false,false,true]);
+ assert.deepEqual(choices.map(x=>x.props['aria-checked']),[false,false,true]);
  await act(async()=>choices[1].props.onPress());assert.equal(selected,'light');
  await act(async()=>renderer.unmount());
 });

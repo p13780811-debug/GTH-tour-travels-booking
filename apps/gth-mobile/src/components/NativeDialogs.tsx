@@ -8,6 +8,7 @@ type Theme=typeof colors.light;
 export type Confirmation={title:string;message:string;confirmLabel:string;action:()=>void|Promise<void>};
 function Control({label,onPress,theme,selected=false,disabled=false,radio=false}:{label:string;onPress:()=>void;theme:Theme;selected?:boolean;disabled?:boolean;radio?:boolean}){
  return <Pressable accessibilityRole={radio?"radio":"button"} accessibilityLabel={label}
+  aria-checked={radio?selected:undefined} aria-disabled={disabled}
   accessibilityState={radio?{disabled,checked:selected}:{disabled}} disabled={disabled} onPress={onPress}
   style={[styles.control,{backgroundColor:selected?theme.accent:theme.surfaceSoft,borderColor:theme.border,opacity:disabled?0.6:1}]}>
   <Text style={{fontSize:14,fontWeight:"700",color:selected?theme.onAccent:theme.text,textAlign:"center"}}>{label}</Text>

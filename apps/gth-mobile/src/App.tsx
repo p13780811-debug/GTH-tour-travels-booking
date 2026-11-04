@@ -167,6 +167,7 @@ function RecordCard({item,theme,bookmarked,onOpen,onToggle}:{item:DiscoveryCard;
   </Pressable>
   {item.webPath&&<Pressable onPress={onToggle} accessibilityRole="button"
     accessibilityLabel={(bookmarked?"Remove saved ":"Save ")+item.title} accessibilityState={{selected:bookmarked}}
+    aria-pressed={bookmarked}
     style={[styles.bookmarkButton,{borderColor:theme.border}]}>
     {bookmarked?<BookmarkCheck size={19} color={theme.accent}/>:<Bookmark size={19} color={theme.muted}/>}
    </Pressable>}
@@ -182,6 +183,7 @@ function BottomBar({tab,setTab,theme}:{tab:Tab;setTab:(v:Tab)=>void;theme:Theme}
  return <SafeAreaView edges={["bottom"]} style={{borderTopWidth:1,borderColor:theme.border,backgroundColor:theme.surface}}>
   <View style={styles.tabbar}>{tabs.map(({id,title,Icon})=><Pressable key={id} onPress={()=>setTab(id)}
     accessibilityRole="tab" accessibilityState={{selected:tab===id}}
+    aria-selected={tab===id}
     accessibilityLabel={title+" tab"} style={styles.tab}>
     <Icon size={22} color={tab===id?theme.accent:theme.muted} strokeWidth={tab===id?2.5:1.7}/>
     <Text style={{fontSize:10,fontWeight:tab===id?"800":"600",color:tab===id?theme.accent:theme.muted}}>{title}</Text>
@@ -374,6 +376,7 @@ function NativeApp(){
      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:8,paddingVertical:15}}>
       {filters.map(filter=><Pressable key={filter.kind} accessibilityRole="button"
         accessibilityState={{selected:kind===filter.kind}}
+        aria-pressed={kind===filter.kind}
         onPress={()=>{const next=queryForCategory(query,filter.kind);setQuery(next);setTerm(next);setKind(filter.kind);setDetail(null);}}
         style={[styles.chip,{borderColor:kind===filter.kind?theme.accent:theme.border,backgroundColor:theme.surface}]}>
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accent:theme.text}}>{filter.title}</Text>
@@ -388,6 +391,7 @@ function NativeApp(){
        {tenderRegions.map(region=><Pressable key={region.code} accessibilityRole="button"
         accessibilityLabel={"Tender region "+region.label}
         accessibilityState={{selected:tenderRegion===region.code}}
+        aria-pressed={tenderRegion===region.code}
         onPress={()=>{setTenderRegion(region.code);setDetail(null);}}
         style={[styles.chip,{borderColor:tenderRegion===region.code?theme.accent:theme.border,backgroundColor:theme.surface,minHeight:41}]}>
         <Text style={{fontSize:12,fontWeight:"700",color:tenderRegion===region.code?theme.accent:theme.text}}>{region.label}</Text>
