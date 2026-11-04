@@ -97,11 +97,11 @@ export default function TravelServicePage({
                 </article>
               ))}
             </div>
-          ) : (
+          ) : !searchFirstLayout ? (
             <div className="gth-glass mt-5 rounded-2xl border border-[var(--border)] p-5 text-sm text-[var(--text-soft)]">
               No verified live supplier connection is configured for this service. We are not displaying artificial seats, prices or availability.
             </div>
-          )}
+          ) : null}
         </section>
 
         {!searchFirstLayout && <aside className="self-start lg:sticky lg:top-24">

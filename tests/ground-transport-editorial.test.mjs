@@ -19,15 +19,15 @@ test("ground transport guides are original substantial content with unique SEO s
   }
 });
 
-test("train and bus pages keep the provider checkout and existing planner", () => {
+test("bus/train provide exactly one embedded checkout search and keep the travel guides", () => {
   for (const mode of ["bus", "train"]) {
     const file = load("src/app/" + mode + "/page.tsx");
-    assert.match(file, /TransportPlanner/);
+    assert.match(file, /GTHTransportSearchWidget/);
     assert.match(file, /TransportRouteDiscovery/);
-    assert.match(file, /url: "\/go\/transport"/);
-    assert.doesNotMatch(file, /TwelveGoSearchWidget|cdn0\.trainbusferry\.com/);
-    assert.match(file, /name: "GTH PRO /);
-    assert.match(file, /verifiedRouteValue/);
+    assert.match(file, /partners=\{\[\]\}/);
+    assert.doesNotMatch(file, /TransportPlanner|TwelveGoSearchWidget|<iframe|cdn0\.trainbusferry\.com/);
+    assert.match(file, /searchFirstLayout/);
+    assert.doesNotMatch(file, /verifiedRouteValue/);
     assert.match(file, /noLiveDataNotice=/);
   }
   assert.match(load("src/app/train/page.tsx"), /Global Train & Rail Journey Planning/);
@@ -42,7 +42,7 @@ test("blog and provider source remain isolated from payment and hotel systems", 
   assert.match(index, /groundTransportBlogs\.map/);
   assert.match(planner, /initialFrom/);
   assert.match(planner, /id="journey-planner"/);
-  assert.match(corridors, /encodeURIComponent\(route.from\)/);
-  assert.match(corridors, /encodeURIComponent\(route.to\)/);
+  assert.match(corridors, /href="#journey-search"/);
+  assert.doesNotMatch(corridors, /encodeURIComponent\(route.from\)|encodeURIComponent\(route.to\)/);
   assert.doesNotMatch(corridors, /NEXT_PUBLIC_|api[_-]?key|bookings\/create/i);
 });
