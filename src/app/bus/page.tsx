@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
-import TwelveGoSearchWidget from "@/components/travel/TwelveGoSearchWidget";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/bus" },
-  title: "Bus Travel Planning and Partner Booking | GTH PRO",
-  description: "Plan a bus journey and compare current departures and final ticket prices directly with independent operators.",
+  title: "Worldwide Bus Journey Search | GTH PRO",
+  description: "Plan bus journeys with GTH PRO and continue to the connected booking platform to check supported routes and current availability.",
 };
 
 type RouteSearch = { from?: string | string[]; to?: string | string[] };
@@ -21,8 +20,8 @@ export default async function BusPage({ searchParams }: Props) {
   return (
     <TravelServicePage
       eyebrow="GTH PRO · Ground transport"
-      title="Plan your bus journey with confidence"
-      description="Explore bus travel without invented fares, seat counts or ticket confirmations. Start with your route and continue to an established booking service for actual inventory."
+      title="Explore worldwide bus journeys"
+      description="Plan journeys with GTH PRO’s own search form and continue to the connected booking experience for supported routes, schedules and tickets."
       image="/images/dighabus.jpg"
       noLiveDataNotice="GTH PRO does not have a live bus inventory connection. Search results, fares, seating, cancellation conditions and ticket confirmation are provided by the booking partner."
       whatToCheck={[
@@ -32,14 +31,10 @@ export default async function BusPage({ searchParams }: Props) {
         "Keep your ticket and any support reference from the provider; GTH PRO does not issue tickets.",
       ]}
       partners={[
-        { name: "redBus India", url: "https://www.redbus.in/", description: "Search Indian bus routes and book directly with redBus." },
-        { name: "redBus International", url: "https://www.redbus.com/", description: "Explore supported international bus routes; coverage depends on region." },
-        { name: "12Go bus and regional transport", url: "/go/12go", description: "Use the GTH PRO 12Go White Label when its HTTPS is ready, or automatically continue through the official tracked affiliate link. 12Go handles availability, checkout and tickets." },
-        { name: "Busbud global bus and rail booking", url: "https://www.busbud.com/en", description: "Explore operators and routes in supported countries; check live departures with the partner." },
+        { name: "GTH PRO Bus Booking", url: "/go/transport", actionLabel: "Search available journeys", description: "Continue to the connected booking experience for supported bus routes. Availability, tickets, payments and refunds are handled by the authorized booking provider. GTH PRO may earn a referral commission." },
       ]}
     >
       <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="bus" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
-      <TwelveGoSearchWidget mode="bus" />
       <TransportRouteDiscovery mode="bus" />
     </TravelServicePage>
   );

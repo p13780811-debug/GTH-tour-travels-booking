@@ -35,7 +35,8 @@
       "feat/estate-market-workspace-20261029": false,
       "feat/estate-discovery-quality-20261030": false,
       "fix/tender-service-search-discovery-20261104": false,
-      "feat/12go-search-staging-20261104": false
+      "feat/12go-search-staging-20261104": false,
+      "fix/12go-native-white-label-search-20261104": false
     }
   }
 }
