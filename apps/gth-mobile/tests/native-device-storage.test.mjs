@@ -21,10 +21,10 @@ const routing=load("routing");
 const writes=load("device-writes");
 const record={id:"osm:node-123",kind:"hotel",title:"Source hotel",subtitle:"Goa",source:"OpenStreetMap",webPath:"/app/hotels/osm:node-123"};
 async function mount(name,storage){
- const module=load(name,{react:React,"./routing":routing,"./device-writes":writes,
+ const hooks=load(name,{react:React,"./routing":routing,"./device-writes":writes,
   "@react-native-async-storage/async-storage":{default:storage}});
  let state;
- function Component(){state=name==="bookmarks"?module.useNativeBookmarks():module.useRecentSearches();return null;}
+ function Component(){state=name==="bookmarks"?hooks.useNativeBookmarks():hooks.useRecentSearches();return null;}
  let renderer;
  await act(async()=>{renderer=create(React.createElement(Component));});
  return {get state(){return state;},close:()=>act(async()=>renderer.unmount())};
