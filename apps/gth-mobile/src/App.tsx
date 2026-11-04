@@ -6,7 +6,7 @@ import {
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
  ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Clock3,Compass,ExternalLink,
- FileText,Globe2,Home,Hotel,MapPin,Plane,Search,Share2,ShieldCheck,Sparkles,
+ FileText,Globe2,Home,Hotel,MapPin,Plane,Search,Settings,Share2,ShieldCheck,Sparkles,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
 import travelHero from "../assets/hero/travel.jpg";
@@ -14,7 +14,9 @@ import propertyHero from "../assets/hero/property.jpg";
 import tenderHero from "../assets/hero/tender.jpg";
 import brandLogo from "../assets/branding/logo.png";
 import {type DiscoveryCard,type DiscoveryKind} from "./core/catalog";
-import {searchNativeSources,type SearchSlice} from "./core/unified-search";
+import {useNativeDiscovery} from "./core/use-discovery";
+import {useAppearance} from "./core/appearance";
+import {ConfirmationDialog,SettingsDialog,type Confirmation} from "./components/NativeDialogs";
 import {detectPillar,firstPartyUrl,normalizeQuery,queryForCategory,serviceDestination,type Pillar} from "./core/routing";
 import {useNativeBookmarks} from "./core/bookmarks";
 import {useRecentSearches} from "./core/recent-searches";
@@ -66,7 +68,7 @@ function Action({label,onPress,theme,secondary=false}:{label:string;onPress:()=>
   <ArrowRight size={16} color={secondary?theme.text:theme.onAccent}/>
  </Pressable>;
 }
-function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
+function Header({theme,openSettings}:{theme:Theme;openSettings:()=>void}){
  return <View style={[styles.header,{borderColor:theme.border}]}>
   <View style={{flexDirection:"row",alignItems:"center",gap:9}}>
    <View style={[styles.brandMark,{borderColor:theme.accent}]}><Image source={brandLogo} resizeMode="cover" accessibilityLabel="GTH PRO logo" style={{width:37,height:37,borderRadius:11}}/></View>
@@ -74,9 +76,9 @@ function Header({theme,openSaved}:{theme:Theme;openSaved:()=>void}){
     <Text style={{fontSize:10,color:theme.muted}}>THE GLOBAL EXPERIENCE</Text>
    </View>
   </View>
-  <Pressable accessibilityRole="button" accessibilityLabel="Open saved records" onPress={openSaved}
+  <Pressable accessibilityRole="button" accessibilityLabel="Open app settings" onPress={openSettings}
    style={[styles.roundIcon,{backgroundColor:theme.surface,borderColor:theme.border}]}>
-   <Bookmark size={20} color={theme.accent}/>
+   <Settings size={20} color={theme.accent}/>
   </Pressable>
  </View>;
 }
@@ -187,21 +189,20 @@ function BottomBar({tab,setTab,theme}:{tab:Tab;setTab:(v:Tab)=>void;theme:Theme}
  </SafeAreaView>;
 }
 function NativeApp(){
- const dark=useColorScheme()==="dark";
+ const systemDark=useColorScheme()==="dark";
+ const appearance=useAppearance(systemDark);
+ const dark=appearance.dark;
+ const [settingsOpen,setSettingsOpen]=useState(false);
+ const [confirmation,setConfirmation]=useState<Confirmation|null>(null);
  const theme=dark?colors.dark:colors.light;
  const [tab,setTab]=useState<Tab>("home");
  const [query,setQuery]=useState("");
  const [term,setTerm]=useState("");
  const [kind,setKind]=useState<NativeChoice>("all");
  const [tenderRegion,setTenderRegion]=useState<string>("IN");
- const [results,setResults]=useState<DiscoveryCard[]>([]);
- const [slices,setSlices]=useState<SearchSlice[]>([]);
- const [warnings,setWarnings]=useState<string[]>([]);
- const [total,setTotal]=useState(0);
- const [pending,setPending]=useState(false);
- const [error,setError]=useState("");
  const [detail,setDetail]=useState<DiscoveryCard|null>(null);
- const [refresh,setRefresh]=useState(0);
+ const discovery=useNativeDiscovery(kind,term,tenderRegion);
+ const {items:results,slices,warnings,total,pending,error}=discovery;
  const bookmarks=useNativeBookmarks();
  const recent=useRecentSearches();
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
@@ -217,10 +218,9 @@ function NativeApp(){
  function openSite(path:string){
   const target=firstPartyUrl(path);
   if(!target){Alert.alert("Link unavailable","Only official GTH PRO destinations are supported.");return;}
-  Alert.alert("Continue to GTH PRO","This opens the existing verified website service. Bookings, payments and provider details are confirmed there.",[
-   {text:"Stay in app",style:"cancel"},
-   {text:"Continue",onPress:()=>{void Linking.openURL(target).catch(()=>Alert.alert("Unable to open link","Check your connection and try again."));}},
-  ]);
+  setSettingsOpen(false);
+  setConfirmation({title:"Continue to GTH PRO",message:"This opens the GTH PRO website service. Confirm current booking, payment and provider details there.",confirmLabel:"Continue",
+   action:()=>Linking.openURL(target)});
  }
  async function shareRecord(item:DiscoveryCard){
   if(!item.webPath)return;
@@ -241,38 +241,31 @@ function NativeApp(){
   const detected=detectPillar(cleaned);
   const category=preferred!=="all"?preferred:detected;
   if(cleaned.length>=2)recent.remember(cleaned);
+  if(category===kind&&cleaned===term)discovery.retry();
   setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
  }
  function openPillar(pillar:Pillar){
   setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
  }
- useEffect(()=>{
-  if(tab!=="discover"||((kind==="all"||kind==="travel")&&!term.trim())){
-   setResults([]);setTotal(0);setSlices([]);setWarnings([]);setPending(false);setError("");
-   return;
-  }
-  const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),11_000);
-  let mounted=true;
-  setPending(true);setError("");setResults([]);setSlices([]);setWarnings([]);
-  searchNativeSources(kind,term,ctrl.signal,tenderRegion).then(data=>{
-   if(!mounted)return;
-   setResults(data.items);setTotal(data.total);setSlices(data.slices);setWarnings(data.warnings);
-   if(data.slices.every(s=>s.error))
-    setError("The published sources are temporarily unavailable. Please retry.");
-  }).catch(()=>{
-   if(mounted)setError("Unable to load these records. Check your connection and retry.");
-  }).finally(()=>{clearTimeout(timer);if(mounted)setPending(false);});
-  return ()=>{mounted=false;clearTimeout(timer);ctrl.abort();};
- },[tab,kind,term,refresh,tenderRegion]);
+ function clearDeviceData(type:"saved"|"history"){
+  setSettingsOpen(false);
+  setConfirmation({title:type==="saved"?"Clear saved records?":"Clear search history?",
+   message:"This removes the selected data from this device only. This action cannot be undone.",confirmLabel:"Clear from this device",
+   action:()=>{if(type==="saved"){bookmarks.clear();setDetail(null);}else recent.clear();}});
+ }
  const activeItem=detail;
  return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
   <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
-  <Header theme={theme} openSaved={()=>{setTab("saved");setDetail(null);}}/>
-  {(bookmarks.storageError||recent.storageError)&&<View accessibilityRole="alert"
+  <Header theme={theme} openSettings={()=>setSettingsOpen(true)}/>
+  <SettingsDialog visible={settingsOpen} theme={theme} mode={appearance.mode} ready={appearance.ready}
+   dataReady={bookmarks.ready&&recent.ready}
+   onMode={appearance.select} onClose={()=>setSettingsOpen(false)} onClearSaved={()=>clearDeviceData("saved")}
+   onClearHistory={()=>clearDeviceData("history")} onWebsite={openSite}/>
+  <ConfirmationDialog request={confirmation} theme={theme} onClose={()=>setConfirmation(null)}/>
+  {(bookmarks.storageError||recent.storageError||appearance.storageError)&&<View accessibilityRole="alert"
     style={[styles.info,{margin:12,backgroundColor:theme.surface,borderColor:theme.border}]}>
    <Text style={{flex:1,fontSize:12,lineHeight:18,color:theme.muted}}>
-    Device storage is unavailable. Saved records or search history may not persist after closing the app.
+    Device storage is unavailable. Changes may not persist. Restart to retry reading existing device data.
    </Text>
   </View>}
   <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:18,paddingBottom:28}}
@@ -428,9 +421,9 @@ function NativeApp(){
        <Action label="Search train journeys" theme={theme} secondary onPress={()=>openSite("/train")}/>
       </View>
      </View>:<>
-      <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+      <View style={{flexDirection:"row",flexWrap:"wrap",gap:6,justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
        <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="travel"?"Travel experiences & stays":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
-       <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":total+" source matches"}</Text>
+       <Text style={{color:theme.muted,fontSize:11}}>{pending?"Searching":results.length+" shown · "+total+" matches"}</Text>
       </View>
       {(kind==="all"||kind==="travel")&&slices.length>0&&<ScrollView horizontal showsHorizontalScrollIndicator={false}
        contentContainerStyle={{gap:8,marginBottom:12}}>
@@ -455,17 +448,22 @@ function NativeApp(){
       </View>}
       {!!error&&<View style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border}]}>
        <Text style={{flex:1,color:theme.muted,fontSize:12}}>{error}</Text>
-       <Pressable accessibilityRole="button" onPress={()=>setRefresh(v=>v+1)}><Text style={{color:theme.accent,fontWeight:"800"}}>Retry</Text></Pressable>
+       <Pressable accessibilityRole="button" onPress={discovery.retry} style={{minHeight:44,minWidth:44,justifyContent:"center"}}><Text style={{color:theme.accent,fontWeight:"800"}}>Retry</Text></Pressable>
       </View>}
       {!pending&&!error&&results.length===0&&<View style={[styles.empty,{backgroundColor:theme.surface,borderColor:theme.border}]}>
        <Search color={theme.accent} size={28}/>
        <Text style={{color:theme.text,fontSize:16,fontWeight:"800"}}>No published results found</Text>
        <Text style={{color:theme.muted,textAlign:"center",fontSize:12,lineHeight:18}}>Try another city or term. GTH PRO never fabricates availability or records.</Text>
       </View>}
+      {warnings.length>0&&!pending&&!error&&<Action label="Retry unavailable sources" theme={theme} secondary onPress={discovery.retry}/>}
       {results.map((item,index)=><RecordCard key={item.id+"-"+index} theme={theme} item={item}
        bookmarked={!!item.webPath&&savedPaths.has(item.webPath)}
        onToggle={()=>item.webPath&&(savedPaths.has(item.webPath)?bookmarks.remove(item.webPath):bookmarks.save(item))}
        onOpen={()=>setDetail(item)}/>)}
+      {discovery.hasMore&&!pending&&<View style={{marginTop:10,gap:8}}>
+       {discovery.morePending?<ActivityIndicator color={theme.accent} accessibilityLabel="Loading more results"/>:
+        <Action label="Load more results" theme={theme} secondary onPress={()=>void discovery.loadMore()}/>}
+      </View>}
       <Text style={{marginTop:12,color:theme.muted,fontSize:11,lineHeight:17}}>
        Results come from existing public GTH PRO APIs. Open original details to confirm sources, prices, deadlines or provider availability.
       </Text>
@@ -501,7 +499,7 @@ function NativeApp(){
      <View style={{flex:1}}><Text style={{fontSize:14,fontWeight:"800",color:theme.text}}>{item.label}</Text>
       <Text style={{fontSize:11,lineHeight:17,color:theme.muted}}>{item.description}</Text>
      </View>
-     <ExternalLink size={18} color={theme.muted}/>
+     {item.mode==="web"?<ExternalLink size={18} color={theme.muted}/>:<ArrowRight size={18} color={theme.muted}/>}
     </Pressable>)}
     <View style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border,marginTop:15}]}>
      <ShieldCheck size={22} color={theme.accent}/>

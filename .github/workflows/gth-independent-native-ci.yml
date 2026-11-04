@@ -61,6 +61,7 @@ jobs:
           done
           if [ "$ok" -ne 1 ]; then cat /tmp/gth-native-web.log; exit 1; fi
           node scripts/qa-pixel-preview.mjs
+          node scripts/qa-functional-preview.mjs
       - name: Upload screenshot QA evidence
         if: always()
         uses: actions/upload-artifact@v4

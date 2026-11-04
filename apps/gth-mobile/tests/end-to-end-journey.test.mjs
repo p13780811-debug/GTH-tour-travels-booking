@@ -106,14 +106,14 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  assert.match(app,/Search flights on GTH PRO/);
  assert.match(app,/Tender search region/);
  assert.match(app,/Tender region /);
- assert.match(app,/searchNativeSources\(kind,term,ctrl\.signal,tenderRegion\)/);
+ assert.match(app,/useNativeDiscovery\(kind,term,tenderRegion\)/);
  assert.match(app,/code:"WORLD",label:"Worldwide"/);
  assert.match(app,/kind:"travel",title:"Travel"/);
  assert.match(app,/kind==="travel"&&!term\?<View/);
  assert.match(app,/Travel experiences & stays/);
  assert.match(app,/kind==="all"\|\|kind==="travel"\)\&\&slices\.length/);
  assert.match(app,/\(kind==="all"\|\|kind==="travel"\)/);
- assert.match(app,/searchNativeSources/);
+ assert.match(app,/useNativeDiscovery/);
  assert.match(app,/warnings\.length/);
  assert.match(app,/kind==="all"&&!term/);
  assert.match(app,/theme\.onAccent/);

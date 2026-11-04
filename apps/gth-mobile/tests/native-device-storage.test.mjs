@@ -64,3 +64,26 @@ for(const name of ["bookmarks","recent-searches"]){
   assert.equal(stored.length,1);await app.close();
  });
 }
+for(const name of ['bookmarks','recent-searches']){
+ test(name+' never overwrites unread existing device data after initialization fails',async()=>{
+  let writes=0;
+  const app=await mount(name,{getItem:async()=>{throw Error('temporarily unreadable');},setItem:async()=>{writes++;},removeItem:async()=>{writes++;}});
+  await act(async()=>name==='bookmarks'?app.state.save(record):app.state.remember('Mumbai'));
+  assert.equal(app.state.items.length,1);assert.equal(app.state.storageError,true);assert.equal(writes,0);
+  await app.close();
+ });
+}
+test('appearance restores the selected theme, honors system mode and persists changes',async()=>{
+ let persisted='dark',state;
+ const hooks=load('appearance',{'react':React,'./device-writes':writes,
+  '@react-native-async-storage/async-storage':{default:{getItem:async()=>persisted,setItem:async(key,value)=>{persisted=value;}}}});
+ function Component(){state=hooks.useAppearance(false);return null;}
+ let renderer;await act(async()=>{renderer=create(React.createElement(Component));});
+ assert.equal(state.dark,true);assert.equal(state.mode,'dark');
+ await act(async()=>state.select('system'));
+ assert.equal(state.dark,false);assert.equal(persisted,'system');
+ await act(async()=>state.select('light'));
+ assert.equal(state.dark,false);assert.equal(persisted,'light');
+ assert.equal(hooks.parseAppearance('unknown'),'system');
+ await act(async()=>renderer.unmount());
+});

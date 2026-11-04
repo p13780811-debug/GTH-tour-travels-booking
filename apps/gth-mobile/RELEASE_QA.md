@@ -29,6 +29,9 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - With device storage blocked/full, saved records and recent searches stay usable for the session, a persistence notice appears, and a later successful write recovers.
 - Check that results reflect real source records; never claim instant booking, offers, eligibility or verified pricing unless the original service confirms it.
 - Network failure/reconnection on mobile data, background/foreground, and accessibility labels/touch targets.
+- Load successive source pages; retry a failed page; return from Saved/Services without losing loaded results; confirm old searches never replace a newer query.
+- Open app settings, choose day/night/device appearance and restart; cancel and confirm clearing saved records/history separately.
+- Open a website handoff, cancel it, then confirm once; check browser errors have a usable retry and rapid taps do not open duplicate windows.
 
 ## Play Store / production signing gate
 This repo intentionally contains **no** production keystore, passwords, service credentials or upload tokens.

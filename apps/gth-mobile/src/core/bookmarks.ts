@@ -41,6 +41,7 @@ export function useNativeBookmarks(){
  const [ready,setReady]=useState(false);
  const [storageError,setStorageError]=useState(false);
  const current=useRef<DiscoveryCard[]>([]);
+ const readBlocked=useRef(false);
  const writeQueue=useRef(createDeviceWriteQueue());
  useEffect(()=>{
   let mounted=true;
@@ -49,7 +50,7 @@ export function useNativeBookmarks(){
    const restored=parseBookmarks(raw);
    current.current=restored;
    setItems(restored);
-  }).catch(()=>{if(mounted)setStorageError(true);}).finally(()=>{if(mounted)setReady(true);});
+  }).catch(()=>{readBlocked.current=true;if(mounted)setStorageError(true);}).finally(()=>{if(mounted)setReady(true);});
   return ()=>{mounted=false;};
  },[]);
  const apply=useCallback((fn:(value:DiscoveryCard[])=>DiscoveryCard[])=>{
@@ -57,6 +58,8 @@ export function useNativeBookmarks(){
   const next=fn(current.current);
   current.current=next;
   setItems(next);
+  // Never overwrite unseen saved records after a failed initial read.
+  if(readBlocked.current)return;
   // Serialize writes: tapping Save/Remove quickly cannot resurrect old data.
   void writeQueue.current(()=>AsyncStorage.setItem(BOOKMARKS_KEY,JSON.stringify(next)),
    saved=>setStorageError(!saved));
@@ -64,5 +67,6 @@ export function useNativeBookmarks(){
  return {items,ready,storageError,
   save:(item:DiscoveryCard)=>apply(existing=>addBookmark(existing,item)),
   remove:(path:string)=>apply(existing=>removeBookmark(existing,path)),
+  clear:()=>apply(()=>[]),
  };
 }

@@ -34,6 +34,7 @@ export function useRecentSearches(){
  const [ready,setReady]=useState(false);
  const [storageError,setStorageError]=useState(false);
  const current=useRef<string[]>([]);
+ const readBlocked=useRef(false);
  const queue=useRef(createDeviceWriteQueue());
  useEffect(()=>{
   let active=true;
@@ -42,13 +43,15 @@ export function useRecentSearches(){
    const restored=parseRecentSearches(raw);
    current.current=restored;
    setItems(restored);
-  }).catch(()=>{if(active)setStorageError(true);}).finally(()=>{if(active)setReady(true);});
+  }).catch(()=>{readBlocked.current=true;if(active)setStorageError(true);}).finally(()=>{if(active)setReady(true);});
   return ()=>{active=false;};
  },[]);
  const write=useCallback((next:string[])=>{
   if(!ready)return;
   current.current=next;
   setItems(next);
+  // Do not replace unread device history; a restart can recover the read.
+  if(readBlocked.current)return;
   void queue.current(async()=>{
    if(next.length)await AsyncStorage.setItem(RECENT_SEARCHES_KEY,JSON.stringify(next));
    else await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);

@@ -50,3 +50,4 @@ if ! adb shell pidof com.gthpro.mobile >/dev/null 2>&1; then
 fi
 
 echo "PASS: standalone QA APK installed and rendered the native home screen on Android emulator"
+python3 apps/gth-mobile/scripts/qa-native-navigation.py

@@ -88,7 +88,7 @@ test("native app remains separate from website and handles native navigation",()
  assert.match(app,/tab==="discover"/);
  assert.match(app,/tab==="saved"/);
  assert.match(app,/type Tab="home"\|"discover"\|"saved"\|"services"/);
- assert.match(app,/searchNativeSources/);
+ assert.match(app,/useNativeDiscovery/);
  assert.match(app,/Linking\.openURL\(target\)/);
  assert.match(bookmarks,/AsyncStorage/);
  assert.match(bookmarks,/BOOKMARK_LIMIT=30/);

@@ -5,7 +5,7 @@ export type DiscoveryCard={
  id:string;kind:DiscoveryKind;title:string;subtitle:string;source:string;
  image?:string;webPath:string|null;tag?:string;
 };
-export type DiscoveryResponse={items:DiscoveryCard[];total:number};
+export type DiscoveryResponse={items:DiscoveryCard[];total:number;hasNext?:boolean;page?:number};
 const object=(v:unknown):Record<string,unknown>=>v&&typeof v==="object"&&!Array.isArray(v)?v as Record<string,unknown>:{};
 const text=(v:unknown,max=160)=>typeof v==="string"?v.trim().slice(0,max):"";
 const value=(v:unknown,max=160)=>typeof v==="string"?text(v,max):typeof v==="number"&&Number.isSafeInteger(v)?String(v):"";
@@ -26,9 +26,10 @@ const limit=(raw:unknown)=>typeof raw==="number"&&Number.isInteger(raw)&&raw>=0?
 /** No fake data: all cards originate from the existing public web APIs. */
 export function mapSourceRows(kind:DiscoveryKind,payload:unknown):DiscoveryResponse{
  const parent=object(payload);
- const rows=Array.isArray(payload)?payload:Array.isArray(parent.items)?parent.items:[];
+ if(!Array.isArray(payload)&&!Array.isArray(parent.items))throw Error("Unexpected source response.");
+ const rows=Array.isArray(payload)?payload:parent.items as unknown[];
  const seen=new Set<string>();
- const items=rows.slice(0,30).flatMap((row):DiscoveryCard[]=>{
+ const items=rows.slice(0,100).flatMap((row):DiscoveryCard[]=>{
   const data=object(row);
   const title=text(kind==="hotel"?data.name:data.title,120);
   if(!title)return [];
@@ -65,7 +66,8 @@ const cityAndName=(query:string):{city:string;name:string}|null=>{
  return {city,name};
 };
 /** Existing validated endpoints; never copy Supabase connection or secrets to native. */
-export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN"):string{
+export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN",page=1):string{
+ if(!Number.isInteger(page)||page<1||page>1000)throw Error("Invalid result page.");
  const query=normalizeQuery(raw);
  const term=searchTerm(query,kind)||query;
  const params=new URLSearchParams();
@@ -91,16 +93,24 @@ export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN"):str
   if(tenderRegion==="WORLD")params.set("scope","world");
   else {params.set("scope","local");params.set("country",region);}
  }else if(term)params.set("city",term);
- params.set("page","1");
+ params.set("page",String(page));
  const routes:Record<DiscoveryKind,string>={hotel:"/api/hotels",property:"/api/real-estate/search",
   tender:"/api/tender",tour:"/api/tours"};
  return SITE_ORIGIN+routes[kind]+"?"+params.toString();
 }
-export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal,tenderRegion="IN"):Promise<DiscoveryResponse>{
- const result=await fetch(endpointFor(kind,query,tenderRegion),{method:"GET",signal,headers:{"Accept":"application/json"}});
+export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal,tenderRegion="IN",page=1):Promise<DiscoveryResponse>{
+ const result=await fetch(endpointFor(kind,query,tenderRegion,page),{method:"GET",signal,headers:{"Accept":"application/json"}});
  if(!result.ok)throw Error("Source temporarily unavailable.");
  if(!(result.headers.get("content-type")||"").toLowerCase().includes("json"))
   throw Error("Unexpected source response.");
  const data:unknown=await result.json();
- return mapSourceRows(kind,data);
+ const mapped=mapSourceRows(kind,data);
+ const parent=object(data);
+ const headerTotal=result.headers.get(kind==="hotel"?"X-GTH-Total":"X-Total-Count");
+ const headerSize=result.headers.get(kind==="hotel"?"X-GTH-Page-Size":"X-Page-Size");
+ const total=headerTotal!==null&&/^\d{1,9}$/.test(headerTotal)?Number(headerTotal):limit(parent.total)||mapped.total;
+ const size=headerSize!==null&&/^\d{1,3}$/.test(headerSize)?Number(headerSize):limit(parent.pageSize);
+ const hasNext=kind==="hotel"?result.headers.get("X-GTH-Has-More")==="true":
+  typeof parent.hasNext==="boolean"?parent.hasNext:size>0&&page*size<total;
+ return {...mapped,total,page,hasNext:page<1000&&hasNext};
 }

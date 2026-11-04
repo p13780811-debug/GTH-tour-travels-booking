@@ -1,0 +1,51 @@
+import {useEffect,useRef,useState} from "react";
+import {combineSlices,nextNativePage,searchNativeSources,type SearchChoice,type SearchOutcome} from "./unified-search";
+
+/** Native discovery owns request cancellation, page cursors and stale-result
+ * protection. Switching tabs does not discard a completed search. */
+export function useNativeDiscovery(choice:SearchChoice,term:string,tenderRegion:string){
+ const [data,setData]=useState<SearchOutcome>(()=>combineSlices([]));
+ const [pending,setPending]=useState(false);
+ const [morePending,setMorePending]=useState(false);
+ const [error,setError]=useState("");
+ const [revision,setRevision]=useState(0);
+ const generation=useRef(0);
+ const current=useRef(data);
+ const moreLock=useRef(false);
+ const moreController=useRef<AbortController|null>(null);
+ useEffect(()=>{
+  const version=++generation.current;
+  moreController.current?.abort();moreLock.current=false;setMorePending(false);
+  const empty=combineSlices([]);current.current=empty;setData(empty);setError("");
+  if((choice==="all"||choice==="travel")&&!term.trim()){setPending(false);return;}
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),11_000);
+  setPending(true);
+  searchNativeSources(choice,term,controller.signal,tenderRegion).then(result=>{
+   if(generation.current!==version)return;
+   current.current=result;setData(result);
+   if(result.slices.length>0&&result.slices.every(slice=>slice.error))
+    setError("The published sources are temporarily unavailable. Please retry.");
+  }).catch(()=>{
+   if(generation.current===version)setError("Unable to load these records. Check your connection and retry.");
+  }).finally(()=>{clearTimeout(timer);if(generation.current===version)setPending(false);});
+  return ()=>{generation.current++;clearTimeout(timer);controller.abort();moreController.current?.abort();};
+ },[choice,term,tenderRegion,revision]);
+ async function loadMore(){
+  if(pending||moreLock.current||!current.current.slices.some(slice=>slice.hasNext))return;
+  moreLock.current=true;setMorePending(true);
+  const version=generation.current;
+  const controller=new AbortController();moreController.current=controller;
+  const timer=setTimeout(()=>controller.abort(),11_000);
+  try{
+   const result=await nextNativePage(current.current.slices,term,controller.signal,tenderRegion);
+   if(generation.current!==version)return;
+   current.current=result;setData(result);
+  }finally{
+   clearTimeout(timer);
+   if(generation.current===version){moreLock.current=false;setMorePending(false);}
+  }
+ }
+ return {...data,pending,morePending,error,hasMore:data.slices.some(slice=>slice.hasNext),
+  loadMore,retry:()=>setRevision(value=>value+1)};
+}
