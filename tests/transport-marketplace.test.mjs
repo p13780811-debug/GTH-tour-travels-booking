@@ -39,7 +39,7 @@ test("ground transport connects separate car rental and airport transfer pages",
 test("global rail search uses GTH branding and does not imply railway API access", () => {
   const train = read("src/app/train/page.tsx");
   assert.match(train, /Global Train & Rail Journey Planning/);
-  assert.match(train, /Domestic railway status and PNR services are not integrated/);
+  assert.match(train, /official railway PNR services are not integrated/);
   assert.match(train, /GTHTransportSearchWidget/);
   assert.doesNotMatch(train, /indianrailapi|Math\.random|YOUR_API_KEY|IRCTC|12Go|Busbud/);
 });
