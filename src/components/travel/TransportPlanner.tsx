@@ -5,8 +5,8 @@ import { ArrowRightLeft, ArrowUpRight } from "lucide-react";
 
 type Mode = "bus" | "train" | "transfer";
 const providers: Record<Mode, { label: string; url: string }> = {
-  bus: { label: "redBus", url: "https://www.redbus.in/" },
-  train: { label: "IRCTC", url: "https://www.irctc.co.in/nget/train-search" },
+  bus: { label: "12Go White Label", url: "/go/12go" },
+  train: { label: "12Go White Label", url: "/go/12go" },
   transfer: { label: "Welcome Pickups", url: "https://www.welcomepickups.com/" },
 };
 const labels: Record<Mode, { origin: string; destination: string; date: string }> = {
@@ -56,6 +56,12 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
       setError("Select a valid local pickup time.");
     } else {
       setError("");
+      if (mode === "bus" || mode === "train") {
+        // A real user gesture opens the existing 12Go gateway immediately.
+        // Do not fabricate supplier route/departure IDs or silently forward PII.
+        window.location.assign(provider.url);
+        return;
+      }
       setReady(true);
       return;
     }
@@ -66,7 +72,9 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
     <div id="journey-planner" className="gth-glass mb-12 scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 md:p-7">
       <h2 className="text-xl font-bold">Plan your route</h2>
       <p className="mt-2 text-xs leading-5 sm:text-sm sm:leading-6 text-[var(--text-soft)]">
-        Prepare your journey here, then check current schedules, prices, availability and payment terms directly with the provider. This is not a live availability search or a reservation.
+        {mode === "transfer"
+          ? "Prepare your journey here, then check current schedules, prices, availability and payment terms directly with the provider. This is not a live availability search or a reservation."
+          : "Enter a route and date, then open 12Go in one click to search supported journeys. Route details are not transferred or prefilled: confirm them again on the partner booking page, where actual availability and prices are shown."}
       </p>
       <form onSubmit={submit} className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4">
         <label className="block text-sm font-semibold">
@@ -108,7 +116,7 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
             <ArrowRightLeft size={17} /> Swap route
           </button>
           <button type="submit" className="gth-btn-gold min-h-11 rounded-xl px-2 text-xs sm:px-6 sm:text-sm font-bold">
-            Review journey
+            {mode === "bus" ? "Search bus journeys" : mode === "train" ? "Search train journeys" : "Review journey"}
           </button>
         </div>
       </form>
