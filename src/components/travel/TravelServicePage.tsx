@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, BookOpen, Bus, Car, Compass, Hotel, Plane, ShieldCheck, Train } from "lucide-react";
 
-type Partner = { name: string; url: string; description: string };
+type Partner = { name: string; url: string; description: string; actionLabel?: string };
 type Props = {
   eyebrow: string;
   title: string;
@@ -83,7 +83,7 @@ export default function TravelServicePage({
                   <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{partner.description}</p>
                   <a href={partner.url} target="_blank" rel="noopener noreferrer sponsored"
                     className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
-                    Open official provider <ArrowUpRight size={16} />
+                    {partner.actionLabel ?? "Open official provider"} <ArrowUpRight size={16} />
                   </a>
                 </article>
               ))}
