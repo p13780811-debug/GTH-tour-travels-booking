@@ -18,7 +18,10 @@ permissions:
 jobs:
   listing-intake-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,5 +38,6 @@ jobs:
         run: npx tsc --noEmit --pretty false
       - name: Lint touched UI and extraction code
         run: npx eslint src/lib/real-estate/listing-intake.ts src/components/real-estate/ListingIntakeAssistant.tsx src/app/real-estate/post-property/page.tsx
-      - name: Compile Next.js production build (does not deploy)
+      - name: Compile Next.js only with configured CI public Supabase values
+        if: ${{ env.NEXT_PUBLIC_SUPABASE_URL != '' && env.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
         run: npm run build
