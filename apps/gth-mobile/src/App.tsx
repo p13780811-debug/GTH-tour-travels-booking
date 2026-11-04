@@ -46,6 +46,7 @@ const serviceLinks:{label:string;path:string;kind:Pillar;mode:"native"|"web";des
  {label:"Public tenders",path:"/app/tenders",kind:"tender",mode:"native",description:"Explore official notices and deadlines"},
  {label:"Bus journeys",path:"/bus",kind:"travel",mode:"web",description:"Plan worldwide bus routes and check available journeys"},
  {label:"Train journeys",path:"/train",kind:"travel",mode:"web",description:"Explore global rail routes and booking options"},
+ {label:"Ferry journeys",path:"/ferry",kind:"travel",mode:"web",description:"Ferries, speedboats and island connections"},
  {label:"Airport transfers",path:"/transfers",kind:"travel",mode:"web",description:"Existing airport pickup and transfer partners"},
  {label:"Car rentals",path:"/cars",kind:"travel",mode:"web",description:"Original car rental search and providers"},
  {label:"Tours & activities",path:"/tours",kind:"tour",mode:"native",description:"Discover listed tours and activities"},
@@ -423,6 +424,7 @@ function NativeApp(){
        <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/app/flights")}/>
        <Action label="Search bus journeys" theme={theme} secondary onPress={()=>openSite("/bus")}/>
        <Action label="Search train journeys" theme={theme} secondary onPress={()=>openSite("/train")}/>
+       <Action label="Search ferry journeys" theme={theme} secondary onPress={()=>openSite("/ferry")}/>
       </View>
      </View>:<>
       <View style={{flexDirection:"row",flexWrap:"wrap",gap:6,justifyContent:"space-between",alignItems:"center",marginBottom:10}}>

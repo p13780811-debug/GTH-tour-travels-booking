@@ -46,6 +46,7 @@ try {
    await page.getByText("Tender services").waitFor();
    await page.getByText("Bus journeys",{exact:true}).waitFor();
    await page.getByText("Train journeys",{exact:true}).waitFor();
+   await page.getByText("Ferry journeys",{exact:true}).waitFor();
    await page.screenshot({path:`${capture}/native-services-390-${colorScheme}.png`,fullPage:true});
   }
   await context.close();

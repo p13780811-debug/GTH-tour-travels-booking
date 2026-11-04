@@ -4,7 +4,7 @@ import Link from "next/link";
 import {useState} from "react";
 import scroll from "./TravelScroll.module.css";
 import {usePathname} from "next/navigation";
-import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark, ShieldCheck} from "lucide-react";
+import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Ship, Newspaper, Landmark, ShieldCheck} from "lucide-react";
 
 /**
  * Shared secondary navigation across travel categories and their detail pages.
@@ -23,6 +23,7 @@ export const TRAVEL_SECTIONS = [
   {href:"/cars",label:"Car rentals",Icon:CarFront},
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},
+  {href:"/ferry",label:"Ferries",Icon:Ship},
   {href:"/insurance",label:"Insurance",Icon:ShieldCheck},
 ] as const;
 

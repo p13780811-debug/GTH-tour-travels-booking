@@ -24,6 +24,7 @@ def tap(label):
 for label,heading in [('Discover tab','Discover what matters'),('Saved tab','My Research Desk'),('Services tab','Explore every service')]:
  tap(label);tree=wait_text(heading);(root/(label.split()[0].lower()+'.xml')).write_bytes(ET.tostring(tree))
 tap('Bus journeys');wait_text('Continue to GTH PRO');tap('Close');wait_text('Explore every service')
+tap('Ferry journeys');wait_text('Continue to GTH PRO');tap('Close');wait_text('Explore every service')
 tap('Open app settings');wait_text('App settings');tap('Night theme')
 adb('shell','input','keyevent','4');wait_text('Explore every service')
 tap('Home tab');wait_text('Your world')
@@ -34,4 +35,4 @@ restored=snapshot()
 assert any(n.get('content-desc')=='Night theme' and n.get('checked')=='true' for n in restored.iter('node')), 'Native night-theme selection did not persist after relaunch'
 (root/'settings-after-relaunch.xml').write_bytes(ET.tostring(restored))
 with (root/'native-settings.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
-print('PASS: native tabs, cancelled bus handoff, settings, Android Back and force-stop/relaunch')
+print('PASS: native tabs, cancelled bus/ferry handoffs, settings, Android Back and force-stop/relaunch')

@@ -18,7 +18,7 @@ Supabase policies, importers, or global CSS.
   `src/app/globals.css`; the website theme remains the source of truth.
 - 11-second network cancellation and retry UI; no fabricated records or prices.
 - Explicit Tender country selector (India, US, UK, UAE, Singapore, Australia) and opt-in Worldwide search; no GPS inference.
-- Bus and global rail entries reuse the existing GTH PRO `/bus` and `/train` planners after the same explicit website-handoff confirmation as other booking services.
+- Bus, global rail and ferry entries reuse the existing GTH PRO `/bus`, `/train` and `/ferry` planners after the same explicit website-handoff confirmation as other booking services.
 - Failed local storage reads/writes produce an in-app notice; later saves and history clears recover in order without an unhandled promise rejection.
 - Complete source pagination uses the existing API cursors/count headers; failed next pages retain records and retry the same cursor. Search survives tab navigation and stale cancelled responses cannot overwrite a newer search.
 - Native settings persist device/day/night appearance, expose confirmed local-only data clearing and connect privacy, terms and support. Unread local data is never overwritten after a failed storage read.

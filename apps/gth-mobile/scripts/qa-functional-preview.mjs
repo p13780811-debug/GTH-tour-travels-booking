@@ -69,6 +69,10 @@ try{
  unavailable=false;
  await page.getByRole('button',{name:'Retry',exact:true}).click();
  await page.getByRole('button',{name:'Details for QA Fixture Alpha',exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Services tab',exact:true}).click();
+ await page.getByRole('button',{name:/^Ferry journeys/}).click();
+ await page.getByText('Continue to GTH PRO',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Close',exact:true}).click();
  assert.deepEqual(errors,[]);
  await context.close();
  console.log('PASS: fixture UI search → pagination → save/revisit → affirmative/cancelled handoff → theme restore → confirmed local-data clearing → outage/retry');
