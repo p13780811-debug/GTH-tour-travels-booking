@@ -41,7 +41,9 @@ export default function TravelServicePage({
   ];
 
   return (
-    <main className="min-h-screen min-w-0 overflow-x-hidden bg-[var(--bg)] text-[var(--text)]">
+    <main className={searchFirstLayout
+      ? "min-h-screen min-w-0 overflow-x-hidden bg-[var(--bg)] text-[var(--text)]"
+      : "min-h-screen bg-[var(--bg)] text-[var(--text)]"}>
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={image} alt="" fill priority sizes="100vw" className="absolute inset-0 -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/75" />
@@ -59,7 +61,7 @@ export default function TravelServicePage({
       <div className={searchFirstLayout
         ? "mx-auto w-full max-w-7xl min-w-0 px-4 pb-16 pt-2 sm:px-6 sm:pt-9"
         : "mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-3 sm:py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]"}>
-        <section className="w-full min-w-0">
+        <section className={searchFirstLayout ? "w-full min-w-0" : undefined}>
           {children}
           {noLiveDataNotice && (
             <p role="status" className="gth-glass mt-6 max-w-3xl rounded-2xl border border-[var(--border)] p-5 text-sm leading-6">
