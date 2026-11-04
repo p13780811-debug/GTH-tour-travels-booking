@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
-import TwelveGoSearchWidget from "@/components/travel/TwelveGoSearchWidget";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/bus" },
@@ -22,7 +21,7 @@ export default async function BusPage({ searchParams }: Props) {
     <TravelServicePage
       eyebrow="GTH PRO · Ground transport"
       title="Plan your bus journey with confidence"
-      description="Explore bus travel without invented fares, seat counts or ticket confirmations. Start with your route and continue to an established booking service for actual inventory."
+      description="Plan bus journeys with GTH PRO’s own search form and continue directly to the 12Go White Label booking site for supported routes and current provider availability."
       image="/images/dighabus.jpg"
       noLiveDataNotice="GTH PRO does not have a live bus inventory connection. Search results, fares, seating, cancellation conditions and ticket confirmation are provided by the booking partner."
       whatToCheck={[
@@ -39,7 +38,6 @@ export default async function BusPage({ searchParams }: Props) {
       ]}
     >
       <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="bus" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
-      <TwelveGoSearchWidget mode="bus" />
       <TransportRouteDiscovery mode="bus" />
     </TravelServicePage>
   );
