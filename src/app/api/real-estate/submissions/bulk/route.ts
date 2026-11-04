@@ -27,7 +27,7 @@ const positiveMoney = (value:unknown):number|null => {
   if(value===undefined||value===null||value==="")return null;
   if(!/^\d{1,12}(?:\.\d{1,2})?$/.test(String(value)))throw new RequestError("Invalid asking price",400);
   const n=Number(value);
-  if(!Number.isFinite(n)||n<=0)return null;
+  if(!Number.isFinite(n)||n<=0)throw new RequestError("Invalid asking price",400);
   return n;
 };
 const quantity = (value:unknown,min:number,max:number):number|null => {
