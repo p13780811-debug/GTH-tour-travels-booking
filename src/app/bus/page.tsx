@@ -19,6 +19,7 @@ export default async function BusPage({ searchParams }: Props) {
   const query = await searchParams;
   return (
     <TravelServicePage
+      searchFirstLayout
       eyebrow="GTH PRO · Ground transport"
       title="Explore worldwide bus journeys"
       description="Plan journeys with GTH PRO’s own search form and continue to the connected booking experience for supported routes, schedules and tickets."
