@@ -120,7 +120,7 @@ async def run_outreach(group_ids: Sequence[int]) -> int:
             if dialog.is_group:
                 dialogs[utils.get_peer_id(dialog.entity)] = dialog.entity
 
-        posted_in_run = 0
+        attempted_sends = 0
         for index, group_id in enumerate(group_ids, start=1):
             entity = dialogs.get(group_id)
             if entity is None:
@@ -149,13 +149,13 @@ async def run_outreach(group_ids: Sequence[int]) -> int:
                 skipped += 1
                 continue
 
-            if posted_in_run:
+            if attempted_sends:
                 LOG.info("Waiting %d seconds between group messages", MIN_INTERVAL_SECONDS)
                 await asyncio.sleep(MIN_INTERVAL_SECONDS)
 
+            attempted_sends += 1
             try:
                 await client.send_message(entity, OUTREACH_MESSAGE, link_preview=False)
-                posted_in_run += 1
                 posted += 1
                 LOG.info("Target %d: message accepted by Telegram", index)
             except FloodWaitError:
