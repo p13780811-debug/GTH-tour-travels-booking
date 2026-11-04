@@ -124,8 +124,10 @@ export default function BulkListingUpload({onNeedLogin}:{onNeedLogin:()=>void}) 
         if(extracted.length>BULK_MAX_RECORDS)throw new Error("Maximum 100 projects per batch. Split the files.");
       }
       if(!extracted.length)throw new Error("No usable property records found.");
-      setRows(joinAndRevalidate(extracted));
-      setFiles(Array.from(fileList).map(file=>file.name));
+      if(rows.length+extracted.length>BULK_MAX_RECORDS)throw new Error("This portfolio would exceed 100 projects. Submit the current ready records first.");
+      const fresh=extracted.map(row=>({...row,id:crypto.randomUUID()}));
+      setRows(current=>joinAndRevalidate([...current,...fresh]));
+      setFiles(current=>[...current,...Array.from(fileList).map(file=>file.name)]);
     }catch(err){setError(err instanceof Error?err.message:"Unable to read file. Please use a CSV/XLSX template.");}
     finally{setBusy(false);}
   };
@@ -211,7 +213,7 @@ export default function BulkListingUpload({onNeedLogin}:{onNeedLogin:()=>void}) 
     </label>
     <input id="bulk-property-files" type="file" multiple accept=".xlsx,.csv,.tsv,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
       disabled={busy} className="block w-full mt-2 text-sm" onChange={event=>{void parseFiles(event.target.files);event.target.value="";}}/>
-    {files.length>0&&<p className="text-xs opacity-75 mt-2">Loaded: {files.join(" · ")}</p>}
+    {files.length>0&&<p className="text-xs opacity-75 mt-2">Loaded into this batch: {files.join(" · ")}</p>}
     <p className="text-xs opacity-70 mt-3">Documents are parsed in your browser; only reviewed property fields are submitted. Scanned PDFs cannot be reliably extracted without OCR. Original catalogues are not retained as evidence—keep your source files.</p>
     {busy&&<p role="status" className="mt-4 text-sm">Processing your portfolio or submitting for review…</p>}
     {error&&<p role="alert" className="mt-4 text-sm">{error}</p>}
