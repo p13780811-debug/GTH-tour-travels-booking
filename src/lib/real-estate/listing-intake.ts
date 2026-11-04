@@ -5,7 +5,7 @@ export type IntakeFields = Partial<Record<IntakeKey,string>>;
 export type IntakeDraft = {fields:IntakeFields;recognized:string[];review:string[];missing:string[]};
 
 const CITIES = ["Navi Mumbai","Mumbai","Dombivli","Kalyan","Thane","Panvel","Pune","Kolkata","Delhi","Bengaluru","Hyderabad","Chennai","Noida","Gurugram","Ahmedabad","Jaipur","Surat","Nagpur","Goa","Dubai","Abu Dhabi","Singapore","London"] as const;
-const LOCALITIES = ["Lodha Palava","Palava","Dombivli East","Dombivli West","Kalyan East","Kalyan West","Thane West","Thane East","CBD Belapur","Kopar Khairane","Bandra West","Bandra East","Andheri West","Andheri East","Navi Mumbai","Mira Road","Bhayandar","Airoli","Ghansoli","Vashi","Nerul","Kharghar","Taloja","Ulwe","Seawoods","Kamothe","Panvel","Powai","BKC","Colaba","Borivali","Dadar","Mulund","Chembur","Ghatkopar","Malad","Kurla","Fort","Virar","Vasai"] as const;
+const LOCALITIES = ["Lodha Palava","Palava","Dombivli East","Dombivli West","Kalyan East","Kalyan West","Thane West","Thane East","CBD Belapur","Kopar Khairane","Bandra West","Bandra East","Andheri West","Andheri East","Mira Road","Bhayandar","Airoli","Ghansoli","Vashi","Nerul","Kharghar","Taloja","Ulwe","Seawoods","Kamothe","Powai","BKC","Colaba","Borivali","Dadar","Mulund","Chembur","Ghatkopar","Malad","Kurla","Fort","Virar","Vasai"] as const;
 const INDIA_CITIES:ReadonlySet<string> = new Set(CITIES.slice(0,19));
 function found(source:string,terms:readonly string[]):string|undefined {
   return terms.find(term=>new RegExp("(?:^|[^a-z])"+term.replace(/\s+/g,"\\s+")+"(?=$|[^a-z])","i").test(source));
@@ -22,7 +22,7 @@ function priceFrom(text:string):{value:string;currency:string}|null {
   if(!Number.isFinite(amount)||amount<=0||amount>999999999999||Math.abs(Math.round(amount*100)-amount*100)>0.001)return null;
   const prefix=(tagged?tagged[0]:"").toUpperCase();
   const currency=prefix.includes("AED")?"AED":prefix.includes("USD")?"USD":prefix.includes("GBP")?"GBP":prefix.includes("EUR")?"EUR":prefix.includes("SGD")?"SGD":"INR";
-  if(!tagged&&!/^(crore|cr|lakh|lac)/.test(unit))return null;
+  if(!tagged&&!/^(crore|cr|lakh|lac|l$)/.test(unit))return null;
   return {value:String(amount),currency};
 }
 function count(text:string,pattern:RegExp):string|undefined {
