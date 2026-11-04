@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Permission-based, scheduled Telegram outreach for GTH PRO Real Estate.
+"""GTH PRO Real Estate: one-time, opt-in invitations to selected Telegram groups.
 
-No outgoing message without explicit enable flag, admin-approved group IDs,
-valid account authentication, and cross-run duplicate detection.
+Runs independently on GitHub Actions; does not call or deploy GTH PRO website.
+Every target receives at most one attempted invitation, with conservative checks
+against previously sent invitations across separate runner executions.
 """
 from __future__ import annotations
 
@@ -13,194 +14,219 @@ import os
 import re
 import socket
 import sys
-from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
-SITE_URL = "https://www.gthproglobal.com/real-estate"
-OUTREACH_MESSAGE = (
-    "Namaste dosto! Main GTH PRO Real Estate ka founder hoon. "
-    "Mumbai, Navi Mumbai, Thane ya Dombivli side mein agar aap owner, "
-    "builder ya authorized broker hain aur genuine sale/rent property "
-    "list karna chahte hain, to hamare portal par listing submit karna "
-    "free hai. Photos, property details aur listing rights ke saath "
-    "submission hoti hai; publication se pehle review hota hai.\n\n"
-    f"Link: {SITE_URL}\n\n"
-    "Kisi ko property list karne mein help chahiye to reply kar sakte hain. "
-    "Thanks! - GTH PRO"
+INVITATION_LINK = "https://www.gthproglobal.com/real-estate"
+INVITATION_TEXT = (
+    "Namaste dosto! Main GTH PRO Real Estate portal ka founder hoon. "
+    "Mumbai, Navi Mumbai, Thane aur Dombivli ke property owners, builders "
+    "aur authorized brokers ko ek invitation dena chahta hoon.\n\n"
+    "Aapke paas genuine sale/rent property ya project hai to aap hamare "
+    "portal par free listing ke liye details share kar sakte hain. "
+    "Hum abhi real, original property inventory build kar rahe hain, "
+    "isliye main khud onboarding mein help karunga.\n\n"
+    f"Yahan dekhiye: {INVITATION_LINK}\n\n"
+    "Interested hain to group mein reply kar sakte hain. Dhanyavaad!"
 )
-MIN_INTERVAL_SECONDS = 300
-COOLDOWN_DAYS = 14
-MAX_TARGETS = 3
-TARGET_PATTERN = re.compile(r"-\d{5,20}\Z")
-LOG = logging.getLogger("gth-broker-outreach")
+# Explicitly selected groups; NEVER discover, join, DM or scrape members.
+INITIAL_GROUPS = ("@maratha_realtors", "@MumbaiPropertyDeals", "@indian_realty")
+USERNAME_PATTERN = re.compile(r"@[A-Za-z0-9_]{5,32}\Z")
+MIN_SECONDS_BETWEEN_ATTEMPTS = 300
+MAX_SENDS_PER_RUN = 3
+MARKER_PREFIX = "GTHPRO_ONE_TIME_BROKER_INVITE_V1"
+LOG = logging.getLogger("gth-telegram")
 
 
-def configure_output() -> None:
-    # Avoid cp1252 UnicodeEncodeError on Windows consoles.
+def safe_console() -> None:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             try:
                 stream.reconfigure(encoding="utf-8", errors="backslashreplace")
-            except (ValueError, OSError, LookupError):
+            except (LookupError, OSError, ValueError):
                 pass
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
-def parse_approved_ids(value: str) -> list[int]:
-    if not value.strip():
-        return []
-    items = [entry.strip() for entry in value.split(",")]
-    if any(not TARGET_PATTERN.fullmatch(item) for item in items):
-        raise ValueError("Use comma-separated numeric Telegram group peer IDs")
-    if len(items) != len(set(items)):
-        raise ValueError("Approved target list contains duplicates")
-    if len(items) > MAX_TARGETS:
-        raise ValueError(f"Maximum {MAX_TARGETS} approved groups per run")
-    return [int(item) for item in items]
-
-
-def enabled(value: str) -> bool:
+def is_enabled(value: str) -> bool:
     return value.strip().lower() == "true"
 
 
-def has_recent_post(last_date: datetime | None, now: datetime) -> bool:
-    if last_date is None:
-        return False
-    if last_date.tzinfo is None:
-        raise ValueError("Telegram history timestamp missing timezone")
-    return now - last_date.astimezone(timezone.utc) < timedelta(days=COOLDOWN_DAYS)
+def normalize_username(value: str) -> str:
+    handle = value.strip()
+    if not USERNAME_PATTERN.fullmatch(handle):
+        raise ValueError("Target must be an explicit public group @username")
+    return handle.lower()
 
 
-def load_credentials() -> tuple[int, str, str]:
-    """Never use files, defaults, or hardcoded Telegram credentials."""
+def approved_groups(extra: str = "") -> tuple[str, ...]:
+    # New groups must be intentionally added to BROKER_EXTRA_APPROVED_GROUPS.
+    handles = list(INITIAL_GROUPS)
+    if extra.strip():
+        handles.extend(item.strip() for item in extra.split(","))
+    names = [normalize_username(name) for name in handles]
+    if len(names) != len(set(names)):
+        raise ValueError("Duplicate approved group usernames")
+    if len(names) > 50:
+        raise ValueError("Maximum 50 explicitly approved groups")
+    return tuple(names)
+
+
+def sent_marker(peer_id: int) -> str:
+    return f"{MARKER_PREFIX}:{peer_id}"
+
+
+def message_is_invitation(message: str | None) -> bool:
+    return bool(message and "gthproglobal.com/real-estate" in message.lower())
+
+
+def credentials() -> tuple[int, str, str]:
+    """Credentials MUST come only from GitHub Actions Secrets / environment."""
     api_id = int(os.environ["TELEGRAM_API_ID"])
     api_hash = os.environ["TELEGRAM_API_HASH"].strip()
-    session_string = os.environ["TELEGRAM_SESSION_STRING"].strip()
-    if api_id <= 0 or not api_hash or not session_string:
-        raise ValueError("Telegram authentication is not configured")
-    return api_id, api_hash, session_string
+    session = os.environ["TELEGRAM_SESSION_STRING"].strip()
+    if api_id <= 0 or not api_hash or not session:
+        raise ValueError("Missing or invalid Telegram environment credentials")
+    return api_id, api_hash, session
 
 
-async def connect_with_retries(client: object, attempts: int = 3) -> None:
-    # Only retry connections, never an uncertain message send.
-    for attempt in range(1, attempts + 1):
+async def connect_safely(client: object) -> None:
+    for attempt in range(3):
         try:
             await client.connect()
             return
         except (OSError, ConnectionError, TimeoutError, socket.gaierror) as exc:
-            if attempt == attempts:
+            if attempt == 2:
                 raise RuntimeError("Telegram connection failed") from exc
-            LOG.warning("10054/Connection/NameResolution timeout; retry %s/%s", attempt, attempts)
-            await asyncio.sleep(min(10 * attempt, 30))
+            LOG.warning("10054/NameResolution/timeout while connecting; retrying")
+            await asyncio.sleep(10 * (attempt + 1))
 
 
-async def run_outreach(group_ids: Sequence[int]) -> int:
+async def was_already_invited(client: object, entity: object, peer_id: int, me: object) -> bool:
+    """Fail closed if cross-run checks cannot complete. Never delete sent evidence."""
+    # The account's own prior group messages are the primary durable evidence.
+    async for message in client.iter_messages(
+        entity, from_user=me, search="gthproglobal.com", limit=50
+    ):
+        if message_is_invitation(message.raw_text):
+            return True
+
+    # Private secondary ledger in Telegram Saved Messages (survives GitHub runners).
+    marker = sent_marker(peer_id)
+    async for message in client.iter_messages("me", search=MARKER_PREFIX, limit=100):
+        if marker in (message.raw_text or ""):
+            return True
+    return False
+
+
+async def run(groups: Sequence[str]) -> int:
     from telethon import TelegramClient, utils
     from telethon.errors import FloodWaitError, RPCError
     from telethon.sessions import StringSession
 
-    api_id, api_hash, session_string = load_credentials()
+    api_id, api_hash, session = credentials()
     client = TelegramClient(
-        StringSession(session_string), api_id, api_hash,
+        StringSession(session), api_id, api_hash,
         connection_retries=3, request_retries=2, retry_delay=5,
         flood_sleep_threshold=0, auto_reconnect=True,
     )
-    posted = skipped = 0
+    sent = already_sent = unavailable = 0
+    attempts = 0
     try:
-        await connect_with_retries(client)
+        await connect_safely(client)
         if not await client.is_user_authorized():
-            raise RuntimeError("StringSession is not authorized")
+            raise RuntimeError("TELEGRAM_SESSION_STRING is no longer authorized")
         me = await client.get_me()
         if me is None:
-            raise RuntimeError("Account identity unavailable")
+            raise RuntimeError("Telegram account identity missing")
 
-        # Exact ID allowlist + joined-group-only; exclude private chats and channels.
-        dialogs = {}
+        # Match only exact usernames of joined GROUPS; never broadcast to users.
+        dialogs: dict[str, object] = {}
         async for dialog in client.iter_dialogs():
             if dialog.is_group:
-                dialogs[utils.get_peer_id(dialog.entity)] = dialog.entity
+                username = getattr(dialog.entity, "username", None)
+                if username:
+                    dialogs["@" + username.lower()] = dialog.entity
 
-        attempted_sends = 0
-        for index, group_id in enumerate(group_ids, start=1):
-            entity = dialogs.get(group_id)
+        for name in groups:
+            if sent >= MAX_SENDS_PER_RUN:
+                break
+            entity = dialogs.get(name)
             if entity is None:
-                LOG.warning("Target %d not an accessible joined group; skipping", index)
-                skipped += 1
+                LOG.warning("%s not joined/accessible as public group; skipped", name)
+                unavailable += 1
                 continue
+            peer_id = utils.get_peer_id(entity)
             try:
-                history = client.iter_messages(
-                    entity, limit=1,
-                    search="gthproglobal.com/real-estate", from_user=me,
+                seen = await was_already_invited(client, entity, peer_id, me)
+            except FloodWaitError:
+                LOG.error("FloodWait: stopping immediately")
+                return 1
+            except (OSError, ConnectionError, TimeoutError, RPCError):
+                LOG.error("%s duplicate check unavailable; skipped safely", name)
+                unavailable += 1
+                continue
+
+            if seen:
+                LOG.info("%s already invited before: permanent skip", name)
+                already_sent += 1
+                continue
+
+            # Five minutes between send ATTEMPTS, including unknown outcomes.
+            if attempts:
+                LOG.info("Pausing %ss before next send attempt", MIN_SECONDS_BETWEEN_ATTEMPTS)
+                await asyncio.sleep(MIN_SECONDS_BETWEEN_ATTEMPTS)
+            attempts += 1
+            try:
+                await client.send_message(entity, INVITATION_TEXT, link_preview=False)
+                sent += 1
+                LOG.info("%s: Telegram accepted one-time invitation", name)
+            except FloodWaitError:
+                LOG.error("FloodWait: no retry and no further messages")
+                return 1
+            except (OSError, ConnectionError, TimeoutError, RPCError):
+                # Delivery is uncertain. Do not retry in this execution.
+                LOG.error("%s: send failed/unknown; no retry", name)
+                unavailable += 1
+                continue
+
+            # Ledger failure does not cause retransmission; group history is primary.
+            try:
+                await client.send_message(
+                    "me", sent_marker(peer_id) + " " + name, link_preview=False
                 )
-                try:
-                    previous = await history.__anext__()
-                except StopAsyncIteration:
-                    previous = None
-            except FloodWaitError:
-                LOG.error("FloodWait during duplicate check: stopping")
-                raise
-            except (RPCError, OSError, ConnectionError, TimeoutError):
-                LOG.error("Cannot verify target %d history; skipping safely", index)
-                skipped += 1
-                continue
+            except (OSError, ConnectionError, TimeoutError, RPCError):
+                LOG.warning("%s: ledger unavailable; verify original group history", name)
 
-            if has_recent_post(previous.date if previous else None, datetime.now(timezone.utc)):
-                LOG.info("Target %d contacted in last %d days; skipped", index, COOLDOWN_DAYS)
-                skipped += 1
-                continue
-
-            if attempted_sends:
-                LOG.info("Waiting %d seconds between group messages", MIN_INTERVAL_SECONDS)
-                await asyncio.sleep(MIN_INTERVAL_SECONDS)
-
-            attempted_sends += 1
-            try:
-                await client.send_message(entity, OUTREACH_MESSAGE, link_preview=False)
-                posted += 1
-                LOG.info("Target %d: message accepted by Telegram", index)
-            except FloodWaitError:
-                LOG.error("FloodWait during send; stopping without bypass")
-                raise
-            except (RPCError, OSError, ConnectionError, TimeoutError):
-                # Transport failures might still deliver a message; never retry sends.
-                LOG.error("Target %d: failed or unknown delivery; no automatic retry", index)
-                skipped += 1
-                continue
-
-        LOG.info("Run done: sent=%d skipped=%d approved=%d", posted, skipped, len(group_ids))
-        return 0 if skipped == 0 else 2
+        LOG.info("Results: sent=%d previous=%d unavailable=%d", sent, already_sent, unavailable)
+        return 0 if unavailable == 0 else 2
     finally:
         await client.disconnect()
 
 
 def main() -> int:
-    configure_output()
-    parser = argparse.ArgumentParser(description="GTH PRO approved Telegram outreach")
-    parser.add_argument("--dry-run", action="store_true", help="No Telegram connection or sending")
-    args = parser.parse_args()
-    group_ids = parse_approved_ids(os.environ.get("BROKER_APPROVED_GROUP_IDS", ""))
+    safe_console()
+    parser = argparse.ArgumentParser(description="One-time GTH PRO broker invitations")
+    parser.add_argument("--dry-run", action="store_true", help="No network or Telegram sends")
+    options = parser.parse_args()
 
-    if args.dry_run:
-        LOG.info("DRY RUN: no network; approved targets configured=%d", len(group_ids))
-        LOG.info("Preview:\n%s", OUTREACH_MESSAGE)
-        return 0
-
-    if not enabled(os.environ.get("BROKER_OUTREACH_ENABLED", "")):
-        LOG.info("Disabled: BROKER_OUTREACH_ENABLED is not true")
-        return 0
-    if not group_ids:
-        LOG.warning("Disabled: no admin-approved Telegram group IDs")
-        return 0
     try:
-        return asyncio.run(run_outreach(group_ids))
-    except (KeyError, ValueError, RuntimeError) as exc:
-        LOG.error("Configuration/authentication failed: %s", type(exc).__name__)
+        groups = approved_groups(os.environ.get("BROKER_EXTRA_APPROVED_GROUPS", ""))
+        if options.dry_run:
+            LOG.info("DRY RUN: no network access; approved groups: %s", ", ".join(groups))
+            LOG.info("Invitation preview:\n%s", INVITATION_TEXT)
+            return 0
+        if not is_enabled(os.environ.get("BROKER_OUTREACH_ENABLED", "")):
+            LOG.info("Not activated; one-time invitations disabled by default")
+            return 0
+        return asyncio.run(run(groups))
+    except (KeyError, ValueError, RuntimeError):
+        LOG.error("Stopped: missing/invalid credentials or configuration")
         return 1
     except (OSError, ConnectionError, TimeoutError):
-        LOG.error("Network failure: 10054/timeout/DNS")
+        LOG.error("Stopped: DNS/connection reset 10054/network timeout")
         return 1
     except Exception as exc:
-        LOG.error("Stopped safely: %s", type(exc).__name__)
+        LOG.error("Stopped safely due to %s", type(exc).__name__)
         return 1
 
 
