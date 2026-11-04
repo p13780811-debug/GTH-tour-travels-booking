@@ -45,6 +45,8 @@ jobs:
       - name: Safe preview, no Telegram access
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         run: python scripts/telegram_broker_outreach.py --dry-run
+      - name: Run offline safety tests
+        run: python -m unittest discover -s tests -p 'test_telegram_broker_outreach.py' -v
       - name: Approved group posting only
         if: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
         run: python scripts/telegram_broker_outreach.py
