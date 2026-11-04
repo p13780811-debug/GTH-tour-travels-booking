@@ -57,6 +57,13 @@ test("overlong and empty inputs cannot create a listing draft",()=>{
 test("review-first design and missing required details are signaled",()=>{
   const draft=extractListingIntake("Commercial office in Navi Mumbai for rent");
   assert.ok(draft.review.length>0);
-  assert.ok(draft.missing.includes("Address or locality")===false);
+  assert.ok(draft.missing.includes("Address or locality"));
   assert.ok(draft.missing.includes("Your relationship to this property (select manually)"));
+});
+
+test("common abbreviated lakh price remains INR without inventing other fields",()=>{
+  const draft=extractListingIntake("2 BHK flat in Kalyan for sale 85L");
+  assert.equal(draft.fields.price_amount,"8500000");
+  assert.equal(draft.fields.currency,"INR");
+  assert.equal(draft.fields.location,undefined);
 });
