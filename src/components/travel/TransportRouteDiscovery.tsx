@@ -33,7 +33,7 @@ export default function TransportRouteDiscovery({ mode }: { mode: GroundTranspor
           <h2 className="text-xl font-bold sm:text-2xl">Explore popular journey pairs</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
             Route ideas for planning, not live departures, scheduled services or confirmed fares.
-            Choose a pair to prefill the journey planner; final tickets are offered by the provider.
+            Use the booking form above to search a route once; the connected provider confirms tickets and final fares.
           </p>
         </div>
       </div>
@@ -46,8 +46,8 @@ export default function TransportRouteDiscovery({ mode }: { mode: GroundTranspor
             <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-soft)]">{route.context}</p>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
               <Link className="gth-btn-gold inline-flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 font-semibold"
-                href={`/${mode}?from=${encodeURIComponent(route.from)}&to=${encodeURIComponent(route.to)}#journey-planner`}>
-                Plan route <ArrowRight size={15} />
+                href="#journey-search">
+                Search route <ArrowRight size={15} />
               </Link>
               <Link className="inline-flex min-h-10 items-center gap-1 font-semibold underline underline-offset-4"
                 href={`/blog/${route.guide}`}>Read guide <BookOpen size={15} /></Link>
