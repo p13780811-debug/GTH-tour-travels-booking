@@ -69,7 +69,9 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
   }
 
   return (
-    <div id="journey-planner" className="gth-glass mb-12 w-full min-w-0 scroll-mt-24 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+    <div id="journey-planner" className={mode === "transfer"
+      ? "gth-glass mb-12 scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 md:p-7"
+      : "gth-glass mb-12 w-full min-w-0 scroll-mt-24 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6"}>
       <h2 className="text-xl font-bold">Plan your route</h2>
       <p className="mt-2 text-xs leading-5 sm:text-sm sm:leading-6 text-[var(--text-soft)]">
         {mode === "transfer"
@@ -77,49 +79,53 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
           : "Plan your route with GTH PRO. Search opens the booking platform for supported journeys, prices and availability. Route details are not prefilled, so confirm the itinerary on the booking page."}
       </p>
       <form onSubmit={submit} className={mode === "transfer"
-        ? "mt-3 grid min-w-0 grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4"
+        ? "mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4"
         : "mt-4 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"}>
-        <label className="block min-w-0 text-sm font-semibold">
+        <label className={mode === "transfer" ? "block text-sm font-semibold" : "block min-w-0 text-sm font-semibold"}>
           {field.origin}
           <input name="origin" type="text" required minLength={2} maxLength={100} autoComplete="off"
             value={from} onChange={(e) => { setFrom(e.target.value); invalidate(); }}
-            className="mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"
+            className={mode === "transfer" ? "mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" : "mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"}
             placeholder={mode === "transfer" ? "Airport, terminal or address" : "Departure location"} />
         </label>
-        <label className="block min-w-0 text-sm font-semibold">
+        <label className={mode === "transfer" ? "block text-sm font-semibold" : "block min-w-0 text-sm font-semibold"}>
           {field.destination}
           <input name="destination" type="text" required minLength={2} maxLength={100} autoComplete="off"
             value={to} onChange={(e) => { setTo(e.target.value); invalidate(); }}
-            className="mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"
+            className={mode === "transfer" ? "mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" : "mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"}
             placeholder="Arrival location" />
         </label>
-        <label className="block min-w-0 text-sm font-semibold">
+        <label className={mode === "transfer" ? "block text-sm font-semibold" : "block min-w-0 text-sm font-semibold"}>
           {field.date}
           <input name="date" type="date" required value={date} onChange={(e) => { setDate(e.target.value); invalidate(); }}
-            className="mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]" />
+            className={mode === "transfer" ? "mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" : "mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"} />
         </label>
-        <label className="block min-w-0 text-sm font-semibold">
+        <label className={mode === "transfer" ? "block text-sm font-semibold" : "block min-w-0 text-sm font-semibold"}>
           Travellers
           <input name="travellers" type="number" min={1} max={8} step={1} required value={travellers}
             onChange={(e) => { setTravellers(e.target.valueAsNumber); invalidate(); }}
-            className="mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]" />
+            className={mode === "transfer" ? "mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" : "mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"} />
         </label>
         {mode === "transfer" && (
           <label className="block text-sm font-semibold sm:col-span-2">
             Pickup time (destination local time)
             <input name="time" type="time" required value={pickupTime}
               onChange={(e) => { setPickupTime(e.target.value); invalidate(); }}
-              className="mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]" />
+              className={mode === "transfer" ? "mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-[var(--text)]" : "mt-2 h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]"} />
           </label>
         )}
         <div className={mode === "transfer"
-          ? "col-span-1 grid min-w-0 grid-cols-1 items-center gap-2 sm:col-span-2 sm:grid-cols-2"
+          ? "grid grid-cols-2 items-center gap-2 col-span-2"
           : "col-span-1 grid min-w-0 grid-cols-1 items-center gap-2 sm:col-span-2 sm:ml-auto sm:w-auto sm:grid-cols-[minmax(0,10rem)_minmax(0,17rem)] lg:col-span-4"}>
           <button type="button" onClick={() => { setFrom(to); setTo(from); invalidate(); }}
-            className="inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-3 text-sm sm:px-4">
+            className={mode === "transfer"
+              ? "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-2 text-xs sm:px-4 sm:text-sm"
+              : "inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-3 text-sm sm:px-4"}>
             <ArrowRightLeft size={17} /> Swap route
           </button>
-          <button type="submit" className="gth-btn-gold min-h-11 w-full min-w-0 rounded-xl px-3 text-sm font-bold sm:px-6">
+          <button type="submit" className={mode === "transfer"
+              ? "gth-btn-gold min-h-11 rounded-xl px-2 text-xs sm:px-6 sm:text-sm font-bold"
+              : "gth-btn-gold min-h-11 w-full min-w-0 rounded-xl px-3 text-sm font-bold sm:px-6"}>
             {mode === "bus" ? "Search bus journeys" : mode === "train" ? "Search train journeys" : "Review journey"}
           </button>
         </div>
