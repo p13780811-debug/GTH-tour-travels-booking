@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
+import TwelveGoSearchWidget from "@/components/travel/TwelveGoSearchWidget";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/train" },
@@ -33,11 +34,12 @@ export default async function TrainPage({ searchParams }: Props) {
       partners={[
         { name: "IRCTC ticket booking", url: "https://www.irctc.co.in/nget/train-search", description: "Official Indian Railways online ticketing service." },
         { name: "National Train Enquiry System", url: "https://enquiry.indianrail.gov.in/ntes/", description: "Official running-train and schedule enquiries (not a ticket booking service)." },
-        { name: "12Go regional train and ground transport", url: "https://12go.asia/en", description: "Compare supported regional ground-transport services on the partner site. Independent ticketing; no affiliate tracking is configured." },
+        { name: "12Go regional train and ground transport", url: "/go/12go", description: "The approved 12Go White Label opens automatically when HTTPS is ready; otherwise continue through our official tracked affiliate link. 12Go handles availability, checkout and tickets." },
         { name: "Busbud intercity buses and trains", url: "https://www.busbud.com/en", description: "Explore bus and rail bookings in supported markets; confirm actual route and date with Busbud." },
       ]}
     >
       <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="train" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
+      <TwelveGoSearchWidget mode="train" />
       <TransportRouteDiscovery mode="train" />
     </TravelServicePage>
   );

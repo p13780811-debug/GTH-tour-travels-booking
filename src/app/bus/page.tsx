@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import TravelServicePage from "@/components/travel/TravelServicePage";
 import TransportPlanner from "@/components/travel/TransportPlanner";
 import TransportRouteDiscovery from "@/components/travel/TransportRouteDiscovery";
+import TwelveGoSearchWidget from "@/components/travel/TwelveGoSearchWidget";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/bus" },
@@ -33,11 +34,12 @@ export default async function BusPage({ searchParams }: Props) {
       partners={[
         { name: "redBus India", url: "https://www.redbus.in/", description: "Search Indian bus routes and book directly with redBus." },
         { name: "redBus International", url: "https://www.redbus.com/", description: "Explore supported international bus routes; coverage depends on region." },
-        { name: "12Go bus and regional transport", url: "https://12go.asia/en", description: "Browse supported bus, train and ferry journeys; the partner handles ticketing and payment. No affiliate tracking is configured." },
+        { name: "12Go bus and regional transport", url: "/go/12go", description: "Use the GTH PRO 12Go White Label when its HTTPS is ready, or automatically continue through the official tracked affiliate link. 12Go handles availability, checkout and tickets." },
         { name: "Busbud global bus and rail booking", url: "https://www.busbud.com/en", description: "Explore operators and routes in supported countries; check live departures with the partner." },
       ]}
     >
       <TransportPlanner key={verifiedRouteValue(query.from) + ":" + verifiedRouteValue(query.to)} mode="bus" initialFrom={verifiedRouteValue(query.from)} initialTo={verifiedRouteValue(query.to)} />
+      <TwelveGoSearchWidget mode="bus" />
       <TransportRouteDiscovery mode="bus" />
     </TravelServicePage>
   );
