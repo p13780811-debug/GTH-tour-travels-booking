@@ -1,0 +1,46 @@
+name: Real Estate Bulk Portfolio Upload Checks
+on:
+  push:
+    branches:
+      - feature/real-estate-bulk-listing-upload-20261105
+    paths:
+      - "src/app/api/real-estate/submissions/bulk/**"
+      - "src/lib/real-estate/bulk-listing.ts"
+      - "src/components/real-estate/BulkListingUpload.tsx"
+      - "src/app/real-estate/post-property/page.tsx"
+      - "src/lib/security/rate-limit.ts"
+      - "tests/real-estate-bulk-listing.test.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/real-estate-bulk-listing-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-bulk-listing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install locked dependencies with no lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: CSV Excel schema and dedupe tests
+        run: node --experimental-strip-types --test tests/real-estate-bulk-listing.test.mjs tests/real-estate-listing-intake.test.mjs
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Lint changed files
+        run: npx eslint src/lib/real-estate/bulk-listing.ts src/components/real-estate/BulkListingUpload.tsx src/app/api/real-estate/submissions/bulk/route.ts src/app/real-estate/post-property/page.tsx src/lib/security/rate-limit.ts
+      - name: Next.js production build (no Vercel deploy)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: compile-only-placeholder
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
