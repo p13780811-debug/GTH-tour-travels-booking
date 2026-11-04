@@ -8,8 +8,10 @@ test("official 12Go search form remains opt-in and scoped to transport pages", (
   const widget = source("src/components/travel/TwelveGoSearchWidget.tsx");
   assert.match(widget, /cdn0\.trainbusferry\.com\/tools\/form\/en/);
   assert.match(widget, /17380992/);
-  assert.match(widget, /script\.dataset\.width = "100%"/);
+  assert.match(widget, /script\.dataset\.width = "250"/);
   assert.match(widget, /script\.dataset\.domain = "12go\.asia"/);
+  assert.match(widget, /script\.dataset\.border = "1"/);
+  assert.match(widget, /href="\/go\/12go"/);
   assert.match(widget, /Powered by/);
   assert.match(widget, /12Go system/);
   assert.match(widget, /https:\/\/12go\.asia\/\?z=17380992/);
@@ -22,6 +24,26 @@ test("official 12Go search form remains opt-in and scoped to transport pages", (
     assert.ok(file.includes('<TwelveGoSearchWidget mode="' + mode + '" />'));
     assert.match(file, /<TransportPlanner/);
     assert.match(file, /<TransportRouteDiscovery/);
+  }
+});
+
+test("12Go handoff never uses arbitrary redirect parameters, unapproved providers or unverified TLS", () => {
+  const route = source("src/app/go/12go/route.ts");
+  const widget = source("src/components/travel/TwelveGoSearchWidget.tsx");
+  assert.match(route, /https:\/\/transport\.gthproglobal\.com\//);
+  assert.match(route, /https:\/\/12go\.asia\/\?z=17380992/);
+  assert.match(route, /AbortSignal\.timeout\(3000\)/);
+  assert.match(route, /redirect: "manual"/);
+  assert.match(route, /response\.status >= 200 && response\.status < 400/);
+  assert.match(route, /NextResponse\.redirect\(target, 307\)/);
+  assert.match(route, /X-Robots-Tag/);
+  assert.match(route, /no-store/);
+  assert.doesNotMatch(route, /request\.nextUrl|searchParams|get\("url"\)|NEXT_PUBLIC_|apiKey|Math\.random/i);
+  assert.match(widget, /Continue to 12Go booking/);
+  for (const mode of ["bus", "train"]) {
+    const page = source("src/app/" + mode + "/page.tsx");
+    assert.match(page, /url: "\/go\/12go"/);
+    assert.match(page, /<TwelveGoSearchWidget mode=/);
   }
 });
 
