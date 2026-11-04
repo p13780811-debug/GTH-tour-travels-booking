@@ -43,13 +43,13 @@ try{
  assert.equal(popup.url(),'https://www.gthproglobal.com/app/hotels/osm:node-101');
  assert.equal(handoffs,1);await popup.close();
  await page.getByRole('button',{name:'Open app settings',exact:true}).click();
- await page.getByRole('button',{name:'Night theme',exact:true}).click();
- assert.equal(await page.getByRole('button',{name:'Night theme',exact:true}).getAttribute('aria-selected'),'true');
+ await page.getByRole('radio',{name:'Night theme',exact:true}).click();
+ assert.equal(await page.getByRole('radio',{name:'Night theme',exact:true}).getAttribute('aria-checked'),'true');
  await page.screenshot({path:'/tmp/gth-native-pixel-qa/native-settings-night-390.png',fullPage:true});
  await page.getByRole('button',{name:'Close',exact:true}).click();
  await page.reload();
  await page.getByRole('button',{name:'Open app settings',exact:true}).click();
- assert.equal(await page.getByRole('button',{name:'Night theme',exact:true}).getAttribute('aria-selected'),'true');
+ assert.equal(await page.getByRole('radio',{name:'Night theme',exact:true}).getAttribute('aria-checked'),'true');
  await page.getByRole('button',{name:'Clear saved records',exact:true}).click();
  await page.getByRole('button',{name:'Close',exact:true}).click();
  await page.getByRole('tab',{name:'Saved tab',exact:true}).click();

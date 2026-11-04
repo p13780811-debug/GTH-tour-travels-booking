@@ -6,9 +6,9 @@ import type {AppearanceMode} from "../core/appearance";
 
 type Theme=typeof colors.light;
 export type Confirmation={title:string;message:string;confirmLabel:string;action:()=>void|Promise<void>};
-function Control({label,onPress,theme,selected=false,disabled=false}:{label:string;onPress:()=>void;theme:Theme;selected?:boolean;disabled?:boolean}){
- return <Pressable accessibilityRole="button" accessibilityLabel={label}
-  accessibilityState={{disabled,selected}} disabled={disabled} onPress={onPress}
+function Control({label,onPress,theme,selected=false,disabled=false,radio=false}:{label:string;onPress:()=>void;theme:Theme;selected?:boolean;disabled?:boolean;radio?:boolean}){
+ return <Pressable accessibilityRole={radio?"radio":"button"} accessibilityLabel={label}
+  accessibilityState={radio?{disabled,checked:selected}:{disabled}} disabled={disabled} onPress={onPress}
   style={[styles.control,{backgroundColor:selected?theme.accent:theme.surfaceSoft,borderColor:theme.border,opacity:disabled?0.6:1}]}>
   <Text style={{fontSize:14,fontWeight:"700",color:selected?theme.onAccent:theme.text,textAlign:"center"}}>{label}</Text>
  </Pressable>;
@@ -54,8 +54,10 @@ export function SettingsDialog({visible,theme,mode,ready,dataReady,onMode,onClos
   <Sheet theme={theme} title="App settings" onClose={onClose}>
    <Text style={{fontSize:16,fontWeight:"800",color:theme.text}}>Appearance</Text>
    <Text style={{fontSize:13,lineHeight:21,color:theme.muted}}>Use your phone appearance or choose a day/night theme.</Text>
-   {([{id:"system",label:"Use device theme"},{id:"light",label:"Day theme"},{id:"dark",label:"Night theme"}] as const).map(item=>
-    <Control key={item.id} label={item.label} theme={theme} selected={mode===item.id} disabled={!ready} onPress={()=>onMode(item.id)}/>)}
+   <View accessibilityRole="radiogroup" accessibilityLabel="App appearance" style={{gap:12}}>
+    {([{id:"system",label:"Use device theme"},{id:"light",label:"Day theme"},{id:"dark",label:"Night theme"}] as const).map(item=>
+     <Control key={item.id} radio label={item.label} theme={theme} selected={mode===item.id} disabled={!ready} onPress={()=>onMode(item.id)}/>)}
+   </View>
    <Text style={{fontSize:16,fontWeight:"800",color:theme.text,marginTop:12}}>Your device data</Text>
    <Text style={{fontSize:13,lineHeight:21,color:theme.muted}}>Saved records and recent searches stay on this device. Clearing them does not change any website account.</Text>
    <Control label="Clear saved records" theme={theme} disabled={!dataReady} onPress={onClearSaved}/>

@@ -31,3 +31,15 @@ test('handoff failure displays a safe retry and leaves the dialog open',async()=
  assert.ok(!JSON.stringify(renderer.toJSON()).includes('private token'));
  await act(async()=>renderer.unmount());
 });
+test('appearance exposes one checked radio choice and a working native selection',async()=>{
+ let selected;
+ let renderer;await act(async()=>{renderer=create(React.createElement(dialogs.SettingsDialog,{
+  visible:true,theme:colors.light,mode:'dark',ready:true,dataReady:true,onMode:value=>{selected=value;},
+  onClose:()=>{},onClearSaved:()=>{},onClearHistory:()=>{},onWebsite:()=>{},
+ }));});
+ const choices=renderer.root.findAllByType('Pressable').filter(x=>x.props.accessibilityRole==='radio');
+ assert.equal(choices.length,3);
+ assert.deepEqual(choices.map(x=>x.props.accessibilityState.checked),[false,false,true]);
+ await act(async()=>choices[1].props.onPress());assert.equal(selected,'light');
+ await act(async()=>renderer.unmount());
+});

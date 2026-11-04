@@ -31,7 +31,7 @@ adb('shell','am','force-stop','com.gthpro.mobile')
 adb('shell','monkey','-p','com.gthpro.mobile','-c','android.intent.category.LAUNCHER','1')
 wait_text('Your world');tap('Open app settings');wait_text('App settings')
 restored=snapshot()
-assert any(n.get('content-desc')=='Night theme' and n.get('selected')=='true' for n in restored.iter('node')), 'Native night-theme selection did not persist after relaunch'
+assert any(n.get('content-desc')=='Night theme' and n.get('checked')=='true' for n in restored.iter('node')), 'Native night-theme selection did not persist after relaunch'
 (root/'settings-after-relaunch.xml').write_bytes(ET.tostring(restored))
 with (root/'native-settings.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
 print('PASS: native tabs, cancelled bus handoff, settings, Android Back and force-stop/relaunch')
