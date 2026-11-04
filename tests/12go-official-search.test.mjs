@@ -51,7 +51,9 @@ test("global rail presentation does not imply any Indian Railways integration", 
 test("brand-neutral gateway delegates to only the approved SSL-verified partner or official tracked fallback", () => {
   const alias = source("src/app/go/transport/route.ts");
   const route = source("src/app/go/12go/route.ts");
-  assert.match(alias, /export \{ GET \} from "\.\.\/12go\/route"/);\n  assert.match(alias, /export const runtime = "nodejs"/);\n  assert.match(alias, /export const dynamic = "force-dynamic"/);
+  assert.match(alias, /export \{ GET \} from "\.\.\/12go\/route"/);
+  assert.match(alias, /export const runtime = "nodejs"/);
+  assert.match(alias, /export const dynamic = "force-dynamic"/);
   assert.match(route, /https:\/\/transport\.gthproglobal\.com\//);
   assert.match(route, /https:\/\/12go\.asia\/\?z=17380992/);
   assert.match(route, /AbortSignal\.timeout\(3000\)/);
