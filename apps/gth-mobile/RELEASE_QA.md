@@ -25,6 +25,8 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - Tender location explicitly switches between India and Worldwide; server returns the selected scope, never a guessed GPS region.
 - Save, revisit, remove and share a genuine source record; stored bookmarks remain local after restart.
 - External booking/tender handoff requires an affirmative Continue action and launches the existing GTH PRO URL.
+- Bus journeys and Train journeys open the existing branded planners; no app-owned fares, direct supplier secrets or new booking engine.
+- With device storage blocked/full, saved records and recent searches stay usable for the session, a persistence notice appears, and a later successful write recovers.
 - Check that results reflect real source records; never claim instant booking, offers, eligibility or verified pricing unless the original service confirms it.
 - Network failure/reconnection on mobile data, background/foreground, and accessibility labels/touch targets.
 

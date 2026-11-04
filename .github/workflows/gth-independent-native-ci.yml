@@ -36,7 +36,7 @@ jobs:
             echo "Website source or deployment configuration changed:"; echo "$changed"; exit 1
           fi
       - name: Install isolated Expo / React Native dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Verify native colors reflect central website CSS
         run: npm run theme:check
       - name: Strict TypeScript verification
@@ -101,7 +101,7 @@ jobs:
         with:
           packages: platform-tools
       - name: Install isolated native application
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Generate local Android project without touching website
         run: npx expo prebuild --platform android --non-interactive --clean
       - name: Compile self-contained QA APK and test AAB with bundled Hermes JavaScript

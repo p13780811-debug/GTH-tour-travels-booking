@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, BookOpen, Bus, Car, Compass, Hotel, Plane, ShieldCheck, Train } from "lucide-react";
 
-type Partner = { name: string; url: string; description: string };
+type Partner = { name: string; url: string; description: string; actionLabel?: string };
 type Props = {
   eyebrow: string;
   title: string;
@@ -14,6 +14,8 @@ type Props = {
   partners?: Partner[];
   noLiveDataNotice?: string;
   children?: ReactNode;
+  /** Flight-like full-width search layout for GTH PRO Bus & Train only. */
+  searchFirstLayout?: boolean;
 };
 
 export default function TravelServicePage({
@@ -25,6 +27,7 @@ export default function TravelServicePage({
   partners = [],
   noLiveDataNotice,
   children,
+  searchFirstLayout = false,
 }: Props) {
   const travelLinks = [
     { name: "Flights", href: "/flights", Icon: Plane },
@@ -38,11 +41,15 @@ export default function TravelServicePage({
   ];
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <main className={searchFirstLayout
+      ? "min-h-screen min-w-0 overflow-x-hidden bg-[var(--bg)] text-[var(--text)]"
+      : "min-h-screen bg-[var(--bg)] text-[var(--text)]"}>
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={image} alt="" fill priority sizes="100vw" className="absolute inset-0 -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/75" />
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:py-16 md:px-6 md:py-24">
+        <div className={searchFirstLayout
+          ? "mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 sm:py-12 lg:py-14"
+          : "mx-auto max-w-7xl px-4 py-3 sm:py-16 md:px-6 md:py-24"}>
           <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">{eyebrow}</p>
           <h1 className="mt-1 sm:mt-4 max-w-4xl text-2xl sm:text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
           <p className="hidden sm:block mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-base">{description}</p>
@@ -51,8 +58,10 @@ export default function TravelServicePage({
       </section>
       <TravelSectionNav />
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-3 sm:py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]">
-        <section>
+      <div className={searchFirstLayout
+        ? "mx-auto w-full max-w-7xl min-w-0 px-4 pb-16 pt-2 sm:px-6 sm:pt-9"
+        : "mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-3 sm:py-12 md:px-6 lg:grid-cols-[minmax(0,1fr)_310px]"}>
+        <section className={searchFirstLayout ? "w-full min-w-0" : undefined}>
           {children}
           {noLiveDataNotice && (
             <p role="status" className="gth-glass mt-6 max-w-3xl rounded-2xl border border-[var(--border)] p-5 text-sm leading-6">
@@ -83,7 +92,7 @@ export default function TravelServicePage({
                   <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{partner.description}</p>
                   <a href={partner.url} target="_blank" rel="noopener noreferrer sponsored"
                     className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
-                    Open official provider <ArrowUpRight size={16} />
+                    {partner.actionLabel ?? "Open official provider"} <ArrowUpRight size={16} />
                   </a>
                 </article>
               ))}
@@ -95,7 +104,7 @@ export default function TravelServicePage({
           )}
         </section>
 
-        <aside className="self-start lg:sticky lg:top-24">
+        {!searchFirstLayout && <aside className="self-start lg:sticky lg:top-24">
           <div className="gth-glass rounded-2xl border border-[var(--border)] p-5">
             <h2 className="mb-4 font-bold">Keep planning your trip</h2>
             <nav aria-label="Travel services" className="space-y-2">
@@ -107,7 +116,7 @@ export default function TravelServicePage({
               ))}
             </nav>
           </div>
-        </aside>
+        </aside>}
       </div>
     </main>
   );

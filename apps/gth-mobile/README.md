@@ -18,13 +18,15 @@ Supabase policies, importers, or global CSS.
   `src/app/globals.css`; the website theme remains the source of truth.
 - 11-second network cancellation and retry UI; no fabricated records or prices.
 - Explicit Tender country selector (India, US, UK, UAE, Singapore, Australia) and opt-in Worldwide search; no GPS inference.
+- Bus and global rail entries reuse the existing GTH PRO `/bus` and `/train` planners after the same explicit website-handoff confirmation as other booking services.
+- Failed local storage reads/writes produce an in-app notice; later saves and history clears recover in order without an unhandled promise rejection.
 - Isolated CI compiles an installable, self-contained Android QA APK and a test-only AAB; emulator launch smoke and phone-width visual QA are automated.
 - See [RELEASE_QA.md](./RELEASE_QA.md) for the physical-device and Play Store release gates.
 
 ## Local development
 ```bash
 cd apps/gth-mobile
-npm install
+npm ci
 npm run theme:check
 npm run typecheck
 npm test

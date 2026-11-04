@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {normalizeQuery} from "./routing";
+import {createDeviceWriteQueue} from "./device-writes";
 
 export const RECENT_SEARCHES_KEY="gthpro.native.recent-searches.v1";
 export const MAX_RECENT_SEARCHES=8;
@@ -31,8 +32,9 @@ export function rememberSearch(previous:readonly string[],raw:string):string[]{
 export function useRecentSearches(){
  const [items,setItems]=useState<string[]>([]);
  const [ready,setReady]=useState(false);
+ const [storageError,setStorageError]=useState(false);
  const current=useRef<string[]>([]);
- const queue=useRef<Promise<void>>(Promise.resolve());
+ const queue=useRef(createDeviceWriteQueue());
  useEffect(()=>{
   let active=true;
   AsyncStorage.getItem(RECENT_SEARCHES_KEY).then(raw=>{
@@ -40,20 +42,20 @@ export function useRecentSearches(){
    const restored=parseRecentSearches(raw);
    current.current=restored;
    setItems(restored);
-  }).catch(()=>{}).finally(()=>{if(active)setReady(true);});
+  }).catch(()=>{if(active)setStorageError(true);}).finally(()=>{if(active)setReady(true);});
   return ()=>{active=false;};
  },[]);
  const write=useCallback((next:string[])=>{
   if(!ready)return;
   current.current=next;
   setItems(next);
-  queue.current=queue.current.catch(()=>{}).then(async()=>{
+  void queue.current(async()=>{
    if(next.length)await AsyncStorage.setItem(RECENT_SEARCHES_KEY,JSON.stringify(next));
    else await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
-  });
+  },saved=>setStorageError(!saved));
  },[ready]);
  return {
-  items,ready,
+  items,ready,storageError,
   remember:(query:string)=>write(rememberSearch(current.current,query)),
   clear:()=>write([]),
  };

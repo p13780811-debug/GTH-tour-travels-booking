@@ -6,7 +6,8 @@ import {getPublicTender} from "@/lib/tender/catalog";
 import {TENDER_SERVICES,serviceChoice,SERVICE_UUID} from "@/lib/tender/services";
 import {SITE_CONFIG} from "@/lib/site-config";
 export const dynamic="force-dynamic";
-export const metadata:Metadata={title:"Tender Assistance & Business Service Quotes | GTH PRO",description:"Request a written quote for eligibility review, bid document review, GeM onboarding guidance or tender monitoring.",robots:{index:false,follow:true}};
+const publicLaunch=process.env.VERCEL_ENV==="production" && process.env.GTH_PUBLIC_LAUNCH_ENABLED==="true";
+export const metadata:Metadata={title:"Tender Assistance & Business Service Quotes | GTH PRO",description:"Request a written quote for eligibility review, bid document review, GeM onboarding guidance or tender monitoring.",alternates:{canonical:"/tender/services"},robots:{index:publicLaunch,follow:true}};
 export default async function TenderServicesPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
   const params=await searchParams;
   const initialService=serviceChoice(params.service)??"eligibility_review";

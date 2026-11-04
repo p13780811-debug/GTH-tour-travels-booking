@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {approvedRecordPath} from "./routing";
 import type {DiscoveryCard} from "./catalog";
+import {createDeviceWriteQueue} from "./device-writes";
 
 export const BOOKMARKS_KEY="gthpro.native.bookmarks.v1";
 export const BOOKMARK_LIMIT=30;
@@ -38,8 +39,9 @@ export function removeBookmark(items:DiscoveryCard[],path:string):DiscoveryCard[
 export function useNativeBookmarks(){
  const [items,setItems]=useState<DiscoveryCard[]>([]);
  const [ready,setReady]=useState(false);
+ const [storageError,setStorageError]=useState(false);
  const current=useRef<DiscoveryCard[]>([]);
- const writeQueue=useRef<Promise<void>>(Promise.resolve());
+ const writeQueue=useRef(createDeviceWriteQueue());
  useEffect(()=>{
   let mounted=true;
   AsyncStorage.getItem(BOOKMARKS_KEY).then(raw=>{
@@ -47,7 +49,7 @@ export function useNativeBookmarks(){
    const restored=parseBookmarks(raw);
    current.current=restored;
    setItems(restored);
-  }).catch(()=>{}).finally(()=>{if(mounted)setReady(true);});
+  }).catch(()=>{if(mounted)setStorageError(true);}).finally(()=>{if(mounted)setReady(true);});
   return ()=>{mounted=false;};
  },[]);
  const apply=useCallback((fn:(value:DiscoveryCard[])=>DiscoveryCard[])=>{
@@ -56,10 +58,10 @@ export function useNativeBookmarks(){
   current.current=next;
   setItems(next);
   // Serialize writes: tapping Save/Remove quickly cannot resurrect old data.
-  writeQueue.current=writeQueue.current.catch(()=>{}).then(()=>
-   AsyncStorage.setItem(BOOKMARKS_KEY,JSON.stringify(next)));
+  void writeQueue.current(()=>AsyncStorage.setItem(BOOKMARKS_KEY,JSON.stringify(next)),
+   saved=>setStorageError(!saved));
  },[ready]);
- return {items,ready,
+ return {items,ready,storageError,
   save:(item:DiscoveryCard)=>apply(existing=>addBookmark(existing,item)),
   remove:(path:string)=>apply(existing=>removeBookmark(existing,path)),
  };

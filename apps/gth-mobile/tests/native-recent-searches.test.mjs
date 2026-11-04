@@ -19,6 +19,7 @@ function load(path,imports={}){
 const route=load("src/core/routing.ts");
 const recent=load("src/core/recent-searches.ts",{
  "./routing":route,
+ "./device-writes":load("src/core/device-writes.ts"),
  "@react-native-async-storage/async-storage":{default:{}},
  "react":{useCallback:()=>{},useEffect:()=>{},useRef:()=>{},useState:()=>{}},
 });

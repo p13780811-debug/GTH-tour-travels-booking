@@ -42,6 +42,8 @@ const serviceLinks:{label:string;path:string;kind:Pillar;mode:"native"|"web";des
  {label:"Hotels",path:"/app/hotels",kind:"hotel",mode:"native",description:"Browse published accommodation records"},
  {label:"Real Estate",path:"/app/property",kind:"property",mode:"native",description:"Discover property projects and registry data"},
  {label:"Public tenders",path:"/app/tenders",kind:"tender",mode:"native",description:"Explore official notices and deadlines"},
+ {label:"Bus journeys",path:"/bus",kind:"travel",mode:"web",description:"Plan worldwide bus routes and check available journeys"},
+ {label:"Train journeys",path:"/train",kind:"travel",mode:"web",description:"Explore global rail routes and booking options"},
  {label:"Airport transfers",path:"/transfers",kind:"travel",mode:"web",description:"Existing airport pickup and transfer partners"},
  {label:"Car rentals",path:"/cars",kind:"travel",mode:"web",description:"Original car rental search and providers"},
  {label:"Tours & activities",path:"/tours",kind:"tour",mode:"native",description:"Discover listed tours and activities"},
@@ -267,6 +269,12 @@ function NativeApp(){
  return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
   <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
   <Header theme={theme} openSaved={()=>{setTab("saved");setDetail(null);}}/>
+  {(bookmarks.storageError||recent.storageError)&&<View accessibilityRole="alert"
+    style={[styles.info,{margin:12,backgroundColor:theme.surface,borderColor:theme.border}]}>
+   <Text style={{flex:1,fontSize:12,lineHeight:18,color:theme.muted}}>
+    Device storage is unavailable. Saved records or search history may not persist after closing the app.
+   </Text>
+  </View>}
   <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:18,paddingBottom:28}}
    style={{flex:1}} key={tab+(activeItem?"-detail":"")}>
    {activeItem?<>
@@ -416,6 +424,8 @@ function NativeApp(){
        <Action label="Explore hotels & stays" theme={theme} onPress={()=>{setKind("hotel");setTerm("");}}/>
        <Action label="Discover tours & activities" theme={theme} secondary onPress={()=>{setKind("tour");setTerm("");}}/>
        <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/app/flights")}/>
+       <Action label="Search bus journeys" theme={theme} secondary onPress={()=>openSite("/bus")}/>
+       <Action label="Search train journeys" theme={theme} secondary onPress={()=>openSite("/train")}/>
       </View>
      </View>:<>
       <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
