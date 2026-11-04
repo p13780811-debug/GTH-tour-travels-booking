@@ -67,3 +67,8 @@ test("common abbreviated lakh price remains INR without inventing other fields",
   assert.equal(draft.fields.currency,"INR");
   assert.equal(draft.fields.location,undefined);
 });
+
+test("compound crore and lakh pricing is not understated",()=>{
+  const draft=extractListingIntake("2 BHK flat in Thane for sale 1 crore 20 lakh");
+  assert.equal(draft.fields.price_amount,"12000000");
+});
