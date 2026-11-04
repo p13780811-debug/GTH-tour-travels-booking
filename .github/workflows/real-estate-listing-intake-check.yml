@@ -1,0 +1,37 @@
+name: Real Estate Listing Intake Safety
+
+on:
+  push:
+    branches:
+      - feature/real-estate-listing-intake-assistant-20261105
+    paths:
+      - src/lib/real-estate/listing-intake.ts
+      - src/components/real-estate/ListingIntakeAssistant.tsx
+      - src/app/real-estate/post-property/page.tsx
+      - tests/real-estate-listing-intake.test.mjs
+      - .github/workflows/real-estate-listing-intake-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  listing-intake-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Test user-input extraction
+        run: node --experimental-strip-types --test tests/real-estate-listing-intake.test.mjs
+      - name: Install dependencies (no lifecycle scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: TypeScript validation
+        run: npx tsc --noEmit --pretty false
+      - name: Lint touched UI and extraction code
+        run: npx eslint src/lib/real-estate/listing-intake.ts src/components/real-estate/ListingIntakeAssistant.tsx src/app/real-estate/post-property/page.tsx
