@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Official search form from the owner's 12Go affiliate form constructor.
- * The pending White Label approval is independent of this hosted widget.
+ * The provider-approved White Label is used only when its SSL is working.
  * No private API keys, invented results or unsupported route-specific links.
  */
 const AFFILIATE_ID = "17380992";
@@ -28,9 +28,9 @@ export default function TwelveGoSearchWidget({ mode }: { mode: TransportMode }) 
     script.dataset.one2go = AFFILIATE_ID;
     script.dataset.color = "default";
     script.dataset.language = "en";
-    script.dataset.width = "100%";
+    script.dataset.width = "250";
     script.dataset.height = "320";
-    script.dataset.border = "0";
+    script.dataset.border = "1";
     script.dataset.domain = "12go.asia";
     script.onerror = () => setFailed(true);
     container.appendChild(script);
@@ -62,9 +62,17 @@ export default function TwelveGoSearchWidget({ mode }: { mode: TransportMode }) 
           </p>}
         </div>
       )}
-      <p id="powered" className="mt-4 text-xs text-[var(--text-soft)]">
+      <p className="mt-4 text-xs text-[var(--text-soft)]">
         Powered by <a href={AFFILIATE_HOME} target="_blank" rel="sponsored noopener noreferrer"
           className="underline underline-offset-2">12Go system</a>
+      </p>
+      <a href="/go/12go" target="_blank" rel="sponsored noopener noreferrer"
+        className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold">
+        Continue to 12Go booking
+      </a>
+      <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
+        This booking link uses the approved GTH PRO White Label when its HTTPS is active, otherwise
+        the official tracked 12Go partner checkout. No payment is processed by GTH PRO.
       </p>
       <p className="mt-2 text-xs text-[var(--text-soft)]">
         Affiliate disclosure: GTH PRO may earn a commission if you book through our 12Go partner link.
