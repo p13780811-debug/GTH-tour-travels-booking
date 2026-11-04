@@ -259,11 +259,11 @@ function NativeApp(){
  return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
   <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
   <Header theme={theme} openSettings={()=>setSettingsOpen(true)}/>
-  <SettingsDialog visible={settingsOpen} theme={theme} mode={appearance.mode} ready={appearance.ready}
+  {settingsOpen&&<SettingsDialog visible theme={theme} mode={appearance.mode} ready={appearance.ready}
    dataReady={bookmarks.ready&&recent.ready}
    onMode={appearance.select} onClose={()=>setSettingsOpen(false)} onClearSaved={()=>clearDeviceData("saved")}
-   onClearHistory={()=>clearDeviceData("history")} onWebsite={openSite}/>
-  <ConfirmationDialog request={confirmation} theme={theme} onClose={()=>setConfirmation(null)}/>
+   onClearHistory={()=>clearDeviceData("history")} onWebsite={openSite}/>}
+  {confirmation&&<ConfirmationDialog request={confirmation} theme={theme} onClose={()=>setConfirmation(null)}/>}
   {(bookmarks.storageError||recent.storageError||appearance.storageError)&&<View accessibilityRole="alert"
     style={[styles.info,{margin:12,backgroundColor:theme.surface,borderColor:theme.border}]}>
    <Text style={{flex:1,fontSize:12,lineHeight:18,color:theme.muted}}>
