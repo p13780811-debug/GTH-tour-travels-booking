@@ -4,91 +4,90 @@ import { readFileSync } from "node:fs";
 
 const source = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 
-test("native branded bus and global train search open the approved booking gateway", () => {
-  const planner = source("src/components/travel/TransportPlanner.tsx");
-  assert.match(planner, /bus: \{ label: "GTH PRO Booking", url: "\/go\/transport" \}/);
-  assert.match(planner, /train: \{ label: "GTH PRO Booking", url: "\/go\/transport" \}/);
-  assert.match(planner, /window\.location\.assign\(provider\.url\)/);
-  assert.match(planner, /mode === "bus" \|\| mode === "train"/);
-  assert.match(planner, /"Search bus journeys"/);
-  assert.match(planner, /"Search train journeys"/);
-  assert.match(planner, /not prefilled/);
-  assert.match(planner, /todayLocal/);
-  assert.match(planner, /origin\.toLocaleLowerCase\(\) === destination\.toLocaleLowerCase\(\)/);
-  assert.match(planner, /grid-cols-1/);
-  assert.match(planner, /sm:grid-cols-2/);
-  assert.match(planner, /transfer: \{ label: "Welcome Pickups", url: "https:\/\/www\.welcomepickups\.com\/" \}/);
-  assert.match(planner, /"Review journey"/);
-  assert.doesNotMatch(planner, /trainbusferry\.com|document\.createElement\("script"\)|TwelveGoSearchWidget|NEXT_PUBLIC_.*TOKEN/i);
-});
-
-test("GTH PRO pages show their own brand, never provider names, embeds or external booking callouts", () => {
+test("single approved search widget is the sole journey input for bus/train", () => {
+  const widget = source("src/components/travel/GTHTransportSearchWidget.tsx");
+  assert.match(widget, /https:\/\/cdn0\.trainbusferry\.com\/tools\/form\/en\/\?id=17380992&domain=12go\.asia/);
+  assert.match(widget, /script\.dataset\.one2go = AFFILIATE_ID/);
+  assert.match(widget, /script\.dataset\.domain = "12go\.asia"/);
+  assert.match(widget, /script\.dataset\.width = String\(width\)/);
+  assert.match(widget, /script\.dataset\.height = String\(height\)/);
+  assert.match(widget, /getBoundingClientRect\(\)\.width/);
+  assert.match(widget, /ResizeObserver/);
+  assert.match(widget, /if \(width < 640\)/);
+  assert.match(widget, /if \(width < 1024\)/);
+  assert.match(widget, /host\.contains\(document\.activeElement\)/);
+  assert.match(widget, /className="mt-4 w-full min-w-0 max-w-full overflow-x-auto/);
+  assert.match(widget, /className="gth-glass mb-10 w-full min-w-0/);
+  assert.match(widget, /role="region"/);
+  assert.match(widget, /Loading booking search/);
+  assert.match(widget, /script\.onerror/);
+  assert.match(widget, /href="\/go\/transport"/);
+  assert.doesNotMatch(widget, /dataset\.width = "250"|dangerouslySetInnerHTML|NEXT_PUBLIC_.*SECRET|fakeResults|Math\.random/);
   for (const mode of ["bus", "train"]) {
     const page = source("src/app/" + mode + "/page.tsx");
-    assert.match(page, /<TransportPlanner/);
+    assert.match(page, /GTHTransportSearchWidget/);
+    assert.ok(page.includes('<GTHTransportSearchWidget mode="' + mode + '" />'));
     assert.match(page, /<TransportRouteDiscovery/);
-    assert.match(page, /GTH PRO /);
-    assert.match(page, /url: "\/go\/transport"/);
-    assert.match(page, /actionLabel: "Search available journeys"/);
-    assert.match(page, /may earn a referral commission/);
-    assert.doesNotMatch(page, /12Go|IRCTC|Busbud|redBus|TwelveGoSearchWidget|cdn0\.trainbusferry\.com|<iframe|<script/i);
+    assert.match(page, /searchFirstLayout/);
+    assert.match(page, /partners=\{\[\]\}/);
+    assert.doesNotMatch(page, /TransportPlanner|TwelveGoSearchWidget|verifiedRouteValue|<iframe|<script|url: "\/go\/transport"/);
   }
-  const shared = source("src/components/travel/TravelServicePage.tsx");
-  assert.match(shared, /actionLabel\?: string/);
-  assert.match(shared, /partner\.actionLabel \?\? "Open official provider"/);
-  const widgetSource = new URL("../src/components/travel/TwelveGoSearchWidget.tsx", import.meta.url);
-  assert.throws(() => readFileSync(widgetSource, "utf8"), /ENOENT/);
 });
 
-test("bus and rail match Flight search full-width responsive layout, without changing flights or transfers", () => {
+test("route suggestions scroll to the only search form and do not promise prefill", () => {
+  const routes = source("src/components/travel/TransportRouteDiscovery.tsx");
+  assert.match(routes, /href="#journey-search"/);
+  assert.match(routes, /Search route/);
+  assert.match(routes, /booking form above to search a route once/);
+  assert.doesNotMatch(routes, /encodeURIComponent\(route\.from\)|encodeURIComponent\(route\.to\)|#journey-planner/);
+});
+
+test("mobile and desktop share a full-width GTH layout without changing flights or transfers", () => {
   const flight = source("src/app/flights/page.tsx");
   const flightWidget = source("src/components/flights/AviasalesWhiteLabel.tsx");
   const shell = source("src/components/travel/TravelServicePage.tsx");
-  const planner = source("src/components/travel/TransportPlanner.tsx");
+  const widget = source("src/components/travel/GTHTransportSearchWidget.tsx");
   assert.match(flight, /mx-auto w-full max-w-7xl pb-16 pt-2 sm:pt-9/);
   assert.match(flightWidget, /w-full min-w-0 scroll-mt-24/);
   assert.match(shell, /searchFirstLayout\?: boolean/);
   assert.match(shell, /searchFirstLayout = false/);
   assert.match(shell, /max-w-7xl min-w-0 px-4 pb-16 pt-2 sm:px-6 sm:pt-9/);
   assert.match(shell, /!searchFirstLayout && <aside/);
-  assert.match(planner, /lg:grid-cols-4/);
-  assert.match(planner, /grid-cols-1 gap-3 sm:grid-cols-2/);
-  assert.match(planner, /min-w-0 max-w-full rounded-xl/);
-  assert.match(planner, /sm:grid-cols-\[minmax\(0,10rem\)_minmax\(0,17rem\)\]/);
-  assert.match(planner, /mode === "transfer"\s*\?\s*"gth-glass mb-12 scroll-mt-24 rounded-2xl border border-\[var\(--border\)\] p-5 md:p-7"/);
-  assert.match(planner, /\? "mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4"/);
-  for (const mode of ["bus", "train"]) {
-    const page = source("src/app/" + mode + "/page.tsx");
-    assert.match(page, /<TravelServicePage\s+searchFirstLayout/);
-  }
+  assert.match(shell, /partners\.length/);
+  assert.match(shell, /!searchFirstLayout \?/);
+  assert.match(widget, /p-2 sm:p-6/);
+  assert.match(widget, /sizeFor\(width\)/);
+  assert.match(widget, /category: "desktop"/);
+  assert.match(widget, /category: "mobile"/);
   const transfers = source("src/app/transfers/page.tsx");
-  assert.doesNotMatch(transfers, /searchFirstLayout/);
+  const planner = source("src/components/travel/TransportPlanner.tsx");
+  assert.doesNotMatch(transfers, /searchFirstLayout|GTHTransportSearchWidget/);
+  assert.match(planner, /transfer: \{ label: "Welcome Pickups", url: "https:\/\/www\.welcomepickups\.com\/" \}/);
+  assert.match(planner, /Journey summary — not booked/);
 });
 
-test("global rail presentation does not imply any Indian Railways integration", () => {
+test("worldwide rail copy does not claim an official domestic railway booking engine", () => {
   const train = source("src/app/train/page.tsx");
   assert.match(train, /Global Train & Rail Journey Planning/);
-  assert.match(train, /global rail journeys — Asia & beyond/i);
-  assert.match(train, /Domestic railway status and PNR services are not integrated/);
-  assert.doesNotMatch(train, /Plan an Indian Railways journey|Indian Rail Journey Planning/);
+  assert.match(train, /Explore global rail journeys — Asia & beyond/);
+  assert.match(train, /official railway PNR services are not integrated/);
+  assert.doesNotMatch(train, /Indian Rail Journey Planning|12Go White Label|IRCTC|Busbud|redBus/);
 });
 
-test("brand-neutral gateway delegates to only the approved SSL-verified partner or official tracked fallback", () => {
-  const alias = source("src/app/go/transport/route.ts");
+test("approved booking fallback stays fixed-target and unchanged", () => {
   const route = source("src/app/go/12go/route.ts");
-  assert.match(alias, /export \{ GET, runtime, dynamic \} from "\.\.\/12go\/route"/);
+  const alias = source("src/app/go/transport/route.ts");
   assert.match(route, /https:\/\/transport\.gthproglobal\.com\//);
   assert.match(route, /https:\/\/12go\.asia\/\?z=17380992/);
   assert.match(route, /AbortSignal\.timeout\(3000\)/);
   assert.match(route, /redirect: "manual"/);
-  assert.match(route, /response\.status >= 200 && response\.status < 400/);
-  assert.match(route, /NextResponse\.redirect\(target, 307\)/);
   assert.match(route, /X-Robots-Tag/);
   assert.match(route, /no-store/);
+  assert.match(alias, /export \{ GET, runtime, dynamic \} from "\.\.\/12go\/route"/);
   assert.doesNotMatch(route, /request\.nextUrl|searchParams|get\("url"\)|NEXT_PUBLIC_|apiKey|Math\.random/i);
 });
 
-test("staging disables Vercel preview deployment", () => {
+test("staging branch cannot trigger a preview deploy", () => {
   const config = JSON.parse(source("vercel.json"));
-  assert.equal(config.git.deploymentEnabled["fix/12go-native-white-label-search-20261104"], false);
+  assert.equal(config.git.deploymentEnabled["fix/12go-single-responsive-search-20261105"], false);
 });
