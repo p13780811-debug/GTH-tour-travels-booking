@@ -24,13 +24,13 @@ test("train and bus pages keep the provider checkout and existing planner", () =
     const file = load("src/app/" + mode + "/page.tsx");
     assert.match(file, /TransportPlanner/);
     assert.match(file, /TransportRouteDiscovery/);
-    assert.match(file, /url: "\/go\/12go"/);
+    assert.match(file, /url: "\/go\/transport"/);
     assert.doesNotMatch(file, /TwelveGoSearchWidget|cdn0\.trainbusferry\.com/);
-    assert.match(file, /busbud\.com\/en/);
+    assert.match(file, /name: "GTH PRO /);
     assert.match(file, /verifiedRouteValue/);
     assert.match(file, /noLiveDataNotice=/);
   }
-  assert.match(load("src/app/train/page.tsx"), /irctc\.co\.in\/nget\/train-search/);
+  assert.match(load("src/app/train/page.tsx"), /Global Train & Rail Journey Planning/);
 });
 
 test("blog and provider source remain isolated from payment and hotel systems", () => {
