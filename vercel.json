@@ -38,7 +38,8 @@
       "feat/12go-search-staging-20261104": false,
       "fix/12go-native-white-label-search-20261104": false,
       "fix/12go-flight-style-responsive-20261104": false,
-      "fix/12go-single-responsive-search-20261105": false
+      "fix/12go-single-responsive-search-20261105": false,
+      "fix/transport-interactive-search-ferry-20261105": false
     }
   }
 }

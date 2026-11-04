@@ -1,140 +1,87 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, BusFront, Ship, TrainFront } from "lucide-react";
 
 /**
- * Approved 12Go affiliate search-form constructor output (affiliate 17380992).
- * Keep exactly one supplier-owned form on each GTH PRO transport page:
- * a customer enters origin, destination, date and passengers only once.
+ * First-party GTH PRO transport search.
  *
- * The previous 250px fixed-size embed made the form tiny on mobile/desktop.
- * Measure the real parent width, set explicit provider dimensions, and rebuild
- * only when changing responsive breakpoint or rotating to a different width.
- * No undocumented route prefill URLs, paid API, custom CSS theme or fake fares.
+ * Deliberately uses native HTML controls and GET navigation rather than
+ * an unresponsive, fixed-height, third-party injected search iframe.
+ * Origin, destination, departure date, passenger count and transport mode
+ * are sent ONCE to a validated server-side route deep-link handoff.
+ * No paid API or browser-held affiliate credentials.
  */
-const AFFILIATE_ID = "17380992";
-const SEARCH_FORM_SRC = "https://cdn0.trainbusferry.com/tools/form/en/?id=17380992&domain=12go.asia";
+export type TransportMode = "bus" | "train" | "ferry";
 
-type Mode = "bus" | "train";
-type LoadStatus = "loading" | "ready" | "error";
+const modes = [
+  { mode: "bus" as const, href: "/bus", label: "Bus", Icon: BusFront },
+  { mode: "train" as const, href: "/train", label: "Train", Icon: TrainFront },
+  { mode: "ferry" as const, href: "/ferry", label: "Ferry", Icon: Ship },
+];
 
-function sizeFor(width: number) {
-  if (width < 640) return { category: "mobile", height: 680 };
-  if (width < 1024) return { category: "tablet", height: 520 };
-  return { category: "desktop", height: 440 };
-}
-
-export default function GTHTransportSearchWidget({ mode }: { mode: Mode }) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<LoadStatus>("loading");
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-
-    let disposed = false;
-    let lastWidth = 0;
-    let lastCategory = "";
-    let activeScript: HTMLScriptElement | undefined;
-    let observer: ResizeObserver | undefined;
-    let checkTimer: number | undefined;
-    let loadTimer: number | undefined;
-
-    const mount = () => {
-      if (disposed) return;
-      const width = Math.floor(host.getBoundingClientRect().width);
-      if (width < 240) return; // Wait for the actual responsive layout.
-      const { category, height } = sizeFor(width);
-      if (activeScript && category === lastCategory && Math.abs(width - lastWidth) < 100) return;
-      // Avoid destroying a journey while the visitor interacts with the provider form.
-      if (activeScript && host.contains(document.activeElement)) return;
-
-      lastWidth = width;
-      lastCategory = category;
-      window.clearTimeout(checkTimer);
-      window.clearTimeout(loadTimer);
-      host.replaceChildren();
-      setStatus("loading");
-
-      const script = document.createElement("script");
-      script.src = SEARCH_FORM_SRC;
-      script.async = true;
-      script.dataset.one2go = AFFILIATE_ID;
-      script.dataset.color = "default";
-      script.dataset.language = "en";
-      script.dataset.width = String(width);
-      script.dataset.height = String(height);
-      script.dataset.border = "0";
-      script.dataset.domain = "12go.asia";
-      let failed = false;
-      script.onerror = () => {
-        failed = true;
-        if (!disposed && script === activeScript) setStatus("error");
-      };
-      script.onload = () => {
-        if (!disposed && script === activeScript && !failed) setStatus("ready");
-      };
-      // Some script bundles load successfully but get blocked before rendering.
-      loadTimer = window.setTimeout(() => {
-        if (disposed || script !== activeScript || failed) return;
-        const rendered = host.querySelector("iframe, form, input, [data-one2go]");
-        if (!rendered && host.children.length <= 1) setStatus("error");
-      }, 12000);
-      activeScript = script;
-      host.appendChild(script);
-    };
-
-    // The vendor form is sized from the parent, not a hard-coded 250px widget.
-    observer = new ResizeObserver(() => {
-      window.clearTimeout(checkTimer);
-      checkTimer = window.setTimeout(mount, 120);
-    });
-    observer.observe(host);
-    mount();
-
-    return () => {
-      disposed = true;
-      observer?.disconnect();
-      window.clearTimeout(checkTimer);
-      window.clearTimeout(loadTimer);
-      if (activeScript) {
-        activeScript.onerror = null;
-        activeScript.onload = null;
-      }
-      host.replaceChildren();
-    };
-  }, []);
-
+export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const field =
+    "mt-2 block h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-base text-[var(--text)] outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]";
   return (
-    <section id="journey-search" className="gth-glass mb-10 w-full min-w-0 scroll-mt-24 overflow-hidden rounded-2xl border border-[var(--border)] p-2 sm:p-6" aria-labelledby="gth-ground-search-heading">
-      <div className="px-2 pt-2 sm:px-0 sm:pt-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">GTH PRO · Global travel</p>
-        <h2 id="gth-ground-search-heading" className="mt-1 text-xl font-bold sm:text-2xl">
-          {mode === "bus" ? "Search bus journeys" : "Search global train journeys"}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-          Enter your route, travel date and passengers once. Current tickets and checkout are handled by the connected booking partner; available modes and routes vary by location.
-        </p>
-      </div>
-      <div
-        ref={hostRef}
-        role="region"
-        aria-label={mode === "bus" ? "Bus ticket search form" : "Train ticket search form"}
-        className="mt-4 w-full min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full"
-      />
-      {status === "loading" && (
-        <p role="status" className="px-2 pb-3 text-sm text-[var(--text-soft)]">Loading booking search…</p>
-      )}
-      {status === "error" && (
-        <div role="alert" className="mx-2 mb-3 rounded-xl border border-[var(--border)] p-4 text-sm sm:mx-0">
-          <p>The booking form could not load in this browser. You can open the booking search directly.</p>
-          <a href="/go/transport" className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 font-semibold">
-            Open booking search
-          </a>
+    <section id="journey-search"
+      aria-labelledby="gth-ground-search-heading"
+      className="gth-glass mb-8 w-full min-w-0 scroll-mt-24 rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">GTH PRO · Global travel</p>
+          <h2 id="gth-ground-search-heading" className="mt-1 text-xl font-bold sm:text-2xl">
+            {mode === "bus" ? "Search bus journeys" : mode === "train" ? "Search global train journeys" : "Search ferry journeys"}
+          </h2>
         </div>
-      )}
-      <p className="px-2 pb-2 text-xs leading-5 text-[var(--text-soft)] sm:px-0">
-        GTH PRO may receive a referral commission. Final availability, fares, payment and refunds are managed by the booking provider.
+        <nav aria-label="Choose ground and sea transport" className="flex flex-wrap gap-2">
+          {modes.map(({ mode: item, href, label, Icon }) => (
+            <Link key={item} href={href}
+              aria-current={mode === item ? "page" : undefined}
+              className={mode === item
+                ? "gth-btn-gold inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold"
+                : "inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-sm font-semibold"}>
+              <Icon size={16} aria-hidden="true" /> {label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+      <form method="GET" action="/go/transport/search" className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" autoComplete="on">
+        <input type="hidden" name="mode" value={mode} />
+        <label className="block min-w-0 text-sm font-semibold">
+          From
+          <input className={field} type="text" name="from" minLength={2} maxLength={80}
+            placeholder={mode === "ferry" ? "e.g. Phuket" : mode === "train" ? "e.g. Bangkok" : "e.g. Mumbai"}
+            autoComplete="address-level2" required />
+        </label>
+        <label className="block min-w-0 text-sm font-semibold">
+          To
+          <input className={field} type="text" name="to" minLength={2} maxLength={80}
+            placeholder={mode === "ferry" ? "e.g. Koh Phi Phi" : mode === "train" ? "e.g. Chiang Mai" : "e.g. Goa"}
+            autoComplete="off" required />
+        </label>
+        <label className="block min-w-0 text-sm font-semibold">
+          Departure date
+          <input className={field} type="date" name="date" min={today} required />
+        </label>
+        <label className="block min-w-0 text-sm font-semibold">
+          Travelers
+          <select className={field} name="people" defaultValue="1" required>
+            {Array.from({length:8},(_,i)=>i+1).map(count=>(
+              <option value={count} key={count}>{count} {count===1?"traveler":"travelers"}</option>
+            ))}
+          </select>
+        </label>
+        <div className="sm:col-span-2 lg:col-span-4">
+          <button type="submit"
+            className="gth-btn-gold inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-base font-bold sm:w-auto sm:min-w-64">
+            Find tickets <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </form>
+      <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+        Search opens the route-specific provider booking page with your itinerary and affiliate tracking.
+        Exact station matches, schedules, date and passenger selection depend on provider support; confirm them before payment.
+        GTH PRO may receive a referral commission.
       </p>
     </section>
   );

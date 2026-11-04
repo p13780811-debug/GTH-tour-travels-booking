@@ -2,7 +2,7 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, ArrowUpRight, BookOpen, Bus, Car, Compass, Hotel, Plane, ShieldCheck, Train } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Bus, Car, Compass, Hotel, Plane, ShieldCheck, Train, Ship } from "lucide-react";
 
 type Partner = { name: string; url: string; description: string; actionLabel?: string };
 type Props = {
@@ -36,6 +36,7 @@ export default function TravelServicePage({
     { name: "Travel guides", href: "/guides", Icon: BookOpen },
     { name: "Bus", href: "/bus", Icon: Bus },
     { name: "Train", href: "/train", Icon: Train },
+    { name: "Ferry", href: "/ferry", Icon: Ship },
     { name: "Airport transfers", href: "/transfers", Icon: Car },
     { name: "Car rentals", href: "/cars", Icon: Car },
   ];

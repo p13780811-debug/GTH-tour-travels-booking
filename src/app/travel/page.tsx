@@ -2,7 +2,7 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, BusFront, CarFront, Compass, Globe2, Hotel, MapPinned, Plane, ShieldCheck, Sparkles, Ticket, TrainFront } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, BusFront, CarFront, Compass, Globe2, Hotel, MapPinned, Plane, ShieldCheck, Sparkles, Ticket, TrainFront, Ship } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Global Travel | Flights, Hotels, Tours & More | GTH PRO",
@@ -22,7 +22,8 @@ const services = [
 ] as const;
 const additional = [
   { name: "Bus Travel", href: "/bus", Icon: BusFront, detail: "Road connections and operator booking handoffs." },
-  { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and official booking resources." },
+  { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and connected operator bookings." },
+  { name: "Ferry Travel", href: "/ferry", Icon: Ship, detail: "Ferries, speedboats and island connections across supported routes." },
   { name: "Experiences", href: "/activities", Icon: Sparkles, detail: "Destination activities and discovery." },
   { name: "Travel Guides", href: "/guides", Icon: BookOpen, detail: "Research and booking checklists." },
   { name: "Travel Blog", href: "/blog", Icon: Compass, detail: "Articles for thoughtful travel planning." },
