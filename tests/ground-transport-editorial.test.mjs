@@ -25,7 +25,7 @@ test("train and bus pages keep the provider checkout and existing planner", () =
     assert.match(file, /TransportPlanner/);
     assert.match(file, /TransportRouteDiscovery/);
     assert.match(file, /url: "\/go\/12go"/);
-    assert.match(file, /TwelveGoSearchWidget/);
+    assert.doesNotMatch(file, /TwelveGoSearchWidget|cdn0\.trainbusferry\.com/);
     assert.match(file, /busbud\.com\/en/);
     assert.match(file, /verifiedRouteValue/);
     assert.match(file, /noLiveDataNotice=/);
