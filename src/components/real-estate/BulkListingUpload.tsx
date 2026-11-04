@@ -47,8 +47,8 @@ async function parseFile(file:File,defaults:BulkDefaults):Promise<BulkDraftRow[]
   if(name.endsWith(".xlsx")) {
     const head=new Uint8Array(await file.slice(0,4).arrayBuffer());
     if(head[0]!==0x50||head[1]!==0x4b)throw new Error(file.name+": invalid XLSX archive.");
-    const {default:readXlsxFile}=await import("read-excel-file");
-    const sheet=await readXlsxFile(file);
+    const {readSheet}=await import("read-excel-file/browser");
+    const sheet=await readSheet(file);
     return rowsFromSheet(sheet,file.name,defaults);
   }
   if(name.endsWith(".pdf")) {
@@ -56,9 +56,10 @@ async function parseFile(file:File,defaults:BulkDefaults):Promise<BulkDraftRow[]
     if(head!=="%PDF-")throw new Error(file.name+": invalid PDF file.");
     const pdfjs=await import("pdfjs-dist");
     pdfjs.GlobalWorkerOptions.workerSrc=new URL("pdfjs-dist/build/pdf.worker.min.mjs",import.meta.url).toString();
-    const document=await pdfjs.getDocument({
-      data:new Uint8Array(await file.arrayBuffer()), isEvalSupported:false,
-    }).promise;
+    const loadingTask=pdfjs.getDocument({
+      data:new Uint8Array(await file.arrayBuffer()),
+    });
+    const document=await loadingTask.promise;
     try {
       if(document.numPages>100)throw new Error(file.name+": use batches of up to 100 PDF pages.");
       const drafts:BulkDraftRow[]=[];
@@ -89,7 +90,7 @@ async function parseFile(file:File,defaults:BulkDefaults):Promise<BulkDraftRow[]
       }
       if(!drafts.length)throw new Error(file.name+": no selectable text found. Scanned PDFs require a separate OCR/Excel source.");
       return drafts;
-    } finally {await document.destroy();}
+    } finally {await loadingTask.destroy();}
   }
   throw new Error("Supported formats: .xlsx, .csv, .tsv, and text-based .pdf.");
 }
