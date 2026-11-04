@@ -19,6 +19,7 @@ export default async function TrainPage({ searchParams }: Props) {
   const query = await searchParams;
   return (
     <TravelServicePage
+      searchFirstLayout
       eyebrow="GTH PRO · Global rail journeys"
       title="Explore global rail journeys — Asia & beyond"
       description="Plan global rail journeys with GTH PRO’s own search form, then continue to the connected booking experience for supported routes, schedules and tickets. Coverage varies by country."
