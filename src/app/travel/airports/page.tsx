@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Compass, Globe2, MapPin, Plane, ShieldCheck } from "lucide-react";
 import { airports } from "@/lib/travel/nuiteeAirportDirectory";
+import AirportDiscoveryTools from "@/components/travel/AirportDiscoveryTools";
 
 export const metadata: Metadata = {
   title: "Airport Explorer | Codes, Cities & Flight Planning | GTH PRO",
@@ -48,42 +49,7 @@ export default function AirportExplorerPage() {
         </div>
       </section>
 
-      <section aria-labelledby="route-planner" className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 md:p-7">
-          <h2 id="route-planner" className="flex items-center gap-2 text-xl font-bold md:text-2xl">
-            <Plane size={22} aria-hidden="true" /> Choose your route
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-            Select an origin and destination to open the existing GTH PRO flight page with your route noted.
-            Choose travel dates in the flight provider&apos;s search form to retrieve actual offers.
-          </p>
-          <form action="/flights" method="get" className="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-            <label className="block text-sm font-semibold">
-              From
-              <select name="origin" defaultValue="CCU" required className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]">
-                {airports.map(airport => (
-                  <option key={airport.code} value={airport.code}>{airport.city} — {airport.code}</option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm font-semibold">
-              To
-              <select name="destination" defaultValue="BOM" required className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]">
-                {airports.map(airport => (
-                  <option key={airport.code} value={airport.code}>{airport.city} — {airport.code}</option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold">
-              Explore route <ArrowRight size={16} aria-hidden="true" />
-            </button>
-          </form>
-          <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">
-            Reference airport listings do not guarantee that a flight route operates or has availability.
-            Flight prices, payment and booking are confirmed by the selected provider, not this directory.
-          </p>
-        </div>
-      </section>
+      <AirportDiscoveryTools />
 
       <section aria-labelledby="popular-routes" className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
         <h2 id="popular-routes" className="text-xl font-bold md:text-2xl">Explore route ideas</h2>
@@ -99,8 +65,8 @@ export default function AirportExplorerPage() {
       </section>
 
       {[
-        { title: "Airports in India", items: india },
-        { title: "International airports", items: international },
+        { title: "Featured airport guides in India", items: india },
+        { title: "Featured international airport guides", items: international },
       ].map(group => (
         <section key={group.title} aria-labelledby={group.title.replaceAll(" ", "-")} className="mx-auto max-w-7xl px-4 pb-14 sm:px-6">
           <h2 id={group.title.replaceAll(" ", "-")} className="flex items-center gap-2 text-2xl font-bold">
