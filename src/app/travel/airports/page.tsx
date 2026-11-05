@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Compass, Globe2, MapPin, Plane, ShieldCheck } from "lucide-react";
@@ -38,6 +39,7 @@ export default function AirportExplorerPage() {
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <TravelSectionNav />
       <section className="border-b border-[var(--border)] bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
           <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-soft)]">
