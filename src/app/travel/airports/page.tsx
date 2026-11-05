@@ -8,6 +8,19 @@ export const metadata: Metadata = {
   title: "Airport Explorer | Codes, Cities & Flight Planning | GTH PRO",
   description: "Research verified airport codes and cities worldwide, then continue to GTH PRO flights, hotels and airport transfers. No fake fares or live-price claims.",
   alternates: { canonical: "/travel/airports" },
+  openGraph: {
+    title: "Global Airport Explorer | IATA Codes & City Guides | GTH PRO",
+    description: "Explore curated airport codes, local time zones and flight-planning guides with GTH PRO's airport directory. Check actual flight availability with the provider.",
+    url: "/travel/airports",
+    type: "website",
+    images: [{ url: "/images/mega/flights.jpg", alt: "GTH PRO global airport and flight planning" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Global Airport Explorer | GTH PRO",
+    description: "Search airports by city or IATA code and continue to flight planning and travel services.",
+    images: ["/images/mega/flights.jpg"],
+  },
 };
 
 const routes = [
