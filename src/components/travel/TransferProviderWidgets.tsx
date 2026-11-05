@@ -37,18 +37,15 @@ export default function TransferProviderWidgets() {
   useEffect(() => {
     function syncHash() {
       const selected = window.location.hash.replace("#transfer-widget-", "");
-      if (selected === "options" || selected === "airport" || selected === "additional") {
-        setActive(current => {
-          if (current === selected) return current;
-          setLoadState("loading");
-          return selected;
-        });
+      if ((selected === "options" || selected === "airport" || selected === "additional") && selected !== active) {
+        setLoadState("loading");
+        setActive(selected);
       }
     }
     syncHash();
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
-  }, []);
+  }, [active]);
 
   useEffect(() => {
     const mount = host.current;
