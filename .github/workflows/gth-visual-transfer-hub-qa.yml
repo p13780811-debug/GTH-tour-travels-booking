@@ -1,0 +1,47 @@
+name: GTH Visual Transfer Hub QA
+
+on:
+  push:
+    branches: [feat/visual-transfer-hub-20261105]
+    paths:
+      - "src/components/travel/TransferHubShowcase.tsx"
+      - "src/lib/travel/transferHubCatalog.ts"
+      - "src/app/transfers/page.tsx"
+      - "tests/transfer-hub-visual-contract.test.mjs"
+      - ".github/workflows/gth-visual-transfer-hub-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  transfer-hub-safe-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      VERCEL_ENV: preview
+      GTH_PUBLIC_LAUNCH_ENABLED: "false"
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Configure Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies without lifecycle hooks
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify visual gallery, partner link, and legacy widget contracts
+        run: node --test tests/transfer-hub-visual-contract.test.mjs tests/transfers-ui-provider-contract.test.mjs
+      - name: Typecheck repository
+        run: ./node_modules/.bin/tsc --noEmit --incremental false
+      - name: Lint changed files only
+        run: ./node_modules/.bin/eslint src/app/transfers/page.tsx src/components/travel/TransferHubShowcase.tsx src/lib/travel/transferHubCatalog.ts
+      - name: Production-build code in a preview-safe CI environment
+        run: npm run build
