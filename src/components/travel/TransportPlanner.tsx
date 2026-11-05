@@ -7,7 +7,7 @@ type Mode = "bus" | "train" | "transfer";
 const providers: Record<Mode, { label: string; url: string }> = {
   bus: { label: "GTH PRO Booking", url: "/go/transport" },
   train: { label: "GTH PRO Booking", url: "/go/transport" },
-  transfer: { label: "Welcome Pickups", url: "https://www.welcomepickups.com/" },
+  transfer: { label: "Welcome Pickups", url: "https://tpo.lv/GFuzmgYk" },
 };
 const labels: Record<Mode, { origin: string; destination: string; date: string }> = {
   bus: { origin: "Departure city", destination: "Arrival city", date: "Journey date" },
@@ -141,7 +141,7 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
           <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
             This information stays on this page and is not sent to the provider. Enter your route and date again on {provider.label}, then review its actual terms before paying.
           </p>
-          <a href={provider.url} target="_blank" rel="noopener noreferrer"
+          <a href={provider.url} target="_blank" rel={mode === "transfer" ? "noopener noreferrer sponsored" : "noopener noreferrer"}
             className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold">
             Continue on {provider.label} <ArrowUpRight size={16} aria-hidden="true" />
           </a>

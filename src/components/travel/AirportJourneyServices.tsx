@@ -88,8 +88,8 @@ export default function AirportJourneyServices() {
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-[var(--text-soft)]">{service.detail}</span>
                   <span className="mt-auto pt-4 text-[11px] font-medium text-[var(--text-soft)]">
-                    {service.kind === "partner" ? "Existing GTH PRO partner link"
-                      : service.kind === "provider" ? "Independent provider website"
+                    {service.kind === "partner" ? "Open booking options"
+                      : service.kind === "provider" ? "Explore service"
                         : "GTH PRO service"}
                   </span>
                 </>

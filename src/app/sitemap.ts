@@ -1,6 +1,7 @@
 import { seoShard } from "@/lib/seo/large-sitemaps";
 import type { MetadataRoute } from "next";
 import { destinations } from "@/data/destinations";
+import { airports } from "@/lib/travel/nuiteeAirportDirectory";
 import { blogs } from "@/data/blogs";
 import { siteOrigin } from "@/lib/seo/site";
 import { createClient } from "@supabase/supabase-js";
@@ -12,7 +13,7 @@ export const revalidate = 3600;
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
-  "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
+  "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/hotels/list-your-property",
   "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender", "/tender/services",
   "/partners", "/contact", "/about", "/affiliate-disclosure",
@@ -93,6 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    ...airports.map(airport => ({ url: base + "/travel/airports/" + airport.code.toLowerCase(), changeFrequency: "monthly" as const, priority: 0.45 })),
     ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...approved,
     ...properties, // Remaining project shards are advertised by sitemap-index.xml.

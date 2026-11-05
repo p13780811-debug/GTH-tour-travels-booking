@@ -19,7 +19,7 @@ const widgets = {
   },
   additional: {
     title: "More travel services",
-    description: "An additional Travelpayouts partner widget. Its exact supplier and services must be confirmed in the Travelpayouts dashboard before being named.",
+    description: "Additional Travelpayouts widget; its provider and services have not been independently verified. Use only after checking the displayed supplier.",
     src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&show_header=true&powered_by=true&campaign_id=627&promo_id=8951",
   },
 } as const;
@@ -28,9 +28,42 @@ type WidgetType = keyof typeof widgets;
 type LoadState = "loading" | "loaded" | "error";
 
 export default function TransferProviderWidgets() {
-  const [active, setActive] = useState<WidgetType>("airport");
+  const [active, setActive] = useState<WidgetType>("options");
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const host = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<WidgetType>("options");
+
+  // Editorial partner cards can deep-link to a particular existing widget
+  // tab without creating a new supplier integration or changing script IDs.
+  useEffect(() => {
+    function syncHash() {
+      const selected = window.location.hash.replace("#transfer-widget-", "");
+      if ((selected === "options" || selected === "airport" || selected === "additional") && selected !== activeRef.current) {
+        activeRef.current = selected;
+        setLoadState("loading");
+        setActive(selected);
+      }
+    }
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    function handleAnchorClick(event: MouseEvent) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest('a[href^="#transfer-widget-"]');
+      if (!link) return;
+      const type = link.getAttribute("href")?.replace("#transfer-widget-", "");
+      if ((type === "options" || type === "airport" || type === "additional") && type !== activeRef.current) {
+        activeRef.current = type;
+        setLoadState("loading");
+        setActive(type);
+      }
+    }
+    document.addEventListener("click", handleAnchorClick);
+    return () => {
+      window.removeEventListener("hashchange", syncHash);
+      document.removeEventListener("click", handleAnchorClick);
+    };
+  }, []);
 
   useEffect(() => {
     const mount = host.current;
@@ -43,11 +76,25 @@ export default function TransferProviderWidgets() {
     script.src = widgets[active].src;
     script.async = true;
     script.charset = "utf-8";
-    script.onload = () => setLoadState("loaded");
+    // Loading a script is not proof that its form appeared. Detect the actual
+    // supplier content and surface alternatives instead of an endless spinner.
+    const hasSupplierContent = () => [...mount.children].some(node => node !== script);
+    const observer = new MutationObserver(() => {
+      if (hasSupplierContent()) setLoadState("loaded");
+    });
+    observer.observe(mount, { childList: true, subtree: true });
+    const timeout = window.setTimeout(() => {
+      if (!hasSupplierContent()) setLoadState("error");
+    }, 15000);
+    script.onload = () => {
+      if (hasSupplierContent()) setLoadState("loaded");
+    };
     script.onerror = () => setLoadState("error");
     mount.appendChild(script);
 
     return () => {
+      window.clearTimeout(timeout);
+      observer.disconnect();
       script.onload = null;
       script.onerror = null;
       mount.replaceChildren();
@@ -56,19 +103,23 @@ export default function TransferProviderWidgets() {
 
   function select(type: WidgetType) {
     if (type === active) return;
+    activeRef.current = type;
     setLoadState("loading");
     setActive(type);
   }
 
   return (
-    <section aria-labelledby="transfer-provider-heading" className="gth-glass mb-8 min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+    <section aria-labelledby="transfer-provider-heading" className="gth-glass mb-8 w-full min-w-0 scroll-mt-24 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+      <span id="transfer-widget-options" aria-hidden="true" className="block h-0 scroll-mt-24" />
+      <span id="transfer-widget-airport" aria-hidden="true" className="block h-0 scroll-mt-24" />
+      <span id="transfer-widget-additional" aria-hidden="true" className="block h-0 scroll-mt-24" />
       <div className="flex flex-wrap items-center gap-3">
         <span className="hidden sm:inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <CarFront size={21} aria-hidden="true" />
         </span>
         <div>
-          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
-          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Compare airport transfers</h2>
+          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">GTH PRO · Supplier-powered transfer search</p>
+          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Search transfer options</h2>
         </div>
       </div>
 
@@ -90,20 +141,24 @@ export default function TransferProviderWidgets() {
           className={active === "additional"
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
-          <ArrowUpRight size={16} aria-hidden="true" /> More travel tools
+          <ArrowUpRight size={16} aria-hidden="true" /> Other partner widget
         </button>
       </div>
 
-      <div className="mt-5 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+      <div className="mt-5 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
         <h3 className="font-semibold">{widgets[active].title}</h3>
+        <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
+          Complete pickup, drop-off, date and passengers inside this supplier form.
+          Partner booking, payment and support remain on the supplier side.
+        </p>
 
-        {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading provider search…</p>}
+        {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading transfer search…</p>}
         {loadState === "error" && (
           <p role="alert" className="mt-4 text-sm text-[var(--text-soft)]">
-            The provider widget could not load. Check your network or content-blocker settings, or try the alternative partner below.
+            The search form could not display. Try another search option or continue to a listed booking service below.
           </p>
         )}
-        <div ref={host} aria-label={widgets[active].title} className="mt-4 min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full" />
+        <div ref={host} aria-label={widgets[active].title} className="mx-auto mt-4 w-full min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full [&_iframe]:w-full" />
         {active === "airport" && (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
             <p className="min-w-0 flex-1 text-xs leading-5 text-[var(--text-soft)]">
@@ -112,11 +167,11 @@ export default function TransferProviderWidgets() {
             </p>
             <button type="button" onClick={() => select("options")}
               className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]">
-              Try Kiwitaxi
+              Try another search
             </button>
             <a href="https://tpo.lv/GFuzmgYk" target="_blank" rel="noopener noreferrer sponsored"
               className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
-              Welcome Pickups <ArrowUpRight size={13} aria-hidden="true" />
+              Explore pickup services <ArrowUpRight size={13} aria-hidden="true" />
             </a>
           </div>
         )}
@@ -131,7 +186,11 @@ export default function TransferProviderWidgets() {
         </p>
         <a href="https://tpo.lv/GFuzmgYk" target="_blank" rel="noopener noreferrer sponsored"
           className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">
-          Alternative: Welcome Pickups <ArrowUpRight size={16} aria-hidden="true" />
+          Explore pickup services <ArrowUpRight size={16} aria-hidden="true" />
+        </a>
+        <a href="https://gettransfer.tpo.lv/jpv6nsqO" target="_blank" rel="noopener noreferrer sponsored"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">
+          Compare more rides <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </div>
       <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">

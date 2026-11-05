@@ -4,7 +4,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 function load(path,imports={}){const mod={exports:{}};vm.runInNewContext(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module:mod,exports:mod.exports,URL,URLSearchParams,Response,require:n=>{if(n in imports)return imports[n];throw Error(n);}});return mod.exports;}
-const catalog=load('src/lib/travel/cruises.ts');
+const media=JSON.parse(readFileSync('src/data/cruise-media.json','utf8'));
+const catalog=load('src/lib/travel/cruises.ts',{'@/data/cruise-media.json':{default:media}});
 const {GET}=load('src/app/go/cruises/[slug]/route.ts',{'@/lib/travel/cruises':catalog,'next/server':{NextResponse:{json:(v,i)=>Response.json(v,i),redirect:(v,s)=>new Response(null,{status:s,headers:{location:v}})}}});
 test('every displayed cruise opens its exact product through the existing Klook campaign',async()=>{
  assert.equal(catalog.cruises.length,7);
@@ -44,4 +45,14 @@ test('every statically generated app service, including cruises, has a renderabl
  });
  const params=gateway.generateStaticParams();assert.ok(params.some(p=>p.id==='cruises'));
  for(const p of params)assert.ok(await gateway.default({params:Promise.resolve(p)}));
+});
+
+test('cruise photos have local files and retained commercial-use attribution',()=>{
+ for(const photo of Object.values(media)){
+  assert.match(photo.path,/^\/images\/cruises\/[a-z-]+\.(?:jpg|png)$/);
+  assert.ok(readFileSync('public'+photo.path).length>5000);
+  assert.match(photo.sourceUrl,/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+  assert.match(photo.license,/^CC (?:BY|BY-SA) 4\.0$/);
+  assert.ok(photo.author&&photo.alt&&photo.modifications);
+ }
 });

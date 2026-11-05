@@ -77,7 +77,8 @@ test("Flights, Hotels and Transfers remain on their original providers and theme
   const shell = source("src/components/travel/TravelServicePage.tsx");
   assert.match(flights, /wl_id=23459/);
   assert.match(hotel, /nuitee\.link/);
-  assert.doesNotMatch(transfers, /searchFirstLayout|GTHTransportSearchWidget/);
+  assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
+  assert.match(transfers, /TransferProviderWidgets/);
   assert.match(shell, /searchFirstLayout = false/);
   assert.match(shell, /!searchFirstLayout && <aside/);
 });
