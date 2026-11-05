@@ -22,6 +22,10 @@ export type TransferAirportSpotlight = {
   imageAlt: string;
   note: string;
   guideHref?: string;
+  /** Photography must match its claim; local city photos are only destination scenery. */
+  imageKind?: "airport" | "city";
+  photoCredit?: string;
+  photoCreditUrl?: string;
 };
 
 export type TransferSupplier = {
@@ -31,6 +35,9 @@ export type TransferSupplier = {
   href: string;
   external: boolean;
   disclosure: string;
+  /** Only GTH PRO's own illustrative photo assets; never a provider product image. */
+  image: string;
+  imageAlt: string;
 };
 
 export const transferJourneyCategories: readonly TransferJourneyCategory[] = [
@@ -91,7 +98,7 @@ export const transferJourneyCategories: readonly TransferJourneyCategory[] = [
 ] as const;
 
 export const transferAirportSpotlights: readonly TransferAirportSpotlight[] = [
-  { code: "BOM", city: "Mumbai", airport: "Mumbai Airport", image: "/images/cities/mumbai.jpg", imageAlt: "Mumbai city skyline", note: "Mumbai metro arrivals", guideHref: "/travel/airports/bom" },
+  { code: "BOM", city: "Mumbai", airport: "Chhatrapati Shivaji Maharaj International Airport", image: "https://upload.wikimedia.org/wikipedia/commons/d/d8/MumbaiAirportT2.JPG", imageAlt: "Exterior of Mumbai Chhatrapati Shivaji Maharaj International Airport Terminal 2", imageKind: "airport", photoCredit: "Bombaywallas / Wikimedia Commons · CC BY-SA 3.0", photoCreditUrl: "https://commons.wikimedia.org/wiki/File:MumbaiAirportT2.JPG", note: "BOM · Mumbai airport transfers", guideHref: "/travel/airports/bom" },
   { code: "CCU", city: "Kolkata", airport: "Kolkata Airport", image: "/images/cities/kolkata.jpg", imageAlt: "Kolkata city landmarks", note: "Kolkata city connections", guideHref: "/travel/airports/ccu" },
   { code: "DEL", city: "Delhi", airport: "Delhi Airport", image: "/images/cities/delhi.jpg", imageAlt: "Delhi destination scene", note: "National Capital Region", guideHref: "/travel/airports/del" },
   { code: "GOI", city: "Goa", airport: "Goa Dabolim Airport", image: "/images/cities/goa.jpg", imageAlt: "Goa coastal landscape", note: "Check GOI vs GOX", guideHref: "/travel/airports/goi" },
@@ -114,33 +121,41 @@ export const transferSuppliers: readonly TransferSupplier[] = [
   {
     name: "Kiwitaxi",
     description: "Supplier-powered airport transfer search and vehicle options.",
-    action: "Find in GTH PRO widget",
-    href: "#transfer-provider-heading",
+    action: "Explore transfer options",
+    href: "#transfer-widget-options",
     external: false,
-    disclosure: "Existing Travelpayouts widget",
+    disclosure: "Supplier-powered booking widget",
+    image: "/images/mega/transfers.jpg",
+    imageAlt: "Vehicles at an airport pickup area, illustrative photo",
   },
   {
     name: "intui.travel",
     description: "Airport transfer and shuttle search with destination options.",
-    action: "Choose intui.travel tab",
-    href: "#transfer-provider-heading",
+    action: "Explore shuttle options",
+    href: "#transfer-widget-airport",
     external: false,
-    disclosure: "Existing Travelpayouts widget",
+    disclosure: "Supplier-powered booking widget",
+    image: "/images/mega/transfers.jpg",
+    imageAlt: "Vehicles at an airport pickup area, illustrative photo",
   },
   {
     name: "Welcome Pickups",
     description: "Explore airport pickup services through the existing tracked partner link.",
-    action: "View on partner",
+    action: "Explore pickup choices",
     href: "https://tpo.lv/GFuzmgYk",
     external: true,
-    disclosure: "Existing affiliate link",
+    disclosure: "External booking · affiliate link",
+    image: "/images/mega/welcome.jpg",
+    imageAlt: "Illustration of a welcome pickup service",
   },
   {
     name: "GetTransfer",
     description: "Compare eligible transfer services on the supplier's own booking page.",
-    action: "View on partner",
+    action: "Compare ride options",
     href: "https://gettransfer.tpo.lv/jpv6nsqO",
     external: true,
-    disclosure: "Existing affiliate link",
+    disclosure: "External booking · affiliate link",
+    image: "/images/mega/transfers.jpg",
+    imageAlt: "Airport transfer vehicle scene, illustrative photo",
   },
 ] as const;
