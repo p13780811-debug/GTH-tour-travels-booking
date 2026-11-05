@@ -6,12 +6,19 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
  for(const width of [360,390,1440]){
   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600});
-  // One context-level handler covers popup redirects too. Page-level blocking
-  // can otherwise abort the popup's redirect before the QA receiver sees it.
-  await context.route('**/*',route=>{
+  let clickedAffiliate=null;
+  // Verify the real server's first-hop response. Route interception does not
+  // re-run for each URL in an HTTP redirect chain; receive the popup at the
+  // first-party route instead of following a partner checkout in this test.
+  await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname.startsWith('/go/cruises/')&&route.request().isNavigationRequest()){
+    const response=await route.fetch({maxRedirects:0});assert.equal(response.status(),302);
+    clickedAffiliate=new URL(response.headers().location);
+    assert.equal(clickedAffiliate.origin,'https://tp.media');
+    return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA referral receiver</h1>'});
+   }
    if(url.origin==='http://127.0.0.1:3000')return route.continue();
-   if(url.origin==='https://tp.media')return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA referral receiver</h1>'});
    return route.abort();
   });
   const page=await context.newPage();
@@ -32,8 +39,9 @@ try{
   // visiting partner checkout or recording a fake supplier booking.
   const opened=context.waitForEvent('page');
   await page.locator('[data-cruise] a').first().click();
-  const popup=await opened;await popup.waitForURL('https://tp.media/**');await popup.waitForLoadState('domcontentloaded');
-  assert.equal(new URL(popup.url()).searchParams.get('u'),'https://www.klook.com/en-IN/activity/142451-3-night-disney-adventure-cruise-from-singapore/');
+  const popup=await opened;await popup.getByRole('heading',{name:'QA referral receiver'}).waitFor();
+  assert.equal(new URL(popup.url()).pathname,'/go/cruises/disney-adventure-3-nights');
+  assert.equal(clickedAffiliate?.searchParams.get('u'),'https://www.klook.com/en-IN/activity/142451-3-night-disney-adventure-cruise-from-singapore/');
   await popup.close();
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Singapore');
   await page.getByLabel('Cruise type',{exact:true}).selectOption('holiday');
