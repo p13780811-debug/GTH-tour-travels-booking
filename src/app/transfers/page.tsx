@@ -32,7 +32,7 @@ export default function TransfersPage() {
         "Review the final price, refund policy and provider support contact before paying.",
       ]}
       partners={[
-        { name: "Welcome Pickups · Affiliate", url: "https://tpo.lv/GFuzmgYk", description: "Explore airport pickup services with the supplied affiliate link; final availability and booking conditions are determined by the provider." },
+        { name: "Welcome Pickups", url: "https://tpo.lv/GFuzmgYk", actionLabel: "Explore pickup options", description: "Check airport pickups and final availability with the selected supplier. Affiliate referral and supplier-managed checkout." },
       ]}
     >
       <nav aria-label="Airport transfers quick links" className="mb-7 grid min-w-0 gap-3 sm:grid-cols-3">
