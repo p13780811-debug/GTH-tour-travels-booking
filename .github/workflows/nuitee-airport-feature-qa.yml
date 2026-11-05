@@ -43,3 +43,11 @@ jobs:
         run: ./node_modules/.bin/tsc --noEmit --incremental false
       - name: Lint only the airport feature files
         run: ./node_modules/.bin/eslint src/lib/travel/nuiteeAirportDirectory.ts src/lib/travel/nuiteeAirportIndex.ts src/lib/travel/airportReference*.ts src/components/travel/AirportDiscoveryTools.tsx 'src/app/travel/airports/**/*.tsx'
+      - name: Check Next.js production build without production credentials
+        env:
+          VERCEL_ENV: preview
+          GTH_PUBLIC_LAUNCH_ENABLED: "false"
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+        run: npm run build
+
