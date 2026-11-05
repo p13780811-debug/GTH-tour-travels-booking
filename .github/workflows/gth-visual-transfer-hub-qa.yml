@@ -2,9 +2,12 @@ name: GTH Visual Transfer Hub QA
 
 on:
   push:
-    branches: [feat/visual-transfer-hub-20261105]
+    branches: [feat/visual-transfer-hub-20261105, fix/transfer-wegotrip-ui-photos-cta-20261105]
     paths:
       - "src/components/travel/TransferHubShowcase.tsx"
+      - "src/components/travel/TransferSpotlightImage.tsx"
+      - "src/components/travel/TransferProviderWidgets.tsx"
+      - "src/components/travel/AirportJourneyServices.tsx"
       - "src/lib/travel/transferHubCatalog.ts"
       - "src/app/transfers/page.tsx"
       - "tests/transfer-hub-visual-contract.test.mjs"
@@ -42,6 +45,6 @@ jobs:
       - name: Typecheck repository
         run: ./node_modules/.bin/tsc --noEmit --incremental false
       - name: Lint changed files only
-        run: ./node_modules/.bin/eslint src/app/transfers/page.tsx src/components/travel/TransferHubShowcase.tsx src/lib/travel/transferHubCatalog.ts
+        run: ./node_modules/.bin/eslint src/app/transfers/page.tsx src/components/travel/TransferHubShowcase.tsx src/components/travel/TransferSpotlightImage.tsx src/components/travel/TransferProviderWidgets.tsx src/components/travel/AirportJourneyServices.tsx src/lib/travel/transferHubCatalog.ts
       - name: Production-build code in a preview-safe CI environment
         run: npm run build
