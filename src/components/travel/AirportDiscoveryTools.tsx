@@ -127,7 +127,7 @@ export default function AirportDiscoveryTools() {
                     {guideCodes.has(a.code) && (
                       <Link className="gold-text underline" href={`/travel/airports/${a.code.toLowerCase()}`}>Airport guide</Link>
                     )}
-                    <Link className="underline" href={`/flights?origin=CCU&destination=${a.code}`}>
+                    <Link className="underline" href={`/flights?origin=${a.code === "CCU" ? "BOM" : "CCU"}&destination=${a.code}`}>
                       Explore flights <ArrowRight className="inline" size={14} aria-hidden="true" />
                     </Link>
                   </div>
