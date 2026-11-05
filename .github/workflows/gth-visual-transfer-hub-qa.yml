@@ -2,7 +2,7 @@ name: GTH Visual Transfer Hub QA
 
 on:
   push:
-    branches: [feat/visual-transfer-hub-20261105, fix/transfer-wegotrip-ui-photos-cta-20261105]
+    branches: [feat/visual-transfer-hub-20261105, fix/transfer-wegotrip-ui-photos-cta-20261105, fix/transfer-wegotrip-widget-hash-state-20261105]
     paths:
       - "src/components/travel/TransferHubShowcase.tsx"
       - "src/components/travel/TransferSpotlightImage.tsx"
