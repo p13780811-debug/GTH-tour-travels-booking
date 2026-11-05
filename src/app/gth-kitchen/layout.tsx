@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+
 export const metadata: Metadata = {
-  title: "GTH PRO Kitchen Project",
+  title: "Thali Treats Palava",
   robots: { index: false, follow: false },
 };
+
 export default function KitchenLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

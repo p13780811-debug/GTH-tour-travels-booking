@@ -31,7 +31,7 @@ function neutralControl(tag){
 }
 
 test('all marketplace categories remain visible as neutral filter selections, not conversion buttons',()=>{
- const {default:Filters}=load('src/components/real-estate/DiscoveryFilters.tsx');
+ const {default:Filters}=load('src/components/real-estate/DiscoveryFilters.tsx',{'./RegionSearch':{default:()=>null}});
  const html=renderToStaticMarkup(React.createElement(Filters,{expanded:true,onApply(){}}));
  const tags=buttons(html);
  assert.equal(tags.length,8); // All, five inventory types, Apply and Reset
@@ -94,7 +94,7 @@ test('scoped Real Estate control styling uses existing global theme tokens and p
 
 test('real estate header and footer provide direct routes to the three-pillar ecosystem',()=>{
  const {default:Header}=load('src/components/real-estate/EstateHeader.tsx',{'next/link':link,'next/navigation':{usePathname:()=>'/real-estate'},'@/components/brand/BrandVideo':{default:()=>null},'@/components/ThemeToggle':{default:()=>null}});
- const {default:Footer}=load('src/components/real-estate/RealEstateFooter.tsx',{'next/link':link});
+ const {default:Footer}=load('src/components/real-estate/RealEstateFooter.tsx',{'./EstateAnalyticsConsent':load('src/components/real-estate/EstateAnalyticsConsent.tsx'),'next/link':link});
  for(const Component of [Header,Footer]){const html=renderToStaticMarkup(React.createElement(Component));for(const href of ['/','/travel','/tender'])assert.ok(html.includes(`href="${href}"`),`Missing platform route ${href}`);}
  const header=renderToStaticMarkup(React.createElement(Header));assert.match(header,/aria-label="GTH PRO platforms"/);assert.match(header,/aria-current="location"/);
 });

@@ -80,7 +80,9 @@ export function knownSeoKind(x:string):x is SeoKind{
 export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:number}[]>{
  if(!isPublicLaunch())return [];
  const client=db();
- const signal=AbortSignal.timeout(5_000);
+ // Counting every approved record can exceed a normal row-read deadline.
+ // Keep counts bounded separately; paginated row reads retain their 5-second limit.
+ const signal=AbortSignal.timeout(12_000);
  const output=await Promise.all(SEO_KINDS.map(async kind=>{
   const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"}).abortSignal(signal);
   if(error)throw new Error("SEO count unavailable: "+kind);

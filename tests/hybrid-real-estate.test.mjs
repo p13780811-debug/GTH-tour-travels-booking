@@ -5,7 +5,7 @@ import ts from 'typescript';
 function load(path,deps={}){const exports={};new Function('exports','require',ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(exports,n=>{if(!(n in deps))throw Error(n);return deps[n]});return exports;}
 const validators=load('src/lib/security/validators.ts');
 const request=load('src/lib/security/request.ts',{'./validators':validators});
-const search=load('src/lib/real-estate/hybrid-search.ts',{'@/lib/security/request':request});
+const search=load('src/lib/real-estate/hybrid-search.ts',{'@/lib/security/request':request,'./search-region':load('src/lib/real-estate/search-region.ts')});
 const parse=value=>search.parseHybridSearch(new URLSearchParams(value));
 
 test('hybrid search rejects operator injection, invalid budgets, enums and fractional pages',()=>{

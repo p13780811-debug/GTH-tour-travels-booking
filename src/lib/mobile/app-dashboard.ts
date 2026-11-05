@@ -7,6 +7,7 @@ export const appServices=[
  {id:"transfers",label:"Airport transfers",href:"/transfers",pillar:"travel",icon:"transfer",keywords:"pickup drop taxi"},
  {id:"cars",label:"Car rentals",href:"/cars",pillar:"travel",icon:"car",keywords:"drive rental"},
  {id:"tours",label:"Tours & activities",href:"/tours",pillar:"travel",icon:"compass",keywords:"experience sightseeing tickets"},
+ {id:"cruises",label:"Cruises",href:"/cruises",pillar:"travel",icon:"compass",keywords:"cruise ship sailing cabin disney harbour dinner"},
  {id:"insurance",label:"Travel protection",href:"/insurance",pillar:"travel",icon:"shield",keywords:"insurance flight claims delay"},
  {id:"destinations",label:"Destinations",href:"/app/destinations",pillar:"travel",icon:"globe",keywords:"cities guides explore"},
  {id:"esim",label:"Travel eSIM",href:"/flights/out/yesim",pillar:"travel",icon:"sim",keywords:"data internet roaming connectivity"},
@@ -15,6 +16,20 @@ export const appServices=[
  {id:"saved-tenders",label:"Saved tenders",href:"/tender/saved",pillar:"tender",icon:"bookmark",keywords:"shortlist watchlist"},
  {id:"tender-help",label:"Tender services",href:"/tender/services",pillar:"tender",icon:"file",keywords:"help assistance document quote"},
 ] as const;
+/**
+ * Keep dashboard taps inside the installed /app scope. Existing website and
+ * affiliate destinations are opened only through an explicit customer action.
+ * This list is fixed at build time; no arbitrary URL or provider ID is accepted.
+ */
+export function mobileServiceHref(service: typeof appServices[number]): string {
+ return service.href.startsWith("/app/") ? service.href : "/app/services/" + service.id;
+}
+export function mobileWebServices() {
+ return appServices.filter(service => !service.href.startsWith("/app/"));
+}
+export function mobileWebService(id: string) {
+ return mobileWebServices().find(service => service.id === id);
+}
 export const appPromotions=[
  {id:"stay",pillar:"travel",eyebrow:"Plan your stay",title:"A new place. A better break.",description:"Find hotels, rooms and stay options worldwide.",action:"Find a stay",href:"/app/hotels",image:"/images/mega/hotels.jpg"},
  {id:"deals",pillar:"travel",eyebrow:"Travel deals",title:"Find experiences and current offers.",description:"Browse destinations and check current promotions with the booking provider.",action:"Explore offers",href:"/travel/deals",image:"/images/mega/tours.jpg"},

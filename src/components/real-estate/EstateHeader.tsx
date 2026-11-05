@@ -33,6 +33,7 @@ export default function EstateHeader() {
  </div><nav aria-label="GTH PRO platforms" className="gth-container scrollbar-hide flex items-center gap-4 overflow-x-auto text-xs">
   <Link href="/" className="inline-flex min-h-11 shrink-0 items-center">GTH PRO home</Link>
   <Link href="/real-estate" onClick={event => navigate(event,"/real-estate")} aria-current="location" className="inline-flex min-h-11 shrink-0 items-center font-semibold underline">Real Estate</Link>
+  <Link href="/real-estate/workspace" className="inline-flex min-h-11 shrink-0 items-center">Property workspace</Link>
   <Link href="/real-estate/worldwide" className="inline-flex min-h-11 shrink-0 items-center">Worldwide property</Link>
   <Link href="/travel" className="inline-flex min-h-11 shrink-0 items-center">Travel</Link>
   <Link href="/tender" className="inline-flex min-h-11 shrink-0 items-center">Tenders</Link>

@@ -5,14 +5,14 @@ import vm from "node:vm";
 import ts from "typescript";
 
 function harness(launched=true){
- const signals=[];
+ const signals=[],deadlines=new Map();
  const publicEnv={NEXT_PUBLIC_SUPABASE_URL:"https://test.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"public-test-key",
   VERCEL_ENV:"production",GTH_PUBLIC_LAUNCH_ENABLED:String(launched)};
  function compile(path,dependencies={}){
   const compiledModule={exports:{}};
   const code=ts.transpileModule(readFileSync(new URL("../"+path,import.meta.url),"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   vm.runInNewContext(code,{module:compiledModule,exports:compiledModule.exports,URL,process:{env:publicEnv},
-   AbortSignal:{timeout:ms=>{assert.equal(ms,5000);return AbortSignal.abort();}},
+   AbortSignal:{timeout:ms=>{assert.ok(ms===5000||ms===12000);const signal=AbortSignal.abort();deadlines.set(signal,ms);return signal;}},
    require:name=>{if(name in dependencies)return dependencies[name];throw Error("Unexpected dependency "+name);},
   });
   return compiledModule.exports;
@@ -20,7 +20,7 @@ function harness(launched=true){
  const client={from(table){
   let signal;
   const query=new Proxy({}, {get(_target,key){
-   if(key==="abortSignal")return value=>{signal=value;signals.push({table,signal});return query;};
+   if(key==="abortSignal")return value=>{signal=value;signals.push({table,signal,deadline:deadlines.get(signal)});return query;};
    if(key==="then")return (resolve,reject)=>signal?.aborted
     ?Promise.resolve({data:null,count:null,error:{message:"private database detail"}}).then(resolve,reject)
     :new Promise(()=>{}).then(resolve,reject);
@@ -55,6 +55,7 @@ test("SEO shard count outages fail explicitly and the launch gate avoids all DB 
  const h=harness();
  await assert.rejects(h.shards.seoShardCounts(),/SEO count unavailable/);
  assert.equal(h.signals.length,6);
+ assert.ok(h.signals.every(({deadline})=>deadline===12000));
  const preview=harness(false);
  assert.equal((await preview.sitemap()).length,0);
  assert.equal((await preview.shards.seoShardCounts()).length,0);

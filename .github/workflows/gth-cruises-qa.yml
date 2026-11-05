@@ -1,0 +1,54 @@
+name: GTH Cruises — product links and responsive page QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/app/cruises/**'
+      - 'src/app/go/cruises/**'
+      - 'src/lib/travel/cruises.ts'
+      - 'src/lib/travel/partner-search.ts'
+      - 'scripts/qa-cruises.mjs'
+      - '.github/workflows/gth-cruises-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gth-cruises-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cruise-journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - run: node --test tests/cruise-catalog.test.mjs tests/travel-partner-search.test.mjs tests/travel-deals-klook-affiliate.test.mjs
+      - name: Install QA browser
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Start test-only Next.js server
+        run: |
+          npm run dev > /tmp/gth-cruise-dev.log 2>&1 &
+          ok=0
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 3 http://127.0.0.1:3000/cruises >/dev/null; then ok=1; break; fi
+            sleep 2
+          done
+          if [ "$ok" -ne 1 ]; then tail -80 /tmp/gth-cruise-dev.log; exit 1; fi
+      - run: node scripts/qa-cruises.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gth-cruises-mobile-desktop-qa
+          path: /tmp/gth-cruises-qa/
+          if-no-files-found: ignore
+          retention-days: 7
+      - if: failure()
+        run: tail -80 /tmp/gth-cruise-dev.log || true

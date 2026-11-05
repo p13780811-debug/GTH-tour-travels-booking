@@ -82,3 +82,16 @@ test("Shared source helper exposes unbounded source-ID cursor rather than synthe
  assert.match(src,/\.limit\(limit\+1\)/);
  assert.doesNotMatch(src,/pageRaw|page<100|Math\.random/);
 });
+
+
+test("Progress API reuses the existing shared read cache without changing source/booking contract",()=>{
+ const api=read("src/app/api/travel/osm-attractions/route.ts");
+ const cache=read("src/lib/travel/cachedDiscovery.ts");
+ assert.match(api,/import \{cachedSourceProgress\} from "@\/lib\/travel\/cachedDiscovery"/);
+ assert.match(api,/await cachedSourceProgress\(\)/);
+ assert.doesNotMatch(api,/await sourceProgress\(\)/);
+ assert.match(cache,/revalidate:300/);
+ assert.match(api,/verified_places:0/);
+ assert.match(api,/Source directory temporarily unavailable/);
+ assert.match(api,/Cache-Control/);
+});

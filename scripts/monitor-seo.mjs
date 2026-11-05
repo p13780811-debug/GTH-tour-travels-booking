@@ -47,7 +47,7 @@ try {
     try {
       const parsed = new URL(u);
       if (parsed.origin !== origin || parsed.search || parsed.hash ||
-        !/^\/seo-sitemaps\/(hotels|tours|destinations|attractions|tenders)\/[0-9]+\.xml$/.test(parsed.pathname)) {
+        !/^\/seo-sitemaps\/(hotels|tours|destinations|attractions|tenders|properties)\/[0-9]+\.xml$/.test(parsed.pathname)) {
         errors.push("sitemap-index.xml: invalid shard URL");
         continue;
       }

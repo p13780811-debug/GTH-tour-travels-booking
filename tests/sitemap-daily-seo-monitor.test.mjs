@@ -28,3 +28,7 @@ test("SEO monitors do not mutate pages, fetch private data or falsely claim inde
  assert.match(y,/cron: "20 7 \* \* \*"/);
  assert.match(y,/node scripts\/monitor-seo\.mjs/);
 });
+
+test("daily SEO sampling accepts the real-estate property shards advertised by the index",()=>{
+ assert.match(read("scripts/monitor-seo.mjs"),/tenders\|properties/);
+});

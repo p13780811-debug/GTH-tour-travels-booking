@@ -5,6 +5,7 @@ import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowUpRight,Building2,CalendarCheck,ClipboardCheck,FileSearch,Globe,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import {loadAppDetail} from "@/lib/mobile/catalog";
+import AppSaveRecord from "@/components/mobile/AppSaveRecord";
 import {isMobileSection} from "@/lib/mobile/routes";
 
 export const dynamic="force-dynamic";
@@ -37,6 +38,13 @@ export default async function AppRecordDetail({params}:Props){
      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--gold)]">GTH PRO · {record.subtitle}</p>
      <h1 className="mt-2 text-xl font-semibold leading-7 tracking-tight">{record.title}</h1>
      <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{record.summary}</p>
+     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <AppSaveRecord kind={record.kind} href={"/app/"+section+"/"+id}
+       title={record.title} subtitle={record.subtitle}/>
+      <Link href="/app/board" className="inline-flex min-h-11 items-center text-xs font-semibold text-[var(--gold)] underline">
+       My Research Desk
+      </Link>
+     </div>
      <div className="mt-5 grid grid-cols-2 gap-2">
       {record.facts.map(([key,value])=><div key={key} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3">
        <p className="text-[11px] font-medium text-[var(--text-soft)]">{key}</p>

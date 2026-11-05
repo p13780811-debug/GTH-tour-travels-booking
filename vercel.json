@@ -2,6 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
+      "fix/attractions-progress-cpu-cache-20261103": false,
+      "fix/estate-metadata-discovery-20261030": false,
       "feat/real-estate-production-upgrade-20261019": false,
       "feat/real-estate-explorer-design-20261019": false,
       "release/gth-one-shot-20261018": false,
@@ -30,6 +32,14 @@
       "fix/real-estate-registry-resilience-20261027": false,
       "feat/hybrid-portal-buyer-upgrade-20261027": false,
       "fix/mobile-app-drive-widget-isolation-20261028": false,
+      "feat/estate-market-workspace-20261029": false,
+      "feat/estate-discovery-quality-20261030": false,
+      "fix/tender-service-search-discovery-20261104": false,
+      "feat/12go-search-staging-20261104": false,
+      "fix/12go-native-white-label-search-20261104": false,
+      "fix/12go-flight-style-responsive-20261104": false,
+      "fix/12go-single-responsive-search-20261105": false,
+      "fix/transport-interactive-search-ferry-20261105": false,
       "feat/travel-offer-discovery-klook-20261029": false
     }
   }

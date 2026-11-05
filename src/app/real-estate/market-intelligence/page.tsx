@@ -1,21 +1,6 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import research from '@/data/market-intelligence/mumbai-research.json'
-import type { MumbaiResearch } from '@/lib/market-intelligence'
-import MarketIntelligenceClient from './MarketIntelligenceClient'
-
-// Static, immutable research snapshot. No Supabase queries and no live listing writes.
-const dataset = research as unknown as MumbaiResearch
-
-export const metadata: Metadata = {
-  title: 'Mumbai market research (simulated) | GTH PRO',
-  description: 'Explore Mumbai simulated market data and research-only price scenarios. Not actual property inventory, verified prices, or investment advice.',
-  robots: { index: false, follow: false },
-}
-
-export default function MarketIntelligencePage() {
-  // Publication remains opt-in until the source's conflicting license notices
-  // have been independently resolved. Existing property discovery is unaffected.
-  if (process.env.GTH_MARKET_RESEARCH_ENABLED !== 'true') notFound()
-  return <MarketIntelligenceClient research={dataset} />
-}
+import {isPublicLaunch,siteUrl} from '@/lib/seo/site';
+import type {Metadata} from 'next';
+import LocalityPriceExplorer from '@/components/real-estate/LocalityPriceExplorer';
+import JourneyNav from '@/components/real-estate/JourneyNav';
+export const metadata:Metadata={title:'Recorded property market evidence | GTH PRO',description:'Research published asking-price observations and independently source-reviewed transaction samples by country, city, currency, property type and area basis.',alternates:{canonical:siteUrl('/real-estate/market-intelligence')},robots:{index:isPublicLaunch(),follow:true}};
+export default function MarketIntelligencePage(){return <main className="gth-container pb-28 pt-8"><JourneyNav/><h1 className="mt-6 text-3xl font-bold">Property market evidence</h1><p className="mt-3 text-sm leading-7">Real observed evidence, separate from registry data and research scenarios. No generated valuations, sold prices, forecast returns or artificial charts.</p><LocalityPriceExplorer/></main>;}

@@ -60,7 +60,7 @@ export function appQueryHref(section:MobileSection,query:AppQuery,overrides:Part
 function escapeLike(value:string):string{
  return value.replace(/[\\%_]/g,character=>"\\"+character);
 }
-export async function listAppRecords(section:MobileSection,query:AppQuery):Promise<AppListing>{
+export async function listAppRecords(section:MobileSection,query:AppQuery,signal?:AbortSignal):Promise<AppListing>{
  const {page,q,country,category,destination}=query,offset=(page-1)*PAGE_SIZE;
  if(section==="flights"||section==="destinations"){
   let all=destinations.filter(x=>!q||x.name.toLowerCase().includes(q.toLowerCase()));
@@ -83,11 +83,12 @@ export async function listAppRecords(section:MobileSection,query:AppQuery):Promi
    if(destination){
     const match=destinations.find(d=>d.slug===destination);
     if(!match)return empty(page,"Destination not found");
-    const hint=escapeLike(match.name);
+    const hint="%"+escapeLike(match.name)+"%";
+    // Match published regional names such as North Goa / South Goa as well as Goa.
     list=list.or("city.ilike."+hint+",region.ilike."+hint);
    }
    const {data,error,count}=await list.order("name",{ascending:true}).order("source_id",{ascending:true})
-     .range(offset,offset+PAGE_SIZE-1);
+     .range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
    if(error)return empty(page,"Hotel directory temporarily unavailable");
    const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
      if(!/^(node|way|relation)\/[0-9]{1,19}$/.test(row.source_id))return [];
@@ -103,7 +104,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery):Promi
      .not("slug","is",null);
    if(q)list=list.ilike("title","%"+escapeLike(q)+"%");
    if(category)list=list.eq("property_type",category);
-   const {data,error,count}=await list.order("id",{ascending:false}).range(offset,offset+PAGE_SIZE-1);
+   const {data,error,count}=await list.order("id",{ascending:false}).range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
    if(error)return empty(page,"Property directory temporarily unavailable");
    const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
      if(typeof row.slug!=="string"||!/^[a-z0-9][a-z0-9-]{1,127}$/.test(row.slug))return [];
@@ -120,7 +121,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery):Promi
   if(q)list=list.ilike("title","%"+escapeLike(q)+"%");
   if(country)list=list.eq("country_code",country);
   if(category)list=list.eq("sector",category);
-  const {data,error,count}=await list.order("deadline_at",{ascending:true}).range(offset,offset+PAGE_SIZE-1);
+  const {data,error,count}=await list.order("deadline_at",{ascending:true}).range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
   if(error)return empty(page,"Tender listings temporarily unavailable");
   const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
     if(typeof row.id!=="string"||!/^[a-f0-9-]{36}$/i.test(row.id))return [];

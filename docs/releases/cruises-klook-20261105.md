@@ -1,0 +1,11 @@
+# GTH PRO Cruises — existing Klook PR #148
+
+Dedicated `/cruises` catalogue contains seven editorially reviewed product identities: Disney Adventure 3-night (142451), Disney Adventure 4-night (142504), Genting Dream (164709), Spectrum of the Seas (125574), Singapore River Cruise (3846), Aqua Luna (659), Dubai Marina Dinner Cruise (144402). Each fixed official source URL is recorded in `src/lib/travel/cruises.ts`, reviewed 5 November 2026.
+
+The page renders product options without JavaScript or a supplier API. Destination/name and cruise-type GET filters preserve the on-page collection; no-match destinations can use the existing tracked Klook search. Each card opens its own exact product through `/go/cruises/[slug]`, using the existing public Travelpayouts campaign identifiers. Unknown IDs and query overrides fail closed. This does not certify current inventory, package fares, successful bookings or commission eligibility for every cruise SKU.
+
+Existing approved destination photographs are labelled as destination views, not vessel photographs. Supplier photography, reviews, ratings, fake prices and discounts are not copied. Final cabin/date/package conditions stay with Klook and the operator. No new paid API, database, importer, flight/hotel connection or global theme change.
+
+Discoverable from Travel category navigation, the Travel landing page, footer, sitemap and the existing web-app service gateway. Native Expo PR #153 remains separate. Previous Deals work in #148 is preserved; its existing Klook deals-page program/attribution release check remains open. No merge/deployment is performed in this task.
+
+Validation: direct redirect and filtering regressions; TypeScript and targeted ESLint; exact-head production/security regression CI plus Playwright at 360/390/1440px in day/night, named card links, first-click product redirect, destination/type filters and no-match provider search. Browser QA uses a test-only receiver to avoid partner checkout; it does not prove referral commission attribution.

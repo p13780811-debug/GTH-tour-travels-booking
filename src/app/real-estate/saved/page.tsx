@@ -47,7 +47,7 @@ export default function SavedPage() {
     }, [load])
     const compared = items.filter(item => selected.includes(item.slug) && !item.unavailable)
     return <main className="gth-container pt-10 pb-28 px-4">
-        <JourneyNav />
+        <Link href="/real-estate/workspace?tab=saved" className="gth-btn mt-4 inline-flex">Sync shortlist with my account</Link><JourneyNav />
         <header className="mt-8 mb-8"><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Your shortlist</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Saved, compare & research</h1><p className="opacity-70 leading-7 mt-4">Saved on this device. No account sync. Clearing browser storage removes this shortlist.</p></header>
         <div className="flex justify-between gap-4 flex-wrap items-center mb-6"><p role="status">{loading ? "Loading saved listings…" : `${items.length} saved · ${compared.length} selected for comparison`}</p><button className={`gth-btn ${styles.action}`} disabled={loading} onClick={load}>Refresh listings</button></div>
         {error && <p role="alert" className="gth-glass rounded-2xl p-5 mb-6">{error}</p>}

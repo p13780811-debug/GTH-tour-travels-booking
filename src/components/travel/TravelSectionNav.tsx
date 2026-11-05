@@ -4,7 +4,7 @@ import Link from "next/link";
 import {useState} from "react";
 import scroll from "./TravelScroll.module.css";
 import {usePathname} from "next/navigation";
-import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Newspaper, Landmark, ShieldCheck, BadgePercent} from "lucide-react";
+import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, Plane, Route, Ticket, TrainFront, Ship, Newspaper, Landmark, ShieldCheck, BadgePercent} from "lucide-react";
 
 /**
  * Shared secondary navigation across travel categories and their detail pages.
@@ -15,7 +15,6 @@ export const TRAVEL_SECTIONS = [
   {href:"/hotels",label:"Hotels",Icon:Hotel},
   {href:"/tours",label:"Tours",Icon:Compass},
   {href:"/activities",label:"Activities",Icon:Ticket},
-  {href:"/travel/deals",label:"Deals & Offers",Icon:BadgePercent},
   {href:"/attractions",label:"Attractions",Icon:Landmark},
   {href:"/destinations",label:"Destinations",Icon:MapPinned},
   {href:"/guides",label:"Guides",Icon:BookOpen},
@@ -24,6 +23,9 @@ export const TRAVEL_SECTIONS = [
   {href:"/cars",label:"Car rentals",Icon:CarFront},
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},
+  {href:"/ferry",label:"Ferries",Icon:Ship},
+  {href:"/cruises",label:"Cruises",Icon:Ship},
+  {href:"/travel/deals",label:"Deals & offers",Icon:BadgePercent},
   {href:"/insurance",label:"Insurance",Icon:ShieldCheck},
 ] as const;
 

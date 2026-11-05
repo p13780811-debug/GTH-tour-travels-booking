@@ -8,7 +8,7 @@ test("bus and train never generate artificial seat inventory or fares", () => {
   for (const path of ["src/app/bus/page.tsx", "src/app/train/page.tsx"]) {
     const source = read(path);
     assert.match(source, /TravelServicePage/);
-    assert.match(source, /TransportPlanner/);
+    assert.match(source, /GTHTransportSearchWidget/);
     assert.doesNotMatch(source, /Math\.random|YOUR_API_KEY|select seat|Booked Seat|availableSeats/gi);
   }
 });
@@ -36,11 +36,12 @@ test("ground transport connects separate car rental and airport transfer pages",
   assert.match(legacy, /TravelpayoutsCarWidget/);
 });
 
-test("train referral stays with official railway service, not mocked API", () => {
+test("global rail search uses GTH branding and does not imply railway API access", () => {
   const train = read("src/app/train/page.tsx");
-  assert.match(train, /irctc\.co\.in/);
-  assert.match(train, /enquiry\.indianrail\.gov\.in/);
-  assert.doesNotMatch(train, /indianrailapi|Math\.random|YOUR_API_KEY/);
+  assert.match(train, /Global Train & Rail Journey Planning/);
+  assert.match(train, /official railway PNR services are not integrated/);
+  assert.match(train, /GTHTransportSearchWidget/);
+  assert.doesNotMatch(train, /indianrailapi|Math\.random|YOUR_API_KEY|IRCTC|12Go|Busbud/);
 });
 
 
