@@ -32,9 +32,14 @@ try{
    const res=await context.request.get('http://127.0.0.1:3000'+link,{maxRedirects:0});assert.equal(res.status(),302);
    const target=new URL(res.headers().location);assert.equal(target.origin,'https://tp.media');assert.match(new URL(target.searchParams.get('u')).pathname,/\/activity\/\d+-/);
   }
-  await page.screenshot({path:`${root}/cruises-${width}-night.png`,fullPage:true});
+  for(const img of await page.locator('[data-cruise] img').all()){
+   await img.scrollIntoViewIfNeeded();await img.evaluate(element=>element.decode());
+   assert.ok(await img.evaluate(element=>element.naturalWidth>0));
+  }
+  await page.getByRole('heading',{name:'A different way to see the world.'}).scrollIntoViewIfNeeded();
+  await page.screenshot({path:`${root}/cruises-${width}-night.png`,fullPage:true,animations:'disabled'});
   await page.getByRole('button',{name:'Switch to day theme',exact:true}).click();
-  await page.screenshot({path:`${root}/cruises-${width}-day.png`,fullPage:true});
+  await page.screenshot({path:`${root}/cruises-${width}-day.png`,fullPage:true,animations:'disabled'});
   // Capture the actual one-click redirect in a test-only receiver, without
   // visiting partner checkout or recording a fake supplier booking.
   const opened=context.waitForEvent('page');
@@ -50,7 +55,8 @@ try{
   await page.getByRole('status').filter({hasText:'3 cruise options'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),3);
   await page.getByRole('link',{name:'Clear filters',exact:true}).click();
-  await page.locator('[data-cruise]').first().waitFor();assert.equal(await page.locator('[data-cruise]').count(),7);
+  await page.getByRole('status').filter({hasText:'7 cruise options'}).waitFor();
+  assert.equal(await page.locator('[data-cruise]').count(),7);
   assert.equal(await page.getByRole('searchbox',{name:'Destination or cruise name'}).inputValue(),'');
   assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
