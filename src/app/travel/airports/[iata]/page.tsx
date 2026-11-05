@@ -20,6 +20,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${airport.city} Airport Guide (${airport.code}) | GTH PRO`,
     description: `Explore ${airport.name} (${airport.code}): airport details, local time zone, flight planning and ground transport links on GTH PRO.`,
     alternates: { canonical: `/travel/airports/${airport.code.toLowerCase()}` },
+    openGraph: {
+      title: `${airport.name} (${airport.code}) Airport Guide | GTH PRO`,
+      description: `Airport codes and local time zone for ${airport.name} in ${airport.city}. Continue to flight and ground transfer planning with GTH PRO.`,
+      url: `/travel/airports/${airport.code.toLowerCase()}`,
+      type: "article",
+      images: [{ url: "/images/mega/flights.jpg", alt: "Airport and flight route research with GTH PRO" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${airport.city} Airport (${airport.code}) | GTH PRO`,
+      description: `Plan flights and airport transfers using verified reference information for ${airport.name}.`,
+      images: ["/images/mega/flights.jpg"],
+    },
   };
 }
 
