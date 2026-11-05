@@ -5,13 +5,14 @@ import TransferProviderWidgets from "@/components/travel/TransferProviderWidgets
 import AirportJourneyServices from "@/components/travel/AirportJourneyServices";
 import TravelPartnerSearch from "@/components/travel/TravelPartnerSearch";
 import TransferAirportFinder from "@/components/travel/TransferAirportFinder";
+import TransferHubShowcase from "@/components/travel/TransferHubShowcase";
 import Link from "next/link";
 import { ArrowRight, CarFront, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/transfers" },
-  title: "Airport Services, Transfers & Travel Extras | GTH PRO",
-  description: "Find airport transfer providers with GTH PRO. Explore airports, compare Kiwitaxi and intui.travel widgets, and continue to supplier-managed bookings.",
+  title: "Airport Transfer Hub | Private Pickups, Shuttles & Partners | GTH PRO",
+  description: "Explore visual airport pickup, private car, family transfer and shuttle guides. Compare transfer suppliers with existing Kiwitaxi, intui.travel, Welcome Pickups and GetTransfer links.",
   openGraph: { title: "Airport Transfers, Kiwitaxi & Pickups | GTH PRO", description: "Discover arrival airports and compare airport transfer providers with clearly labeled partner booking options.", url: "/transfers", type: "website", images: ["/images/mega/transfers.jpg"] },
 };
 
@@ -45,6 +46,7 @@ export default function TransfersPage() {
           Airport Explorer <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </nav>
+      <TransferHubShowcase />
       <TransferAirportFinder />
       <TransferProviderWidgets />
       <details className="gth-glass mb-10 min-w-0 rounded-2xl border border-[var(--border)] p-4 sm:p-6">
