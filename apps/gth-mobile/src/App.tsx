@@ -6,7 +6,7 @@ import {
 import {SafeAreaProvider,SafeAreaView} from "react-native-safe-area-context";
 import {
  ArrowLeft,ArrowRight,Bookmark,BookmarkCheck,Building2,Clock3,Compass,ExternalLink,
- FileText,Globe2,Home,Hotel,MapPin,Plane,Search,Settings,Share2,ShieldCheck,Sparkles,
+ Bus,FileText,Globe2,Home,Hotel,MapPin,Plane,Search,Settings,Share2,ShieldCheck,Ship,TrainFront,
 } from "lucide-react-native";
 import colors from "./theme/generated.json";
 import travelHero from "../assets/hero/travel.jpg";
@@ -83,19 +83,13 @@ function Header({theme,openSettings}:{theme:Theme;openSettings:()=>void}){
   </Pressable>
  </View>;
 }
-function Hero({theme,onSearch,onExplore,onQuick,query,setQuery}:{theme:Theme;onSearch:()=>void;onExplore:()=>void;onQuick:(query:string)=>void;query:string;setQuery:(v:string)=>void}){
+function Hero({theme,onSearch,onQuick,query,setQuery}:{theme:Theme;onSearch:()=>void;onQuick:(query:string)=>void;query:string;setQuery:(v:string)=>void}){
  return <View style={[styles.hero,{backgroundColor:theme.surface,borderColor:theme.border}]}>
-  <View style={{flexDirection:"row",alignItems:"center",gap:7}}>
-   <Sparkles size={15} color={theme.accent}/>
-   <TextLabel text="ONE WORLD · LIMITLESS POSSIBILITIES" theme={theme}/>
-  </View>
-  <Text style={[styles.h1,{color:theme.text}]}>Your world.{"\n"}One brilliant app.</Text>
-  <Text style={[styles.lead,{color:theme.muted}]}>
-   Travel, discover places and find business opportunities in a space designed around you.
-  </Text>
+  <Text style={[styles.h1,{color:theme.text}]}>Your world. All in one place.</Text>
+  <Text style={[styles.lead,{color:theme.muted}]}>Travel · Real Estate · Tenders</Text>
   <View style={[styles.searchRow,{backgroundColor:theme.bg,borderColor:theme.border}]}>
    <Search size={20} color={theme.accent}/>
-   <TextInput placeholder="Goa hotels, Mumbai homes, tenders…"
+   <TextInput placeholder="Search GTH PRO" multiline={false} numberOfLines={1}
     placeholderTextColor={theme.muted} value={query} onChangeText={setQuery}
     onSubmitEditing={onSearch} returnKeyType="search" autoCorrect={false}
     accessibilityLabel="Universal search" style={[styles.searchInput,{color:theme.text}]}/>
@@ -104,17 +98,38 @@ function Hero({theme,onSearch,onExplore,onQuick,query,setQuery}:{theme:Theme;onS
     <ArrowRight size={21} color={theme.onAccent}/>
    </Pressable>
   </View>
-  <View style={{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:12,alignItems:"center"}}>
-   <Text style={{fontSize:11,fontWeight:"700",color:theme.muted}}>Try:</Text>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled"
+   contentContainerStyle={{gap:8,paddingTop:10,paddingBottom:2,alignItems:"center"}}>
    {[{q:"Goa hotels",label:"Goa hotels"},{q:"Mumbai property",label:"Mumbai homes"},{q:"construction tender",label:"Tenders"}].map(item=>
     <Pressable key={item.q} accessibilityRole="button" accessibilityLabel={"Search "+item.q}
      onPress={()=>onQuick(item.q)} style={[styles.chip,{backgroundColor:theme.surfaceSoft,borderColor:theme.border,minHeight:37,paddingHorizontal:12}]}>
      <Text style={{fontSize:11,fontWeight:"700",color:theme.text}}>{item.label}</Text>
     </Pressable>)}
+  </ScrollView>
+ </View>;
+}
+function ServiceShortcuts({theme,onOpen,onExplore}:{theme:Theme;onOpen:(item:typeof serviceLinks[number])=>void;onExplore:()=>void}){
+ const entries=["Flights","Hotels","Tours & activities","Bus journeys","Train journeys","Ferry journeys","Real Estate","Public tenders"]
+  .flatMap(label=>serviceLinks.filter(item=>item.label===label));
+ return <View style={{marginTop:18,gap:10}}>
+  <Text style={[styles.sectionTitle,{color:theme.text}]}>What would you like to do?</Text>
+  <View style={styles.shortcutGrid}>
+   {entries.map(item=>{
+    const Icon=item.label==="Bus journeys"?Bus:item.label==="Train journeys"?TrainFront:item.label==="Ferry journeys"?Ship:
+     item.kind==="hotel"?Hotel:item.kind==="property"?Building2:item.kind==="tender"?FileText:item.kind==="tour"?Compass:Plane;
+    const label=item.label.replace(" journeys","").replace("Public tenders","Tenders").replace("Tours & activities","Tours");
+    return <Pressable key={item.label} onPress={()=>onOpen(item)} accessibilityRole="button" accessibilityLabel={"Open "+item.label}
+     style={({pressed})=>[styles.quickTile,{backgroundColor:theme.surface,borderColor:theme.border,opacity:pressed?.84:1}]}>
+     <Icon size={23} color={theme.accent}/>
+     <Text style={{color:theme.text,fontSize:12,fontWeight:"800",textAlign:"center"}}>{label}</Text>
+    </Pressable>;
+   })}
+   <Pressable onPress={onExplore} accessibilityRole="button" accessibilityLabel="Explore all services"
+    style={[styles.quickTile,{backgroundColor:theme.surfaceSoft,borderColor:theme.border}]}>
+    <Compass size={23} color={theme.accent}/>
+    <Text style={{color:theme.text,fontSize:12,fontWeight:"800",textAlign:"center"}}>All services</Text>
+   </Pressable>
   </View>
-  <Pressable accessibilityRole="button" accessibilityLabel="Explore all services" onPress={onExplore} style={{paddingVertical:7,alignSelf:"flex-start",marginTop:5}}> 
-   <Text style={{fontSize:12,fontWeight:"700",color:theme.accent}}>Explore all services  ↗</Text>
-  </Pressable>
  </View>;
 }
 function Journey({theme,onOpen}:{theme:Theme;onOpen:(kind:Pillar)=>void}){
@@ -306,7 +321,8 @@ function NativeApp(){
      </View>}
     </View>
    </>:tab==="home"?<>
-    <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)} onExplore={()=>{setTab("discover");setKind("all");setTerm("");}}/>
+    <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)}/>
+    <ServiceShortcuts theme={theme} onOpen={item=>item.mode==="native"?openPillar(item.kind):openSite(item.path)} onExplore={()=>setTab("services")}/>
     {recent.ready&&recent.items.length>0&&<View style={[styles.recent,{backgroundColor:theme.surface,borderColor:theme.border}]}>
      <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:12}}>
       <View style={{flexDirection:"row",alignItems:"center",gap:8}}>
@@ -339,28 +355,6 @@ function NativeApp(){
       <ArrowRight color={theme.accent} size={22}/>
      </Pressable>
     </View>
-    <View style={{marginTop:24,gap:10}}>
-     <TextLabel theme={theme} text="YOUR EVERYDAY SHORTCUTS"/>
-     <Text style={[styles.sectionTitle,{color:theme.text}]}>Everything, one tap away.</Text>
-     <View style={{flexDirection:"row",flexWrap:"wrap",gap:12}}>
-      {serviceLinks.slice(0,4).map(item=><Pressable key={item.label}
-        onPress={()=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}
-        accessibilityRole="button" accessibilityLabel={"Open "+item.label}
-        style={({pressed})=>[styles.quickTile,{backgroundColor:theme.surface,borderColor:theme.border,opacity:pressed?.84:1}]}>
-        <View style={{width:42,height:42,borderRadius:14,alignItems:"center",justifyContent:"center",backgroundColor:theme.surfaceSoft}}>
-         {item.kind==="travel"?<Plane size={24} color={theme.accent}/>:
-          item.kind==="hotel"?<Hotel size={24} color={theme.accent}/>:
-          item.kind==="property"?<Building2 size={24} color={theme.accent}/>:
-          <FileText size={24} color={theme.accent}/>}
-        </View>
-        <View style={{flexDirection:"row",alignItems:"center",gap:4}}>
-         <Text numberOfLines={1} style={{flex:1,color:theme.text,fontSize:13,fontWeight:"800"}}>{item.label}</Text>
-         <ArrowRight size={15} color={theme.accent}/>
-        </View>
-        <Text numberOfLines={2} style={{fontSize:11,lineHeight:16,color:theme.muted}}>{item.description}</Text>
-       </Pressable>)}
-     </View>
-    </View>
    </>:tab==="discover"?<>
     <View style={{paddingTop:12}}>
      <TextLabel theme={theme} text="SEARCH THE GLOBAL ECOSYSTEM"/>
@@ -368,8 +362,8 @@ function NativeApp(){
      <View style={[styles.searchRow,{backgroundColor:theme.surface,borderColor:theme.border,marginTop:13}]}>
       <Search size={20} color={theme.accent}/>
       <TextInput value={query} onChangeText={setQuery} onSubmitEditing={()=>enterSearch(kind)}
-       returnKeyType="search" accessibilityLabel="Search source records" autoCorrect={false}
-       placeholder="Search a city, project or notice…" placeholderTextColor={theme.muted}
+       returnKeyType="search" accessibilityLabel="Search source records" autoCorrect={false} multiline={false} numberOfLines={1}
+       placeholder="City, project or notice" placeholderTextColor={theme.muted}
        style={[styles.searchInput,{color:theme.text}]}/>
       <Pressable accessibilityRole="button" accessibilityLabel="Submit source search" onPress={()=>enterSearch(kind)}
        style={[styles.searchGo,{backgroundColor:theme.accent}]}><ArrowRight size={20} color={theme.onAccent}/></Pressable>
@@ -526,11 +520,11 @@ const styles=StyleSheet.create({
  brandName:{fontSize:18,fontWeight:"900",letterSpacing:0.4},
  roundIcon:{height:44,width:44,borderWidth:1,borderRadius:14,alignItems:"center",justifyContent:"center"},
  eyebrow:{fontSize:10,fontWeight:"900",letterSpacing:1.5},
- hero:{marginTop:17,padding:18,borderWidth:1,borderRadius:26},
- h1:{fontSize:31,lineHeight:36,fontWeight:"900",letterSpacing:-0.7},
- lead:{fontSize:13,lineHeight:21,marginTop:9},
- searchRow:{borderWidth:1,borderRadius:15,minHeight:55,flexDirection:"row",alignItems:"center",paddingLeft:12,paddingRight:5,marginTop:18,gap:9},
- searchInput:{height:45,flex:1,fontSize:13,minWidth:0},
+ hero:{marginTop:14,padding:16,borderWidth:1,borderRadius:22},
+ h1:{fontSize:24,lineHeight:29,fontWeight:"900",letterSpacing:-0.4},
+ lead:{fontSize:12,lineHeight:19,marginTop:6},
+ searchRow:{borderWidth:1,borderRadius:15,minHeight:55,flexDirection:"row",alignItems:"center",paddingLeft:12,paddingRight:5,marginTop:12,gap:9},
+ searchInput:{minHeight:48,flex:1,fontSize:13,lineHeight:20,minWidth:0,paddingVertical:8,includeFontPadding:false,textAlignVertical:"center"},
  searchGo:{width:43,height:43,alignItems:"center",justifyContent:"center",borderRadius:12},
  sectionTitle:{fontSize:20,fontWeight:"900",marginTop:5,letterSpacing:-0.3},
  journeyCard:{width:255,borderRadius:19,borderWidth:1,overflow:"hidden"},
@@ -538,7 +532,8 @@ const styles=StyleSheet.create({
  info:{padding:15,borderRadius:17,borderWidth:1,flexDirection:"row",alignItems:"center",gap:12},
  serviceRow:{minHeight:65,padding:12,borderRadius:15,borderWidth:1,flexDirection:"row",alignItems:"center",gap:13,marginBottom:9},
  recent:{borderWidth:1,borderRadius:18,marginTop:14,paddingHorizontal:14,paddingVertical:8,gap:4},
- quickTile:{width:"47%",minHeight:140,flexGrow:1,maxWidth:"49%",padding:13,borderRadius:18,borderWidth:1,justifyContent:"space-between",gap:9},
+ shortcutGrid:{flexDirection:"row",flexWrap:"wrap",gap:8},
+ quickTile:{flexBasis:"30%",flexGrow:1,minWidth:75,minHeight:82,padding:10,borderRadius:16,borderWidth:1,alignItems:"center",justifyContent:"center",gap:8},
  tabbar:{height:57,flexDirection:"row",alignItems:"center",justifyContent:"space-around"},
  tab:{height:55,flex:1,alignItems:"center",justifyContent:"center",gap:3},
  chip:{borderWidth:1,paddingHorizontal:14,minHeight:42,borderRadius:24,alignItems:"center",justifyContent:"center"},

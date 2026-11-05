@@ -18,6 +18,15 @@ try {
   await page.getByText("Explore your possibilities").waitFor({timeout:10000});
   await page.getByRole("tab",{name:"Home tab"}).waitFor();
   await page.getByRole("button",{name:"Search Goa hotels"}).waitFor();
+  for(const name of ["Open Flights","Open Hotels","Open Tours & activities","Open Bus journeys","Open Train journeys","Open Ferry journeys","Open Real Estate","Open Public tenders","Explore all services"]){
+   const box=await page.getByRole("button",{name,exact:true}).boundingBox();
+   assert.ok(box&&box.y>=0&&box.y+box.height<787,`Primary service hidden below initial phone viewport: ${name}, ${width}px`);
+  }
+  const input=page.getByRole("textbox",{name:"Universal search",exact:true});
+  assert.equal(await input.getAttribute("placeholder"),"Search GTH PRO");
+  await input.fill("Mumbai CSMT to Howrah railway station");
+  assert.equal(await input.inputValue(),"Mumbai CSMT to Howrah railway station");
+  await input.fill("");
   // Pixel evidence must contain loaded real editorial images, not blank cards.
   const images=await page.locator("img").evaluateAll(elements=>
    elements.filter(element=>element.complete&&element.naturalWidth>0).length);
