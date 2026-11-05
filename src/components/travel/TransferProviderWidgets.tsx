@@ -99,7 +99,7 @@ export default function TransferProviderWidgets() {
           <CarFront size={21} aria-hidden="true" />
         </span>
         <div>
-          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
+          <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">GTH PRO · Supplier-powered transfer search</p>
           <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Search transfer options</h2>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function TransferProviderWidgets() {
         {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading transfer search…</p>}
         {loadState === "error" && (
           <p role="alert" className="mt-4 text-sm text-[var(--text-soft)]">
-            The supplier form did not render. Please try another provider tab or the existing Welcome Pickups / GetTransfer partner links below.
+            The search form could not display. Try another search option or continue to a listed booking service below.
           </p>
         )}
         <div ref={host} aria-label={widgets[active].title} className="mx-auto mt-4 w-full min-w-0 max-w-full overflow-x-auto [&_iframe]:max-w-full [&_iframe]:w-full" />
