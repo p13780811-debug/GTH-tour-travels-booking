@@ -85,6 +85,10 @@ test("supplier cards choose the right already-connected widget and use neutral b
   assert.match(catalog, /href: "#transfer-widget-options"/);
   assert.match(catalog, /href: "#transfer-widget-airport"/);
   assert.match(panel, /addEventListener\("hashchange", syncHash\)/);
+  assert.match(panel, /activeRef\.current = type/);
+  assert.match(panel, /document\.addEventListener\("click", handleAnchorClick\)/);
+  assert.match(panel, /document\.removeEventListener\("click", handleAnchorClick\)/);
+  assert.match(panel, /activeRef\.current = selected/);
   assert.match(panel, /id="transfer-widget-options"/);
   assert.match(panel, /id="transfer-widget-airport"/);
   assert.doesNotMatch(catalog, /action: "View on partner"/);
