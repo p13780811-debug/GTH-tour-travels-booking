@@ -7,6 +7,7 @@ export const appServices=[
  {id:"transfers",label:"Airport transfers",href:"/transfers",pillar:"travel",icon:"transfer",keywords:"pickup drop taxi"},
  {id:"cars",label:"Car rentals",href:"/cars",pillar:"travel",icon:"car",keywords:"drive rental"},
  {id:"tours",label:"Tours & activities",href:"/tours",pillar:"travel",icon:"compass",keywords:"experience sightseeing tickets"},
+ {id:"cruises",label:"Cruises",href:"/cruises",pillar:"travel",icon:"compass",keywords:"cruise ship sailing cabin disney harbour dinner"},
  {id:"insurance",label:"Travel protection",href:"/insurance",pillar:"travel",icon:"shield",keywords:"insurance flight claims delay"},
  {id:"destinations",label:"Destinations",href:"/app/destinations",pillar:"travel",icon:"globe",keywords:"cities guides explore"},
  {id:"esim",label:"Travel eSIM",href:"/flights/out/yesim",pillar:"travel",icon:"sim",keywords:"data internet roaming connectivity"},
@@ -31,6 +32,7 @@ export function mobileWebService(id: string) {
 }
 export const appPromotions=[
  {id:"stay",pillar:"travel",eyebrow:"Plan your stay",title:"A new place. A better break.",description:"Find hotels, rooms and stay options worldwide.",action:"Find a stay",href:"/app/hotels",image:"/images/mega/hotels.jpg"},
+ {id:"deals",pillar:"travel",eyebrow:"Travel deals",title:"Find experiences and current offers.",description:"Browse destinations and check current promotions with the booking provider.",action:"Explore offers",href:"/travel/deals",image:"/images/mega/tours.jpg"},
  {id:"fly",pillar:"travel",eyebrow:"Your next journey",title:"Take your plans further.",description:"Search flights, then arrange your airport transfer.",action:"Search flights",href:"/app/flights",image:"/images/mega/flights.jpg"},
  {id:"property",pillar:"property",eyebrow:"Property discovery",title:"Explore your next move.",description:"Browse project records and view their source details.",action:"Explore properties",href:"/app/property",image:"/images/real-estate.jpg"},
  {id:"tender",pillar:"tender",eyebrow:"Business opportunities",title:"Find your next opportunity.",description:"Explore published tender notices and official documents.",action:"Explore tenders",href:"/app/tenders",image:"/images/tender.jpg"},

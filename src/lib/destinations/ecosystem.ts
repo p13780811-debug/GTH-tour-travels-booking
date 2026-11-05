@@ -2,6 +2,8 @@
  * Only include real routes; city filters are used only when the receiving route supports them.
  * This file is a directory of discovery actions, not an inventory count or booking guarantee.
  */
+import {flightDestinations} from "@/data/flight/destinations";
+
 export type DestinationService = {
   key:string;
   label:string;
@@ -19,6 +21,14 @@ const ISO:Readonly<Record<string,string>>={
  "Poland":"PL","Canada":"CA","Nepal":"NP","Malaysia":"MY","Philippines":"PH",
  "Norway":"NO","Portugal":"PT","Czechia":"CZ","Austria":"AT","Sweden":"SE","Italy":"IT"
 };
+/** Destination context is a planning hint, not a ticket or supplier-verified route. */
+export function destinationFlightHref(name:string):string{
+ const airport=flightDestinations.find(item=>item.name.toLocaleLowerCase("en")===name.toLocaleLowerCase("en"))?.destination;
+ const params=new URLSearchParams();
+ if(airport)params.set("destination",airport);
+ params.set("destinationCity",name.slice(0,80));
+ return "/flights?"+params.toString()+"#flight-search";
+}
 export function destinationServices(place:{slug:string;name:string;country:string|null}):DestinationService[]{
  const slug=encodeURIComponent(place.slug);
  const country=place.country ? ISO[place.country] : undefined;
@@ -28,9 +38,9 @@ export function destinationServices(place:{slug:string;name:string;country:strin
  if(country)tender.set("country",country);
  return [
   {key:"hotels",label:"Hotels & stays",description:"Search public hotel listings",href:"/hotels?destination="+slug,scope:"destination",pillar:"Travel"},
-  {key:"flights",label:"Flights",description:"Compare routes and dates",href:"/flights",scope:"global",pillar:"Travel"},
-  {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?city="+slug,scope:"destination",pillar:"Travel"},
-  {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?city="+slug,scope:"destination",pillar:"Travel"},
+  {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name),scope:"destination",pillar:"Travel"},
+  {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
+  {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"transfers",label:"Airport transfers",description:"Check pickup providers",href:"/transfers",scope:"global",pillar:"Travel"},
   {key:"cars",label:"Car rentals",description:"Browse rental providers",href:"/cars",scope:"global",pillar:"Travel"},
   {key:"bus",label:"Buses",description:"Explore bus options",href:"/bus",scope:"global",pillar:"Travel"},

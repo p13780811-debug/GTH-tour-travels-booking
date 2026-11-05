@@ -11,6 +11,7 @@ import GTHNetwork from "@/components/sections/GTHNetwork";
 import dynamic from "next/dynamic"
 import HeroSlider from "@/components/HeroSlider";
 import EcosystemPillars from "@/components/sections/EcosystemPillars";
+import EcosystemHub from "./EcosystemHub";
 
 
 const supabase = createClient(
@@ -85,6 +86,9 @@ export default async function MegaAggregator() {
             <div className="relative z-0">
                 <HeroSlider />
             </div>
+
+            {/* Ecosystem-only all-services directory; all other website pages stay untouched. */}
+            <EcosystemHub />
 
             <EcosystemPillars />
             <section aria-label="Join GTH PRO business ecosystem" className="border-y border-[var(--border)] bg-[var(--card)]/60 py-10">
@@ -400,6 +404,9 @@ export default async function MegaAggregator() {
                                 {name:"Articles",href:"/blog"},
                                 {name:"Bus",href:"/bus"},
                                 {name:"Rail",href:"/train"},
+                                {name:"Ferries",href:"/ferry"},
+                                {name:"Activities",href:"/activities"},
+                                {name:"Insurance",href:"/insurance"},
                                 {name:"Airport Transfers",href:"/transfers"},
                                 {name:"Car Rentals",href:"/cars"},
                             ].map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">{item.name} <span className="ml-2" aria-hidden="true">↗</span></Link>)}

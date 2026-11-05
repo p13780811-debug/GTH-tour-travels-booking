@@ -1,0 +1,80 @@
+{
+  "genting-dream": {
+    "path": "/images/cruises/genting-dream.jpg",
+    "alt": "Genting Dream",
+    "author": "Sapphire Jasper",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Genting_Dream_at_Marina_Bay_Cruise_Centre.jpg",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/Genting_Dream_at_Marina_Bay_Cruise_Centre.jpg/960px-Genting_Dream_at_Marina_Bay_Cruise_Centre.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Genting Dream",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "8c0c233e5b0aed19e433df4c55092679400229798de036e94bff6ea0c9513005",
+    "reviewedOn": "2026-11-05"
+  },
+  "spectrum-of-the-seas": {
+    "path": "/images/cruises/spectrum-of-the-seas.jpg",
+    "alt": "Spectrum of the Seas",
+    "author": "Dickelbers",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Spectrum_of_the_Seas_02.jpg",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Spectrum_of_the_Seas_02.jpg/960px-Spectrum_of_the_Seas_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Spectrum of the Seas",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "3d2821c502baccbb8f668cfc28cb3f1a87fefd61784b4984c6c64570663a8e24",
+    "reviewedOn": "2026-11-05"
+  },
+  "disney-adventure": {
+    "path": "/images/cruises/disney-adventure.jpg",
+    "alt": "Disney Adventure",
+    "author": "nagi usano from Tokyo, Japan",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Disney_Adventure_Disney_Cruise_Line_(55114526110).jpg",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Disney_Adventure_Disney_Cruise_Line_%2855114526110%29.jpg/960px-Disney_Adventure_Disney_Cruise_Line_%2855114526110%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Disney Adventure",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "8a1a53fd0e5d120283ef4fa00f53446be6913370fe7421454164e23929e87f89",
+    "reviewedOn": "2026-11-05"
+  },
+  "aqua-luna": {
+    "path": "/images/cruises/aqua-luna.jpg",
+    "alt": "Aqua Luna",
+    "author": "Mk2010",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aqua_Luna,_a_Chinese_Junk_in_Victoria_Harbour_(Hong_Kong).jpg",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Aqua_Luna%2C_a_Chinese_Junk_in_Victoria_Harbour_%28Hong_Kong%29.jpg/960px-Aqua_Luna%2C_a_Chinese_Junk_in_Victoria_Harbour_%28Hong_Kong%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Aqua Luna",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "ef1297575f808f9fab51fcaa853c874bfc6c2713ae5d95ef276d5bf8ca22c8b9",
+    "reviewedOn": "2026-11-05"
+  },
+  "singapore-river": {
+    "path": "/images/cruises/singapore-river.jpg",
+    "alt": "Singapore River Cruise boat on the river; representative vessel",
+    "author": "LN9267",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:RC260_Singapore_River_Cruise_12-05-2024.jpg",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/RC260_Singapore_River_Cruise_12-05-2024.jpg/960px-RC260_Singapore_River_Cruise_12-05-2024.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Singapore river sightseeing boat — representative vessel",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "eabe568ca1b0061abf2fe8de3aefcaeaaaf4f1d9561ef06348c2b2a3a28de112",
+    "reviewedOn": "2026-11-05"
+  },
+  "dubai-dhow": {
+    "path": "/images/cruises/dubai-dhow.png",
+    "alt": "Dubai dhow cruise — representative vessel",
+    "author": "Shahana Shamsuddin",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dhow_Cruise.png",
+    "mediaUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Dhow_Cruise.png/960px-Dhow_Cruise.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "caption": "Dubai dhow cruise — representative vessel",
+    "modifications": "Wikimedia thumbnail; displayed with a centre crop.",
+    "sha256": "451e51897711df8bd092defe9bfdb2a38760cd53c9b1441d2e0b872dccf30bc1",
+    "reviewedOn": "2026-11-05"
+  }
+}

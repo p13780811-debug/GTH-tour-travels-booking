@@ -67,7 +67,8 @@ test("airport extras connect only known internal routes, approved affiliate URLs
   assert.match(source, /https:\/\/radicalstorage\.tpo\.lv\/iDuI1UD0/);
   assert.match(source, /https:\/\/yesim\.tpo\.lv\/yZBVdtqT/);
   assert.match(source, /https:\/\/www\.prioritypass\.com\/en-GB\/airport-lounges/);
-  assert.match(source, /Independent provider website/);
+  assert.match(source, /Independent provider links above are not represented as approved Travelpayouts affiliate campaigns/);
+  assert.match(source, /service.kind === "provider"/);
   assert.match(source, /rel=\{service\.kind === "partner" \? "noopener noreferrer sponsored"/);
   assert.doesNotMatch(source, /Math\.random|live guaranteed|booked successfully/i);
 });

@@ -77,7 +77,8 @@ test("Flights, Hotels and Transfers remain on their original providers and theme
   const shell = source("src/components/travel/TravelServicePage.tsx");
   assert.match(flights, /wl_id=23459/);
   assert.match(hotel, /nuitee\.link/);
-  assert.doesNotMatch(transfers, /searchFirstLayout|GTHTransportSearchWidget/);
+  assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
+  assert.match(transfers, /TransferProviderWidgets/);
   assert.match(shell, /searchFirstLayout = false/);
   assert.match(shell, /!searchFirstLayout && <aside/);
 });
@@ -85,4 +86,11 @@ test("Flights, Hotels and Transfers remain on their original providers and theme
 test("preview deployment disabled for the staging-only branch", () => {
   const c = JSON.parse(source("vercel.json"));
   assert.equal(c.git.deploymentEnabled["fix/transport-interactive-search-ferry-20261105"], false);
+});
+
+test("booking gateway exposes static Next.js segment configuration", () => {
+  const gateway = source("src/app/go/transport/route.ts");
+  assert.match(gateway, /export const runtime = "nodejs"/);
+  assert.match(gateway, /export const dynamic = "force-dynamic"/);
+  assert.match(gateway, /export \{ GET \} from "\.\.\/12go\/route"/);
 });

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 const services = [
+  { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore named cruise holidays, harbour sailings and dinner cruises, with direct links to the selected Klook product." },
   { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Explore international fare observations and verify current total prices and availability with the ticket provider." },
   { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays through the existing Nuitee White Label; the supplier confirms availability, rates, payment and booking terms." },
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
@@ -26,6 +27,7 @@ const additional = [
   { name: "Ferry Travel", href: "/ferry", Icon: Ship, detail: "Ferries, speedboats and island connections across supported routes." },
   { name: "Airport Explorer", href: "/travel/airports", Icon: Plane, detail: "Verified airport codes and route planning using free Nuitee reference data." },
   { name: "Experiences", href: "/activities", Icon: Sparkles, detail: "Destination activities and discovery." },
+  { name: "Deals & offers", href: "/travel/deals", Icon: Sparkles, detail: "Browse destination experiences and provider-managed deals, without invented discount claims." },
   { name: "Travel Guides", href: "/guides", Icon: BookOpen, detail: "Research and booking checklists." },
   { name: "Travel Blog", href: "/blog", Icon: Compass, detail: "Articles for thoughtful travel planning." },
   { name: "Global Marketplace", href: "/mega-aggregator", Icon: MapPinned, detail: "The GTH PRO travel aggregator and providers." },

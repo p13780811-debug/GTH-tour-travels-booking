@@ -7,12 +7,13 @@ import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import { flightDestinations } from "@/data/flight/destinations";
 
-type Props = { searchParams: Promise<{ origin?: string; destination?: string; flightSearch?: string }> };
+type Props = { searchParams: Promise<{ origin?: string; destination?: string; destinationCity?: string; flightSearch?: string }> };
 
 export default async function FlightsPage({ searchParams }: Props) {
   const query = await searchParams;
   const origin = /^[A-Z]{3}$/.test(query.origin || "") ? query.origin! : "CCU";
   const destination = /^[A-Z]{3}$/.test(query.destination || "") ? query.destination! : "";
+  const city = typeof query.destinationCity === "string" && /^[\p{L}\p{M}\p{N} .'-]{2,80}$/u.test(query.destinationCity.trim()) ? query.destinationCity.trim() : "";
   const isResultsView = typeof query.flightSearch === "string" && /^[A-Za-z0-9]{10,40}$/.test(query.flightSearch);
 
   return (
@@ -45,12 +46,14 @@ export default async function FlightsPage({ searchParams }: Props) {
       <TravelSectionNav />
 
       <div className="mx-auto w-full max-w-7xl pb-16 pt-2 sm:pt-9">
-        {destination && origin !== destination && (
+        {(city || (destination && origin !== destination)) && (
           <div className="mx-4 mb-5 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm shadow-sm">
             <PlaneTakeoff size={18} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
             <p>
-              Route inspiration: <strong>{origin} → {destination}</strong>. Choose these airports and
-              your travel dates in the supplier search form to see matching offers.
+              {city ? <>Flight search destination: <strong>{city}{destination ? " ("+destination+")" : ""}</strong>.</>
+                    : <>Route inspiration: <strong>{origin} → {destination}</strong>.</>}
+              {" "}Choose your departure airport, destination airport and travel dates in the supplier search form
+              to see provider offers. Destination context is not a confirmed fare or prefilled booking.
             </p>
           </div>
         )}
