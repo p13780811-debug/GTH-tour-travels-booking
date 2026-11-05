@@ -17,7 +17,7 @@ test("all-services experience is scoped to the existing ecosystem page", () => {
   assert.match(page, /<HotelQuadSection/);
   assert.match(page, /<FeaturedDestinationsSlider/);
   assert.match(page, /<GTHNetwork/);
-  assert.match(page, /<HeroSearch/);
+  assert.match(page, /import HeroSearch from/);
   assert.match(page, /id="travel-services"/);
   assert.match(page, /id="insights"/);
   assert.match(page, /id="providers"/);
