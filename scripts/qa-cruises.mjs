@@ -65,7 +65,8 @@ try{
   const more=await page.getByRole('link',{name:'Explore Mumbai cruise options'}).getAttribute('href');
   const res=await context.request.get('http://127.0.0.1:3000'+more,{maxRedirects:0});assert.equal(res.status(),302);
   const target=new URL(new URL(res.headers().location).searchParams.get('u'));assert.equal(target.searchParams.get('query'),'Mumbai cruise');
-  await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'domcontentloaded' });
+  // The directory is server-rendered before React attaches the filter handlers.
+  await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'networkidle' });
   const directory = page.locator('#ecosystem-directory');
   await directory.getByRole('heading', { name: 'Everything GTH PRO, in one place.' }).waitFor();
   const cruisesTile = directory.getByRole('link', { name: 'Cruises', exact: true });
