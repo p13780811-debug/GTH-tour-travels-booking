@@ -43,6 +43,8 @@ try{
   assert.equal(await page.locator('[data-cruise]').count(),3);
   await page.getByRole('link',{name:'Clear filters',exact:true}).click();
   await page.locator('[data-cruise]').first().waitFor();assert.equal(await page.locator('[data-cruise]').count(),7);
+  assert.equal(await page.getByRole('searchbox',{name:'Destination or cruise name'}).inputValue(),'');
+  assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.getByRole('heading',{name:'No matching cruises in this collection'}).waitFor();
