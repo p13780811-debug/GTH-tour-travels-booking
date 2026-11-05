@@ -24,6 +24,7 @@ const additional = [
   { name: "Bus Travel", href: "/bus", Icon: BusFront, detail: "Road connections and operator booking handoffs." },
   { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and connected operator bookings." },
   { name: "Ferry Travel", href: "/ferry", Icon: Ship, detail: "Ferries, speedboats and island connections across supported routes." },
+  { name: "Airport Explorer", href: "/travel/airports", Icon: Plane, detail: "Verified airport codes and route planning using free Nuitee reference data." },
   { name: "Experiences", href: "/activities", Icon: Sparkles, detail: "Destination activities and discovery." },
   { name: "Travel Guides", href: "/guides", Icon: BookOpen, detail: "Research and booking checklists." },
   { name: "Travel Blog", href: "/blog", Icon: Compass, detail: "Articles for thoughtful travel planning." },
