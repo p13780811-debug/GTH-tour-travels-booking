@@ -1,0 +1,45 @@
+name: Nuitee Free Airport Explorer QA
+
+on:
+  push:
+    branches:
+      - feature/nuitee-airport-discovery-free
+    paths:
+      - "src/lib/travel/airportReference*.ts"
+      - "src/lib/travel/nuiteeAirport*.ts"
+      - "src/components/travel/AirportDiscoveryTools.tsx"
+      - "src/app/travel/airports/**"
+      - "src/app/travel/page.tsx"
+      - "src/app/sitemap.ts"
+      - "tests/nuitee-airport-discovery.test.mjs"
+      - ".github/workflows/nuitee-airport-feature-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-airport-feature:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out feature commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Configure Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify Nuitee reference data and cost boundary
+        run: node --test tests/nuitee-airport-discovery.test.mjs
+      - name: Type-check repository (no external API calls)
+        run: ./node_modules/.bin/tsc --noEmit --incremental false
+      - name: Lint only the airport feature files
+        run: ./node_modules/.bin/eslint src/lib/travel/nuiteeAirportDirectory.ts src/lib/travel/nuiteeAirportIndex.ts src/lib/travel/airportReference*.ts src/components/travel/AirportDiscoveryTools.tsx 'src/app/travel/airports/**/*.tsx'
