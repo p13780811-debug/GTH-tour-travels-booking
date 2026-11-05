@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, CarFront, CheckCircle2, Globe2, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CarFront, Globe2, MapPin, ShieldCheck } from "lucide-react";
+import TourCarousel from "@/components/tours/TourCarousel";
+import TransferSpotlightImage from "./TransferSpotlightImage";
 import {
   transferJourneyCategories,
   transferAirportSpotlights,
@@ -8,157 +10,180 @@ import {
 } from "@/lib/travel/transferHubCatalog";
 
 /**
- * GTH PRO editorial discovery gallery. This is deliberately static, image-rich
- * and independent of any unapproved supplier inventory/API. Each CTA leads to
- * the already connected booking widgets or existing affiliate links.
+ * Reuse the same compact image-rail design as GTH PRO Tours/Activities,
+ * without representing editorial destinations as supplier products.
+ *
+ * The existing transfer widgets are the ONLY live supplier searches.
+ * External partner links are unchanged and always marked sponsored.
  */
 export default function TransferHubShowcase() {
+  const cardBase = "group flex w-[194px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[var(--gold)] sm:w-[212px]";
+
   return (
-    <div className="mb-10 min-w-0 space-y-12">
+    <div className="mb-9 min-w-0 space-y-10">
       <section id="transfer-discovery" aria-labelledby="transfer-categories-heading" className="scroll-mt-24">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
-              GTH PRO · Visual transfer hub
+        <header className="mb-3 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
+              GTH PRO · Airport & ground travel
             </p>
-            <h2 id="transfer-categories-heading" className="mt-2 text-2xl font-bold leading-tight sm:text-3xl">
-              See the ways you can travel
+            <h2 id="transfer-categories-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
+              Pick a transfer experience
             </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-              From a private airport pickup to family-size vehicles and shuttle services,
-              discover transfer categories visually. Actual service types, vehicles and prices
-              depend on your airport and the provider you select.
+            <p className="mt-2 max-w-3xl text-xs leading-6 text-[var(--text-soft)]">
+              Swipe through transfer types, then check real availability in the existing booking tools.
+              These cards explain services, not supplier inventory or guaranteed vehicle classes.
             </p>
           </div>
-          <a href="#transfer-provider-heading"
-            className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold">
-            Compare providers <ArrowRight size={16} aria-hidden="true" />
+          <a href="#transfer-provider-heading" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+            Search transfers <ArrowRight size={16} aria-hidden="true" />
           </a>
-        </div>
-
-        <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        </header>
+        <TourCarousel label="Airport transfer experiences">
           {transferJourneyCategories.map(item => (
-            <article key={item.slug}
-              className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--card)]">
+            <article key={item.slug} className={cardBase}>
+              <div className="relative h-[118px] w-full overflow-hidden bg-[var(--bg)]">
                 <Image src={item.image} alt={item.imageAlt} fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  sizes="(max-width: 640px) 194px, 212px"
+                  className="object-cover object-center transition-transform duration-300 group-hover:scale-105" />
               </div>
-              <div className="flex flex-1 flex-col p-5">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--gold)]">{item.tag}</span>
-                <h3 className="mt-2 text-lg font-bold">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">{item.description}</p>
-                <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
-                  <CheckCircle2 size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
-                  {item.check}
+              <div className="flex min-h-[207px] flex-1 flex-col p-3">
+                <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--gold)]">
+                  {item.tag}
                 </p>
+                <h3 className="mt-2 line-clamp-2 min-h-[38px] text-sm font-bold leading-5">{item.title}</h3>
+                <p className="mt-1.5 line-clamp-3 text-xs leading-[18px] text-[var(--text-soft)]">{item.description}</p>
+                <p className="mt-2 line-clamp-2 text-[11px] leading-4 text-[var(--text-soft)]">{item.check}</p>
                 <a href="#transfer-provider-heading"
-                  aria-label={`Compare provider availability for ${item.title}`}
-                  className="gold-text mt-auto inline-flex min-h-11 items-center gap-2 pt-4 text-sm font-semibold underline-offset-4 hover:underline">
-                  Explore with transfer providers <ArrowRight size={16} aria-hidden="true" />
+                  aria-label={`Explore ${item.title} in transfer search`}
+                  className="gth-btn-gold mt-auto inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold">
+                  Explore options <ArrowRight size={14} aria-hidden="true" />
                 </a>
               </div>
             </article>
           ))}
-        </div>
+        </TourCarousel>
       </section>
 
       <section id="popular-airport-transfers" aria-labelledby="transfer-airports-heading" className="scroll-mt-24">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
-              <Globe2 size={16} aria-hidden="true" /> International travel
+        <header className="mb-3 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
+              <Globe2 size={14} aria-hidden="true" /> Destinations & airport pickups
             </p>
-            <h2 id="transfer-airports-heading" className="mt-2 text-2xl font-bold sm:text-3xl">
-              Explore airport pickup destinations
+            <h2 id="transfer-airports-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
+              Find transfers by destination
             </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-              Find the right airport before you choose a pickup. These are destination guides
-              and transfer search starting points—not live bookable offers or quoted fares.
+            <p className="mt-2 max-w-3xl text-xs leading-6 text-[var(--text-soft)]">
+              These are city guides and airport reference points, not photographed cars
+              available to book. Airport codes help you avoid selecting the wrong terminal or city.
             </p>
           </div>
           <Link href="/travel/airports"
-            className="gth-glass inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold">
-            All airports <ArrowUpRight size={16} aria-hidden="true" />
+            className="gth-glass inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
+            Airport Explorer <ArrowUpRight size={15} aria-hidden="true" />
           </Link>
-        </div>
+        </header>
 
-        <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <TourCarousel label="Airport transfer destinations">
           {transferAirportSpotlights.map(destination => (
-            <article key={destination.code}
-              className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)]">
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--card)]">
-                <Image src={destination.image} alt={destination.imageAlt} fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <article data-airport-code={destination.code} key={destination.code} className={cardBase}>
+              <div className="relative h-[124px] w-full overflow-hidden bg-[var(--bg)]">
+                <TransferSpotlightImage
+                  src={destination.image}
+                  alt={destination.imageAlt}
+                  credit={destination.photoCredit}
+                  creditUrl={destination.photoCreditUrl}
+                  sizes="(max-width: 640px) 194px, 212px"
+                />
+                {!destination.photoCredit && (
+                  <span className="pointer-events-none absolute bottom-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                    Destination photo
+                  </span>
+                )}
               </div>
-              <div className="flex flex-1 flex-col gap-2 p-4">
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--gold)]">
-                  <MapPin size={14} aria-hidden="true" /> {destination.code} · {destination.city}
-                </span>
-                <h3 className="text-base font-bold leading-6">{destination.airport}</h3>
-                <p className="text-xs leading-5 text-[var(--text-soft)]">{destination.note}</p>
-                <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 text-xs font-semibold">
+              <div className="flex min-h-[178px] flex-1 flex-col p-3">
+                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--gold)]">
+                  <MapPin size={13} aria-hidden="true" /> {destination.code} · {destination.city}
+                </p>
+                <h3 className="mt-1.5 text-sm font-bold leading-5">Transfers in {destination.city}</h3>
+                <p className="mt-1 line-clamp-2 text-[11px] leading-[17px] text-[var(--text-soft)]">
+                  {destination.airport}
+                </p>
+                <p className="mt-1 line-clamp-1 text-[11px] leading-4 text-[var(--text-soft)]">{destination.note}</p>
+                <div className="mt-auto flex flex-col gap-1.5 pt-3">
                   <a href="#transfer-provider-heading"
-                    aria-label={`Compare transfer suppliers for ${destination.city} — ${destination.code}`}
-                    className="gold-text inline-flex min-h-9 items-center gap-1 underline-offset-4 hover:underline">
-                    Find transfers <ArrowRight size={14} aria-hidden="true" />
+                    aria-label={`Search ${destination.city} transfer options`}
+                    className="gth-btn-gold inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold">
+                    Search transfers <ArrowRight size={14} aria-hidden="true" />
                   </a>
                   {destination.guideHref && (
-                    <Link href={destination.guideHref} className="inline-flex min-h-9 items-center underline-offset-4 hover:underline">
-                      Airport guide
+                    <Link href={destination.guideHref}
+                      className="inline-flex min-h-7 items-center justify-center text-[11px] font-semibold text-[var(--text-soft)] underline-offset-2 hover:underline">
+                      Airport information
                     </Link>
                   )}
                 </div>
               </div>
             </article>
           ))}
-        </div>
-        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-          Destination images illustrate the cities, not a specific transfer vehicle or operator.
-          Enter your exact pickup, date, passengers and hotel address in the provider search below.
+        </TourCarousel>
+        <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
+          Mumbai uses a credited photograph of its real airport terminal. Other city photographs
+          show destination scenery, not their airport buildings. Verify available transfers and final
+          prices inside the booking tool.
         </p>
       </section>
 
       <section id="transfer-partners" aria-labelledby="transfer-partners-heading" className="scroll-mt-24">
-        <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">Already connected services</p>
-          <h2 id="transfer-partners-heading" className="mt-2 text-2xl font-bold sm:text-3xl">
-            Compare transfer booking partners
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-            Choose a supplier and check real options with them. The embedded Travelpayouts
-            widgets and existing tracked affiliate links are preserved; GTH PRO does not
-            create transfer bookings or collect partner payments.
+        <header className="mb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
+            Existing transfer booking services
           </p>
-        </div>
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {transferSuppliers.map(partner => (
-            <article key={partner.name} className="gth-glass flex min-w-0 flex-col rounded-2xl border border-[var(--border)] p-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
-                <CarFront size={20} aria-hidden="true" />
-              </span>
-              <h3 className="mt-4 text-lg font-bold">{partner.name}</h3>
-              <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-soft)]">{partner.description}</p>
-              <span className="mt-3 text-xs font-medium text-[var(--text-soft)]">{partner.disclosure}</span>
-              {partner.external ? (
-                <a href={partner.href} target="_blank" rel="noopener noreferrer sponsored"
-                  className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
-                  {partner.action} <ArrowUpRight size={15} aria-hidden="true" />
-                </a>
-              ) : (
-                <a href={partner.href}
-                  className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
-                  {partner.action} <ArrowRight size={15} aria-hidden="true" />
-                </a>
-              )}
+          <h2 id="transfer-partners-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
+            Continue your transfer search
+          </h2>
+          <p className="mt-2 max-w-3xl text-xs leading-6 text-[var(--text-soft)]">
+            Choose a service below. GTH PRO keeps the original embedded widgets and tracked
+            booking links; payments and reservations remain with independent suppliers.
+          </p>
+        </header>
+
+        <TourCarousel label="Airport transfer booking services">
+          {transferSuppliers.map(supplier => (
+            <article key={supplier.name} className={cardBase}>
+              <div className="relative h-[114px] w-full overflow-hidden bg-[var(--bg)]">
+                <Image src={supplier.image} alt={supplier.imageAlt} fill sizes="(max-width: 640px) 194px, 212px"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="flex min-h-[194px] flex-1 flex-col p-3">
+                <span className="inline-flex items-center gap-1.5 text-[10px] text-[var(--gold)]">
+                  <CarFront size={13} aria-hidden="true" /> Airport transfers
+                </span>
+                <h3 className="mt-2 text-sm font-bold">{supplier.name}</h3>
+                <p className="mt-1.5 line-clamp-3 text-xs leading-[18px] text-[var(--text-soft)]">{supplier.description}</p>
+                <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-[var(--text-soft)]">{supplier.disclosure}</p>
+                {supplier.external ? (
+                  <a href={supplier.href} target="_blank" rel="noopener noreferrer sponsored"
+                    aria-label={`${supplier.action} with ${supplier.name} (external booking)`}
+                    className="gth-btn-gold mt-auto inline-flex min-h-10 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold">
+                    {supplier.action} <ArrowUpRight size={14} aria-hidden="true" />
+                  </a>
+                ) : (
+                  <a href={supplier.href} aria-label={`${supplier.action} with ${supplier.name}`}
+                    className="gth-btn-gold mt-auto inline-flex min-h-10 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold">
+                    {supplier.action} <ArrowRight size={14} aria-hidden="true" />
+                  </a>
+                )}
+              </div>
             </article>
           ))}
-        </div>
-        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-          Supplier programs may show different vehicle classes, routes and inventory.
-          Do not treat an illustration, airport listing or provider mention as a confirmed offer.
+        </TourCarousel>
+        <p className="mt-3 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+          <ShieldCheck size={16} className="mt-1 shrink-0" aria-hidden="true" />
+          Affiliate disclosure: GTH PRO may earn a commission from eligible bookings.
+          These images illustrate travel; they are not actual supplier products or guaranteed vehicles.
+          Provider booking, support and payment terms apply.
         </p>
       </section>
     </div>
