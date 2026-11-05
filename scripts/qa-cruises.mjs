@@ -65,6 +65,18 @@ try{
   const more=await page.getByRole('link',{name:'Explore Mumbai cruise options'}).getAttribute('href');
   const res=await context.request.get('http://127.0.0.1:3000'+more,{maxRedirects:0});assert.equal(res.status(),302);
   const target=new URL(new URL(res.headers().location).searchParams.get('u'));assert.equal(target.searchParams.get('query'),'Mumbai cruise');
+  await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'domcontentloaded' });
+  const directory = page.locator('#ecosystem-directory');
+  await directory.getByRole('heading', { name: 'Everything GTH PRO, in one place.' }).waitFor();
+  const cruisesTile = directory.getByRole('link', { name: 'Cruises', exact: true });
+  await directory.getByRole('button', { name: 'Real Estate', exact: true }).click();
+  await cruisesTile.waitFor({ state: 'hidden' });
+  await directory.getByRole('button', { name: 'Travel', exact: true }).click();
+  await cruisesTile.waitFor();
+  assert.ok(await page.locator('html').evaluate(element => element.scrollWidth) <= width + 1);
+  await cruisesTile.click();
+  await page.waitForURL('**/cruises');
+  await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
  console.log('PASS: seven cruise cards, exact product redirects, destination/type filters and empty-state search at mobile and desktop widths');

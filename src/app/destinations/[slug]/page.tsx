@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane, ShieldCheck, Sparkles } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationEcosystem from "@/components/destination/DestinationEcosystem";
+import {destinationServices} from "@/lib/destinations/ecosystem";
 import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
 import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
@@ -96,6 +97,10 @@ export default async function DestinationPage({ params }: Props) {
       { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}`) },
     ],
   };
+  const links=destinationServices({slug,name:destination.name,country:destination.country});
+  const hotelsHref=links.find(item=>item.key==="hotels")!.href;
+  const toursHref=links.find(item=>item.key==="tours")!.href;
+  const flightsHref=links.find(item=>item.key==="flights")!.href;
   const availableTours = (await getTours({ city: slug })).slice(0, 6);
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
@@ -127,9 +132,9 @@ export default async function DestinationPage({ params }: Props) {
             </p>
             <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-3">
               <Link href="#destination-ecosystem" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
-              <Link href="#destination-hotels" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Hotels</Link>
-              <Link href="#destination-tours" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
-              <Link href="/flights" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
+              <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Hotels</Link>
+              <Link href={toursHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
+              <Link href={flightsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
             </nav>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
@@ -178,7 +183,7 @@ export default async function DestinationPage({ params }: Props) {
               <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Hotels in {destination.name}</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Only available source catalog records are displayed. Provider handles final booking and prices.</p>
             </div>
-            <Link href={"/hotels?destination="+encodeURIComponent(slug)}
+            <Link href={hotelsHref}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">All Hotels <ArrowRight size={15}/></Link>
           </div>
           <HotelResults city={destination.name} destination={slug} compactRail/>
@@ -192,7 +197,7 @@ export default async function DestinationPage({ params }: Props) {
             <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Tours & experiences in {destination.name}</h2>
             <p className="mt-2 text-sm text-[var(--text-soft)]">Real tour catalog entries where present; never simulated availability.</p>
           </div>
-          <Link href={"/tours?city="+encodeURIComponent(slug)} className="inline-flex items-center gap-2 text-sm font-semibold underline">All tours <ArrowRight size={16}/></Link>
+          <Link href={toursHref} className="inline-flex items-center gap-2 text-sm font-semibold underline">All tours <ArrowRight size={16}/></Link>
         </div>
         {availableTours.length>0?(
           <div role="region" aria-label="Tours horizontal cards" tabIndex={0}
@@ -210,7 +215,7 @@ export default async function DestinationPage({ params }: Props) {
         ):(
           <div role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-soft)]">
             No source-backed tours are currently displayed for {destination.name}. This does not mean every experience is unavailable.
-            <Link href={"/tours?city="+encodeURIComponent(slug)} className="mt-3 block font-semibold underline">Browse tour discovery</Link>
+            <Link href={toursHref} className="mt-3 block font-semibold underline">Browse tour discovery</Link>
           </div>
         )}
       </section>

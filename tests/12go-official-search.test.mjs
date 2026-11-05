@@ -87,3 +87,10 @@ test("preview deployment disabled for the staging-only branch", () => {
   const c = JSON.parse(source("vercel.json"));
   assert.equal(c.git.deploymentEnabled["fix/transport-interactive-search-ferry-20261105"], false);
 });
+
+test("booking gateway exposes static Next.js segment configuration", () => {
+  const gateway = source("src/app/go/transport/route.ts");
+  assert.match(gateway, /export const runtime = "nodejs"/);
+  assert.match(gateway, /export const dynamic = "force-dynamic"/);
+  assert.match(gateway, /export \{ GET \} from "\.\.\/12go\/route"/);
+});
