@@ -1,3 +1,4 @@
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -48,6 +49,7 @@ export default async function AirportGuidePage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <TravelSectionNav />
       <article>
         <header className="border-b border-[var(--border)] bg-[var(--card)]">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 md:py-20">
