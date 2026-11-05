@@ -6,9 +6,15 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
  for(const width of [360,390,1440]){
   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600});
+  // One context-level handler covers popup redirects too. Page-level blocking
+  // can otherwise abort the popup's redirect before the QA receiver sees it.
+  await context.route('**/*',route=>{
+   const url=new URL(route.request().url());
+   if(url.origin==='http://127.0.0.1:3000')return route.continue();
+   if(url.origin==='https://tp.media')return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA referral receiver</h1>'});
+   return route.abort();
+  });
   const page=await context.newPage();
-  // Third-party analytics are irrelevant to this local UI check and do not get clicks.
-  await page.route(/https:\/\/(?!127\.0\.0\.1)/,route=>route.abort());
   await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:'A different way to see the world.'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),7);
@@ -24,7 +30,6 @@ try{
   await page.screenshot({path:`${root}/cruises-${width}-day.png`,fullPage:true});
   // Capture the actual one-click redirect in a test-only receiver, without
   // visiting partner checkout or recording a fake supplier booking.
-  await context.route('https://tp.media/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<h1>QA referral receiver</h1>'}));
   const opened=context.waitForEvent('page');
   await page.locator('[data-cruise] a').first().click();
   const popup=await opened;await popup.waitForURL('https://tp.media/**');await popup.waitForLoadState('domcontentloaded');

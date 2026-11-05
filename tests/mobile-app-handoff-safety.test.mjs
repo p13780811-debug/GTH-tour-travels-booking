@@ -15,7 +15,7 @@ const dashboard=evalModule(read("src/lib/mobile/app-dashboard.ts"));
 const preferences=evalModule(read("src/lib/mobile/app-preferences.ts"),{"./app-dashboard":dashboard});
 const services=dashboard.appServices;
 
-test("existing shortcuts and Cruises remain inside the authenticated app handoff flow",()=>{
+test("existing shortcuts and Cruises remain inside the explicit app handoff flow",()=>{
  assert.equal(services.length,15);
  for(const id of ["flights","hotels","property","tenders","transfers","cars","tours","insurance","destinations","esim","saved-property","property-tools","saved-tenders","tender-help","cruises"])assert.ok(services.some(s=>s.id===id));
  assert.equal(new Set(services.map(s=>s.id)).size,15);

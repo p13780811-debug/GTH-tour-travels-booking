@@ -23,6 +23,11 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
     note: "A provider controls available vehicles, pickup requirements, rates and booking confirmation.",
     cta: "Continue to airport transfers",
   },
+  cruises: {
+    detail: "Explore cruise holidays, harbour sailings and dinner cruises in the GTH PRO cruise collection.",
+    note: "Klook and the cruise operator confirm sailing dates, cabin availability, package fares and booking conditions.",
+    cta: "Explore cruise options",
+  },
   cars: {
     detail: "Explore car rental options for your destination through the existing website tools.",
     note: "Vehicle inventory, licensing rules, taxes and confirmed rental prices come from the provider.",
@@ -75,6 +80,7 @@ export default async function AppServiceGateway({
   if (!service) notFound();
 
   const info = serviceInfo[service.id];
+  if (!info) notFound();
   const related =
     service.pillar === "property"
       ? { href: "/app/property", label: "Browse property records in app" }

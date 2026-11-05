@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-function load(path,imports={}){const mod={exports:{}};vm.runInNewContext(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:mod,exports:mod.exports,URL,URLSearchParams,Response,require:n=>{if(n in imports)return imports[n];throw Error(n);}});return mod.exports;}
+function load(path,imports={}){const mod={exports:{}};vm.runInNewContext(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module:mod,exports:mod.exports,URL,URLSearchParams,Response,require:n=>{if(n in imports)return imports[n];throw Error(n);}});return mod.exports;}
 const catalog=load('src/lib/travel/cruises.ts');
 const {GET}=load('src/app/go/cruises/[slug]/route.ts',{'@/lib/travel/cruises':catalog,'next/server':{NextResponse:{json:(v,i)=>Response.json(v,i),redirect:(v,s)=>new Response(null,{status:s,headers:{location:v}})}}});
 test('every displayed cruise opens its exact product through the existing Klook campaign',async()=>{
@@ -30,4 +30,18 @@ test('destination and cruise-type filtering preserves the actual collection',()=
  assert.equal(catalog.filterCruises('dubai','dining')[0].slug,'dubai-marina-dinner');
  assert.equal(catalog.filterCruises('Hong Kong','sightseeing')[0].slug,'aqua-luna-harbour');
  assert.equal(catalog.filterCruises('Mumbai','').length,0);
+});
+
+test('every statically generated app service, including cruises, has a renderable gateway',async()=>{
+ const dashboard=load('src/lib/mobile/app-dashboard.ts');
+ const element=(type,props)=>({type,props});
+ const gateway=load('src/app/app/services/[id]/page.tsx',{
+  'react/jsx-runtime':{jsx:element,jsxs:element,Fragment:'fragment'},
+  'next/link':{default:'link'},'next/navigation':{notFound:()=>{throw Error('not found');}},
+  'lucide-react':{ArrowLeft:'icon',ArrowUpRight:'icon',ExternalLink:'icon',ShieldCheck:'icon'},
+  '@/components/mobile/MobileAppHeader':{default:'header'},
+  '@/lib/mobile/app-dashboard':dashboard,
+ });
+ const params=gateway.generateStaticParams();assert.ok(params.some(p=>p.id==='cruises'));
+ for(const p of params)assert.ok(await gateway.default({params:Promise.resolve(p)}));
 });
