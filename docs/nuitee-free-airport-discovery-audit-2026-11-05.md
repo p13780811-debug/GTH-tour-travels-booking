@@ -47,3 +47,15 @@ No existing Flight, Hotel, Activity, Tour, database or API integration was edite
 ## Growth expectation
 
 Airport guides may improve long-tail search discoverability but do not guarantee traffic, revenue, indexed pages, or supplier booking availability. Monitor Search Console indexing and real analytics after an approved launch. Existing organic social scheduling can promote the page only after the public URL is live.
+
+## Expanded global reference catalog (2026-11-05)
+
+15 country-scoped read-only Nuitee Connect metadata searches were filtered to country-matching IATA airport records with the provider's airline-service indicator. Raw accepted counts are: India 22; Japan 24; United States 18; Germany 24; United Kingdom 22; France 21; Australia 24; China 23; Canada 25; Brazil 23; Thailand 25; UAE 7; Indonesia 24; Malaysia 24; Spain 7. **313 country-sourced records before de-duplication**, plus the original 16 manually verified airport-guide records. Search results are capped by the Nuitee API query endpoint, so this is not a complete list of all airports worldwide. The site de-duplicates by IATA code and filters unsuitable records. An airport reference or hasAirlineService flag is not a guarantee of a currently available route.
+
+- `src/lib/travel/airportReference*.ts`: static country-scoped records, no runtime network access.
+- `src/lib/travel/nuiteeAirportIndex.ts`: searchable, validated, deduplicated combined catalog.
+- `src/components/travel/AirportDiscoveryTools.tsx`: accessible text/country search with incremental results, route selector, and existing flight-search navigation.
+- `tests/nuitee-airport-discovery.test.mjs`: source contract and zero-booking-call regression checks.
+- `.github/workflows/nuitee-airport-feature-qa.yml`: isolated branch CI for tests, TypeScript and lint. Does not build/deploy Next production or call third-party booking APIs.
+
+Do not describe the feature as merged/live until exact-commit CI and release gates pass. Commercial/production Flights and Experiences API permissions remain outside this static reference feature.
