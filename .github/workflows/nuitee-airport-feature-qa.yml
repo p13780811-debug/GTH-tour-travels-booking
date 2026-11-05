@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/nuitee-airport-discovery-free
+      - fix/airport-explorer-seo-social-20261105
     paths:
       - "src/lib/travel/airportReference*.ts"
       - "src/lib/travel/nuiteeAirport*.ts"
