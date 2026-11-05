@@ -32,6 +32,24 @@ export default function TransferProviderWidgets() {
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const host = useRef<HTMLDivElement>(null);
 
+  // Editorial partner cards can deep-link to a particular existing widget
+  // tab without creating a new supplier integration or changing script IDs.
+  useEffect(() => {
+    function syncHash() {
+      const selected = window.location.hash.replace("#transfer-widget-", "");
+      if (selected === "options" || selected === "airport" || selected === "additional") {
+        setActive(current => {
+          if (current === selected) return current;
+          setLoadState("loading");
+          return selected;
+        });
+      }
+    }
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
   useEffect(() => {
     const mount = host.current;
     if (!mount) return;
@@ -76,13 +94,16 @@ export default function TransferProviderWidgets() {
 
   return (
     <section aria-labelledby="transfer-provider-heading" className="gth-glass mb-8 w-full min-w-0 scroll-mt-24 overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-6">
+      <span id="transfer-widget-options" aria-hidden="true" className="block h-0 scroll-mt-24" />
+      <span id="transfer-widget-airport" aria-hidden="true" className="block h-0 scroll-mt-24" />
+      <span id="transfer-widget-additional" aria-hidden="true" className="block h-0 scroll-mt-24" />
       <div className="flex flex-wrap items-center gap-3">
         <span className="hidden sm:inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <CarFront size={21} aria-hidden="true" />
         </span>
         <div>
           <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-soft)]">intui.travel · Kiwitaxi · Travelpayouts</p>
-          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Compare airport transfers</h2>
+          <h2 id="transfer-provider-heading" className="mt-1 text-xl font-bold sm:text-2xl">Search transfer options</h2>
         </div>
       </div>
 
@@ -115,7 +136,7 @@ export default function TransferProviderWidgets() {
           Partner booking, payment and support remain on the supplier side.
         </p>
 
-        {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading provider search…</p>}
+        {loadState === "loading" && <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Loading transfer search…</p>}
         {loadState === "error" && (
           <p role="alert" className="mt-4 text-sm text-[var(--text-soft)]">
             The supplier form did not render. Please try another provider tab or the existing Welcome Pickups / GetTransfer partner links below.
@@ -130,11 +151,11 @@ export default function TransferProviderWidgets() {
             </p>
             <button type="button" onClick={() => select("options")}
               className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]">
-              Try Kiwitaxi
+              Try another search
             </button>
             <a href="https://tpo.lv/GFuzmgYk" target="_blank" rel="noopener noreferrer sponsored"
               className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--gold)]">
-              Welcome Pickups <ArrowUpRight size={13} aria-hidden="true" />
+              Explore pickup services <ArrowUpRight size={13} aria-hidden="true" />
             </a>
           </div>
         )}
@@ -149,11 +170,11 @@ export default function TransferProviderWidgets() {
         </p>
         <a href="https://tpo.lv/GFuzmgYk" target="_blank" rel="noopener noreferrer sponsored"
           className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">
-          Alternative: Welcome Pickups <ArrowUpRight size={16} aria-hidden="true" />
+          Explore pickup services <ArrowUpRight size={16} aria-hidden="true" />
         </a>
         <a href="https://gettransfer.tpo.lv/jpv6nsqO" target="_blank" rel="noopener noreferrer sponsored"
           className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">
-          GetTransfer <ArrowUpRight size={16} aria-hidden="true" />
+          Compare more rides <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </div>
       <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
