@@ -31,21 +31,39 @@ export default function TransferProviderWidgets() {
   const [active, setActive] = useState<WidgetType>("options");
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const host = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<WidgetType>("options");
 
   // Editorial partner cards can deep-link to a particular existing widget
   // tab without creating a new supplier integration or changing script IDs.
   useEffect(() => {
     function syncHash() {
       const selected = window.location.hash.replace("#transfer-widget-", "");
-      if ((selected === "options" || selected === "airport" || selected === "additional") && selected !== active) {
+      if ((selected === "options" || selected === "airport" || selected === "additional") && selected !== activeRef.current) {
+        activeRef.current = selected;
         setLoadState("loading");
         setActive(selected);
       }
     }
     syncHash();
     window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
-  }, [active]);
+    function handleAnchorClick(event: MouseEvent) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest('a[href^="#transfer-widget-"]');
+      if (!link) return;
+      const type = link.getAttribute("href")?.replace("#transfer-widget-", "");
+      if ((type === "options" || type === "airport" || type === "additional") && type !== activeRef.current) {
+        activeRef.current = type;
+        setLoadState("loading");
+        setActive(type);
+      }
+    }
+    document.addEventListener("click", handleAnchorClick);
+    return () => {
+      window.removeEventListener("hashchange", syncHash);
+      document.removeEventListener("click", handleAnchorClick);
+    };
+  }, []);
 
   useEffect(() => {
     const mount = host.current;
@@ -85,6 +103,7 @@ export default function TransferProviderWidgets() {
 
   function select(type: WidgetType) {
     if (type === active) return;
+    activeRef.current = type;
     setLoadState("loading");
     setActive(type);
   }
