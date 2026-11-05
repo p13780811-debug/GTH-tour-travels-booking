@@ -59,3 +59,9 @@ Airport guides may improve long-tail search discoverability but do not guarantee
 - `.github/workflows/nuitee-airport-feature-qa.yml`: isolated branch CI for tests, TypeScript and lint. Does not build/deploy Next production or call third-party booking APIs.
 
 Do not describe the feature as merged/live until exact-commit CI and release gates pass. Commercial/production Flights and Experiences API permissions remain outside this static reference feature.
+
+## Verified QA result
+
+The feature-specific GitHub Actions run completed successfully after fixing a shortened checkout SHA:
+https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/42040745717
+Checks passed on source commit `eea221f221c2217ad979110f813a592a0258ad26`: `npm ci --ignore-scripts`, airport reference test, repository `tsc --noEmit`, and feature-file ESLint. Subsequent commit(s) modified only this audit document, not application source. No full Next.js production build, browser QA, Vercel preview, or production release has been performed. Deployment is gated on explicit confirmation of a no-charge release path.
