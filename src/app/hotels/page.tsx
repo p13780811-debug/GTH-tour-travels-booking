@@ -21,6 +21,7 @@ import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
+import HotelFeaturedStays from "@/components/hotel/HotelFeaturedStays";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 
 import {
@@ -387,6 +388,7 @@ function HotelsContent() {
             </div>
             {hotelMode === "booking" ? <div>
               <HotelBookingExperience />
+              <HotelFeaturedStays />
               <section className="mx-auto max-w-7xl px-4 pb-3 pt-5 sm:px-6" aria-labelledby="hotel-inspiration-title">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO · Signature destinations</p>
