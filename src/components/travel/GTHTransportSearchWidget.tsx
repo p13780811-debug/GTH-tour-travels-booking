@@ -1,5 +1,7 @@
-import Link from "next/link";
-import { ArrowRight, BusFront, Ship, TrainFront } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ArrowRight, BusFront, Ship, TrainFront, PlaneTakeoff } from "lucide-react";
 
 /**
  * First-party GTH PRO transport search.
@@ -10,15 +12,17 @@ import { ArrowRight, BusFront, Ship, TrainFront } from "lucide-react";
  * are sent ONCE to a validated server-side route deep-link handoff.
  * No paid API or browser-held affiliate credentials.
  */
-export type TransportMode = "bus" | "train" | "ferry";
+export type TransportMode = "bus" | "train" | "ferry" | "flight";
 
 const modes = [
-  { mode: "bus" as const, href: "/bus", label: "Bus", Icon: BusFront },
-  { mode: "train" as const, href: "/train", label: "Train", Icon: TrainFront },
-  { mode: "ferry" as const, href: "/ferry", label: "Ferry", Icon: Ship },
+  { mode: "bus" as const, label: "Bus", Icon: BusFront },
+  { mode: "train" as const, label: "Train", Icon: TrainFront },
+  { mode: "ferry" as const, label: "Ferry", Icon: Ship },
+  { mode: "flight" as const, label: "Flight", Icon: PlaneTakeoff },
 ];
 
 export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode }) {
+  const [activeMode, setActiveMode] = useState<TransportMode>(mode);
   const today = new Date().toISOString().slice(0, 10);
   const field =
     "mt-2 block h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-base text-[var(--text)] outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]";
@@ -30,33 +34,34 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">GTH PRO · Global travel</p>
           <h2 id="gth-ground-search-heading" className="mt-1 text-xl font-bold sm:text-2xl">
-            {mode === "bus" ? "Search bus journeys" : mode === "train" ? "Search global train journeys" : "Search ferry journeys"}
+            {activeMode === "bus" ? "Search bus journeys" : activeMode === "train" ? "Search global train journeys" : activeMode === "flight" ? "Search 12Go flights" : "Search ferry journeys"}
           </h2>
         </div>
-        <nav aria-label="Choose ground and sea transport" className="flex flex-wrap gap-2">
-          {modes.map(({ mode: item, href, label, Icon }) => (
-            <Link key={item} href={href}
-              aria-current={mode === item ? "page" : undefined}
-              className={mode === item
-                ? "gth-btn-gold inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold"
-                : "inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[var(--border)] px-3 text-sm font-semibold"}>
-              <Icon size={16} aria-hidden="true" /> {label}
-            </Link>
+        <nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">
+          {modes.map(({ mode: item, label, Icon }) => (
+            <button key={item} type="button" onClick={() => setActiveMode(item)}
+              aria-current={activeMode === item ? "true" : undefined}
+              aria-pressed={activeMode === item}
+              className={activeMode === item
+                ? "gth-btn-gold inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-3 sm:text-sm"
+                : "inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] px-1 py-2 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-3 sm:text-sm"}>
+              <Icon size={17} aria-hidden="true" /><span>{label}</span>
+            </button>
           ))}
         </nav>
       </div>
       <form method="GET" action="/go/transport/search" className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" autoComplete="on">
-        <input type="hidden" name="mode" value={mode} />
+        <input type="hidden" name="mode" value={activeMode} />
         <label className="block min-w-0 text-sm font-semibold">
           From
           <input className={field} type="text" name="from" minLength={2} maxLength={80}
-            placeholder={mode === "ferry" ? "e.g. Phuket" : mode === "train" ? "e.g. Bangkok" : "e.g. Mumbai"}
+            placeholder={activeMode === "ferry" ? "e.g. Phuket" : activeMode === "train" || activeMode === "flight" ? "e.g. Bangkok" : "e.g. Mumbai"}
             autoComplete="address-level2" required />
         </label>
         <label className="block min-w-0 text-sm font-semibold">
           To
           <input className={field} type="text" name="to" minLength={2} maxLength={80}
-            placeholder={mode === "ferry" ? "e.g. Koh Phi Phi" : mode === "train" ? "e.g. Chiang Mai" : "e.g. Goa"}
+            placeholder={activeMode === "ferry" ? "e.g. Koh Phi Phi" : activeMode === "train" || activeMode === "flight" ? "e.g. Chiang Mai" : "e.g. Goa"}
             autoComplete="off" required />
         </label>
         <label className="block min-w-0 text-sm font-semibold">
@@ -79,8 +84,8 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
         </div>
       </form>
       <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
-        Search opens the route-specific provider booking page with your itinerary and affiliate tracking.
-        Exact station matches, schedules, date and passenger selection depend on provider support; confirm them before payment.
+        Search opens a route-specific 12Go partner page with your itinerary and public affiliate tracking.
+        Exact stations or airports, schedules, date and passenger selection depend on route coverage; reconfirm on 12Go before payment.
         GTH PRO may receive a referral commission.
       </p>
     </section>
