@@ -43,9 +43,9 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
               aria-current={activeMode === item ? "true" : undefined}
               aria-pressed={activeMode === item}
               className={activeMode === item
-                ? "gth-btn-gold inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-3 sm:text-sm"
-                : "inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border border-[var(--border)] px-1 py-2 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-3 sm:text-sm"}>
-              <Icon size={17} aria-hidden="true" /><span>{label}</span>
+                ? "inline-flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-xl bg-[image:var(--btn-bg)] px-1.5 py-2 text-xs font-bold text-[var(--btn-text)] shadow-[var(--btn-shadow)] sm:gap-2 sm:px-3 sm:text-sm"
+                : "inline-flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--card)] px-1.5 py-2 text-xs font-semibold text-[var(--text)] sm:gap-2 sm:px-3 sm:text-sm"}>
+              <Icon size={17} aria-hidden="true" />{label}
             </button>
           ))}
         </nav>
