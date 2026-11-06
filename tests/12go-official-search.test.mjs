@@ -11,7 +11,7 @@ test("the frozen partner iframe is gone; native first-party form provides editab
   assert.match(form, /type="text" name="to"/);
   assert.match(form, /type="date" name="date"/);
   assert.match(form, /<select className=\{field\} name="people"/);
-  assert.match(form, /type="hidden" name="mode" value=\{mode\}/);
+  assert.match(form, /type="hidden" name="mode" value=\{activeMode\}/);
   assert.match(form, /type="submit"/);
   assert.match(form, /minLength=\{2\}/);
   assert.match(form, /maxLength=\{80\}/);
@@ -35,7 +35,7 @@ test("route handoff is strict, official, mode-limited, and preserves itinerary w
   const route = source("src/app/go/transport/search/route.ts");
   assert.match(route, /"https:\/\/12go\.asia"/);
   assert.match(route, /"17380992"/);
-  assert.match(route, /"bus", "train", "ferry"/);
+  assert.match(route, /"bus", "train", "ferry", "flight"/);
   assert.match(route, /mode = single\(params, "mode"\)/);
   assert.match(route, /locationSlug\(single\(params, "from"\)\)/);
   assert.match(route, /locationSlug\(single\(params, "to"\)\)/);
@@ -97,22 +97,25 @@ test("booking gateway exposes static Next.js segment configuration", () => {
 });
 
 
-test("12Go flights are optional: tracked flight routes are supported without replacing Aviasales or Nuitee",()=>{
+test("all four 12Go modes switch inside the same existing search form; main Flights page stays untouched",()=>{
   const page = source("src/app/flights/page.tsx");
   const widget = source("src/components/travel/GTHTransportSearchWidget.tsx");
   const route = source("src/app/go/transport/search/route.ts");
   const hotels = source("src/lib/travel/hotel-whitelabel.ts");
   const transfers = source("src/app/transfers/page.tsx");
-  assert.match(widget, /"flight" as const/);
-  assert.match(widget, /name="mode" value=\{mode\}/);
-  assert.match(widget, /href: "\/flights#12go-flight-options"/);
+  assert.match(widget, /"use client"/);
+  for (const mode of ['bus','train','ferry','flight']) assert.match(widget,new RegExp('mode: "'+mode+'" as const'));
+  assert.match(widget, /grid-cols-4 gap-1/);
+  assert.match(widget, /onClick=\{\(\) => setActiveMode\(item\)\}/);
+  assert.match(widget, /aria-pressed=\{activeMode === item\}/);
+  assert.match(widget, /name="mode" value=\{activeMode\}/);
+  assert.match(widget, /<form method="GET" action="\/go\/transport\/search"/);
+  assert.doesNotMatch(widget, /href: "\/flights|<iframe/);
   assert.match(route, /"bus", "train", "ferry", "flight"/);
   assert.match(route, /mode === "flight" \? "flights" : mode/);
   assert.match(route, /supplier\.searchParams\.set\("z", AFFILIATE_ID\)/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
-  assert.match(page, /<details id="12go-flight-options"/);
-  assert.match(page, /<GTHTransportSearchWidget mode="flight" \/>/);
-  assert.match(page, /!isResultsView && <details/);
+  assert.doesNotMatch(page, /12go-flight-options|GTHTransportSearchWidget|12go\.asia/);
   assert.match(hotels, /nuitee\.link/);
   assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
 });
