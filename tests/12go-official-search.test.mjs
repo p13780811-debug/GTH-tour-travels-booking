@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 
 const source = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 
@@ -118,4 +120,32 @@ test("all four 12Go modes switch inside the same existing search form; main Flig
   assert.doesNotMatch(page, /12go-flight-options|GTHTransportSearchWidget|12go\.asia/);
   assert.match(hotels, /nuitee\.link/);
   assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
+});
+
+test("one 12Go form handoff preserves all four modes and blocks injected/duplicate parameters",async()=>{
+  const mod={exports:{}};
+  const content=ts.transpileModule(source("src/app/go/transport/search/route.ts"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  vm.runInNewContext(content,{module,exports:mod.exports,Date,URL,URLSearchParams,Response,require:name=>{
+    if(name==="next/server")return {NextResponse:{redirect:(target,status)=>new Response(null,{status,headers:{location:String(target)}})}};
+    throw Error("Unexpected dependency "+name);
+  }},{timeout:2000});
+  const tomorrow=new Date(Date.now()+86400000).toISOString().slice(0,10);
+  for(const [mode,path] of [["bus","bus"],["train","train"],["ferry","ferry"],["flight","flights"]]){
+    const url="https://www.gthproglobal.com/go/transport/search?"+new URLSearchParams({mode,from:"Bangkok",to:"Chiang Mai",date:tomorrow,people:"2"});
+    const response=await mod.exports.GET({nextUrl:new URL(url),url});
+    assert.equal(response.status,303);
+    const next=new URL(response.headers.get("location"));
+    assert.equal(next.origin,"https://12go.asia");
+    assert.equal(next.pathname,"/en/"+path+"/bangkok/chiang-mai");
+    assert.equal(next.searchParams.get("date"),tomorrow);
+    assert.equal(next.searchParams.get("people"),"2");
+    assert.equal(next.searchParams.get("z"),"17380992");
+  }
+  for(const extra of ["&mode=bus","&to=https%3A%2F%2Fevil.example","&people=999"]){
+    const url="https://www.gthproglobal.com/go/transport/search?"+new URLSearchParams({mode:"flight",from:"Bangkok",to:"Chiang Mai",date:tomorrow,people:"2"})+extra;
+    const response=await mod.exports.GET({nextUrl:new URL(url),url});
+    assert.equal(response.status,303);
+    assert.equal(new URL(response.headers.get("location")).pathname,"/flights");
+    assert.equal(new URL(response.headers.get("location")).searchParams.get("search"),"invalid");
+  }
 });
