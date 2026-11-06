@@ -36,7 +36,7 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
  const destination=typeof rawCity==="string"?rawCity.normalize("NFKC").trim().replace(/\s+/gu," "):"";
  const type=typeof rawType==="string"?rawType:"";
  const provider=typeof rawProvider==="string"?rawProvider:"invalid";
- const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||(destination.length>=2&&/^[\p{L}\p{M}\p{N}\s.'’-]+$/u.test(destination)))&&(!type||cruiseTypes.some(item=>item.id===type))&&["","gyg","klook"].includes(provider);
+ const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||(destination.length>=2&&/^[\p{L}\p{M}\p{N}\s.'’·–-]+$/u.test(destination)))&&(!type||cruiseTypes.some(item=>item.id===type))&&["","gyg","klook"].includes(provider);
  const selected=valid?filterCruises(destination,type):[...cruises];
  const selectedIndia=valid?filterIndianWaters(destination,type):[...indianWaterOptions];
  const holiday=selected.filter(item=>item.type==="holiday"),day=selected.filter(item=>item.type!=="holiday");
