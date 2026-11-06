@@ -21,7 +21,7 @@ try{
     assert.equal(forwardedSearch.origin,url.searchParams.get('provider')==='klook'?'https://tp.media':'https://www.getyourguide.com');
     return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA partner search receiver</h1>'});
    }
-   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&['Mumbai Private Sailing Yacht Cruise','Hooghly River Sunset Cruise','Goa Mandovi Dinner Cruise'].includes(url.searchParams.get('destination'))&&route.request().isNavigationRequest()){
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&['Mumbai Private Sailing Yacht Cruise','Hooghly River Sunset Cruise','Goa Mandovi Dinner Cruise','Disney Adventure · 3-night cruise'].includes(url.searchParams.get('destination'))&&route.request().isNavigationRequest()){
     const response=await route.fetch({maxRedirects:0});
     assert.ok([302,303,307,308].includes(response.status()));
     exactProductSearch=response.headers().location;
@@ -134,6 +134,11 @@ try{
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.getByRole('heading',{name:'QA exact cruise product'}).waitFor();
   assert.equal(exactProductSearch,goaHref);
+  await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Disney Adventure · 3-night cruise');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.getByRole('heading',{name:'QA exact cruise product'}).waitFor();
+  assert.equal(new URL(exactProductSearch,'http://127.0.0.1:3000').pathname,'/go/cruises/disney-adventure-3-nights');
   await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
