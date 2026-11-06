@@ -13,15 +13,18 @@ test('India block is isolated and existing international cruise catalogue is ret
  assert.match(original,/singapore-river-cruise/);
  assert.equal((original.match(/sourceUrl:"https:\/\/www\.klook\.com/g)||[]).length,7);
 });
-test('four India destinations with two grounded exact Klook products',()=>{
- for(const slug of ['goa-mandovi-dinner','kerala-alleppey-houseboat','mumbai-harbour','lakshadweep-cruises'])assert.ok(ui.includes(slug),slug);
+test('six Indian destination photo cards with two exact Klook products',()=>{
+ for(const slug of ['goa-mandovi-dinner','kerala-alleppey-houseboat','mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises'])assert.ok(ui.includes(slug),slug);
  assert.match(ui,/activity\/185166-goa-lexicon-dinner-cruise/);
  assert.match(ui,/activity\/6620-alleppey-backwater-cruise-by-houseboat-cochin/);
  assert.match(ui,/partnerSearchHref\("cruises"/);
 });
 test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.ok(!ui.includes('₹'));
- assert.ok(!ui.includes('<Image'));
+ assert.ok(ui.includes('<Image'));
+ assert.match(ui,/Special:FilePath/);
+ assert.match(ui,/Indian cruise photo credits/);
+ assert.match(ui,/CC BY/);
  assert.ok(!ui.includes('getyourguide.com'));
  assert.match(ui,/campaign_id:"137"/);
  assert.match(ui,/marker:"417668"/);
