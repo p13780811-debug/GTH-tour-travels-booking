@@ -14,10 +14,12 @@ test("all-services experience is scoped to the existing ecosystem page", () => {
   assert.match(page, /<EcosystemHub \/>/);
   assert.match(page, /<HeroSlider \/>/);
   assert.match(page, /<EcosystemPillars \/>/);
-  assert.match(page, /<HotelQuadSection/);
+  assert.doesNotMatch(page, /<HotelQuadSection/);
   assert.match(page, /<FeaturedDestinationsSlider/);
   assert.match(page, /<GTHNetwork/);
-  assert.match(page, /import HeroSearch from/);
+  assert.doesNotMatch(page, /Trip\.com|trip\.com/i);
+  assert.match(page, /import EcosystemUnifiedSearch from/);
+  assert.match(page, /<EcosystemUnifiedSearch \/>/);
   assert.match(page, /id="travel-services"/);
   assert.match(page, /id="insights"/);
   assert.match(page, /id="providers"/);
