@@ -30,10 +30,10 @@ export const metadata = {
 
 const partners = [
     { name: "GetYourGuide · Kolkata Cruise", reward: "", description: "Owner-authorized Kolkata Hooghly River cruise. Verify supplier dates and final prices.", image: "/images/mega/tours.jpg", link: "https://www.getyourguide.com/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/?partner_id=DF3NBKA&utm_medium=online_publisher&cmp=gthpro_cruises_kolkata" },
-    { name: "Experience Hub", original: "Klook", reward: "", description: "Curated local adventures", image: "/images/mega/klook.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
-    { name: "Elite Transfers", original: "Welcome Pickups", reward: "", description: "VIP airport logistics", image: "/images/mega/welcome.jpg", link: "https://tpo.lv/GFuzmgYk" },
-    { name: "Sky Rights", original: "AirHelp", reward: "", description: "Legal flight protection", image: "/images/mega/airhelp.jpg", link: "https://airhelp.tpo.lv/W9baN8JY" },
-    { name: "Safe Guard", original: "EKTA", reward: "", description: "Global health & safety cover", image: "/images/mega/ekta.jpg", link: "https://ektatraveling.tpo.lv/zRNsrOPf" },
+    { name: "Klook Experiences", original: "Klook", reward: "", description: "Discover Klook experiences and confirm real prices with the provider", image: "/images/mega/klook.jpg", link: "https://klook.tpo.lv/IKb6eSUe" },
+    { name: "Welcome Pickups", original: "Welcome Pickups", reward: "", description: "Explore airport transfer availability and supplier pickup terms", image: "/images/mega/welcome.jpg", link: "https://tpo.lv/GFuzmgYk" },
+    { name: "AirHelp", original: "AirHelp", reward: "", description: "Check independent flight-disruption eligibility and claim services", image: "/images/mega/airhelp.jpg", link: "https://airhelp.tpo.lv/W9baN8JY" },
+    { name: "EKTA Travel Insurance", original: "EKTA", reward: "", description: "Review independent travel insurance terms, coverage and exclusions", image: "/images/mega/ekta.jpg", link: "https://ektatraveling.tpo.lv/zRNsrOPf" },
 ];
 
 const categories = [
@@ -178,13 +178,19 @@ export default async function MegaAggregator() {
                                 {name:"Insurance",href:"/insurance"},
                                 {name:"Airport Transfers",href:"/transfers"},
                                 {name:"Car Rentals",href:"/cars"},
+                                {name:"Cruises",href:"/cruises"},
+                                {name:"12Go Bus",href:"/bus"},
+                                {name:"12Go Train",href:"/train"},
+                                {name:"AI Planner",href:"/ai-trip"},
+                                {name:"Property discovery",href:"/real-estate"},
+                                {name:"Tender opportunities",href:"/tender"},
                             ].map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">{item.name} <span className="ml-2" aria-hidden="true">↗</span></Link>)}
                         </nav>
                     </div>
                 </section>
 
                 {/* Travel Guides - Cocktail Version (Airbnb Style + Gemini Clean Look) */}
-                <section id="insights" className="bg-black py-14 text-white md:py-20">
+                <section id="insights" className="bg-[var(--bg)] py-14 text-[var(--text)] md:py-20">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
                         <div className="flex flex-col items-center mb-12">
                             <h2 className="text-4xl font-bold tracking-tight mb-4">
@@ -196,63 +202,63 @@ export default async function MegaAggregator() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
                             {/* Goa Guide Card - Updated for Originality */}
-                            <Link href="/blog/research-a-new-destination" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-skyBlue">
+                            <Link href="/blog/research-a-new-destination" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
                                     <img
-                                        // Yahan static ki jagah koi bhi popular hotel id dalo testing ke liye
-                                        src="/images/hotels/goa-1.jpg"
-                                        alt="Goa Luxury"
+                                        // Destination illustration only; no hotel identity or room price is claimed
+                                        src="/images/cities/goa.jpg"
+                                        alt="Goa destination scenery"
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
                                     />
-                                    {/* Live Price Tag overlay */}
+                                    {/* Editorial category label, not a hotel price or offer. */}
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-skyBlue">RESEARCH BEFORE YOU BOOK</p>
+                                        <p className="text-[10px] font-bold text-[var(--gold)]">RESEARCH BEFORE YOU BOOK</p>
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
                                 </div>
                                 <div className="absolute bottom-0 p-6">
                                     <h3 className="text-xl font-bold">Destination Research Guide</h3>
-                                    <p className="text-sm text-neutral-400 mt-1 italic">Useful checks before choosing a destination</p>
+                                    <p className="text-sm text-[var(--text-soft)] mt-1 italic">Useful checks before choosing a destination</p>
                                 </div>
                             </Link>
 
                             {/* Paris Guide Card */}
-                            <Link href="/blog/hotel-booking-checklist" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                            <Link href="/blog/hotel-booking-checklist" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
                                     <img
-                                        // GOA WALA SAME FORMULA (Paris Hotel ID: 255541)
-                                        src="/images/hotels/paris-1.jpg"
-                                        alt="Paris Travel Guide"
+                                        // Travel-guide illustration, not a hotel detail page
+                                        src="/images/cities/paris.jpg"
+                                        alt="Paris destination scenery"
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-sky-400">HOTEL BOOKING CHECKLIST</p>
+                                        <p className="text-[10px] font-bold text-[var(--gold)]">HOTEL BOOKING CHECKLIST</p>
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                                 </div>
                                 <div className="absolute bottom-0 p-6">
                                     <h3 className="text-xl font-bold text-white">Hotel Booking Checklist</h3>
-                                    <p className="text-sm text-neutral-400 mt-1">Room rates, taxes and cancellation terms</p>
+                                    <p className="text-sm text-[var(--text-soft)] mt-1">Room rates, taxes and cancellation terms</p>
                                 </div>
                             </Link>
 
                             {/* Dubai Guide Card */}
-                            <Link href="/blog/how-to-compare-flight-fares" className="group relative overflow-hidden rounded-2xl bg-neutral-900 transition-all hover:ring-2 hover:ring-blue-500">
+                            <Link href="/blog/how-to-compare-flight-fares" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
                                     <img
-                                        // GOA WALA SAME FORMULA (Dubai Hotel ID: 16522)
-                                        src="/images/hotels/dubai-1.jpg"
-                                        alt="Dubai Travel Guide"
+                                        // Travel-guide illustration, not a hotel detail page
+                                        src="/images/cities/dubai.jpg"
+                                        alt="Dubai destination scenery"
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-sky-400">FLIGHT FARE CHECKLIST</p>
+                                        <p className="text-[10px] font-bold text-[var(--gold)]">FLIGHT FARE CHECKLIST</p>
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                                 </div>
                                 <div className="absolute bottom-0 p-6">
                                     <h3 className="text-xl font-bold text-white">How to Compare Flight Fares</h3>
-                                    <p className="text-sm text-neutral-400 mt-1">Baggage, fare rules and connections</p>
+                                    <p className="text-sm text-[var(--text-soft)] mt-1">Baggage, fare rules and connections</p>
                                 </div>
                             </Link>
                         </div>
