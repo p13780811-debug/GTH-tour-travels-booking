@@ -24,10 +24,11 @@ function HotelCard({hotel}:{hotel:Card}){
        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
        placeholderClassName="flex h-full w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)]"/>
      {hotel.bookingReady&&<span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 py-1 text-xs font-semibold"><ShieldCheck size={13}/> Verified partner link</span>}
-     {hotel.imageAttribution&&<span className="absolute bottom-2 left-2 right-2 rounded bg-[var(--card)] px-2 py-1 text-[10px]">
-       Photo: {hotel.imageAttribution.author} · Wikimedia Commons
-     </span>}
    </Link>
+   {hotel.imageAttribution&&<p className="px-4 pt-2 text-[10px] leading-5 text-[var(--text-soft)]">
+     Photo: <a href={hotel.imageAttribution.commonsPage} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.imageAttribution.author}</a>
+     {" · "}<a href={hotel.imageAttribution.licenseUrl} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.imageAttribution.license}</a>
+   </p>}
    <div className="flex min-h-48 flex-1 flex-col gap-2 p-4">
      <p className="text-xs capitalize text-[var(--text-soft)]">{hotel.category.replaceAll("_"," ")} · {hotel.source}</p>
      <h3 className="line-clamp-2 text-base font-semibold">{hotel.name}</h3>
@@ -75,7 +76,9 @@ export default function HotelFeaturedStays(){
      const items=data?.[section.key]||[];
      return <div className="mb-8" key={section.key}>
        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-         <h3 className="text-xl font-bold">{section.title}</h3>
+         <div><h3 className="text-xl font-bold">{section.title}</h3>
+           {section.key==="international"&&<p className="mt-1 max-w-xl text-xs text-[var(--text-soft)]">Current international directory coverage is limited. Use the live hotel booking search above for more destinations.</p>}
+         </div>
          <Link href={section.href} className="gth-btn inline-flex min-h-11 items-center gap-2 px-4 text-sm font-semibold">Browse hotels <ArrowUpRight size={15}/></Link>
        </div>
        {items.length?<div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
