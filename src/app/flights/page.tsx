@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle2, Compass, PlaneTakeoff } from "lucide-react";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
-import GTHTransportSearchWidget from "@/components/travel/GTHTransportSearchWidget";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import { flightDestinations } from "@/data/flight/destinations";
@@ -59,14 +58,6 @@ export default async function FlightsPage({ searchParams }: Props) {
           </div>
         )}
         <AviasalesWhiteLabel isResultsView={isResultsView} />
-        {/* Optional 12Go alternative: retain Aviasales as the approved primary search. */}
-        {!isResultsView && <details id="12go-flight-options" className="mx-4 mt-5 scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6 sm:p-5">
-          <summary className="min-h-11 cursor-pointer text-sm font-semibold text-[var(--text)] sm:text-base">
-            <span className="inline-flex items-center gap-2"><PlaneTakeoff size={18} className="text-[var(--gold)]" aria-hidden="true"/> Also search Flights with 12Go</span>
-          </summary>
-          <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Optional 12Go search for supported routes. Your main flight search continues through Aviasales. Availability, airports, fare and checkout are confirmed on the partner site.</p>
-          <div className="mt-4"><GTHTransportSearchWidget mode="flight" /></div>
-        </details>}
         <div className="px-4 sm:px-6">
           <FlightJourneyServices />
           <PopularDestinations destinations={flightDestinations} origin={origin} />
