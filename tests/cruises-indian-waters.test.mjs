@@ -20,7 +20,8 @@ test('six Indian photo cards with exact matched cruise products and no generic K
  assert.ok(!ui.includes("partnerSearchHref"));
  assert.match(ui,/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/);
  assert.match(ui,/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/);
- assert.match(ui,/No confirmed bookable cruise/);
+ assert.match(ui,/A matching cruise or sailing is not guaranteed/);
+ assert.match(ui,/buildCruiseProviderSearch/);
 });
 test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.ok(!ui.includes('₹'));
