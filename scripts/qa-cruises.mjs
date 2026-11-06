@@ -17,7 +17,7 @@ try{
     const response=await route.fetch({maxRedirects:0});
     assert.ok([302,303,307,308].includes(response.status()),'Unlisted destination must redirect on first click');
     forwardedSearch=new URL(response.headers().location);
-    assert.equal(forwardedSearch.origin,'https://tp.media');
+    assert.equal(forwardedSearch.origin,url.searchParams.get('provider')==='klook'?'https://tp.media':'https://www.getyourguide.com');
     return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA partner search receiver</h1>'});
    }
    if(url.origin==='http://127.0.0.1:3000'&&url.pathname.startsWith('/go/cruises/')&&route.request().isNavigationRequest()){
@@ -43,16 +43,15 @@ try{
   const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
   assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
   assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
-  const exactGuideProducts={
-   'mumbai-harbour':'/mumbai-l201/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/',
-   'kolkata-river-cruises':'/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/',
-  };
-  for(const [slug,pathname] of Object.entries(exactGuideProducts)){
-   const card=page.locator('[data-india-cruise="'+slug+'"]');
-   const href=await card.locator('a').first().getAttribute('href');
-   assert.equal(new URL(href).hostname,'www.getyourguide.com');
-   assert.equal(new URL(href).pathname,pathname);
-  }
+  const mumbaiHref=await page.locator('[data-india-cruise="mumbai-harbour"] a').first().getAttribute('href');
+  assert.equal(mumbaiHref,'https://gyg.me/ZzIrHzQ9');
+  const kolkataHref=await page.locator('[data-india-cruise="kolkata-river-cruises"] a').first().getAttribute('href');
+  const kolkataUrl=new URL(kolkataHref);
+  assert.equal(kolkataUrl.hostname,'www.getyourguide.com');
+  assert.equal(kolkataUrl.pathname,'/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/');
+  assert.equal(kolkataUrl.searchParams.get('partner_id'),'DF3NBKA');
+  assert.equal(kolkataUrl.searchParams.get('cmp'),'gthpro_cruises_kolkata');
+  assert.equal(await page.locator('head script[data-gyg-partner-id="DF3NBKA"]').count(),1);
   for(const slug of ['lakshadweep-cruises','andaman-cruises']){
    const card=page.locator('[data-india-cruise="'+slug+'"]');
    assert.equal(await card.locator('a[href*="partner-search"]').count(),0);
@@ -97,8 +96,19 @@ try{
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
-  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Andaman cruise');
+  assert.equal(forwardedSearch.pathname,'/s/');
+  assert.equal(forwardedSearch.searchParams.get('q'),'Andaman cruise');
+  assert.equal(forwardedSearch.searchParams.get('partner_id'),'DF3NBKA');
   assert.equal(await page.getByText('No matching cruises in this collection').count(),0);
+  // Klook is still available when explicitly selected; test our first hop,
+  // not the supplier's returned catalogue, which is controlled by Klook.
+  await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
+  await page.getByRole('combobox',{name:'Search provider'}).selectOption('klook');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
+  assert.equal(forwardedSearch.origin,'https://tp.media');
+  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Andaman cruise');
   // The directory is server-rendered before React attaches the filter handlers.
   await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'networkidle' });
   const directory = page.locator('#ecosystem-directory');
@@ -114,5 +124,5 @@ try{
   await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
- console.log('PASS: seven international cards, four exact India products, honest nonbookable cards, and filters on mobile/desktop');
+ console.log('PASS: seven international cards, Mumbai/Kolkata tracked GYG links, India GYG search + Klook option and mobile/desktop filters');
 }finally{await browser.close();}
