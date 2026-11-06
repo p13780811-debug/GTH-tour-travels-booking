@@ -72,8 +72,6 @@ export default function RootLayout({
       {/* Travelpayouts Drive: project-specific, asynchronous AI affiliate tool. */}
       <head>
         <script id="gth-impact-stat" type="text/javascript" dangerouslySetInnerHTML={{ __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A8102593-82f8-43dd-baf2-89d6712f2a581.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');` }} />
-        {/* GetYourGuide Partner Integration Analyzer: provided for GTH PRO account. Install once globally. */}
-        <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="DF3NBKA" />
         <Script id="gth-travelpayouts-drive" strategy="beforeInteractive">
           {`(function () {
             if (window.location.pathname === "/app" || window.location.pathname.startsWith("/app/")) return;
