@@ -125,7 +125,7 @@ test("all four 12Go modes switch inside the same existing search form; main Flig
 test("one 12Go form handoff preserves all four modes and blocks injected/duplicate parameters",async()=>{
   const mod={exports:{}};
   const content=ts.transpileModule(source("src/app/go/transport/search/route.ts"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  vm.runInNewContext(content,{module,exports:mod.exports,Date,URL,URLSearchParams,Response,require:name=>{
+  vm.runInNewContext(content,{module:mod,exports:mod.exports,Date,URL,URLSearchParams,Response,require:name=>{
     if(name==="next/server")return {NextResponse:{redirect:(target,status)=>new Response(null,{status,headers:{location:String(target)}})}};
     throw Error("Unexpected dependency "+name);
   }},{timeout:2000});
