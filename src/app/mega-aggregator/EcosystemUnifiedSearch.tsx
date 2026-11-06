@@ -1,8 +1,7 @@
 "use client";
 
 import {useState} from "react";
-import Link from "next/link";
-import {ArrowUpRight, BriefcaseBusiness, Building2, Globe2, Plane, Search} from "lucide-react";
+import {BriefcaseBusiness, Building2, Globe2, Plane, Search} from "lucide-react";
 
 /** Uses the existing /search route and its validated pillar-specific routing.
  * No duplicate provider API, invented results, client token or CSS theme.
@@ -31,13 +30,6 @@ const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>=
   property:[{value:"property",label:"Properties and projects"}],
   tender:[{value:"tender",label:"Tender notices"}],
 };
-const directLinks=[
-  {label:"Hotels",href:"/hotels"}, {label:"Flights",href:"/flights"},
-  {label:"Tours",href:"/tours"}, {label:"Cruises",href:"/cruises"},
-  {label:"Bus · 12Go",href:"/bus"}, {label:"Train · 12Go",href:"/train"},
-  {label:"Property registry",href:"/real-estate/registry"}, {label:"Tender search",href:"/tender"},
-] as const;
-
 export default function EcosystemUnifiedSearch() {
   const [pillar,setPillar]=useState<Pillar>("all");
   const [category,setCategory]=useState<SearchCategory>("all");
@@ -97,14 +89,6 @@ export default function EcosystemUnifiedSearch() {
       <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">
         Connected search opens existing GTH PRO pages. Booking dates, guest details, prices and payment remain in the verified provider workflow.
       </p>
-      <nav aria-label="Open a service directly" className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        {directLinks.map(link=>(
-          <Link key={link.href} href={link.href}
-            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-xs font-semibold text-[var(--text)] hover:border-[var(--gold)]">
-            {link.label} <ArrowUpRight size={13} aria-hidden="true"/>
-          </Link>
-        ))}
-      </nav>
     </section>
   );
 }
