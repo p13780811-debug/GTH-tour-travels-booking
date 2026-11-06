@@ -2,29 +2,31 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const page=readFileSync("src/app/hotels/page.tsx","utf8");
-const widget=readFileSync("src/components/hotel/NuiteeHotelOffers.tsx","utf8");
+const card=readFileSync("src/components/hotel/NuiteeHotelOffers.tsx","utf8");
+const api=readFileSync("src/app/api/hotels/nuitee-featured/route.ts","utf8");
 const config=JSON.parse(readFileSync("vercel.json","utf8"));
-test("Source-backed hotel cards follow the existing connected supplier search",()=>{
-  assert.match(page,/<HotelBookingExperience\s*\/>[\s\S]*<NuiteeHotelOffers\s*\/>/);
-  assert.doesNotMatch(page,/HotelFeaturedStays/);
-  assert.match(widget,/LiteAPI\.HotelsList\.create/);
-  assert.match(widget,/HOTEL_WIDGET_SCRIPT/);
+test("Native GTH cards follow existing Nuitee search and use centralized theme",()=>{
+ assert.match(page,/<HotelBookingExperience\s*\/>[\s\S]*<NuiteeHotelOffers\s*\/>/);
+ assert.match(card,/HotelPropertyImage/);
+ assert.match(card,/bg-\[var\(--card\)\]/);
+ assert.match(card,/text-\[var\(--text\)\]/);
+ assert.match(card,/gth-btn-gold/);
+ assert.doesNotMatch(card,/iframe|srcDoc|HotelsList\.create|dark:invert/);
 });
-test("Mumbai and London use grounded real place IDs, Nuitee exact property navigation",()=>{
-  assert.match(widget,/ChIJwe1EZjDG5zsRaYxkjY_tpF0/);
-  assert.match(widget,/ChIJdd4hrwug2EcRmSrV3Vo6llI/);
-  assert.match(widget,/hotelWhiteLabelUrl\(parsed\)/);
-  assert.match(widget,/new URL\("\/hotels\/"\+encodeURIComponent\(id\),HOTEL_BOOKING_ORIGIN\)/);
-  assert.match(widget,/event\?\.hotel\?\.id\?\?event\?\.hotel\?\.hotelId/);
+test("Supplier data is server-only, bounded, cached and sandbox-gated",()=>{
+ assert.match(api,/api\.liteapi\.travel\/v3\.0\/data\/hotels/);
+ assert.match(api,/NUITEE_SANDBOX_API_KEY/);
+ assert.match(api,/NUITEE_PRODUCTION_API_KEY/);
+ assert.match(api,/GTH_NUITEE_PRODUCTION_ENABLED/);
+ assert.match(api,/process\.env\.VERCEL_ENV==="production"/);
+ assert.match(api,/s-maxage=3600/);
+ assert.match(api,/hotels\.slice\(0,6\)/);
+ assert.doesNotMatch(card,/NUITEE_SANDBOX_API_KEY|X-API-Key/);
+ assert.match(card,/no real transactions or verified live rates/);
 });
-test("No fabricated hotel catalogue, direct payment or CSS overrides",()=>{
-  assert.doesNotMatch(widget,/hotel_catalog|hotel_booking_links|tp\.media|tpo\.lv/);
-  assert.doesNotMatch(widget,/SUPABASE_SERVICE_ROLE_KEY|LITEAPI_KEY|STRIPE_SECRET_KEY/);
-  assert.doesNotMatch(widget,/sheet\\.cloneNode\\(true\\)/);
-  assert.doesNotMatch(widget,/doc\\.body\\?\\.scrollHeight|Math\\.min\\(3600/);
-  assert.match(widget,/Math\\.min\\(1280/);
-  assert.match(widget,/rows:1/);
-  assert.match(widget,/new MutationObserver\\(fit\\)/);
-  assert.match(widget,/getElementById\\("gth-nuitee-hotel-offers"\\)/);
-  assert.equal(config.git.deploymentEnabled["feat/hotels-global-source-cards-20261106"],false);
+test("Supplier IDs are preserved and no fabricated prices are shown",()=>{
+ assert.match(card,/encodeURIComponent\(id\)/);
+ assert.match(card,/HOTEL_BOOKING_ORIGIN/);
+ assert.doesNotMatch(card,/₹|fakePrice|bookNow|prebook/);
+ assert.equal(config.git.deploymentEnabled["feat/hotels-global-source-cards-20261106"],false);
 });

@@ -1,218 +1,118 @@
 "use client";
-
-import {useCallback,useEffect,useRef,useState} from "react";
+import {useEffect,useState} from "react";
 import Link from "next/link";
-import {ArrowUpRight,ShieldCheck} from "lucide-react";
-import {
-  HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT,hotelWhiteLabelUrl,
-  normalizeHotelOccupancies,parseHotelBookingSearch,
-} from "@/lib/travel/hotel-whitelabel";
+import {ArrowUpRight,MapPin,Star,ShieldCheck} from "lucide-react";
+import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 
-/**
- * Same supplier-origin pattern as WeGoTrip's original tour cards.
- * Nuitee's official HotelsList owns all hotel names, hotel photographs, rates
- * and hotel IDs. No OSM or fake catalogue is rendered here.
- *
- * The original search SDK and White Label flow stay untouched. We isolate each
- * supplier list in a responsive srcDoc iframe, like HotelBookingExperience,
- * so the vendor's styles cannot override GTH PRO's global CSS.
+/** Original Nuitee hotel content, presented in existing GTH day/night classes.
+ * No iframe, copied CSS, hardcoded colors, fabricated prices or client secrets.
  */
 const MARKETS=[
-  {
-    key:"india",
-    title:"Hotels in India",
-    city:"Mumbai",
-    placeId:"ChIJwe1EZjDG5zsRaYxkjY_tpF0",
-    description:"Original supplier hotel cards for Mumbai, India",
-  },
-  {
-    key:"world",
-    title:"International hotels",
-    city:"London",
-    placeId:"ChIJdd4hrwug2EcRmSrV3Vo6llI",
-    description:"Original supplier hotel cards for London, United Kingdom",
-  },
+ {key:"india",city:"Mumbai",title:"Hotels in India"},
+ {key:"world",city:"London",title:"International hotels"},
 ] as const;
-const frameDocument='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body><main id="gth-nuitee-hotel-offers"></main></body></html>';
-type ListSdk={
-  init:(args:{domain:string;deepLinkParams?:string})=>void;
-  HotelsList:{create:(args:{
-    selector:string;placeId:string;hasSearchBar:boolean;rows:number;currency:string;
-    primaryColor?:string;onHotelClick:(value:unknown)=>void;
-  })=>void|Promise<void>};
-};
-type FrameWindow=Window&{LiteAPI?:ListSdk};
-type ClickInfo={hotel?:{id?:unknown;hotelId?:unknown};checkin?:unknown;checkout?:unknown;adults?:unknown;children?:unknown};
-
-function supplierHotelId(value:unknown):string|null{
-  // SDK data only; never turn arbitrary user-entered hotel names into IDs.
-  return typeof value==="string"&&/^[A-Za-z0-9_-]{2,100}$/.test(value)?value:null;
+type Hotel={id:string;name:string;city:string;address:string;photo:string|null;stars:number|null;rating:number|null};
+type Feed={market:string;city:string;sandbox:boolean;hotels:Hotel[]};
+function validHotel(value:unknown):value is Hotel{
+ if(!value||typeof value!=="object")return false;
+ const h=value as Partial<Hotel>;
+ return typeof h.id==="string"&&/^[A-Za-z0-9_-]{2,100}$/.test(h.id)
+   &&typeof h.name==="string"&&typeof h.city==="string"
+   &&(h.photo===null||typeof h.photo==="string");
 }
-function hotelPartnerHref(placeId:string){
-  const u=new URL("/hotels",HOTEL_BOOKING_ORIGIN);
-  u.searchParams.set("placeId",placeId);
-  u.searchParams.set("language","en");
-  u.searchParams.set("currency","INR");
-  return u.toString();
+function hotelUrl(id:string){
+ const u=new URL("/hotels/"+encodeURIComponent(id),HOTEL_BOOKING_ORIGIN);
+ u.searchParams.set("language","en");u.searchParams.set("currency","INR");return u.toString();
 }
-function SupplierMarket({market}:{market:typeof MARKETS[number]}){
-  const frame=useRef<HTMLIFrameElement>(null);
-  const bootstrapped=useRef<Document|null>(null);
-  const teardown=useRef<(()=>void)|null>(null);
-  const [attempt,setAttempt]=useState(0);
-  const [loading,setLoading]=useState(true);
-  const [error,setError]=useState("");
-  const openSelectedHotel=useCallback((value:unknown)=>{
-    const event=value as ClickInfo|null;
-    const id=supplierHotelId(event?.hotel?.id??event?.hotel?.hotelId);
-    if(!id){
-      setError("The supplier did not return a valid hotel ID. Open this destination's booking results below.");
-      return;
-    }
-    // The White Label domain is GTH PRO's already-connected Nuitee supplier site.
-    // A vendor-returned hotel ID opens its exact hotel details, not a generic search.
-    const basic=new URL("/hotels/"+encodeURIComponent(id),HOTEL_BOOKING_ORIGIN);
-    basic.searchParams.set("language","en");
-    basic.searchParams.set("currency","INR");
-    let target=basic.toString();
-    if(typeof event?.checkin==="string"&&typeof event.checkout==="string"&&
-       typeof event.adults==="number"&&Array.isArray(event.children)){
-      const normalized=normalizeHotelOccupancies([{adults:event.adults,children:event.children}]);
-      if(normalized){
-        const query=new URLSearchParams({
-          hotelId:id,checkin:event.checkin,checkout:event.checkout,
-          occupancies:btoa(JSON.stringify(normalized)),currency:"INR",
-        });
-        const parsed=parseHotelBookingSearch(query);
-        if(parsed)target=hotelWhiteLabelUrl(parsed);
-      }
-    }
-    window.location.assign(target);
-  },[]);
-  const boot=useCallback(async()=>{
-    const element=frame.current,doc=element?.contentDocument;
-    const win=element?.contentWindow as FrameWindow|null;
-    if(!element||!doc||!win||bootstrapped.current===doc)return;
-    teardown.current?.();
-    bootstrapped.current=doc;
-    let active=true;
-    let timer:ReturnType<typeof setTimeout>|undefined;
-    let mutations:MutationObserver|undefined;
-    let resizeObserver:ResizeObserver|undefined;
-    let fitFrame:number|undefined;
-    setLoading(true);setError("");
-    // Measure the supplier LIST only. document.body.scrollHeight is tied to
-    // iframe viewport height in some supplier styles and caused runaway 3600px gaps.
-    const fit=()=>{
-      if(!active)return;
-      if(fitFrame!==undefined)return;
-      fitFrame=window.requestAnimationFrame(()=>{
-        fitFrame=undefined;
-        if(!active)return;
-        const list=doc.getElementById("gth-nuitee-hotel-offers");
-        const contentHeight=list?Math.max(list.scrollHeight,list.getBoundingClientRect().height):0;
-        const next=Math.ceil(Math.min(1280,Math.max(360,contentHeight+24)));
-        if(element.height!==String(next))element.height=String(next);
-      });
-    };
-    const cancel=()=>{
-      active=false;
-      if(timer)clearTimeout(timer);
-      if(fitFrame!==undefined)window.cancelAnimationFrame(fitFrame);
-      mutations?.disconnect();resizeObserver?.disconnect();
-    };
-    teardown.current=cancel;
-    timer=setTimeout(()=>{
-      if(active){setLoading(false);setError("Hotel cards are taking longer than expected. Open the supplier hotel list below.");}
-    },20000);
-    try{
-      await new Promise<void>((resolve,reject)=>{
-        const script=doc.createElement("script");
-        script.src=HOTEL_WIDGET_SCRIPT;
-        script.async=true;
-        script.onload=()=>resolve();
-        script.onerror=()=>reject(new Error("Hotel supplier widget unavailable"));
-        doc.head.appendChild(script);
-      });
-      if(!active)return;
-      if(!win.LiteAPI?.HotelsList?.create)throw new Error("Supplier hotel list unavailable");
-      // Keep the vendor's native card stylesheet inside this iframe.
-      // Copying parent GTH CSS made white cards inherit white text and
-      // applied viewport-height rules, breaking mobile contrast and spacing.
-      // The outer page still uses the centralized GTH day/night design tokens.
-      const gold=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
-      win.LiteAPI.init({
-        domain:new URL(HOTEL_BOOKING_ORIGIN).hostname,
-        deepLinkParams:"language=en&currency=INR",
-      });
-      await win.LiteAPI.HotelsList.create({
-        selector:"#gth-nuitee-hotel-offers",placeId:market.placeId,
-        hasSearchBar:false,rows:1,currency:"INR",
-        ...(/^#[0-9a-fA-F]{6}$/.test(gold)?{primaryColor:gold}:{}),
-        onHotelClick:openSelectedHotel,
-      });
-      if(!active)return;
-      const list=doc.getElementById("gth-nuitee-hotel-offers");
-      if(!list)throw new Error("Supplier hotel list container unavailable");
-      mutations=new MutationObserver(fit);
-      mutations.observe(list,{childList:true,subtree:true,characterData:true});
-      resizeObserver=new ResizeObserver(fit);
-      resizeObserver.observe(list);
-      fit();
-      if(timer)clearTimeout(timer);
-      setLoading(false);
-    }catch{
-      if(active){if(timer)clearTimeout(timer);setLoading(false);
-        setError("Supplier hotel cards could not load. You can still open this destination on our connected hotel booking site.");}
-    }
-  },[market.placeId,openSelectedHotel]);
-  useEffect(()=>{
-    if(frame.current?.contentDocument?.readyState==="complete")void boot();
-    return ()=>teardown.current?.();
-  },[boot,attempt]);
-  return <section aria-label={market.description} className="min-w-0">
-    <div className="mb-3">
-      <h3 className="text-xl font-bold text-[var(--text)]">{market.title}</h3>
-      <p className="mt-1 text-sm text-[var(--text-soft)]">{market.city} · Original supplier hotel cards</p>
-    </div>
-    {loading&&<p role="status" className="mb-2 text-xs text-[var(--text-soft)]">Loading original supplier hotels for {market.city}…</p>}
-    {error&&<div role="alert" className="mb-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
-      <p>{error}</p>
-      <button type="button" className="gth-btn mt-3" onClick={()=>{
-        teardown.current?.();bootstrapped.current=null;setLoading(true);setError("");setAttempt(n=>n+1);
-      }}>Retry hotel cards</button>
-    </div>}
-    <iframe key={attempt} ref={frame} title={"Nuitee original hotels in "+market.city}
-      srcDoc={frameDocument} onLoad={()=>void boot()} height="560"
-      className="block w-full min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)]"
-      sandbox="allow-scripts allow-same-origin" referrerPolicy="strict-origin-when-cross-origin"/>
-    <a href={hotelPartnerHref(market.placeId)} target="_blank" rel="noopener noreferrer sponsored"
-      className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)] underline underline-offset-4">
-      Browse more {market.city} hotels <ArrowUpRight size={15} aria-hidden="true"/>
-    </a>
-  </section>;
+function Card({hotel,sandbox}:{hotel:Hotel;sandbox:boolean}){
+ const href=hotelUrl(hotel.id);
+ return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm">
+   <a href={href} rel="noopener noreferrer sponsored" aria-label={"Explore "+hotel.name}>
+     <div className="h-44 overflow-hidden bg-[var(--bg-soft)] sm:h-48">
+       <HotelPropertyImage src={hotel.photo} name={hotel.name}
+         className="h-full w-full object-cover"
+         placeholderClassName="flex h-full w-full items-center justify-center text-[var(--text-soft)]"/>
+     </div>
+   </a>
+   <div className="flex min-h-48 flex-1 flex-col gap-2 p-4">
+     <p className="text-xs text-[var(--text-soft)]">Nuitee · {hotel.city}</p>
+     <h4 className="line-clamp-2 text-base font-semibold text-[var(--text)]">{hotel.name}</h4>
+     <div className="flex min-h-5 flex-wrap items-center gap-3 text-xs text-[var(--text-soft)]">
+       {hotel.stars!==null&&<span className="inline-flex items-center gap-1">
+         <Star size={14} className="text-[var(--gold)]" aria-hidden="true"/>{hotel.stars.toFixed(1)} hotel stars
+       </span>}
+       {hotel.rating!==null&&<span>Guest rating {hotel.rating.toFixed(1)}/10</span>}
+     </div>
+     {hotel.address&&<p className="line-clamp-2 flex items-start gap-1.5 text-xs leading-5 text-[var(--text-soft)]">
+       <MapPin size={14} className="mt-0.5 shrink-0" aria-hidden="true"/>{hotel.address}
+     </p>}
+     <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">
+       {sandbox?"Sandbox hotel · test prices only":"Confirm current prices with supplier"}
+     </p>
+     <a href={href} rel="noopener noreferrer sponsored"
+       className="gth-btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 text-sm font-semibold">
+       {sandbox?"Preview hotel details":"See hotel & rooms"} <ArrowUpRight size={15} aria-hidden="true"/>
+     </a>
+   </div>
+ </article>;
+}
+function Market({market}:{market:typeof MARKETS[number]}){
+ const [feed,setFeed]=useState<Feed|null>(null),[error,setError]=useState("");
+ const [loading,setLoading]=useState(true),[retry,setRetry]=useState(0);
+ useEffect(()=>{
+  const controller=new AbortController();
+  setLoading(true);setError("");setFeed(null);
+  fetch("/api/hotels/nuitee-featured?market="+market.key,{signal:controller.signal})
+   .then(async response=>{
+    if(!response.ok)throw Error("Supplier listing unavailable");
+    const body:unknown=await response.json();
+    if(!body||typeof body!=="object")throw Error("Invalid supplier listing");
+    const data=body as Partial<Feed>;
+    if(!Array.isArray(data.hotels)||typeof data.sandbox!=="boolean")throw Error("Invalid supplier listing");
+    if(!controller.signal.aborted)setFeed({market:market.key,city:market.city,
+       sandbox:data.sandbox,hotels:data.hotels.filter(validHotel)});
+   }).catch(()=>{if(!controller.signal.aborted)setError("Original supplier hotel cards could not load.");})
+   .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
+  return ()=>controller.abort();
+ },[market.key,retry]);
+ return <section aria-label={market.title} className="min-w-0">
+   <h3 className="text-xl font-bold text-[var(--text)]">{market.title}</h3>
+   <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">{market.city} · Original Nuitee hotel catalogue</p>
+   {loading&&<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm">Loading supplier hotels…</p>}
+   {error&&<div role="alert" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm">
+      {error} Existing booking search above is still available.
+      <button type="button" onClick={()=>setRetry(v=>v+1)} className="gth-btn mt-3">Retry</button>
+   </div>}
+   {!loading&&!error&&feed&&<>
+    {feed.sandbox&&<p role="note" className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] p-3 text-xs text-[var(--text-soft)]">
+      Sandbox preview: test hotel content only, no real transactions or verified live rates.
+    </p>}
+    {feed.hotels.length?<div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+     {feed.hotels.map(hotel=><Card key={hotel.id} hotel={hotel} sandbox={feed.sandbox}/>)}
+    </div>:<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
+      No supplier hotels returned for this destination.
+    </p>}
+   </>}
+ </section>;
 }
 export default function NuiteeHotelOffers(){
-  return <section aria-labelledby="gth-original-hotel-cards" className="mx-auto max-w-7xl px-4 py-7 sm:px-6">
-    <div className="mb-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
-        GTH PRO · Original supplier hotels
-      </p>
-      <h2 id="gth-original-hotel-cards" className="mt-2 text-2xl font-bold text-[var(--text)] md:text-3xl">
-        Explore real hotels in India and worldwide
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-        Hotel photos, property information and date-dependent prices are provided directly by our connected
-        Nuitee hotel supplier. Choose an actual hotel card for its exact details on the booking site.
-      </p>
-    </div>
-    <div className="grid min-w-0 gap-8">
-      {MARKETS.map(market=><SupplierMarket key={market.key} market={market}/>)}
-    </div>
-    <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
-      <ShieldCheck size={15} className="mt-1 shrink-0" aria-hidden="true"/>
-      Booking, payment, final taxes, cancellation rules and availability are confirmed by the supplier.
-      <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link>
-    </p>
-  </section>;
+ return <section aria-labelledby="gth-nuitee-cards" className="mx-auto max-w-7xl px-4 py-7 sm:px-6">
+  <div className="mb-6">
+   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO · Nuitee supplier catalogue</p>
+   <h2 id="gth-nuitee-cards" className="mt-2 text-2xl font-bold text-[var(--text)] md:text-3xl">
+     Explore original hotels in India and worldwide
+   </h2>
+   <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+     Supplier hotel names and photos, presented with the existing GTH PRO day/night design.
+     Prices and final availability must be checked with Nuitee.
+   </p>
+  </div>
+  <div className="grid min-w-0 gap-8">{MARKETS.map(market=><Market market={market} key={market.key}/>)}</div>
+  <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
+   <ShieldCheck size={15} className="mt-1 shrink-0" aria-hidden="true"/>
+   Preview data does not prove live booking approval.
+   <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link>.
+  </p>
+ </section>;
 }
