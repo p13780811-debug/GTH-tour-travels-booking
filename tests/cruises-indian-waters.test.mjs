@@ -37,12 +37,14 @@ test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.match(ui,/noopener noreferrer sponsored/);
 });
 
-test('GetYourGuide integration analyzer appears exactly once in shared head',()=>{
- const layout=readFileSync('src/app/layout.tsx','utf8');
+test('GetYourGuide analyzer is scoped to cruises; approved root integrations remain untouched',()=>{
+ const layout=readFileSync('src/app/cruises/layout.tsx','utf8');
+ const root=readFileSync('src/app/layout.tsx','utf8');
  assert.equal(layout.split('pa.umd.production.min.js').length-1,1);
  assert.ok(layout.includes('data-gyg-partner-id="DF3NBKA"'));
- assert.ok(layout.includes('id="gth-impact-stat"'));
- assert.ok(layout.includes('id="gth-travelpayouts-drive"'));
+ assert.ok(!root.includes('pa.umd.production.min.js'));
+ assert.ok(root.includes('id="gth-impact-stat"'));
+ assert.ok(root.includes('id="gth-travelpayouts-drive"'));
 });
 test('search sends new destinations to tracked GYG results and allows selected Klook',()=>{
  const search=readFileSync('src/lib/travel/cruise-provider-search.ts','utf8');
