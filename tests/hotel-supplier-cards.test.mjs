@@ -15,7 +15,7 @@ test("Mumbai and London use grounded real place IDs, Nuitee exact property navig
   assert.match(widget,/ChIJdd4hrwug2EcRmSrV3Vo6llI/);
   assert.match(widget,/hotelWhiteLabelUrl\(parsed\)/);
   assert.match(widget,/new URL\("\/hotels\/"\+encodeURIComponent\(id\),HOTEL_BOOKING_ORIGIN\)/);
-  assert.match(widget,/hotel\.id\?\?event\?\.hotel\?\.hotelId/);
+  assert.match(widget,/event\?\.hotel\?\.id\?\?event\?\.hotel\?\.hotelId/);
 });
 test("No fabricated hotel catalogue, direct payment or CSS overrides",()=>{
   assert.doesNotMatch(widget,/hotel_catalog|hotel_booking_links|tp\.media|tpo\.lv/);
