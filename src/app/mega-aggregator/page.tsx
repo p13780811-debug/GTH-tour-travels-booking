@@ -196,7 +196,7 @@ export default async function MegaAggregator() {
                             <h2 className="text-4xl font-bold tracking-tight mb-4">
                                 Travel intelligence & practical guides
                             </h2>
-                            <div className="h-1 w-20 bg-blue-600 rounded-full"></div>
+                            <div className="h-1 w-20 bg-[var(--gold)] rounded-full"></div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -204,12 +204,7 @@ export default async function MegaAggregator() {
                             {/* Goa Guide Card - Updated for Originality */}
                             <Link href="/blog/research-a-new-destination" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
-                                    <img
-                                        // Destination illustration only; no hotel identity or room price is claimed
-                                        src="/images/cities/goa.jpg"
-                                        alt="Goa destination scenery"
-                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
-                                    />
+                                    <Image src="/images/cities/goa.jpg" alt="Goa destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0" />
                                     {/* Editorial category label, not a hotel price or offer. */}
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                                         <p className="text-[10px] font-bold text-[var(--gold)]">RESEARCH BEFORE YOU BOOK</p>
@@ -217,20 +212,15 @@ export default async function MegaAggregator() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
                                 </div>
                                 <div className="absolute bottom-0 p-6">
-                                    <h3 className="text-xl font-bold">Destination Research Guide</h3>
-                                    <p className="text-sm text-[var(--text-soft)] mt-1 italic">Useful checks before choosing a destination</p>
+                                    <h3 className="text-xl font-bold text-white">Destination Research Guide</h3>
+                                    <p className="text-sm text-white/85 mt-1 italic">Useful checks before choosing a destination</p>
                                 </div>
                             </Link>
 
                             {/* Paris Guide Card */}
                             <Link href="/blog/hotel-booking-checklist" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
-                                    <img
-                                        // Travel-guide illustration, not a hotel detail page
-                                        src="/images/cities/paris.jpg"
-                                        alt="Paris destination scenery"
-                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
+                                    <Image src="/images/cities/paris.jpg" alt="Paris destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                                         <p className="text-[10px] font-bold text-[var(--gold)]">HOTEL BOOKING CHECKLIST</p>
                                     </div>
@@ -238,19 +228,14 @@ export default async function MegaAggregator() {
                                 </div>
                                 <div className="absolute bottom-0 p-6">
                                     <h3 className="text-xl font-bold text-white">Hotel Booking Checklist</h3>
-                                    <p className="text-sm text-[var(--text-soft)] mt-1">Room rates, taxes and cancellation terms</p>
+                                    <p className="text-sm text-white/85 mt-1">Room rates, taxes and cancellation terms</p>
                                 </div>
                             </Link>
 
                             {/* Dubai Guide Card */}
                             <Link href="/blog/how-to-compare-flight-fares" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
                                 <div className="relative h-64 w-full overflow-hidden">
-                                    <img
-                                        // Travel-guide illustration, not a hotel detail page
-                                        src="/images/cities/dubai.jpg"
-                                        alt="Dubai destination scenery"
-                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
+                                    <Image src="/images/cities/dubai.jpg" alt="Dubai destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                                         <p className="text-[10px] font-bold text-[var(--gold)]">FLIGHT FARE CHECKLIST</p>
                                     </div>
@@ -258,7 +243,7 @@ export default async function MegaAggregator() {
                                 </div>
                                 <div className="absolute bottom-0 p-6">
                                     <h3 className="text-xl font-bold text-white">How to Compare Flight Fares</h3>
-                                    <p className="text-sm text-[var(--text-soft)] mt-1">Baggage, fare rules and connections</p>
+                                    <p className="text-sm text-white/85 mt-1">Baggage, fare rules and connections</p>
                                 </div>
                             </Link>
                         </div>
