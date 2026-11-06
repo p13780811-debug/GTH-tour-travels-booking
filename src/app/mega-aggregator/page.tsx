@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link"
 import { createClient } from "@supabase/supabase-js"
 import EcosystemUnifiedSearch from "./EcosystemUnifiedSearch";
+import EcosystemHeroCarousel from "./EcosystemHeroCarousel";
 import FeaturedDestinationsSlider from "@/components/home/FeaturedDestinationsSlider"
 import GTHNetwork from "@/components/sections/GTHNetwork";
 import HeroSlider from "@/components/HeroSlider";
@@ -61,16 +62,6 @@ export default async function MegaAggregator() {
 
     return (
         <div className="gth-master-home w-full transition-colors duration-300">
-            <div className="gth-master-intro border-b border-[var(--border)]">
-                <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.13em] text-[var(--text-soft)]">
-                        GTH PRO <span className="mx-2 text-[var(--gold)]">•</span> Global Technical Hub
-                    </p>
-                    <Link href="#ecosystem-pillars" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--border)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
-                        Explore the three pillars <span aria-hidden="true">↓</span>
-                    </Link>
-                </div>
-            </div>
             {/* Shared cinematic hero remains unchanged for desktop.
                 It is not mounted on mobile, where the 930px media/planner layout
                 would crowd the viewport. Existing global CSS stays untouched. */}
@@ -78,28 +69,9 @@ export default async function MegaAggregator() {
                 <HeroSlider />
             </div>
 
-            {/* Mobile-first hero: image and copy are separate, so no manually
-                painted black backgrounds, overlays, custom gradients or CSS. */}
-            <section aria-labelledby="ecosystem-mobile-hero-title" className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
-                <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
-                    <div className="relative aspect-[16/9] w-full">
-                        <Image src="/images/mega/tours.jpg" alt="Explore places and connected global services" fill priority
-                            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 90vw, 1px"
-                            className="object-cover" />
-                    </div>
-                    <div className="gth-glass px-4 py-4 sm:px-6">
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">GTH PRO · Global ecosystem</p>
-                        <h1 id="ecosystem-mobile-hero-title" className="mt-2 text-2xl font-bold leading-tight text-[var(--text)] sm:text-3xl">
-                            Your world. One connected gateway.
-                        </h1>
-                        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-                            Explore travel, property research and tender opportunities from one place.
-                        </p>
-                    </div>
-                </div>
-            </section>
+            <EcosystemHeroCarousel />
 
-            <div className="relative z-30 mx-auto w-full max-w-7xl px-3 pb-6 pt-3 sm:px-6 xl:-mt-24 xl:pt-0">
+            <div className="relative z-30 mx-auto -mt-10 w-full max-w-7xl px-3 pb-6 sm:-mt-12 sm:px-6 xl:-mt-24">
                 <EcosystemUnifiedSearch />
             </div>
 

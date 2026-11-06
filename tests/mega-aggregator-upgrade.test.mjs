@@ -34,7 +34,15 @@ test("No unauthorized provider or invented hotel inventory",()=>{
  assert.match(page,/partner_id=DF3NBKA/);
  assert.match(page,/klook\.tpo\.lv\/IKb6eSUe/);
  assert.doesNotMatch(page,/id="travel-services"|aria-label="Additional travel services"/);
- assert.match(page,/aspect-\[16\/9\]/);
+ const hero=read("src/app/mega-aggregator/EcosystemHeroCarousel.tsx");
+ assert.match(page,/<EcosystemHeroCarousel \/>/);
+ assert.match(hero,/Your world\. One connected gateway\./);
+ assert.match(hero,/aspect-\[2\/1\]/);
+ assert.match(hero,/onTouchEnd/);
+ for(const asset of ["hotels.jpg","flights.jpg","tours.jpg","real-estate.jpg","tender.jpg"])
+   assert.ok(hero.includes(asset),"Hero image missing: "+asset);
+ assert.match(page,/-mt-10/);
+ assert.doesNotMatch(page,/gth-master-intro/);
  assert.doesNotMatch(page,/bg-black|from-black|via-black|bg-gradient|bg-slate/);
  assert.match(page,/id="insights"/);
  assert.match(page,/id="providers"/);

@@ -11,7 +11,13 @@ const search=read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx");
 test("One mobile-compact hero and one first-party search on the page only",()=>{
  assert.match(page,/<HeroSlider \/>/);
  assert.match(page,/hidden xl:block/);
- assert.match(page,/aspect-\[16\/9\]/);
+ const mobileHero=read("src/app/mega-aggregator/EcosystemHeroCarousel.tsx");
+ assert.match(page,/<EcosystemHeroCarousel \/>/);
+ assert.match(mobileHero,/Your world\. One connected gateway\./);
+ assert.match(mobileHero,/aspect-\[2\/1\]/);
+ assert.match(mobileHero,/setInterval/);
+ assert.match(mobileHero,/onTouchStart/);
+ assert.doesNotMatch(page,/gth-master-intro/);
  assert.match(page,/<EcosystemUnifiedSearch \/>/);
  assert.match(page,/<EcosystemPillars \/>/);
  assert.match(page,/<EcosystemHub \/>/);
