@@ -1,11 +1,12 @@
 import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
+import {redirect} from "next/navigation";
 import {ArrowUpRight,Anchor,Check,MapPin,Search,Ship} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import IndianWaters from "@/components/travel/IndianWaters";
 import {cruises,cruisePhotos,cruiseTypes,filterCruises,CRUISE_REVIEWED_ON,type Cruise} from "@/lib/travel/cruises";
-import {partnerSearchHref} from "@/lib/travel/partner-search";
+import {buildPartnerSearch} from "@/lib/travel/partner-search";
 
 export const metadata:Metadata={title:"Cruises | Cruise Holidays, Harbour & Dinner Sailings | GTH PRO",description:"Explore Disney Adventure, Genting Dream, Royal Caribbean and sightseeing cruises with GTH PRO. Browse cruise options and open the exact Klook product to check dates, cabins and fares.",alternates:{canonical:"/cruises"}};
 
@@ -33,10 +34,13 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
  const rawCity=params.destination??"",rawType=params.type??"";
  const destination=typeof rawCity==="string"?rawCity.normalize("NFKC").trim().replace(/\s+/gu," "):"";
  const type=typeof rawType==="string"?rawType:"";
- const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||/^[\p{L}\p{M}\p{N}\s.'’-]+$/u.test(destination))&&(!type||cruiseTypes.some(item=>item.id===type));
+ const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||(destination.length>=2&&/^[\p{L}\p{M}\p{N}\s.'’-]+$/u.test(destination)))&&(!type||cruiseTypes.some(item=>item.id===type));
  const selected=valid?filterCruises(destination,type):[...cruises];
  const holiday=selected.filter(item=>item.type==="holiday"),day=selected.filter(item=>item.type!=="holiday");
- const partnerHref=valid&&destination?partnerSearchHref("cruises",destination):null;
+ // A catalogue miss goes straight to the existing tracked provider search on the first submit.
+ // The destination is validated above; buildPartnerSearch fixes the provider and referral IDs.
+ const outbound=valid&&destination&&selected.length===0?buildPartnerSearch({kind:"cruises",destination}):null;
+ if(outbound)redirect(outbound);
  return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
   <TravelSectionNav/>
   <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
@@ -57,7 +61,6 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
     {!valid&&<p role="alert" className="mt-3 text-sm">Choose a valid destination and cruise type. All cruise options are shown below.</p>}
     <p className="mt-4 text-sm text-[var(--text-soft)]" role="status">{selected.length} cruise options · Current catalogue: Singapore, Hong Kong and Dubai</p>
    </section>
-   {selected.length===0&&<section className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6"><h2 className="text-xl font-bold">No matching cruises in this collection</h2><p className="mt-3 text-sm text-[var(--text-soft)]">Try another destination or browse more cruise experiences with the booking provider.</p>{partnerHref&&<a href={partnerHref} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold mt-4 inline-flex min-h-12 items-center rounded-xl px-4 text-sm font-semibold">Explore {destination} cruise options</a>}</section>}
    {holiday.length>0&&<section aria-labelledby="holiday-cruises" className="mt-8"><h2 id="holiday-cruises" className="text-2xl font-bold">Cruise holidays</h2><p className="mt-2 text-sm text-[var(--text-soft)]">Compare ships, sailing dates and cabin options for your time at sea.</p><div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">{holiday.map(item=><CruiseCard key={item.slug} item={item}/>)}</div></section>}
    {day.length>0&&<section aria-labelledby="day-cruises" className="mt-10"><h2 id="day-cruises" className="text-2xl font-bold">Harbour, river & dinner cruises</h2><p className="mt-2 text-sm text-[var(--text-soft)]">Shorter experiences for a day out or an evening on the water.</p><div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">{day.map(item=><CruiseCard key={item.slug} item={item}/>)}</div></section>}
    <IndianWaters/>
