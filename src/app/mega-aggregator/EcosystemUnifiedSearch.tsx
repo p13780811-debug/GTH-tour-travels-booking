@@ -48,9 +48,6 @@ export default function EcosystemUnifiedSearch() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO · Universal discovery</p>
           <h2 id="ecosystem-search-title" className="mt-2 text-xl font-bold sm:text-2xl">Search one ecosystem, explore every pillar.</h2>
         </div>
-        <Link href="/search" className="hidden min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4 sm:inline-flex">
-          Full discovery <ArrowUpRight size={15} aria-hidden="true"/>
-        </Link>
       </div>
 
       <div role="group" aria-label="Select GTH PRO platform" className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
