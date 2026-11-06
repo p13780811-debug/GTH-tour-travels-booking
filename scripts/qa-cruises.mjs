@@ -33,12 +33,17 @@ try{
   await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:'A different way to see the world.'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),7);
-  assert.equal(await page.locator('[data-india-cruise]').count(),4);
+  assert.equal(await page.locator('[data-india-cruise]').count(),6);
+  for(const img of await page.locator('[data-india-cruise] img').all()){
+   const src=await img.getAttribute('src');
+   assert.ok(src?.startsWith('https://commons.wikimedia.org/wiki/Special:FilePath/'),src);
+   assert.ok(await img.getAttribute('alt'));
+  }
   const goaHref=await page.locator('[data-india-cruise="goa-mandovi-dinner"] a').getAttribute('href');
   const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
   assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
   assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
-  for(const slug of ['mumbai-harbour','lakshadweep-cruises']){
+  for(const slug of ['mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises']){
    const href=await page.locator('[data-india-cruise="'+slug+'"] a').getAttribute('href');
    assert.ok(href.startsWith('/api/travel/partner-search?'),href);
   }
