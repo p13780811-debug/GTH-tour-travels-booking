@@ -25,6 +25,16 @@ try{
   await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:'A different way to see the world.'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),7);
+  assert.equal(await page.locator('[data-india-cruise]').count(),4);
+  const goaHref=await page.locator('[data-india-cruise="goa-mandovi-dinner"] a').getAttribute('href');
+  const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
+  assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
+  assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
+  for(const slug of ['mumbai-harbour','lakshadweep-cruises']){
+   const href=await page.locator('[data-india-cruise="'+slug+'"] a').getAttribute('href');
+   assert.ok(href.startsWith('/api/travel/partner-search?'),href);
+  }
+
   await page.getByRole('navigation',{name:'Browse GTH PRO travel categories'}).getByRole('link',{name:'Cruises',exact:true}).waitFor();
   assert.ok(await page.locator('html').evaluate(e=>e.scrollWidth)<=width+1);
   const links=await page.locator('[data-cruise] a').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
