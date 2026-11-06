@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'src/app/cruises/**'
+      - 'src/components/travel/IndianWaters.tsx'
+      - 'tests/cruises-indian-waters.test.mjs'
       - 'src/app/go/cruises/**'
       - 'src/lib/travel/cruises.ts'
       - 'src/lib/travel/partner-search.ts'
@@ -29,7 +31,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - run: node --test tests/cruise-catalog.test.mjs tests/travel-partner-search.test.mjs tests/travel-deals-klook-affiliate.test.mjs
+      - run: node --test tests/cruise-catalog.test.mjs tests/cruises-indian-waters.test.mjs tests/travel-partner-search.test.mjs tests/travel-deals-klook-affiliate.test.mjs
       - name: Install QA browser
         run: |
           npm install --no-save --legacy-peer-deps playwright@1.56.0

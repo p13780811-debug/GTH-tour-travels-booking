@@ -7,11 +7,19 @@ try{
  for(const width of [360,390,1440]){
   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600});
   let clickedAffiliate=null;
+  let forwardedSearch=null;
   // Verify the real server's first-hop response. Route interception does not
   // re-run for each URL in an HTTP redirect chain; receive the popup at the
   // first-party route instead of following a partner checkout in this test.
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&url.searchParams.get('destination')==='Andaman'&&route.request().isNavigationRequest()){
+    const response=await route.fetch({maxRedirects:0});
+    assert.ok([302,303,307,308].includes(response.status()),'Unlisted destination must redirect on first click');
+    forwardedSearch=new URL(response.headers().location);
+    assert.equal(forwardedSearch.origin,'https://tp.media');
+    return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA partner search receiver</h1>'});
+   }
    if(url.origin==='http://127.0.0.1:3000'&&url.pathname.startsWith('/go/cruises/')&&route.request().isNavigationRequest()){
     const response=await route.fetch({maxRedirects:0});assert.equal(response.status(),302);
     clickedAffiliate=new URL(response.headers().location);
@@ -25,6 +33,21 @@ try{
   await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:'A different way to see the world.'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),7);
+  assert.equal(await page.locator('[data-india-cruise]').count(),6);
+  for(const img of await page.locator('[data-india-cruise] img').all()){
+   const src=await img.getAttribute('src');
+   assert.ok(src?.startsWith('https://commons.wikimedia.org/wiki/Special:FilePath/'),src);
+   assert.ok(await img.getAttribute('alt'));
+  }
+  const goaHref=await page.locator('[data-india-cruise="goa-mandovi-dinner"] a').getAttribute('href');
+  const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
+  assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
+  assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
+  for(const slug of ['mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises']){
+   const href=await page.locator('[data-india-cruise="'+slug+'"] a').getAttribute('href');
+   assert.ok(href.startsWith('/api/travel/partner-search?'),href);
+  }
+
   await page.getByRole('navigation',{name:'Browse GTH PRO travel categories'}).getByRole('link',{name:'Cruises',exact:true}).waitFor();
   assert.ok(await page.locator('html').evaluate(e=>e.scrollWidth)<=width+1);
   const links=await page.locator('[data-cruise] a').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
@@ -59,12 +82,11 @@ try{
   assert.equal(await page.locator('[data-cruise]').count(),7);
   assert.equal(await page.getByRole('searchbox',{name:'Destination or cruise name'}).inputValue(),'');
   assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
-  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
-  await page.getByRole('heading',{name:'No matching cruises in this collection'}).waitFor();
-  const more=await page.getByRole('link',{name:'Explore Mumbai cruise options'}).getAttribute('href');
-  const res=await context.request.get('http://127.0.0.1:3000'+more,{maxRedirects:0});assert.equal(res.status(),302);
-  const target=new URL(new URL(res.headers().location).searchParams.get('u'));assert.equal(target.searchParams.get('query'),'Mumbai cruise');
+  await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
+  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Andaman cruise');
+  assert.equal(await page.getByText('No matching cruises in this collection').count(),0);
   // The directory is server-rendered before React attaches the filter handlers.
   await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'networkidle' });
   const directory = page.locator('#ecosystem-directory');
@@ -80,5 +102,5 @@ try{
   await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
- console.log('PASS: seven cruise cards, exact product redirects, destination/type filters and empty-state search at mobile and desktop widths');
+ console.log('PASS: seven cruise cards, India links, filters and one-click external destination search at mobile and desktop widths');
 }finally{await browser.close();}
