@@ -7,11 +7,19 @@ try{
  for(const width of [360,390,1440]){
   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600});
   let clickedAffiliate=null;
+  let forwardedSearch=null;
   // Verify the real server's first-hop response. Route interception does not
   // re-run for each URL in an HTTP redirect chain; receive the popup at the
   // first-party route instead of following a partner checkout in this test.
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&url.searchParams.get('destination')==='Mumbai'&&route.request().isNavigationRequest()){
+    const response=await route.fetch({maxRedirects:0});
+    assert.ok([302,303,307,308].includes(response.status()),'Unlisted destination must redirect on first click');
+    forwardedSearch=new URL(response.headers().location);
+    assert.equal(forwardedSearch.origin,'https://tp.media');
+    return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA partner search receiver</h1>'});
+   }
    if(url.origin==='http://127.0.0.1:3000'&&url.pathname.startsWith('/go/cruises/')&&route.request().isNavigationRequest()){
     const response=await route.fetch({maxRedirects:0});assert.equal(response.status(),302);
     clickedAffiliate=new URL(response.headers().location);
@@ -71,10 +79,9 @@ try{
   assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
-  await page.getByRole('heading',{name:'No matching cruises in this collection'}).waitFor();
-  const more=await page.getByRole('link',{name:'Explore Mumbai cruise options'}).getAttribute('href');
-  const res=await context.request.get('http://127.0.0.1:3000'+more,{maxRedirects:0});assert.equal(res.status(),302);
-  const target=new URL(new URL(res.headers().location).searchParams.get('u'));assert.equal(target.searchParams.get('query'),'Mumbai cruise');
+  await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
+  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Mumbai cruise');
+  assert.equal(await page.getByText('No matching cruises in this collection').count(),0);
   // The directory is server-rendered before React attaches the filter handlers.
   await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'networkidle' });
   const directory = page.locator('#ecosystem-directory');
@@ -90,5 +97,5 @@ try{
   await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
- console.log('PASS: seven cruise cards, exact product redirects, destination/type filters and empty-state search at mobile and desktop widths');
+ console.log('PASS: seven cruise cards, India links, filters and one-click external destination search at mobile and desktop widths');
 }finally{await browser.close();}
