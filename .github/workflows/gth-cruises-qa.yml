@@ -9,6 +9,7 @@ on:
       - 'src/app/go/cruises/**'
       - 'src/lib/travel/cruises.ts'
       - 'src/lib/travel/partner-search.ts'
+      - 'src/lib/travel/cruise-provider-search.ts'
       - 'scripts/qa-cruises.mjs'
       - '.github/workflows/gth-cruises-qa.yml'
 permissions:

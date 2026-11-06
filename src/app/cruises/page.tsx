@@ -6,7 +6,7 @@ import {ArrowUpRight,Anchor,Check,MapPin,Search,Ship} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import IndianWaters from "@/components/travel/IndianWaters";
 import {cruises,cruisePhotos,cruiseTypes,filterCruises,CRUISE_REVIEWED_ON,type Cruise} from "@/lib/travel/cruises";
-import {buildPartnerSearch} from "@/lib/travel/partner-search";
+import {buildCruiseProviderSearch,type CruiseSearchType} from "@/lib/travel/cruise-provider-search";
 
 export const metadata:Metadata={title:"Cruises | Cruise Holidays, Harbour & Dinner Sailings | GTH PRO",description:"Explore Disney Adventure, Genting Dream, Royal Caribbean and sightseeing cruises with GTH PRO. Browse cruise options and open the exact Klook product to check dates, cabins and fares.",alternates:{canonical:"/cruises"}};
 
@@ -31,15 +31,17 @@ function CruiseCard({item}:{item:Cruise}){
 }
 export default async function CruisesPage({searchParams}:{searchParams:Promise<Params>}){
  const params=await searchParams;
- const rawCity=params.destination??"",rawType=params.type??"";
+ const rawCity=params.destination??"",rawType=params.type??"",rawProvider=params.provider??"";
  const destination=typeof rawCity==="string"?rawCity.normalize("NFKC").trim().replace(/\s+/gu," "):"";
  const type=typeof rawType==="string"?rawType:"";
- const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||(destination.length>=2&&/^[\p{L}\p{M}\p{N}\s.'’-]+$/u.test(destination)))&&(!type||cruiseTypes.some(item=>item.id===type));
+ const provider=typeof rawProvider==="string"?rawProvider:"invalid";
+ const valid=typeof rawCity==="string"&&typeof rawType==="string"&&destination.length<=80&&(!destination||(destination.length>=2&&/^[\p{L}\p{M}\p{N}\s.'’-]+$/u.test(destination)))&&(!type||cruiseTypes.some(item=>item.id===type))&&["","gyg","klook"].includes(provider);
  const selected=valid?filterCruises(destination,type):[...cruises];
  const holiday=selected.filter(item=>item.type==="holiday"),day=selected.filter(item=>item.type!=="holiday");
- // A catalogue miss goes straight to the existing tracked provider search on the first submit.
- // The destination is validated above; buildPartnerSearch fixes the provider and referral IDs.
- const outbound=valid&&destination&&selected.length===0?buildPartnerSearch({kind:"cruises",destination}):null;
+ // Catalogue names continue to filter locally; new destinations open GYG results
+ // on the FIRST submit. Klook remains an explicit optional provider search.
+ const shouldHandoff=valid&&Boolean(destination)&&(selected.length===0||provider!=="");
+ const outbound=shouldHandoff?buildCruiseProviderSearch(destination,provider==="klook"?"klook":"gyg",type as CruiseSearchType):null;
  if(outbound)redirect(outbound);
  return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
   <TravelSectionNav/>
@@ -47,24 +49,26 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
    <header className="gth-glass rounded-3xl border border-[var(--border)] p-5 sm:p-8">
     <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Ship size={18} aria-hidden="true"/>GTH PRO · Cruise journeys</p>
     <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">A different way to see the world.</h1>
-    <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">Find your next cruise holiday, harbour escape or dinner on the water. Explore the options here, then choose your dates and package with Klook.</p>
+    <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">Find your next cruise holiday, harbour escape or dinner on the water. Explore the options here, then choose your dates and package with Klook or GetYourGuide.</p>
     <nav aria-label="Cruise collections" className="mt-5 flex flex-wrap gap-3"><a href="#cruise-options" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Explore cruises<Anchor size={16} aria-hidden="true"/></a><a href="#indian-waters" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4 text-sm">Explore Indian Waters</a><Link href="/ferry" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4 text-sm">Need a ferry instead?</Link></nav>
    </header>
    <section id="cruise-options" aria-label="Find a cruise" className="mt-6 scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
     <h2 className="text-xl font-bold">Find your cruise</h2>
-    <form key={valid?`${destination}:${type}`:"invalid"} action="/cruises#cruise-options" method="GET" role="search" aria-label="Filter cruise options" className="mt-4 flex flex-wrap items-end gap-3">
+    <form key={valid?`${destination}:${type}:${provider}`:"invalid"} action="/cruises#cruise-options" method="GET" role="search" aria-label="Filter cruise options" className="mt-4 flex flex-wrap items-end gap-3">
      <label className="min-w-0 flex-1 text-sm font-semibold">Destination or cruise name<input type="search" name="destination" maxLength={80} defaultValue={valid?destination:""} placeholder="Singapore, Goa, Kerala, Mumbai, Andaman…" className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"/></label>
      <label className="min-w-0 text-sm font-semibold">Cruise type<select aria-label="Cruise type" name="type" defaultValue={valid?type:""} className="mt-2 block min-h-12 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">All cruises</option>{cruiseTypes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+     <label className="min-w-0 text-sm font-semibold">Search provider<select aria-label="Search provider" name="provider" defaultValue={valid?provider:""} className="mt-2 block min-h-12 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">Auto · GetYourGuide for new destinations</option><option value="gyg">GetYourGuide results</option><option value="klook">Klook results</option></select></label>
      <button className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold" type="submit"><Search size={16} aria-hidden="true"/>Show cruises</button>
      {(destination||type)&&<Link href="/cruises#cruise-options" className="inline-flex min-h-12 items-center px-2 text-sm underline">Clear filters</Link>}
     </form>
+    <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">New destination searches open GetYourGuide results in one click. Choose Klook to search there instead; supplier results are not guaranteed to match the location or cruise type.</p>
     {!valid&&<p role="alert" className="mt-3 text-sm">Choose a valid destination and cruise type. All cruise options are shown below.</p>}
     <p className="mt-4 text-sm text-[var(--text-soft)]" role="status">{selected.length} cruise options · International catalogue: Singapore, Hong Kong and Dubai · Explore Indian Waters below</p>
    </section>
    {holiday.length>0&&<section aria-labelledby="holiday-cruises" className="mt-8"><h2 id="holiday-cruises" className="text-2xl font-bold">Cruise holidays</h2><p className="mt-2 text-sm text-[var(--text-soft)]">Compare ships, sailing dates and cabin options for your time at sea.</p><div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">{holiday.map(item=><CruiseCard key={item.slug} item={item}/>)}</div></section>}
    {day.length>0&&<section aria-labelledby="day-cruises" className="mt-10"><h2 id="day-cruises" className="text-2xl font-bold">Harbour, river & dinner cruises</h2><p className="mt-2 text-sm text-[var(--text-soft)]">Shorter experiences for a day out or an evening on the water.</p><div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">{day.map(item=><CruiseCard key={item.slug} item={item}/>)}</div></section>}
    <IndianWaters/>
-   <section aria-labelledby="cruise-planning" className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6"><h2 id="cruise-planning" className="text-xl font-bold">Before you book</h2><div className="mt-4 grid gap-4 text-sm leading-6 sm:grid-cols-3"><p><strong>Choose the right package.</strong> Check the sailing date, itinerary, cabin occupancy, child ages and boarding port.</p><p><strong>Review the full fare.</strong> Confirm taxes, port charges, gratuities, transfers and cancellation conditions for the selected package.</p><p><strong>Check travel requirements.</strong> Confirm passports, visas and the cruise operator’s boarding rules before paying.</p></div><p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">GTH PRO provides cruise discovery and affiliate referrals. Booking, payment, confirmation and support are handled by Klook and the cruise operator. We may earn a commission from eligible bookings. Product pages last reviewed: {CRUISE_REVIEWED_ON}. Vessel photographs are historical editorial images; representative boat images do not identify a guaranteed package vessel. Catalogue listings do not guarantee current sailings or cabin availability.</p></section>
+   <section aria-labelledby="cruise-planning" className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6"><h2 id="cruise-planning" className="text-xl font-bold">Before you book</h2><div className="mt-4 grid gap-4 text-sm leading-6 sm:grid-cols-3"><p><strong>Choose the right package.</strong> Check the sailing date, itinerary, cabin occupancy, child ages and boarding port.</p><p><strong>Review the full fare.</strong> Confirm taxes, port charges, gratuities, transfers and cancellation conditions for the selected package.</p><p><strong>Check travel requirements.</strong> Confirm passports, visas and the cruise operator’s boarding rules before paying.</p></div><p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">GTH PRO provides cruise discovery and affiliate referrals. Booking, payment, confirmation and support are handled by the selected partner (Klook or GetYourGuide) and the cruise operator. We may earn a commission from eligible bookings. Product pages last reviewed: {CRUISE_REVIEWED_ON}. Vessel photographs are historical editorial images; representative boat images do not identify a guaranteed package vessel. Catalogue listings do not guarantee current sailings or cabin availability.</p></section>
    <details id="cruise-photo-credits" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-xs text-[var(--text-soft)]"><summary className="flex min-h-11 cursor-pointer items-center font-semibold">Cruise photo credits</summary><ul className="mt-3 space-y-3">{cruisePhotos.map(photo=><li key={photo.path}><a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{photo.caption} — {photo.author}</a>{" · "}<a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline">{photo.license}</a>{" · "}{photo.modifications}</li>)}</ul></details>
   </div>
  </main>;
