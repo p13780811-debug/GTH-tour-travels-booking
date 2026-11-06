@@ -33,7 +33,7 @@ const MARKETS=[
     description:"Original supplier hotel cards for London, United Kingdom",
   },
 ] as const;
-const frameDocument='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><main id="gth-nuitee-hotel-offers"></main></body></html>';
+const frameDocument='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body><main id="gth-nuitee-hotel-offers"></main></body></html>';
 type ListSdk={
   init:(args:{domain:string;deepLinkParams?:string})=>void;
   HotelsList:{create:(args:{
@@ -99,21 +99,27 @@ function SupplierMarket({market}:{market:typeof MARKETS[number]}){
     let timer:ReturnType<typeof setTimeout>|undefined;
     let mutations:MutationObserver|undefined;
     let resizeObserver:ResizeObserver|undefined;
-    let themeObserver:MutationObserver|undefined;
+    let fitFrame:number|undefined;
     setLoading(true);setError("");
+    // Measure the supplier LIST only. document.body.scrollHeight is tied to
+    // iframe viewport height in some supplier styles and caused runaway 3600px gaps.
     const fit=()=>{
       if(!active)return;
-      const next=Math.min(3600,Math.max(480,doc.body?.scrollHeight+32||480));
-      if(element.height!==String(next))element.height=String(next);
+      if(fitFrame!==undefined)return;
+      fitFrame=window.requestAnimationFrame(()=>{
+        fitFrame=undefined;
+        if(!active)return;
+        const list=doc.getElementById("gth-nuitee-hotel-offers");
+        const contentHeight=list?Math.max(list.scrollHeight,list.getBoundingClientRect().height):0;
+        const next=Math.ceil(Math.min(1280,Math.max(360,contentHeight+24)));
+        if(element.height!==String(next))element.height=String(next);
+      });
     };
-    const syncTheme=()=>{doc.documentElement.className=document.documentElement.className;};
-    syncTheme();
-    themeObserver=new MutationObserver(syncTheme);
-    themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
     const cancel=()=>{
       active=false;
       if(timer)clearTimeout(timer);
-      mutations?.disconnect();resizeObserver?.disconnect();themeObserver?.disconnect();
+      if(fitFrame!==undefined)window.cancelAnimationFrame(fitFrame);
+      mutations?.disconnect();resizeObserver?.disconnect();
     };
     teardown.current=cancel;
     timer=setTimeout(()=>{
@@ -130,10 +136,10 @@ function SupplierMarket({market}:{market:typeof MARKETS[number]}){
       });
       if(!active)return;
       if(!win.LiteAPI?.HotelsList?.create)throw new Error("Supplier hotel list unavailable");
-      // Reuse the SAME compiled GTH global styles; no new theme or inline CSS.
-      for(const sheet of document.querySelectorAll('link[rel="stylesheet"], style')){
-        doc.head.appendChild(sheet.cloneNode(true));
-      }
+      // Keep the vendor's native card stylesheet inside this iframe.
+      // Copying parent GTH CSS made white cards inherit white text and
+      // applied viewport-height rules, breaking mobile contrast and spacing.
+      // The outer page still uses the centralized GTH day/night design tokens.
       const gold=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
       win.LiteAPI.init({
         domain:new URL(HOTEL_BOOKING_ORIGIN).hostname,
@@ -141,15 +147,17 @@ function SupplierMarket({market}:{market:typeof MARKETS[number]}){
       });
       await win.LiteAPI.HotelsList.create({
         selector:"#gth-nuitee-hotel-offers",placeId:market.placeId,
-        hasSearchBar:false,rows:2,currency:"INR",
-        ...(gold?{primaryColor:gold}:{}),
+        hasSearchBar:false,rows:1,currency:"INR",
+        ...(/^#[0-9a-fA-F]{6}$/.test(gold)?{primaryColor:gold}:{}),
         onHotelClick:openSelectedHotel,
       });
       if(!active)return;
+      const list=doc.getElementById("gth-nuitee-hotel-offers");
+      if(!list)throw new Error("Supplier hotel list container unavailable");
       mutations=new MutationObserver(fit);
-      mutations.observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
+      mutations.observe(list,{childList:true,subtree:true,characterData:true});
       resizeObserver=new ResizeObserver(fit);
-      resizeObserver.observe(doc.body);
+      resizeObserver.observe(list);
       fit();
       if(timer)clearTimeout(timer);
       setLoading(false);
@@ -163,13 +171,9 @@ function SupplierMarket({market}:{market:typeof MARKETS[number]}){
     return ()=>teardown.current?.();
   },[boot,attempt]);
   return <section aria-label={market.description} className="min-w-0">
-    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h3 className="text-xl font-bold text-[var(--text)]">{market.title}</h3>
-        <p className="mt-1 text-sm text-[var(--text-soft)]">{market.city} · Direct supplier hotel cards</p>
-      </div>
-      <a href={hotelPartnerHref(market.placeId)} className="gth-btn inline-flex min-h-11 items-center gap-2 px-4 text-sm font-semibold"
-         target="_blank" rel="noopener noreferrer sponsored">More {market.city} hotels <ArrowUpRight size={15}/></a>
+    <div className="mb-3">
+      <h3 className="text-xl font-bold text-[var(--text)]">{market.title}</h3>
+      <p className="mt-1 text-sm text-[var(--text-soft)]">{market.city} · Original supplier hotel cards</p>
     </div>
     {loading&&<p role="status" className="mb-2 text-xs text-[var(--text-soft)]">Loading original supplier hotels for {market.city}…</p>}
     {error&&<div role="alert" className="mb-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">
@@ -179,9 +183,13 @@ function SupplierMarket({market}:{market:typeof MARKETS[number]}){
       }}>Retry hotel cards</button>
     </div>}
     <iframe key={attempt} ref={frame} title={"Nuitee original hotels in "+market.city}
-      srcDoc={frameDocument} onLoad={()=>void boot()} height="720"
+      srcDoc={frameDocument} onLoad={()=>void boot()} height="560"
       className="block w-full min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)]"
       sandbox="allow-scripts allow-same-origin" referrerPolicy="strict-origin-when-cross-origin"/>
+    <a href={hotelPartnerHref(market.placeId)} target="_blank" rel="noopener noreferrer sponsored"
+      className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)] underline underline-offset-4">
+      Browse more {market.city} hotels <ArrowUpRight size={15} aria-hidden="true"/>
+    </a>
   </section>;
 }
 export default function NuiteeHotelOffers(){
