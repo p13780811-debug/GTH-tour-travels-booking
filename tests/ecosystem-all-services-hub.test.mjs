@@ -43,6 +43,12 @@ test("Main directory covers 31 implemented routes including real estate and tend
 test("No hardcoded black backgrounds or manual dark overlays in Mega page",()=>{
  assert.doesNotMatch(page,/bg-black|from-black|via-black|to-black|bg-slate|bg-gradient|text-amber|border-white/);
  assert.match(page,/gth-glass/);
+ assert.match(page,/className="gth-master-home w-full transition-colors/);
+ assert.doesNotMatch(page,/gth-master-home w-full bg-/);
+ assert.doesNotMatch(page,/gth-master-intro[^"]*bg-/);
+ assert.doesNotMatch(search,/scroll-mt-24[^"]*bg-\[/);
+ assert.match(search,/gth-glass scroll-mt-24/);
+
  assert.match(page,/var\(--text\)/);
  assert.match(page,/var\(--gold\)/);
  assert.match(page,/GTHNetwork partners=\{partners\} discoveryOnly/);

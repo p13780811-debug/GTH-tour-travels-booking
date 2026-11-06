@@ -42,7 +42,7 @@ export default function EcosystemUnifiedSearch() {
 
   return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
-      className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--text)] shadow-xl sm:rounded-3xl sm:p-6">
+      className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-4 text-[var(--text)] shadow-xl sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO · Universal discovery</p>

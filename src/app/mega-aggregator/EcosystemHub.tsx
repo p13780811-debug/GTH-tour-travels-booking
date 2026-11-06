@@ -98,7 +98,7 @@ export default function EcosystemHub() {
     : availableServices;
 
   return (
-    <div className="w-full min-w-0 bg-[var(--bg)] text-[var(--text)]">
+    <div className="w-full min-w-0 text-[var(--text)]">
       <section id="ecosystem-directory" aria-labelledby="ecosystem-directory-heading" className="border-b border-[var(--border)] py-8 sm:py-12">
         <div className="mx-auto w-full max-w-7xl min-w-0 px-3 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
