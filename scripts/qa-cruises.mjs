@@ -46,8 +46,8 @@ try{
    assert.ok(src?.startsWith('https://commons.wikimedia.org/wiki/Special:FilePath/'),src);
    assert.ok(await img.getAttribute('alt'));
   }
-  const goaHref=await page.locator('[data-india-cruise="goa-mandovi-dinner"] a').getAttribute('href');
-  const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
+  const goaHref=await page.locator('[data-india-cruise="goa-mandovi-dinner"] a').first().getAttribute('href');
+  const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').first().getAttribute('href');
   assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
   assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
   const mumbaiHref=await page.locator('[data-india-cruise="mumbai-harbour"] a').first().getAttribute('href');
