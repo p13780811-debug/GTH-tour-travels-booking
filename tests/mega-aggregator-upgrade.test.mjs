@@ -1,0 +1,54 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync,existsSync} from "node:fs";
+
+const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
+const page=read("src/app/mega-aggregator/page.tsx");
+const hub=read("src/app/mega-aggregator/EcosystemHub.tsx");
+const search=read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx");
+const siteSearch=read("src/app/search/page.tsx");
+const config=JSON.parse(read("vercel.json"));
+
+test("Only the ecosystem page gains a working universal search, preserving original hero",()=>{
+ assert.match(page,/<HeroSlider \/>/);
+ assert.match(page,/<EcosystemUnifiedSearch \/>/);
+ assert.match(page,/<EcosystemPillars \/>/);
+ assert.match(page,/<EcosystemHub \/>/);
+ assert.match(page,/gth-master-hero-shell>div:last-child/);
+ assert.match(page,/className="gth-master-home/);
+ assert.match(page,/GTHNetwork partners=\{partners\} discoveryOnly/);
+});
+
+test("All pillar searches submit to the existing first-party search engine",()=>{
+ assert.match(search,/action="\/search" method="get"/);
+ assert.match(search,/name="q"/);
+ assert.match(search,/name="category"/);
+ for(const value of ["all","hotel","flight","tour","property","tender"])assert.ok(search.includes('value:"'+value+'"'));
+ assert.match(siteSearch,/redirect\(targetFor\(intent, query\)\)/);
+ assert.doesNotMatch(search,/fetch\(|localStorage|API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+});
+
+test("No unauthorized provider or invented hotel inventory",()=>{
+ assert.doesNotMatch(page,/trip\.com|Trip\.com|HotelQuadSection|goaData|parisData|Digha Elite|Verified Inventory/i);
+ assert.doesNotMatch(page,/₹[\d,]+|€\d+|Private Beach Access|Priority Concierge/i);
+ assert.match(page,/partner_id=DF3NBKA/);
+ assert.match(page,/klook\.tpo\.lv\/IKb6eSUe/);
+ assert.match(page,/id="travel-services"/);
+ assert.match(page,/id="insights"/);
+ assert.match(page,/id="providers"/);
+});
+
+test("Service search covers all real pillars without dead routes",()=>{
+ assert.match(hub,/value=\{serviceQuery\}/);
+ assert.match(hub,/setServiceQuery\(event\.target\.value\)/);
+ assert.match(hub,/key: "business"/);
+ const chunk=hub.split("const services = [")[1].split("] as const;")[0];
+ const routes=[...chunk.matchAll(/href: "(\/[^"]+)"/g)].map(x=>x[1]);
+ assert.ok(routes.length>=30);
+ assert.equal(new Set(routes).size,routes.length,"No duplicate service routes");
+ for(const route of routes)assert.ok(existsSync(new URL("../src/app"+route+"/page.tsx",import.meta.url)),route);
+});
+
+test("Feature branch is not automatically deployed or merged to live",()=>{
+ assert.equal(config.git.deploymentEnabled["feat/mega-aggregator-worldclass-20261107"],false);
+});
