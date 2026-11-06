@@ -17,7 +17,10 @@ test('six Indian photo cards with exact matched cruise products and no generic K
  for(const slug of ['goa-mandovi-dinner','kerala-alleppey-houseboat','mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises'])assert.ok(ui.includes(slug),slug);
  assert.match(ui,/activity\/185166-goa-lexicon-dinner-cruise/);
  assert.match(ui,/activity\/6620-alleppey-backwater-cruise-by-houseboat-cochin/);
- assert.match(ui,/partnerSearchHref\("cruises"/);
+ assert.ok(!ui.includes("partnerSearchHref"));
+ assert.match(ui,/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/);
+ assert.match(ui,/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/);
+ assert.match(ui,/No confirmed bookable cruise/);
 });
 test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.ok(!ui.includes('₹'));
@@ -25,7 +28,7 @@ test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.match(ui,/Special:FilePath/);
  assert.match(ui,/Indian cruise photo credits/);
  assert.match(ui,/CC BY/);
- assert.match(ui,/getyourguide\\.com/);
+ assert.ok(ui.includes("www.getyourguide.com"));
  assert.match(ui,/Affiliate attribution is not verified/);
  assert.match(ui,/campaign_id:"137"/);
  assert.match(ui,/marker:"417668"/);
