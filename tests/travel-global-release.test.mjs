@@ -29,7 +29,9 @@ test("landing page removes fake live fares and broken travel guide routes", () =
   assert.doesNotMatch(mega, /LIVE DEALS FROM|href="\/blog\/goa-travel-guide"/);
   assert.match(mega, /link: "\/insurance"/);
   assert.match(policy, /does not underwrite, sell or issue insurance policies/);
-  assert.match(mega, /link: "https:\/\/www\.trip\.com\/"/);
+  assert.doesNotMatch(mega, /Trip\.com|trip\.com/i);
+  assert.match(mega, /partner_id=DF3NBKA/);
+  assert.match(mega, /klook\.tpo\.lv\/IKb6eSUe/);
   assert.match(mega, /GTHNetwork partners=\{partners\} discoveryOnly/);
   const network = readFileSync(new URL("../src/components/sections/GTHNetwork.tsx", import.meta.url), "utf8");
   assert.match(network, /discoveryOnly \? "Explore International Travel Providers"/);
