@@ -8,6 +8,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600});
   let clickedAffiliate=null;
   let forwardedSearch=null;
+  let exactProductSearch=null;
   // Verify the real server's first-hop response. Route interception does not
   // re-run for each URL in an HTTP redirect chain; receive the popup at the
   // first-party route instead of following a partner checkout in this test.
@@ -19,6 +20,12 @@ try{
     forwardedSearch=new URL(response.headers().location);
     assert.equal(forwardedSearch.origin,url.searchParams.get('provider')==='klook'?'https://tp.media':'https://www.getyourguide.com');
     return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA partner search receiver</h1>'});
+   }
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&['Mumbai Private Sailing Yacht Cruise','Hooghly River Sunset Cruise','Goa Mandovi Dinner Cruise'].includes(url.searchParams.get('destination'))&&route.request().isNavigationRequest()){
+    const response=await route.fetch({maxRedirects:0});
+    assert.ok([302,303,307,308].includes(response.status()));
+    exactProductSearch=response.headers().location;
+    return route.fulfill({status:200,contentType:'text/html',body:'<h1>QA exact cruise product</h1>'});
    }
    if(url.origin==='http://127.0.0.1:3000'&&url.pathname.startsWith('/go/cruises/')&&route.request().isNavigationRequest()){
     const response=await route.fetch({maxRedirects:0});assert.equal(response.status(),302);
@@ -63,6 +70,13 @@ try{
    assert.equal(await card.locator('a[href*="klook.com"]').count(),0);
   }
 
+  // Each India card title/image/CTA must point to precisely the same approved target.
+  for(const slug of ['goa-mandovi-dinner','kerala-alleppey-houseboat','mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises']){
+   const card=page.locator('[data-india-cruise="'+slug+'"]');
+   const links=await card.locator('a[href]').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
+   assert.equal(links.length,3,slug+' must have clickable image, title and action');
+   assert.equal(new Set(links).size,1,slug+' destinations must not mix search and product URLs');
+  }
   await page.getByRole('navigation',{name:'Browse GTH PRO travel categories'}).getByRole('link',{name:'Cruises',exact:true}).waitFor();
   assert.ok(await page.locator('html').evaluate(e=>e.scrollWidth)<=width+1);
   const links=await page.locator('[data-cruise] a').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
@@ -90,13 +104,37 @@ try{
   await page.getByLabel('Cruise type',{exact:true}).selectOption('holiday');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.waitForURL(/destination=Singapore/);
-  await page.getByRole('status').filter({hasText:'3 cruise options'}).waitFor();
+  await page.getByRole('status').filter({hasText:'3 matching cruise options'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),3);
   await page.getByRole('link',{name:'Clear filters',exact:true}).click();
-  await page.getByRole('status').filter({hasText:'7 cruise options'}).waitFor();
+  await page.getByRole('status').filter({hasText:'13 matching cruise options'}).waitFor();
   assert.equal(await page.locator('[data-cruise]').count(),7);
   assert.equal(await page.getByRole('searchbox',{name:'Destination or cruise name'}).inputValue(),'');
   assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
+  // Known Indian city filters on-site instead of redirecting to an unrelated search.
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.waitForURL(/destination=Mumbai/);
+  assert.equal(await page.locator('[data-cruise]').count(),0);
+  assert.equal(await page.locator('[data-india-cruise]').count(),1);
+  assert.equal(await page.locator('[data-india-cruise="mumbai-harbour"] h3 a').getAttribute('href'),'https://gyg.me/ZzIrHzQ9');
+  assert.ok(await page.locator('html').evaluate(e=>e.scrollWidth)<=width+1,'Mumbai mobile search overflow');
+  // The exact title uses the same tracked product as its card, never generic results.
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai Private Sailing Yacht Cruise');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.getByRole('heading',{name:'QA exact cruise product'}).waitFor();
+  assert.equal(exactProductSearch,'https://gyg.me/ZzIrHzQ9');
+  await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Hooghly River Sunset Cruise');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.getByRole('heading',{name:'QA exact cruise product'}).waitFor();
+  assert.equal(exactProductSearch,kolkataHref);
+  await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Goa Mandovi Dinner Cruise');
+  await page.getByRole('button',{name:'Show cruises',exact:true}).click();
+  await page.getByRole('heading',{name:'QA exact cruise product'}).waitFor();
+  assert.equal(exactProductSearch,goaHref);
+  await page.goto('http://127.0.0.1:3000/cruises',{waitUntil:'domcontentloaded'});
   await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
@@ -128,5 +166,5 @@ try{
   await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
- console.log('PASS: seven international cards, Mumbai/Kolkata tracked GYG links, India GYG search + Klook option and mobile/desktop filters');
+ console.log('PASS: seven international plus six Indian cards, exact title handoffs, shared image/title/CTA links, GYG and Klook search, mobile/desktop filters');
 }finally{await browser.close();}
