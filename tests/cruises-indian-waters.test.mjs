@@ -8,7 +8,7 @@ const original=readFileSync('src/lib/travel/cruises.ts','utf8');
 
 test('India block is isolated and existing international cruise catalogue is retained',()=>{
  assert.ok(page.includes('from "@/components/travel/IndianWaters";'));
- assert.match(page,/<IndianWaters\/>/);
+ assert.match(page,/<IndianWaters options=\{selectedIndia\}\/>/);
  assert.match(original,/disney-adventure-3-nights/);
  assert.match(original,/singapore-river-cruise/);
  assert.equal((original.match(/sourceUrl:"https:\/\/www\.klook\.com/g)||[]).length,7);
