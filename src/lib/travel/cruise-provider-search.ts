@@ -14,7 +14,7 @@ export function buildCruiseProviderSearch(
  destination:string, provider:CruiseSearchProvider="gyg", type:CruiseSearchType=""
 ):string|null{
  const parsed=parsePartnerSearch({kind:"cruises",destination});
- if(!parsed.ok||!(type in cruiseIntent)||(provider!=="gyg"&&provider!=="klook"))return null;
+ if(!parsed.ok||!Object.hasOwn(cruiseIntent,type)||(provider!=="gyg"&&provider!=="klook"))return null;
  const category=cruiseIntent[type];
  if(provider==="klook"){
   // Existing Travelpayouts/Klook referral builder. Search results are supplier-
