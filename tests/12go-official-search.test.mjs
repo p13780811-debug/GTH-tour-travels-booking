@@ -42,7 +42,8 @@ test("route handoff is strict, official, mode-limited, and preserves itinerary w
   assert.match(route, /validDeparture\(date\)/);
   assert.match(route, /!\/\^\[1-8\]\$\/.test\(people\)/);
   assert.match(route, /from === to/);
-  assert.match(route, /new URL\("\/en\/" \+ mode \+ "\/" \+ from \+ "\/" \+ to, PROVIDER_ORIGIN\)/);
+  assert.match(route, /const supplierMode = mode === "flight" \? "flights" : mode;/);
+  assert.match(route, /new URL\("\/en\/" \+ supplierMode \+ "\/" \+ from \+ "\/" \+ to, PROVIDER_ORIGIN\)/);
   assert.match(route, /supplier\.searchParams\.set\("date", date\)/);
   assert.match(route, /supplier\.searchParams\.set\("people", people\)/);
   assert.match(route, /supplier\.searchParams\.set\("z", AFFILIATE_ID\)/);
@@ -93,4 +94,25 @@ test("booking gateway exposes static Next.js segment configuration", () => {
   assert.match(gateway, /export const runtime = "nodejs"/);
   assert.match(gateway, /export const dynamic = "force-dynamic"/);
   assert.match(gateway, /export \{ GET \} from "\.\.\/12go\/route"/);
+});
+
+
+test("12Go flights are optional: tracked flight routes are supported without replacing Aviasales or Nuitee",()=>{
+  const page = source("src/app/flights/page.tsx");
+  const widget = source("src/components/travel/GTHTransportSearchWidget.tsx");
+  const route = source("src/app/go/transport/search/route.ts");
+  const hotels = source("src/lib/travel/hotel-whitelabel.ts");
+  const transfers = source("src/app/transfers/page.tsx");
+  assert.match(widget, /"flight" as const/);
+  assert.match(widget, /name="mode" value=\{mode\}/);
+  assert.match(widget, /href: "\/flights#12go-flight-options"/);
+  assert.match(route, /"bus", "train", "ferry", "flight"/);
+  assert.match(route, /mode === "flight" \? "flights" : mode/);
+  assert.match(route, /supplier\.searchParams\.set\("z", AFFILIATE_ID\)/);
+  assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
+  assert.match(page, /<details id="12go-flight-options"/);
+  assert.match(page, /<GTHTransportSearchWidget mode="flight" \/>/);
+  assert.match(page, /!isResultsView && <details/);
+  assert.match(hotels, /nuitee\.link/);
+  assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
 });
