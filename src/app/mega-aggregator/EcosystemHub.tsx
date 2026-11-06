@@ -274,7 +274,7 @@ export default function EcosystemHub() {
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3 md:grid-cols-6 lg:grid-cols-8" aria-live="polite">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8" aria-live="polite">
             {availableServices.map(service => {
               const Icon = service.Icon;
               return (

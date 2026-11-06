@@ -30,7 +30,7 @@ test("mobile service tiles and interactive pillar filters remain responsive and 
   assert.match(hub, /useState<Selection>\("all"\)/);
   assert.match(hub, /onClick=\{\(\) => setActive\(filter\.key\)\}/);
   assert.match(hub, /aria-pressed=\{active === filter\.key\}/);
-  assert.match(hub, /grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3 md:grid-cols-6 lg:grid-cols-8/);
+  assert.match(hub, /grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8/);
   assert.match(hub, /min-w-0/);
   assert.match(hub, /focus-visible:outline/);
   assert.match(hub, /overflow-x-auto/);

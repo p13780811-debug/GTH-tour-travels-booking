@@ -82,7 +82,7 @@ export default async function MegaAggregator() {
             </div>
             {/* Page-scoped suppression of the shared hero's nonfunctional search bar.
                 The shared HeroSlider itself and global CSS remain unchanged. */}
-            <div className="relative z-0 [&_.gth-master-hero-shell>div:last-child]:hidden">
+            <div className="relative z-0 [&_.gth-master-hero-shell>div:nth-child(2)]:hidden [&_.gth-master-hero-shell>div:last-child]:hidden">
                 <HeroSlider />
             </div>
             <div className="relative z-40 mx-auto -mt-48 w-full max-w-7xl px-3 pb-8 sm:-mt-36 sm:px-6 xl:-mt-20">
