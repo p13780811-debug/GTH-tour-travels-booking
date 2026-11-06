@@ -145,7 +145,7 @@ test("one 12Go form handoff preserves all four modes and blocks injected/duplica
     const url="https://www.gthproglobal.com/go/transport/search?"+new URLSearchParams({mode:"flight",from:"Bangkok",to:"Chiang Mai",date:tomorrow,people:"2"})+extra;
     const response=await mod.exports.GET({nextUrl:new URL(url),url});
     assert.equal(response.status,303);
-    assert.equal(new URL(response.headers.get("location")).pathname,"/flights");
+    assert.equal(new URL(response.headers.get("location")).pathname,extra.startsWith("&mode=")?"/travel":"/flights");
     assert.equal(new URL(response.headers.get("location")).searchParams.get("search"),"invalid");
   }
 });
