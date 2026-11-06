@@ -24,11 +24,11 @@ test("travel planner validates local route and date without pretending to book",
 });
 
 test("ground transport connects separate car rental and airport transfer pages", () => {
-  const mega = read("src/app/mega-aggregator/page.tsx");
+  const directory = read("src/app/mega-aggregator/EcosystemHub.tsx");
   const shared = read("src/components/travel/TravelServicePage.tsx");
   const legacy = read("src/app/cars/page.tsx");
-  assert.match(mega, /link: "\/transfers"/);
-  assert.match(mega, /link: "\/cars"/);
+  assert.match(directory, /href: "\/transfers"/);
+  assert.match(directory, /href: "\/cars"/);
   assert.match(shared, /href: "\/bus"/);
   assert.match(shared, /href: "\/train"/);
   assert.match(shared, /href: "\/transfers"/);

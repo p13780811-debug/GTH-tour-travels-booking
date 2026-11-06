@@ -23,5 +23,5 @@ test("main Travel links target the hub while Real Estate keeps its own page", ()
  assert.match(mobile,/href: "\/flights"/);
   assert.match(mobile,/matches: \["\/flights", "\/travel"\]/);
  assert.match(mobile,/href: "\/tender"/);
- assert.match(read("src/app/mega-aggregator/page.tsx"),/href="\/travel"/);
+ assert.match(read("src/app/mega-aggregator/EcosystemHub.tsx"),/href: "\/travel"/);
 });

@@ -34,7 +34,7 @@ test("No unauthorized provider or invented hotel inventory",()=>{
  assert.match(page,/partner_id=DF3NBKA/);
  assert.match(page,/klook\.tpo\.lv\/IKb6eSUe/);
  assert.doesNotMatch(page,/id="travel-services"|aria-label="Additional travel services"/);
- assert.match(page,/aspect-[16/9]/);
+ assert.match(page,/aspect-\[16\/9\]/);
  assert.doesNotMatch(page,/bg-black|from-black|via-black|bg-gradient|bg-slate/);
  assert.match(page,/id="insights"/);
  assert.match(page,/id="providers"/);
