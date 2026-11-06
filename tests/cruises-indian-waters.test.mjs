@@ -56,3 +56,19 @@ test('search sends new destinations to tracked GYG results and allows selected K
  assert.ok(page.includes('Search provider'));
  assert.ok(page.includes('buildCruiseProviderSearch'));
 });
+
+
+test('one unified search filters India cards, links exact products and keeps mobile inputs readable',()=>{
+ assert.match(ui,/export const indianWaterOptions/);
+ assert.match(ui,/export function filterIndianWaters/);
+ assert.match(ui,/export function indianCruiseHref/);
+ assert.match(ui,/indianCruiseHref\(option\)/);
+ assert.match(page,/selectedIndia=valid\?filterIndianWaters\(destination,type\)/);
+ assert.match(page,/<IndianWaters options=\{selectedIndia\}\/>/);
+ assert.match(page,/indianCruiseHref\(namedIndia\)/);
+ assert.match(page,/\/go\/cruises\/\$\{namedInternational.slug\}/);
+ assert.match(page,/grid-cols-1 items-end gap-3/);
+ assert.match(page,/13 matching cruise options|selected.length\+selectedIndia.length/);
+ assert.match(ui,/View \$\{option.title\} on the provider/);
+ assert.match(page,/View \$\{item.title\} on Klook/);
+});
