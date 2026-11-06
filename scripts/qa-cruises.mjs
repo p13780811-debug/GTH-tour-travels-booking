@@ -52,11 +52,15 @@ try{
   assert.equal(kolkataUrl.searchParams.get('partner_id'),'DF3NBKA');
   assert.equal(kolkataUrl.searchParams.get('cmp'),'gthpro_cruises_kolkata');
   assert.equal(await page.locator('head script[data-gyg-partner-id="DF3NBKA"]').count(),1);
-  for(const slug of ['lakshadweep-cruises','andaman-cruises']){
+  for(const [slug,query] of [['lakshadweep-cruises','Lakshadweep cruise'],['andaman-cruises','Andaman cruise']]){
    const card=page.locator('[data-india-cruise="'+slug+'"]');
-   assert.equal(await card.locator('a[href*="partner-search"]').count(),0);
+   const href=await card.locator('a').first().getAttribute('href');
+   const url=new URL(href);
+   assert.equal(url.origin,'https://www.getyourguide.com');
+   assert.equal(url.pathname,'/s/');
+   assert.equal(url.searchParams.get('q'),query);
+   assert.equal(url.searchParams.get('partner_id'),'DF3NBKA');
    assert.equal(await card.locator('a[href*="klook.com"]').count(),0);
-   await card.getByText('No confirmed bookable cruise', {exact:false}).waitFor();
   }
 
   await page.getByRole('navigation',{name:'Browse GTH PRO travel categories'}).getByRole('link',{name:'Cruises',exact:true}).waitFor();
