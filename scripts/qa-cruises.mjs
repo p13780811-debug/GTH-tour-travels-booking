@@ -13,7 +13,7 @@ try{
   // first-party route instead of following a partner checkout in this test.
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
-   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&url.searchParams.get('destination')==='Mumbai'&&route.request().isNavigationRequest()){
+   if(url.origin==='http://127.0.0.1:3000'&&url.pathname==='/cruises'&&url.searchParams.get('destination')==='Andaman'&&route.request().isNavigationRequest()){
     const response=await route.fetch({maxRedirects:0});
     assert.ok([302,303,307,308].includes(response.status()),'Unlisted destination must redirect on first click');
     forwardedSearch=new URL(response.headers().location);
@@ -77,10 +77,10 @@ try{
   assert.equal(await page.locator('[data-cruise]').count(),7);
   assert.equal(await page.getByRole('searchbox',{name:'Destination or cruise name'}).inputValue(),'');
   assert.equal(await page.getByLabel('Cruise type',{exact:true}).inputValue(),'');
-  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Mumbai');
+  await page.getByRole('searchbox',{name:'Destination or cruise name'}).fill('Andaman');
   await page.getByRole('button',{name:'Show cruises',exact:true}).click();
   await page.getByRole('heading',{name:'QA partner search receiver'}).waitFor();
-  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Mumbai cruise');
+  assert.equal(new URL(forwardedSearch.searchParams.get('u')).searchParams.get('query'),'Andaman cruise');
   assert.equal(await page.getByText('No matching cruises in this collection').count(),0);
   // The directory is server-rendered before React attaches the filter handlers.
   await page.goto('http://127.0.0.1:3000/mega-aggregator', { waitUntil: 'networkidle' });
