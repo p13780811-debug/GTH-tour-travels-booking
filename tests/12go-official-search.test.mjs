@@ -149,3 +149,21 @@ test("one 12Go form handoff preserves all four modes and blocks injected/duplica
     assert.equal(new URL(response.headers.get("location")).searchParams.get("search"),"invalid");
   }
 });
+
+test("12Go tabs follow central day/night color tokens and keep rectangular mobile shape",()=>{
+  const widget=source("src/components/travel/GTHTransportSearchWidget.tsx");
+  const css=source("src/app/globals.css");
+  assert.match(css, /--btn-text:\s*#ffffff/); // Global day mode
+  assert.match(css, /html\.dark\s*\{[\s\S]*?--btn-text:\s*#000000/); // Global night mode
+  assert.match(css, /nav span,\s*nav a\s*\{\s*color:\s*var\(--text\)/);
+  assert.match(widget, /grid-cols-4 gap-1/);
+  assert.match(widget, /rounded-xl bg-\[image:var\(--btn-bg\)\]/);
+  assert.match(widget, /text-\[var\(--btn-text\)\]/);
+  assert.match(widget, /shadow-\[var\(--btn-shadow\)\]/);
+  assert.match(widget, /bg-\[var\(--card\)\]/);
+  assert.doesNotMatch(widget, /<span>\{label\}<\/span>|min-w-0 flex-col items-center/);
+  // Only the full-width Find Tickets CTA uses the existing pill-shaped global class.
+  assert.equal((widget.match(/gth-btn-gold/g)||[]).length,1);
+  assert.match(widget, /<button type="submit"[\s\S]*?className="gth-btn-gold/);
+  assert.doesNotMatch(widget, /style=\{|bg-\[#|text-\[#|\.module\.css/);
+});
