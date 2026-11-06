@@ -29,8 +29,27 @@ test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.match(ui,/Indian cruise photo credits/);
  assert.match(ui,/CC BY/);
  assert.ok(ui.includes("www.getyourguide.com"));
- assert.match(ui,/Affiliate attribution is not verified/);
+ assert.match(ui,/https:\/\/gyg\.me\/ZzIrHzQ9/);
+ assert.match(ui,/partner_id=DF3NBKA&utm_medium=online_publisher&cmp=gthpro_cruises_kolkata/);
+ assert.match(ui,/partner tracking is not yet configured for this card/);
  assert.match(ui,/campaign_id:"137"/);
  assert.match(ui,/marker:"417668"/);
  assert.match(ui,/noopener noreferrer sponsored/);
+});
+
+test('GetYourGuide integration analyzer appears exactly once in shared head',()=>{
+ const layout=readFileSync('src/app/layout.tsx','utf8');
+ assert.equal(layout.split('pa.umd.production.min.js').length-1,1);
+ assert.ok(layout.includes('data-gyg-partner-id="DF3NBKA"'));
+ assert.ok(layout.includes('id="gth-impact-stat"'));
+ assert.ok(layout.includes('id="gth-travelpayouts-drive"'));
+});
+test('search sends new destinations to tracked GYG results and allows selected Klook',()=>{
+ const search=readFileSync('src/lib/travel/cruise-provider-search.ts','utf8');
+ assert.ok(search.includes('https://www.getyourguide.com/s/'));
+ assert.ok(search.includes('DF3NBKA'));
+ assert.ok(search.includes('gthpro_cruises_search'));
+ assert.ok(search.includes('buildPartnerSearch'));
+ assert.ok(page.includes('Search provider'));
+ assert.ok(page.includes('buildCruiseProviderSearch'));
 });
