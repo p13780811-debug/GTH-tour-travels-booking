@@ -13,7 +13,9 @@ const cruiseIntent:Record<CruiseSearchType,string>={
 export function buildCruiseProviderSearch(
  destination:string, provider:CruiseSearchProvider="gyg", type:CruiseSearchType=""
 ):string|null{
- const parsed=parsePartnerSearch({kind:"cruises",destination});
+ // Cruise titles may contain editorial separators; normalize those for the
+ // existing shared partner-search validator without weakening global rules.
+ const parsed=parsePartnerSearch({kind:"cruises",destination:destination.replace(/[·–]/gu," ")});
  if(!parsed.ok||!Object.hasOwn(cruiseIntent,type)||(provider!=="gyg"&&provider!=="klook"))return null;
  const category=cruiseIntent[type];
  if(provider==="klook"){

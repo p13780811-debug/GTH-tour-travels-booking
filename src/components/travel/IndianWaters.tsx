@@ -1,10 +1,11 @@
 import Image from "next/image";
 import {ArrowUpRight,Check,MapPin,Waves} from "lucide-react";
 import {buildCruiseProviderSearch} from "@/lib/travel/cruise-provider-search";
+import type {CruiseType} from "@/lib/travel/cruises";
 
 type Photo={file:string;author:string;license:string;licenseUrl:string;caption:string;alt:string};
-type IndianWaterOption={
- slug:string;city:string;region:string;title:string;description:string;
+export type IndianWaterOption={
+ slug:string;city:string;region:string;title:string;description:string;type:CruiseType;
  highlights:readonly string[];label:string;photo:Photo;sourceUrl?:string;affiliateUrl?:string;
 };
 // Fixed editorial photograph sources from Wikimedia Commons. They represent the
@@ -18,13 +19,13 @@ const photos={
  andaman:{file:"Havelock jetty Andaman vrvbaan042k24 (3).jpg",author:"Vinayaraj",license:"CC BY-SA 4.0",licenseUrl:"https://creativecommons.org/licenses/by-sa/4.0/",caption:"Havelock jetty · representative island waterfront",alt:"Jetty on Havelock island in the Andaman Islands"}
 } as const satisfies Record<string,Photo>;
 
-const options:readonly IndianWaterOption[]=[
- {slug:"goa-mandovi-dinner",city:"Goa",region:"Mandovi River",title:"Goa Mandovi Dinner Cruise",description:"Explore the published Goa Lexicon dinner cruise, with onboard dining and entertainment. Select dates and package directly with Klook.",highlights:["Mandovi river experience","Confirm meeting point and inclusions"],label:"Check dates & packages",sourceUrl:"https://www.klook.com/en-IN/activity/185166-goa-lexicon-dinner-cruise/",photo:photos.goa},
- {slug:"kerala-alleppey-houseboat",city:"Kerala",region:"Alleppey / Kochi",title:"Alleppey Backwater Houseboat",description:"Klook lists a houseboat day excursion departing from Kochi with time on Kerala's backwaters and a traditional boat.",highlights:["Houseboat and backwater scenery","Review transfer and meal details"],label:"Check dates & packages",sourceUrl:"https://www.klook.com/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/",photo:photos.kerala},
- {slug:"mumbai-harbour",city:"Mumbai",region:"Mumbai Harbour",title:"Mumbai Private Sailing Yacht Cruise",description:"A published private yacht sailing experience along Mumbai’s coastline, departing near the Gateway of India. Confirm current dates with GetYourGuide.",highlights:["Mumbai coastline sailing","Operator confirms timing and inclusions"],label:"Check cruise on GetYourGuide",sourceUrl:"https://www.getyourguide.com/mumbai-l201/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/",affiliateUrl:"https://gyg.me/ZzIrHzQ9",photo:photos.mumbai},
- {slug:"lakshadweep-cruises",city:"Lakshadweep",region:"Island cruise holidays",title:"Lakshadweep Cruise Discovery",description:"Explore cruise and island-related options. Sailing schedules, visitor permits and boarding rules must be checked with the operator.",highlights:["Island cruise discovery","Verify permits and itineraries"],label:"Search cruises on GetYourGuide",photo:photos.lakshadweep},
- {slug:"kolkata-river-cruises",city:"Kolkata",region:"Hooghly River",title:"Hooghly River Sunset Cruise",description:"A published Kolkata sunset cruise with refreshments on the Hooghly River. Verify the boarding point carefully before booking.",highlights:["Hooghly riverside experience","Verify meeting point and operator details"],label:"Check cruise on GetYourGuide",sourceUrl:"https://www.getyourguide.com/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/",affiliateUrl:"https://www.getyourguide.com/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/?partner_id=DF3NBKA&utm_medium=online_publisher&cmp=gthpro_cruises_kolkata",photo:photos.kolkata},
- {slug:"andaman-cruises",city:"Andaman",region:"Port Blair / Havelock",title:"Andaman Island Cruises",description:"Discover coastal and island sailing experiences; use current provider results to check routes and timings.",highlights:["Island waters and coastal excursions","Check routes and operator rules"],label:"Search cruises on GetYourGuide",photo:photos.andaman}
+export const indianWaterOptions:readonly IndianWaterOption[]=[
+ {slug:"goa-mandovi-dinner",type:"dining",city:"Goa",region:"Mandovi River",title:"Goa Mandovi Dinner Cruise",description:"Explore the published Goa Lexicon dinner cruise, with onboard dining and entertainment. Select dates and package directly with Klook.",highlights:["Mandovi river experience","Confirm meeting point and inclusions"],label:"Check dates & packages",sourceUrl:"https://www.klook.com/en-IN/activity/185166-goa-lexicon-dinner-cruise/",photo:photos.goa},
+ {slug:"kerala-alleppey-houseboat",type:"sightseeing",city:"Kerala",region:"Alleppey / Kochi",title:"Alleppey Backwater Houseboat",description:"Klook lists a houseboat day excursion departing from Kochi with time on Kerala's backwaters and a traditional boat.",highlights:["Houseboat and backwater scenery","Review transfer and meal details"],label:"Check dates & packages",sourceUrl:"https://www.klook.com/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/",photo:photos.kerala},
+ {slug:"mumbai-harbour",type:"sightseeing",city:"Mumbai",region:"Mumbai Harbour",title:"Mumbai Private Sailing Yacht Cruise",description:"A published private yacht sailing experience along Mumbai’s coastline, departing near the Gateway of India. Confirm current dates with GetYourGuide.",highlights:["Mumbai coastline sailing","Operator confirms timing and inclusions"],label:"Check cruise on GetYourGuide",sourceUrl:"https://www.getyourguide.com/mumbai-l201/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/",affiliateUrl:"https://gyg.me/ZzIrHzQ9",photo:photos.mumbai},
+ {slug:"lakshadweep-cruises",type:"holiday",city:"Lakshadweep",region:"Island cruise holidays",title:"Lakshadweep Cruise Discovery",description:"Explore cruise and island-related options. Sailing schedules, visitor permits and boarding rules must be checked with the operator.",highlights:["Island cruise discovery","Verify permits and itineraries"],label:"Search cruises on GetYourGuide",photo:photos.lakshadweep},
+ {slug:"kolkata-river-cruises",type:"sightseeing",city:"Kolkata",region:"Hooghly River",title:"Hooghly River Sunset Cruise",description:"A published Kolkata sunset cruise with refreshments on the Hooghly River. Verify the boarding point carefully before booking.",highlights:["Hooghly riverside experience","Verify meeting point and operator details"],label:"Check cruise on GetYourGuide",sourceUrl:"https://www.getyourguide.com/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/",affiliateUrl:"https://www.getyourguide.com/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/?partner_id=DF3NBKA&utm_medium=online_publisher&cmp=gthpro_cruises_kolkata",photo:photos.kolkata},
+ {slug:"andaman-cruises",type:"sightseeing",city:"Andaman",region:"Port Blair / Havelock",title:"Andaman Island Cruises",description:"Discover coastal and island sailing experiences; use current provider results to check routes and timings.",highlights:["Island waters and coastal excursions","Check routes and operator rules"],label:"Search cruises on GetYourGuide",photo:photos.andaman}
 ];
 const TRACKING={campaign_id:"137",marker:"417668",p:"4110",trs:"504342"};
 function reviewedKlookReferral(sourceUrl:string,slug:string):string|null{
@@ -55,9 +56,26 @@ function reviewedGuideUrl(sourceUrl:string,affiliateUrl?:string):string|null{
   return tracked.href;
  }catch{return null;}
 }
+/** One reviewed target per card, reused by the search and card click journey. */
+export function indianCruiseHref(option:IndianWaterOption):string|null{
+ if(!option.sourceUrl)return buildCruiseProviderSearch(option.city,"gyg");
+ return option.sourceUrl.startsWith("https://www.getyourguide.com/")
+  ?reviewedGuideUrl(option.sourceUrl,option.affiliateUrl)
+  :reviewedKlookReferral(option.sourceUrl,option.slug);
+}
+
+/** A named Indian cruise is filterable just like a Klook international cruise. */
+export function filterIndianWaters(destination:string,type:string):IndianWaterOption[]{
+ const terms=destination.normalize("NFKC").trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean);
+ return indianWaterOptions.filter(option=>{
+  const haystack=`${option.city} ${option.region} ${option.title}`.toLocaleLowerCase();
+  return (!type||option.type===type)&&terms.every(term=>haystack.includes(term));
+ });
+}
 function commonsPhotoUrl(file:string):string{return "https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(file)+"?width=800";}
 function commonsSourceUrl(file:string):string{return "https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(file).replace(/%20/g,"_");}
-export default function IndianWaters(){
+export default function IndianWaters({options=indianWaterOptions}:{options?:readonly IndianWaterOption[]}){
+ if(options.length===0)return null;
  return <section id="indian-waters" aria-labelledby="indian-waters-title" className="mt-10 scroll-mt-24">
   <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Waves size={16} aria-hidden="true"/>GTH PRO · India cruise discovery</p>
   <h2 id="indian-waters-title" className="mt-2 text-2xl font-bold">Explore Indian Waters</h2>
@@ -65,15 +83,16 @@ export default function IndianWaters(){
   <div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
    {options.map(option=>{
     const isGuide=Boolean(option.sourceUrl?.startsWith("https://www.getyourguide.com/"));
-    const href=option.sourceUrl?(isGuide?reviewedGuideUrl(option.sourceUrl,option.affiliateUrl):reviewedKlookReferral(option.sourceUrl,option.slug)):buildCruiseProviderSearch(option.city,"gyg");
+    const href=indianCruiseHref(option);
     return <article key={option.slug} data-india-cruise={option.slug} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
      <div className="relative aspect-[16/9] overflow-hidden bg-[var(--bg)]">
       <Image src={commonsPhotoUrl(option.photo.file)} alt={option.photo.alt} fill unoptimized sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" className="object-cover"/>
+      {href&&<a href={href} target="_blank" rel="noopener noreferrer sponsored" aria-label={`View ${option.title} on the provider`} className="absolute inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--gold)]"/>}
      </div>
      <div className="flex flex-1 flex-col p-5">
       <p className="text-xs leading-5 text-[var(--text-soft)]">{option.photo.caption}</p>
       <p className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold)]"><MapPin size={13} aria-hidden="true"/>{option.city} · {option.region}</p>
-      <h3 className="mt-3 text-xl font-bold leading-snug">{option.title}</h3>
+      <h3 className="mt-3 text-xl font-bold leading-snug">{href?<a href={href} target="_blank" rel="noopener noreferrer sponsored" className="hover:underline focus-visible:underline">{option.title}</a>:option.title}</h3>
       <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{option.description}</p>
       <ul className="mt-4 space-y-2 text-sm">{option.highlights.map(text=><li key={text} className="flex items-start gap-2"><Check size={15} className="mt-1 shrink-0 text-[var(--gold)]" aria-hidden="true"/><span>{text}</span></li>)}</ul>
       <div className="mt-auto pt-5">
