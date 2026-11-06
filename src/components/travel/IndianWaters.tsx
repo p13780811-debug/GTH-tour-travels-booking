@@ -66,7 +66,7 @@ export function indianCruiseHref(option:IndianWaterOption):string|null{
 
 /** A named Indian cruise is filterable just like a Klook international cruise. */
 export function filterIndianWaters(destination:string,type:string):IndianWaterOption[]{
- const terms=destination.normalize("NFKC").trim().toLocaleLowerCase().split(/\\s+/u).filter(Boolean);
+ const terms=destination.normalize("NFKC").trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean);
  return indianWaterOptions.filter(option=>{
   const haystack=`${option.city} ${option.region} ${option.title}`.toLocaleLowerCase();
   return (!type||option.type===type)&&terms.every(term=>haystack.includes(term));
