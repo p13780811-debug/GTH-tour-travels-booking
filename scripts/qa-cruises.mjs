@@ -43,9 +43,21 @@ try{
   const keralaHref=await page.locator('[data-india-cruise="kerala-alleppey-houseboat"] a').getAttribute('href');
   assert.equal(new URL(new URL(goaHref).searchParams.get('u')).pathname,'/en-IN/activity/185166-goa-lexicon-dinner-cruise/');
   assert.equal(new URL(new URL(keralaHref).searchParams.get('u')).pathname,'/en-IN/activity/6620-alleppey-backwater-cruise-by-houseboat-cochin/');
-  for(const slug of ['mumbai-harbour','lakshadweep-cruises','kolkata-river-cruises','andaman-cruises']){
-   const href=await page.locator('[data-india-cruise="'+slug+'"] a').getAttribute('href');
-   assert.ok(href.startsWith('/api/travel/partner-search?'),href);
+  const exactGuideProducts={
+   'mumbai-harbour':'/mumbai-l201/mumbai-private-sailing-yacht-cruise-with-snacks-t1142848/',
+   'kolkata-river-cruises':'/kolkata-l275/kolkata-hooghly-river-sunset-cruise-with-snacks-drinks-t1250175/',
+  };
+  for(const [slug,pathname] of Object.entries(exactGuideProducts)){
+   const card=page.locator('[data-india-cruise="'+slug+'"]');
+   const href=await card.locator('a').first().getAttribute('href');
+   assert.equal(new URL(href).hostname,'www.getyourguide.com');
+   assert.equal(new URL(href).pathname,pathname);
+  }
+  for(const slug of ['lakshadweep-cruises','andaman-cruises']){
+   const card=page.locator('[data-india-cruise="'+slug+'"]');
+   assert.equal(await card.locator('a[href*="partner-search"]').count(),0);
+   assert.equal(await card.locator('a[href*="klook.com"]').count(),0);
+   await card.getByText('No confirmed bookable cruise', {exact:false}).waitFor();
   }
 
   await page.getByRole('navigation',{name:'Browse GTH PRO travel categories'}).getByRole('link',{name:'Cruises',exact:true}).waitFor();
@@ -102,5 +114,5 @@ try{
   await page.locator('[data-cruise]').first().waitFor();
   await context.close();
  }
- console.log('PASS: seven cruise cards, India links, filters and one-click external destination search at mobile and desktop widths');
+ console.log('PASS: seven international cards, four exact India products, honest nonbookable cards, and filters on mobile/desktop');
 }finally{await browser.close();}
