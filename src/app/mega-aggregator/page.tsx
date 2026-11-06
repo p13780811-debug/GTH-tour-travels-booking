@@ -150,14 +150,15 @@ export default async function MegaAggregator() {
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             {categories.map((category) => (
                                 <Link key={category.link} href={category.link}
-                                    className="group relative flex min-h-[245px] flex-col justify-end overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-5 text-white shadow-sm transition-transform duration-300 hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:min-h-[295px]">
-                                    <Image src={category.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" aria-hidden="true" />
-                                    <div className="relative z-10">
-                                        <h3 className="text-xl font-semibold tracking-tight">{category.name}</h3>
-                                        <p className="mt-2 text-sm leading-6 text-white/80">{category.description}</p>
-                                        <span className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-amber-200">
+                                    className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] transition-colors hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
+                                    <div className="relative h-40 w-full shrink-0 overflow-hidden">
+                                        <Image src={category.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                                    </div>
+                                    <div className="flex flex-1 flex-col gap-2 p-4 text-[var(--text)]">
+                                        <h3 className="text-lg font-semibold tracking-tight">{category.name}</h3>
+                                        <p className="flex-1 text-sm leading-6 text-[var(--text-soft)]">{category.description}</p>
+                                        <span className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold">
                                             Explore <span aria-hidden="true">↗</span>
                                         </span>
                                     </div>
@@ -189,67 +190,37 @@ export default async function MegaAggregator() {
                     </div>
                 </section>
 
-                {/* Travel Guides - Cocktail Version (Airbnb Style + Gemini Clean Look) */}
-                <section id="insights" className="bg-[var(--bg)] py-14 text-[var(--text)] md:py-20">
+                {/* Editorial guides use the established global GTH glass/card system.
+                    No manually defined black backgrounds, gradients or image overlays. */}
+                <section id="insights" className="py-12 md:py-16">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                        <div className="flex flex-col items-center mb-12">
-                            <h2 className="text-4xl font-bold tracking-tight mb-4">
-                                Travel intelligence & practical guides
-                            </h2>
-                            <div className="h-1 w-20 bg-[var(--gold)] rounded-full"></div>
+                        <div className="mb-7">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">Research & guidance</p>
+                            <h2 className="mt-2 text-2xl font-bold tracking-tight text-[var(--text)] sm:text-3xl">Travel intelligence & practical guides</h2>
+                            <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Useful information before you choose a destination or booking partner.</p>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-                            {/* Goa Guide Card - Updated for Originality */}
-                            <Link href="/blog/research-a-new-destination" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
-                                <div className="relative h-64 w-full overflow-hidden">
-                                    <Image src="/images/cities/goa.jpg" alt="Goa destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0" />
-                                    {/* Editorial category label, not a hotel price or offer. */}
-                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-[var(--gold)]">RESEARCH BEFORE YOU BOOK</p>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {[
+                                {title:"Destination Research Guide",detail:"Useful checks before choosing a destination",image:"/images/cities/goa.jpg",href:"/blog/research-a-new-destination"},
+                                {title:"Hotel Booking Checklist",detail:"Room rates, taxes and cancellation terms",image:"/images/cities/paris.jpg",href:"/blog/hotel-booking-checklist"},
+                                {title:"How to Compare Flight Fares",detail:"Baggage, fare rules and connections",image:"/images/cities/dubai.jpg",href:"/blog/how-to-compare-flight-fares"},
+                            ].map(guide=>(
+                                <Link href={guide.href} key={guide.href}
+                                    className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] transition-colors hover:border-[var(--gold)]">
+                                    <div className="relative h-40 w-full shrink-0 overflow-hidden">
+                                        <Image src={guide.image} alt="" fill sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105" />
                                     </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-                                </div>
-                                <div className="absolute bottom-0 p-6">
-                                    <h3 className="text-xl font-bold text-white">Destination Research Guide</h3>
-                                    <p className="text-sm text-white/85 mt-1 italic">Useful checks before choosing a destination</p>
-                                </div>
-                            </Link>
-
-                            {/* Paris Guide Card */}
-                            <Link href="/blog/hotel-booking-checklist" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
-                                <div className="relative h-64 w-full overflow-hidden">
-                                    <Image src="/images/cities/paris.jpg" alt="Paris destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-[var(--gold)]">HOTEL BOOKING CHECKLIST</p>
+                                    <div className="flex flex-1 flex-col gap-2 p-4">
+                                        <h3 className="text-lg font-semibold text-[var(--text)]">{guide.title}</h3>
+                                        <p className="flex-1 text-sm leading-6 text-[var(--text-soft)]">{guide.detail}</p>
+                                        <span className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[var(--text)]">Read guide <span aria-hidden="true">↗</span></span>
                                     </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                </div>
-                                <div className="absolute bottom-0 p-6">
-                                    <h3 className="text-xl font-bold text-white">Hotel Booking Checklist</h3>
-                                    <p className="text-sm text-white/85 mt-1">Room rates, taxes and cancellation terms</p>
-                                </div>
-                            </Link>
-
-                            {/* Dubai Guide Card */}
-                            <Link href="/blog/how-to-compare-flight-fares" className="group relative overflow-hidden rounded-2xl bg-[var(--card)] transition-all hover:ring-2 hover:ring-[var(--gold)]">
-                                <div className="relative h-64 w-full overflow-hidden">
-                                    <Image src="/images/cities/dubai.jpg" alt="Dubai destination scenery" fill sizes="(max-width: 768px) 100vw, 33vw" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <p className="text-[10px] font-bold text-[var(--gold)]">FLIGHT FARE CHECKLIST</p>
-                                    </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                </div>
-                                <div className="absolute bottom-0 p-6">
-                                    <h3 className="text-xl font-bold text-white">How to Compare Flight Fares</h3>
-                                    <p className="text-sm text-white/85 mt-1">Baggage, fare rules and connections</p>
-                                </div>
-                            </Link>
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 </section>
-
 
             </div>
 
