@@ -35,17 +35,21 @@ import {
  * This component is imported ONLY from /mega-aggregator.
  */
 type Pillar = "travel" | "property" | "tender" | "business";
-type Selection = "all" | Exclude<Pillar, "business">;
+type Selection = "all" | Pillar;
 
 const filters: readonly { key: Selection; label: string }[] = [
   { key: "all", label: "All services" },
   { key: "travel", label: "Travel" },
   { key: "property", label: "Real Estate" },
   { key: "tender", label: "Tenders" },
+  { key: "business", label: "Partners & Support" },
 ];
 
 const services = [
   { label: "Hotels", href: "/hotels", pillar: "travel", Icon: Hotel },
+  { label: "Travel gateway", href: "/travel", pillar: "travel", Icon: Globe2 },
+  { label: "AI Trip Planner", href: "/ai-trip", pillar: "travel", Icon: Compass },
+  { label: "Travel deals", href: "/travel/deals", pillar: "travel", Icon: Ticket },
   { label: "Flights", href: "/flights", pillar: "travel", Icon: Plane },
   { label: "Trains", href: "/train", pillar: "travel", Icon: TrainFront },
   { label: "Buses", href: "/bus", pillar: "travel", Icon: BusFront },
@@ -65,9 +69,13 @@ const services = [
   { label: "Property tools", href: "/real-estate/tools", pillar: "property", Icon: Search },
   { label: "Post property", href: "/real-estate/post-property", pillar: "property", Icon: FileUp },
   { label: "Claim project", href: "/real-estate/claim-project", pillar: "property", Icon: FileCheck2 },
+  { label: "Saved properties", href: "/real-estate/saved", pillar: "property", Icon: Building2 },
   { label: "Tender search", href: "/tender", pillar: "tender", Icon: BriefcaseBusiness },
   { label: "Tender services", href: "/tender/services", pillar: "tender", Icon: FileCheck2 },
+  { label: "Tender assistant", href: "/tender/assistant", pillar: "tender", Icon: BriefcaseBusiness },
+  { label: "Saved tenders", href: "/tender/saved", pillar: "tender", Icon: FileCheck2 },
   { label: "Become a partner", href: "/partners", pillar: "business", Icon: Handshake },
+  { label: "Partner application", href: "/partners/apply", pillar: "business", Icon: FileUp },
   { label: "Contact GTH PRO", href: "/contact", pillar: "business", Icon: Globe2 },
 ] as const;
 
@@ -75,7 +83,7 @@ type Highlight = {
   title: string;
   description: string;
   href: string;
-  pillar: Exclude<Pillar, "business">;
+  pillar: Pillar;
   image?: string;
   Icon: typeof Plane;
   eyebrow: string;
@@ -124,6 +132,11 @@ const highlights: Highlight[] = [
     title: "Request tender assistance",
     description: "Ask for a written quote for eligibility, document or procurement support.",
     href: "/tender/services", pillar: "tender", Icon: FileCheck2, eyebrow: "Business services",
+  },
+  {
+    title: "Join GTH PRO as a partner",
+    description: "Submit an application for authorized partner participation and inventory review.",
+    href: "/partners/apply", pillar: "business", Icon: Handshake, eyebrow: "Partnerships",
   },
 ];
 
@@ -208,7 +221,12 @@ const usefulGroups = [
 
 export default function EcosystemHub() {
   const [active, setActive] = useState<Selection>("all");
-  const availableServices = services.filter(service => active === "all" || service.pillar === active);
+  const [serviceQuery, setServiceQuery] = useState("");
+  const normalizedQuery = serviceQuery.trim().toLowerCase();
+  const availableServices = services.filter(service =>
+    (active === "all" || service.pillar === active) &&
+    (!normalizedQuery || (service.label + " " + service.pillar).toLowerCase().includes(normalizedQuery))
+  );
   const availableHighlights = highlights.filter(item => active === "all" || item.pillar === active);
 
   return (
@@ -232,7 +250,19 @@ export default function EcosystemHub() {
             </nav>
           </div>
 
-          <div aria-label="Filter ecosystem services" className="mt-6 flex max-w-full gap-2 overflow-x-auto pb-2">
+          <div className="mt-6 flex flex-wrap items-end gap-3">
+            <label htmlFor="ecosystem-services-filter" className="block w-full min-w-0 max-w-xl text-xs font-semibold text-[var(--text-soft)]">
+              Filter available GTH PRO services
+              <input id="ecosystem-services-filter" type="search" maxLength={60}
+                value={serviceQuery} onChange={event => setServiceQuery(event.target.value)}
+                placeholder="Hotel, bus, property, tender, partner…"
+                className="gth-input mt-2 min-h-11 w-full min-w-0" />
+            </label>
+            {(serviceQuery || active !== "all") &&
+              <button type="button" onClick={() => {setServiceQuery("");setActive("all");}}
+                className="gth-btn min-h-11 rounded-xl px-4 text-xs font-semibold">Clear filters</button>}
+          </div>
+          <div aria-label="Filter ecosystem services" className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-2">
             {filters.map(filter => (
               <button key={filter.key} type="button" aria-pressed={active === filter.key}
                 onClick={() => setActive(filter.key)}
@@ -258,6 +288,7 @@ export default function EcosystemHub() {
               );
             })}
           </div>
+          {availableServices.length === 0 && <p role="status" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">No matching service. Clear filters or use universal search above.</p>}
         </div>
       </section>
 
