@@ -32,7 +32,7 @@ export function propertySeo(row: PropertySeoRecord | null) {
   const developer=[row.developer,row.builder_name].find(value=>typeof value==="string"&&value.trim().length>=2&&!/not provided/i.test(value))
   const developerFact=typeof developer==="string" ? ` Recorded developer: ${excerpt(developer,70)}.` : ""
   const description = registryOnly
-    ? `MahaRERA project record for ${name} in ${place}.${row.rera_id ? ` Registration: ${row.rera_id}.` : ""}${developerFact} Verify current status on the official MahaRERA portal; this record does not confirm price, possession or availability.`
+    ? `MahaRERA project record for ${name} in ${place}.${row.rera_id ? ` Registration: ${row.rera_id}.` : ""} Verify current status on the official MahaRERA portal; this record does not confirm price, possession or availability.${developerFact}`
     : `Explore ${marketplace ? "reviewed property information" : "recorded property details"} for ${name} in ${place}. Request available units, verified pricing and approved photographs before making a decision.`
 
   return { title, description: excerpt(description, 295) }
