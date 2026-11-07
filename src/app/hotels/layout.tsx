@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacement";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/hotels" },
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function HotelTravelLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <>{children}<HotelsDiscoveryPlacement /></>;
 }
