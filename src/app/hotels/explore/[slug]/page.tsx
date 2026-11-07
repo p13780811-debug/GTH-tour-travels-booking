@@ -12,7 +12,8 @@ import {getNuiteeMarketFeed} from "@/lib/travel/nuitee-hotel-catalog";
 import {destinationImageForSlug} from "@/data/destinations";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 
-export const dynamic="force-dynamic";
+// Generate each page on first request; cache output for a day to avoid per-visit Vercel work.
+export const revalidate=86400;
 type Props={params:Promise<{slug:string}>};
 export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {slug}=await params,market=getHotelMarket(slug);
