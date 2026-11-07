@@ -23,13 +23,16 @@ test("landing page removes fake live fares and broken travel guide routes", () =
   const blog = readFileSync(new URL("../src/data/blogs.ts", import.meta.url), "utf8");
   const policy = readFileSync(new URL("../src/app/insurance/page.tsx", import.meta.url), "utf8");
   for (const slug of ["research-a-new-destination", "hotel-booking-checklist", "how-to-compare-flight-fares"]) {
-    assert.match(mega, new RegExp('href="/blog/' + slug + '"'));
+    assert.ok(mega.includes('href:"/blog/' + slug + '"'), "Missing real editorial guide "+slug);
     assert.match(blog, new RegExp('slug: "' + slug + '"'));
   }
   assert.doesNotMatch(mega, /LIVE DEALS FROM|href="\/blog\/goa-travel-guide"/);
-  assert.match(mega, /link: "\/insurance"/);
+  const directory=readFileSync(new URL("../src/app/mega-aggregator/EcosystemHub.tsx",import.meta.url),"utf8");
+  assert.match(directory,/href: "\/insurance"/);
   assert.match(policy, /does not underwrite, sell or issue insurance policies/);
-  assert.match(mega, /link: "https:\/\/www\.trip\.com\/"/);
+  assert.doesNotMatch(mega, /Trip\.com|trip\.com/i);
+  assert.match(mega, /partner_id=DF3NBKA/);
+  assert.match(mega, /klook\.tpo\.lv\/IKb6eSUe/);
   assert.match(mega, /GTHNetwork partners=\{partners\} discoveryOnly/);
   const network = readFileSync(new URL("../src/components/sections/GTHNetwork.tsx", import.meta.url), "utf8");
   assert.match(network, /discoveryOnly \? "Explore International Travel Providers"/);
