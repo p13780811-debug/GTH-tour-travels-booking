@@ -25,7 +25,7 @@ export function propertySeo(row: PropertySeoRecord | null) {
   // Never portray historical registration records as proof of current approval.
   // The same canonical page serves registry research and genuine published inventory.
   const suffix = registryOnly
-    ? ` – MahaRERA ${/^P\\d{11}$/.test(row.rera_id || "") ? row.rera_id + " " : ""}Project Record | GTH PRO`
+    ? ` – MahaRERA ${/^P[0-9]{11}$/.test(row.rera_id || "") ? row.rera_id + " " : ""}Project Record | GTH PRO`
     : ` – ${marketplace ? "Reviewed Property Details" : "Property Record"} | GTH PRO`
   const title = excerpt(`${row.title || "Property record"} ${locality}`, Math.max(20,118 - suffix.length)) + suffix
   const name=excerpt(row.title || "Property record",65), place=excerpt(locality,35)
