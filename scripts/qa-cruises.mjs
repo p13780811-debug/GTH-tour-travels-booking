@@ -59,6 +59,16 @@ try{
   assert.equal(kolkataUrl.searchParams.get('partner_id'),'DF3NBKA');
   assert.equal(kolkataUrl.searchParams.get('cmp'),'gthpro_cruises_kolkata');
   assert.equal(await page.locator('head script[data-gyg-partner-id="DF3NBKA"]').count(),1);
+  const gyg=page.locator('#getyourguide-cruises');
+  assert.equal(await gyg.count(),1);
+  assert.equal(await gyg.locator('[data-gyg-cruise-style]').count(),8);
+  assert.equal(await gyg.locator('[data-gyg-cruise-destination]').count(),8);
+  assert.equal(await gyg.locator('[data-gyg-widget="activities"]').count(),3);
+  for(const href of await gyg.locator('a[rel~="sponsored"]').evaluateAll(els=>els.map(el=>el.getAttribute('href')))){
+    const target=new URL(href);
+    assert.equal(target.origin,'https://www.getyourguide.com');
+    assert.equal(target.searchParams.get('partner_id'),'DF3NBKA');
+  }
   for(const [slug,query] of [['lakshadweep-cruises','Lakshadweep cruise'],['andaman-cruises','Andaman cruise']]){
    const card=page.locator('[data-india-cruise="'+slug+'"]');
    const href=await card.locator('a').first().getAttribute('href');

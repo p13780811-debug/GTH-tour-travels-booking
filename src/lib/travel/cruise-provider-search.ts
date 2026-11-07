@@ -32,3 +32,31 @@ export function buildCruiseProviderSearch(
  link.searchParams.set("cmp","gthpro_cruises_search");
  return link.href;
 }
+
+
+/** Supported publisher-only cruise discovery. No live inventory, pricing or booking API. */
+const GETYOURGUIDE_CRUISE_TERMS = {
+  harbour: "harbour cruise",
+  sunset: "sunset cruise",
+  dinner: "dinner cruise",
+  yacht: "private yacht sailing",
+  river: "river cruise",
+  houseboat: "houseboat backwaters",
+  island: "island boat tour",
+  holiday: "cruise holiday",
+} as const;
+export type GetYourGuideCruiseIntent = keyof typeof GETYOURGUIDE_CRUISE_TERMS;
+
+/** Closed provider host, validated locality and fixed campaign identifier. */
+export function buildGetYourGuideCruiseDiscovery(
+  destination: string, intent: GetYourGuideCruiseIntent
+): string | null {
+  const parsed = parsePartnerSearch({kind:"cruises", destination:destination.replace(/[·–]/gu," ")});
+  if(!parsed.ok || !Object.hasOwn(GETYOURGUIDE_CRUISE_TERMS,intent)) return null;
+  const link = new URL("https://www.getyourguide.com/s/");
+  link.searchParams.set("q",parsed.destination+" "+GETYOURGUIDE_CRUISE_TERMS[intent]);
+  link.searchParams.set("partner_id",GETYOURGUIDE_PARTNER_ID);
+  link.searchParams.set("utm_medium","online_publisher");
+  link.searchParams.set("cmp","gthpro_cruises_style_"+intent);
+  return link.href;
+}
