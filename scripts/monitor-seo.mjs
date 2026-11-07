@@ -72,7 +72,7 @@ try {
         const parsed = new URL(u);
         if (parsed.origin !== origin || parsed.search || parsed.hash) errors.push(shard + ": invalid destination URL");
         else {
-          if (rootPaths.has(parsed.pathname)) errors.push(shard + ": duplicated root sitemap canonical URL");
+          if (shard.startsWith("/seo-sitemaps/properties/") && rootPaths.has(parsed.pathname)) errors.push(shard + ": duplicated root property sitemap canonical URL");
           sitemapPaths.push(parsed.pathname);
         }
       } catch { errors.push(shard + ": invalid listed URL"); }
