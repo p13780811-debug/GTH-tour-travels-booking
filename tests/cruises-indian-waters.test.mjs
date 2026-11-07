@@ -23,6 +23,18 @@ test('six Indian photo cards with exact matched cruise products and no generic K
  assert.match(ui,/A matching cruise or sailing is not guaranteed/);
  assert.match(ui,/buildCruiseProviderSearch/);
 });
+test('Cruise action buttons are concise; supplier attribution stays in disclosure, not every CTA',()=>{
+ assert.equal((ui.match(/label:"View cruise details"/g)||[]).length,2);
+ assert.equal((ui.match(/label:"Find cruise options"/g)||[]).length,2);
+ assert.doesNotMatch(ui,/label:"(?:Check cruise|Search cruises) on GetYourGuide"/);
+ assert.match(page,/>More water experiences<\/a>/);
+ const discovery=readFileSync('src/components/travel/GetYourGuideCruiseDiscovery.tsx','utf8');
+ assert.match(discovery,/View experiences <ArrowUpRight/);
+ assert.match(discovery,/Featured water experiences/);
+ assert.match(discovery,/Powered by <a href=\{fallback\}/);
+ assert.doesNotMatch(discovery,/Explore on GetYourGuide <ArrowUpRight/);
+});
+
 test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.ok(!ui.includes('₹'));
  assert.ok(ui.includes('<Image'));
