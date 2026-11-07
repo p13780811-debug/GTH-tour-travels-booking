@@ -72,10 +72,11 @@ export default async function PropertyPage({ params }: PageProps) {
                 ...(property.description ? { description: property.description } : {}),
                 ...(sourceUpdated ? { dateModified: sourceUpdated } : {}),
                 ...(indexedRegistry ? { about: {
-                    "@type": "Thing", name: property.title, identifier: property.rera_id,
+                    "@type": "Place", name: property.title, identifier: property.rera_id,
                     description: "Recorded MahaRERA project registration; current status must be verified with the authority",
                     ...(property.city && property.city !== "City not provided"
-                        ? { spatialCoverage: { "@type": "Place", name: property.city } } : {}),
+                        ? { address: { "@type": "PostalAddress", addressLocality: property.city,
+                            ...(property.state && property.state !== "State not provided" ? { addressRegion: property.state } : {}) } } : {}),
                 } } : {}),
                 breadcrumb: { "@id": `${canonical}#breadcrumb` },
             },
