@@ -6,6 +6,7 @@ import { siteOrigin } from "@/lib/seo/site";
 import { createClient } from "@supabase/supabase-js";
 import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSeoRecord } from "@/lib/seo/public-listings";
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
+import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
@@ -95,6 +96,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
+    // Hotel ID profiles remain noindex until individually approved for original-content publication.
+    ...HOTEL_MARKETS.map(market=>({url:base+"/hotels/explore/"+market.slug,changeFrequency:"monthly" as const,priority:0.45})),
     ...airports.map(airport => ({ url: base + "/travel/airports/" + airport.code.toLowerCase(), changeFrequency: "monthly" as const, priority: 0.45 })),
     ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...approved,
