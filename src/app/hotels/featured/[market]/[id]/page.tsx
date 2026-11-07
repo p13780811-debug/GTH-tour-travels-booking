@@ -10,7 +10,8 @@ import {getNuiteeMarketFeed,validNuiteeHotelId} from "@/lib/travel/nuitee-hotel-
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {siteUrl} from "@/lib/seo/site";
 
-export const dynamic="force-dynamic";
+// Generate each page on first request; cache output for a day to avoid per-visit Vercel work.
+export const revalidate=86400;
 type Props={params:Promise<{market:string;id:string}>};
 async function resolve(params:Props["params"]){
  const {market:slug,id}=await params;
