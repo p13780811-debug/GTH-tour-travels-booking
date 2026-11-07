@@ -51,7 +51,7 @@ export default function GetYourGuideCruiseDiscovery({destination=""}:{destinatio
     <section id="getyourguide-cruises" aria-labelledby="getyourguide-cruises-heading" className="mt-10 scroll-mt-24">
       <header className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
         <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
-          <Waves size={17} aria-hidden="true"/> GTH PRO · GetYourGuide
+          <Waves size={17} aria-hidden="true"/> GTH PRO · Cruise experiences
         </p>
         <h2 id="getyourguide-cruises-heading" className="mt-3 text-2xl font-bold sm:text-3xl">
           Explore more cruises and water experiences
@@ -64,7 +64,7 @@ export default function GetYourGuideCruiseDiscovery({destination=""}:{destinatio
         {focused && (
           <a href={focused} target="_blank" rel={sponsored}
              className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold">
-            Search more in {city} <ArrowUpRight size={16} aria-hidden="true"/>
+            Find more in {city} <ArrowUpRight size={16} aria-hidden="true"/>
           </a>
         )}
       </header>
@@ -73,13 +73,13 @@ export default function GetYourGuideCruiseDiscovery({destination=""}:{destinatio
         <h3 className="flex items-center gap-2 text-lg font-bold sm:text-xl">
           <Ship size={19} aria-hidden="true" className="text-[var(--gold)]"/> Browse by cruise style
         </h3>
-        <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid min-w-0 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           {CRUISE_STYLES.map(item=>{
             const href=buildGetYourGuideCruiseDiscovery(city||item.city,item.intent);
             return href?(
               <a key={item.intent} data-gyg-cruise-style={item.intent} href={href}
                  target="_blank" rel={sponsored}
-                 className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-4 text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
+                 className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-4 text-[var(--text)] sm:px-4 transition-colors hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
                 <span className="min-w-0">
                   <strong className="block text-sm">{item.label}</strong>
                   <span className="mt-1 block text-xs text-[var(--text-soft)]">{city||item.city} · {item.note}</span>
@@ -115,7 +115,7 @@ export default function GetYourGuideCruiseDiscovery({destination=""}:{destinatio
 
       <div className="mt-8">
         <h3 className="flex items-center gap-2 text-lg font-bold sm:text-xl">
-          <Compass size={19} aria-hidden="true" className="text-[var(--gold)]"/> GetYourGuide activity highlights
+          <Compass size={19} aria-hidden="true" className="text-[var(--gold)]"/> Featured water experiences
         </h3>
         <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
           These official activity widgets are provider-managed recommendations, not a verified cruise-only inventory feed.
@@ -143,7 +143,7 @@ export default function GetYourGuideCruiseDiscovery({destination=""}:{destinatio
                 </div>
                 <a href={fallback} target="_blank" rel={sponsored}
                    className="gth-btn-gold mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-center text-sm font-semibold">
-                  Explore on GetYourGuide <ArrowUpRight size={16} aria-hidden="true"/>
+                  View experiences <ArrowUpRight size={16} aria-hidden="true"/>
                 </a>
               </article>
             );
