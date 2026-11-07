@@ -34,7 +34,7 @@ function harness(launched=true){
  const shards=compile("src/lib/seo/large-sitemaps.ts",{...deps,"@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings});
  const guides=compile("src/lib/travel/guideMedia.ts",{...deps,"@/lib/travel/open-attractions":{safeCommonsMedia:()=>null},
   "@/lib/travel/guideCatalog":{GUIDE_CONTENT_VERSION:1,contentReady:()=>true,guideBySlug:()=>null,topicGuides:[],guideCatalog:[{slug:"london"}]}});
- const sitemap=compile("src/app/sitemap.ts",{...deps,"@/lib/seo/large-sitemaps":shards,"@/data/destinations":{destinations:[]},"@/data/blogs":{blogs:[]},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings,"@/lib/travel/guideMedia":guides,"@/lib/travel/nuiteeAirportDirectory":{airports:[{code:"BOM"}]}}).default;
+ const sitemap=compile("src/app/sitemap.ts",{...deps,"@/lib/seo/large-sitemaps":shards,"@/data/destinations":{destinations:[]},"@/data/blogs":{blogs:[]},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings,"@/lib/travel/guideMedia":guides,"@/lib/travel/nuiteeAirportDirectory":{airports:[{code:"BOM"}]},"@/lib/travel/nuitee-hotel-markets":{HOTEL_MARKETS:[]}}).default;
  return {sitemap,shards,signals};
 }
 
