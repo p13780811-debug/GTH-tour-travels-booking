@@ -15,7 +15,8 @@ test("Only the ecosystem page gains a working universal search, preserving origi
  assert.match(page,/<EcosystemPillars \/>/);
  assert.match(page,/<EcosystemHub \/>/);
  assert.match(page,/gth-master-hero-shell>div:last-child/);
- assert.match(page,/className="gth-master-home/);
+ assert.match(page,/className="w-full transition-colors duration-300"/);
+ assert.doesNotMatch(page,/className="gth-master-home/);
  assert.match(page,/GTHNetwork partners=\{partners\} discoveryOnly/);
 });
 

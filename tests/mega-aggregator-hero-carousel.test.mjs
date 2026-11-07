@@ -32,6 +32,7 @@ test("floating first-party search overlaps the shorter mobile carousel",()=>{
 test("no custom backgrounds or duplicated intro/hero panels",()=>{
  assert.doesNotMatch(hero,/bg-black|bg-gradient|style=\{|gth-glass|from-black|via-black/);
  assert.doesNotMatch(page,/gth-master-intro|src="\/images\/mega\/tours.jpg"/);
- assert.match(page,/className="gth-master-home w-full/);
+ assert.match(page,/className="w-full transition-colors duration-300"/);
+ assert.doesNotMatch(page,/className="gth-master-home/);
  assert.match(page,/<HeroSlider \/>/); // desktop remains unchanged
 });

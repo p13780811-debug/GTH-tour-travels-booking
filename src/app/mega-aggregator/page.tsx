@@ -61,7 +61,7 @@ export default async function MegaAggregator() {
     )
 
     return (
-        <div className="gth-master-home w-full transition-colors duration-300">
+        <div className="w-full transition-colors duration-300">
             {/* Shared cinematic hero remains unchanged for desktop.
                 It is not mounted on mobile, where the 930px media/planner layout
                 would crowd the viewport. Existing global CSS stays untouched. */}

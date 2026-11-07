@@ -12,7 +12,8 @@ const realEstateLayout = load("src/app/real-estate/layout.tsx");
 
 test("master design remains scoped to the preserved mega-aggregator ecosystem route", () => {
   assert.match(home, /return <FlagshipHome \/>/);
-  assert.match(mega, /className="gth-master-home /);
+  assert.match(mega, /className="w-full transition-colors duration-300"/);
+  assert.doesNotMatch(mega, /className="gth-master-home/);
   assert.match(css, /\.gth-master-home \{/);
   assert.doesNotMatch(css, /(?:^|\n)\s*(?:html|body|:root)\s*\{[^}]*--gth-navy:/m);
   assert.match(hero, /gth-master-hero-shell/);
