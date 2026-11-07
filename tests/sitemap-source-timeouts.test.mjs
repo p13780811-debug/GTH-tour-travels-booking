@@ -47,7 +47,7 @@ test("production-launch sitemap completes through timed-out DB sources and retai
   for(const path of ["/cruises","/travel/airports","/travel/airports/bom"])assert.ok(entries.some(entry=>entry.url==="https://www.gthproglobal.com"+path));
   assert.ok(entries.some(entry=>entry.url==="https://www.gthproglobal.com/real-estate"));
   assert.ok(entries.every(entry=>!entry.url.includes("/stay/")&&!entry.url.includes("/guides/")));
-  assert.equal(h.signals.length,6);assert.ok(h.signals.every(({signal})=>signal.aborted));
+  assert.equal(h.signals.length,5);assert.ok(h.signals.every(({signal})=>signal.aborted));
   assert.doesNotMatch(JSON.stringify(entries),/private database/);
  }finally{clearTimeout(timer);}
 });

@@ -56,6 +56,9 @@ export default async function PropertyPage({ params }: PageProps) {
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
     const cover = projectCover(publishedMedia)
     const listing = realEstateListingSchema(property, inventory, publishedMedia, canonical)
+    const indexedRegistry=isIndexableProperty(property)
+    const sourceUpdated=typeof property.updated_at==="string"&&Number.isFinite(Date.parse(property.updated_at))
+        ?property.updated_at:null
     const structuredData = property ? {
         "@context": "https://schema.org",
         "@graph": [
@@ -67,6 +70,13 @@ export default async function PropertyPage({ params }: PageProps) {
                 name: property.title,
                 ...(cover ? { primaryImageOfPage: { "@type": "ImageObject", url: siteUrl(publishedMediaUrl(cover.id)), caption: `${property.title} — ${cover.media_type === "render" ? "architectural render" : "reviewed project photo"}` } } : {}),
                 ...(property.description ? { description: property.description } : {}),
+                ...(sourceUpdated ? { dateModified: sourceUpdated } : {}),
+                ...(indexedRegistry ? { about: {
+                    "@type": "Thing", name: property.title, identifier: property.rera_id,
+                    description: "Recorded MahaRERA project registration; current status must be verified with the authority",
+                    ...(property.city && property.city !== "City not provided"
+                        ? { spatialCoverage: { "@type": "Place", name: property.city } } : {}),
+                } } : {}),
                 breadcrumb: { "@id": `${canonical}#breadcrumb` },
             },
             {
@@ -74,7 +84,8 @@ export default async function PropertyPage({ params }: PageProps) {
                 "@id": `${canonical}#breadcrumb`,
                 itemListElement: [
                     { "@type": "ListItem", position: 1, name: "GTH PRO Real Estate", item: siteUrl("/real-estate") },
-                    { "@type": "ListItem", position: 2, name: property.title, item: canonical },
+                    ...(indexedRegistry ? [{ "@type": "ListItem", position: 2, name: "MahaRERA Project Registry", item: siteUrl("/real-estate/registry") }] : []),
+                    { "@type": "ListItem", position: indexedRegistry ? 3 : 2, name: property.title, item: canonical },
                 ],
             },
         ],

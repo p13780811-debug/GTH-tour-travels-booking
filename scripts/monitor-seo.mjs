@@ -18,6 +18,7 @@ let sitemapPaths = [];
 try {
   const robots = await get("/robots.txt");
   if (!robots.includes("Sitemap: " + origin + "/sitemap.xml")) errors.push("robots.txt: missing correct Sitemap");
+  if (!robots.includes("Sitemap: " + origin + "/sitemap-index.xml")) errors.push("robots.txt: missing property sitemap index");
   const xml = await get("/sitemap.xml");
   const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => decode(m[1]));
   if (!urls.length) errors.push("sitemap.xml: empty");
@@ -33,7 +34,8 @@ try {
     } catch { errors.push("sitemap.xml: invalid URL"); }
   }
   console.log("Sitemap URLs discovered: " + urls.length);
-  // Inspect the new live sitemap index and sample every content category.
+  const rootPaths = new Set(sitemapPaths);
+  // Inspect the published sitemap index and sample every content category.
   // Never fetch all 30,000 detail URLs in one daily monitor (cost/traffic-safe).
   const indexXml = await get("/sitemap-index.xml");
   if (!/<sitemapindex\b/.test(indexXml)) errors.push("sitemap-index.xml: invalid XML root");
@@ -69,7 +71,10 @@ try {
       try {
         const parsed = new URL(u);
         if (parsed.origin !== origin || parsed.search || parsed.hash) errors.push(shard + ": invalid destination URL");
-        else sitemapPaths.push(parsed.pathname);
+        else {
+          if (rootPaths.has(parsed.pathname)) errors.push(shard + ": duplicated root sitemap canonical URL");
+          sitemapPaths.push(parsed.pathname);
+        }
       } catch { errors.push(shard + ": invalid listed URL"); }
     }
   }
