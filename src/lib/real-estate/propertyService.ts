@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase"
-export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,verified,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,source_type,ingestion_source,last_verified_at,official_source_url,official_source_reference"
+export const PUBLIC_PROPERTY_FIELDS = "id,title,slug,location,city,country,state,district,taluka,village,pin_code,price,bhk,lat,lng,image,gallery,hero_image,builder_name,developer,description,created_at,is_featured,boost_expiry,property_type,listing_type,status,verified,bedrooms,bathrooms,area_sqft,sqft,beds,baths,amenities,rating,review_count,featured,intelligence_score,final_score,rank_position,ai_score,views,leads,fraud_score,rera_id,completion_date,registration_date,updated_at,source_type,ingestion_source,last_verified_at,official_source_url,official_source_reference"
 
 // ==========================================================
 // 🏛️ GTH PRO ESTATE — HYPER PROPERTY ENGINE V9

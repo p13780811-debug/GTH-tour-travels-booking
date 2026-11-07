@@ -56,6 +56,9 @@ export default async function PropertyPage({ params }: PageProps) {
     const canonical = siteUrl(`/real-estate/${encodeURIComponent(slug)}`)
     const cover = projectCover(publishedMedia)
     const listing = realEstateListingSchema(property, inventory, publishedMedia, canonical)
+    const indexedRegistry=isIndexableProperty(property)
+    const sourceUpdated=typeof property.updated_at==="string"&&Number.isFinite(Date.parse(property.updated_at))
+        ?property.updated_at:null
     const structuredData = property ? {
         "@context": "https://schema.org",
         "@graph": [
@@ -67,6 +70,14 @@ export default async function PropertyPage({ params }: PageProps) {
                 name: property.title,
                 ...(cover ? { primaryImageOfPage: { "@type": "ImageObject", url: siteUrl(publishedMediaUrl(cover.id)), caption: `${property.title} — ${cover.media_type === "render" ? "architectural render" : "reviewed project photo"}` } } : {}),
                 ...(property.description ? { description: property.description } : {}),
+                ...(sourceUpdated ? { dateModified: sourceUpdated } : {}),
+                ...(indexedRegistry ? { about: {
+                    "@type": "Place", name: property.title, identifier: property.rera_id,
+                    description: "Recorded MahaRERA project registration; current status must be verified with the authority",
+                    ...(property.city && property.city !== "City not provided"
+                        ? { address: { "@type": "PostalAddress", addressLocality: property.city,
+                            ...(property.state && property.state !== "State not provided" ? { addressRegion: property.state } : {}) } } : {}),
+                } } : {}),
                 breadcrumb: { "@id": `${canonical}#breadcrumb` },
             },
             {
@@ -74,7 +85,8 @@ export default async function PropertyPage({ params }: PageProps) {
                 "@id": `${canonical}#breadcrumb`,
                 itemListElement: [
                     { "@type": "ListItem", position: 1, name: "GTH PRO Real Estate", item: siteUrl("/real-estate") },
-                    { "@type": "ListItem", position: 2, name: property.title, item: canonical },
+                    ...(indexedRegistry ? [{ "@type": "ListItem", position: 2, name: "MahaRERA Project Registry", item: siteUrl("/real-estate/registry") }] : []),
+                    { "@type": "ListItem", position: indexedRegistry ? 3 : 2, name: property.title, item: canonical },
                 ],
             },
         ],
@@ -83,5 +95,33 @@ export default async function PropertyPage({ params }: PageProps) {
         {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
         <RecordPropertyView slug={slug} title={property.title} city={property.city||""}/>
         <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} publishedMedia={publishedMedia} />
+        {indexedRegistry && <aside aria-label="MahaRERA registry record provenance"
+            className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+            <div className="gth-glass rounded-2xl p-5">
+                <h2 className="text-lg font-semibold">MahaRERA source and current status</h2>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                    This project has a recorded MahaRERA registration reference <strong>{property.rera_id}</strong>.
+                    {property.developer && <> Recorded developer: {property.developer}.</>}
+                    {property.district && <> District: {property.district}.</>}
+                    {property.ingestion_source && <> Dataset source: {property.ingestion_source}.</>}
+                    Imported historical records are not a live registration-status feed.
+                    Confirm current status, registration changes and possession directly with MahaRERA.
+                    No price, carpet area, completion or sale availability is inferred from missing source fields.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                    <a href={property.official_source_url || "https://maharera.maharashtra.gov.in/projects-search-result"}
+                        target="_blank" rel="noopener noreferrer" className="gth-btn inline-flex min-h-11 items-center px-4 text-sm">
+                        Open official MahaRERA project search
+                    </a>
+                    <a href="/real-estate/registry" className="gth-btn inline-flex min-h-11 items-center px-4 text-sm">
+                        Browse MahaRERA project registry
+                    </a>
+                </div>
+                <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+                    Use the registration reference above on the official portal.
+                    The official search link is not a verified direct project-detail link.
+                </p>
+            </div>
+        </aside>}
     </>
 }
