@@ -46,7 +46,7 @@ test("supplier requests are server-only, cached, narrow and production-key-gated
  assert.match(supplier,/signal:AbortSignal\.timeout\(8500\)/);
  assert.match(supplier,/\.slice\(0,24\)/);
  assert.match(supplier,/hotels\.slice\(0,MAX_HOTELS\)/);
- assert.doesNotMatch(supplier+api,/createClient|supabase|service_role|NEXT_PUBLIC_NUITEE|rates\/book|prebook/i);
+ assert.doesNotMatch(supplier+api,/createClient|\.from\(|service_role|NEXT_PUBLIC_NUITEE|rates\/book|prebook/i);
  assert.doesNotMatch(offers+card,/NUITEE_PRODUCTION_API_KEY|NUITEE_SANDBOX_API_KEY|X-API-Key/);
  assert.match(api,/s-maxage=86400/);
  assert.match(api,/getHotelMarket\(market\)/);
