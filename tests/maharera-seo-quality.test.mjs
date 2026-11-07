@@ -46,9 +46,11 @@ test("canonical detail route serves source-backed structured data and truthful b
  assert.match(page,/realEstateListingSchema/);
  assert.match(page,/robots: \{ index:/);
  assert.match(svc,/registration_date,updated_at,source_type/);
- assert.match(details,/imported MahaRERA data snapshot/);
- assert.match(details,/not an individually verified project-detail deep link/);
- assert.match(details,/Last source verification recorded/);
+ assert.match(details,/property.ingestion_source/);
+ assert.match(page,/MahaRERA source and current status/);
+ assert.match(page,/Imported historical records are not a live registration-status feed/);
+ assert.match(page,/No price, carpet area, completion or sale availability is inferred/);
+ assert.match(page,/official search link is not a verified direct project-detail link/);
 });
 test("existing sharded property sitemap is the only dynamic property URL source",()=>{
  const main=read("src/app/sitemap.ts");
