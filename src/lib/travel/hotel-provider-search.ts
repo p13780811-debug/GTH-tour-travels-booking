@@ -1,5 +1,3 @@
-import {HOTEL_WHITE_LABEL_ENTRY_URL} from "@/lib/travel/hotel-whitelabel";
-
 /**
  * Direct booking destination for source-backed directory records with no verified Nuitee hotelId/placeId.
  * Open the EXISTING Nuitee White Label itself, never loop back through /hotels.
@@ -12,5 +10,5 @@ export function hotelProviderSearchUrl(destination:string,stay:HotelStaySelectio
  // OSM text + approximate coordinates cannot produce such a verified identity.
  void destination;
  void stay;
- return HOTEL_WHITE_LABEL_ENTRY_URL;
+ return "https://gthproglobal.nuitee.link/?language=en&currency=INR";
 }
