@@ -35,12 +35,12 @@ test("no new API subscription, Nuitee supplier feed or private production key ne
  assert.match(offers,/IntersectionObserver/);
  assert.match(offers,/cache:"no-store"/);
  assert.doesNotMatch(offers+location,/api\.liteapi\.travel|NUITEE_PRODUCTION_API_KEY|GTH_NUITEE_PRODUCTION_ENABLED|\/api\/hotels\/nuitee-featured/);
- assert.match(provider,/return "\/hotels\?view=booking"/);
+ assert.match(provider,/return "https:\/\/gthproglobal\.nuitee\.link\/\?language=en&currency=INR"/);
 });
 
 test("directory cards never fabricate an exact Nuitee hotel booking",()=>{
  assert.match(offers,/\/hotels\/stay\//);
- assert.match(offers,/\/hotels\?view=booking/);
+ assert.match(offers,/HOTEL_WHITE_LABEL_ENTRY_URL/);
  assert.match(offers,/OpenStreetMap/);
  assert.match(offers,/image_attribution/);
  assert.match(offers,/No verified room price or availability/);
@@ -75,10 +75,10 @@ test("homepage showcases one real sample per major Indian and global city with o
  assert.equal(new Set([...indiaCities,...worldCities]).size,14);
  assert.match(offers,/HOTEL_SHOWCASE_INDIA\.map\(slug=><ShowcaseCity/);
  assert.match(offers,/HOTEL_SHOWCASE_WORLD\.map\(slug=><ShowcaseCity/);
- assert.match(offers,/hotel=\{samples\[slug\]\?\?null\}/);
- assert.match(offers,/fetch\("\/api\/hotels\/showcase"/);
+ assert.match(offers,/<EditorialExampleCard slug=\{slug\}\/>/);
+ assert.doesNotMatch(offers,/fetch\("\/api\/hotels\/showcase"/);
  assert.match(offers,/IntersectionObserver/);
- assert.match(offers,/not a ranking/);
+ assert.match(offers,/not Nuitee inventory or verified rankings/);
 });
 test("internal showcase endpoint is bounded, cache-backed, free, public-directory-only",()=>{
  const api=read("src/app/api/hotels/showcase/route.ts");
@@ -103,10 +103,40 @@ test("global editorial examples are openly sourced and never represented as live
  for(const slug of expected){
    assert.ok(examples.includes(''+slug+':{name:')||examples.includes('"'+slug+'":{name:'),slug);
  }
- assert.equal((examples.match(/source:"Wikimedia Commons/g)||[]).length,8);
+ assert.equal((examples.match(/photo:\{file:/g)||[]).length,13);
  assert.match(offers,/getHotelEditorialExample\(slug\)/);
- assert.match(offers,/editorial\?<EditorialExampleCard slug=\{slug\}\/>/);
- assert.match(offers,/Not GTH directory inventory/);
- assert.match(offers,/Property photograph not available/);
- assert.doesNotMatch(examples,/hotelId|supplierId|rates|booking_ready|NUITEE_PRODUCTION_API_KEY/);
+ assert.match(offers,/getHotelEditorialExample\(marketSlug\)/);
+ assert.match(offers,/not verified Nuitee inventory/);
+ assert.match(offers,/Hotel photograph awaiting verified reuse rights/);
+ assert.doesNotMatch(examples,/hotelId\s*:|supplierId\s*:|booking_ready\s*:|NUITEE_PRODUCTION_API_KEY/);
+});
+
+
+test("all featured card booking links go to the Nuitee domain; details use a separate GTH page",()=>{
+ const whitelabel=read("src/lib/travel/hotel-whitelabel.ts");
+ const detail=read("src/app/hotels/stay/[id]/page.tsx");
+ const editorial=read("src/app/hotels/example/[slug]/page.tsx");
+ assert.match(whitelabel,/HOTEL_WHITE_LABEL_ENTRY_URL = \x60\$\{HOTEL_BOOKING_ORIGIN\}\/\?language=en&currency=INR\x60/);
+ assert.match(offers,/href=\{HOTEL_WHITE_LABEL_ENTRY_URL\}/);
+ assert.match(location,/href=\{HOTEL_WHITE_LABEL_ENTRY_URL\}/);
+ assert.match(detail,/hotelProviderSearchUrl\(\[hotel\.name/);
+ assert.match(editorial,/href=\{HOTEL_WHITE_LABEL_ENTRY_URL\}/);
+ assert.match(offers,/\/hotels\/example\//);
+ assert.doesNotMatch(offers+location,/href="\/hotels\?view=booking"/);
+ assert.doesNotMatch(provider,/return "\/hotels\?view=booking"/);
+});
+
+test("photographed editorial hotel examples must provide exact-source licensed media metadata",()=>{
+ const examples=read("src/lib/travel/hotel-editorial-examples.ts");
+ const guide=read("src/app/hotels/example/[slug]/page.tsx");
+ for(const name of ["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad","london","paris","new-york","singapore","tokyo","bangkok","rome"])
+  assert.match(examples,new RegExp('(?:^|\\n)  "?'+name+'"?:\\{name:'));
+ assert.match(examples,/commons\.wikimedia\.org\/wiki\/Special:FilePath/);
+ assert.match(examples,/file:string;author:string;license:string;licenseUrl:string/);
+ assert.match(offers,/editorialPhotoUrl\(example\.photo\)/);
+ assert.match(offers,/editorialPhotoSource\(example\.photo\)/);
+ assert.match(guide,/editorialPhotoUrl\(hotel\.photo\)/);
+ assert.match(guide,/editorialPhotoSource\(hotel\.photo\)/);
+ assert.match(guide,/index:false/);
+ assert.doesNotMatch(guide,/booking\.com|price:\d|fake ratings|NUITEE_API_KEY/);
 });

@@ -29,9 +29,9 @@ test("unknown or dispersed cities never gain guessed coordinates",()=>{
   assert.equal(hotelLocationFilter("%Paris%",null).includes("latitude"),false);
 });
 test("unmapped hotel uses existing GTH Nuitee booking search, never a guessed link",()=>{
- assert.equal(hotelProviderSearchUrl("New Delhi"),"/hotels?view=booking");
- assert.equal(hotelProviderSearchUrl("Example Hotel, New Delhi",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3}),"/hotels?view=booking");
- assert.equal(hotelProviderSearchUrl(""),"/hotels?view=booking");
+ assert.equal(hotelProviderSearchUrl("New Delhi"),"https://gthproglobal.nuitee.link/?language=en&currency=INR");
+ assert.equal(hotelProviderSearchUrl("Example Hotel, New Delhi",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3}),"https://gthproglobal.nuitee.link/?language=en&currency=INR");
+ assert.equal(hotelProviderSearchUrl(""),"https://gthproglobal.nuitee.link/?language=en&currency=INR");
 });
 test("API stays anon-read-only and hotels use a detail-first booking flow",()=>{
   const api=read("src/app/api/hotels/route.ts");
