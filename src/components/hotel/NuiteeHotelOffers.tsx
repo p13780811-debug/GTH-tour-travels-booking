@@ -5,7 +5,7 @@ import {ArrowUpRight,Globe2,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {HOTEL_WHITE_LABEL_ENTRY_URL} from "@/lib/travel/hotel-whitelabel";
 import {HOTEL_MARKETS,HOTEL_SHOWCASE_INDIA,HOTEL_SHOWCASE_WORLD,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
-import {getHotelEditorialExample} from "@/lib/travel/hotel-editorial-examples";
+import {getHotelEditorialExample,editorialPhotoUrl,editorialPhotoSource} from "@/lib/travel/hotel-editorial-examples";
 
 /** Free first-party directory cards. Source records are NOT Nuitee hotels or bookable offers. */
 type DirectoryHotel={
@@ -94,22 +94,37 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
 function EditorialExampleCard({slug}:{slug:string}){
   const example=getHotelEditorialExample(slug);
   if(!example)return null;
+  const detail="/hotels/example/"+encodeURIComponent(slug);
   return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)]">
-    <div className="flex h-44 items-center justify-center bg-[var(--bg-soft)] text-[var(--text-soft)] sm:h-48"
-      aria-label="Property photograph not available">
-      <Hotel size={38} strokeWidth={1.5} aria-hidden="true"/>
-    </div>
+    <Link href={detail} prefetch={false} aria-label={"Hotel details for "+example.name}
+      className="block h-44 overflow-hidden bg-[var(--bg-soft)] sm:h-48">
+      {example.photo?
+        <HotelPropertyImage src={editorialPhotoUrl(example.photo)} name={example.name}
+          className="h-full w-full object-cover"
+          placeholderClassName="flex h-full w-full items-center justify-center text-[var(--text-soft)]"/>:
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[var(--text-soft)]">
+          <Hotel size={36} aria-hidden="true"/>
+          <span className="text-xs">Hotel photograph awaiting verified reuse rights</span>
+        </div>}
+    </Link>
     <div className="flex flex-1 flex-col gap-2 p-4">
-      <p className="text-xs text-[var(--text-soft)]">Verified public-reference example · Not GTH directory inventory</p>
-      <h5 className="text-base font-semibold">{example.name}</h5>
-      <a href={example.url} target="_blank" rel="noopener noreferrer"
-        className="text-xs text-[var(--text-soft)] underline underline-offset-2">
-        {example.source}
-      </a>
-      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">This illustrates hotel discovery in this destination. No exact Nuitee match, room price or availability is claimed.</p>
-      <a href={HOTEL_WHITE_LABEL_ENTRY_URL} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
-        Search hotel rooms <ArrowUpRight size={14} aria-hidden="true"/>
-      </a>
+      <p className="text-xs text-[var(--text-soft)]">{example.city} · {example.country}</p>
+      <h5 className="text-base font-semibold"><Link href={detail} prefetch={false} className="hover:underline">{example.name}</Link></h5>
+      <p className="line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">{example.description}</p>
+      {example.photo?
+        <p className="text-[11px] leading-4 text-[var(--text-soft)]">
+          Photo: <a href={editorialPhotoSource(example.photo)} target="_blank" rel="noopener noreferrer" className="underline">{example.photo.author} · Wikimedia Commons</a>
+          {" · "}<a href={example.photo.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline">{example.photo.license}</a>
+        </p>:null}
+      <p className="mt-auto pt-1 text-xs text-[var(--text-soft)]">
+        Public-reference example; not verified Nuitee inventory. Exact hotel matching and room availability are not claimed.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Link href={detail} prefetch={false} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
+        <a href={HOTEL_WHITE_LABEL_ENTRY_URL} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
+          Open Nuitee <ArrowUpRight size={14} aria-hidden="true"/>
+        </a>
+      </div>
     </div>
   </article>;
 }
@@ -132,6 +147,7 @@ function ShowcaseCity({slug,hotel,loading}:{slug:string;hotel:DirectoryHotel|nul
       </Link>
     </div>
     {loading?<p role="status" className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">Loading a source-backed hotel sample…</p>:
+      editorial?.photo?<EditorialExampleCard slug={slug}/>:
       hotel?<Card hotel={hotel}/>:
       editorial?<EditorialExampleCard slug={slug}/>:
       <p className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">
