@@ -1,9 +1,10 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
-import {ArrowUpRight,Globe2,MapPin,ShieldCheck} from "lucide-react";
+import {ArrowUpRight,Globe2,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import {HOTEL_MARKETS,HOTEL_SHOWCASE_INDIA,HOTEL_SHOWCASE_WORLD,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
+import {getHotelEditorialExample} from "@/lib/travel/hotel-editorial-examples";
 
 /** Free first-party directory cards. Source records are NOT Nuitee hotels or bookable offers. */
 type DirectoryHotel={
@@ -86,10 +87,36 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     )}
   </div>;
 }
+/** Source-backed global illustration when no GTH-owned catalog hotel is available.
+ * It must not masquerade as a verified directory record, affiliate offer or live inventory. */
+function EditorialExampleCard({slug}:{slug:string}){
+  const example=getHotelEditorialExample(slug);
+  if(!example)return null;
+  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)]">
+    <div className="flex h-44 items-center justify-center bg-[var(--bg-soft)] text-[var(--text-soft)] sm:h-48"
+      aria-label="Property photograph not available">
+      <Hotel size={38} strokeWidth={1.5} aria-hidden="true"/>
+    </div>
+    <div className="flex flex-1 flex-col gap-2 p-4">
+      <p className="text-xs text-[var(--text-soft)]">Verified public-reference example · Not GTH directory inventory</p>
+      <h5 className="text-base font-semibold">{example.name}</h5>
+      <a href={example.url} target="_blank" rel="noopener noreferrer"
+        className="text-xs text-[var(--text-soft)] underline underline-offset-2">
+        {example.source}
+      </a>
+      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">This illustrates hotel discovery in this destination. No exact Nuitee match, room price or availability is claimed.</p>
+      <Link href="/hotels?view=booking" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
+        Search hotel rooms <ArrowUpRight size={14} aria-hidden="true"/>
+      </Link>
+    </div>
+  </article>;
+}
+
 /** One representative source-backed hotel per selected city, not an invented top-rated list.
  * One cached gallery fetch avoids a separate API request per card. */
 function ShowcaseCity({slug,hotel,loading}:{slug:string;hotel:DirectoryHotel|null;loading:boolean}){
   const market=getHotelMarket(slug);
+  const editorial=getHotelEditorialExample(slug);
   if(!market)return null;
   return <section className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4"
     aria-label={"A sample hotel in "+market.city}>
@@ -104,6 +131,7 @@ function ShowcaseCity({slug,hotel,loading}:{slug:string;hotel:DirectoryHotel|nul
     </div>
     {loading?<p role="status" className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">Loading a source-backed hotel sample…</p>:
       hotel?<Card hotel={hotel}/>:
+      editorial?<EditorialExampleCard slug={slug}/>:
       <p className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">
         No source-backed sample could be displayed for this city right now. Browse the city directory or try Nuitee's hotel search.
       </p>}
