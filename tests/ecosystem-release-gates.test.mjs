@@ -11,7 +11,7 @@ test("shared design shell keeps dedicated Real Estate view and central footer on
  assert.doesNotMatch(shell,/<Footer \/>/);
  const mega=source("src/app/mega-aggregator/page.tsx");
  assert.match(mega,/<HeroSlider \/>/);
- assert.match(mega,/href="\/partners\/apply"/);
+ assert.match(source("src/app/mega-aggregator/EcosystemHub.tsx"),/href: "\/partners\/apply"/);
  assert.doesNotMatch(mega,/<EcosystemFooter \/>/);
 });
 test("real estate and tender user entry points are original working routes",()=>{

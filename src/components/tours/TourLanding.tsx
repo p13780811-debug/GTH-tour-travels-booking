@@ -20,6 +20,7 @@ export default async function TourLanding({searchParams,basePath}:{searchParams:
     {destinations.map(item=><Link key={item.city} href={tourDiscoveryHref(basePath,filters,"rail",{city:item.city,page:1})} className="flex min-h-16 shrink-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] pr-4 text-sm font-semibold"><span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-l-xl"><Image src={item.image} alt="" fill sizes="64px" className="object-cover"/></span>{item.city}</Link>)}
    </div>
   </section>
+  <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6"><Link href="/travel/deals" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold text-[var(--gold)]">Browse current travel deals and provider offers</Link></div>
   <div id="discover" className="scroll-mt-24">
    {parsed.ok&&<Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-4 text-xs text-[var(--text-soft)]">Loading original supplier tours and photos…</p>}><SupplierTourCatalog search={filters} basePath={basePath}/></Suspense>}
    {parsed.ok&&<ReviewedPartnerCatalog search={filters} basePath={basePath}/>}

@@ -1,19 +1,20 @@
-import { seoShard } from "@/lib/seo/large-sitemaps";
 import type { MetadataRoute } from "next";
 import { destinations } from "@/data/destinations";
+import { airports } from "@/lib/travel/nuiteeAirportDirectory";
 import { blogs } from "@/data/blogs";
 import { siteOrigin } from "@/lib/seo/site";
 import { createClient } from "@supabase/supabase-js";
 import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSeoRecord } from "@/lib/seo/public-listings";
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
+import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
-  "/", "/mega-aggregator", "/travel", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/hotels/list-your-property",
+  "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
+  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/hotels/list-your-property",
   "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender", "/tender/services",
   "/partners", "/contact", "/about", "/affiliate-disclosure",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
@@ -89,13 +90,18 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Preview builds must not advertise unlaunched or unverified services for indexing.
   if (!publicLaunch) return [];
-  const [approved,guidePaths,properties]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[]),seoShard("properties",0).catch(()=>[] as DynamicEntry[])]);
+  // Property URLs are already partitioned across /seo-sitemaps/properties/*.xml.
+  // Do not duplicate the first 1,000 properties in the root sitemap or pay for a repeated query.
+  const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
+    // Hotel ID profiles remain noindex until individually approved for original-content publication.
+    ...HOTEL_MARKETS.map(market=>({url:base+"/hotels/explore/"+market.slug,changeFrequency:"monthly" as const,priority:0.45})),
+    ...airports.map(airport => ({ url: base + "/travel/airports/" + airport.code.toLowerCase(), changeFrequency: "monthly" as const, priority: 0.45 })),
     ...blogs.map(article => ({ url: base + "/blog/" + article.slug, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...approved,
-    ...properties, // Remaining project shards are advertised by sitemap-index.xml.
     ...guidePaths.map(slug=>({url:base+"/guides/"+slug,changeFrequency:"monthly" as const,priority:0.55})),
   ];
 }

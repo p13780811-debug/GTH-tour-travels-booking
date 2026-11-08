@@ -1,11 +1,11 @@
 /** Public referral identifiers verified in the owner's Travelpayouts link builder.
  * No API credential is needed for a destination search handoff.
  */
-export const PARTNER_SEARCH_KINDS = ["tours", "activities", "cars", "transfers"] as const;
+export const PARTNER_SEARCH_KINDS = ["tours", "activities", "cars", "transfers", "cruises"] as const;
 export type PartnerSearchKind = typeof PARTNER_SEARCH_KINDS[number];
 
 const intent: Record<PartnerSearchKind, string> = {
-  tours: "tours", activities: "activities", cars: "car rental", transfers: "airport transfer",
+  tours: "tours", activities: "activities", cars: "car rental", transfers: "airport transfer", cruises: "cruise",
 };
 
 export function parsePartnerSearch(input: Record<string, unknown>):

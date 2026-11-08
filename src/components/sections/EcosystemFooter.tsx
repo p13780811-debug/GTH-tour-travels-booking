@@ -7,7 +7,7 @@ const columns = [
   { heading: "Travel", links: [
     ["Travel Homepage","/travel"], ["Flights","/flights"], ["Hotels","/hotels"],
     ["Tours & Activities","/tours"], ["Destinations","/destinations"],
-    ["Airport Transfers","/transfers"], ["Car Rentals","/cars"], ["Bus","/bus"], ["Rail","/train"], ["Ferries","/ferry"]
+    ["Airport Transfers","/transfers"], ["Car Rentals","/cars"], ["Bus","/bus"], ["Rail","/train"], ["Ferries","/ferry"], ["Cruises","/cruises"]
   ] },
   { heading: "Real Estate", links: [
     ["Property Marketplace","/real-estate"], ["Explore Properties","/real-estate#property-search"],

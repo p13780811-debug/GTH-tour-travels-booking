@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Single-search partner handoff for bus, train and ferry.
- * Source routes were verified at 12go.asia/en/{bus|train|ferry}/{from}/{to}
+ * Single-search partner handoff for bus, train, ferry, and optional flights.
+ * Source routes were verified at 12go.asia/en/{bus|train|ferry|flights}/{from}/{to}
  * on the supplier's public pages; date/people are best-effort supplier query
  * preferences and must be reconfirmed there.
  * User explicitly submits the form before this navigation; no cookie stuffing.
@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODES = new Set(["bus", "train", "ferry"] as const);
+const MODES = new Set(["bus", "train", "ferry", "flight"] as const);
 const PROVIDER_ORIGIN = "https://12go.asia";
 const AFFILIATE_ID = "17380992";
 
@@ -48,12 +48,12 @@ function noStore(response: NextResponse): NextResponse {
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const mode = single(params, "mode");
-  const sourcePath = MODES.has(mode as "bus" | "train" | "ferry") ? "/" + mode : "/travel";
+  const sourcePath = MODES.has(mode as "bus" | "train" | "ferry" | "flight") ? "/" + (mode === "flight" ? "flights" : mode) : "/travel";
   const from = locationSlug(single(params, "from"));
   const to = locationSlug(single(params, "to"));
   const date = single(params, "date");
   const people = single(params, "people");
-  if (!mode || !MODES.has(mode as "bus" | "train" | "ferry") ||
+  if (!mode || !MODES.has(mode as "bus" | "train" | "ferry" | "flight") ||
       !from || !to || from === to || !validDeparture(date) || !people || !/^[1-8]$/.test(people)) {
     const fallback = new URL(sourcePath, request.url);
     fallback.searchParams.set("search", "invalid");
@@ -61,7 +61,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Fixed, allowlisted host + mode and validated path slugs; no open redirects.
-  const supplier = new URL("/en/" + mode + "/" + from + "/" + to, PROVIDER_ORIGIN);
+  // 12Go publishes its flight-only route with plural /flights/; keep the
+  // public form mode singular while preserving existing bus/train/ferry paths.
+  const supplierMode = mode === "flight" ? "flights" : mode;
+  const supplier = new URL("/en/" + supplierMode + "/" + from + "/" + to, PROVIDER_ORIGIN);
   supplier.searchParams.set("date", date);
   supplier.searchParams.set("people", people);
   supplier.searchParams.set("z", AFFILIATE_ID);

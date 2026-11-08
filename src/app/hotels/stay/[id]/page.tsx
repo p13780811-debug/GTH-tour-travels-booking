@@ -213,7 +213,7 @@ export default async function HotelStay({params,searchParams}:PageProps){
       </div>}
      {!hotel.partner&&(hotel.city||hotel.address||hotel.country)&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.address,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults})}
-       >
+       target="_blank" rel="noopener noreferrer sponsored">
        <BedDouble size={17}/> Search stays using Nuitee white-label <ArrowUpRight size={16}/></a>}
      {hotel.website&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotel.website} target="_blank" rel="noopener noreferrer nofollow"><Globe size={16}/> Listed hotel website <ArrowUpRight size={15}/></a>}

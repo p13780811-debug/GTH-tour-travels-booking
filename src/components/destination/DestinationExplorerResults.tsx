@@ -5,6 +5,7 @@ import Link from "next/link";
 import {useEffect, useRef, useState} from "react";
 import {ArrowRight, BookOpen, Check, Columns3, GitCompareArrows, Heart, Hotel, LayoutGrid, List, MapPin, Plane, X} from "lucide-react";
 import type {DestinationCardInfo} from "@/components/destination/DestinationCard";
+import {destinationFlightHref} from "@/lib/destinations/ecosystem";
 
 const SAVED_KEY="gth-destination-explorer-saved-v1";
 const NOTES_KEY="gth-destination-explorer-notes-v1";
@@ -126,9 +127,9 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
         </Link>
        </div>
        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-3 text-xs">
-        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/hotels/results?city="+encodeURIComponent(item.title)}><Hotel size={13}/> Hotels</Link>
-        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/tours?city="+encodeURIComponent(item.slug)}><Columns3 size={13}/> Tours</Link>
-        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href="/flights"><Plane size={13}/> Flights</Link>
+        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/hotels/results?city="+encodeURIComponent(item.title)+"&destination="+encodeURIComponent(item.slug)}><Hotel size={13}/> Hotels</Link>
+        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/tours?city="+encodeURIComponent(item.title)+"#discover"}><Columns3 size={13}/> Tours</Link>
+        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={destinationFlightHref(item.title)}><Plane size={13}/> Flights</Link>
        </div>
       </div>
      </article>;

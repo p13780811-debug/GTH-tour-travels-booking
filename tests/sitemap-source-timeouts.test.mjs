@@ -34,7 +34,7 @@ function harness(launched=true){
  const shards=compile("src/lib/seo/large-sitemaps.ts",{...deps,"@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings});
  const guides=compile("src/lib/travel/guideMedia.ts",{...deps,"@/lib/travel/open-attractions":{safeCommonsMedia:()=>null},
   "@/lib/travel/guideCatalog":{GUIDE_CONTENT_VERSION:1,contentReady:()=>true,guideBySlug:()=>null,topicGuides:[],guideCatalog:[{slug:"london"}]}});
- const sitemap=compile("src/app/sitemap.ts",{...deps,"@/lib/seo/large-sitemaps":shards,"@/data/destinations":{destinations:[]},"@/data/blogs":{blogs:[]},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings,"@/lib/travel/guideMedia":guides}).default;
+ const sitemap=compile("src/app/sitemap.ts",{...deps,"@/lib/seo/large-sitemaps":shards,"@/data/destinations":{destinations:[]},"@/data/blogs":{blogs:[]},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings,"@/lib/travel/guideMedia":guides,"@/lib/travel/nuiteeAirportDirectory":{airports:[{code:"BOM"}]},"@/lib/travel/nuitee-hotel-markets":{HOTEL_MARKETS:[]}}).default;
  return {sitemap,shards,signals};
 }
 
@@ -44,9 +44,10 @@ test("production-launch sitemap completes through timed-out DB sources and retai
  try{
   const entries=await Promise.race([h.sitemap(),timeout]);
   assert.ok(entries.some(entry=>entry.url==="https://www.gthproglobal.com/tours"));
+  for(const path of ["/cruises","/travel/airports","/travel/airports/bom"])assert.ok(entries.some(entry=>entry.url==="https://www.gthproglobal.com"+path));
   assert.ok(entries.some(entry=>entry.url==="https://www.gthproglobal.com/real-estate"));
   assert.ok(entries.every(entry=>!entry.url.includes("/stay/")&&!entry.url.includes("/guides/")));
-  assert.equal(h.signals.length,6);assert.ok(h.signals.every(({signal})=>signal.aborted));
+  assert.equal(h.signals.length,5);assert.ok(h.signals.every(({signal})=>signal.aborted));
   assert.doesNotMatch(JSON.stringify(entries),/private database/);
  }finally{clearTimeout(timer);}
 });
