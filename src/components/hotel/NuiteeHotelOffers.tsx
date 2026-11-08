@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import {ArrowUpRight,Globe2,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import {HOTEL_WHITE_LABEL_ENTRY_URL} from "@/lib/travel/hotel-whitelabel";
 import {HOTEL_MARKETS,HOTEL_SHOWCASE_INDIA,HOTEL_SHOWCASE_WORLD,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
 import {getHotelEditorialExample} from "@/lib/travel/hotel-editorial-examples";
 
@@ -36,9 +37,9 @@ function Card({hotel}:{hotel:DirectoryHotel}){
       <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">Directory location only. No verified room price or availability; Nuitee search does not guarantee an exact hotel match.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <Link prefetch={false} href={detail} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
-        <Link href="/hotels?view=booking" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
+        <a href={HOTEL_WHITE_LABEL_ENTRY_URL} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
           Search rooms <ArrowUpRight size={14} aria-hidden="true"/>
-        </Link>
+        </a>
       </div>
     </div>
   </article>;
@@ -106,9 +107,9 @@ function EditorialExampleCard({slug}:{slug:string}){
         {example.source}
       </a>
       <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">This illustrates hotel discovery in this destination. No exact Nuitee match, room price or availability is claimed.</p>
-      <Link href="/hotels?view=booking" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
+      <a href={HOTEL_WHITE_LABEL_ENTRY_URL} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
         Search hotel rooms <ArrowUpRight size={14} aria-hidden="true"/>
-      </Link>
+      </a>
     </div>
   </article>;
 }
@@ -219,9 +220,9 @@ export default function NuiteeHotelOffers(){
     <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
       <h3 className="text-base font-semibold">Need a different destination or live room prices?</h3>
       <p className="mt-2 text-sm text-[var(--text-soft)]">Use the existing worldwide Nuitee White Label search. It handles destination, dates, guests, availability and booking; exact hotel matches are not guaranteed by these directory cards.</p>
-      <Link href="/hotels?view=booking" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+      <a href={HOTEL_WHITE_LABEL_ENTRY_URL} className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         Search worldwide hotel rooms <ArrowUpRight size={16} aria-hidden="true"/>
-      </Link>
+      </a>
     </div>
     <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
