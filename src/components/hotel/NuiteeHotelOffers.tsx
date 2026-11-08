@@ -84,13 +84,15 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     </div>:null}
     {!loading&&!error&&visible&&(hotels.length?
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">{hotels.map(hotel=><Card key={String(hotel.id)} hotel={hotel}/>)}</div>:
-      getHotelEditorialExample(marketSlug)?<EditorialExampleCard slug={marketSlug}/>:
-      <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">No source-backed directory hotels returned for this area. Search available rooms using the existing Nuitee booking form.</p>
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
+        No independently verified property photo is available in this city directory yet.
+        <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="mt-3 block font-semibold underline underline-offset-2">
+          See authentic hotel photos and rooms on Nuitee
+        </a>
+      </div>
     )}
   </div>;
 }
-/** Source-backed global illustration when no GTH-owned catalog hotel is available.
- * It must not masquerade as a verified directory record, affiliate offer or live inventory. */
 /** Supplier-native booking cards, not fabricated OSM booking cards.
  * Public directory records and editorial hotel examples remain informational
  * on city-guide pages, never represented as bookable Nuitee inventory.
