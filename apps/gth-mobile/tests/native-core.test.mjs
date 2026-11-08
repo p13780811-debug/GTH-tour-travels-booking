@@ -25,13 +25,13 @@ const routing=load("src/core/routing.ts");
 const catalog=load("src/core/catalog.ts",{"./routing":routing});
 test("GTH PRO native app opens only original first-party service URLs",()=>{
  assert.equal(routing.SITE_ORIGIN,"https://www.gthproglobal.com");
- assert.equal(routing.firstPartyUrl("/app/hotels/osm:node-123"),"https://www.gthproglobal.com/app/hotels/osm:node-123");
+ assert.equal(routing.firstPartyUrl("/hotels/stay/osm:node-123"),"https://www.gthproglobal.com/hotels/stay/osm:node-123");
  for(const path of ["//evil.example","https://evil.example","/\\\\evil.com","/bad\npath"]){
   assert.equal(routing.firstPartyUrl(path),null,path);
  }
- assert.equal(routing.approvedRecordPath("hotel","osm:node-123"),"/app/hotels/osm:node-123");
- assert.equal(routing.approvedRecordPath("property","valid-project"),"/app/property/valid-project");
- assert.equal(routing.approvedRecordPath("tender","12345678-1234-1234-1234-123456789abc"),"/app/tenders/12345678-1234-1234-1234-123456789abc");
+ assert.equal(routing.approvedRecordPath("hotel","osm:node-123"),"/hotels/stay/osm:node-123");
+ assert.equal(routing.approvedRecordPath("property","valid-project"),"/real-estate/valid-project");
+ assert.equal(routing.approvedRecordPath("tender","12345678-1234-1234-1234-123456789abc"),"/tender/12345678-1234-1234-1234-123456789abc");
  assert.equal(routing.approvedRecordPath("hotel","javascript:bad"),null);
  assert.equal(routing.approvedRecordPath("tour","45"),"/tours/45");
  assert.equal(routing.approvedRecordPath("tour","javascript:bad"),null);
@@ -70,11 +70,11 @@ test("one native intent router reuses site public search endpoints",()=>{
 test("native service cards are source-backed and never invent suppliers or pricing",()=>{
  const hotels=catalog.mapSourceRows("hotel",[{id:"osm:node-123",name:"Test Hotel",city:"Goa",booking_ready:false,source:"OpenStreetMap"}]);
  assert.equal(hotels.items.length,1);
- assert.equal(hotels.items[0].webPath,"/app/hotels/osm:node-123");
+ assert.equal(hotels.items[0].webPath,"/hotels/stay/osm:node-123");
  assert.equal(hotels.items[0].tag,"Accommodation record");
  assert.equal(hotels.items[0].image,undefined);
  const tender=catalog.mapSourceRows("tender",{items:[{id:"12345678-1234-1234-1234-123456789abc",title:"Sample notice",deadline_at:"2026-12-01",source_name:"Government source"}],total:1});
- assert.equal(tender.items[0].webPath,"/app/tenders/12345678-1234-1234-1234-123456789abc");
+ assert.equal(tender.items[0].webPath,"/tender/12345678-1234-1234-1234-123456789abc");
  const rejected=catalog.mapSourceRows("hotel",[{id:"unsafe",name:"",city:"Goa"}]);
  assert.equal(rejected.items.length,0);
 });

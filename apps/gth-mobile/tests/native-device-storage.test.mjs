@@ -21,7 +21,7 @@ const routing=load("routing");
 const catalog=load("catalog",{"./routing":routing});
 const research=load("research");
 const writes=load("device-writes");
-const record={id:"osm:node-123",kind:"hotel",title:"Source hotel",subtitle:"Goa",source:"OpenStreetMap",webPath:"/app/hotels/osm:node-123"};
+const record={id:"osm:node-123",kind:"hotel",title:"Source hotel",subtitle:"Goa",source:"OpenStreetMap",webPath:"/hotels/stay/osm:node-123"};
 async function mount(name,storage){
  const hooks=load(name,{react:React,"./routing":routing,"./device-writes":writes,"./catalog":catalog,"./research":research,
   "@react-native-async-storage/async-storage":{default:storage}});

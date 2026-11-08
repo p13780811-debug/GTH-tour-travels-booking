@@ -4,7 +4,7 @@
 - App sources: `apps/gth-mobile/`; this is **not** the original GTH PRO website or its PWA.
 - Work stays in **draft PR #153**, without merging or deploying to Vercel, until owner approval.
 - Website, global CSS, Supabase/RLS, supplier APIs, importers and production domains are never edited by app release QA.
-- App only reads existing public GTH PRO APIs. Payment/booking and privileged workflows stay on original websites after explicit user consent.
+- Native research reads existing public GTH PRO APIs. Live services open the canonical website in the OS in-app browser after explicit consent; all booking, authentication and private workflows retain the existing website controls.
 
 ## Automated acceptance gates
 1. Compare PR with `main` to prove website and deployment files are unchanged.
@@ -50,16 +50,26 @@ On a physical Android phone, install the matching standalone QA APK **from the e
   source/license links and failed-photo fallbacks. A saved booking match must
   still pass the existing server-side mapping check before supplier handoff.
 - From native Hotels, open Search rooms & rates and confirm the existing
-  `/app/hotels` Nuitée booking form appears. Do not add directory parameters
-  (`q`, `destination`, `directory`) to this booking entry. Cancel must retain
+  canonical `/hotels` Nuitée booking form appears. Do not add directory mode
+  filters to this booking entry. Cancel must retain
   the native hotel screen; no unverified directory record becomes bookable.
+- Confirm Home shortcuts and the live hub launch current canonical website
+  pages in the system in-app browser; Android Back returns to GTH PRO. Known
+  public page opens use a new navigation revision, while affiliate exits and
+  signed URLs retain their original parameters. A simulated website HTML v1→v2
+  must appear on the next open without reinstalling the app.
+- Load two source pages, change their fixtures, then background/foreground the
+  app. Changed/removed records must refresh without losing pagination or private
+  notes. Verify stale notices on failure and successful recovery on retry.
+- Check old PWA saved paths migrate to current canonical record pages, saved
+  metadata/photos refresh by exact ID, and offline snapshots remain clearly dated.
 - Check selected bottom tabs, category/region filters and actions in both themes;
   text contrast must meet 4.5:1. Use enlarged Android fonts, keyboard navigation
   and screen-reader checkbox/selection labels. Confirm multiline note editing
   remains reachable above the keyboard on a physical phone.
 
 ## Continuation verification — 9 November 2026
-- Native theme check, strict TypeScript and 34 native tests passed locally.
+- Native theme check, strict TypeScript and 43 native tests passed locally.
 - Actual Expo web renderer passed both themes at 320/360/390/428px and the
   existing functional journey plus the new super-app service/research journey.
 - Android Hermes JavaScript export passed. This export is not an installable APK.
@@ -69,8 +79,10 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - Local website production build could not download Google Fonts through this
   environment's network. It is not recorded as a passing build; remote exact-head
   Production Check must independently pass before acceptance.
-- New APK/AAB/emulator results must come from the updated PR commit's isolated
-  CI run. Previous `2a255ea` artifacts do not validate this continuation.
+- The live-browser and freshness continuation requires APK/AAB/emulator results
+  from its own final PR commit's isolated CI run. Earlier core-build artifacts
+  do not validate the added native module. Use the latest commit shown in
+  [PR #153 checks](https://github.com/p13780811-debug/GTH-tour-travels-booking/pull/153/checks).
 - Live supplier booking/commission, physical-phone acceptance and Play Store
   production signing/publishing remain separate, unverified release gates.
 

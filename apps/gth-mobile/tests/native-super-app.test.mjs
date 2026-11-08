@@ -24,7 +24,7 @@ test('every ecosystem has distinct existing services; search and booking intents
  assert.ok(services.filterServices('registry','property').some(service=>service.path==='/real-estate/registry'));
  assert.ok(services.filterServices('assistant','tender').some(service=>service.path==='/tender/assistant'));
  assert.equal(services.filterServices('cruise','tender').length,0);
- for(const [query,path] of [['Mumbai flights','/app/flights'],['Goa cruises','/cruises'],['Mumbai to Howrah train','/train'],['ferry tickets','/ferry'],['car rental','/cars']])
+ for(const [query,path] of [['Mumbai flights','/flights'],['Goa cruises','/cruises'],['Mumbai to Howrah train','/train'],['ferry tickets','/ferry'],['car rental','/cars']])
   assert.equal(services.bookingServiceForQuery(query)?.path,path);
  assert.equal(services.bookingServiceForQuery('Mumbai property'),undefined);
 });
@@ -86,6 +86,10 @@ test('research notes and checklists persist with source media; refresh and publi
  await act(async()=>state.save({...card,title:'Updated original title'}));
  assert.equal(state.items[0].research.note,'Ask about wheelchair access');
  assert.deepEqual(state.items[0].research.checked,['terms']);
+ await act(async()=>state.refreshSources([{...card,title:'Automatically refreshed source',loadedAt:'2026-11-09T01:00:00.000Z'}]));
+ assert.equal(state.items[0].title,'Automatically refreshed source');
+ assert.equal(state.items[0].research.note,'Ask about wheelchair access');
+ assert.deepEqual(state.items[0].research.checked,['terms']);
  const restored=hooks.parseBookmarks(raw)[0];
  assert.equal(restored.image,card.image);assert.equal(restored.photoCredit.page,credit.commons_page);
  assert.equal(restored.bookingPath,card.bookingPath);assert.equal(restored.research.note,'Ask about wheelchair access');
@@ -108,10 +112,19 @@ test('day and night action text meets WCAG AA while retaining the existing gold 
 });
 test('an unavailable source image has an accessible fallback instead of a blank photo',async()=>{
  const photos=loadNative('components/SourcePhoto.tsx',{react:React,'react-native':{Image:'Image',Pressable:'Pressable',Text:'Text',View:'View'},
-  'lucide-react-native':{ImageOff:'ImageOff'},'../theme/generated.json':colors});
+  'lucide-react-native':{ImageOff:'ImageOff'},'../theme/generated.json':colors,'../core/catalog':catalog});
  let renderer;await act(async()=>{renderer=create(React.createElement(photos.SourcePhoto,{item:{title:'Source hotel',image:'https://www.gthproglobal.com/images/source.jpg'},theme:colors.light,large:true}));});
  await act(async()=>renderer.root.findByType('Image').props.onError());
  assert.equal(renderer.root.findAllByType('Image').length,0);
  assert.match(JSON.stringify(renderer.toJSON()),/Source photo unavailable/);
  await act(async()=>renderer.unmount());
+});
+test('previous PWA saved links migrate to canonical live records without losing private research',()=>{
+ const hooks=loadNative('core/bookmarks.ts',{react:React,'./routing':routing,'./catalog':catalog,'./research':research,'./device-writes':writes,
+  '@react-native-async-storage/async-storage':{__esModule:true,default:{}}});
+ const old={id:'osm:node-77',kind:'hotel',title:'Saved hotel',subtitle:'Goa',source:'Public source',webPath:'/app/hotels/osm:node-77',research:{note:'My private question',checked:['dates']}};
+ const restored=hooks.parseBookmarks(JSON.stringify([old]))[0];
+ assert.equal(restored.webPath,'/hotels/stay/osm:node-77');
+ assert.equal(restored.research.note,'My private question');assert.deepEqual(restored.research.checked,['dates']);
+ assert.deepEqual(hooks.parseBookmarks(JSON.stringify([{...old,webPath:'/app/hotels/osm:node-88'}])),[]);
 });

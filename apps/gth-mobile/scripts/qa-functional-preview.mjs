@@ -8,7 +8,7 @@ try{
  let unavailable=false;const requests=[];let handoffs=0;
  await context.route('https://www.gthproglobal.com/**',async route=>{
   const url=new URL(route.request().url());
-  if(url.pathname.startsWith('/app/hotels/')){handoffs++;return route.fulfill({status:200,contentType:'text/html',body:'<h1>Test-only original record</h1>'});}
+  if(url.pathname.startsWith('/hotels/stay/')){handoffs++;return route.fulfill({status:200,contentType:'text/html',body:'<h1>Test-only original record</h1>'});}
   if(!url.pathname.startsWith('/api/'))return route.abort();
   requests.push(url);
   if(unavailable)return route.fulfill({status:503,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:'{"error":"Test outage"}'});
@@ -41,7 +41,8 @@ try{
  const popupPromise=page.waitForEvent('popup');
  await page.getByRole('button',{name:'Continue',exact:true}).click();
  const popup=await popupPromise;await popup.waitForLoadState();
- assert.equal(popup.url(),'https://www.gthproglobal.com/app/hotels/osm:node-101');
+ assert.equal(new URL(popup.url()).pathname,'/hotels/stay/osm:node-101');
+ assert.ok(new URL(popup.url()).searchParams.has('gth_app_refresh'));
  assert.equal(handoffs,1);await popup.close();
  await page.getByRole('button',{name:'Open app settings',exact:true}).click();
  await page.getByRole('radio',{name:'Night theme',exact:true}).click();

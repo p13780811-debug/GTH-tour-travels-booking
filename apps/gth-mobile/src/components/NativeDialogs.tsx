@@ -55,6 +55,7 @@ export function SettingsDialog({visible,theme,mode,ready,dataReady,onMode,onClos
   <Sheet theme={theme} title="App settings" onClose={onClose}>
    <Text style={{fontSize:16,fontWeight:"800",color:theme.text}}>Appearance</Text>
    <Text style={{fontSize:13,lineHeight:21,color:theme.muted}}>Use your phone appearance or choose a day/night theme.</Text>
+   <Text style={{fontSize:12,lineHeight:19,color:theme.muted}}>Live services keep your saved website appearance.</Text>
    <View accessibilityRole="radiogroup" accessibilityLabel="App appearance" style={{gap:12}}>
     {([{id:"system",label:"Use device theme"},{id:"light",label:"Day theme"},{id:"dark",label:"Night theme"}] as const).map(item=>
      <Control key={item.id} radio label={item.label} theme={theme} selected={mode===item.id} disabled={!ready} onPress={()=>onMode(item.id)}/>)}

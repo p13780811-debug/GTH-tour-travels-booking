@@ -24,6 +24,8 @@ import {bookingServiceForQuery,SERVICES as serviceLinks} from "./core/services";
 import ServicesHub,{ServiceIcon} from "./components/ServicesHub";
 import {PhotoCreditLine,SourcePhoto} from "./components/SourcePhoto";
 import ResearchNotebook from "./components/ResearchNotebook";
+import {useForegroundRefresh} from "./core/foreground-refresh";
+import {openLiveWebsite} from "./core/live-website";
 
 type Theme=typeof colors.light;
 type Tab="home"|"discover"|"saved"|"services";
@@ -205,11 +207,15 @@ function NativeApp(){
  const [detail,setDetail]=useState<DiscoveryCard|null>(null);
  const [savedKind,setSavedKind]=useState<DiscoveryKind|"all">("all");
  const discovery=useNativeDiscovery(kind,term,tenderRegion);
+ useForegroundRefresh(discovery.refresh);
  const {items:results,slices,warnings,total,pending,error}=discovery;
  const bookmarks=useNativeBookmarks();
  const recent=useRecentSearches();
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
  const savedItems=bookmarks.items.filter(item=>savedKind==="all"||item.kind===savedKind);
+ useEffect(()=>{
+  if(bookmarks.ready)bookmarks.refreshSources(results);
+ },[results,bookmarks.ready]);
  useEffect(()=>{
   if(Platform.OS==="web")return;
   const listener=BackHandler.addEventListener("hardwareBackPress",()=>{
@@ -223,8 +229,8 @@ function NativeApp(){
   const target=firstPartyUrl(path);
   if(!target){Alert.alert("Link unavailable","Only official GTH PRO destinations are supported.");return;}
   setSettingsOpen(false);
-  setConfirmation({title:"Continue to GTH PRO",message:"This opens the GTH PRO website service. Confirm current booking, payment and provider details there.",confirmLabel:"Continue",
-   action:()=>Linking.openURL(target)});
+  setConfirmation({title:"Continue to GTH PRO",message:"Open the live GTH PRO service inside the app. Current booking, account and provider details come from the website.",confirmLabel:"Continue",
+   action:()=>openLiveWebsite(path,theme)});
  }
  function openPhotoCredit(item:DiscoveryCard,kind:"page"|"license"){
   const target=approvedCreditUrl(kind==="page"?item.photoCredit?.page:item.photoCredit?.licenseUrl);
@@ -254,15 +260,15 @@ function NativeApp(){
   const service=(preferred==="all"||preferred==="travel")&&detected==="all"?bookingServiceForQuery(cleaned):undefined;
   if(service){
    setQuery(cleaned);
-   const target=firstPartyUrl(service.path)!;
    setConfirmation({title:"Continue to "+service.label,message:"Open the existing GTH PRO search to choose your route, travel dates and passengers. Your search text does not confirm availability.",
-    confirmLabel:"Open "+service.label,action:()=>Linking.openURL(target)});
+    confirmLabel:"Open "+service.label,action:()=>openLiveWebsite(service.path,theme)});
    return;
   }
   if(category===kind&&cleaned===term)discovery.retry();
   setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
  }
  function openPillar(pillar:Pillar){
+  if(kind===pillar&&!term)discovery.refresh();
   setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
  }
  function clearDeviceData(type:"saved"|"history"){
@@ -271,7 +277,7 @@ function NativeApp(){
    message:"This removes the selected data from this device only. This action cannot be undone.",confirmLabel:"Clear from this device",
    action:()=>{if(type==="saved"){bookmarks.clear();setSavedKind("all");setDetail(null);}else recent.clear();}});
  }
- const activeItem=detail;
+ const activeItem=detail?(results.find(item=>item.kind===detail.kind&&item.id===detail.id)||detail):null;
  const savedItem=activeItem?bookmarks.items.find(item=>item.webPath&&item.webPath===activeItem.webPath):undefined;
  const resultView=tab==="discover"&&(!["all","travel"].includes(kind)||!!term);
  const visibleRecords=activeItem?[]:resultView?results:tab==="saved"?savedItems:[];
@@ -289,9 +295,15 @@ function NativeApp(){
     Device storage is unavailable. Changes may not persist. Restart to retry reading existing device data.
    </Text>
   </View>}
+  {activeItem&&discovery.stale&&<View accessibilityRole="alert" style={[styles.info,{margin:12,backgroundColor:theme.surface,borderColor:theme.border}]}>
+   <Text style={{flex:1,color:theme.muted,fontSize:12,lineHeight:18}}>Unable to refresh this reference. Previously loaded details are shown.</Text>
+   <Pressable accessibilityRole="button" accessibilityLabel="Refresh latest source records" onPress={discovery.refresh}
+    style={{minWidth:44,minHeight:44,justifyContent:"center"}}><Text style={{color:theme.accentText,fontWeight:"800"}}>Retry</Text></Pressable>
+  </View>}
   <FlatList<DiscoveryCard> keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{paddingHorizontal:18,paddingBottom:28}}
    style={{flex:1}} key={tab+(activeItem?"-detail":"")} data={visibleRecords}
    initialNumToRender={8} maxToRenderPerBatch={8} windowSize={7}
+   onRefresh={!activeItem&&resultView?discovery.refresh:undefined} refreshing={resultView&&discovery.refreshing}
    keyExtractor={item=>item.kind+":"+item.id}
    renderItem={({item})=><RecordCard theme={theme} item={item} bookmarked={!!item.webPath&&savedPaths.has(item.webPath)}
     onOpen={()=>setDetail(item)} onToggle={()=>item.webPath&&(savedPaths.has(item.webPath)?bookmarks.remove(item.webPath):bookmarks.save(item))}
@@ -309,6 +321,9 @@ function NativeApp(){
      <Text style={[styles.h1,{color:theme.text,marginTop:9}]}>{activeItem.title}</Text>
      <Text style={[styles.lead,{color:theme.muted}]}>{activeItem.subtitle}</Text>
      <Text style={{fontSize:13,color:theme.muted,marginTop:8}}>Source: {activeItem.source}</Text>
+     <Text style={{fontSize:11,lineHeight:18,color:theme.muted,marginTop:8}}>
+      {activeItem.loadedAt?"Source snapshot loaded "+new Date(activeItem.loadedAt).toLocaleString("en-GB"):"Saved source reference"}. Open the original for current details.
+     </Text>
      {activeItem.tag&&<Text style={{fontSize:12,color:theme.accentText,marginTop:8}}>{activeItem.tag}</Text>}
      {!!activeItem.facts?.length&&<View style={{gap:10,marginTop:20}}>
       <Text accessibilityRole="header" style={{color:theme.text,fontSize:17,fontWeight:"800"}}>At a glance</Text>
@@ -344,7 +359,7 @@ function NativeApp(){
     </View>
    </>:tab==="home"?<>
     <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)}/>
-    <ServiceShortcuts theme={theme} onOpen={item=>item.mode==="native"?openPillar(item.kind):openSite(item.path)} onExplore={()=>setTab("services")}/>
+    <ServiceShortcuts theme={theme} onOpen={item=>openSite(item.path)} onExplore={()=>openSite("/mega-aggregator")}/>
     {recent.ready&&recent.items.length>0&&<View style={[styles.recent,{backgroundColor:theme.surface,borderColor:theme.border}]}>
      <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:12}}>
       <View style={{flexDirection:"row",alignItems:"center",gap:8}}>
@@ -399,9 +414,10 @@ function NativeApp(){
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accentText:theme.text}}>{filter.title}</Text>
       </Pressable>)}
      </ScrollView>
-     {kind==="hotel"&&<View style={{gap:8,marginBottom:16}}>
-      <Action label="Search rooms & rates" theme={theme} onPress={()=>openSite("/app/hotels")}/>
-      <Text style={{fontSize:12,lineHeight:19,color:theme.muted}}>Choose dates and guests for current room options. Browse hotel records below.</Text>
+     {!["all","travel"].includes(kind)&&<View style={{gap:8,marginBottom:16}}>
+      <Action label={kind==="hotel"?"Search rooms & rates":kind==="property"?"Open live property search":kind==="tender"?"Open live tender workspace":"Open live tours & activities"}
+       theme={theme} onPress={()=>openSite(serviceDestination[kind as DiscoveryKind])}/>
+      <Text style={{fontSize:12,lineHeight:19,color:theme.muted}}>Use the latest website features in app. Published research records are shown below.</Text>
      </View>}
      {(kind==="tender"||(kind==="all"&&!!term))&&<View style={{marginBottom:14,gap:8}}>
       <Text style={{fontSize:12,fontWeight:"800",color:theme.text}}>Tender search region</Text>
@@ -441,7 +457,7 @@ function NativeApp(){
       <View style={{width:"100%",gap:10}}>
        <Action label="Explore hotels & stays" theme={theme} onPress={()=>{setKind("hotel");setTerm("");}}/>
        <Action label="Discover tours & activities" theme={theme} secondary onPress={()=>{setKind("tour");setTerm("");}}/>
-       <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/app/flights")}/>
+       <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/flights")}/>
        <Action label="Search bus journeys" theme={theme} secondary onPress={()=>openSite("/bus")}/>
        <Action label="Search train journeys" theme={theme} secondary onPress={()=>openSite("/train")}/>
        <Action label="Search ferry journeys" theme={theme} secondary onPress={()=>openSite("/ferry")}/>
@@ -466,7 +482,7 @@ function NativeApp(){
       {warnings.length>0&&!pending&&<View accessibilityRole="alert" style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border,marginBottom:12}]}>
        <ShieldCheck color={theme.accentText} size={18}/>
        <Text style={{fontSize:12,lineHeight:18,flex:1,color:theme.muted}}>
-        {warnings.length} {warnings.length===1?"source is":"sources are"} unavailable. {results.length?"Available results remain visible.":"Retry to reload these sources."}
+        {warnings.length} {warnings.length===1?"source is":"sources are"} unavailable. {discovery.stale?"Previously loaded records are shown; retry for current details.":results.length?"Available results remain visible.":"Retry to reload these sources."}
        </Text>
       </View>}
       {pending&&<View accessibilityLiveRegion="polite" style={{padding:20,gap:12}}>
@@ -510,10 +526,11 @@ function NativeApp(){
      <Text style={{color:theme.text,fontSize:16,fontWeight:"800",textAlign:"center"}}>No saved records in this category</Text>
      <Action label="Show all saved records" theme={theme} onPress={()=>setSavedKind("all")}/>
     </View>}
-   </>:<ServicesHub theme={theme} onOpen={item=>item.mode==="native"?openPillar(item.kind):openSite(item.path)}/>}
+   </>:<ServicesHub theme={theme} onOpen={item=>openSite(item.path)}/>}
    </>}
    ListFooterComponent={!activeItem&&resultView?<View style={{marginTop:10,gap:8}}>
-    {discovery.morePending?<ActivityIndicator color={theme.accentText} accessibilityLabel="Loading more results"/>:
+    {discovery.morePending?<ActivityIndicator color={theme.accentText} accessibilityLabel={discovery.refreshing?"Refreshing source records":"Loading more results"}/>:
+     discovery.stale?<Action label="Refresh source records" theme={theme} secondary onPress={discovery.refresh}/>:
      discovery.hasMore&&!pending&&<Action label="Load more results" theme={theme} secondary onPress={()=>void discovery.loadMore()}/>}
     <Text style={{marginTop:12,color:theme.muted,fontSize:11,lineHeight:17}}>
      Open original details to confirm sources, prices, deadlines and current provider availability.

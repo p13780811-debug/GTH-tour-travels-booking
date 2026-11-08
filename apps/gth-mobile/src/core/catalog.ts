@@ -6,6 +6,7 @@ export type DiscoveryCard={
  id:string;kind:DiscoveryKind;title:string;subtitle:string;source:string;
  image?:string;webPath:string|null;tag?:string;
  facts?:{label:string;value:string}[];photoCredit?:PhotoCredit;bookingPath?:string;
+ loadedAt?:string;
 };
 export type DiscoveryResponse={items:DiscoveryCard[];total:number;hasNext?:boolean;page?:number;totalIsExact?:boolean};
 const object=(v:unknown):Record<string,unknown>=>v&&typeof v==="object"&&!Array.isArray(v)?v as Record<string,unknown>:{};
@@ -34,9 +35,22 @@ export function approvedCreditUrl(raw:unknown):string|null{
    url.hostname==="creativecommons.org"&&/^\/(?:licenses|publicdomain)\//.test(url.pathname))?url.toString():null;
  }catch{return null;}
 }
+/** Version only our public image endpoints. Never alter supplier, signed or
+ * affiliate URLs; a fresh API read must not leave an old first-party photo. */
+export function sourcePhotoRequestUri(image:string,loadedAt?:string):string{
+ if(!loadedAt||!Number.isFinite(Date.parse(loadedAt)))return image;
+ try{
+  const url=new URL(image);
+  if(["www.gthproglobal.com","gthproglobal.com"].includes(url.hostname)&&!url.search&&
+    (url.pathname.startsWith("/images/")||url.pathname.startsWith("/api/property-media/"))){
+   url.searchParams.set("gth_source_revision",loadedAt);return url.toString();
+  }
+ }catch{/* Keep the already validated source URL unchanged. */}
+ return image;
+}
 /** Revalidate saved media as strictly as new API records; keep the license with
  * the image after a restart. Commons images without usable credit are omitted. */
-export function recordExtras(raw:unknown):Pick<DiscoveryCard,"image"|"photoCredit"|"facts">{
+export function recordExtras(raw:unknown):Pick<DiscoveryCard,"image"|"photoCredit"|"facts"|"loadedAt">{
  const data=object(raw),credit=object(data.photoCredit);
  const author=text(credit.author,120),license=text(credit.license,80);
  const page=approvedCreditUrl(credit.page),licenseUrl=approvedCreditUrl(credit.licenseUrl);
@@ -48,7 +62,8 @@ export function recordExtras(raw:unknown):Pick<DiscoveryCard,"image"|"photoCredi
   const fact=object(raw),label=text(fact.label,30),value=text(fact.value,160);
   return label&&value?[{label,value}]:[];
  }):[];
- return {image,photoCredit:image?photoCredit:undefined,facts};
+ const loadedAt=typeof data.loadedAt==="string"&&/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(data.loadedAt)&&Number.isFinite(Date.parse(data.loadedAt))?data.loadedAt:undefined;
+ return {image,photoCredit:image?photoCredit:undefined,facts,loadedAt};
 }
 function publicFacts(kind:DiscoveryKind,data:Record<string,unknown>):{label:string;value:string}[]{
  const pairs:unknown[][]=kind==="hotel"?[["Address",data.address],["Country",data.country],["Stay type",data.category]]:
@@ -145,7 +160,7 @@ export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN",page
  return SITE_ORIGIN+routes[kind]+"?"+params.toString();
 }
 export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal,tenderRegion="IN",page=1):Promise<DiscoveryResponse>{
- const result=await fetch(endpointFor(kind,query,tenderRegion,page),{method:"GET",signal,headers:{"Accept":"application/json"}});
+ const result=await fetch(endpointFor(kind,query,tenderRegion,page),{method:"GET",signal,cache:"no-store",headers:{"Accept":"application/json"}});
  if(!result.ok)throw Error("Source temporarily unavailable.");
  if(!(result.headers.get("content-type")||"").toLowerCase().includes("json"))
   throw Error("Unexpected source response.");
@@ -159,6 +174,7 @@ export async function getSourceCards(kind:DiscoveryKind,query:string,signal:Abor
  const size=headerSize!==null&&/^\d{1,3}$/.test(headerSize)?Number(headerSize):limit(parent.pageSize);
  const hasNext=kind==="hotel"?result.headers.get("X-GTH-Has-More")==="true":
   typeof parent.hasNext==="boolean"?parent.hasNext:size>0&&page*size<total;
- return {...mapped,total,page,totalIsExact:validTotal||typeof parent.total==="number"&&Number.isInteger(parent.total)&&parent.total>=0,
+ const loadedAt=new Date().toISOString();
+ return {...mapped,items:mapped.items.map(item=>({...item,loadedAt})),total,page,totalIsExact:validTotal||typeof parent.total==="number"&&Number.isInteger(parent.total)&&parent.total>=0,
   hasNext:page<maxPage(kind)&&hasNext};
 }

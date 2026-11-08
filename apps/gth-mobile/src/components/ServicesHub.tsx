@@ -1,6 +1,6 @@
 import React,{useMemo,useState} from "react";
 import {Pressable,ScrollView,StyleSheet,Text,TextInput,View} from "react-native";
-import {ArrowRight,ArrowUpRight,BadgePercent,BookOpen,Bookmark,Building2,Bus,Car,Compass,FileText,Hotel,Landmark,MapPin,Plane,Route,Search,ShieldCheck,Ship,SlidersHorizontal,Ticket,TrainFront,User} from "lucide-react-native";
+import {ArrowUpRight,BadgePercent,BookOpen,Bookmark,Building2,Bus,Car,Compass,FileText,Hotel,Landmark,MapPin,Plane,Route,Search,ShieldCheck,Ship,SlidersHorizontal,Ticket,TrainFront,User} from "lucide-react-native";
 import colors from "../theme/generated.json";
 import {filterServices,SERVICE_GROUPS,serviceGroup,type NativeService,type ServiceGroup} from "../core/services";
 
@@ -19,6 +19,11 @@ export default function ServicesHub({theme,onOpen}:{theme:Theme;onOpen:(service:
    <Text accessibilityRole="header" style={{color:theme.text,fontSize:27,fontWeight:"900",letterSpacing:-0.6}}>Explore every service</Text>
    <Text style={{color:theme.muted,fontSize:13,lineHeight:20}}>Your next journey, property or opportunity starts here.</Text>
   </View>
+  <Pressable accessibilityRole="button" accessibilityLabel="Open live GTH PRO hub" onPress={()=>onOpen({label:"Live GTH PRO",path:"/mega-aggregator",kind:"travel",mode:"web",icon:"compass",description:"Latest website services"})}
+    style={[styles.reset,{backgroundColor:theme.accent,gap:5,paddingVertical:13}]}>
+   <Text style={{color:theme.onAccent,fontSize:15,fontWeight:"900"}}>Open live GTH PRO ↗</Text>
+   <Text style={{color:theme.onAccent,fontSize:12,lineHeight:18}}>Latest website features, automatically available here.</Text>
+  </Pressable>
   <View style={[styles.search,{backgroundColor:theme.surface,borderColor:theme.border}]}>
    <Search size={19} color={theme.accentText}/>
    <TextInput accessibilityLabel="Find a service" placeholder="Find a service" placeholderTextColor={theme.muted}
@@ -35,7 +40,7 @@ export default function ServicesHub({theme,onOpen}:{theme:Theme;onOpen:(service:
      <Text style={{color:theme.text,fontSize:12,fontWeight:"800"}}>{item.label}</Text>
     </Pressable>)}
   </ScrollView>
-  <Text accessibilityLiveRegion="polite" style={{color:theme.muted,fontSize:12}}>{visible.length} services · choose how to continue</Text>
+  <Text accessibilityLiveRegion="polite" style={{color:theme.muted,fontSize:12}}>{visible.length} quick shortcuts · live service screens</Text>
   {SERVICE_GROUPS.map(section=>{
    const items=visible.filter(service=>serviceGroup(service)===section.id);
    if(!items.length)return null;
@@ -45,15 +50,15 @@ export default function ServicesHub({theme,onOpen}:{theme:Theme;onOpen:(service:
      <Text style={{color:theme.muted,fontSize:12,lineHeight:18}}>{section.caption}</Text>
     </View>
     {items.map(service=><Pressable key={service.label} accessibilityRole="button"
-      accessibilityLabel={service.label+" · "+(service.mode==="native"?"Explore in app":"GTH PRO website")}
+      accessibilityLabel={service.label+" · Live GTH PRO service"}
       onPress={()=>onOpen(service)} style={({pressed})=>[styles.row,{backgroundColor:theme.surface,borderColor:theme.border,opacity:pressed?0.78:1}]}>
       <View style={[styles.icon,{backgroundColor:theme.surfaceSoft}]}><ServiceIcon service={service} theme={theme}/></View>
       <View style={{flex:1,gap:5}}>
        <Text style={{color:theme.text,fontSize:14,fontWeight:"800"}}>{service.label}</Text>
        <Text style={{color:theme.muted,fontSize:12,lineHeight:18}}>{service.description}</Text>
-       <Text style={{color:theme.accentText,fontSize:10,fontWeight:"700"}}>{service.mode==="native"?"Explore in app":"Continue on GTH PRO website"}</Text>
+       <Text style={{color:theme.accentText,fontSize:11,fontWeight:"700"}}>Open live service in app</Text>
       </View>
-      {service.mode==="native"?<ArrowRight size={18} color={theme.text}/>:<ArrowUpRight size={18} color={theme.text}/>}
+      <ArrowUpRight size={18} color={theme.text}/>
      </Pressable>)}
    </View>;
   })}
@@ -64,7 +69,7 @@ export default function ServicesHub({theme,onOpen}:{theme:Theme;onOpen:(service:
    <Pressable accessibilityRole="button" accessibilityLabel="Show all services" onPress={()=>{setQuery("");setGroup("all");}}
      style={[styles.reset,{backgroundColor:theme.accent}]}><Text style={{color:theme.onAccent,fontWeight:"800"}}>Show all services</Text></Pressable>
   </View>}
-  <Text style={{color:theme.muted,fontSize:11,lineHeight:18}}>Bookings and account tools continue through the existing GTH PRO service. Your native saved records remain on this device.</Text>
+  <Text style={{color:theme.muted,fontSize:11,lineHeight:18}}>Website upgrades appear in live service screens on next open. Your native research notes remain on this device.</Text>
  </View>;
 }
 const styles=StyleSheet.create({

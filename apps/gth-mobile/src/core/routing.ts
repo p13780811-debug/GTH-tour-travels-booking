@@ -47,13 +47,22 @@ export function firstPartyUrl(path:string):string|null {
  }catch{return null;}
 }
 export function approvedRecordPath(kind:Pillar,id:string):string|null {
- if(kind==="hotel"&&/^osm:(?:node|way|relation)-[0-9]{1,19}$/.test(id))return "/app/hotels/"+id;
+ if(kind==="hotel"&&/^osm:(?:node|way|relation)-[0-9]{1,19}$/.test(id))return "/hotels/stay/"+id;
  if(kind==="hotel"&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(id))return "/hotels/stay/"+id;
- if(kind==="property"&&/^[a-z0-9][a-z0-9-]{1,127}$/.test(id))return "/app/property/"+id;
- if(kind==="tender"&&/^[a-f0-9-]{36}$/i.test(id))return "/app/tenders/"+id;
+ if(kind==="property"&&/^[a-z0-9][a-z0-9-]{1,127}$/.test(id))return "/real-estate/"+id;
+ if(kind==="tender"&&/^[a-f0-9-]{36}$/i.test(id))return "/tender/"+id;
  if(kind==="tour"&&(/^[1-9][0-9]{0,18}$/.test(id)||/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(id)))return "/tours/"+id;
  return null;
 }
+/** Migrate only the previous exact, validated PWA detail path. Local notes
+ * remain attached to the same record ID when the canonical live page changes. */
+export function acceptsSavedRecordPath(kind:Pillar,id:string,path:unknown):boolean{
+ const current=approvedRecordPath(kind,id);
+ if(!current||typeof path!=="string")return false;
+ if(path===current)return true;
+ const old:Partial<Record<Pillar,string>>={hotel:"/app/hotels/",property:"/app/property/",tender:"/app/tenders/"};
+ return !!old[kind]&&path===old[kind]+id;
+}
 export const serviceDestination:Record<Pillar,string>={
-  travel:"/app/flights",hotel:"/app/hotels",property:"/app/property",tender:"/app/tenders",tour:"/tours",
+  travel:"/flights",hotel:"/hotels",property:"/real-estate",tender:"/tender",tour:"/tours",
 };

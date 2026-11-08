@@ -72,7 +72,7 @@ test("published API payloads map only to factual IDs, slugs and licensed images"
   title:"Existing Project",city:"Mumbai",formatted_price:"Price on request",
   image:"/images/cities/mumbai.jpg",
  }]});
- assert.equal(property.items[0].webPath,"/app/property/existing-project");
+ assert.equal(property.items[0].webPath,"/real-estate/existing-project");
  assert.equal(property.items[0].tag,"Price on request");
  assert.equal(property.items[0].image,routing.SITE_ORIGIN+"/images/cities/mumbai.jpg");
  const notVerified=catalog.mapSourceRows("property",{items:[{

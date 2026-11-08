@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useCallback,useEffect,useRef,useState} from "react";
-import {approvedRecordPath} from "./routing";
+import {acceptsSavedRecordPath,approvedRecordPath} from "./routing";
 import type {DiscoveryCard} from "./catalog";
 import {recordExtras} from "./catalog";
 import {createDeviceWriteQueue} from "./device-writes";
@@ -21,7 +21,7 @@ export function parseBookmarks(raw:string|null):SavedDiscoveryCard[]{
    const item=entry as Partial<DiscoveryCard>;
    const path=typeof item.id==="string"&&typeof item.kind==="string"
      ?approvedRecordPath(item.kind as DiscoveryCard["kind"],item.id):null;
-   if(!path||path!==item.webPath||seen.has(path))return false;
+   if(!path||!acceptsSavedRecordPath(item.kind!,item.id!,item.webPath)||seen.has(path))return false;
    if(typeof item.title!=="string"||item.title.length>120||!item.title.trim()
     ||typeof item.subtitle!=="string"||item.subtitle.length>120
     ||typeof item.source!=="string"||item.source.length>80)return false;
@@ -29,7 +29,7 @@ export function parseBookmarks(raw:string|null):SavedDiscoveryCard[]{
    return true;
   }).slice(0,BOOKMARK_LIMIT).map(v=>({
    id:v.id,kind:v.kind,title:v.title,subtitle:v.subtitle,source:v.source,
-   webPath:v.webPath,tag:typeof v.tag==="string"?v.tag.slice(0,60):undefined,
+   webPath:approvedRecordPath(v.kind,v.id),tag:typeof v.tag==="string"?v.tag.slice(0,60):undefined,
    ...recordExtras(v),
    // Re-enter the server-verified booking route; a saved flag is never proof
    // that an old room or partner offer is still available.
@@ -66,6 +66,7 @@ export function useNativeBookmarks(){
  const apply=useCallback((fn:(value:SavedDiscoveryCard[])=>SavedDiscoveryCard[])=>{
   if(!ready)return;
   const next=fn(current.current);
+  if(next===current.current)return;
   current.current=next;
   setItems(next);
   // Never overwrite unseen saved records after a failed initial read.
@@ -77,6 +78,18 @@ export function useNativeBookmarks(){
  return {items,ready,storageError,
   save:(item:DiscoveryCard)=>apply(existing=>addBookmark(existing,item)),
   remove:(path:string)=>apply(existing=>removeBookmark(existing,path)),
+  refreshSources:(fresh:DiscoveryCard[])=>apply(existing=>{
+   const byPath=new Map(fresh.filter(item=>item.webPath).map(item=>[item.webPath,item]));
+   let changed=false;
+   const next=existing.map(item=>{
+    const source=byPath.get(item.webPath);
+    if(!source||source.kind!==item.kind||source.id!==item.id)return item;
+    const updated={...source,research:item.research};
+    if(JSON.stringify(updated)===JSON.stringify(item))return item;
+    changed=true;return updated;
+   });
+   return changed?next:existing;
+  }),
   updateNote:(path:string,note:string)=>apply(existing=>existing.map(item=>item.webPath===path
    ?{...item,research:{...parseResearch(item.research,item.kind),note:normalizeNote(note)}}:item)),
   toggleCheck:(path:string,id:string)=>apply(existing=>existing.map(item=>{

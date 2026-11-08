@@ -2,7 +2,7 @@ import {getSourceCards,type DiscoveryCard,type DiscoveryKind} from "./catalog";
 import {detectPillar,normalizeQuery,type Pillar} from "./routing";
 
 export type SearchChoice=DiscoveryKind|"all"|"travel";
-export type SearchSlice={kind:DiscoveryKind;items:DiscoveryCard[];total:number;error:string|null;page?:number;hasNext?:boolean;totalIsExact?:boolean};
+export type SearchSlice={kind:DiscoveryKind;items:DiscoveryCard[];total:number;error:string|null;page?:number;hasNext?:boolean;totalIsExact?:boolean;stale?:boolean};
 export type SearchOutcome={items:DiscoveryCard[];total:number;warnings:string[];slices:SearchSlice[]};
 export const SOURCE_KINDS:readonly DiscoveryKind[]=["hotel","property","tender","tour"];
 
@@ -50,7 +50,7 @@ export async function nextNativePage(previous:SearchSlice[],raw:string,signal:Ab
    const seen=new Set(slice.items.map(item=>item.id));
    const items=[...slice.items,...data.items.filter(item=>!seen.has(item.id))];
    return {...slice,items,total:Math.max(data.total,items.length),totalIsExact:data.totalIsExact,page,
-    hasNext:data.hasNext===true&&data.items.length>0,error:null};
+    hasNext:data.hasNext===true&&data.items.length>0,error:null,stale:false};
   }catch{return {...slice,error:"Source temporarily unavailable"};}
  }));
  return combineSlices(slices);
@@ -67,8 +67,28 @@ export async function retryNativeSources(previous:SearchSlice[],raw:string,signa
    const seen=new Set(slice.items.map(item=>item.id));
    const items=[...slice.items,...data.items.filter(item=>!seen.has(item.id))];
    return {...slice,items,total:Math.max(data.total,items.length),totalIsExact:data.totalIsExact,page,
-    hasNext:data.hasNext===true,error:null};
+    hasNext:data.hasNext===true,error:null,stale:false};
   }catch{return slice;}
+ }));
+ return combineSlices(slices);
+}
+
+/** Re-read the loaded window on foreground/pull-to-refresh. Refreshing pages
+ * replaces old source data, including removals, without discarding pagination
+ * or any personal notebook. Failed sources retain an explicitly stale snapshot. */
+export async function refreshNativeSources(previous:SearchSlice[],raw:string,signal:AbortSignal,tenderRegion="IN"):Promise<SearchOutcome>{
+ const slices=await Promise.all(previous.map(async old=>{
+  try{
+   let fresh:SearchSlice={...old,items:[],error:null,stale:false};
+   const seen=new Set<string>();
+   for(let page=1;page<=Math.max(1,old.page??1);page++){
+    const data=await getSourceCards(old.kind,normalizeQuery(raw),signal,tenderRegion,page);
+    const items=data.items.filter(item=>{if(seen.has(item.id))return false;seen.add(item.id);return true;});
+    fresh={...fresh,items:[...fresh.items,...items],total:data.total,totalIsExact:data.totalIsExact,page,hasNext:data.hasNext===true};
+    if(!fresh.hasNext)break;
+   }
+   return {...fresh,total:Math.max(fresh.total,fresh.items.length)};
+  }catch{return {...old,error:"Refresh unavailable; showing previously loaded records",stale:true};}
  }));
  return combineSlices(slices);
 }
