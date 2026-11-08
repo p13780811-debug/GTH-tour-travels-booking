@@ -43,7 +43,8 @@
       "feat/travel-offer-discovery-klook-20261029": false,
       "feat/mega-aggregator-worldclass-20261107": false,
       "feat/maharera-seo-quality-20261107": false,
-      "feat/nuitee-hotel-discovery-seo-20261108": false
+      "feat/nuitee-hotel-discovery-seo-20261108": false,
+      "fix/hotel-cards-white-label-photos-20261108": false
     }
   }
 }
