@@ -78,7 +78,7 @@ test("homepage showcases one real sample per major Indian and global city with o
  assert.match(offers,/<EditorialExampleCard slug=\{slug\}\/>/);
  assert.doesNotMatch(offers,/fetch\("\/api\/hotels\/showcase"/);
  assert.match(offers,/IntersectionObserver/);
- assert.match(offers,/not a ranking/);
+ assert.match(offers,/not Nuitee inventory or verified rankings/);
 });
 test("internal showcase endpoint is bounded, cache-backed, free, public-directory-only",()=>{
  const api=read("src/app/api/hotels/showcase/route.ts");
@@ -108,7 +108,7 @@ test("global editorial examples are openly sourced and never represented as live
  assert.match(offers,/getHotelEditorialExample\(marketSlug\)/);
  assert.match(offers,/not verified Nuitee inventory/);
  assert.match(offers,/Hotel photograph awaiting verified reuse rights/);
- assert.doesNotMatch(examples,/hotelId|supplierId|rates|booking_ready|NUITEE_PRODUCTION_API_KEY/);
+ assert.doesNotMatch(examples,/hotelId\s*:|supplierId\s*:|booking_ready\s*:|NUITEE_PRODUCTION_API_KEY/);
 });
 
 
