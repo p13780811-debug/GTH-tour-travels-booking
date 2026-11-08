@@ -2,6 +2,8 @@
  * https://docs.liteapi.travel/docs/deeplinking-to-whitelabel
  */
 export const HOTEL_BOOKING_ORIGIN = "https://gthproglobal.nuitee.link";
+/** Official Nuitee booking entry point when no verified hotelId/placeId exists. */
+export const HOTEL_WHITE_LABEL_ENTRY_URL = `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`;
 export const HOTEL_WIDGET_SCRIPT = "https://components.liteapi.travel/v1.0/sdk.umd.js";
 export type HotelOccupancy = { adults: number; children: number[]; rooms?: number };
 export type HotelBookingSearch = {
