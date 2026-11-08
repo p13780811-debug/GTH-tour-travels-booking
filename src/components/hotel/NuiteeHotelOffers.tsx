@@ -46,6 +46,7 @@ function Card({hotel}:{hotel:DirectoryHotel}){
 }
 export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;limit?:number}){
   const market=getHotelMarket(marketSlug);
+  const curatedPhoto=getHotelEditorialExample(marketSlug)?.photo;
   const marker=useRef<HTMLDivElement>(null);
   const [visible,setVisible]=useState(false),[hotels,setHotels]=useState<DirectoryHotel[]>([]);
   const [loading,setLoading]=useState(false),[error,setError]=useState(false),[retry,setRetry]=useState(0);
@@ -60,7 +61,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     return ()=>observer.disconnect();
   },[]);
   useEffect(()=>{
-    if(!visible||!market)return;
+    if(!visible||!market||curatedPhoto)return;
     const controller=new AbortController();
     setLoading(true);setError(false);
     const params=new URLSearchParams({city:market.supplierCity,country:market.countryCode,source:"directory",page:"1"});
@@ -73,8 +74,15 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
       }).catch(()=>{if(!controller.signal.aborted)setError(true);})
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
-  },[visible,market,limit,retry]);
+  },[visible,market,limit,retry,curatedPhoto]);
   if(!market)return null;
+  if(curatedPhoto)return <div className="min-w-0">
+    <EditorialExampleCard slug={marketSlug}/>
+    <Link href={"/hotels/results?city="+encodeURIComponent(market.supplierCity)+"&country="+market.countryCode}
+      className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-2">
+      Browse more source-backed city directory hotels
+    </Link>
+  </div>;
   return <div ref={marker} className="min-w-0" aria-label={market.city+" source-backed hotel directory cards"}>
     {!visible?<p className="text-sm text-[var(--text-soft)]">Explore source-backed local hotel records below.</p>:null}
     {loading?<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">Loading directory hotels…</p>:null}
