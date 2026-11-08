@@ -1388,8 +1388,12 @@ body.gth-hotel-search-widget { margin: 0; padding: 0.5rem; min-height: 0; height
 .gth-hotel-search-widget .search-bar .guests-popup .guest-control input,
 .gth-hotel-search-widget .search-bar .guests-popup .guest-control button { background: var(--card); color: var(--text); }
 @media (max-width: 640px) {
-  .gth-hotel-booking { padding: var(--space-md); }
+  /* Nuitee mobile search uses available screen width; all colors remain global day/night tokens. */
+  .gth-hotel-booking { width: 100%; max-width: 100%; margin: var(--space-sm) auto; padding: var(--space-md); border-left: 0; border-right: 0; border-radius: 0; }
   .gth-hotel-booking-heading > .gth-hotel-booking-action { width: 100%; }
   .gth-hotel-mode-switch > button { flex: 1 1 10rem; }
+  .gth-hotel-search-panel { margin-inline: calc(-1 * var(--space-md)); }
+  .gth-hotel-search-frame { border-radius: 0; }
+  body.gth-hotel-search-widget { padding: 0; }
   .gth-hotel-search-widget .search-bar { width: 100%; max-width: 100%; }
 }
