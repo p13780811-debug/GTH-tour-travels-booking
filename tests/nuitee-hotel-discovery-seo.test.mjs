@@ -49,9 +49,9 @@ test("directory cards never fabricate an exact Nuitee hotel booking",()=>{
 
 test("15 bounded hotel market guides preserve SEO and zero-rate-search scope",()=>{
  const slugs=[...markets.matchAll(/\{slug:"([^"]+)",city:/g)].map(v=>v[1]);
- assert.equal(slugs.length,15);
+ assert.equal(slugs.length,18);
  assert.equal(new Set(slugs).size,slugs.length);
- for(const name of ["mumbai","kolkata","goa","delhi","london","dubai","paris","tokyo","rome","new-york"])
+ for(const name of ["mumbai","kolkata","goa","delhi","chennai","hyderabad","ahmedabad","london","dubai","paris","tokyo","rome","new-york"])
   assert.ok(slugs.includes(name));
  assert.match(location,/getHotelMarket\(slug\)/);
  assert.match(location,/if\(!market\)notFound\(\)/);
@@ -62,4 +62,22 @@ test("15 bounded hotel market guides preserve SEO and zero-rate-search scope",()
  assert.match(location,/alternates:\{canonical\}/);
  assert.match(sitemap,/HOTEL_MARKETS\.map\(market=>\(\{url:base\+"\/hotels\/explore\/"/);
  assert.doesNotMatch(sitemap,/getNuiteeMarketFeed|nuitee-featured/);
+});
+
+test("homepage hotel showcase exposes one city hotel in each of six India and eight global markets",()=>{
+ const india=offers.match(/const INDIA_SHOWCASE=\[([^\]]+)\] as const/);
+ const global=offers.match(/const WORLD_SHOWCASE=\[([^\]]+)\] as const/);
+ assert.ok(india&&global,"Both market groups must be present");
+ const decode=v=>[...v.matchAll(/"([^"]+)"/g)].map(x=>x[1]);
+ const indiaCities=decode(india[1]),worldCities=decode(global[1]);
+ assert.deepEqual(indiaCities,["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad"]);
+ assert.ok(worldCities.includes("london")&&worldCities.includes("paris")&&worldCities.includes("new-york"));
+ assert.equal(indiaCities.length,6);
+ assert.equal(worldCities.length,8);
+ assert.equal(new Set([...indiaCities,...worldCities]).size,14);
+ assert.match(offers,/INDIA_SHOWCASE\.map\(slug=><ShowcaseCity key=\{slug\} slug=\{slug\}\/>\)/);
+ assert.match(offers,/WORLD_SHOWCASE\.map\(slug=><ShowcaseCity key=\{slug\} slug=\{slug\}\/>\)/);
+ assert.match(offers,/<FreeHotelDirectoryCards marketSlug=\{slug\} limit=\{1\}\/>/);
+ assert.match(offers,/IntersectionObserver/);
+ assert.match(offers,/not a ranking/);
 });
