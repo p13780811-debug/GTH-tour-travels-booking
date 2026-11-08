@@ -15,7 +15,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
 const pages = [
   "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/hotels/list-your-property",
-  "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender", "/tender/services",
+  "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender", "/tender/services", "/tender/coverage",
   "/partners", "/contact", "/about", "/affiliate-disclosure",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
   

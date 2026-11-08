@@ -91,15 +91,15 @@ export function TenderWorkspaceToolbar({ searchHref, searchLabel, notices }: { s
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div><h3 className="text-base font-semibold">Your tender workspace</h3><p className="mt-1 text-xs leading-6 text-[var(--text-soft)]">Shortlist, compare and revisit. Saved notices are checked again when you open your workspace.</p></div>
       <div className="flex flex-wrap items-center gap-3">
-        <Link href="/tender/saved" className="gth-btn inline-flex items-center justify-center gap-2"><Bookmark size={15} aria-hidden="true"/>Saved tenders ({workspace.saved.length})</Link>
-        <Link href="/tender/saved?view=compare" className="gth-btn inline-flex items-center justify-center gap-2"><GitCompareArrows size={15} aria-hidden="true"/>Compare ({workspace.comparison.length}/3)</Link>
+        <Link prefetch={false} href="/tender/saved" className="gth-btn inline-flex items-center justify-center gap-2"><Bookmark size={15} aria-hidden="true"/>Saved tenders ({workspace.saved.length})</Link>
+        <Link prefetch={false} href="/tender/saved?view=compare" className="gth-btn inline-flex items-center justify-center gap-2"><GitCompareArrows size={15} aria-hidden="true"/>Compare ({workspace.comparison.length}/3)</Link>
         <button type="button" className="gth-btn inline-flex items-center justify-center gap-2" disabled={alreadySaved} onClick={saveSearch}><SearchCheck size={15} aria-hidden="true"/>{alreadySaved ? "Search saved" : "Save this search"}</button>
         <TenderCsvDownload notices={notices}/>
       </div>
     </div>
     {message ? <p role="status" className="mt-3 text-xs leading-6 text-[var(--text-soft)]">{message}</p> : null}
     {workspace.searches.length ? <ul aria-label="Saved tender searches" className="mt-4 flex flex-wrap gap-3">{workspace.searches.map(search => <li key={search.href} className="flex min-w-0 max-w-full items-center gap-2">
-      <Link href={search.href} className="break-words text-sm underline underline-offset-4">{search.label}</Link>
+      <Link prefetch={false} href={search.href} className="break-words text-sm underline underline-offset-4">{search.label}</Link>
       <button type="button" className="gth-btn inline-flex items-center justify-center" aria-label={"Remove saved search " + search.label} onClick={() => update(value => ({...value,searches:value.searches.filter(item => item.href !== search.href)}))}><X size={14} aria-hidden="true"/></button>
     </li>)}</ul> : null}
     <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">Saved notice IDs and search filters stay on this browser. Private bid drafts use the separate signed-in preparation workspace.</p>

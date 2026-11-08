@@ -15,8 +15,8 @@ async function queue({role='admin',authError=null,error=null,rows=[],count=0}={}
  globalThis.__gthQueueBoundary={authenticatedStorage:async()=>{
   if(authError)throw authError;
   return {user:{app_metadata:{role},user_metadata:{role:'admin'}},client:{from:name=>{calls.push(['from',name]);return query;}}};
- },RequestError,requestError:err=>Response.json({error:err.message},{status:err.status??503}),parseServiceMessage,SERVICE_MESSAGE_PREFIX};
- const compiled=ts.transpileModule(`const {authenticatedStorage,RequestError,requestError,parseServiceMessage,SERVICE_MESSAGE_PREFIX}=globalThis.__gthQueueBoundary;\n${source}`,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+ },parseTenderCommercial:()=>null,RequestError,requestError:err=>Response.json({error:err.message},{status:err.status??503}),parseServiceMessage,SERVICE_MESSAGE_PREFIX};
+ const compiled=ts.transpileModule(`const {authenticatedStorage,RequestError,requestError,parseServiceMessage,SERVICE_MESSAGE_PREFIX,parseTenderCommercial}=globalThis.__gthQueueBoundary;\n${source}`,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
  const handler=await import(`data:text/javascript;base64,${Buffer.from(compiled+`\n//${crypto.randomUUID()}`).toString('base64')}`);
  return {calls,get:search=>handler.GET(new Request(`https://gth.test/api/admin/tender-services${search??''}`))};
 }

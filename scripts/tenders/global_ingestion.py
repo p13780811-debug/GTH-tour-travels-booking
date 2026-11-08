@@ -238,11 +238,11 @@ def collect_worldbank_india(limit):
             rejected.append(str(exc))
     return accepted[:limit],rejected
 
-def collect(source, limit):
+def collect(source, limit, *, pages=1, window=0):
     if source=="worldbank_india":
         return collect_worldbank_india(limit)
     if source in ("worldbank", "ted"):
-        return core.collect(source, limit)
+        return core.collect(source, limit, pages=pages, window=window) if pages > 1 else core.collect(source, limit)
     fetchers = {"uk": (fetch_uk, normalize_uk), "brazil": (fetch_brazil, normalize_brazil),
                 "uk_contractsfinder": (extra.fetch_contractsfinder, extra.contracts_finder_notice),
                 "ukraine": (extra.fetch_ukraine, extra.ukraine_notice),
@@ -290,6 +290,8 @@ def main(argv=None):
     p = argparse.ArgumentParser(description="Global official procurement data importer")
     p.add_argument("--source", choices=(*SOURCES, "all"), default="all")
     p.add_argument("--limit", type=int, default=100)
+    p.add_argument("--pages", type=int, default=1, help="Bounded World Bank/TED pages per run (1..3)")
+    p.add_argument("--rotation", default="0", help="Deeper-page rotation 0..30 or auto; newest page is always retained")
     p.add_argument("--commit", action="store_true")
     p.add_argument("--publish-official", action="store_true",
                    help="Explicitly approve publishing notices sourced from official APIs")
@@ -297,17 +299,22 @@ def main(argv=None):
     args = p.parse_args(argv)
     if not 1 <= args.limit <= 100:
         p.error("--limit must be 1..100 per source")
+    if not 1 <= args.pages <= 3:
+        p.error("--pages must be 1..3")
+    if args.rotation != "auto" and (not args.rotation.isdigit() or not 0 <= int(args.rotation) <= 30):
+        p.error("--rotation must be auto or 0..30")
+    rotation = (int(datetime.now(timezone.utc).timestamp()) // (6 * 3600)) % 31 if args.rotation == "auto" else int(args.rotation)
     if args.commit and not args.expected_project_ref:
         p.error("--commit requires --expected-project-ref")
     if args.publish_official and not args.commit:
         p.error("--publish-official requires --commit")
     names = SOURCES if args.source == "all" else (args.source,)
     stats = {"mode": "official_published" if args.publish_official else ("private_review" if args.commit else "dry_run"),
-             "sources": {}, "accepted": 0, "rejected": 0, "submitted_for_publication": 0}
+             "page_budget": args.pages, "rotation": rotation, "sources": {}, "accepted": 0, "rejected": 0, "submitted_for_publication": 0}
     failures = 0
     for source in names:
         try:
-            records, rejected = collect(source, args.limit)
+            records, rejected = collect(source, args.limit, pages=args.pages, window=rotation) if args.pages > 1 else collect(source, args.limit)
             if records is None:
                 stats["sources"][source] = {"skipped": "Free SAM.gov API key not configured"}
                 continue

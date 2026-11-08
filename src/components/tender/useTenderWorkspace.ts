@@ -7,6 +7,7 @@ const CHANGE = "gth-tender-discovery-change";
 // Browser-only fallback, never read or written during server rendering.
 let sessionValue: string | null = null;
 let memoryOnly = false;
+const pending: Array<(value:TenderDiscoveryWorkspace)=>TenderDiscoveryWorkspace> = [];
 function snapshot() {
   if (memoryOnly) return sessionValue;
   try { return window.localStorage.getItem(TENDER_WORKSPACE_KEY); }
@@ -24,11 +25,20 @@ export function useTenderWorkspace() {
   const raw = useSyncExternalStore(subscribe,snapshot,serverSnapshot);
   const workspace = useMemo(() => raw ? parseTenderWorkspace(raw) : EMPTY_TENDER_WORKSPACE,[raw]);
   const update = useCallback((change: (value: TenderDiscoveryWorkspace) => TenderDiscoveryWorkspace): boolean => {
-    const next = JSON.stringify(change(parseTenderWorkspace(snapshot())));
-    let persisted = true;
-    try { window.localStorage.setItem(TENDER_WORKSPACE_KEY,next); }
-    catch { persisted = false; memoryOnly = true; }
-    sessionValue = next;
+    let base:TenderDiscoveryWorkspace;
+    try{
+      base=parseTenderWorkspace(window.localStorage.getItem(TENDER_WORKSPACE_KEY));
+      for(const operation of pending)base=operation(base);
+    }catch{
+      const next=change(parseTenderWorkspace(sessionValue));
+      pending.push(change);sessionValue=JSON.stringify(next);memoryOnly=true;
+      window.dispatchEvent(new Event(CHANGE));return false;
+    }
+    const next=JSON.stringify(change(base));
+    let persisted=true;
+    try{window.localStorage.setItem(TENDER_WORKSPACE_KEY,next);pending.length=0;memoryOnly=false;}
+    catch{persisted=false;memoryOnly=true;pending.push(change);}
+    sessionValue=next;
     window.dispatchEvent(new Event(CHANGE));
     return persisted;
   },[]);

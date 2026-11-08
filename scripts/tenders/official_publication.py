@@ -20,6 +20,36 @@ APPROVED_SOURCE_HOST = {
     "US SAM.gov": "sam.gov",
 }
 
+def fresh_oidc_token(fallback):
+    """Refresh each upload batch using GitHub's trusted short-lived broker.
+    Never send its credential outside the official Actions broker origin.
+    """
+    from urllib.parse import urlsplit
+    from urllib.request import HTTPRedirectHandler, build_opener
+    provider=os.environ.get("ACTIONS_ID_TOKEN_REQUEST_URL", "")
+    credential=os.environ.get("ACTIONS_ID_TOKEN_REQUEST_TOKEN", "")
+    if not provider and not credential: return fallback
+    parsed=urlsplit(provider)
+    if (not provider or not credential or parsed.scheme!="https" or not parsed.hostname or
+        not (parsed.hostname=="actions.githubusercontent.com" or parsed.hostname.endswith(".actions.githubusercontent.com")) or
+        parsed.username or parsed.password or parsed.port not in (None,443)):
+        raise ValueError("Invalid GitHub identity broker")
+    class NoRedirect(HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+    url=provider+("&" if parsed.query else "?")+urlencode({"audience":"gth-pro-tender-ingest:dqprqjmhxjnrllczqyhz"})
+    request=Request(url,headers={"Authorization":"Bearer "+credential})
+    try:
+        with build_opener(NoRedirect).open(request,timeout=15) as response:
+            data=response.read(16001)
+            if len(data)>16000: raise ValueError("Invalid identity response")
+            token=json.loads(data).get("value")
+            if not isinstance(token,str) or not token or len(token)>6000: raise ValueError("Invalid identity response")
+            return token
+    except Exception:
+        raise ValueError("Fresh GitHub identity unavailable; batch was not submitted") from None
+
+
 def submit_official(records, project_ref):
     from import_tenders import valid_source
     if os.environ.get("GTH_TENDER_INGESTION_ENABLED") != "true":
@@ -53,7 +83,7 @@ def submit_official(records, project_ref):
                 raise ValueError("Mixed source batch")
             payload = json.dumps({"source": chunk[0]["source_name"], "records": chunk}, separators=(",", ":")).encode()
             req = Request(endpoint, data=payload, method="POST", headers={
-                "Authorization": "Bearer " + oidc,
+                "Authorization": "Bearer " + fresh_oidc_token(oidc),
                 "Content-Type": "application/json",
             })
             with urlopen(req, timeout=30) as response:

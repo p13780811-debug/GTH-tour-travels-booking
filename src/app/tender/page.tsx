@@ -1,10 +1,11 @@
+import {searchCachedPublicTenders as searchPublicTenders,getCachedTenderStats as getTenderDiscoveryStats} from "@/lib/tender/public-reader";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, Building2, ClipboardCheck, FileSearch,
   Globe2, Plane, Search, ShieldCheck
 } from "lucide-react";
-import { parseTenderFilters, searchPublicTenders, getTenderDiscoveryStats, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import { parseTenderFilters, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
 import {TenderMarketOverview, TenderMarketCard} from "@/components/tender/TenderMarketplacePanels";
 import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
@@ -103,6 +104,56 @@ export default async function TenderPage({searchParams}: Props) {
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
           {t("intro")}
         </p>
+      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" aria-label="Search official tender notices" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 sm:p-5">
+       <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
+          <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("country")}
+          <select name="country" defaultValue={filters.country} className="gth-input mt-2 min-w-0">
+            <option value="">{filters.scope==="world"?"All countries":audience.country?`${t("inCountry")}: ${countryLabel(audience.country,language)} (auto)`:t("allCountries")}</option>
+            {countries.map(c=><option key={c} value={c}>{countryLabel(c,language)}</option>)}
+          </select>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("sector")}
+          <select name="sector" defaultValue={filters.sector} className="gth-input mt-2 min-w-0">
+            <option value="">{t("allSectors")}</option>
+            {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
+          </select>
+        </label>
+        <button type="submit" className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
+          <Search size={17} aria-hidden="true"/> {t("search")}
+        </button>
+       </div>
+       <details className="mt-4" open={Boolean(filters.closingBefore||filters.closingWithin||filters.sort==="newest"||filters.scope==="world")}>
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">More filters · scope, language and deadlines</summary>
+        <div className="mt-2 grid min-w-0 gap-3 sm:grid-cols-2">        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
+          <select name="scope" defaultValue={filters.scope} className="gth-input mt-2 min-w-0">
+            <option value="local">{t("localScope")}</option><option value="world">{t("worldScope")}</option>
+          </select>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("language")}
+          <select name="lang" defaultValue={language} className="gth-input mt-2 min-w-0">
+            {LANG_OPTIONS.map(l=><option value={l.code} key={l.code}>{l.label}</option>)}
+          </select>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
+          <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="gth-input mt-2 min-w-0"/>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
+          <select name="sort" defaultValue={filters.sort??"deadline"} className="gth-input mt-2 min-w-0">
+            <option value="deadline">{language==="hi"?"पहले जल्दी बंद होने वाले":"Closing soonest"}</option>
+            <option value="newest">{language==="hi"?"पहले नए जोड़े गए":"Recently added"}</option>
+          </select>
+        </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">Deadline window
+          <select name="closingWithin" defaultValue={filters.closingWithin??""} className="gth-input mt-2 min-w-0">
+            <option value="">Any upcoming deadline</option><option value="7">Closing in the next 7 days</option>
+          </select>
+        </label></div>
+       </details>
+       <div className="mt-3 flex flex-wrap items-center gap-3">        <Link href={tenderFilterHref({q:"",country:homeCountry,sector:"",scope:filters.scope},language)} className="gth-btn inline-flex items-center justify-center">{t("clear")}</Link><Link href="/tender/coverage" className="inline-flex min-h-11 items-center text-sm underline">Country & source coverage</Link></div>
+      </form>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
           <ShieldCheck size={16} aria-hidden="true"/> {t("verified")}
         </div>
@@ -138,51 +189,7 @@ export default async function TenderPage({searchParams}: Props) {
         </div>
         <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} ${t("results")}` : "Source-backed catalog"}</span>
       </div>
-      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" className="grid min-w-0 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:items-end lg:p-5">
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
-          <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("country")}
-          <select name="country" defaultValue={filters.country} className="gth-input mt-2 min-w-0">
-            <option value="">{filters.scope==="world"?"All countries":audience.country?`${t("inCountry")}: ${countryLabel(audience.country,language)} (auto)`:t("allCountries")}</option>
-            {countries.map(c=><option key={c} value={c}>{countryLabel(c,language)}</option>)}
-          </select>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
-          <select name="scope" defaultValue={filters.scope} className="gth-input mt-2 min-w-0">
-            <option value="local">{t("localScope")}</option><option value="world">{t("worldScope")}</option>
-          </select>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("language")}
-          <select name="lang" defaultValue={language} className="gth-input mt-2 min-w-0">
-            {LANG_OPTIONS.map(l=><option value={l.code} key={l.code}>{l.label}</option>)}
-          </select>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("sector")}
-          <select name="sector" defaultValue={filters.sector} className="gth-input mt-2 min-w-0">
-            <option value="">{t("allSectors")}</option>
-            {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
-          </select>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("deadlineFilter")}
-          <input type="date" name="closingBefore" defaultValue={filters.closingBefore} className="gth-input mt-2 min-w-0"/>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"क्रम":"Sort by"}
-          <select name="sort" defaultValue={filters.sort??"deadline"} className="gth-input mt-2 min-w-0">
-            <option value="deadline">{language==="hi"?"पहले जल्दी बंद होने वाले":"Closing soonest"}</option>
-            <option value="newest">{language==="hi"?"पहले नए जोड़े गए":"Recently added"}</option>
-          </select>
-        </label>
-        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">Deadline window
-          <select name="closingWithin" defaultValue={filters.closingWithin??""} className="gth-input mt-2 min-w-0">
-            <option value="">Any upcoming deadline</option><option value="7">Closing in the next 7 days</option>
-          </select>
-        </label>
-        <button type="submit" className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
-          <Search size={17} aria-hidden="true"/> {t("search")}
-        </button>
-        <Link href={tenderFilterHref({q:"",country:homeCountry,sector:"",scope:filters.scope},language)} className="gth-btn inline-flex items-center justify-center">{t("clear")}</Link>
-      </form>
+
       <TenderWorkspaceToolbar notices={notices} searchHref={tenderFilterHref(searchFilters,language)} searchLabel={[filters.q||"All notices",localCountry||(filters.scope==="world"?"Worldwide":"Choose country"),filters.sector,filters.closingWithin?"Closing in 7 days":""].filter(Boolean).join(" · ")}/>
       {filters.q||filters.sector||filters.closingBefore||filters.closingWithin ? <nav aria-label="Active tender filters" className="mt-4 flex flex-wrap items-center gap-3 text-sm">
         <span className="text-xs text-[var(--text-soft)]">Active filters:</span>

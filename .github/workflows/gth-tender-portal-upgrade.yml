@@ -1,0 +1,139 @@
+name: GTH Tender Portal — protected UX, revenue and read-budget QA
+on:
+  push:
+    branches: [feat/tender-decision-revenue-global-20261109]
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/tender/**"
+      - "src/app/api/tender/**"
+      - "src/lib/tender/**"
+      - "src/components/tender/**"
+      - "src/components/admin/Tender*"
+      - "src/app/api/admin/tender-services/**"
+      - "scripts/tenders/**"
+      - "scripts/qa-tender-portal.mjs"
+      - "tests/tender-*.test.mjs"
+      - "tests/test_*tender*.py"
+      - ".github/workflows/gth-tender-portal-upgrade.yml"
+permissions:
+  contents: read
+concurrency:
+  group: gth-tender-upgrade-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  protected-portal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://tender-qa.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
+      SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
+      UPSTASH_REDIS_REST_URL: https://tender-qa.upstash.io
+      UPSTASH_REDIS_REST_TOKEN: fixture-private-budget
+      VERCEL_ENV: production
+      GTH_PUBLIC_LAUNCH_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        env:
+          NODE_OPTIONS: ""
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-python@v5
+        env:
+          NODE_OPTIONS: ""
+        with:
+          python-version: "3.12"
+      - name: Verify protected boundaries before installing tools
+        env:
+          NODE_OPTIONS: ""
+        run: node scripts/check-tender-upgrade-boundaries.mjs
+      - name: Install existing application dependencies
+        env:
+          NODE_OPTIONS: ""
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Run all website regressions and strict types
+        env:
+          NODE_OPTIONS: ""
+        run: |
+          npm run test:security
+          npx tsc --noEmit
+          npm run lint
+          python -m unittest discover -s tests -p 'test_*tender*.py'
+      - name: Start explicit local source, auth and Redis fixtures
+        env:
+          NODE_OPTIONS: ""
+        run: |
+          node scripts/qa-tender-portal.mjs --fixture-server > /tmp/gth-tender-fixture.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/gth-tender-fixture.log
+          exit 1
+      - name: Production build with original fonts and isolated source fixtures
+        env:
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs
+        run: npm run build
+      - name: Install browser for actual portal journeys
+        env:
+          NODE_OPTIONS: ""
+        run: |
+          npm install --no-save --package-lock=false --legacy-peer-deps --no-audit --no-fund playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Verify real HTTP/cache, day/night, RTL and quote-to-payment journeys
+        env:
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs
+        run: |
+          npm run start -- --port 4210 > /tmp/gth-tender-next-start.log 2>&1 &
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 3 http://127.0.0.1:4210/tender/coverage > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gth-tender-next-start.log; exit 1; fi
+          NODE_OPTIONS= node scripts/qa-tender-portal.mjs
+      - name: Upload actual fixture-browser acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        env:
+          NODE_OPTIONS: ""
+        with:
+          name: gth-tender-portal-qa-fixtures-not-production
+          path: |
+            /tmp/gth-tender-portal-qa/
+            /tmp/gth-tender-next-start.log
+          retention-days: 7
+          if-no-files-found: ignore
+  official-source-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Record bounded official-source availability without publishing
+        run: |
+          mkdir -p /tmp/gth-tender-source-probe
+          for source in worldbank ted; do
+            if python scripts/tenders/global_ingestion.py --source "$source" --limit 20 --pages 3 --rotation 0 > "/tmp/gth-tender-source-probe/$source.json"; then
+              echo "Read-only source probe completed: $source"
+            else
+              echo "::warning::Official source probe reported an upstream error for $source; inspect evidence. No database writes were attempted."
+            fi
+          done
+      - name: Upload observed source health, not publication proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-tender-official-source-health-read-only
+          path: /tmp/gth-tender-source-probe/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,3 +1,5 @@
+import TenderPursuitPlanner from "@/components/tender/TenderPursuitPlanner";
+import {getCachedPublicTender as getPublicTender} from "@/lib/tender/public-reader";
 import type { Metadata } from "next";
 import { cache } from "react";
 import JsonLd from "@/components/seo/JsonLd";
@@ -6,7 +8,7 @@ import { isIndexableTender, tenderMetadata } from "@/lib/seo/public-listings";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Globe2, ShieldCheck } from "lucide-react";
-import { getPublicTender, safeTenderSource } from "@/lib/tender/catalog";
+import { safeTenderSource } from "@/lib/tender/catalog";
 import TenderIntelligencePanel from "@/components/tender/TenderIntelligencePanel";
 import {resolveTenderAudience} from "@/lib/tender/localization";
 import { TenderSaveCompare, TenderDeadlineDownload } from "@/components/tender/TenderDiscoveryActions";
@@ -74,6 +76,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
       <Link href="/tender/saved?view=compare" className="gth-btn inline-flex items-center justify-center gap-2">Open comparison</Link>
       </div>
       {tender.summary&&<section className="mt-9"><h2 className="text-xl font-semibold">Notice summary</h2><p className="mt-4 whitespace-pre-line text-sm leading-8 text-[var(--text-soft)]">{tender.summary}</p></section>}
+      <TenderPursuitPlanner key={tender.id} id={tender.id} deadline={tender.deadline_at}/>
       <TenderIntelligencePanel tenderId={tender.id} language={language} sourceUrl={url}
         notice={{
           title:tender.title,summary:tender.summary,sector:tender.sector,

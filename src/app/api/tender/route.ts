@@ -1,5 +1,6 @@
+import {searchCachedPublicTenders as searchPublicTenders,tenderResponseHeaders} from "@/lib/tender/public-reader";
 import { NextResponse } from "next/server";
-import { parseTenderFilters, searchPublicTenders } from "@/lib/tender/catalog";
+import { parseTenderFilters } from "@/lib/tender/catalog";
 import { resolveTenderAudience } from "@/lib/tender/localization";
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
@@ -12,10 +13,10 @@ export async function GET(request: Request) {
   const country=valid.filters.country || audience.country || "";
   const result = await searchPublicTenders({...valid.filters,country:valid.filters.scope==="world"?valid.filters.country:country,
     nearby:valid.filters.scope==="local"&&country?audience.nearby:[]});
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers });
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers:{...headers,...(result.status===429?{"Retry-After":"60"}:{})} });
   return NextResponse.json({ items: result.items, total: result.total, page: result.page, pageSize: result.size,
     country,language:audience.language,scope:valid.filters.scope,
-    primaryCount:result.primaryCount??null,nearbyCount:result.nearbyCount??null,countryRequired:result.countryRequired??false }, { headers });
+    primaryCount:result.primaryCount??null,nearbyCount:result.nearbyCount??null,countryRequired:result.countryRequired??false }, { headers:tenderResponseHeaders(searchParams,result.items.map(item=>item.deadline_at)) });
 }
 
 // Import/publication is privileged and NEVER accepted through a public API.

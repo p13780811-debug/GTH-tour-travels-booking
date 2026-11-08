@@ -58,5 +58,5 @@ jobs:
           test -n "$GTH_TENDER_OIDC_TOKEN"
           echo "::add-mask::$GTH_TENDER_OIDC_TOKEN"
           export GTH_TENDER_OIDC_TOKEN
-          python scripts/tenders/global_ingestion.py --source all --limit 100 \
+          python scripts/tenders/global_ingestion.py --source all --limit 100 --pages 3 --rotation auto \
             --commit --publish-official --expected-project-ref dqprqjmhxjnrllczqyhz

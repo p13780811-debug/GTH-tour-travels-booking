@@ -1,3 +1,10 @@
+> 9 November 2026 continuation: the existing amendment RPC already updates changed
+> public source fields without overwriting reviewed eligibility. The new staged
+> workflow adds a maximum three-page World Bank/TED rotating read window and fresh
+> GitHub OIDC per upload batch. See [the protected audit](releases/tender-portal-audit-20261109.md).
+> Older phase descriptions below are historical; neither these connectors nor
+> source-guidance links promise complete worldwide inventory.
+
 # GTH PRO Global Open Tender Intake — 15 October 2026
 
 This extends (does not replace) the existing /tender marketplace, source-provenance gate,
@@ -99,10 +106,9 @@ after the real OIDC-authorized run.
 ## Known technical constraints
 
 - Existing World Bank and TED parsers are preserved. Both need HTTP/live fixture testing.
-- One page per source, capped at 100 per six-hour run. Coverage is limited; do not
+- Default dry runs read one page; the staged workflow reads up to three World Bank/TED pages, capped at100 accepted per source per six-hour run. Coverage is limited; do not
   advertise exhaustive historical or worldwide tender coverage.
-- Imported duplicate source references are ignored to protect previous review work;
-  amendments and corrected deadlines require a separate controlled update workflow.
+- The OIDC gateway uses the existing source-revision RPC for changed public fields and deadlines, preserving reviewed eligibility. The manual protected-key fallback remains ignore-duplicates.
 - Brazil PNCP local date-time without offset uses America/Sao_Paulo for conservative
   display; always consult the official closing deadline. Date-only deadlines close at
   midnight UTC to avoid offering notices that may already have expired.

@@ -56,7 +56,7 @@ export function TenderMarketOverview({
             <p className="text-xs font-medium text-[var(--text-soft)]">{m("notice")}</p>
             <p className="mt-2 text-3xl font-bold tracking-tight tabular-nums">{allCount.toLocaleString(language)}</p>
           </div>
-          <Link href={tenderFilterHref({...base,closingWithin:"7"},language)}
+          <Link prefetch={false} href={tenderFilterHref({...base,closingWithin:"7"},language)}
             className="group border-b border-[var(--border)] px-5 py-5 hover:bg-[var(--bg-soft)] sm:border-b-0 sm:border-e sm:px-7"
             aria-label={m("soon")}>
             <p className="inline-flex items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
@@ -73,7 +73,7 @@ export function TenderMarketOverview({
             <p className="mt-3 text-sm font-semibold">{dateText??"—"}</p>
           </div>
         </div>
-        <p className="border-t border-[var(--border)] px-5 py-3 text-xs leading-6 text-[var(--text-soft)] sm:px-7">{m("schedule")}</p>
+        <p className="border-t border-[var(--border)] px-5 py-3 text-xs leading-6 text-[var(--text-soft)] sm:px-7">{m("schedule")}{stats.checkedAt&&Number.isFinite(Date.parse(stats.checkedAt))?` Counts checked: ${new Date(stats.checkedAt).toLocaleString(language,{dateStyle:"medium",timeStyle:"short",timeZone:"UTC"})} UTC.`:""}</p>
       </div>
     </section>:null}
     {view==="categories"?<section aria-labelledby="tender-category-title" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-12">
@@ -83,7 +83,7 @@ export function TenderMarketOverview({
           <h2 id="tender-category-title" className="mt-2 text-2xl font-semibold">{m("categories")}</h2>
           <p className="mt-3 max-w-3xl text-sm text-[var(--text-soft)]">{m("categoryHelp")}</p>
         </div>
-        <Link className="gth-btn inline-flex items-center gap-2 justify-center"
+        <Link prefetch={false} className="gth-btn inline-flex items-center gap-2 justify-center"
           href={tenderFilterHref({...base,sector:""},language)}>
           {m("all")} <span className="tabular-nums">{allCount}</span>
         </Link>
@@ -92,7 +92,7 @@ export function TenderMarketOverview({
         {categories.map(({key,Icon})=>{
           const count=stats.sectors[key as TenderSector];
           const active=filters.sector===key;
-          return <Link key={key}
+          return <Link prefetch={false} key={key}
             href={tenderFilterHref({...base,sector:key},language)}
             aria-current={active?"page":undefined}
             className={"group flex min-h-32 flex-col justify-between rounded-2xl border p-4 transition-colors hover:border-[var(--gold)] sm:p-5 " +
@@ -107,7 +107,7 @@ export function TenderMarketOverview({
           </Link>;
         })}
       </div>
-      <Link href={tenderFilterHref({...base,closingWithin:"7"},language)}
+      <Link prefetch={false} href={tenderFilterHref({...base,closingWithin:"7"},language)}
         className="gth-btn mt-5 flex flex-wrap items-center justify-between gap-3">
         <span className="inline-flex items-center gap-3"><Timer size={19} aria-hidden="true"/>{m("soon")}</span>
         <span className="inline-flex items-center gap-2 text-xs">{m("soonHelp")} <ArrowRight size={16} aria-hidden="true"/></span>
@@ -146,7 +146,7 @@ export function TenderMarketCard({tender,language}:{
       <span className="capitalize">{m(tender.sector)}</span>
     </div>
     <h3 className="mt-4 break-words text-lg font-semibold leading-7">
-      <Link href={"/tender/"+tender.id} className="hover:underline">{tender.title}</Link>
+      <Link prefetch={false} href={"/tender/"+tender.id} className="hover:underline">{tender.title}</Link>
     </h3>
     <p className="mt-2 line-clamp-2 text-sm font-medium text-[var(--text-soft)]">{tender.buyer}</p>
     {tender.region?<p className="mt-1 text-xs text-[var(--text-soft)]">{tender.region}</p>:null}
@@ -165,7 +165,7 @@ export function TenderMarketCard({tender,language}:{
     <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--text-soft)]"><ShieldCheck size={14} aria-hidden="true"/>{m("deadlineNote")}</p>
     <TenderSaveCompare id={tender.id} title={tender.title}/>
     <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
-      <Link href={"/tender/"+tender.id}
+      <Link prefetch={false} href={"/tender/"+tender.id}
         className="gth-btn inline-flex items-center gap-2 justify-center">
         <FileText size={16} aria-hidden="true"/>{t("view")}
       </Link>
@@ -173,7 +173,7 @@ export function TenderMarketCard({tender,language}:{
         className="gth-btn inline-flex items-center gap-2 justify-center">
         {m("openOriginal")} <ArrowUpRight size={16} aria-hidden="true"/>
       </a>:null}
-      <Link href={"/tender/assistant?tenderId="+encodeURIComponent(tender.id)}
+      <Link prefetch={false} href={"/tender/assistant?tenderId="+encodeURIComponent(tender.id)}
         className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text)]">{t("eligibility")} <ArrowRight size={16} aria-hidden="true"/></Link>
     </div>
   </article>;

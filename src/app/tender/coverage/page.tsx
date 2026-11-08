@@ -1,0 +1,21 @@
+import type {Metadata} from "next";
+import Link from "next/link";
+import {ArrowLeft,ArrowUpRight,Globe2,Search} from "lucide-react";
+import {COUNTRY_CODES,countryLabel} from "@/lib/tender/localization";
+import {TENDER_COVERAGE,coverageLabel,tenderSourcesFor} from "@/lib/tender/coverage";
+export const metadata:Metadata={title:"Tender Country & Official Source Coverage | GTH PRO",description:"Find official procurement sources by country and understand GTH PRO feed, free-key and portal-only coverage.",alternates:{canonical:"/tender/coverage"}};
+export default async function TenderCoveragePage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
+ const p=await searchParams,country=typeof p.country==="string"&&COUNTRY_CODES.has(p.country)?p.country:"";
+ const rows=tenderSourcesFor(country),countries=[...COUNTRY_CODES].sort((a,b)=>countryLabel(a,"en").localeCompare(countryLabel(b,"en")));
+ return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]"><div className="mx-auto max-w-6xl px-4 py-9 sm:px-6 md:py-12">
+  <Link href="/tender" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ArrowLeft size={16}/>Tender discovery</Link>
+  <p className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]"><Globe2 size={17}/>Your global procurement starting point</p>
+  <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Know where your next opportunity comes from.</h1>
+  <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Search imported notices in GTH PRO, then use the official source for the latest documents and submission. Coverage is partial: an available connector does not prove a successful recent sync or complete country inventory.</p>
+  <form action="/tender/coverage" method="get" role="search" className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><label className="min-w-0 flex-1 text-sm font-semibold">Country<select name="country" defaultValue={country} className="gth-input mt-2 w-full min-w-0"><option value="">All listed sources</option>{countries.map(code=><option key={code} value={code}>{countryLabel(code,"en")}</option>)}</select></label><button type="submit" className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2"><Search size={16}/>Find sources</button></form>
+  <div className="mt-5 flex flex-wrap gap-3"><Link prefetch={false} href={"/tender?"+new URLSearchParams({scope:"world",lang:"en",...(country?{country}:{})})} className="gth-btn inline-flex min-h-11 items-center justify-center">Search imported {country?countryLabel(country,"en"):"worldwide"} notices</Link><Link href="/tender/services?service=tender_monitoring" className="gth-btn inline-flex min-h-11 items-center justify-center">Optional monitoring-service quote</Link></div>
+  <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">Existing ingestion runs on a best-effort six-hour schedule, with bounded requests and source validation. No source here promises every tender or instant publication.</p>
+  <section aria-label="Official tender sources" className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{rows.map(row=><article key={row.id} className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs font-semibold text-[var(--text-soft)]">{coverageLabel(row.mode)}</p><h2 className="mt-3 text-lg font-semibold">{row.name}</h2><p className="mt-3 flex-1 text-sm leading-7 text-[var(--text-soft)]">{row.note}</p><a href={row.url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline">Open official source <ArrowUpRight size={16}/></a></article>)}</section>
+  <p className="mt-7 text-xs leading-6 text-[var(--text-soft)]">{TENDER_COVERAGE.filter(row=>row.mode!=="official-portal").length} source connectors are represented in the existing ingestion code. Country selection filters source guidance; global World Bank and UN sources remain visible for context. Live feed health and imported counts must be checked from the actual source run and catalogue.</p>
+ </div></main>;
+}

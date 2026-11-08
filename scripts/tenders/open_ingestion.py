@@ -246,38 +246,62 @@ def _ted_notice(item):
         "currency": currency,
     }, "ted", "ted.europa.eu")
 
-def fetch_worldbank(limit):
-    url = WORLD_BANK + "?" + urlencode({
-        "format": "json", "rows": min(limit, 100), "os": 0,
-        "srt": "noticedate desc,id asc",
-    })
-    result = _http_json(url, allowed_host="search.worldbank.org")
-    notices = result.get("procnotices")
-    if isinstance(notices, dict):
-        notices = list(notices.values())
-    if not isinstance(notices, list):
-        raise ValueError("World Bank response schema changed")
-    return notices[:limit]
+def _source_pages(pages, window):
+    if not isinstance(pages, int) or not 1 <= pages <= 3 or not isinstance(window, int) or not 0 <= window <= 30:
+        raise ValueError("Source page budget must be 1..3 and rotation 0..30")
+    return [0] + [1 + window * (pages - 1) + i for i in range(pages - 1)]
 
-def fetch_ted(limit):
-    since = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y%m%d")
-    result = _http_json(TED, allowed_host="api.ted.europa.eu", payload={
-        "query": "PD>=" + since + " SORT BY publication-date DESC",
-        "fields": TED_FIELDS, "page": 1, "limit": min(limit, 100),
-        "scope": "ACTIVE", "paginationMode": "PAGE_NUMBER",
-    })
-    notices = result.get("notices")
-    if not isinstance(notices, list):
-        raise ValueError("TED response schema changed")
-    return notices[:limit]
 
-def collect(source, limit):
+def _balanced_pages(batches):
+    """Preserve newest results while giving deeper pages a bounded fair share."""
+    return [batch[i] for i in range(max((len(b) for b in batches), default=0))
+            for batch in batches if i < len(batch)]
+
+
+def fetch_worldbank(limit, *, pages=1, window=0):
+    batches=[]
+    width=100 if pages > 1 else min(limit, 100)
+    for page in _source_pages(pages, window):
+        result = _http_json(WORLD_BANK + "?" + urlencode({
+            "format": "json", "rows": width, "os": page * width,
+            "srt": "noticedate desc,id asc",
+        }), allowed_host="search.worldbank.org")
+        notices = result.get("procnotices")
+        if isinstance(notices, dict): notices = list(notices.values())
+        if not isinstance(notices, list): raise ValueError("World Bank response schema changed")
+        batches.append(notices[:width])
+        if not notices: break
+    return _balanced_pages(batches)
+
+
+def fetch_ted(limit, *, pages=1, window=0):
+    since = (datetime.now(timezone.utc) - timedelta(days=365 if pages > 1 else 10)).strftime("%Y%m%d")
+    batches=[]
+    total=None
+    for page in _source_pages(pages, window):
+        if total is not None and page*min(limit,100)>=total: break
+        result = _http_json(TED, allowed_host="api.ted.europa.eu", payload={
+            "query": "PD>=" + since + " SORT BY publication-date DESC",
+            "fields": TED_FIELDS, "page": page + 1, "limit": min(limit, 100),
+            "scope": "ACTIVE", "paginationMode": "PAGE_NUMBER",
+        })
+        notices = result.get("notices")
+        total_value=result.get("totalNoticeCount")
+        if isinstance(total_value,int) and not isinstance(total_value,bool) and total_value>=0: total=total_value
+        if not isinstance(notices, list): raise ValueError("TED response schema changed")
+        batches.append(notices[:min(limit,100)])
+        if not notices: break
+    return _balanced_pages(batches)
+
+
+def collect(source, limit, *, pages=1, window=0):
     if source not in ("ted", "worldbank"):
         raise ValueError("Unsupported tender source")
-    records = fetch_ted(limit) if source == "ted" else fetch_worldbank(limit)
+    records = (fetch_ted(limit, pages=pages, window=window) if source == "ted" else fetch_worldbank(limit, pages=pages, window=window)) if pages > 1 else (fetch_ted(limit) if source == "ted" else fetch_worldbank(limit))
     normalize = _ted_notice if source == "ted" else _worldbank_notice
     accepted, rejected, seen = [], [], set()
     for item in records:
+        if len(accepted) >= limit: break
         try:
             if not isinstance(item, dict):
                 raise ValueError("Invalid notice object")

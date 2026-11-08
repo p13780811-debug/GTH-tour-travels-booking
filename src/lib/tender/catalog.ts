@@ -61,7 +61,8 @@ function publicClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return url && key ? createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false }
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (input,init) => fetch(input,{...init,signal:init?.signal ? AbortSignal.any([init.signal,AbortSignal.timeout(5000)]) : AbortSignal.timeout(5000)}) }
   }) : null;
 }
 
@@ -150,6 +151,7 @@ export type TenderDiscoveryStats = {
   sectors: Record<TenderSector, number>;
   closingSoon7: number;
   latestImportedAt: string | null;
+  checkedAt?: string;
 };
 
 /**
@@ -215,4 +217,18 @@ export async function getPublicTender(id: string):
     if (error) return {ok:false,status:503,error:"Tender catalog unavailable"};
     return {ok:true,item:data as PublicTender | null};
   } catch {return {ok:false,status:503,error:"Tender catalog unavailable"};}
+}
+
+/** One bounded anonymous/RLS read for a saved shortlist; never a full catalogue. */
+export async function getPublicTenderBatch(ids:string[]):Promise<TenderResult>{
+  if(!ids.length||ids.length>40||new Set(ids).size!==ids.length||ids.some(id=>!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id)))
+    return {ok:false,status:400,error:"Choose up to 40 valid tender references"};
+  const db=publicClient();if(!db)return {ok:false,status:503,error:"Tender catalog is not configured"};
+  try{
+    const {data,error}=await db.from("tenders").select(PUBLIC_COLUMNS)
+      .in("id",ids).eq("status","published").eq("source_verified",true).eq("is_public",true)
+      .gt("deadline_at",new Date().toISOString()).limit(40);
+    if(error)throw error;
+    return {ok:true,items:(data??[]) as PublicTender[],total:data?.length??0,page:1,size:40};
+  }catch{return {ok:false,status:503,error:"Tender catalog unavailable"};}
 }

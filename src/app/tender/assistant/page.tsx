@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
 import TenderAssistant from "@/components/tender/TenderAssistant";
-import {getPublicTender} from "@/lib/tender/catalog";
+import {getCachedPublicTender as getPublicTender} from "@/lib/tender/public-reader";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
   title:"AI Tender Eligibility & Guided Bid Preparation | GTH PRO",

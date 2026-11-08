@@ -1,3 +1,4 @@
+import type {TenderCommercial} from "./commercial";
 /** Shared public service catalogue and bounded, versioned intake format. No secrets. */
 export const TENDER_SERVICES = [
   {id:"eligibility_review",name:"Eligibility review",summary:"Review your business profile against a selected notice and identify missing qualification evidence.",deliverable:"A written eligibility checklist with questions to resolve against the official notice."},
@@ -13,7 +14,7 @@ export type ServiceRequest = {
   organisation:string; phone:string; country:string; notes:string; tender_id:string|null;
 };
 export type ServiceContext = {service:TenderServiceId;phone:string;notes:string;tender_id:string|null;tender_title:string|null};
-export type ServiceQueueItem = ServiceRequest & {status:"new"|"reviewing"|"closed";submitted_at:string;tender_title:string|null};
+export type ServiceQueueItem = ServiceRequest & {status:"new"|"reviewing"|"closed";submitted_at:string;tender_title:string|null;commercial?:TenderCommercial|null;commercialInvalid?:boolean};
 export function serviceChoice(value:unknown):TenderServiceId|null {
   return TENDER_SERVICES.find(service=>service.id===value)?.id??null;
 }
