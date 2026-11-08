@@ -185,7 +185,7 @@ export default function NuiteeHotelOffers(){
       <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold)]"><Globe2 size={15}/> GTH PRO hotel discovery</p>
       <h2 id="gth-free-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore hotels across India and the world</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-        Explore a real directory hotel from each featured city, then browse its local catalog. This selection shows the geographic breadth of GTH PRO's free hotel directory; it is not a ranking, a guarantee of inventory in every destination, or proof of room availability.
+        Explore real named hotel examples from India and worldwide, with matching publicly licensed hotel photos where permitted. Read GTH PRO details, then open our existing Nuitee White Label to find availability. These editorial examples are not Nuitee inventory or verified rankings.
       </p>
     </div>
     <ShowcaseCatalog/>
@@ -205,7 +205,7 @@ export default function NuiteeHotelOffers(){
     </div>
     <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
-      Directory hotel records are source-attributed locations, not confirmed Nuitee listings. Pricing and payment remain with the existing booking provider. No new paid API is required.
+      These named hotel examples and source-backed directory records are not confirmed Nuitee inventory. The existing White Label handles availability, pricing and payment. No paid API or guessed hotel IDs are used.
     </p>
   </section>;
 }
