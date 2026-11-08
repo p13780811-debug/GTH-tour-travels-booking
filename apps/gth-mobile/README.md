@@ -36,6 +36,10 @@ Supabase policies, importers, or global CSS.
 - Source details include published facts. Reviewed hotel UUIDs resolve to their
   real detail route; only an API-confirmed booking match exposes the existing
   server-verified exact-hotel handoff, which checks the mapping again on click.
+- Native Hotels also offers a direct room/rate search through the existing
+  Nuitée White Label entry, including when a directory record has no exact
+  partner match. The booking URL stays separate from directory query parameters;
+  destination, dates and guests are selected in the existing booking form.
 - Partial-source retries preserve successful pages and retry the failed cursor.
   Hotel/tender pagination respects the actual API limit, and unknown property
   totals are not displayed as exact inventory counts. Long result lists use

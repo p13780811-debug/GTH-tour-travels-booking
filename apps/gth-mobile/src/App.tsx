@@ -399,6 +399,10 @@ function NativeApp(){
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accentText:theme.text}}>{filter.title}</Text>
       </Pressable>)}
      </ScrollView>
+     {kind==="hotel"&&<View style={{gap:8,marginBottom:16}}>
+      <Action label="Search rooms & rates" theme={theme} onPress={()=>openSite("/app/hotels")}/>
+      <Text style={{fontSize:12,lineHeight:19,color:theme.muted}}>Choose dates and guests for current room options. Browse hotel records below.</Text>
+     </View>}
      {(kind==="tender"||(kind==="all"&&!!term))&&<View style={{marginBottom:14,gap:8}}>
       <Text style={{fontSize:12,fontWeight:"800",color:theme.text}}>Tender search region</Text>
       <Text style={{fontSize:11,lineHeight:17,color:theme.muted}}>

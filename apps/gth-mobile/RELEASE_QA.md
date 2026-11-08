@@ -49,6 +49,10 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - Review exact hotel UUID and OSM detail links, booking-match gating, credit
   source/license links and failed-photo fallbacks. A saved booking match must
   still pass the existing server-side mapping check before supplier handoff.
+- From native Hotels, open Search rooms & rates and confirm the existing
+  `/app/hotels` Nuitée booking form appears. Do not add directory parameters
+  (`q`, `destination`, `directory`) to this booking entry. Cancel must retain
+  the native hotel screen; no unverified directory record becomes bookable.
 - Check selected bottom tabs, category/region filters and actions in both themes;
   text contrast must meet 4.5:1. Use enlarged Android fonts, keyboard navigation
   and screen-reader checkbox/selection labels. Confirm multiline note editing

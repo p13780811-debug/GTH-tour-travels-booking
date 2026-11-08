@@ -53,10 +53,20 @@ try{
  await page.getByText('No matching service',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Show all services',exact:true}).click();
  await page.getByRole('tab',{name:'Home tab',exact:true}).click();
+ await page.getByRole('button',{name:'Open Hotels',exact:true}).click();
+ await page.getByRole('button',{name:'Search rooms & rates',exact:true}).click();
+ const roomSearchPromise=page.waitForEvent('popup');
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ const roomSearch=await roomSearchPromise;await roomSearch.waitForLoadState();
+ assert.equal(roomSearch.url(),'https://www.gthproglobal.com/app/hotels',
+  'The existing White Label entry must remain bare: q/destination switch this website route to directory mode');
+ await roomSearch.close();
+ await page.getByRole('tab',{name:'Home tab',exact:true}).click();
+ const beforeCruise=apiCalls.length;
  await page.getByRole('textbox',{name:'Universal search',exact:true}).fill('Goa cruises');
  await page.getByRole('button',{name:'Search GTH PRO',exact:true}).click();
  await page.getByText('Continue to Cruises',{exact:true}).waitFor();
- assert.equal(apiCalls.length,0,'A cruise query must not search unrelated inventory');
+ assert.equal(apiCalls.length,beforeCruise,'A cruise query must not search unrelated inventory');
  const popupPromise=page.waitForEvent('popup');
  await page.getByRole('button',{name:'Open Cruises',exact:true}).click();
  const popup=await popupPromise;await popup.waitForLoadState();
@@ -72,7 +82,7 @@ try{
  await page.getByRole('button',{name:'Retry unavailable sources',exact:true}).click();
  await page.getByRole('button',{name:'Details for QA Tour Recovered',exact:true}).waitFor();
  assert.equal(apiCalls.filter(url=>url.pathname!=='/api/tours').length,successfulCalls,'Recover only the failed source');
- assert.deepEqual(apiCalls.filter(url=>url.pathname==='/api/hotels').map(url=>url.searchParams.get('page')),['1','2']);
+ assert.deepEqual(apiCalls.filter(url=>url.pathname==='/api/hotels'&&url.searchParams.get('city')==='Goa').map(url=>url.searchParams.get('page')),['1','2']);
  await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).click();
  await page.getByText('At a glance',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Check dates & availability',exact:true}).click();
