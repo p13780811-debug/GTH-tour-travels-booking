@@ -47,7 +47,7 @@ test("directory cards never fabricate an exact Nuitee hotel booking",()=>{
  assert.doesNotMatch(offers,/HOTEL_BOOKING_ORIGIN|hotelWhiteLabelUrl|\/hotels\/featured\/|getNuiteeMarketFeed/);
 });
 
-test("15 bounded hotel market guides preserve SEO and zero-rate-search scope",()=>{
+test("18 bounded hotel market guides preserve SEO and zero-rate-search scope",()=>{
  const slugs=[...markets.matchAll(/\{slug:"([^"]+)",city:/g)].map(v=>v[1]);
  assert.equal(slugs.length,18);
  assert.equal(new Set(slugs).size,slugs.length);
@@ -64,20 +64,34 @@ test("15 bounded hotel market guides preserve SEO and zero-rate-search scope",()
  assert.doesNotMatch(sitemap,/getNuiteeMarketFeed|nuitee-featured/);
 });
 
-test("homepage hotel showcase exposes one city hotel in each of six India and eight global markets",()=>{
- const india=offers.match(/const INDIA_SHOWCASE=\[([^\]]+)\] as const/);
- const global=offers.match(/const WORLD_SHOWCASE=\[([^\]]+)\] as const/);
- assert.ok(india&&global,"Both market groups must be present");
+test("homepage showcases one real sample per major Indian and global city with one batched read",()=>{
+ const india=markets.match(/export const HOTEL_SHOWCASE_INDIA=\[([^\]]+)\] as const/);
+ const global=markets.match(/export const HOTEL_SHOWCASE_WORLD=\[([^\]]+)\] as const/);
+ assert.ok(india&&global,"Both market groups must be configured centrally");
  const decode=v=>[...v.matchAll(/"([^"]+)"/g)].map(x=>x[1]);
  const indiaCities=decode(india[1]),worldCities=decode(global[1]);
  assert.deepEqual(indiaCities,["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad"]);
- assert.ok(worldCities.includes("london")&&worldCities.includes("paris")&&worldCities.includes("new-york"));
- assert.equal(indiaCities.length,6);
- assert.equal(worldCities.length,8);
+ assert.deepEqual(worldCities,["london","paris","new-york","dubai","singapore","tokyo","bangkok","rome"]);
  assert.equal(new Set([...indiaCities,...worldCities]).size,14);
- assert.match(offers,/INDIA_SHOWCASE\.map\(slug=><ShowcaseCity key=\{slug\} slug=\{slug\}\/>\)/);
- assert.match(offers,/WORLD_SHOWCASE\.map\(slug=><ShowcaseCity key=\{slug\} slug=\{slug\}\/>\)/);
- assert.match(offers,/<FreeHotelDirectoryCards marketSlug=\{slug\} limit=\{1\}\/>/);
+ assert.match(offers,/HOTEL_SHOWCASE_INDIA\.map\(slug=><ShowcaseCity/);
+ assert.match(offers,/HOTEL_SHOWCASE_WORLD\.map\(slug=><ShowcaseCity/);
+ assert.match(offers,/hotel=\{samples\[slug\]\?\?null\}/);
+ assert.match(offers,/fetch\("\/api\/hotels\/showcase"/);
  assert.match(offers,/IntersectionObserver/);
  assert.match(offers,/not a ranking/);
+});
+test("internal showcase endpoint is bounded, cache-backed, free, public-directory-only",()=>{
+ const api=read("src/app/api/hotels/showcase/route.ts");
+ assert.match(api,/import "server-only"/);
+ assert.match(api,/unstable_cache/);
+ assert.match(api,/HOTEL_SHOWCASE_INDIA,HOTEL_SHOWCASE_WORLD/);
+ assert.match(api,/CACHE_SECONDS=12\*60\*60/);
+ assert.match(api,/\.eq\("source","osm"\)/);
+ assert.match(api,/\.eq\("category","hotel"\)/);
+ assert.match(api,/\.limit\(8\)/);
+ assert.match(api,/AbortSignal\.timeout\(8500\)/);
+ assert.match(api,/source:"OpenStreetMap"/);
+ assert.match(api,/hotelSourceImageUrl/);
+ assert.doesNotMatch(api,/X-API-Key|NUITEE_PRODUCTION|NEXT_PUBLIC_NUITEE|service_role|rates\/book|prebook/i);
+ assert.doesNotMatch(api,/insert\(|update\(|upsert\(|delete\(/);
 });
