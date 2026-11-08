@@ -86,30 +86,70 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     )}
   </div>;
 }
-/** On /hotels only, after the existing booking experience. Does not inject vendor CSS or change global styles. */
+/** One real, source-backed directory hotel per selected city — not an invented top-rated list.
+ * Further discovery stays available through the existing market guide and Nuitee search. */
+const INDIA_SHOWCASE=["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad"] as const;
+const WORLD_SHOWCASE=["london","paris","new-york","dubai","singapore","tokyo","bangkok","rome"] as const;
+
+function ShowcaseCity({slug}:{slug:string}){
+  const market=getHotelMarket(slug);
+  if(!market)return null;
+  return <section className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4"
+    aria-label={"A sample hotel in "+market.city}>
+    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+      <div className="min-w-0">
+        <p className="text-xs text-[var(--text-soft)]">{market.country} · Hotel directory sample</p>
+        <h4 className="mt-1 text-lg font-semibold">{market.city}</h4>
+      </div>
+      <Link href={"/hotels/explore/"+market.slug} className="text-xs font-semibold underline underline-offset-2">
+        Explore city hotels
+      </Link>
+    </div>
+    <FreeHotelDirectoryCards marketSlug={slug} limit={1}/>
+  </section>;
+}
+
+/** On /hotels only, after the existing booking experience. No vendor CSS or global overrides. */
 export default function NuiteeHotelOffers(){
   return <section aria-labelledby="gth-free-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
     <div className="mb-6">
       <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold)]"><Globe2 size={15}/> GTH PRO hotel discovery</p>
-      <h2 id="gth-free-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore hotels in India and worldwide</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Free, source-attributed hotel directory cards with GTH PRO day/night styling. Select a hotel for its original directory record, then use the existing Nuitee White Label search for actual rooms and prices. No paid hotel API required.</p>
+      <h2 id="gth-free-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore hotels across India and the world</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
+        Explore a real directory hotel from each featured city, then browse its local catalog. This selection shows the geographic breadth of GTH PRO's free hotel directory; it is not a ranking, a guarantee of inventory in every destination, or proof of room availability.
+      </p>
     </div>
-    <div className="grid min-w-0 gap-10">{(["mumbai","london"] as const).map(slug=>{
-      const market=getHotelMarket(slug);
-      return market?<section key={slug} aria-label={market.city+" hotel directory"} className="min-w-0">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <h3 className="text-xl font-semibold">{market.city}</h3>
-          <Link href={"/hotels/explore/"+slug} className="text-sm font-semibold underline">Explore area guide</Link>
-        </div>
-        <FreeHotelDirectoryCards marketSlug={slug}/>
-      </section>:null;
-    })}</div>
-    <div className="mt-9">
-      <h3 className="mb-3 text-lg font-semibold">Explore hotel destinations</h3>
-      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">{HOTEL_MARKETS.map(m=>
-        <Link key={m.slug} href={"/hotels/explore/"+m.slug} className="flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm font-semibold hover:border-[var(--gold)]">{m.city}</Link>)}
+    <section aria-labelledby="gth-india-hotel-samples">
+      <h3 id="gth-india-hotel-samples" className="text-xl font-bold">Explore India · City by city</h3>
+      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Mumbai, Kolkata, New Delhi, Chennai, Hyderabad and Ahmedabad — one source-backed hotel per city when catalog data is available.</p>
+      <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {INDIA_SHOWCASE.map(slug=><ShowcaseCity key={slug} slug={slug}/>)}
       </div>
+    </section>
+    <section aria-labelledby="gth-global-hotel-samples" className="mt-10">
+      <h3 id="gth-global-hotel-samples" className="text-xl font-bold">Explore Worldwide · City by city</h3>
+      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Browse examples across Europe, North America, the Middle East and Asia, with the same familiar GTH PRO design.</p>
+      <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {WORLD_SHOWCASE.map(slug=><ShowcaseCity key={slug} slug={slug}/>)}
+      </div>
+    </section>
+    <section aria-labelledby="gth-all-hotel-cities" className="mt-9">
+      <h3 id="gth-all-hotel-cities" className="mb-3 text-lg font-semibold">Browse more hotel destinations</h3>
+      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        {HOTEL_MARKETS.map(m=><Link key={m.slug} href={"/hotels/explore/"+m.slug}
+          className="flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm font-semibold hover:border-[var(--gold)]">{m.city}</Link>)}
+      </div>
+    </section>
+    <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
+      <h3 className="text-base font-semibold">Need a different destination or live room prices?</h3>
+      <p className="mt-2 text-sm text-[var(--text-soft)]">Use the existing worldwide Nuitee White Label search. It handles destination, dates, guests, availability and booking; exact hotel matches are not guaranteed by these directory cards.</p>
+      <Link href="/hotels?view=booking" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+        Search worldwide hotel rooms <ArrowUpRight size={16} aria-hidden="true"/>
+      </Link>
     </div>
-    <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]"><ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>These are public location directory records, not confirmed Nuitee listings. Final availability, price and payment are handled only in Nuitee's existing White Label.</p>
+    <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
+      <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
+      Directory hotel records are source-attributed locations, not confirmed Nuitee listings. Pricing and payment remain with the existing booking provider. No new paid API is required.
+    </p>
   </section>;
 }
