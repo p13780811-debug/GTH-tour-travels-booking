@@ -1,10 +1,11 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
-import {ArrowUpRight,Globe2,Hotel,MapPin,ShieldCheck} from "lucide-react";
+import {ArrowUpRight,Globe2,MapPin,ShieldCheck} from "lucide-react";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
-import {HOTEL_MARKETS,HOTEL_SHOWCASE_INDIA,HOTEL_SHOWCASE_WORLD,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
-import {getHotelEditorialExample} from "@/lib/travel/hotel-editorial-examples";
+import NuiteeHotelsListWidget from "@/components/hotel/NuiteeHotelsListWidget";
+import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
+import {HOTEL_MARKETS,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
 
 /** Free first-party directory cards. Source records are NOT Nuitee hotels or bookable offers. */
 type DirectoryHotel={
@@ -36,9 +37,9 @@ function Card({hotel}:{hotel:DirectoryHotel}){
       <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">Directory location only. No verified room price or availability; Nuitee search does not guarantee an exact hotel match.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <Link prefetch={false} href={detail} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
-        <Link href="/hotels?view=booking" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
-          Search rooms <ArrowUpRight size={14} aria-hidden="true"/>
-        </Link>
+        <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
+          Search Nuitee rooms <ArrowUpRight size={14} aria-hidden="true"/>
+        </a>
       </div>
     </div>
   </article>;
@@ -68,7 +69,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
         if(!response.ok)throw new Error("Hotel directory unavailable");
         const value:unknown=await response.json();
         if(!Array.isArray(value))throw new Error("Invalid directory response");
-        if(!controller.signal.aborted)setHotels(value.filter(validHotel).slice(0,Math.min(9,Math.max(1,limit))));
+        if(!controller.signal.aborted)setHotels(value.filter(validHotel).filter(hotel=>hotel.image!=="/placeholder.jpg").slice(0,Math.min(9,Math.max(1,limit))));
       }).catch(()=>{if(!controller.signal.aborted)setError(true);})
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
@@ -83,149 +84,59 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     </div>:null}
     {!loading&&!error&&visible&&(hotels.length?
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">{hotels.map(hotel=><Card key={String(hotel.id)} hotel={hotel}/>)}</div>:
-      getHotelEditorialExample(marketSlug)?<EditorialExampleCard slug={marketSlug}/>:
-      <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">No source-backed directory hotels returned for this area. Search available rooms using the existing Nuitee booking form.</p>
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
+        No independently verified property photo is available in this city directory yet.
+        <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="mt-3 block font-semibold underline underline-offset-2">
+          See authentic hotel photos and rooms on Nuitee
+        </a>
+      </div>
     )}
   </div>;
 }
-/** Source-backed global illustration when no GTH-owned catalog hotel is available.
- * It must not masquerade as a verified directory record, affiliate offer or live inventory. */
-function EditorialExampleCard({slug}:{slug:string}){
-  const example=getHotelEditorialExample(slug);
-  if(!example)return null;
-  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)]">
-    <div className="flex h-44 items-center justify-center bg-[var(--bg-soft)] text-[var(--text-soft)] sm:h-48"
-      aria-label="Property photograph not available">
-      <Hotel size={38} strokeWidth={1.5} aria-hidden="true"/>
-    </div>
-    <div className="flex flex-1 flex-col gap-2 p-4">
-      <p className="text-xs text-[var(--text-soft)]">Verified public-reference example · Not GTH directory inventory</p>
-      <h5 className="text-base font-semibold">{example.name}</h5>
-      <a href={example.url} target="_blank" rel="noopener noreferrer"
-        className="text-xs text-[var(--text-soft)] underline underline-offset-2">
-        {example.source}
-      </a>
-      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">This illustrates hotel discovery in this destination. No exact Nuitee match, room price or availability is claimed.</p>
-      <Link href="/hotels?view=booking" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
-        Search hotel rooms <ArrowUpRight size={14} aria-hidden="true"/>
-      </Link>
-    </div>
-  </article>;
-}
-
-/** One representative source-backed hotel per selected city, not an invented top-rated list.
- * One cached gallery fetch avoids a separate API request per card. */
-function ShowcaseCity({slug,hotel,loading}:{slug:string;hotel:DirectoryHotel|null;loading:boolean}){
-  const market=getHotelMarket(slug);
-  const editorial=getHotelEditorialExample(slug);
-  if(!market)return null;
-  return <section className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4"
-    aria-label={"A sample hotel in "+market.city}>
-    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-      <div className="min-w-0">
-        <p className="text-xs text-[var(--text-soft)]">{market.country} · Hotel directory sample</p>
-        <h4 className="mt-1 text-lg font-semibold">{market.city}</h4>
-      </div>
-      <Link href={"/hotels/explore/"+market.slug} className="text-xs font-semibold underline underline-offset-2">
-        Explore city hotels
-      </Link>
-    </div>
-    {loading?<p role="status" className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">Loading a source-backed hotel sample…</p>:
-      hotel?<Card hotel={hotel}/>:
-      editorial?<EditorialExampleCard slug={slug}/>:
-      <p className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">
-        No source-backed sample could be displayed for this city right now. Browse the city directory or try Nuitee's hotel search.
-      </p>}
-  </section>;
-}
-
-function ShowcaseCatalog(){
-  const marker=useRef<HTMLDivElement>(null);
-  const [visible,setVisible]=useState(false);
-  const [loading,setLoading]=useState(false),[error,setError]=useState(false),[retry,setRetry]=useState(0);
-  const [samples,setSamples]=useState<Record<string,DirectoryHotel|null>>({});
-  useEffect(()=>{
-    const element=marker.current;
-    if(!element)return;
-    if(!("IntersectionObserver" in window)){setVisible(true);return;}
-    const observer=new IntersectionObserver(entries=>{
-      if(entries.some(entry=>entry.isIntersecting)){setVisible(true);observer.disconnect();}
-    },{rootMargin:"200px"});
-    observer.observe(element);
-    return ()=>observer.disconnect();
-  },[]);
-  useEffect(()=>{
-    if(!visible)return;
-    const controller=new AbortController();
-    setLoading(true);setError(false);
-    fetch("/api/hotels/showcase",{signal:controller.signal})
-      .then(async response=>{
-        if(!response.ok)throw new Error("Showcase unavailable");
-        const value:unknown=await response.json();
-        if(!value||typeof value!=="object"||Array.isArray(value))throw new Error("Invalid response");
-        const raw=(value as {samples?:unknown}).samples;
-        if(!raw||typeof raw!=="object"||Array.isArray(raw))throw new Error("Invalid samples");
-        const records=raw as Record<string,unknown>;
-        const safe:Record<string,DirectoryHotel|null>={};
-        for(const slug of [...HOTEL_SHOWCASE_INDIA,...HOTEL_SHOWCASE_WORLD]){
-          safe[slug]=validHotel(records[slug])?records[slug] as DirectoryHotel:null;
-        }
-        if(!controller.signal.aborted)setSamples(safe);
-      }).catch(()=>{if(!controller.signal.aborted)setError(true);})
-      .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
-    return ()=>controller.abort();
-  },[visible,retry]);
-  const fetching=!visible||loading;
-  return <div ref={marker}>
-    {error&&<div role="alert" className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
-      Featured directory samples are temporarily unavailable. Hotel city guides and Nuitee booking search remain available.
-      <button type="button" className="gth-btn ml-3 min-h-10 px-3" onClick={()=>setRetry(n=>n+1)}>Retry samples</button>
-    </div>}
-    <section aria-labelledby="gth-india-hotel-samples">
-      <h3 id="gth-india-hotel-samples" className="text-xl font-bold">Explore India · City by city</h3>
-      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Mumbai, Kolkata, New Delhi, Chennai, Hyderabad and Ahmedabad — one source-backed hotel per city when data is available.</p>
-      <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {HOTEL_SHOWCASE_INDIA.map(slug=><ShowcaseCity key={slug} slug={slug} hotel={samples[slug]??null} loading={fetching}/>)}
-      </div>
-    </section>
-    <section aria-labelledby="gth-global-hotel-samples" className="mt-10">
-      <h3 id="gth-global-hotel-samples" className="text-xl font-bold">Explore Worldwide · City by city</h3>
-      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Browse examples across Europe, North America, the Middle East and Asia, with the same familiar GTH PRO design.</p>
-      <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {HOTEL_SHOWCASE_WORLD.map(slug=><ShowcaseCity key={slug} slug={slug} hotel={samples[slug]??null} loading={fetching}/>)}
-      </div>
-    </section>
-  </div>;
-}
-
-/** On /hotels only, after existing booking experience. No vendor CSS or global overrides. */
+/** Supplier-native booking cards, not fabricated OSM booking cards.
+ * Public directory records and editorial hotel examples remain informational
+ * on city-guide pages, never represented as bookable Nuitee inventory.
+ */
 export default function NuiteeHotelOffers(){
-  return <section aria-labelledby="gth-free-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
-    <div className="mb-6">
-      <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold)]"><Globe2 size={15}/> GTH PRO hotel discovery</p>
-      <h2 id="gth-free-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore hotels across India and the world</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-        Explore a real directory hotel from each featured city, then browse its local catalog. This selection shows the geographic breadth of GTH PRO's free hotel directory; it is not a ranking, a guarantee of inventory in every destination, or proof of room availability.
+  const booking=HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR";
+  return <section aria-labelledby="gth-nuitee-real-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
+    <header className="mb-6">
+      <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold)]">
+        <Globe2 size={15} aria-hidden="true"/> GTH PRO · Nuitee White Label
       </p>
+      <h2 id="gth-nuitee-real-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore real hotels with photos and booking links</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
+        These supplier hotel cards come directly from our connected Nuitee White Label, not from incomplete OpenStreetMap records. Choose a hotel to see its actual listing, photos and room options. No paid catalogue API key is needed.
+      </p>
+    </header>
+    <div className="grid min-w-0 gap-8">
+      <section aria-labelledby="gth-nuitee-india" className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+        <h3 id="gth-nuitee-india" className="mb-2 text-xl font-semibold">Hotels in India · Mumbai</h3>
+        <NuiteeHotelsListWidget id="gth-hotels-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1}/>
+      </section>
+      <section aria-labelledby="gth-nuitee-global" className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+        <h3 id="gth-nuitee-global" className="mb-2 text-xl font-semibold">Hotels worldwide · London</h3>
+        <NuiteeHotelsListWidget id="gth-hotels-nuitee-london" placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI" placeLabel="London" rows={1}/>
+      </section>
     </div>
-    <ShowcaseCatalog/>
-    <section aria-labelledby="gth-all-hotel-cities" className="mt-9">
-      <h3 id="gth-all-hotel-cities" className="mb-3 text-lg font-semibold">Browse more hotel destinations</h3>
+    <div className="mt-9">
+      <h3 className="mb-3 text-lg font-semibold">Explore more cities across India and the world</h3>
       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
-        {HOTEL_MARKETS.map(m=><Link key={m.slug} href={"/hotels/explore/"+m.slug}
-          className="flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm font-semibold hover:border-[var(--gold)]">{m.city}</Link>)}
+        {HOTEL_MARKETS.map(m=><div key={m.slug} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
+          <p className="text-sm font-semibold">{m.city}</p>
+          <p className="mt-1 text-xs text-[var(--text-soft)]">{m.country}</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Link href={"/hotels/explore/"+m.slug} className="text-xs underline underline-offset-2">City guide</Link>
+            <a href={booking} target="_blank" rel="noopener noreferrer sponsored" className="text-xs font-semibold underline underline-offset-2">
+              Nuitee hotels <ArrowUpRight size={12} className="inline" aria-hidden="true"/>
+            </a>
+          </div>
+        </div>)}
       </div>
-    </section>
-    <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
-      <h3 className="text-base font-semibold">Need a different destination or live room prices?</h3>
-      <p className="mt-2 text-sm text-[var(--text-soft)]">Use the existing worldwide Nuitee White Label search. It handles destination, dates, guests, availability and booking; exact hotel matches are not guaranteed by these directory cards.</p>
-      <Link href="/hotels?view=booking" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
-        Search worldwide hotel rooms <ArrowUpRight size={16} aria-hidden="true"/>
-      </Link>
     </div>
     <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
-      Directory hotel records are source-attributed locations, not confirmed Nuitee listings. Pricing and payment remain with the existing booking provider. No new paid API is required.
+      Supplier availability, photos, prices and booking are handled by Nuitee. A GTH PRO directory entry does not guarantee an exact supplier hotel match; the official supplier cards above carry their own direct booking links.
     </p>
   </section>;
 }
