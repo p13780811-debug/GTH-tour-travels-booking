@@ -5,10 +5,9 @@ import {Suspense} from "react";
 import {notFound} from "next/navigation";
 import {ArrowRight,BedDouble,Compass,MapPin,Plane,ShieldCheck} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import NuiteeHotelCard from "@/components/hotel/NuiteeHotelCard";
+import {FreeHotelDirectoryCards} from "@/components/hotel/NuiteeHotelOffers";
 import JsonLd from "@/components/seo/JsonLd";
 import {HOTEL_MARKETS,getHotelMarket,type HotelMarket} from "@/lib/travel/nuitee-hotel-markets";
-import {getNuiteeMarketFeed} from "@/lib/travel/nuitee-hotel-catalog";
 import {destinationImageForSlug} from "@/data/destinations";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 
@@ -19,25 +18,13 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {slug}=await params,market=getHotelMarket(slug);
  if(!market)return {title:"Hotel destination unavailable | GTH PRO",robots:{index:false}};
  const title=`Hotels in ${market.city} | Location Guide & Hotel Discovery | GTH PRO`;
- const description=`Explore hotel locations in ${market.city}, ${market.country}. ${market.tip} Search rooms on the existing Nuitee booking provider.`.slice(0,280);
+ const description=`Explore hotel locations in ${market.city}, ${market.country}. ${market.tip} Search rooms on the existing Nuitee White Label search.`.slice(0,280);
  const canonical=siteUrl("/hotels/explore/"+market.slug);
  return {title,description,alternates:{canonical},robots:{index:isPublicLaunch(),follow:true},
    openGraph:{title,description,url:canonical,type:"website"}};
 }
-async function SourceCards({market}:{market:HotelMarket}){
- const feed=await getNuiteeMarketFeed(market.slug);
- if(feed.status!=="ready")return <p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--text-soft)]">
-   Nuitee catalogue is currently unavailable for this area. You can still search destination, dates and guests using the original hotel booking page.
- </p>;
- if(!feed.hotels.length)return <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--text-soft)]">
-   No original supplier hotels were returned for this location. Try the full destination search.
- </p>;
- return <>
-   {feed.sandbox&&<p className="mb-3 text-xs text-[var(--text-soft)]">Sandbox hotel catalogue preview — no verified live availability or pricing.</p>}
-   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-     {feed.hotels.map(hotel=><NuiteeHotelCard key={hotel.id} hotel={hotel} market={market.slug} sandbox={feed.sandbox}/>)}
-   </div>
- </>;
+function SourceCards({market}:{market:HotelMarket}){
+  return <FreeHotelDirectoryCards marketSlug={market.slug} limit={9}/>;
 }
 export default async function HotelMarketPage({params}:Props){
  const {slug}=await params,market=getHotelMarket(slug);
@@ -58,7 +45,7 @@ export default async function HotelMarketPage({params}:Props){
        <p className="text-xs font-bold uppercase tracking-[0.16em]">GTH PRO · Hotels worldwide</p>
        <h1 className="mt-3 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">Hotels in {market.city}</h1>
        <p className="mt-4 max-w-2xl text-sm leading-7 sm:text-base">
-         Choose an area before choosing a hotel. Read original local travel guidance, view available source-backed supplier profiles, and confirm exact dates and rooms with the booking provider.
+         Choose an area before choosing a hotel. Read original local travel guidance, view public source-backed hotel directory records, and confirm exact dates and rooms with the booking provider.
        </p>
        <Link href="/hotels?view=booking" className="gth-btn-gold mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
          <BedDouble size={17} aria-hidden="true"/> Search live hotel rooms <ArrowRight size={16} aria-hidden="true"/>
@@ -80,13 +67,13 @@ export default async function HotelMarketPage({params}:Props){
        </div>
        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
          These are planning areas, not claims that any specific hotel, room, amenity or price is available.
-         {market.supplierCity!==market.city?" The connected hotel catalogue is scoped to "+market.supplierCity+"; it does not include every property across the wider region.":""}
+         {market.supplierCity!==market.city?" The public hotel directory search is scoped to "+market.supplierCity+"; it does not include every property across the wider region.":""}
        </p>
      </section>
      <section aria-labelledby="city-supplier-hotel-title" className="mt-10">
-       <h2 id="city-supplier-hotel-title" className="text-2xl font-bold">Explore source-backed hotels</h2>
+       <h2 id="city-supplier-hotel-title" className="text-2xl font-bold">Explore local directory hotels</h2>
        <p className="mb-5 mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-         Cards use the original Nuitee hotel ID when supplier access is enabled. Open a GTH PRO property overview or go directly to that hotel's White Label page. Booking, rates and availability remain with Nuitee.
+         These source-backed hotel directory cards use existing public records, not Nuitee property IDs. Open GTH PRO hotel details to check location, then use the existing Nuitee booking search to find current rooms. Exact hotel matches are not assumed.
        </p>
        <Suspense fallback={<p role="status" className="rounded-xl border border-[var(--border)] p-5 text-sm">Checking available supplier hotel profiles…</p>}>
          <SourceCards market={market}/>
