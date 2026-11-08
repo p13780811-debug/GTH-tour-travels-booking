@@ -2,7 +2,7 @@
 
 ## Scope and production guard
 - App sources: `apps/gth-mobile/`; this is **not** the original GTH PRO website or its PWA.
-- Work stays in **draft PR #153**, without merging or deploying to Vercel, until owner approval.
+- Work stays in **PR #153**. On 9 November the owner authorized merging the finished app and OSM SEO together after final checks; use the existing one-shot main deployment, without a second manual promotion.
 - Website, global CSS, Supabase/RLS, supplier APIs, importers and production domains are never edited by app release QA.
 - Native research reads existing public GTH PRO APIs. Live services open the canonical website in the OS in-app browser after explicit consent; all booking, authentication and private workflows retain the existing website controls.
 
@@ -73,12 +73,15 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - Actual Expo web renderer passed both themes at 320/360/390/428px and the
   existing functional journey plus the new super-app service/research journey.
 - Android Hermes JavaScript export passed. This export is not an installable APK.
-- Website regression suite: 736 passed; registry Python suite: 21 passed;
-  website TypeScript and lint passed. Website/database/deployment source remains
-  byte-identical to `main` (`7982db8`) apart from the existing native TypeScript exclusion.
-- Local website production build could not download Google Fonts through this
-  environment's network. It is not recorded as a passing build; remote exact-head
-  Production Check must independently pass before acceptance.
+- Website baseline regression suite: 736 passed; owner-approved OSM SEO continuation
+  expands it to 746 passing local tests. Registry Python suite: 21 passed;
+  website TypeScript and lint passed. The exact OSM website changes are documented
+  in `docs/releases/osm-places-seo-20261109.md`; booking/database/deployment
+  sources and the approved central shell remain unchanged.
+- The local production-mode OSM acceptance build uses explicit local source/font
+  fixtures because Google Fonts is blocked in this workspace. HTTP/browser/cache
+  acceptance passed; final exact-head CI must independently pass the original
+  production build before merge.
 - The live-browser and freshness continuation requires APK/AAB/emulator results
   from its own final PR commit's isolated CI run. Earlier core-build artifacts
   do not validate the added native module. Use the latest commit shown in

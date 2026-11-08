@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Verify website application files are unchanged
+      - name: Verify protected website files outside approved OSM SEO scope are unchanged
         working-directory: .
         run: |
           git fetch --no-tags origin main

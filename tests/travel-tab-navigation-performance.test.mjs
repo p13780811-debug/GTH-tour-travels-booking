@@ -20,7 +20,7 @@ test("adjacent slow destination routes have streaming loading fallbacks",()=>{
 });
 test("public OSM summaries are cached, not mocked or fetched for each page visit",()=>{
  assert.ok(cached.includes('unstable_cache('));
- assert.ok(cached.includes('revalidate:300'));
+ assert.ok(cached.includes('revalidate:86400'));
  assert.ok(cached.includes('sourceProgress()'));
  assert.ok(cached.includes('listMappedCities({pageSize:48})'));
  for(const file of ["attractions","destinations","guides"]){

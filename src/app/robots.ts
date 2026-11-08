@@ -18,8 +18,10 @@ export default function robots(): MetadataRoute.Robots {
       rules: [{ userAgent: "*", allow: "/", disallow: privateRoutes }],
     };
   }
-  return {
+  const result: MetadataRoute.Robots = {
     rules: [{ userAgent: "*", allow: "/", disallow: privateRoutes }],
     sitemap: [siteOrigin() + "/sitemap.xml",siteOrigin() + "/sitemap-index.xml"],
   };
+  if (process.env.GTH_OSM_PLACE_PAGES_ENABLED !== "false" && Array.isArray(result.sitemap)) result.sitemap.push(siteOrigin() + "/attractions/sitemap.xml");
+  return result;
 }

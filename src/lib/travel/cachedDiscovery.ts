@@ -4,18 +4,18 @@ import {sourceProgress} from "@/lib/travel/osmAttractions";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 
 // These anonymous, source-backed directory summaries are shared across
-// Attractions, Guides and Destinations. Cache successful reads for 5 minutes
+// Attractions, Guides and Destinations. Cache successful reads for 24 hours
 // to avoid re-aggregating 160k+ OSM records on every visitor navigation.
 // A provider failure throws: no fabricated totals and no cached error-as-zero.
 export const cachedSourceProgress=unstable_cache(
   async()=>sourceProgress(),
-  ["gth-osm-country-progress-v1"],
-  {revalidate:300,tags:["gth-osm-discovery"]}
+  ["gth-osm-country-progress-24h-v2"],
+  {revalidate:86400,tags:["gth-osm-discovery"]}
 );
 export const cachedHomepageCities=unstable_cache(
   async()=>listMappedCities({pageSize:48}),
-  ["gth-osm-top-city-index-v1"],
-  {revalidate:300,tags:["gth-osm-discovery"]}
+  ["gth-osm-top-city-index-24h-v2"],
+  {revalidate:86400,tags:["gth-osm-discovery"]}
 );
 
 /** A hard navigation budget, even when the remote PostgREST network promise never settles.

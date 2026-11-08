@@ -52,7 +52,7 @@ test("guide discovery shows actual imported source counts and sorts by source co
  assert.match(guides,/cachedSourceProgress\(\)/);
  const cache=read("src/lib/travel/cachedDiscovery.ts");
  assert.match(cache,/sourceProgress\(\)/);
- assert.match(cache,/revalidate:300/);
+ assert.match(cache,/revalidate:86400/);
  assert.match(guides,/countries=\{progress\?\.countries\?\?\[\]\}/);
  assert.match(rail,/counts\.get\(second\.countryCode\)/);
  assert.match(rail,/Country directory: /);

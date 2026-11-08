@@ -1,5 +1,8 @@
 # GTH PRO — Native research and live website services
 
+Owner-approved 9 November continuation: PR #153 also includes the separate
+OSM place SEO release described in [the release note](../../docs/releases/osm-places-seo-20261109.md). Native features remain isolated from its website implementation.
+
 This is a **separate Expo/React Native shell** with native Home, quick discovery
 and a private Research Desk. Live service screens open canonical GTH PRO website
 pages in free OS in-app browser surfaces (Android Custom Tabs / iOS Safari view),

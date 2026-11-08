@@ -1,3 +1,4 @@
+import {osmPlacePath} from "@/lib/travel/osm-place";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -94,7 +95,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
       {result.items.map(place=><article key={place.source_id} className="flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
        <span className="self-start rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3"><Compass size={22}/></span>
        <p className="mt-3 text-xs capitalize text-[var(--text-soft)]">{place.category.replaceAll("-"," ")}</p>
-       <h3 className="mt-2 line-clamp-2 text-sm font-semibold">{place.name}</h3>
+       <h3 className="mt-2 line-clamp-2 text-sm font-semibold"><Link prefetch={false} href={osmPlacePath(place.source_id)!} className="underline decoration-[var(--border)] underline-offset-4 hover:decoration-current">{place.name}</Link></h3>
        <p className="mt-2 line-clamp-2 flex items-start gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13} className="shrink-0"/>{[place.city,place.country_name].filter(Boolean).join(", ")||"Source extract location"}</p>
        <a href={place.source_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-auto inline-flex items-center gap-2 text-xs font-semibold underline">Original OpenStreetMap entry <ExternalLink size={13}/></a>
       </article>)}

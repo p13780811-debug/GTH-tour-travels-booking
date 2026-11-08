@@ -78,6 +78,35 @@ try {
       } catch { errors.push(shard + ": invalid listed URL"); }
     }
   }
+  // Independent OSM index preserves every existing category shard. Sample at
+  // most two OSM shards + two detail pages, never crawl the imported directory.
+  if (robots.includes("Sitemap: " + origin + "/attractions/sitemap.xml")) {
+    const osmIndex = await get("/attractions/sitemap.xml");
+    if (!/<sitemapindex\b/.test(osmIndex)) errors.push("OSM sitemap: invalid index");
+    const osmShards = [...osmIndex.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => decode(m[1]));
+    if (osmShards.length !== new Set(osmShards).size) errors.push("OSM sitemap: duplicate shards");
+    const validOsmShards = osmShards.filter(value => {
+      try {
+        const u = new URL(value);
+        return u.origin === origin && !u.search && !u.hash && /^\/attractions\/sitemaps\/[A-Z]{2}\/[0-9]+\.xml$/.test(u.pathname);
+      } catch { return false; }
+    });
+    if (validOsmShards.length !== osmShards.length) errors.push("OSM sitemap: invalid shard URL");
+    for (const value of validOsmShards.slice(0, 2)) {
+      const xml = await get(new URL(value).pathname);
+      const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => decode(m[1]));
+      if (!/<urlset\b/.test(xml) || urls.length > 1000 || urls.length !== new Set(urls).size) errors.push("OSM sitemap: invalid or duplicate URL set");
+      if (!urls.length) warnings.push("OSM sitemap: source shard has no SEO-eligible records");
+      for (const candidate of urls) {
+        try {
+          const u = new URL(candidate);
+          if (u.origin !== origin || u.search || u.hash || !/^\/attractions\/osm\/(node|way|relation)-[1-9][0-9]{0,18}$/.test(u.pathname)) errors.push("OSM sitemap: invalid canonical URL");
+        } catch { errors.push("OSM sitemap: invalid canonical URL"); }
+      }
+      if (urls[0] && urls[0].startsWith(origin + "/attractions/osm/")) sitemapPaths.push(new URL(urls[0]).pathname);
+    }
+    console.log("OSM sitemap: " + validOsmShards.length + " shards; at most two sampled");
+  }
   console.log("SEO index: " + shardUrls.length + " category shards; " + sampled.length + " sampled (not Google indexing proof)");
 
 } catch (error) {
