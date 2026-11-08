@@ -32,15 +32,15 @@ test("no new API subscription, Nuitee supplier feed or private production key ne
  ])assert.equal(existsSync(path),false,path);
  assert.match(offers,/fetch\("\/api\/hotels\?"/);
  assert.match(offers,/source:"directory"/);
- assert.match(offers,/IntersectionObserver/);
+ assert.match(offers,/NuiteeHotelsListWidget/);
  assert.match(offers,/cache:"no-store"/);
  assert.doesNotMatch(offers+location,/api\.liteapi\.travel|NUITEE_PRODUCTION_API_KEY|GTH_NUITEE_PRODUCTION_ENABLED|\/api\/hotels\/nuitee-featured/);
- assert.match(provider,/return "\/hotels\?view=booking"/);
+ assert.match(provider,/gthproglobal\.nuitee\.link\/hotels\?language=en&currency=INR/);
 });
 
 test("directory cards never fabricate an exact Nuitee hotel booking",()=>{
  assert.match(offers,/\/hotels\/stay\//);
- assert.match(offers,/\/hotels\?view=booking/);
+ assert.match(offers,/HOTEL_BOOKING_ORIGIN/);
  assert.match(offers,/OpenStreetMap/);
  assert.match(offers,/image_attribution/);
  assert.match(offers,/No verified room price or availability/);
@@ -73,12 +73,12 @@ test("homepage showcases one real sample per major Indian and global city with o
  assert.deepEqual(indiaCities,["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad"]);
  assert.deepEqual(worldCities,["london","paris","new-york","dubai","singapore","tokyo","bangkok","rome"]);
  assert.equal(new Set([...indiaCities,...worldCities]).size,14);
- assert.match(offers,/HOTEL_SHOWCASE_INDIA\.map\(slug=><ShowcaseCity/);
- assert.match(offers,/HOTEL_SHOWCASE_WORLD\.map\(slug=><ShowcaseCity/);
- assert.match(offers,/hotel=\{samples\[slug\]\?\?null\}/);
- assert.match(offers,/fetch\("\/api\/hotels\/showcase"/);
+ assert.match(offers,/NuiteeHotelsListWidget/);
+ assert.match(offers,/placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI"/);
+ assert.match(offers,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
+ assert.match(offers,/NuiteeHotelsListWidget/);
  assert.match(offers,/IntersectionObserver/);
- assert.match(offers,/not a ranking/);
+ assert.match(offers,/Nuitee White Label/);
 });
 test("internal showcase endpoint is bounded, cache-backed, free, public-directory-only",()=>{
  const api=read("src/app/api/hotels/showcase/route.ts");
@@ -105,8 +105,20 @@ test("global editorial examples are openly sourced and never represented as live
  }
  assert.equal((examples.match(/source:"Wikimedia Commons/g)||[]).length,8);
  assert.match(offers,/getHotelEditorialExample\(slug\)/);
- assert.match(offers,/editorial\?<EditorialExampleCard slug=\{slug\}\/>/);
+ assert.match(offers,/getHotelEditorialExample\(marketSlug\)/);
  assert.match(offers,/Not GTH directory inventory/);
  assert.match(offers,/Property photograph not available/);
  assert.doesNotMatch(examples,/hotelId|supplierId|rates|booking_ready|NUITEE_PRODUCTION_API_KEY/);
 });
+
+
+test("official supplier widget opens connected White Label instead of local search loops",()=>{
+ const widget=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
+ assert.match(widget,/LiteAPI/);
+ assert.match(widget,/HotelsList\.create/);
+ assert.match(widget,/HOTEL_BOOKING_ORIGIN/);
+ assert.match(widget,/hasSearchBar:false/);
+ assert.doesNotMatch(widget,/onHotelClick:/);
+ assert.doesNotMatch(widget,/NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+ assert.doesNotMatch(offers,/href="\/hotels\?view=booking"/);
+});\n
