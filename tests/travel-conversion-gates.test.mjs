@@ -25,7 +25,7 @@ test("Hotel city discovery does not match arbitrary hotel names or addresses",()
 });
 test("Unknown hotel identity cannot create a fabricated supplier search or affiliate deep link",()=>{
  const link=hotelProviderSearchUrl("Hilton Mumbai",{checkin:"2099-01-12",checkout:"2099-01-15",adults:3});
- assert.equal(link,"/hotels?view=booking");
+ assert.equal(link,"https://gthproglobal.nuitee.link/hotels?language=en&currency=INR");
  const invalid=hotelProviderSearchUrl("Paris",{checkin:"2020-01-01",checkout:"2020-01-02",adults:500});
  assert.equal(invalid,link);
 });
