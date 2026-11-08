@@ -24,17 +24,16 @@ jobs:
         working-directory: apps/gth-mobile
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - name: Verify website application files are unchanged
         working-directory: .
         run: |
-          git fetch --no-tags origin main --depth=1
-          changed="$(git diff --name-only origin/main...HEAD -- src/ public/ vercel.json next.config.ts package.json package-lock.json || true)"
-          if [ -n "$changed" ]; then
-            echo "Website source or deployment configuration changed:"; echo "$changed"; exit 1
-          fi
+          git fetch --no-tags origin main
+          node apps/gth-mobile/scripts/check-isolation.mjs
       - name: Install isolated Expo / React Native dependencies
         run: npm ci --no-audit --no-fund
       - name: Verify native colors reflect central website CSS
@@ -62,6 +61,7 @@ jobs:
           if [ "$ok" -ne 1 ]; then cat /tmp/gth-native-web.log; exit 1; fi
           node scripts/qa-pixel-preview.mjs
           node scripts/qa-functional-preview.mjs
+          node scripts/qa-super-app-preview.mjs
       - name: Upload screenshot QA evidence
         if: always()
         uses: actions/upload-artifact@v4

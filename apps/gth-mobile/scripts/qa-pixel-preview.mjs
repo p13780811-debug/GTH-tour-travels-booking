@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import {chromium} from "playwright";
+import {createRequire} from "node:module";
+const {chromium}=createRequire(import.meta.url)("playwright");
 import {mkdir} from "node:fs/promises";
 
 const origin="http://127.0.0.1:4100";
 const capture="/tmp/gth-native-pixel-qa";
 await mkdir(capture,{recursive:true});
-const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+const browser=await chromium.launch({headless:true,executablePath:process.env.GTH_CHROMIUM_PATH||undefined,args:["--no-sandbox"]});
 try {
  for(const colorScheme of ["light","dark"]){
  for(const width of [320,360,390,428]){

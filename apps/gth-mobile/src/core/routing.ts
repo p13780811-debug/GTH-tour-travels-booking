@@ -48,6 +48,7 @@ export function firstPartyUrl(path:string):string|null {
 }
 export function approvedRecordPath(kind:Pillar,id:string):string|null {
  if(kind==="hotel"&&/^osm:(?:node|way|relation)-[0-9]{1,19}$/.test(id))return "/app/hotels/"+id;
+ if(kind==="hotel"&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(id))return "/hotels/stay/"+id;
  if(kind==="property"&&/^[a-z0-9][a-z0-9-]{1,127}$/.test(id))return "/app/property/"+id;
  if(kind==="tender"&&/^[a-f0-9-]{36}$/i.test(id))return "/app/tenders/"+id;
  if(kind==="tour"&&(/^[1-9][0-9]{0,18}$/.test(id)||/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(id)))return "/tours/"+id;

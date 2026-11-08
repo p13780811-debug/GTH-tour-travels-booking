@@ -22,9 +22,9 @@ if (get(day,"card") !== "oklch(1 0 0)") {
 const bgSoft = get(day,"bg-soft");
 const result = {
   light: { bg:get(day,"bg"),surface:"#ffffff",surfaceSoft:bgSoft,text:get(day,"text"),
-    muted:get(day,"text-soft"),border:bgSoft,accent:get(day,"gold"),onAccent:get(day,"text") },
+    muted:get(day,"text-soft"),border:bgSoft,accent:get(day,"gold"),accentText:get(day,"text"),onAccent:get(day,"text") },
   dark: { bg:get(night,"bg"),surface:get(night,"card"),surfaceSoft:get(night,"bg-soft"),
-    text:get(night,"text"),muted:get(night,"text-soft"),border:get(night,"border"),accent:get(day,"gold"),onAccent:get(night,"bg") },
+    text:get(night,"text"),muted:get(night,"text-soft"),border:get(night,"border"),accent:get(day,"gold"),accentText:get(day,"gold"),onAccent:get(night,"bg") },
 };
 const destination = resolve(dir, "../src/theme/generated.json");
 const contents = JSON.stringify(result,null,2)+"\n";

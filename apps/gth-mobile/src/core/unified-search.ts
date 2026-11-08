@@ -2,7 +2,7 @@ import {getSourceCards,type DiscoveryCard,type DiscoveryKind} from "./catalog";
 import {detectPillar,normalizeQuery,type Pillar} from "./routing";
 
 export type SearchChoice=DiscoveryKind|"all"|"travel";
-export type SearchSlice={kind:DiscoveryKind;items:DiscoveryCard[];total:number;error:string|null;page?:number;hasNext?:boolean};
+export type SearchSlice={kind:DiscoveryKind;items:DiscoveryCard[];total:number;error:string|null;page?:number;hasNext?:boolean;totalIsExact?:boolean};
 export type SearchOutcome={items:DiscoveryCard[];total:number;warnings:string[];slices:SearchSlice[]};
 export const SOURCE_KINDS:readonly DiscoveryKind[]=["hotel","property","tender","tour"];
 
@@ -20,7 +20,7 @@ export async function searchNativeSources(choice:SearchChoice,raw:string,signal:
  const slices:SearchSlice[]=sources.map((kind,index)=>{
   const result=results[index];
   return result.status==="fulfilled"
-   ?{kind,items:result.value.items,total:result.value.total,error:null,page:1,hasNext:result.value.hasNext===true}
+   ?{kind,items:result.value.items,total:result.value.total,totalIsExact:result.value.totalIsExact,error:null,page:1,hasNext:result.value.hasNext===true}
    :{kind,items:[],total:0,error:"Source temporarily unavailable",page:0,hasNext:false};
  });
  return combineSlices(slices);
@@ -49,9 +49,26 @@ export async function nextNativePage(previous:SearchSlice[],raw:string,signal:Ab
    const data=await getSourceCards(slice.kind,normalizeQuery(raw),signal,tenderRegion,page);
    const seen=new Set(slice.items.map(item=>item.id));
    const items=[...slice.items,...data.items.filter(item=>!seen.has(item.id))];
-   return {...slice,items,total:Math.max(data.total,items.length),page,
+   return {...slice,items,total:Math.max(data.total,items.length),totalIsExact:data.totalIsExact,page,
     hasNext:data.hasNext===true&&data.items.length>0,error:null};
   }catch{return {...slice,error:"Source temporarily unavailable"};}
+ }));
+ return combineSlices(slices);
+}
+
+/** Recover only failed sources at their failed page. Successful pages remain
+ * visible, and a failed first page is retried at page one rather than skipped. */
+export async function retryNativeSources(previous:SearchSlice[],raw:string,signal:AbortSignal,tenderRegion="IN"):Promise<SearchOutcome>{
+ const slices=await Promise.all(previous.map(async slice=>{
+  if(!slice.error)return slice;
+  const page=(slice.page??0)+1;
+  try{
+   const data=await getSourceCards(slice.kind,normalizeQuery(raw),signal,tenderRegion,page);
+   const seen=new Set(slice.items.map(item=>item.id));
+   const items=[...slice.items,...data.items.filter(item=>!seen.has(item.id))];
+   return {...slice,items,total:Math.max(data.total,items.length),totalIsExact:data.totalIsExact,page,
+    hasNext:data.hasNext===true,error:null};
+  }catch{return slice;}
  }));
  return combineSlices(slices);
 }

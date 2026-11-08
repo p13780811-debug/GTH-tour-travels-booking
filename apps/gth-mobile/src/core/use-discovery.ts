@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from "react";
-import {combineSlices,nextNativePage,searchNativeSources,type SearchChoice,type SearchOutcome} from "./unified-search";
+import {combineSlices,nextNativePage,retryNativeSources,searchNativeSources,type SearchChoice,type SearchOutcome} from "./unified-search";
 
 /** Native discovery owns request cancellation, page cursors and stale-result
  * protection. Switching tabs does not discard a completed search. */
@@ -31,21 +31,29 @@ export function useNativeDiscovery(choice:SearchChoice,term:string,tenderRegion:
   }).finally(()=>{clearTimeout(timer);if(generation.current===version)setPending(false);});
   return ()=>{generation.current++;clearTimeout(timer);controller.abort();moreController.current?.abort();};
  },[choice,term,tenderRegion,revision]);
- async function loadMore(){
-  if(pending||moreLock.current||!current.current.slices.some(slice=>slice.hasNext))return;
+ async function recoverOrLoad(recover=false){
+  if(pending||moreLock.current||!current.current.slices.some(slice=>recover?slice.error:slice.hasNext))return;
   moreLock.current=true;setMorePending(true);
   const version=generation.current;
   const controller=new AbortController();moreController.current=controller;
   const timer=setTimeout(()=>controller.abort(),11_000);
   try{
-   const result=await nextNativePage(current.current.slices,term,controller.signal,tenderRegion);
+   const load=recover?retryNativeSources:nextNativePage;
+   const result=await load(current.current.slices,term,controller.signal,tenderRegion);
    if(generation.current!==version)return;
    current.current=result;setData(result);
+   setError(result.slices.length>0&&result.slices.every(slice=>slice.error)
+    ?"The published sources are temporarily unavailable. Please retry.":"");
+  }catch{
+   if(generation.current===version)setError("Unable to load these records. Check your connection and retry.");
   }finally{
    clearTimeout(timer);
    if(generation.current===version){moreLock.current=false;setMorePending(false);}
   }
  }
  return {...data,pending,morePending,error,hasMore:data.slices.some(slice=>slice.hasNext),
-  loadMore,retry:()=>setRevision(value=>value+1)};
+  loadMore:()=>recoverOrLoad(),retry:()=>{
+   if(current.current.slices.some(slice=>slice.error))void recoverOrLoad(true);
+   else setRevision(value=>value+1);
+  }};
 }

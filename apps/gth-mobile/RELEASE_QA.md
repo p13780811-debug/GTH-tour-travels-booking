@@ -32,6 +32,43 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 - Load successive source pages; retry a failed page; return from Saved/Services without losing loaded results; confirm old searches never replace a newer query.
 - Open app settings, choose day/night/device appearance and restart; cancel and confirm clearing saved records/history separately.
 - Open a website handoff, cancel it, then confirm once; check browser errors have a usable retry and rapid taps do not open duplicate windows.
+- In Services, search/filter all three ecosystems; confirm Cruises, Activities,
+  deals, attractions, project registry, listing/workspace and tender assistant
+  continue to their existing GTH PRO route. An empty service search has a reset.
+- A global flight/bus/train/ferry/cruise query opens its planner confirmation;
+  a notice about buses remains a tender search when tender intent is explicit.
+- Save a record, add a private note and review checks, restart, then revisit
+  while offline. Verify the note/checks remain, source facts stay available,
+  and sharing the public record excludes private notes and check states.
+- Saved category filters must not delete or hide records permanently; an empty
+  category offers a return to all saved records. Clearing saved records also
+  removes their personal notes/checks; history clearing asks for confirmation
+  from both Home and Settings.
+- Retry a failed source after another source has loaded several pages. Its
+  successful pages must remain intact; failed first pages retry page one.
+- Review exact hotel UUID and OSM detail links, booking-match gating, credit
+  source/license links and failed-photo fallbacks. A saved booking match must
+  still pass the existing server-side mapping check before supplier handoff.
+- Check selected bottom tabs, category/region filters and actions in both themes;
+  text contrast must meet 4.5:1. Use enlarged Android fonts, keyboard navigation
+  and screen-reader checkbox/selection labels. Confirm multiline note editing
+  remains reachable above the keyboard on a physical phone.
+
+## Continuation verification — 9 November 2026
+- Native theme check, strict TypeScript and 34 native tests passed locally.
+- Actual Expo web renderer passed both themes at 320/360/390/428px and the
+  existing functional journey plus the new super-app service/research journey.
+- Android Hermes JavaScript export passed. This export is not an installable APK.
+- Website regression suite: 736 passed; registry Python suite: 21 passed;
+  website TypeScript and lint passed. Website/database/deployment source remains
+  byte-identical to `main` (`7982db8`) apart from the existing native TypeScript exclusion.
+- Local website production build could not download Google Fonts through this
+  environment's network. It is not recorded as a passing build; remote exact-head
+  Production Check must independently pass before acceptance.
+- New APK/AAB/emulator results must come from the updated PR commit's isolated
+  CI run. Previous `2a255ea` artifacts do not validate this continuation.
+- Live supplier booking/commission, physical-phone acceptance and Play Store
+  production signing/publishing remain separate, unverified release gates.
 
 ## Play Store / production signing gate
 This repo intentionally contains **no** production keystore, passwords, service credentials or upload tokens.

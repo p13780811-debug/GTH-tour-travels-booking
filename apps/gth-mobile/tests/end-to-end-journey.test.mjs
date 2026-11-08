@@ -124,6 +124,8 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  assert.equal(theme.dark.onAccent,"#060b12");
  assert.match(script,/get\(day,"text"\)/);
  assert.match(script,/get\(night,"bg"\)/);
- assert.equal((app.match(/label:"(?:Flights|Hotels|Real Estate|Public tenders|Bus journeys|Train journeys|Ferry journeys|Airport transfers|Car rentals|Tours & activities|Travel protection|Destinations|Travel eSIM|Saved properties|Property tools|Saved tenders|Tender services)"/g)||[]).length,17);
+ const services=compile("src/core/services.ts",{"./routing":routing});
+ for(const label of ["Flights","Hotels","Cruises","Project registry","Tender assistant","Bus journeys","Train journeys","Ferry journeys"])
+  assert.ok(services.SERVICES.some(service=>service.label===label),label);
  assert.doesNotMatch(app,/WebView|SERVICE_ROLE_KEY|expo-router.*WebBrowser/);
 });

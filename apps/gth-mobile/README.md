@@ -23,6 +23,26 @@ Supabase policies, importers, or global CSS.
 - Complete source pagination uses the existing API cursors/count headers; failed next pages retain records and retry the same cursor. Search survives tab navigation and stale cancelled responses cannot overwrite a newer search.
 - Native settings persist device/day/night appearance, expose confirmed local-only data clearing and connect privacy, terms and support. Unread local data is never overwritten after a failed storage read.
 - A native, accessible confirmation dialog handles website handoffs, cancellation, failures and rapid taps on Android and the test preview.
+- A searchable Services hub organizes 28 existing GTH PRO services into Travel,
+  Real Estate and Tenders. Service-specific icons and explicit in-app/website
+  labels make the next action clear. Cruises, deals, attractions, registry,
+  listing/workspace and tender-assistant routes reuse the released website.
+- Explicit flight/bus/train/ferry/cruise/transfer/car/eSIM search intents open
+  the correct existing planner after confirmation, without querying unrelated
+  property/hotel inventories or inventing route/date identifiers.
+- Research Desk category filters, 600-character private notes and four personal
+  review checks per saved record work on device, including offline. Notes/checks
+  survive restart and record refresh; public sharing excludes this private data.
+- Source details include published facts. Reviewed hotel UUIDs resolve to their
+  real detail route; only an API-confirmed booking match exposes the existing
+  server-verified exact-hotel handoff, which checks the mapping again on click.
+- Partial-source retries preserve successful pages and retry the failed cursor.
+  Hotel/tender pagination respects the actual API limit, and unknown property
+  totals are not displayed as exact inventory counts. Long result lists use
+  React Native virtualization.
+- Day/night action text uses readable central-theme colors; gold button fills
+  and the approved brand remain. Licensed image credits survive bookmarking;
+  missing/failed photos have an accessible fallback.
 - Functional preview QA uses explicit test-only API fixtures; Android emulator QA also exercises tabs, settings, cancelled handoff, Android Back and force-stop/relaunch. Fixture outcomes do not certify supplier bookings.
 - Isolated CI compiles an installable, self-contained Android QA APK and a test-only AAB; emulator launch smoke and phone-width visual QA are automated.
 - See [RELEASE_QA.md](./RELEASE_QA.md) for the physical-device and Play Store release gates.
@@ -31,6 +51,7 @@ Supabase policies, importers, or global CSS.
 ```bash
 cd apps/gth-mobile
 npm ci
+node scripts/check-isolation.mjs
 npm run theme:check
 npm run typecheck
 npm test
@@ -45,6 +66,10 @@ npm run theme:sync
 ```
 
 ## Security and limits
+- This continuation adds no dependency, paid API, subscription, duplicate
+  database or server job. Local service filtering, notes and checklists make
+  no network requests. Existing hosting, public API and supplier/affiliate
+  commercial terms still apply; this is not a promise of unlimited free hosting.
 - No service-role key or provider secrets. Native code reads existing public APIs.
 - Original booking, payment, seller contact, official tender eligibility and
   private workflows remain on the original service, with explicit customer approval.

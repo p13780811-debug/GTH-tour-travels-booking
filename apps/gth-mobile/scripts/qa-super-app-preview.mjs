@@ -1,0 +1,125 @@
+// Explicit test fixtures only. These journeys do not certify live inventory,
+// affiliate commission, supplier availability, payment or a physical device.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir} from 'node:fs/promises';
+const {chromium}=createRequire(import.meta.url)('playwright');
+const capture='/tmp/gth-native-pixel-qa';
+await mkdir(capture,{recursive:true});
+const browser=await chromium.launch({headless:true,executablePath:process.env.GTH_CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+const hotelId='a1234567-1234-4123-8123-123456789abc';
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,colorScheme:'light'});
+ await context.addInitScript(()=>{
+  window.__qaShares=[];
+  Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.__qaShares.push(data);}});
+ });
+ let toursAvailable=false;const apiCalls=[],handoffs=[];
+ await context.route('https://www.gthproglobal.com/**',async route=>{
+  const url=new URL(route.request().url());
+  if(!url.pathname.startsWith('/api/')){
+   handoffs.push(url.pathname);
+   return route.fulfill({contentType:'text/html',body:'<h1>QA original service fixture</h1>'});
+  }
+  apiCalls.push(url);
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Expose-Headers':'X-GTH-Total, X-GTH-Page-Size, X-GTH-Has-More, X-Total-Count, X-Page-Size'};
+  if(url.pathname==='/api/tours'&&!toursAvailable)return route.fulfill({status:503,contentType:'application/json',headers,body:'{"error":"QA outage"}'});
+  const second=url.searchParams.get('page')==='2';
+  let body;
+  if(url.pathname==='/api/hotels'){
+   body=[{id:second?'osm:node-222':hotelId,name:second?'QA Hotel Second':'QA Hotel Original',city:'Goa',country:'IN',address:'QA source address',category:'hotel',source:'QA source',booking_ready:!second}];
+   Object.assign(headers,{'X-GTH-Total':'2','X-GTH-Page-Size':'1','X-GTH-Has-More':String(!second)});
+  }else if(url.pathname==='/api/real-estate/search')body={items:[{slug:'qa-property',title:'QA Property',city:'Mumbai',formatted_price:'Price on request'}],hasNext:false};
+  else if(url.pathname==='/api/tender')body={items:[{id:'b1234567-1234-4123-8123-123456789abc',title:'QA Tender',buyer:'QA authority',country_code:'IN',deadline_at:'2027-06-01T12:00:00Z'}],total:1,pageSize:12};
+  else if(url.pathname==='/api/tours'){
+   body=[{id:12,title:'QA Tour Recovered',city:'Goa',category:'Walking tour'}];
+   Object.assign(headers,{'X-Total-Count':'1','X-Page-Size':'24'});
+  }else throw Error('Unexpected fixture endpoint '+url.pathname);
+  return route.fulfill({contentType:'application/json',headers,body:JSON.stringify(body)});
+ });
+ const page=await context.newPage();const errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('http://127.0.0.1:4100');
+ await page.getByRole('tab',{name:'Services tab',exact:true}).click();
+ await page.getByRole('textbox',{name:'Find a service',exact:true}).fill('Cruises');
+ await page.getByRole('button',{name:'Cruises · GTH PRO website',exact:true}).click();
+ await page.getByRole('button',{name:'Close',exact:true}).click();
+ assert.equal(handoffs.length,0);
+ await page.getByRole('button',{name:'Clear service search',exact:true}).click();
+ await page.getByRole('button',{name:'Services: Real Estate',exact:true}).click();
+ await page.getByRole('button',{name:'Project registry · GTH PRO website',exact:true}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Cruises · GTH PRO website',exact:true}).count(),0);
+ await page.getByRole('textbox',{name:'Find a service',exact:true}).fill('unlisted-service');
+ await page.getByText('No matching service',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Show all services',exact:true}).click();
+ await page.getByRole('tab',{name:'Home tab',exact:true}).click();
+ await page.getByRole('textbox',{name:'Universal search',exact:true}).fill('Goa cruises');
+ await page.getByRole('button',{name:'Search GTH PRO',exact:true}).click();
+ await page.getByText('Continue to Cruises',{exact:true}).waitFor();
+ assert.equal(apiCalls.length,0,'A cruise query must not search unrelated inventory');
+ const popupPromise=page.waitForEvent('popup');
+ await page.getByRole('button',{name:'Open Cruises',exact:true}).click();
+ const popup=await popupPromise;await popup.waitForLoadState();
+ assert.equal(popup.url(),'https://www.gthproglobal.com/cruises');await popup.close();
+ await page.getByRole('textbox',{name:'Universal search',exact:true}).fill('Goa');
+ await page.getByRole('button',{name:'Search GTH PRO',exact:true}).click();
+ await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).waitFor();
+ await page.getByText('Tender search region',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Load more results',exact:true}).click();
+ await page.getByRole('button',{name:'Details for QA Hotel Second',exact:true}).waitFor();
+ const successfulCalls=apiCalls.filter(url=>url.pathname!=='/api/tours').length;
+ toursAvailable=true;
+ await page.getByRole('button',{name:'Retry unavailable sources',exact:true}).click();
+ await page.getByRole('button',{name:'Details for QA Tour Recovered',exact:true}).waitFor();
+ assert.equal(apiCalls.filter(url=>url.pathname!=='/api/tours').length,successfulCalls,'Recover only the failed source');
+ assert.deepEqual(apiCalls.filter(url=>url.pathname==='/api/hotels').map(url=>url.searchParams.get('page')),['1','2']);
+ await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).click();
+ await page.getByText('At a glance',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Check dates & availability',exact:true}).click();
+ const bookingPromise=page.waitForEvent('popup');
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ const booking=await bookingPromise;await booking.waitForLoadState();
+ assert.equal(booking.url(),'https://www.gthproglobal.com/hotels/partner/'+hotelId);await booking.close();
+ await page.getByRole('button',{name:'Save to my desk',exact:true}).click();
+ await page.getByRole('textbox',{name:'Private research note',exact:true}).fill('QA private: ask about accessible rooms');
+ await page.getByRole('button',{name:'Save private note',exact:true}).click();
+ await page.getByRole('checkbox',{name:'Read cancellation and check-in terms',exact:true}).click();
+ assert.equal(await page.getByRole('checkbox',{name:'Read cancellation and check-in terms',exact:true}).getAttribute('aria-checked'),'true');
+ await page.getByRole('button',{name:'Share public record QA Hotel Original',exact:true}).click();
+ const shares=await page.evaluate(()=>window.__qaShares);
+ assert.equal(shares.length,1);assert.ok(!JSON.stringify(shares).includes('QA private'));
+ await page.screenshot({path:capture+'/native-research-notebook-390-light.png',fullPage:true});
+ await page.getByRole('tab',{name:'Saved tab',exact:true}).click();
+ await page.getByRole('button',{name:'Saved: Tenders',exact:true}).click();
+ await page.getByText('No saved records in this category',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Show all saved records',exact:true}).click();
+ await page.reload();
+ await page.getByRole('tab',{name:'Saved tab',exact:true}).click();
+ const beforeOffline=apiCalls.length;
+ await context.setOffline(true);
+ await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).click();
+ assert.equal(await page.getByRole('textbox',{name:'Private research note',exact:true}).inputValue(),'QA private: ask about accessible rooms');
+ assert.equal(await page.getByRole('checkbox',{name:'Read cancellation and check-in terms',exact:true}).getAttribute('aria-checked'),'true');
+ assert.equal(apiCalls.length,beforeOffline,'Opening a local saved record must work offline without an API request');
+ await context.setOffline(false);
+ await page.getByRole('tab',{name:'Home tab',exact:true}).click();
+ await page.getByRole('button',{name:'Clear recent searches',exact:true}).click();
+ await page.getByRole('button',{name:'Close',exact:true}).click();
+ await page.getByRole('button',{name:'Repeat search Goa',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Clear recent searches',exact:true}).click();
+ await page.getByRole('button',{name:'Clear from this device',exact:true}).click();
+ assert.equal(await page.getByRole('button',{name:'Repeat search Goa',exact:true}).count(),0);
+ assert.deepEqual(errors,[]);await context.close();
+ for(const colorScheme of ['light','dark'])for(const width of [320,360,390,428]){
+  const preview=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,colorScheme});
+  const screen=await preview.newPage();
+  await screen.goto('http://127.0.0.1:4100');
+  await screen.getByRole('tab',{name:'Services tab',exact:true}).click();
+  await screen.getByRole('button',{name:'Services: Tenders',exact:true}).click();
+  await screen.getByRole('button',{name:'Tender assistant · GTH PRO website',exact:true}).waitFor();
+  assert.ok(await screen.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+  await screen.screenshot({path:`${capture}/native-service-hub-${width}-${colorScheme}.png`,fullPage:true});
+  await preview.close();
+ }
+ console.log('PASS: three ecosystems/service filters, booking-intent routing, exact hotel handoff, cursor-preserving source recovery, private notes/checklists, public-only sharing, offline saved detail, confirmed history clearing and eight service-hub screenshots');
+}finally{await browser.close();}
