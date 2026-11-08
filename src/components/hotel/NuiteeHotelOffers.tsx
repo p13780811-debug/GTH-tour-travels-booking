@@ -129,87 +129,42 @@ function EditorialExampleCard({slug}:{slug:string}){
   </article>;
 }
 
-/** One representative source-backed hotel per selected city, not an invented top-rated list.
- * One cached gallery fetch avoids a separate API request per card. */
-function ShowcaseCity({slug,hotel,loading}:{slug:string;hotel:DirectoryHotel|null;loading:boolean}){
+/** One authentic, photo-attributed hotel example for each curated city.
+ * The same GTH card opens a GTH editorial detail and then the existing Nuitee White Label.
+ * No invented supplier IDs, rate API, or unnecessary per-visitor database requests.
+ */
+function ShowcaseCity({slug}:{slug:string}){
   const market=getHotelMarket(slug);
-  const editorial=getHotelEditorialExample(slug);
   if(!market)return null;
   return <section className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4"
-    aria-label={"A sample hotel in "+market.city}>
+    aria-label={"Featured real hotel example in "+market.city}>
     <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
       <div className="min-w-0">
-        <p className="text-xs text-[var(--text-soft)]">{market.country} · Hotel directory sample</p>
+        <p className="text-xs text-[var(--text-soft)]">{market.country} · Original hotel photograph when rights allow</p>
         <h4 className="mt-1 text-lg font-semibold">{market.city}</h4>
       </div>
       <Link href={"/hotels/explore/"+market.slug} className="text-xs font-semibold underline underline-offset-2">
-        Explore city hotels
+        Explore city
       </Link>
     </div>
-    {loading?<p role="status" className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">Loading a source-backed hotel sample…</p>:
-      editorial?.photo?<EditorialExampleCard slug={slug}/>:
-      hotel?<Card hotel={hotel}/>:
-      editorial?<EditorialExampleCard slug={slug}/>:
-      <p className="min-h-40 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--text-soft)]">
-        No source-backed sample could be displayed for this city right now. Browse the city directory or try Nuitee's hotel search.
-      </p>}
+    <EditorialExampleCard slug={slug}/>
   </section>;
 }
 
 function ShowcaseCatalog(){
-  const marker=useRef<HTMLDivElement>(null);
-  const [visible,setVisible]=useState(false);
-  const [loading,setLoading]=useState(false),[error,setError]=useState(false),[retry,setRetry]=useState(0);
-  const [samples,setSamples]=useState<Record<string,DirectoryHotel|null>>({});
-  useEffect(()=>{
-    const element=marker.current;
-    if(!element)return;
-    if(!("IntersectionObserver" in window)){setVisible(true);return;}
-    const observer=new IntersectionObserver(entries=>{
-      if(entries.some(entry=>entry.isIntersecting)){setVisible(true);observer.disconnect();}
-    },{rootMargin:"200px"});
-    observer.observe(element);
-    return ()=>observer.disconnect();
-  },[]);
-  useEffect(()=>{
-    if(!visible)return;
-    const controller=new AbortController();
-    setLoading(true);setError(false);
-    fetch("/api/hotels/showcase",{signal:controller.signal})
-      .then(async response=>{
-        if(!response.ok)throw new Error("Showcase unavailable");
-        const value:unknown=await response.json();
-        if(!value||typeof value!=="object"||Array.isArray(value))throw new Error("Invalid response");
-        const raw=(value as {samples?:unknown}).samples;
-        if(!raw||typeof raw!=="object"||Array.isArray(raw))throw new Error("Invalid samples");
-        const records=raw as Record<string,unknown>;
-        const safe:Record<string,DirectoryHotel|null>={};
-        for(const slug of [...HOTEL_SHOWCASE_INDIA,...HOTEL_SHOWCASE_WORLD]){
-          safe[slug]=validHotel(records[slug])?records[slug] as DirectoryHotel:null;
-        }
-        if(!controller.signal.aborted)setSamples(safe);
-      }).catch(()=>{if(!controller.signal.aborted)setError(true);})
-      .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
-    return ()=>controller.abort();
-  },[visible,retry]);
-  const fetching=!visible||loading;
-  return <div ref={marker}>
-    {error&&<div role="alert" className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
-      Featured directory samples are temporarily unavailable. Hotel city guides and Nuitee booking search remain available.
-      <button type="button" className="gth-btn ml-3 min-h-10 px-3" onClick={()=>setRetry(n=>n+1)}>Retry samples</button>
-    </div>}
+  return <div>
     <section aria-labelledby="gth-india-hotel-samples">
       <h3 id="gth-india-hotel-samples" className="text-xl font-bold">Explore India · City by city</h3>
-      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Mumbai, Kolkata, New Delhi, Chennai, Hyderabad and Ahmedabad — one source-backed hotel per city when data is available.</p>
+      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Mumbai, Kolkata, New Delhi, Chennai, Hyderabad and Ahmedabad — a real, named hotel example from each city, with original-source photo attribution.</p>
       <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {HOTEL_SHOWCASE_INDIA.map(slug=><ShowcaseCity key={slug} slug={slug} hotel={samples[slug]??null} loading={fetching}/>)}
+        {HOTEL_SHOWCASE_INDIA.map(slug=><ShowcaseCity key={slug} slug={slug}/>)}
       </div>
     </section>
     <section aria-labelledby="gth-global-hotel-samples" className="mt-10">
       <h3 id="gth-global-hotel-samples" className="text-xl font-bold">Explore Worldwide · City by city</h3>
-      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Browse examples across Europe, North America, the Middle East and Asia, with the same familiar GTH PRO design.</p>
+      <p className="mb-4 mt-1 text-sm text-[var(--text-soft)]">Real, named hotels in Europe, America, the Middle East and Asia. Original hotel photos appear only where verified licensing permits.</p>
       <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {HOTEL_SHOWCASE_WORLD.map(slug=><ShowcaseCity key={slug} slug={slug} hotel={samples[slug]??null} loading={fetching}/>)}
+        {HOTEL_SHOWCASE_WORLD.map(slug=><ShowcaseCity key={slug} slug={slug}/>)}
       </div>
     </section>
   </div>;
