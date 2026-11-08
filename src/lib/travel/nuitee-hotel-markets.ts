@@ -23,6 +23,10 @@ export const HOTEL_MARKETS = [
   {slug:"bali",city:"Bali — Denpasar area",supplierCity:"Denpasar",countryCode:"ID",country:"Indonesia",areas:["Denpasar for city-area stays","Sanur for coast-oriented planning","Ubud and other areas require separate location checks"],tip:"These directory cards are scoped to Denpasar, not every Bali resort. Check transfer times carefully before booking."},
 ] as const;
 
+// Homepage examples, not a hotel rating or guaranteed supplier inventory.
+export const HOTEL_SHOWCASE_INDIA=["mumbai","kolkata","delhi","chennai","hyderabad","ahmedabad"] as const;
+export const HOTEL_SHOWCASE_WORLD=["london","paris","new-york","dubai","singapore","tokyo","bangkok","rome"] as const;
+
 export type HotelMarket = (typeof HOTEL_MARKETS)[number];
 export type HotelMarketSlug = HotelMarket["slug"];
 export function getHotelMarket(slug:string): HotelMarket | undefined {
