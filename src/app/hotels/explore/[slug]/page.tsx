@@ -68,9 +68,9 @@ export default async function HotelMarketPage({params}:Props){
      <section aria-labelledby="city-supplier-hotel-title" className="mt-10">
        <h2 id="city-supplier-hotel-title" className="text-2xl font-bold">Explore local directory hotels</h2>
        <p className="mb-5 mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-         These source-backed hotel directory cards use existing public records, not Nuitee property IDs. Open GTH PRO hotel details to check location, then use the existing Nuitee booking search to find current rooms. Exact hotel matches are not assumed.
+         Photo-backed editorial hotel examples (where available) are independently attributed public references, not Nuitee property IDs. Read the GTH PRO details, then go straight to our existing Nuitee White Label for availability and booking. Exact hotel matches are not assumed.
        </p>
-       <Suspense fallback={<p role="status" className="rounded-xl border border-[var(--border)] p-5 text-sm">Checking available supplier hotel profiles…</p>}>
+       <Suspense fallback={<p role="status" className="rounded-xl border border-[var(--border)] p-5 text-sm">Loading local hotel guide…</p>}>
          <SourceCards market={market}/>
        </Suspense>
      </section>
