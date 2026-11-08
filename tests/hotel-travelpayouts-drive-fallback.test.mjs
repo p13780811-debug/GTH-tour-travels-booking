@@ -12,7 +12,7 @@ test("Existing project-specific Travelpayouts Drive is present only once in glob
 
 test("unmapped hotel search redirects to the existing Nuitee booking screen without guessing a supplier ID",()=>{
  const url=hotelProviderSearchUrl("Example Hotel, Paris",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3});
- assert.equal(url,"/hotels?view=booking");
+ assert.equal(url,"https://gthproglobal.nuitee.link/hotels?language=en&currency=INR");
 });
 
 test("GTH hotel details separate verified direct booking from Nuitee search",()=>{
