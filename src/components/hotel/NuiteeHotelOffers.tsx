@@ -1,12 +1,11 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
-import {ArrowUpRight,Globe2,Hotel,MapPin,ShieldCheck} from "lucide-react";
+import {ArrowUpRight,Globe2,MapPin,ShieldCheck} from "lucide-react";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import NuiteeHotelsListWidget from "@/components/hotel/NuiteeHotelsListWidget";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {HOTEL_MARKETS,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
-import {getHotelEditorialExample} from "@/lib/travel/hotel-editorial-examples";
 
 /** Free first-party directory cards. Source records are NOT Nuitee hotels or bookable offers. */
 type DirectoryHotel={
@@ -70,7 +69,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
         if(!response.ok)throw new Error("Hotel directory unavailable");
         const value:unknown=await response.json();
         if(!Array.isArray(value))throw new Error("Invalid directory response");
-        if(!controller.signal.aborted)setHotels(value.filter(validHotel).slice(0,Math.min(9,Math.max(1,limit))));
+        if(!controller.signal.aborted)setHotels(value.filter(validHotel).filter(hotel=>hotel.image!=="/placeholder.jpg").slice(0,Math.min(9,Math.max(1,limit))));
       }).catch(()=>{if(!controller.signal.aborted)setError(true);})
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
@@ -92,29 +91,6 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
 }
 /** Source-backed global illustration when no GTH-owned catalog hotel is available.
  * It must not masquerade as a verified directory record, affiliate offer or live inventory. */
-function EditorialExampleCard({slug}:{slug:string}){
-  const example=getHotelEditorialExample(slug);
-  if(!example)return null;
-  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)]">
-    <div className="flex h-44 items-center justify-center bg-[var(--bg-soft)] text-[var(--text-soft)] sm:h-48"
-      aria-label="Property photograph not available">
-      <Hotel size={38} strokeWidth={1.5} aria-hidden="true"/>
-    </div>
-    <div className="flex flex-1 flex-col gap-2 p-4">
-      <p className="text-xs text-[var(--text-soft)]">Verified public-reference example · Not GTH directory inventory</p>
-      <h5 className="text-base font-semibold">{example.name}</h5>
-      <a href={example.url} target="_blank" rel="noopener noreferrer"
-        className="text-xs text-[var(--text-soft)] underline underline-offset-2">
-        {example.source}
-      </a>
-      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">This illustrates hotel discovery in this destination. No exact Nuitee match, room price or availability is claimed.</p>
-      <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold">
-        Search hotel rooms on Nuitee <ArrowUpRight size={14} aria-hidden="true"/>
-      </a>
-    </div>
-  </article>;
-}
-
 /** Supplier-native booking cards, not fabricated OSM booking cards.
  * Public directory records and editorial hotel examples remain informational
  * on city-guide pages, never represented as bookable Nuitee inventory.
