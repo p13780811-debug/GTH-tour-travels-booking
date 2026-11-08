@@ -83,6 +83,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     </div>:null}
     {!loading&&!error&&visible&&(hotels.length?
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">{hotels.map(hotel=><Card key={String(hotel.id)} hotel={hotel}/>)}</div>:
+      getHotelEditorialExample(marketSlug)?<EditorialExampleCard slug={marketSlug}/>:
       <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">No source-backed directory hotels returned for this area. Search available rooms using the existing Nuitee booking form.</p>
     )}
   </div>;
