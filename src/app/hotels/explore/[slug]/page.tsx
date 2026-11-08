@@ -1,5 +1,4 @@
 import type {Metadata} from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {Suspense} from "react";
 import {notFound} from "next/navigation";
@@ -8,7 +7,6 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {FreeHotelDirectoryCards} from "@/components/hotel/NuiteeHotelOffers";
 import JsonLd from "@/components/seo/JsonLd";
 import {HOTEL_MARKETS,getHotelMarket,type HotelMarket} from "@/lib/travel/nuitee-hotel-markets";
-import {destinationImageForSlug} from "@/data/destinations";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 
 // Generate each page on first request; cache output for a day to avoid per-visit Vercel work.
@@ -36,12 +34,8 @@ export default async function HotelMarketPage({params}:Props){
  ]};
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
    <JsonLd data={breadcrumb}/>
-   <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
-     <div className="absolute inset-0 -z-10">
-       <Image src={destinationImageForSlug(market.slug)} fill priority alt={market.city+" destination scenery, not a hotel property photo"} sizes="100vw" className="object-cover"/>
-       <div className="absolute inset-0 bg-black/70"/>
-     </div>
-     <div className="mx-auto max-w-7xl px-4 py-12 text-white sm:px-6 md:py-20">
+   <section className="border-b border-[var(--border)] bg-[var(--card)]" data-travel-hero="true">
+     <div className="mx-auto max-w-7xl px-4 py-12 text-[var(--text)] sm:px-6 md:py-20">
        <p className="text-xs font-bold uppercase tracking-[0.16em]">GTH PRO · Hotels worldwide</p>
        <h1 className="mt-3 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">Hotels in {market.city}</h1>
        <p className="mt-4 max-w-2xl text-sm leading-7 sm:text-base">
