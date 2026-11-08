@@ -95,3 +95,18 @@ test("internal showcase endpoint is bounded, cache-backed, free, public-director
  assert.doesNotMatch(api,/X-API-Key|NUITEE_PRODUCTION|NEXT_PUBLIC_NUITEE|service_role|rates\/book|prebook/i);
  assert.doesNotMatch(api,/insert\(|update\(|upsert\(|delete\(/);
 });
+
+
+test("global editorial examples are openly sourced and never represented as live inventory",()=>{
+ const examples=read("src/lib/travel/hotel-editorial-examples.ts");
+ const expected=["london","paris","new-york","dubai","singapore","tokyo","bangkok","rome"];
+ for(const slug of expected){
+   assert.ok(examples.includes(''+slug+':{name:')||examples.includes('"'+slug+'":{name:'),slug);
+ }
+ assert.equal((examples.match(/source:"Wikimedia Commons/g)||[]).length,8);
+ assert.match(offers,/getHotelEditorialExample\(slug\)/);
+ assert.match(offers,/editorial\?<EditorialExampleCard slug=\{slug\}\/>/);
+ assert.match(offers,/Not GTH directory inventory/);
+ assert.match(offers,/Property photograph not available/);
+ assert.doesNotMatch(examples,/hotelId|supplierId|rates|booking_ready|NUITEE_PRODUCTION_API_KEY/);
+});
