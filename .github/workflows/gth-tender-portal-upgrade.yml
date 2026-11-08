@@ -129,6 +129,19 @@ jobs:
               echo "::warning::Official source probe reported an upstream error for $source; inspect evidence. No database writes were attempted."
             fi
           done
+          python - <<'PY'
+          import json, os, pathlib
+          lines=["## Read-only official source observations", "", "No notices were published and no database writes were attempted.", "", "| Source | Accepted by parser | Rejected | Observed outcome |", "| --- | ---: | ---: | --- |"]
+          for source in ("worldbank", "ted"):
+              try:
+                  data=json.loads(pathlib.Path("/tmp/gth-tender-source-probe/"+source+".json").read_text())
+                  result=data.get("sources",{}).get(source,{})
+                  outcome="Upstream error" if result.get("error") else "Read-only fetch completed"
+                  lines.append(f"| {source} | {data.get('accepted',0)} | {data.get('rejected',0)} | {outcome} |")
+              except Exception:
+                  lines.append(f"| {source} | unknown | unknown | Probe output unavailable |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as summary: summary.write("\n".join(lines)+"\n")
+          PY
       - name: Upload observed source health, not publication proof
         if: always()
         uses: actions/upload-artifact@v4
