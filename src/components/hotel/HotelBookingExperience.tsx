@@ -122,10 +122,6 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
       });
       if (!active) return;
       if (!win.LiteAPI) throw new Error("Hotel search unavailable");
-      // Reuse the app's compiled global styles, after vendor CSS, including in dev.
-      for (const sheet of document.querySelectorAll('link[rel="stylesheet"], style')) {
-        doc.head.appendChild(sheet.cloneNode(true));
-      }
       const color = getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
       win.LiteAPI.init({ domain: new URL(HOTEL_BOOKING_ORIGIN).hostname, deepLinkParams: "language=en&currency=INR" });
       await win.LiteAPI.SearchBar.create({
@@ -134,6 +130,12 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
         onSearchClick: value => { if (active) search(value); },
       });
       if (!active) return;
+      // The supplier may inject its light-theme CSS while creating SearchBar.
+      // Apply the existing GTH global stylesheet LAST inside this isolated frame;
+      // do not add a second theme or alter the booking/provider callbacks.
+      for (const sheet of document.querySelectorAll('link[rel="stylesheet"], style')) {
+        doc.head.appendChild(sheet.cloneNode(true));
+      }
       const enhanced = new WeakSet<HTMLElement>();
       const enhanceSearchControls = () => {
         const destination = doc.querySelector<HTMLInputElement>(".search-input");
