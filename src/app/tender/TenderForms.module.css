@@ -1,0 +1,14 @@
+.controls select {
+  color-scheme: light;
+}
+
+:global(html.dark) .controls select {
+  color-scheme: dark;
+}
+
+/* Native option menus need an opaque surface as well as themed text. */
+.controls select option,
+.controls select optgroup {
+  background-color: var(--bg-soft);
+  color: var(--text);
+}
