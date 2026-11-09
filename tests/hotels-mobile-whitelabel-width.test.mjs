@@ -32,3 +32,19 @@ test("isolated vendor search, theme sync, mobile full-window handoff remain func
  assert.match(search,/srcDoc=\{searchDocument\}/);
  assert.match(supplier,/https:\/\/gthproglobal\.nuitee\.link/);
 });
+
+test("supplier hotel search respects global dark tokens and loads them after vendor CSS",()=>{
+ const dark=css.slice(css.indexOf("/* Supplier SearchBar can inject white field surfaces"));
+ assert.ok(dark.includes("html.gth-hotel-widget-root.dark body.gth-hotel-search-widget"));
+ for(const token of ["--card","--text","--text-soft","--border","--btn-bg","--btn-text"]){
+   assert.ok(dark.includes("var("+token+")"),"reuse global token "+token);
+ }
+ assert.match(dark,/\.search-bar :is\(\.field, \.desktop-dates, \.mobile-checkin/);
+ assert.match(dark,/\.search-bar input::placeholder/);
+ assert.match(dark,/color-scheme: dark/);
+ assert.doesNotMatch(dark,/background:\s*(?:white|#fff(?:fff)?)\b/i);
+ const sdkCreation=search.indexOf("await win.LiteAPI.SearchBar.create(");
+ const stylesheetCopy=search.indexOf('for (const sheet of document.querySelectorAll');
+ assert.ok(sdkCreation>0 && stylesheetCopy>sdkCreation,"GTH CSS must follow injected vendor styling");
+ assert.match(search,/doc\.documentElement\.className =/);
+});
