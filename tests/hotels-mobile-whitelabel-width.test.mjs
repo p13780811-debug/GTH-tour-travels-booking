@@ -35,7 +35,7 @@ test("isolated vendor search, theme sync, mobile full-window handoff remain func
 
 test("supplier hotel search respects global dark tokens and loads them after vendor CSS",()=>{
  const dark=css.slice(css.indexOf("/* Supplier SearchBar can inject white field surfaces"));
- assert.ok(dark.includes("html.dark.gth-hotel-widget-root body.gth-hotel-search-widget"));
+ assert.ok(dark.includes("html.gth-hotel-widget-root.dark body.gth-hotel-search-widget"));
  for(const token of ["--card","--text","--text-soft","--border","--btn-bg","--btn-text"]){
    assert.ok(dark.includes("var("+token+")"),"reuse global token "+token);
  }
