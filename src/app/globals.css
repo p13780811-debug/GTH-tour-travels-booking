@@ -1390,29 +1390,29 @@ body.gth-hotel-search-widget { margin: 0; padding: 0.5rem; min-height: 0; height
 /* Supplier SearchBar can inject white field surfaces even when the surrounding page
    is dark. Confine the contrast repair to the existing isolated Nuitee document.
    All colors still come from GTH PRO global day/night tokens. */
-html.dark.gth-hotel-widget-root,
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget {
+html.gth-hotel-widget-root.dark,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget {
   color-scheme: dark;
 }
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar,
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar :is(.field, .desktop-dates, .mobile-checkin, .mobile-checkout, .guest-control, .guests-popup, .simple-typeahead-list, .simple-typeahead-list-item) {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar :is(.field, .desktop-dates, .mobile-checkin, .mobile-checkout, .guest-control, .guests-popup, .simple-typeahead-list, .simple-typeahead-list-item) {
   background: var(--card) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar :is(input, .search-input, .date-description, .label, .field > span) {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar :is(input, .search-input, .date-description, .label, .field > span) {
   color: var(--text) !important;
 }
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar input::placeholder {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar input::placeholder {
   color: var(--text-soft) !important;
   opacity: 1;
 }
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar .search-button,
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar .simple-typeahead-list-item-active {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .search-button,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .simple-typeahead-list-item-active {
   background: var(--btn-bg) !important;
   color: var(--btn-text) !important;
 }
-html.dark.gth-hotel-widget-root body.gth-hotel-search-widget .search-bar .search-button .search-text {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .search-button .search-text {
   color: inherit !important;
 }
 @media (max-width: 640px) {
