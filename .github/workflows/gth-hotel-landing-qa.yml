@@ -1,0 +1,77 @@
+name: GTH Hotels — premium landing and preserved booking QA
+on:
+  push:
+    branches: [fix/hotels-search-first-20261024]
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/hotels/**"
+      - "src/components/hotel/NuiteeHotelOffers.tsx"
+      - "scripts/qa-hotel-landing.mjs"
+      - ".github/workflows/gth-hotel-landing-qa.yml"
+permissions:
+  contents: read
+concurrency:
+  group: gth-hotel-landing-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  booking-and-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://tender-qa.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
+      SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: node scripts/check-hotel-landing-boundaries.mjs
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Website regressions, types, lint and existing CSS protection
+        run: |
+          npm run test:security
+          npx tsc --noEmit
+          npm run lint
+          python scripts/check-hotel-css-scope.py
+      - name: Start isolated existing source fixture for build
+        run: |
+          node scripts/qa-tender-portal.mjs --fixture-server > /tmp/gth-hotel-source-fixture.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Production build with original fonts, no production database
+        env:
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs
+        run: npm run build
+      - name: Install acceptance browser
+        run: |
+          npm install --no-save --package-lock=false --legacy-peer-deps --no-audit --no-fund playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Verify real Next pages, themes, city selection and existing booking handoff
+        run: |
+          NODE_OPTIONS=--require=/tmp/gth-tender-network-fixture.cjs npm run start -- --hostname 127.0.0.1 --port 4211 > /tmp/gth-hotel-next.log 2>&1 &
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 3 http://127.0.0.1:4211/hotels > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gth-hotel-next.log; exit 1; fi
+          GTH_HOTEL_HTML_CHECK_URL=http://127.0.0.1:4211/hotels node scripts/check-hotel-first-html.mjs
+          node scripts/qa-hotel-landing.mjs
+      - name: Upload browser evidence (explicit fixtures, not live supplier inventory)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-hotels-landing-qa-fixtures-not-production
+          path: |
+            /tmp/gth-hotel-landing-qa/
+            /tmp/gth-hotel-next.log
+          retention-days: 7

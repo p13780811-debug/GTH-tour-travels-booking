@@ -98,30 +98,38 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
  * on city-guide pages, never represented as bookable Nuitee inventory.
  */
 export default function NuiteeHotelOffers(){
+  const [city,setCity]=useState<"mumbai"|"london">("mumbai");
   const booking=HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR";
   return <section aria-labelledby="gth-nuitee-real-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
-    <header className="mb-6">
-      <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--gold)]">
-        <Globe2 size={15} aria-hidden="true"/> GTH PRO · Nuitee White Label
-      </p>
-      <h2 id="gth-nuitee-real-hotels" className="mt-2 text-2xl font-bold md:text-3xl">Explore real hotels with photos and booking links</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-        These supplier hotel cards come directly from our connected Nuitee White Label, not from incomplete OpenStreetMap records. Choose a hotel to see its actual listing, photos and room options. No paid catalogue API key is needed.
-      </p>
+    <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-soft)]">
+          <Globe2 size={15} aria-hidden="true"/> Rooms &amp; possibilities
+        </p>
+        <h2 id="gth-nuitee-real-hotels" className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Find your kind of stay.</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
+          Explore hotel photos and room options from Nuitee, our booking partner.
+          Choose your dates to confirm availability and the total price.
+        </p>
+      </div>
+      <a href={booking} target="_blank" rel="noopener noreferrer sponsored" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4">Explore on booking site <ArrowUpRight size={16} aria-hidden="true"/></a>
     </header>
-    <div className="grid min-w-0 gap-8">
-      <section aria-labelledby="gth-nuitee-india" className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
-        <h3 id="gth-nuitee-india" className="mb-2 text-xl font-semibold">Hotels in India · Mumbai</h3>
-        <NuiteeHotelsListWidget id="gth-hotels-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1}/>
-      </section>
-      <section aria-labelledby="gth-nuitee-global" className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
-        <h3 id="gth-nuitee-global" className="mb-2 text-xl font-semibold">Hotels worldwide · London</h3>
-        <NuiteeHotelsListWidget id="gth-hotels-nuitee-london" placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI" placeLabel="London" rows={1}/>
-      </section>
+    <div className="min-w-0 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-5">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div role="group" aria-label="Hotel city selection" className="inline-flex max-w-full flex-wrap gap-2">
+          {([['mumbai','Mumbai, India'],['london','London, UK']] as const).map(([id,label])=><button key={id} type="button" aria-pressed={city===id} onClick={()=>setCity(id)} className={"inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+(city===id?"border-[var(--gold)] bg-[var(--bg-soft)] text-[var(--text)]":"border-[var(--border)] text-[var(--text-soft)]")}><MapPin size={14} aria-hidden="true"/>{label}</button>)}
+        </div>
+        <span className="text-xs text-[var(--text-soft)]">Photos &amp; room details from Nuitee</span>
+      </div>
+      <div aria-live="polite" aria-atomic="false">
+        {city==="mumbai"
+          ?<NuiteeHotelsListWidget key="mumbai" id="gth-hotels-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1}/>
+          :<NuiteeHotelsListWidget key="london" id="gth-hotels-nuitee-london" placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI" placeLabel="London" rows={1}/>}
+      </div>
     </div>
-    <div className="mt-9">
-      <h3 className="mb-3 text-lg font-semibold">Explore more cities across India and the world</h3>
-      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+    <details className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
+      <summary className="min-h-8 cursor-pointer text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]">Explore more cities across India and the world</summary>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {HOTEL_MARKETS.map(m=><div key={m.slug} className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
           <p className="text-sm font-semibold">{m.city}</p>
           <p className="mt-1 text-xs text-[var(--text-soft)]">{m.country}</p>
@@ -133,10 +141,10 @@ export default function NuiteeHotelOffers(){
           </div>
         </div>)}
       </div>
-    </div>
-    <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
+    </details>
+    <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
-      Supplier availability, photos, prices and booking are handled by Nuitee. A GTH PRO directory entry does not guarantee an exact supplier hotel match; the official supplier cards above carry their own direct booking links.
+      Booking is handled by Nuitee. Review room inclusions, taxes and cancellation terms before you pay.
     </p>
   </section>;
 }

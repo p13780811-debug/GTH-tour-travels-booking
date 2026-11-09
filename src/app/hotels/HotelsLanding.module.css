@@ -1,0 +1,60 @@
+.page select { color-scheme: light; }
+:global(html.dark) .page select { color-scheme: dark; }
+.page select option, .page select optgroup { background-color: var(--bg-soft); color: var(--text); }
+
+.hero {
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse at 95% 0%, rgba(212, 175, 55, .1), transparent 55%), var(--bg);
+}
+.inner { max-width: 80rem; margin: 0 auto; padding: 1rem 1rem 1.5rem; }
+.intro { display: grid; align-items: center; gap: 2rem; }
+.eyebrow, .sectionLabel { display: flex; align-items: center; gap: .5rem; font-size: .7rem; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; color: var(--text-soft); }
+.eyebrow { display: none; }
+.title { max-width: 48rem; margin: 0; font-size: clamp(1.9rem, 3.6vw, 3.4rem); font-weight: 650; line-height: 1.12; letter-spacing: -.045em; text-wrap: balance; }
+.title span { display: block; font-family: var(--font-heading), Georgia, serif; font-weight: 500; letter-spacing: -.025em; }
+.description { max-width: 35rem; margin-top: .65rem; color: var(--text-soft); font-size: .875rem; line-height: 1.7; }
+.visual { display: none; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; width: min(100%, 26rem); margin: 1rem 0; padding: .25rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card); }
+.modeButton { display: inline-flex; min-height: 44px; min-width: 0; align-items: center; justify-content: center; gap: .4rem; padding: .6rem; border-radius: 999px; color: var(--text-soft); font-size: .8rem; font-weight: 650; cursor: pointer; }
+.modeButton[aria-pressed="true"] { background: var(--text); color: var(--bg); box-shadow: var(--shadow); }
+:global(html.dark) .modeButton[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-text); }
+.page :is(a, button, summary, select):focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+.hero :global(.gth-hotel-booking) { width: 100%; margin: 0; border: 1px solid var(--border); border-radius: 1.5rem; box-shadow: var(--shadow); }
+.hero :global(.gth-hotel-booking) h2 { margin: 0; font-size: 1.125rem; }
+.hero :global(.gth-hotel-search-panel) { margin-top: .5rem; }
+.guides, .planning { width: min(100% - 2rem, 77rem); margin: 0 auto; padding: 2rem 0; }
+.sectionTitle { margin-top: .5rem; font-size: clamp(1.6rem, 2.5vw, 2.2rem); font-weight: 650; line-height: 1.2; letter-spacing: -.035em; text-wrap: balance; }
+.textLink { display: inline-flex; min-height: 44px; align-items: center; gap: .5rem; margin-top: .5rem; font-size: .8rem; font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
+.destinationGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.destinationCard { position: relative; display: block; min-width: 0; height: 12rem; overflow: hidden; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--bg-soft); }
+.destinationCard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 20%, rgba(0, 0, 0, .78)); }
+.destinationCard img { transition: transform .3s ease; }
+.destinationCard:hover img { transform: scale(1.035); }
+.destinationCaption { position: absolute; z-index: 1; inset: auto 0 0; display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: 1rem; color: #fff; }
+.destinationCaption strong { display: block; font-size: 1.125rem; font-weight: 650; }
+.destinationCaption span span { display: block; margin-top: .25rem; font-size: .7rem; }
+.planning { display: grid; gap: 1.5rem; padding-bottom: 3rem; border-top: 1px solid var(--border); }
+.checklist { align-self: start; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--card); }
+.checklist details + details { border-top: 1px solid var(--border); }
+.checklist summary { min-height: 60px; padding: 1.1rem; cursor: pointer; font-size: .875rem; font-weight: 650; }
+.checklist summary svg { display: inline-block; margin-inline-end: .6rem; vertical-align: middle; }
+.checklist p { padding: 0 1.1rem 1.1rem; color: var(--text-soft); font-size: .875rem; line-height: 1.8; }
+@media (min-width: 640px) {
+  .inner { padding: 1.5rem; }
+  .eyebrow { display: flex; margin-bottom: .75rem; }
+  .guides, .planning { width: min(100% - 3rem, 77rem); padding-block: 2.5rem; }
+  .destinationCard { height: 15rem; }
+}
+@media (min-width: 900px) {
+  .intro { grid-template-columns: minmax(0, 1fr) 21rem; }
+  .visual { display: block; position: relative; height: 11rem; overflow: hidden; border: 1px solid var(--border); border-radius: 1.5rem; }
+  .visual::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0, 0, 0, .7)); }
+  .visual figcaption { position: absolute; z-index: 1; inset: auto 1rem 1rem; display: flex; align-items: center; gap: .4rem; color: #fff; font-size: .8rem; font-weight: 600; }
+  .visual figcaption span { margin-inline-start: auto; font-size: .6rem; font-weight: 400; }
+  .destinationGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
+  .planning { grid-template-columns: 1fr 1fr; gap: 4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .destinationCard img { transition: none; }
+  .destinationCard:hover img { transform: none; }
+}

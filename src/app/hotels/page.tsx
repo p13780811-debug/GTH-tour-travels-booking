@@ -21,7 +21,9 @@ import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
+import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacement";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
+import styles from "./HotelsLanding.module.css";
 
 import {
     Search,
@@ -287,34 +289,40 @@ function HotelsContent() {
     ] as const;
 
     return (
-        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
+        <div className={`${styles.page} min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden`}>
             {/* ========================================================================= */}
             {/* HERO */}
             {/* ========================================================================= */}
 
-            <section className="relative gth-glass overflow-hidden border-b border-[var(--border)] bg-[var(--bg)]" data-travel-hero="true">
+            <section className={styles.hero} data-travel-hero="true" aria-labelledby="hotel-hero-title">
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 pt-2 pb-2 md:pt-8 md:pb-9">
+                <div className={styles.inner}>
                     {/* TITLE */}
-                    <div>
-                        <div className="hidden items-center gap-2 px-3 py-2 rounded-full gth-glass border border-[var(--border)] sm:inline-flex">
-                            <Orbit size={14} />
-                            <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--text-soft)]">
-                                GTH GLOBAL STAYS
-                            </span>
+                    <div className={styles.intro}>
+                        <div>
+                            <p className={styles.eyebrow}><Orbit size={14} aria-hidden="true" /> GTH PRO · Global stays</p>
+                            <h1 id="hotel-hero-title" className={styles.title}>
+                                Discover Hotels <span>Around the World</span>
+                            </h1>
+                            <p className={styles.description}>
+                                City breaks, coastal escapes, a little room to unwind.
+                                Find a stay that fits your next journey.
+                            </p>
                         </div>
-
-                        <h1 className="gth-hotel-title mt-1 text-[var(--text)] sm:mt-5 font-bold leading-tight max-w-4xl">
-                            Discover Hotels Around the World
-                        </h1>
-
-                        <p className="mt-2 hidden text-sm md:text-base text-[var(--text-soft)] max-w-2xl sm:mt-4 sm:block">
-                            Search worldwide stays with supplier room availability, photos and amenities,
-                            or explore our source-attributed hotel directory.
-                        </p>
+                        <figure className={styles.visual}>
+                            <Image src="/images/cities/dubai.jpg" alt="Dubai skyline — destination inspiration" fill sizes="(min-width: 900px) 360px, 1px" className="object-cover" />
+                            <figcaption><MapPin size={14} aria-hidden="true" /> Dubai <span>Destination inspiration</span></figcaption>
+                        </figure>
                     </div>
 
+                    <div className={styles.modes} role="group" aria-label="Hotel experience">
+                        <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "booking"}
+                            onClick={() => setHotelMode("booking")}><BedDouble size={17} aria-hidden="true" /> Book a stay</button>
+                        <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "directory"}
+                            onClick={() => setHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
+                    </div>
                     {/* SEARCH */}
+                    {hotelMode === "booking" && <HotelBookingExperience />}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
@@ -377,31 +385,33 @@ function HotelsContent() {
                 </div>
             </section>
       <TravelSectionNav />
-            <div className="gth-hotel-mode-switch" role="group" aria-label="Hotel experience">
-              <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:gap-3">
-              <button type="button" className="gth-btn" aria-pressed={hotelMode === "booking"}
-                onClick={() => setHotelMode("booking")}>Live hotel booking</button>
-              <button type="button" className="gth-btn" aria-pressed={hotelMode === "directory"}
-                onClick={() => setHotelMode("directory")}>Hotel directory & guides</button>
-              </div>
-            </div>
             {hotelMode === "booking" ? <div>
-              <HotelBookingExperience />
-              <section className="mx-auto max-w-7xl px-4 pb-3 pt-5 sm:px-6" aria-labelledby="hotel-inspiration-title">
+              <HotelsDiscoveryPlacement />
+              <section className={styles.guides} aria-labelledby="hotel-inspiration-title">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                  <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">GTH PRO · Signature destinations</p>
-                    <h2 id="hotel-inspiration-title" className="mt-1 text-2xl font-bold text-[var(--text)] md:text-3xl">Your next extraordinary stay starts here</h2>
-                    <p className="mt-2 text-sm text-[var(--text-soft)]">Browse real booking-provider hotel photographs, room details and prices after selecting a destination and dates.</p>
+                  <div><p className={styles.sectionLabel}>A change of scenery</p>
+                    <h2 id="hotel-inspiration-title" className={styles.sectionTitle}>Where will you wake up next?</h2>
+                    <p className="mt-2 text-sm text-[var(--text-soft)]">Explore the neighbourhoods before you choose your stay.</p>
                   </div>
+                  <Link href="/destinations" className={styles.textLink}>Explore destinations <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
-                <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3" aria-label="Featured travel destinations">
-                  {featuredDestinations.map(place=><article key={place.slug} className="group relative h-44 w-48 shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:h-52 sm:w-56">
-                    <Image src={place.image} alt={place.city+" destination scenery, not a hotel photo"} fill sizes="(max-width:640px) 192px,224px" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
-                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"/>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white"><p className="text-lg font-bold">{place.city}</p><p className="text-xs text-slate-200">Explore destination stays</p></div>
-                  </article>)}
+                <nav className={styles.destinationGrid} aria-label="Featured travel destinations">
+                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug} className={styles.destinationCard} aria-label={"Explore "+place.city+" hotel guide"}>
+                    <Image src={place.image} alt={place.city+" destination scenery, not a hotel photo"} fill sizes="(max-width:640px) 46vw, (max-width:1024px) 30vw, 390px" className="object-cover"/>
+                    <span className={styles.destinationCaption}><span><strong>{place.city}</strong><span>Discover the area</span></span><ChevronRight size={20} aria-hidden="true" /></span>
+                  </Link>)}
+                </nav>
+                <p className="mt-3 text-xs text-[var(--text-soft)]">Destination photography for inspiration. Property photos and room options appear in the booking search.</p>
+              </section>
+              <section className={styles.planning} aria-labelledby="hotel-planning-title">
+                <div><p className={styles.sectionLabel}>A little planning. A better stay.</p><h2 id="hotel-planning-title" className={styles.sectionTitle}>Check in with confidence.</h2><p className="mt-3 max-w-lg text-sm leading-7 text-[var(--text-soft)]">Keep these three things in mind when comparing rooms. The final details are on your booking provider&apos;s page.</p>
+                  <Link href="/hotels/list-your-property" className={styles.textLink}>Own a property? List it for free <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
-                <p className="text-xs text-[var(--text-soft)]">Images above show destinations, not individual properties. Hotel-specific photos and amenities are provided by Nuitee during booking search.</p>
+                <div className={styles.checklist}>
+                  <details><summary><MapPin size={18} aria-hidden="true" /> The right location</summary><p>Check the exact address, nearby transport and travel time to the places on your itinerary. A city name alone can cover a large area.</p></details>
+                  <details><summary><ShieldCheck size={18} aria-hidden="true" /> The complete price</summary><p>Compare the total for your dates and guests, including taxes, mandatory fees, meals and room inclusions. Prices can change before confirmation.</p></details>
+                  <details><summary><CalendarDays size={18} aria-hidden="true" /> The terms that fit your plans</summary><p>Review cancellation deadlines, payment timing, check-in rules and child or extra-bed policies before paying.</p></details>
+                </div>
               </section>
             </div> : <>
 
@@ -719,6 +729,7 @@ function HotelsContent() {
                 </div>
             </section>
             </>}
+            {hotelMode === "directory" && <HotelsDiscoveryPlacement />}
         </div>
     );
 }

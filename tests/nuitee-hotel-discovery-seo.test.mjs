@@ -16,7 +16,10 @@ const provider=read("src/lib/travel/hotel-provider-search.ts");
 test("original booking experience, exact hotel route and central theme are retained",()=>{
  assert.match(original,/<HotelBookingExperience\s*\/>/);
  assert.match(original,/HotelCatalogPulse/);
- assert.match(layout,/\{children\}<HotelsDiscoveryPlacement\s*\/>/);
+ assert.doesNotMatch(layout,/HotelsDiscoveryPlacement/);
+ assert.match(original,/<HotelsDiscoveryPlacement\s*\/>/);
+ assert.ok(original.indexOf('<HotelBookingExperience />')<original.indexOf('<HotelsDiscoveryPlacement />'));
+ assert.ok(original.indexOf('<HotelsDiscoveryPlacement />')<original.indexOf('aria-labelledby="hotel-inspiration-title"'));
  assert.match(placement,/pathname==="\/hotels"/);
  assert.doesNotMatch(placement,/startsWith\(/);
  assert.match(offers,/bg-\[var\(--card\)\]/);
