@@ -43,11 +43,11 @@ test("official supplier list supplies authentic photos and its own exact White L
 });
 
 test("unmapped directory hotel booking CTA goes direct to supplier domain, not in-app search",()=>{
- assert.match(provider,/https:\/\/gthproglobal\.nuitee\.link\/hotels\?language=en&currency=INR/);
+ assert.match(provider,/https:\/\/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
  assert.doesNotMatch(provider,/\/hotels\?view=booking/);
  assert.match(offers,/HOTEL_BOOKING_ORIGIN\+"\/hotels\?language=en&currency=INR"/);
  assert.doesNotMatch(offers,/href="\/hotels\?view=booking"/);
- assert.match(guide,/gthproglobal\.nuitee\.link\/hotels\?language=en&currency=INR/);
+ assert.match(guide,/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
  assert.doesNotMatch(guide,/href="\/hotels\?view=booking"/);
 });
 

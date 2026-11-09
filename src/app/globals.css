@@ -1395,12 +1395,23 @@ html.gth-hotel-widget-root.dark body.gth-hotel-search-widget {
   color-scheme: dark;
 }
 html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar,
-html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar :is(.field, .desktop-dates, .mobile-checkin, .mobile-checkout, .guest-control, .guests-popup, .simple-typeahead-list, .simple-typeahead-list-item) {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .field,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .desktop-dates,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .mobile-checkin,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .mobile-checkout,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .guest-control,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .guests-popup,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .simple-typeahead-list,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .simple-typeahead-list-item {
   background: var(--card) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
-html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar :is(input, .search-input, .date-description, .label, .field > span) {
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar input,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .search-input,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .date-description,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .label,
+html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar .field > span {
   color: var(--text) !important;
 }
 html.gth-hotel-widget-root.dark body.gth-hotel-search-widget .search-bar input::placeholder {

@@ -39,7 +39,7 @@ test("travel stay scope carries unchanged through results, navigation and detail
 test("hotel directory fallback never invents Booking.com partner status or a matching hotel",()=>{
  const source=read("src/lib/travel/hotel-provider-search.ts");
  const detail=read("src/app/hotels/stay/[id]/page.tsx");
- assert.match(source,/https:\/\/gthproglobal\.nuitee\.link\/hotels\?language=en&currency=INR/);
+ assert.match(source,/https:\/\/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
  assert.doesNotMatch(source,/\/hotels\?view=booking/);
  assert.doesNotMatch(source,/booking\.com/i);
  assert.match(detail,/exact hotel match or rate is not guaranteed/);

@@ -7,6 +7,7 @@ function setup({key="fixture-private-currency-key",fetcher}={}){
  const calls=[];const env={NUITEE_PRODUCTION_API_KEY:key};let cachePromise;
  const api=loadTenderTs("src/lib/travel/nuitee-free-currencies.ts",{
   "server-only":{},"./hotel-currency":shared,
+  "./nuitee-read-budget":{reserveNuiteeRefresh:async()=>{}},
   "next/cache":{unstable_cache:(fn,keys,options)=>{assert.equal(options.revalidate,86400);return ()=>{if(!cachePromise)cachePromise=fn().catch(error=>{cachePromise=undefined;throw error;});return cachePromise;};}},
  },{process:{env},fetch:async(url,options)=>{calls.push({url,options});return fetcher?fetcher(url,options):new Response(JSON.stringify({data:rows}));}});
  return {api,calls};

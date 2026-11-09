@@ -30,7 +30,7 @@ test("isolated vendor search, theme sync, mobile full-window handoff remain func
  assert.match(search,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
  assert.match(search,/new MutationObserver\(syncTheme\)/);
  assert.match(search,/srcDoc=\{searchDocument\}/);
- assert.match(supplier,/https:\/\/gthproglobal\.nuitee\.link/);
+ assert.match(supplier,/https:\/\/hotel\.gthproglobal\.com/);
 });
 
 test("supplier hotel search respects global dark tokens and loads them after vendor CSS",()=>{
@@ -39,7 +39,8 @@ test("supplier hotel search respects global dark tokens and loads them after ven
  for(const token of ["--card","--text","--text-soft","--border","--btn-bg","--btn-text"]){
    assert.ok(dark.includes("var("+token+")"),"reuse global token "+token);
  }
- assert.match(dark,/\.search-bar :is\(\.field, \.desktop-dates, \.mobile-checkin/);
+ assert.match(dark,/html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar \.field/);
+ assert.match(dark,/html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar \.mobile-checkin/);
  assert.match(dark,/\.search-bar input::placeholder/);
  assert.match(dark,/color-scheme: dark/);
  assert.doesNotMatch(dark,/background:\s*(?:white|#fff(?:fff)?)\b/i);

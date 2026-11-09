@@ -1,7 +1,7 @@
 /** Public Nuitee booking configuration. No private API or reservation calls.
  * https://docs.liteapi.travel/docs/deeplinking-to-whitelabel
  */
-export const HOTEL_BOOKING_ORIGIN = "https://gthproglobal.nuitee.link";
+export const HOTEL_BOOKING_ORIGIN = "https://hotel.gthproglobal.com";
 export const HOTEL_WIDGET_SCRIPT = "https://components.liteapi.travel/v1.0/sdk.umd.js";
 export type HotelOccupancy = { adults: number; children: number[]; rooms?: number };
 export type HotelBookingSearch = {

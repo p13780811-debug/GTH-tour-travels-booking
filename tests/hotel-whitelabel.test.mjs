@@ -84,5 +84,5 @@ test('stale supplier links recover to search rather than silently changing the s
  for(const params of [query({checkin:'2026-10-01'}),query({occupancies:'invalid'}),new URLSearchParams('adults=3')])
   assert.equal(hotelSupplierPathRedirect('/hotels/lp7246c',params,now),'/hotels?view=booking&bookingError=invalid-stay');
  const withoutDates=new URL(hotelSupplierPathRedirect('/hotels/lp7246c',new URLSearchParams('currency=USD&email=private&redirect=https://attacker.invalid'),now));
- assert.equal(withoutDates.hostname,'gthproglobal.nuitee.link');assert.equal(withoutDates.search,'?language=en&currency=USD');
+ assert.equal(withoutDates.hostname,'hotel.gthproglobal.com');assert.equal(withoutDates.search,'?language=en&currency=USD');
 });

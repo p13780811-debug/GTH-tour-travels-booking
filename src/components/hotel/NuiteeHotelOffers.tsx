@@ -98,9 +98,10 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
  * Public directory records and editorial hotel examples remain informational
  * on city-guide pages, never represented as bookable Nuitee inventory.
  */
-export default function NuiteeHotelOffers({currency="INR"}:{currency?:string}){
+export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{currency?:string;preferredCountry?:string}){
   const displayCurrency=hotelCurrency(currency);
   const [city,setCity]=useState<"mumbai"|"london">("mumbai");
+  useEffect(()=>setCity(preferredCountry==="GB"?"london":"mumbai"),[preferredCountry]);
   const booking=HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency;
   return <section aria-labelledby="gth-nuitee-real-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">

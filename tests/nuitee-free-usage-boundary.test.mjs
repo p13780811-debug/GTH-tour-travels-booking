@@ -15,9 +15,9 @@ test("private Nuitee REST access stays confined to the reviewed free-currency se
  const violations=new Set();
  for(const path of sources("src")){
   const text=readFileSync(path,"utf8");if(!/nuitee|liteapi/i.test(text))continue;
-  if(path==="src/lib/travel/nuitee-free-currencies.ts"){
+  if(["src/lib/travel/nuitee-free-currencies.ts","src/lib/travel/nuitee-free-hotels.ts"].includes(path)){
    const urls=[...text.matchAll(/https:\/\/api\.liteapi\.travel[^\s"'`]+/g)].map(match=>match[0]);
-   assert.deepEqual(urls,["https://api.liteapi.travel/v3.0/data/currencies"]);
+   assert.deepEqual(urls,[path.endsWith("nuitee-free-currencies.ts")?"https://api.liteapi.travel/v3.0/data/currencies":"https://api.liteapi.travel/v3.0/data/hotels"]);
    assert.match(text,/import "server-only"/);assert.match(text,/method:"GET"/);
    assert.doesNotMatch(text,/method:["'](?:POST|PATCH|DELETE)|\/data\/places|price.?index|hotels\/rates|book\.liteapi/i);
    continue;

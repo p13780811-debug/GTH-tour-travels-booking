@@ -37,7 +37,7 @@ test("travel booking conversion copy links existing hosted Nuitee without changi
   assert.match(travel, /HOTEL SEARCH & BOOKING/);
   assert.match(travel, /\/hotels\?view=booking/);
   assert.match(travel, /Nuitee White Label/);
-  assert.match(hotels, /https:\/\/gthproglobal\.nuitee\.link/);
+  assert.match(hotels, /https:\/\/hotel\.gthproglobal\.com/);
   assert.match(flights, /wl_id=23459/);
   assert.match(tours, /TourLanding/);
 });

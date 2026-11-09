@@ -1,6 +1,7 @@
 import "server-only";
 import {unstable_cache} from "next/cache";
 import {HOTEL_CURRENCY_OPTIONS} from "./hotel-currency";
+import {reserveNuiteeRefresh} from "./nuitee-read-budget";
 
 // Pricing supplied by the owner and official liteapi-node-sdk 4.3.2:
 // GET /data/currencies is a free metadata endpoint, subject to the ToS.
@@ -31,6 +32,7 @@ export function parseNuiteeCurrencies(input:unknown):HotelCurrencyCatalog{
 const cached=unstable_cache(async():Promise<HotelCurrencyCatalog>=>{
   const key=process.env.NUITEE_PRODUCTION_API_KEY;
   if(!key)throw Error("Currency metadata not configured");
+  await reserveNuiteeRefresh();
   const response=await fetch(CURRENCIES_URL,{
     method:"GET",headers:{accept:"application/json","X-API-Key":key},
     redirect:"error",credentials:"omit",signal:AbortSignal.timeout(5000),cache:"no-store",

@@ -7,5 +7,5 @@ export type HotelStaySelection={checkin?:string;checkout?:string;adults?:number}
 export function hotelProviderSearchUrl(destination:string,stay:HotelStaySelection={}):string{
  void destination;
  void stay;
- return "https://gthproglobal.nuitee.link/hotels?language=en&currency=INR";
+ return "https://hotel.gthproglobal.com/hotels?language=en&currency=INR";
 }

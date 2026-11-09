@@ -1,36 +1,40 @@
-# Nuitee integration: existing free surface and API cost boundary
+# Nuitee free-content integration and cost boundary
 
-Owner constraint: use the available free integration scope; do not introduce paid API hits. The owner reports completing Nuitee White Label production activation on 9 November 2026. Prior dashboard screenshots were Sandbox; that environment issue was external to the GTH iframe's browser-security `sandbox` attribute. Production status is owner-confirmed, not an independently performed reservation.
+Verified scope: 9 November 2026. The owner confirmed completed Production activation, DNS, and the Active & Verified custom White Label at **https://hotel.gthproglobal.com** (singular `hotel`). Account activation is complete; it is separate from providing a server-side REST credential to Vercel.
 
-## Implemented capabilities — reuse, do not duplicate
+## Documentation reviewed
 
-| Capability | Existing implementation | New direct private Nuitee REST calls |
+The owner supplied the current official [API Pricing & Usage Costs](https://docs.liteapi.travel/reference/api-pricing-usage-costs) text. The official `liteapi-node-sdk` **4.3.2** package was downloaded from npm into an isolated `/tmp` review directory; its repository is https://github.com/liteapi-travel/nodejs-sdk . No package/dependency was added to GTH.
+
+| Endpoint/category | Published standard price/condition | This implementation |
 | --- | --- | --- |
-| Worldwide destination, dates, guests and room search | Official public SearchBar in `HotelBookingExperience.tsx` | None |
-| Hotel photographs and supplier hotel links | Official HotelsList in `NuiteeHotelsListWidget.tsx`; one selected city list | None |
-| Hotel details, amenities, room options, final price/cancellation and provider checkout | Existing `gthproglobal.nuitee.link` White Label; desktop results/full-window link and mobile same-tab handoff | None |
-| Exact stay deep links | Existing `hotel-whitelabel.ts` / `/api/hotels/booking`; strict destination/hotel/date/occupancy/currency allowlist, room expansion and child ages retained | None; the GTH endpoint only validates and redirects |
-| Country/city/airport reference discovery | Existing static, verified `airportReference*.ts`, `nuiteeAirportIndex.ts` and `/travel/airports` | None at runtime |
-| Eighteen city guides and source-backed directory | Existing local editorial markets and GTH/OSM directory routes | No Nuitee REST calls; existing Supabase directory operations are a separate existing dependency |
+| Places search/lookup | $0.01/request | Never called by GTH's REST integration |
+| Price Index | $0.05/request | Never called |
+| Hotel content and other non-priced metadata | Free under ToS/reasonable use | Only fixed GET `/v3.0/data/currencies` and `/v3.0/data/hotels` enabled |
+| Rates → Prebook → Book | Free under ToS and reasonable look-to-book ratio | Existing public SDK and provider checkout retained; no new direct REST workflow |
+| Flights search/ticketing/modification | Separate surcharges/fees described by the pricing page | No integration change |
+| Paid seats/AI Insights/logs/reports | Optional recurring add-ons | None activated |
 
-The hotel landing is upgraded around these existing integrations. A second catalogue API or locally invented hotel/rate is unnecessary. Browser acceptance observes zero `/api/hotels` directory calls on the default booking landing. Supplier SDK requests are handled by the SDK; their commercial entitlement remains governed by the account's White Label terms.
+SDK source confirmed `X-API-Key` authentication, currency response `data[]` with `code`/`currency`, and hotel content parameters `countryCode`, `cityName`, `limit`, `offset`, plus hotel ID/name/address/photo/country/city/coordinates/stars fields. Countries, cities, facilities, types, chains, IATA and hotel-detail endpoints were also reviewed; duplicate dictionary requests or a replacement booking engine are unnecessary for this release.
 
-## Charges are not assumed away
+The workspace's direct documentation/SDK HTTP requests returned 403 even after network permission. Pricing provenance is the owner's supplied official text; endpoint/auth/schema provenance is the downloaded official Node SDK. No authenticated live probe or chargeable supplier call was performed.
 
-The repository's 5 November audit records the official pricing and access documentation:
+## Implemented free scope
 
-- https://docs.liteapi.travel/reference/api-pricing-usage-costs
-- https://docs.liteapi.travel/docs/deeplinking-to-whitelabel
-- https://docs.liteapi.travel/docs/getting-access-to-flights
-- https://docs.liteapi.travel/docs/getting-access-to-experiences
+- Worldwide SearchBar, real supplier HotelsList photographs/links, hotel details/amenities/rooms and secure provider checkout remain on the existing public White Label flow.
+- Nine existing booking currencies now have a visible selector. Choice survives SDK searches, supplier lists, exact hotel links, dates, rooms and child ages. Defaults remain INR for existing app callers.
+- `nuitee-free-currencies.ts` is server-only and reads only the production-specific credential. It calls the one fixed free metadata GET with a 5-second timeout, redirect rejection, bounded response parsing and a 24-hour shared Next data cache. Concurrent same-worker misses coalesce. Missing key/failure retains the original nine options; failures have a five-minute worker cooldown.
+- `nuitee-free-hotels.ts` calls only fixed GET `/data/hotels`, never Places or rates. Profiles cache for 24 hours by normalized country/city/page; each page fetches at most 24 records, with pages bounded to 100. Responses validate the requested country/city, IDs, photo URL, stars and coordinates. API prices, private fields and unrecognized fields are never returned or cached.
+- Visitor Geo-IP city profiles come first, then country profiles, then the existing worldwide discovery. Explicit area selection overrides all inferred location. No GPS permission, raw visitor IP or exact visitor-coordinate persistence.
+- Inferred responses and partial failures are private/no-store. Explicit complete area responses alone qualify for shared CDN caching. Only public property snapshots are shared; personalized ordering is performed after reading them.
+- No Supabase query/table/write is added by these features. The existing directory and its source/provenance rules remain separate.
 
-That prior audit identifies charges/conditions for Places, Price Index, flight search ratios, ticketing and modifications. It also distinguishes production authorization for Flights and Experiences from merely seeing an endpoint in a catalogue. These historical observations are not a fresh verification of the owner's current commercial agreement.
+## Request protection and credentials
 
-Current official-document fetches return CONNECT/HTTP 403 in this workspace, including after network permission was granted. The Companion page supplied no document text. Current pricing, any free allowance and the account's exact entitlements therefore cannot be independently re-verified here. The owner has been asked for the public pricing/free-usage text. No new REST endpoint is enabled while that information is missing.
+Only `NUITEE_PRODUCTION_API_KEY` is read, on the server. Old Preview-only sandbox keys/mode flags are not read. No credential value was requested in chat, copied, created or modified by this work. Set that variable securely in **Vercel Production** to activate the direct free-content source if it is not already configured. The public White Label remains functional independently; without the key, currencies retain a local fallback and nearby content returns an honest unavailable state, never fabricated local hotels.
 
-- No supplier private API credential is introduced or read by the GTH production source.
-- No direct REST hotel-rate, Places, Price Index, prebook, booking, payment, modification, cancellation, flight or experience request is added.
-- No live chargeable probe, booking/payment verification, paid add-on activation, API-key change or subscription change is performed.
-- `tests/nuitee-free-usage-boundary.test.mjs` scans production source ASTs for private LiteAPI REST endpoints and supplier credential lookups. It is a regression boundary for GTH code, not a claim about all activity or costs inside external supplier widgets.
+Cache fills alone consume the new `hotel_content` scope in the existing Upstash limiter: shared 30/minute and 1,000/day per environment. All prior limiter policies/code remain byte-identical after removing that one type/policy addition. If Redis is absent, the fallback is 10/minute and 200/day **per worker**, not an account-wide/fleet-wide quota guarantee. Configured limiter failure stops cold supplier reads. Hotel-content failures have a two-minute worker cooldown; successful warm reads consume no new upstream request or budget.
 
-If the current documentation confirms an additional free reference endpoint and the account has that entitlement, review that exact endpoint separately: allowlist the host/fields, bound rows/timeouts and refresh frequency, retain reference data outside visitor-triggered calls, and avoid country-by-country fan-out. Do not expose private keys in client bundles or describe a fair-use allowance as unlimited free use.
+These caps/cache policies bound ordinary use. Standard free endpoints remain subject to the supplier's ToS, fair usage and commercial agreement; this is not a claim of unlimited free account activity. Supplier SDK behavior/fees remain governed by the White Label agreement.
+
+`tests/nuitee-free-usage-boundary.test.mjs` permits private REST access only in the two reviewed server modules at their exact free URLs. All other production source is checked for private supplier REST hosts and credential lookups. Tests also verify no-key/no-budget paths make zero upstream calls, warm/concurrent reads coalesce, paid/path-injection requests are rejected, and private keys do not appear in public output.

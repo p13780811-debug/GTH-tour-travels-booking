@@ -734,7 +734,7 @@ function HotelsContent() {
                 </div>
             </section>
             </>}
-            {hotelMode === "directory" && <HotelsDiscoveryPlacement currency={currency} />}
+            {hotelMode === "directory" && <HotelsDiscoveryPlacement currency={currency} showNearby={false} />}
         </div>
     );
 }

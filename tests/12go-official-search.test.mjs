@@ -79,7 +79,7 @@ test("Flights, Hotels and Transfers remain on their original providers and theme
   const transfers = source("src/app/transfers/page.tsx");
   const shell = source("src/components/travel/TravelServicePage.tsx");
   assert.match(flights, /wl_id=23459/);
-  assert.match(hotel, /nuitee\.link/);
+  assert.match(hotel, /hotel\.gthproglobal\.com/);
   assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
   assert.match(transfers, /TransferProviderWidgets/);
   assert.match(shell, /searchFirstLayout = false/);
@@ -118,7 +118,7 @@ test("all four 12Go modes switch inside the same existing search form; main Flig
   assert.match(route, /supplier\.searchParams\.set\("z", AFFILIATE_ID\)/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
   assert.doesNotMatch(page, /12go-flight-options|GTHTransportSearchWidget|12go\.asia/);
-  assert.match(hotels, /nuitee\.link/);
+  assert.match(hotels, /hotel\.gthproglobal\.com/);
   assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
 });
 
