@@ -76,8 +76,14 @@ jobs:
             sleep 1
           done
           if [ "$ready" -ne 1 ]; then cat /tmp/gth-connected-next.log; exit 1; fi
-          node scripts/qa-connected-travel.mjs
-          GTH_HOTEL_QA_ORIGIN=http://127.0.0.1:4212 node scripts/qa-hotel-landing.mjs
+          for gth_qa_script in scripts/qa-connected-travel.mjs scripts/qa-hotel-landing.mjs; do
+            if ! GTH_HOTEL_QA_ORIGIN=http://127.0.0.1:4212 node "$gth_qa_script" > /tmp/gth-connected-last-browser.log 2>&1; then
+              cat /tmp/gth-connected-last-browser.log
+              node -e 'const s=require("node:fs").readFileSync("/tmp/gth-connected-last-browser.log","utf8").slice(-6000);console.log("::error title=Travel browser acceptance::"+s.replaceAll("%","%25").replaceAll("\r","%0D").replaceAll("\n","%0A"))'
+              exit 1
+            fi
+            cat /tmp/gth-connected-last-browser.log
+          done
       - name: Evidence — explicit fixtures, not live supplier inventory
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,4 +93,5 @@ jobs:
             /tmp/gth-connected-travel-qa/
             /tmp/gth-hotel-landing-qa/
             /tmp/gth-connected-next.log
+            /tmp/gth-connected-last-browser.log
           retention-days: 7
