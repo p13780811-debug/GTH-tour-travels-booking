@@ -15,13 +15,15 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
 import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacement";
+import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
+import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
 import styles from "./HotelsLanding.module.css";
 
@@ -90,6 +92,9 @@ type HotelListing = {
 
 function HotelsContent() {
     const params = useSearchParams();
+    const router=useRouter();
+    const currency=hotelCurrency(params.get("currency"));
+    const changeCurrency=(value:string)=>{const next=new URLSearchParams(params.toString());next.set("currency",hotelCurrency(value));router.replace("/hotels?"+next,{scroll:false});};
     // Preserve existing city/destination directory links. New visits use supplier booking.
     const directoryRequested = params.get("view") === "directory" ||
       (params.get("view") !== "booking" && ["city", "destination", "name", "country"].some(key => params.has(key)));
@@ -315,14 +320,14 @@ function HotelsContent() {
                         </figure>
                     </div>
 
-                    <div className={styles.modes} role="group" aria-label="Hotel experience">
+                    <div className={styles.controlsBar}><div className={styles.modes} role="group" aria-label="Hotel experience">
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "booking"}
                             onClick={() => setHotelMode("booking")}><BedDouble size={17} aria-hidden="true" /> Book a stay</button>
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "directory"}
                             onClick={() => setHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
-                    </div>
+                    </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
                     {/* SEARCH */}
-                    {hotelMode === "booking" && <HotelBookingExperience />}
+                    {hotelMode === "booking" && <HotelBookingExperience key={currency} currency={currency} />}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
@@ -386,7 +391,7 @@ function HotelsContent() {
             </section>
       <TravelSectionNav />
             {hotelMode === "booking" ? <div>
-              <HotelsDiscoveryPlacement />
+              <HotelsDiscoveryPlacement currency={currency} />
               <section className={styles.guides} aria-labelledby="hotel-inspiration-title">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div><p className={styles.sectionLabel}>A change of scenery</p>
@@ -729,7 +734,7 @@ function HotelsContent() {
                 </div>
             </section>
             </>}
-            {hotelMode === "directory" && <HotelsDiscoveryPlacement />}
+            {hotelMode === "directory" && <HotelsDiscoveryPlacement currency={currency} />}
         </div>
     );
 }

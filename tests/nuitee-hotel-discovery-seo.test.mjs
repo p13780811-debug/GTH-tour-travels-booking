@@ -14,12 +14,12 @@ const sitemap=read("src/app/sitemap.ts");
 const provider=read("src/lib/travel/hotel-provider-search.ts");
 
 test("original booking experience, exact hotel route and central theme are retained",()=>{
- assert.match(original,/<HotelBookingExperience\s*\/>/);
+ assert.match(original,/<HotelBookingExperience key=\{currency\} currency=\{currency\}/);
  assert.match(original,/HotelCatalogPulse/);
  assert.doesNotMatch(layout,/HotelsDiscoveryPlacement/);
- assert.match(original,/<HotelsDiscoveryPlacement\s*\/>/);
- assert.ok(original.indexOf('<HotelBookingExperience />')<original.indexOf('<HotelsDiscoveryPlacement />'));
- assert.ok(original.indexOf('<HotelsDiscoveryPlacement />')<original.indexOf('aria-labelledby="hotel-inspiration-title"'));
+ assert.match(original,/<HotelsDiscoveryPlacement currency=\{currency\}/);
+ assert.ok(original.indexOf('<HotelBookingExperience key=')<original.indexOf('<HotelsDiscoveryPlacement currency='));
+ assert.ok(original.indexOf('<HotelsDiscoveryPlacement currency=')<original.indexOf('aria-labelledby="hotel-inspiration-title"'));
  assert.match(placement,/pathname==="\/hotels"/);
  assert.doesNotMatch(placement,/startsWith\(/);
  assert.match(offers,/bg-\[var\(--card\)\]/);
@@ -36,7 +36,7 @@ test("official supplier list supplies authentic photos and its own exact White L
  assert.match(widget,/HotelsList\.create\(options\)/);
  assert.match(widget,/domain:DOMAIN/);
  assert.match(widget,/hasSearchBar:false/);
- assert.match(widget,/deepLinkParams:"language=en&currency=INR"/);
+ assert.match(widget,/deepLinkParams:`language=en&currency=\$\{displayCurrency\}`/);
  assert.match(widget,/getPropertyValue\("--gold"\)/);
  assert.doesNotMatch(widget,/onHotelClick:/);
  assert.doesNotMatch(widget,/NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_NUITEE/);

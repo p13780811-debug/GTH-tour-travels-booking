@@ -26,7 +26,7 @@ test("isolated vendor search, theme sync, mobile full-window handoff remain func
  assert.match(search,/HOTEL_WIDGET_SCRIPT/);
  assert.match(search,/win\.LiteAPI\.SearchBar\.create/);
  assert.match(search,/onSearchClick: value => \{ if \(active\) search\(value\); \}/);
- assert.match(search,/hotelWidgetSearchParams\(payload\)/);
+ assert.match(search,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
  assert.match(search,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
  assert.match(search,/new MutationObserver\(syncTheme\)/);
  assert.match(search,/srcDoc=\{searchDocument\}/);

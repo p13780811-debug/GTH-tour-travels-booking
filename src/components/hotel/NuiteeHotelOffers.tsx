@@ -6,6 +6,7 @@ import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import NuiteeHotelsListWidget from "@/components/hotel/NuiteeHotelsListWidget";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {HOTEL_MARKETS,getHotelMarket} from "@/lib/travel/nuitee-hotel-markets";
+import {hotelCurrency} from "@/lib/travel/hotel-currency";
 
 /** Free first-party directory cards. Source records are NOT Nuitee hotels or bookable offers. */
 type DirectoryHotel={
@@ -97,9 +98,10 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
  * Public directory records and editorial hotel examples remain informational
  * on city-guide pages, never represented as bookable Nuitee inventory.
  */
-export default function NuiteeHotelOffers(){
+export default function NuiteeHotelOffers({currency="INR"}:{currency?:string}){
+  const displayCurrency=hotelCurrency(currency);
   const [city,setCity]=useState<"mumbai"|"london">("mumbai");
-  const booking=HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR";
+  const booking=HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency;
   return <section aria-labelledby="gth-nuitee-real-hotels" className="mx-auto max-w-7xl px-4 pb-12 pt-8 text-[var(--text)] sm:px-6">
     <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -123,8 +125,8 @@ export default function NuiteeHotelOffers(){
       </div>
       <div aria-live="polite" aria-atomic="false">
         {city==="mumbai"
-          ?<NuiteeHotelsListWidget key="mumbai" id="gth-hotels-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1}/>
-          :<NuiteeHotelsListWidget key="london" id="gth-hotels-nuitee-london" placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI" placeLabel="London" rows={1}/>}
+          ?<NuiteeHotelsListWidget key={"mumbai-"+displayCurrency} id={"gth-hotels-nuitee-mumbai-"+displayCurrency} placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1} currency={displayCurrency}/>
+          :<NuiteeHotelsListWidget key={"london-"+displayCurrency} id={"gth-hotels-nuitee-london-"+displayCurrency} placeId="ChIJdd4hrwug2EcRmSrV3Vo6llI" placeLabel="London" rows={1} currency={displayCurrency}/>}
       </div>
     </div>
     <details className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">

@@ -72,14 +72,14 @@ export function hotelWhiteLabelUrl(search: HotelBookingSearch): string {
   return url.toString();
 }
 /** Official SearchBar callback: keep the supplier's room counts and child ages. */
-export function hotelWidgetSearchParams(value: unknown): URLSearchParams | null {
+export function hotelWidgetSearchParams(value: unknown, currency = "INR"): URLSearchParams | null {
   if (!value || typeof value !== "object") return null;
   const data = value as Record<string, unknown>;
   const place = data.place as Record<string, unknown> | undefined;
   if (typeof place?.place_id !== "string" || typeof data.checkin !== "string" ||
       typeof data.checkout !== "string" || typeof data.occupancies !== "string") return null;
   const params = new URLSearchParams({ placeId: place.place_id, checkin: data.checkin,
-    checkout: data.checkout, occupancies: data.occupancies, currency: "INR" });
+    checkout: data.checkout, occupancies: data.occupancies, currency: currencies.has(currency) ? currency : "INR" });
   const search = parseHotelBookingSearch(params);
   return search ? hotelBookingParams(search) : null;
 }

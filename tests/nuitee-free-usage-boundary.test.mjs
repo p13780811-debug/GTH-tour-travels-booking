@@ -11,10 +11,17 @@ function* sources(directory){
   else if(/\.[cm]?[jt]sx?$/.test(entry.name))yield path;
  }
 }
-test("GTH public supplier integrations never introduce private Nuitee REST calls or credentials",()=>{
+test("private Nuitee REST access stays confined to the reviewed free-currency server module",()=>{
  const violations=new Set();
  for(const path of sources("src")){
   const text=readFileSync(path,"utf8");if(!/nuitee|liteapi/i.test(text))continue;
+  if(path==="src/lib/travel/nuitee-free-currencies.ts"){
+   const urls=[...text.matchAll(/https:\/\/api\.liteapi\.travel[^\s"'`]+/g)].map(match=>match[0]);
+   assert.deepEqual(urls,["https://api.liteapi.travel/v3.0/data/currencies"]);
+   assert.match(text,/import "server-only"/);assert.match(text,/method:"GET"/);
+   assert.doesNotMatch(text,/method:["'](?:POST|PATCH|DELETE)|\/data\/places|price.?index|hotels\/rates|book\.liteapi/i);
+   continue;
+  }
   const file=ts.createSourceFile(path,text,ts.ScriptTarget.Latest,true);
   const check=node=>{
    if(ts.isStringLiteralLike(node)||ts.isTemplateHead(node)){

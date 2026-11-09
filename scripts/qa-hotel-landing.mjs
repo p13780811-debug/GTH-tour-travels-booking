@@ -10,7 +10,7 @@ const evidence="/tmp/gth-hotel-landing-qa";await mkdir(evidence,{recursive:true}
 // Only test code supplies this DOM. Production continues loading the original SDK.
 const sdk=String.raw`(()=>{
  window.__hotelFixture={searches:0,lists:[]};
- window.LiteAPI={init(){},SearchBar:{async create(options){
+ window.LiteAPI={init(options){window.__hotelFixture.currency=new URLSearchParams(options.deepLinkParams).get('currency');},SearchBar:{async create(options){
   window.__hotelFixture.searches++;
   const root=document.querySelector(options.selector);
   const css=document.createElement('style');css.textContent='.search-bar{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;padding:12px;border:1px solid;border-radius:16px}.search-bar label{font:12px sans-serif;display:grid;gap:8px}.search-bar input{font:14px sans-serif;min-width:0;width:100%;padding:10px}.search-button{cursor:pointer;font:600 14px sans-serif}@media(max-width:640px){.search-bar{grid-template-columns:1fr 1fr;padding:10px}.search-bar label:first-child,.search-button{grid-column:1/-1}}';document.head.append(css);
@@ -21,7 +21,7 @@ const sdk=String.raw`(()=>{
   const root=document.querySelector(options.selector);root.dataset.fixture='true';
   const city=options.placeId==='ChIJwe1EZjDG5zsRaYxkjY_tpF0'?'Mumbai':'London';
   const grid=document.createElement('div');grid.setAttribute('aria-label',city+' fixture supplier cards');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:16px';
-  for(let i=1;i<=3;i++){const card=document.createElement('a');card.href='https://gthproglobal.nuitee.link/hotels/fixture-'+i;card.style.cssText='display:block;min-height:180px;padding:24px;border:1px solid #ddd;border-radius:16px;background:white;font-size:14px';card.innerHTML='<h3>'+city+' fixture hotel '+i+'</h3><p style="color:#999">QA data, not live inventory</p><strong style="color:black">Fixture price</strong><span data-fixture-badge style="display:block;background:rgb(76,175,80);color:white">Supplier badge</span>';grid.append(card);}root.append(grid);
+  for(let i=1;i<=3;i++){const card=document.createElement('a');card.href='https://gthproglobal.nuitee.link/hotels/fixture-'+i+'?currency='+options.currency;card.style.cssText='display:block;min-height:180px;padding:24px;border:1px solid #ddd;border-radius:16px;background:white;font-size:14px';card.innerHTML='<h3>'+city+' fixture hotel '+i+'</h3><p style="color:#999">QA data, not live inventory</p><strong style="color:black">Fixture price '+options.currency+'</strong><span data-fixture-badge style="display:block;background:rgb(76,175,80);color:white">Supplier badge</span>';grid.append(card);}root.append(grid);
  }}};
 })();`;
 const fixtures=[{id:"osm-12345",name:"Fixture directory hotel",city:"Mumbai",country:"India",image:"/placeholder.jpg",stars:null,affiliate_link:null,source:"OpenStreetMap",booking_ready:false,category:"hotel"}];
@@ -40,6 +40,11 @@ const route=async r=>{
 };
 const scenarios=[];
 try{
+ const reference=await fetch(origin+"/api/hotels/reference/currencies");assert.equal(reference.status,200);assert.equal((await reference.json()).source,"nuitee");assert.match(reference.headers.get("cache-control"),/s-maxage=86400/);
+ const referenceBefore=await fetch("http://127.0.0.1:4312/__fixture").then(r=>r.json());
+ for(let i=0;i<40;i++)assert.equal((await fetch(origin+"/api/hotels/reference/currencies")).status,200);
+ const referenceAfter=await fetch("http://127.0.0.1:4312/__fixture").then(r=>r.json());assert.equal(referenceAfter.requests,referenceBefore.requests,"warm reference views cannot repeat upstream API calls");
+ assert.equal((await fetch(origin+"/api/hotels/reference/currencies?path=places")).status,400);
  for(const width of [320,390,430,768,1440])for(const theme of ["day","night"]){
   const page=await browser.newPage({viewport:{width,height:width<768?844:1000}});
   await page.route("**/*",route);await page.addInitScript(t=>localStorage.setItem("theme-mode",t),theme);
@@ -80,8 +85,10 @@ try{
  const payload={place:{place_id:"ChIJwe1EZjDG5zsRaYxkjY_tpF0"},checkin:start,checkout:end,occupancies:Buffer.from(JSON.stringify([{adults:2,rooms:2,children:[6]}])).toString("base64")};
  for(const width of [390,1440]){
   const page=await browser.newPage({viewport:{width,height:900}});await page.route("**/*",route);await page.goto(origin+"/hotels",{waitUntil:"networkidle"});
+  await page.getByRole("combobox",{name:"Hotel display currency",exact:true}).selectOption("USD");await page.waitForURL(/currency=USD/);
+  await page.waitForFunction(()=>document.querySelector('iframe[title="Worldwide hotel destination, dates and guests"]')?.contentWindow?.__hotelFixture?.currency==="USD");
   const frame=page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]');await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();await frame.locator("html").evaluate((_,p)=>window.__hotelFixture.search(p),payload);
-  if(width<1024){await page.waitForURL(/gthproglobal\.nuitee\.link\/hotels/);const u=new URL(page.url());assert.equal(u.searchParams.get("checkin"),start);const occupancies=JSON.parse(Buffer.from(u.searchParams.get("occupancies"),"base64").toString());assert.equal(occupancies.length,2);assert.deepEqual(occupancies[1].children,[6]);}
+  if(width<1024){await page.waitForURL(/gthproglobal\.nuitee\.link\/hotels/);const u=new URL(page.url());assert.equal(u.searchParams.get("currency"),"USD");assert.equal(u.searchParams.get("checkin"),start);const occupancies=JSON.parse(Buffer.from(u.searchParams.get("occupancies"),"base64").toString());assert.equal(occupancies.length,2);assert.deepEqual(occupancies[1].children,[6]);}
   else{await page.waitForURL(/view=booking/);await page.locator('iframe[title="GTH PRO hotel availability, amenities and room booking"]').waitFor();assert.match(await page.getByRole("link",{name:/Continue on secure booking site/}).getAttribute("href"),/^https:\/\/gthproglobal\.nuitee\.link\/hotels\?/);}
   await page.close();
  }

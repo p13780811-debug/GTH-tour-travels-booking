@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
 import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
   hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
+import {hotelCurrency} from "@/lib/travel/hotel-currency";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -29,7 +30,8 @@ function subscribeResultsViewport(onChange: () => void) {
 function resultsViewportSnapshot() { return window.matchMedia(embeddedResultsMedia).matches; }
 function serverResultsViewportSnapshot() { return false; }
 
-export default function HotelBookingExperience({ searchPath = "/hotels" }: { searchPath?: "/hotels" | "/app/hotels" }) {
+export default function HotelBookingExperience({ searchPath = "/hotels", currency = "INR" }: { searchPath?: "/hotels" | "/app/hotels";currency?:string }) {
+  const displayCurrency=hotelCurrency(currency);
   const router = useRouter();
   const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
   const query = useSearchParams();
@@ -63,7 +65,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
   }, [bookingQuery, showSearch]);
 
   const search = useCallback((payload: unknown) => {
-    const params = hotelWidgetSearchParams(payload);
+    const params = hotelWidgetSearchParams(payload, displayCurrency);
     if (!params) {
       setError("Please select a destination, valid stay dates and guest ages, then search again.");
       return;
@@ -81,7 +83,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
     scrollToResults.current = true;
     setError(""); setBookingQuery(value); setShowSearch(false);
     router.replace(`${searchPath}?view=booking&${value}`, { scroll: false });
-  }, [router, searchPath]);
+  }, [router, searchPath, displayCurrency]);
 
   const loadSearch = useCallback(async () => {
     const frame = searchFrame.current, doc = frame?.contentDocument;
@@ -127,7 +129,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
         doc.head.appendChild(sheet.cloneNode(true));
       }
       const color = getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
-      win.LiteAPI.init({ domain: new URL(HOTEL_BOOKING_ORIGIN).hostname, deepLinkParams: "language=en&currency=INR" });
+      win.LiteAPI.init({ domain: new URL(HOTEL_BOOKING_ORIGIN).hostname, deepLinkParams: `language=en&currency=${displayCurrency}` });
       await win.LiteAPI.SearchBar.create({
         selector: "#gth-hotel-search", primaryColor: color,
         labelsOverride: { searchAction: "Find rooms", placePlaceholderText: "City, airport or landmark worldwide" },
@@ -178,7 +180,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
         setError("Hotel search could not load. Retry or use our secure booking site below.");
       }
     }
-  }, [search]);
+  }, [search, displayCurrency]);
 
   // A streamed srcDoc can finish loading before React hydrates on a direct
   // visit. Bootstrap the already-ready document as well as listening to load.
@@ -213,7 +215,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels" }: { sea
         dispose.current?.(); setLoading(true); setError(""); setShowSearch(true); setAttempt(value => value + 1);
       }}><RotateCcw size={16} aria-hidden="true" /> Retry hotel search</button>
     </div>}
-    {!handoff && <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=INR`}
+    {!handoff && <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=${displayCurrency}`}
       target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>}
 
     <div ref={resultSection} className="gth-hotel-booking-results">

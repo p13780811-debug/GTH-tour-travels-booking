@@ -4,6 +4,7 @@ import {useEffect,useRef,useState} from "react";
 import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-whitelabel";
 import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
 import styles from "./NuiteeHotelsListWidget.module.css";
+import {hotelCurrency} from "@/lib/travel/hotel-currency";
 
 type LiteHotelsListOptions={
   selector:string;
@@ -56,11 +57,12 @@ function loadNuiteeHotelsSdk():Promise<LiteHotelsListSdk>{
  * The existing GTH CSS and day/night tokens own the surrounding layout.
  */
 export default function NuiteeHotelsListWidget({
-  placeId,placeLabel,id,rows=1
+  placeId,placeLabel,id,rows=1,currency="INR"
 }:{
-  placeId:string;placeLabel:string;id:string;rows?:number;
+  placeId:string;placeLabel:string;id:string;rows?:number;currency?:string;
 }){
   const initialized=useRef(false);
+  const displayCurrency=hotelCurrency(currency);
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -75,15 +77,15 @@ export default function NuiteeHotelsListWidget({
       if(!live||initialized.current)return;
       initialized.current=true;
       try{
-        sdk.init({domain:DOMAIN,deepLinkParams:"language=en&currency=INR"});
+        sdk.init({domain:DOMAIN,deepLinkParams:`language=en&currency=${displayCurrency}`});
         const color=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
         const options:LiteHotelsListOptions={
           selector:"#"+id,
           placeId,
-          currency:"INR",
+          currency:displayCurrency,
           hasSearchBar:false,
           rows,
-          deepLinkParams:"language=en&currency=INR",
+          deepLinkParams:`language=en&currency=${displayCurrency}`,
           labelsOverride:{searchAction:"View hotels",placePlaceholderText:"Choose a destination"}
         };
         if(/^#[\da-f]{6}$/i.test(color))options.primaryColor=color;
@@ -94,7 +96,7 @@ export default function NuiteeHotelsListWidget({
       }catch{initialized.current=false;if(live)setFailed(true);}
     }).catch(()=>{if(live)setFailed(true);});
     return ()=>{live=false;};
-  },[id,placeId,rows]);
+  },[id,placeId,rows,displayCurrency]);
 
   return <div className="min-w-0" aria-label={"Nuitee hotel listings near "+placeLabel}>
     <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
@@ -104,7 +106,7 @@ export default function NuiteeHotelsListWidget({
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Photos and room information are provided by Nuitee. Check your dates, total price and booking conditions on the booking site.
     </p>
-    <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"}
+    <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
       Browse on booking site

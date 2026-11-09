@@ -25,6 +25,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://tender-qa.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
       SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
+      NUITEE_PRODUCTION_API_KEY: fixture-private-currency-key
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,14 +45,15 @@ jobs:
       - name: Start isolated existing source fixture for build
         run: |
           node scripts/qa-tender-portal.mjs --fixture-server > /tmp/gth-hotel-source-fixture.log 2>&1 &
+          node scripts/qa-nuitee-free-reference.mjs > /tmp/gth-hotel-currency-fixture.log 2>&1 &
           for i in $(seq 1 20); do
-            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null; then exit 0; fi
+            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null && curl -fsS --max-time 2 http://127.0.0.1:4312/__fixture > /dev/null; then exit 0; fi
             sleep 1
           done
           exit 1
       - name: Production build with original fonts, no production database
         env:
-          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs
         run: npm run build
       - name: Install acceptance browser
         run: |
@@ -59,7 +61,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Verify real Next pages, themes, city selection and existing booking handoff
         run: |
-          NODE_OPTIONS=--require=/tmp/gth-tender-network-fixture.cjs npm run start -- --hostname 127.0.0.1 --port 4211 > /tmp/gth-hotel-next.log 2>&1 &
+          NODE_OPTIONS="--require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs" npm run start -- --hostname 127.0.0.1 --port 4211 > /tmp/gth-hotel-next.log 2>&1 &
           ready=0
           for i in $(seq 1 30); do
             if curl -fsS --max-time 3 http://127.0.0.1:4211/hotels > /dev/null; then ready=1; break; fi
