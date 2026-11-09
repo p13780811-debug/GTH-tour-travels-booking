@@ -70,7 +70,7 @@ export default async function AttractionDetail({params}:Props){
   {links.length>0&&<div className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
    <h2 className="text-lg font-semibold">Independent ticket and tour providers</h2>
    <p className="my-3 text-xs text-[var(--text-soft)]">Affiliate links may earn commission. Provider confirms actual price, availability, inclusions and checkout.</p>
-   <div className="flex flex-wrap gap-2">{links.map(x=><a key={x.partner} href={x.url} target="_blank" rel="sponsored noopener noreferrer" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">Browse on {x.partner==="getyourguide"?"GetYourGuide":"Viator"} <ArrowUpRight size={16}/></a>)}</div>
+   <div className="flex flex-wrap gap-2">{links.map((x,index)=><a key={x.partner} href={x.url} target="_blank" rel="sponsored noopener noreferrer" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">{index===0?"Explore experiences":"More experience options"} <ArrowUpRight size={16}/></a>)}</div>
   </div>}
   <p className="mt-7 flex items-start gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={17} className="mt-1 shrink-0"/>Community-maintained source facts are not official access verification, sellable tours, guaranteed opening hours, prices or booking availability.</p>
  </div></main>;

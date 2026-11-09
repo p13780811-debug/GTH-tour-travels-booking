@@ -97,7 +97,7 @@ function TourImageCard({ item }: { item: CardItem }) {
       </div>
       <span className="flex min-h-[93px] flex-col px-3 pb-3 pt-2.5">
         <span className="flex items-start justify-between gap-1.5 text-[14px] font-bold leading-[19px]">
-          <span className="line-clamp-2">{item.name}</span>
+          <span className="line-clamp-2">{item.category||item.name}</span>
           <ArrowUpRight size={16} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
         </span>
         <span className="mt-1 line-clamp-2 text-[11px] leading-[16px] text-[var(--text-soft)]">

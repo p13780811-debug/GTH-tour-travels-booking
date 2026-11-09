@@ -39,7 +39,7 @@ test("on-demand pages, discovery links and separate OSM sitemap preserve existin
  const page=read("src/app/(mapped-places)/attractions/osm/[id]/page.tsx");
  assert.match(page,/revalidate=86400/);assert.match(page,/generateStaticParams\(\)\{return \[\];\}/);assert.match(page,/dynamicParams=true/);
  assert.match(page,/getOsmPlace\(id\)/);assert.match(page,/isPublicLaunch\(\)&&isIndexableOsmPlace\(item\)/);
- assert.match(page,/notFound\(\)/);assert.match(page,/prefetch=\{false\}/);assert.match(page,/not a confirmed ticket/);assert.match(page,/12Go/);
+ assert.match(page,/notFound\(\)/);assert.match(page,/prefetch=\{false\}/);assert.match(page,/not a confirmed ticket/);for(const route of ["bus","train","ferry"])assert.ok(page.includes('"/'+route+'"'));
  for(const path of ["src/app/attractions/page.tsx","src/components/travel/OSMAttractionsRail.tsx"])assert.match(read(path),/href=\{osmPlacePath\(place.source_id\)!\}/);
  assert.match(read("src/app/robots.ts"),/attractions\/sitemap\.xml/);
  assert.match(read("src/app/sitemap-index.xml/route.ts"),/seoShardCounts/);

@@ -28,11 +28,11 @@ export default function CampaignPromotions({slot}:{slot:"discovery"|"planning"})
     if(!href)return []
     return [{id:item.id,label:item.title,content:<a href={href}
       {...(isHotel?{}:{target:"_blank",rel:"sponsored nofollow noopener noreferrer"})}
-      aria-label={isHotel?`${item.title} on GTH PRO`:`${item.title} on Klook (opens in a new tab)`}
+      aria-label={isHotel?`${item.title} on GTH PRO`:`${item.title} (opens in a new tab)`}
       className="relative block min-h-44 overflow-hidden rounded-2xl">
       <Image src={item.image} alt={`${item.destination} destination imagery`} fill sizes="(max-width: 768px) 100vw, 1200px" className="object-cover"/>
       <div className="gth-glass relative m-3 max-w-lg rounded-xl p-4">
-        <p className="text-xs font-semibold">{isHotel?"GTH PRO · Hotel search":"Klook · Partner search"}</p>
+        <p className="text-xs font-semibold">{isHotel?"GTH PRO · Hotel search":"GTH PRO · Travel search"}</p>
         <h3 className="mt-1 text-xl font-semibold">{item.title}</h3>
         <p className="mt-2 text-sm leading-6">{item.description}</p>
         <span className="gth-btn mt-3 inline-flex min-h-11 items-center gap-2">Explore options<ArrowUpRight size={15}/></span>

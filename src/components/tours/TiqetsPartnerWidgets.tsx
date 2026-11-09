@@ -14,18 +14,18 @@ const panels = {
     name: "Attraction tickets",
     description: "Explore attraction tickets and city passes with established providers.",
     options: [
-      { name: "Tiqets", detail: "Museums, landmarks and attraction admission", url: "https://www.tiqets.com/", sponsored: false },
-      { name: "Klook", detail: "Attractions and bookable travel activities", url: "https://klook.tpo.lv/IKb6eSUe", sponsored: true },
-      { name: "Go City", detail: "Multi-attraction city passes", url: "https://gocity.tpo.lv/NdfDWRGS", sponsored: true },
+      { name: "Museums & landmarks", detail: "Museums, landmarks and attraction admission", url: "https://www.tiqets.com/", sponsored: false },
+      { name: "Activities & attractions", detail: "Attractions and bookable travel activities", url: "https://klook.tpo.lv/IKb6eSUe", sponsored: true },
+      { name: "Sightseeing passes", detail: "Multi-attraction city passes", url: "https://gocity.tpo.lv/NdfDWRGS", sponsored: true },
     ],
   },
   product: {
     name: "More ticket options",
     description: "Explore other tour formats. Exact offers and prices appear on the provider website.",
     options: [
-      { name: "WeGoTrip", detail: "Audio guides and city walking experiences", url: "https://wegotrip.tpo.lv/ZQjE9yR2", sponsored: true },
-      { name: "KKday", detail: "Day trips, experiences and local activities", url: "https://kkday.tpo.lv/ytfvDLam", sponsored: true },
-      { name: "Tiqets", detail: "Find tickets directly with the ticket provider", url: "https://www.tiqets.com/", sponsored: false },
+      { name: "Audio city walks", detail: "Audio guides and city walking experiences", url: "https://wegotrip.tpo.lv/ZQjE9yR2", sponsored: true },
+      { name: "Day trips & local experiences", detail: "Day trips, experiences and local activities", url: "https://kkday.tpo.lv/ytfvDLam", sponsored: true },
+      { name: "More attraction tickets", detail: "Find tickets directly with the ticket provider", url: "https://www.tiqets.com/", sponsored: false },
     ],
   },
 } as const;

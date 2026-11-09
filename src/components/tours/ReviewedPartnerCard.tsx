@@ -9,7 +9,7 @@ export default function ReviewedPartnerCard({product}:{product:ReviewedPartnerPr
  let price="Check price on partner";
  if(product.price_numeric!==null&&product.currency)try{price=new Intl.NumberFormat("en-IN",{style:"currency",currency:product.currency,maximumFractionDigits:2}).format(product.price_numeric);}catch{/* Do not invent a price. */}
  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-  <a href={product.source_url} target="_blank" rel="noopener noreferrer sponsored" aria-label={product.title+" on "+LABELS[product.provider]} className="relative block aspect-[16/10] overflow-hidden">
+  <a href={product.source_url} target="_blank" rel="noopener noreferrer sponsored" aria-label={"View "+product.title} className="relative block aspect-[16/10] overflow-hidden">
    <img src={product.image_url} alt={product.title} width={product.image_width} height={product.image_height} loading="lazy" decoding="async" onError={()=>setFailed(true)} className="h-full w-full object-cover"/>
   </a>
   <div className="flex min-w-0 flex-1 flex-col p-4">

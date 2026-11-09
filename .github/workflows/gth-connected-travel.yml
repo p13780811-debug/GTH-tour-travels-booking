@@ -46,14 +46,15 @@ jobs:
         run: |
           node scripts/qa-tender-portal.mjs --fixture-server > /tmp/gth-connected-source-fixture.log 2>&1 &
           node scripts/qa-nuitee-free-reference.mjs > /tmp/gth-connected-hotel-fixture.log 2>&1 &
+          node scripts/qa-travel-experiences-fixture.mjs > /tmp/gth-connected-experience-fixture.log 2>&1 &
           for i in $(seq 1 20); do
-            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null && curl -fsS --max-time 2 http://127.0.0.1:4312/__fixture > /dev/null; then exit 0; fi
+            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null && curl -fsS --max-time 2 http://127.0.0.1:4312/__fixture > /dev/null && curl -fsS --max-time 2 http://127.0.0.1:4313/__fixture > /dev/null; then exit 0; fi
             sleep 1
           done
           exit 1
       - name: Production build with original fonts and no production service access
         env:
-          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs --require=/tmp/gth-travel-experiences-fixture.cjs
         run: npm run build
       - name: Acceptance browser
         run: |
@@ -61,7 +62,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Mobile and desktop, day and night, trip persistence and original Flights
         run: |
-          NODE_OPTIONS="--require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs" npm run start -- --hostname 127.0.0.1 --port 4212 > /tmp/gth-connected-next.log 2>&1 &
+          NODE_OPTIONS="--require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs --require=/tmp/gth-travel-experiences-fixture.cjs" npm run start -- --hostname 127.0.0.1 --port 4212 > /tmp/gth-connected-next.log 2>&1 &
           ready=0
           for i in $(seq 1 30); do
             if curl -fsS --max-time 3 http://127.0.0.1:4212/travel > /dev/null; then ready=1; break; fi

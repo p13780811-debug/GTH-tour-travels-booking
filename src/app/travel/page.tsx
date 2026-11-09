@@ -1,9 +1,9 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import ConnectedTravelWorkspace from "@/components/travel/ConnectedTravelWorkspace";
-import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
+import ConnectedTravelEntry from "@/components/travel/ConnectedTravelEntry";
+import {Suspense} from "react";
+import workspaceStyles from "@/components/travel/ConnectedTravelWorkspace.module.css";
+import styles from "./TravelLanding.module.css";
 import {HOTEL_COUNTRIES} from "@/lib/travel/hotel-audience";
-import {EMPTY_CONNECTED_TRIP,connectedTripParams,parseConnectedTrip,travelMode} from "@/lib/travel/connected-trip";
-import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 };
 
 const services = [
-  { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore named cruise holidays, harbour sailings and dinner cruises, with direct links to the selected Klook product." },
-  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Explore international fare observations and verify current total prices and availability with the ticket provider." },
-  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays through the existing Nuitee White Label; the supplier confirms availability, rates, payment and booking terms." },
+  { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore cruise holidays, harbour sailings and dinner cruises, with detailed itineraries and booking options." },
+  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
+  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
   { name: "Destinations", label: "EXPLORE THE WORLD", href: "/destinations", img: "/images/cities/paris.jpg", Icon: Globe2, detail: "Discover international destinations, city highlights and helpful planning information." },
   { name: "Airport Transfers", label: "GROUND TRANSPORT", href: "/transfers", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Plan a journey from airport to accommodation and verify pickup terms with external providers." },
@@ -30,7 +30,7 @@ const additional = [
   { name: "Bus Travel", href: "/bus", Icon: BusFront, detail: "Road connections and operator booking handoffs." },
   { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and connected operator bookings." },
   { name: "Ferry Travel", href: "/ferry", Icon: Ship, detail: "Ferries, speedboats and island connections across supported routes." },
-  { name: "Airport Explorer", href: "/travel/airports", Icon: Plane, detail: "Verified airport codes and route planning using free Nuitee reference data." },
+  { name: "Airport Explorer", href: "/travel/airports", Icon: Plane, detail: "Explore airport codes, city connections and onward journey planning." },
   { name: "Experiences", href: "/activities", Icon: Sparkles, detail: "Destination activities and discovery." },
   { name: "Deals & offers", href: "/travel/deals", Icon: Sparkles, detail: "Browse destination experiences and provider-managed deals, without invented discount claims." },
   { name: "Travel Guides", href: "/guides", Icon: BookOpen, detail: "Research and booking checklists." },
@@ -38,27 +38,22 @@ const additional = [
   { name: "Global Marketplace", href: "/mega-aggregator", Icon: MapPinned, detail: "The GTH PRO travel aggregator and providers." },
 ] as const;
 
-export default async function TravelHomePage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
-  const query=await searchParams,parsed=parseConnectedTrip(query,HOTEL_COUNTRIES.map(item=>item.code));
-  const trip=parsed.ok?parsed.trip:EMPTY_CONNECTED_TRIP,mode=travelMode(query.travelMode);
-  const experiences={...EMPTY_TOUR_SEARCH,city:trip.city,currency:trip.currency};
+export default function TravelHomePage() {
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
-      <Image src="/maldives-bg.jpg" fill priority sizes="100vw" alt="Tropical island destination" className="-z-20 object-cover" />
-      <div className="absolute inset-0 -z-10 bg-black/70" aria-hidden="true" />
-      <div className="mx-auto max-w-7xl px-4 py-10 text-white sm:px-6 md:py-14">
-        <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]"><Globe2 size={15}/> GTH PRO · GLOBAL TRAVEL</p>
-        <h1 className="mt-5 max-w-4xl text-3xl font-bold leading-tight md:text-5xl">Your world. One connected travel experience.</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-white/85">A stay you love. A flight that fits. Experiences you remember. Start your journey in one place.</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <a href="#travel-search" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold">Plan my trip <ArrowRight size={16}/></a>
-          <Link href="/flights" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold">Search flights <ArrowRight size={16}/></Link>
-          <Link href="/hotels?view=booking" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Search hotels</Link>
-          <Link href="/destinations" className="inline-flex min-h-12 items-center rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Discover destinations</Link>
-        </div>
+    <section className={styles.hero} data-travel-hero="true">
+      <div className={styles.copy}>
+        <p className={styles.eyebrow}><Globe2 size={14} aria-hidden="true"/> GTH PRO · YOUR WORLD, CONNECTED</p>
+        <h1>Your next journey,<br/><span>beautifully connected.</span></h1>
+        <p className={styles.description}>Find a stay you love, a flight that fits and experiences you’ll remember. Your next adventure starts here.</p>
+        <div className={styles.heroLinks}><span><ShieldCheck size={14} aria-hidden="true"/>Explore. Compare. Book with confidence.</span><Link prefetch={false} href="/destinations">Discover destinations <ArrowUpRight size={13} aria-hidden="true"/></Link></div>
+      </div>
+      <div className={styles.visual} aria-label="Destination inspiration">
+        <div className={styles.mainPhoto}><Image src="/maldives-bg.jpg" fill priority sizes="(max-width:760px) 1px, 310px" alt="Tropical island scenery in the Maldives"/><div className={styles.photoCaption}><span>A little inspiration</span>Somewhere you’ve always wanted to go.</div></div>
+        <div className={styles.smallPhoto}><Image src="/images/cities/paris.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Paris destination scenery"/></div>
+        <div className={styles.smallPhoto}><Image src="/images/mega/flights.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Flight journey inspiration"/></div>
       </div>
     </section>
-      <ConnectedTravelWorkspace key={connectedTripParams(trip,"hotels").toString()} trip={trip} initialMode={mode} countries={HOTEL_COUNTRIES} initialError={parsed.ok?undefined:parsed.error} activitiesHref={tourDiscoveryHref("/activities",experiences)} experiences={<TourAffiliateMarketplace search={experiences} basePath="/activities"/>}/>
+      <Suspense fallback={<section className={workspaceStyles.workspace} aria-label="Travel search"><div className={workspaceStyles.searchCard}><div className={workspaceStyles.searchTop}><h2>Where will you go next?</h2></div><nav aria-label="Open a travel search" className={workspaceStyles.categoryLinks}><Link prefetch={false} href="/hotels?view=booking">Search hotels</Link><Link prefetch={false} href="/flights">Search flights</Link><Link prefetch={false} href="/activities">Find experiences</Link></nav><p role="status" className={workspaceStyles.loading}>Preparing your connected search. You can also open a travel search above.</p></div></section>}><ConnectedTravelEntry countries={HOTEL_COUNTRIES}/></Suspense>
       <TravelSectionNav />
 
     <section aria-labelledby="travel-services" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
@@ -67,7 +62,7 @@ export default async function TravelHomePage({searchParams}:{searchParams:Promis
         <p className="max-w-md text-sm leading-7 text-[var(--text-soft)]">Discover every updated travel section from this dedicated homepage. Prices and availability must be confirmed with booking providers.</p>
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {services.map(({name,label,href,img,Icon,detail})=><Link key={href} href={href} className="group min-w-0 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] transition-transform hover:-translate-y-1">
+        {services.map(({name,label,href,img,Icon,detail})=><Link prefetch={false} key={href} href={href} className="group min-w-0 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] transition-transform hover:-translate-y-1">
           <div className="relative aspect-[16/10] overflow-hidden">
             <Image src={img} alt={name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
@@ -80,13 +75,13 @@ export default async function TravelHomePage({searchParams}:{searchParams:Promis
     <section aria-labelledby="more-travel" className="border-y border-[var(--border)] bg-[var(--card)]/60">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20"><p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--text-soft)]">Beyond the booking search</p><h2 id="more-travel" className="mt-3 text-3xl font-bold md:text-4xl">Explore the full Travel ecosystem.</h2>
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {additional.map(({name,href,Icon,detail})=><Link key={href} href={href} className="gth-glass group flex min-h-32 items-start gap-4 rounded-2xl border border-[var(--border)] p-5 transition-transform hover:-translate-y-1"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]"><Icon size={22}/></span><span className="min-w-0 flex-1"><span className="flex justify-between gap-2 font-bold">{name}<ArrowRight size={17}/></span><span className="mt-2 block text-sm leading-6 text-[var(--text-soft)]">{detail}</span></span></Link>)}
+          {additional.map(({name,href,Icon,detail})=><Link prefetch={false} key={href} href={href} className="gth-glass group flex min-h-32 items-start gap-4 rounded-2xl border border-[var(--border)] p-5 transition-transform hover:-translate-y-1"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]"><Icon size={22}/></span><span className="min-w-0 flex-1"><span className="flex justify-between gap-2 font-bold">{name}<ArrowRight size={17}/></span><span className="mt-2 block text-sm leading-6 text-[var(--text-soft)]">{detail}</span></span></Link>)}
         </div>
       </div>
     </section>
     <section className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between md:py-16">
       <div className="max-w-2xl"><h2 className="text-2xl font-bold md:text-3xl">One ecosystem. Independent experiences.</h2><p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">GTH PRO Travel has its own home and services. Real Estate remains on its separate approved homepage. Hotel discovery records are not live room inventory, and airline fare observations are not guaranteed booking prices.</p></div>
-      <Link href="/real-estate" className="gth-glass inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-bold">Real Estate <ArrowUpRight size={17}/></Link>
+      <Link prefetch={false} href="/real-estate" className="gth-glass inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-6 text-sm font-bold">Real Estate <ArrowUpRight size={17}/></Link>
     </section>
   </main>;
 }

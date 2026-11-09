@@ -1,0 +1,68 @@
+{
+  "src/components/flights/AviasalesWhiteLabel.tsx": {
+    "urls": "db3160de1635beea9bd303cceee419306d12a026904304407ee7cf0cfb80bf24"
+  },
+  "src/components/tours/SupplierTourCard.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/tours/ReviewedPartnerCard.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/hotel/NuiteeHotelOffers.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/app/hotels/stay/[id]/page.tsx": {
+    "urls": "250c86189d718a16a0d258697e35318466ff6ff4fe4637bf7e0891fa22387b7c"
+  },
+  "src/app/hotels/explore/[slug]/page.tsx": {
+    "urls": "676a6e985f7d16cc05f212d18588961bc3ad56e4ee7843683fd1d2d5f546e7a6"
+  },
+  "src/components/travel/DealsDiscovery.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/travel/IndianWaters.tsx": {
+    "urls": "135cd806183cb3059b66055512a87509d45676105b18e88408e09c1a6ba1ef9b"
+  },
+  "src/components/travel/GTHTransportSearchWidget.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/travel/TransferProviderWidgets.tsx": {
+    "urls": "cee05964676ebd6102327439a4f7d816617ff8a25f73f85bcc06bc1e37efb895"
+  },
+  "src/components/travel/TransportPlanner.tsx": {
+    "urls": "80bf03b83b6b6165263c806824a9da042d2c76c1638bbbfe516073d40ffddfaa"
+  },
+  "src/components/travel/NuiteeFlightHandoff.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/flights/FlightJourneyServices.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/components/travel/AirportJourneyServices.tsx": {
+    "urls": "b7aabf801531c0c19347c0d46904275ba3a4e1909ae60d9a82b9e99497937d40"
+  },
+  "src/components/tours/TiqetsPartnerWidgets.tsx": {
+    "urls": "fdd76e19b7a5077124458459d150983b0bd8f787f09c93f10d752738c67dca52"
+  },
+  "src/components/tours/TourAffiliateMarketplace.tsx": {
+    "urls": "d78a00fe3bf98c2f25543ff1c7cf5bcbbc9ed56c8a6c0f22476b1ac83b5e2952"
+  },
+  "src/components/travel/TransferHubShowcase.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/app/cars/page.tsx": {
+    "urls": "70d89b020fc2fc4639d5b8b0b4e8bcc2476745f44549f6a2cf07a99e398ab127"
+  },
+  "src/components/real-estate/CampaignPromotions.tsx": {
+    "urls": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "src/app/(mapped-places)/attractions/osm/[id]/page.tsx": {
+    "urls": "2391ef7b32da1ef67a9efc60709ff6a481bf022091c971b02df8868a89952427"
+  },
+  "src/app/attractions/[qid]/page.tsx": {
+    "urls": "250c86189d718a16a0d258697e35318466ff6ff4fe4637bf7e0891fa22387b7c"
+  },
+  "src/app/mega-aggregator/page.tsx": {
+    "urls": "a5bdd550af0580ea4e352829bbeb637e0558b5078e3f38e21e71d7d3f2204356"
+  }
+}

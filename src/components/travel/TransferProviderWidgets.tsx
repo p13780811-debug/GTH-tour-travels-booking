@@ -129,13 +129,13 @@ export default function TransferProviderWidgets() {
           className={active === "airport"
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
-          <MapPin size={16} aria-hidden="true" /> intui.travel
+          <MapPin size={16} aria-hidden="true" /> Airport pickups
         </button>
         <button type="button" aria-pressed={active === "options"} onClick={() => select("options")}
           className={active === "options"
             ? "gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             : "inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold"}>
-          <CarFront size={16} aria-hidden="true" /> Kiwitaxi
+          <CarFront size={16} aria-hidden="true" /> Private transfers
         </button>
         <button type="button" aria-pressed={active === "additional"} onClick={() => select("additional")}
           className={active === "additional"

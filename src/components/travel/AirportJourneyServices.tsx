@@ -14,11 +14,11 @@ const stages = [
     title: "Prepare for your flight",
     services: [
       { name: "Flight search", detail: "Find your flight and check the booking provider's final fare.", href: "/flights", Icon: Plane, kind: "internal" },
-      { name: "AirHelp compensation", detail: "Review whether eligible flight delays or cancellations qualify for AirHelp claims.", href: "https://airhelp.tpo.lv/W9baN8JY", Icon: ShieldCheck, kind: "partner" },
-      { name: "Compensair claims", detail: "Explore flight disruption compensation options and provider eligibility requirements.", href: "https://compensair.tpo.lv/s1kibgeh", Icon: ShieldCheck, kind: "partner" },
+      { name: "Flight compensation", detail: "Review eligibility for compensation after a flight delay or cancellation.", href: "https://airhelp.tpo.lv/W9baN8JY", Icon: ShieldCheck, kind: "partner" },
+      { name: "Flight disruption claims", detail: "Explore flight disruption compensation options and provider eligibility requirements.", href: "https://compensair.tpo.lv/s1kibgeh", Icon: ShieldCheck, kind: "partner" },
       { name: "Travel insurance", detail: "Review policy exclusions, coverage and insurer terms before choosing a plan.", href: "/insurance", Icon: BriefcaseMedical, kind: "internal" },
       { name: "Airport lounges", detail: "Find lounge access options; membership and entry restrictions apply.", href: "https://www.prioritypass.com/en-GB/airport-lounges", Icon: Users, kind: "provider" },
-      { name: "Yesim travel eSIM", detail: "Check destination data coverage, eSIM support and plan terms through the Yesim affiliate link.", href: "https://yesim.tpo.lv/yZBVdtqT", Icon: Wifi, kind: "partner" },
+      { name: "Travel eSIM", detail: "Review destination coverage, device support and plan terms before booking.", href: "https://yesim.tpo.lv/yZBVdtqT", Icon: Wifi, kind: "partner" },
     ],
   },
   {
@@ -26,12 +26,12 @@ const stages = [
     eyebrow: "At the airport",
     title: "Transfers and terminal essentials",
     services: [
-      { name: "Kiwitaxi & intui.travel", detail: "Open the embedded Travelpayouts airport transfer and pickup widgets.", href: "#transfer-provider-heading", Icon: CarFront, kind: "internal" },
-      { name: "Welcome Pickups", detail: "Check pickup service and destination coverage with Welcome Pickups.", href: "https://tpo.lv/GFuzmgYk", Icon: MapPinned, kind: "partner" },
-      { name: "GetTransfer.com", detail: "Explore third-party transfers and compare supplier service conditions.", href: "https://gettransfer.tpo.lv/jpv6nsqO", Icon: CarFront, kind: "partner" },
-      { name: "Car rentals (QEEQ & Localrent)", detail: "Browse dedicated GTH PRO car-hire widgets; compare deposits and licence requirements.", href: "/cars", Icon: CarFront, kind: "internal" },
+      { name: "Airport transfer search", detail: "Search airport transfers and pickup options.", href: "#transfer-provider-heading", Icon: CarFront, kind: "internal" },
+      { name: "Airport pickups", detail: "Check pickup services and destination coverage.", href: "https://tpo.lv/GFuzmgYk", Icon: MapPinned, kind: "partner" },
+      { name: "Compare private transfers", detail: "Explore third-party transfers and compare supplier service conditions.", href: "https://gettransfer.tpo.lv/jpv6nsqO", Icon: CarFront, kind: "partner" },
+      { name: "Car rentals", detail: "Browse dedicated GTH PRO car-hire widgets; compare deposits and licence requirements.", href: "/cars", Icon: CarFront, kind: "internal" },
       { name: "Airport parking", detail: "Check available parking at your departure airport.", href: "https://www.parkvia.com/en", Icon: CircleParking, kind: "provider" },
-      { name: "Radical Storage", detail: "Find luggage-storage locations and review booking terms through the supplied affiliate link.", href: "https://radicalstorage.tpo.lv/iDuI1UD0", Icon: Luggage, kind: "partner" },
+      { name: "Luggage storage", detail: "Find luggage-storage locations and review booking terms through the supplied affiliate link.", href: "https://radicalstorage.tpo.lv/iDuI1UD0", Icon: Luggage, kind: "partner" },
     ],
   },
   {

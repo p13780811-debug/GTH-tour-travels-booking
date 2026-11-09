@@ -74,3 +74,43 @@ browser scenarios; existing Hotels passed ten viewport/theme scenarios plus
 mobile/desktop booking handoff, geographic/currency caching and supplier
 failure/retry checks. Browser evidence is explicitly fixture-only. Cloud QA
 rebuilds the final commit with the original production fonts before release.
+
+## Owner-requested visual and action-label follow-up
+
+The follow-up replaces the initial hub presentation with a compact editorial
+hero, photo collage, search-first product tabs and mode-specific forms. Light
+tabs use a white surface with navy text; dark tabs use a raised navy surface
+with readable text and a gold indicator. They no longer share the same fixed
+gold gradient. All new control styles are scoped to the workspace.
+
+Flights now has an immediately usable airport suggestion form, keyboard
+selection, swap, one-way/round-trip dates and a real public route-search link.
+It uses the existing route/date builder; no flight fare or ticketing API is
+called. Destination-photo cards prepare a route without inventing fares.
+
+Experiences has real product-photo cards from the existing free public
+catalogue and distinctly labelled destination collections. The catalogue is
+bounded to six cards, coalesced, cached for 24 hours and has an outage cooldown.
+It adds no Supabase query. Supplier-listed prices are explicitly in USD with
+current price/date confirmation at booking. A missing feed never manufactures
+products or prices. An independent visit date does not overwrite hotel checkout
+or a flight return date. No Nuitee Experiences checkout URL is guessed.
+
+The owner also requested neutral action labels throughout existing travel
+surfaces. `scripts/travel-action-copy.json` records exact text substitutions in
+22 files, including supplier search, hotel detail, tours, transport, promotion
+and marketplace actions. These are copy-only changes: an executable guard and
+regression test compare every file with its original contents and retain every
+provider URL, tracking parameter and booking handler. Existing shared CSS,
+supplier logic, SEO, database/security and ecosystem layouts remain intact.
+Provider-owned hosted screens and widget attribution are not rewritten.
+
+Performance refinement: `/travel` is statically prerendered for CDN serving.
+Preferences hydrate from the URL in the browser; switching product tabs uses
+local history and does not request a server render. Opened discovery panels
+remain mounted, so revisiting Hotels does not repeat its metadata request.
+Worldwide hotel SDK frames close when leaving Hotels. Experience cards load
+only when their tab opens through a public, fixed-purpose CDN-cached endpoint;
+successful catalogues have a 24-hour shared cache, failures a short cache,
+and the browser coalesces repeated reads. Internal links disable speculative
+prefetching in this hub. There is no new Supabase read or private supplier API.

@@ -18,10 +18,10 @@ test("GTH booking starts only on hotel details after the source-to-property mapp
  assert.match(detail,/\.eq\("exact_property_verified",true\)/);
  assert.match(detail,/safeVerifiedHotelAffiliateUrl/);
  assert.match(detail,/href=\{hotel\.partner\}/);
- assert.match(detail,/Book Now\{hotel\.partnerName/);
+ assert.match(detail,/Continue booking/);
  assert.match(detail,/Exact-property booking is not connected/);
  assert.match(detail,/hotelProviderSearchUrl/);
- assert.match(detail,/Search stays using Nuitee white-label/);
+ assert.match(detail,/Search stays/);
  assert.doesNotMatch(detail,/Find this hotel on Booking.com/);
  assert.match(detail,/!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
  for(const page of [list,results])assert.doesNotMatch(page,/hotelProviderSearchUrl|Search this hotel on Booking\.com/);

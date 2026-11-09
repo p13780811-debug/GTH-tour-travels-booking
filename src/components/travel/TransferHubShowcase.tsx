@@ -165,12 +165,12 @@ export default function TransferHubShowcase() {
                 <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-[var(--text-soft)]">{supplier.disclosure}</p>
                 {supplier.external ? (
                   <a href={supplier.href} target="_blank" rel="noopener noreferrer sponsored"
-                    aria-label={`${supplier.action} with ${supplier.name} (external booking)`}
+                    aria-label={`${supplier.action} (external booking)`}
                     className="gth-btn-gold mt-auto inline-flex min-h-10 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold">
                     {supplier.action} <ArrowUpRight size={14} aria-hidden="true" />
                   </a>
                 ) : (
-                  <a href={supplier.href} aria-label={`${supplier.action} with ${supplier.name}`}
+                  <a href={supplier.href} aria-label={supplier.action}
                     className="gth-btn-gold mt-auto inline-flex min-h-10 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold">
                     {supplier.action} <ArrowRight size={14} aria-hidden="true" />
                   </a>

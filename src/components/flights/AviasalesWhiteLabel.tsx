@@ -230,7 +230,7 @@ export default function AviasalesWhiteLabel({ isResultsView = false, resultsPath
           </p>
           <a href="/flights/out/aviasales" target="_blank" rel="noopener noreferrer sponsored"
             className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[var(--gold)]">
-            Search directly on Aviasales <ArrowRight size={16} aria-hidden="true" />
+            Continue flight search <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
       </div>

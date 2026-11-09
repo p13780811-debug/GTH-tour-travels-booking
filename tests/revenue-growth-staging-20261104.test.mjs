@@ -30,13 +30,13 @@ test("registry research and sale/rent submissions stay separate", () => {
 });
 
 test("travel booking conversion copy links existing hosted Nuitee without changing supplier code", () => {
-  const travel = source("src/app/travel/page.tsx");
+  const travel = source("src/app/travel/page.tsx") + source("src/components/travel/ConnectedTravelWorkspace.tsx");
   const hotels = source("src/lib/travel/hotel-whitelabel.ts");
   const flights = source("src/components/flights/AviasalesWhiteLabel.tsx");
   const tours = source("src/app/tours/page.tsx");
   assert.match(travel, /HOTEL SEARCH & BOOKING/);
   assert.match(travel, /\/hotels\?view=booking/);
-  assert.match(travel, /Nuitee White Label/);
+  assert.match(travel, /HOTEL_BOOKING_ORIGIN/);
   assert.match(hotels, /https:\/\/hotel\.gthproglobal\.com/);
   assert.match(flights, /wl_id=23459/);
   assert.match(tours, /TourLanding/);

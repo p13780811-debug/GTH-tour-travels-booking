@@ -127,7 +127,7 @@ export default function CarsPage() {
           <Link href="/transfers" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 font-semibold">Plan airport transfer <ArrowRight size={16}/></Link>
           <a href="https://tpo.lv/GFuzmgYk" rel="sponsored noopener noreferrer" target="_blank"
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-5 font-semibold">
-            Welcome Pickups · affiliate partner <ArrowUpRight size={16}/>
+            Explore airport pickups <ArrowUpRight size={16}/>
           </a>
         </div>
       </section>

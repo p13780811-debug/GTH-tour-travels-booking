@@ -18,8 +18,8 @@ test("unmapped hotel search redirects to the existing Nuitee booking screen with
 test("GTH hotel details separate verified direct booking from Nuitee search",()=>{
  const page=read("src/app/hotels/stay/[id]/page.tsx");
  assert.ok(page.includes('href={hotel.partner}'));
- assert.ok(page.includes('Book Now{hotel.partnerName'));
- assert.ok(page.includes('Search stays using Nuitee white-label'));
+ assert.ok(page.includes('Continue booking'));
+ assert.ok(page.includes('Search stays'));
  assert.ok(page.includes('hotelProviderSearchUrl([hotel.name'));
  assert.ok(page.includes('exact hotel match or rate is not guaranteed'));
 });

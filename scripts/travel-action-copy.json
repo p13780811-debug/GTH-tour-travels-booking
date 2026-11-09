@@ -1,0 +1,282 @@
+{
+  "src/components/flights/AviasalesWhiteLabel.tsx": [
+    [
+      "Search directly on Aviasales",
+      "Continue flight search"
+    ]
+  ],
+  "src/components/tours/SupplierTourCard.tsx": [
+    [
+      "\"Price on WeGoTrip\"",
+      "\"Check current price\""
+    ],
+    [
+      "product.title+\" on WeGoTrip\"",
+      "\"View \"+product.title"
+    ],
+    [
+      "View on WeGoTrip",
+      "View experience"
+    ]
+  ],
+  "src/components/tours/ReviewedPartnerCard.tsx": [
+    [
+      "product.title+\" on \"+LABELS[product.provider]",
+      "\"View \"+product.title"
+    ]
+  ],
+  "src/components/hotel/NuiteeHotelOffers.tsx": [
+    [
+      "Search Nuitee rooms",
+      "Search rooms"
+    ],
+    [
+      "See authentic hotel photos and rooms on Nuitee",
+      "Explore hotel photos and rooms"
+    ],
+    [
+      "Nuitee hotels <ArrowUpRight",
+      "Check rooms <ArrowUpRight"
+    ]
+  ],
+  "src/app/hotels/stay/[id]/page.tsx": [
+    [
+      "Book Now{hotel.partnerName?\" · \"+hotel.partnerName:\"\"}",
+      "Continue booking"
+    ],
+    [
+      "Search stays using Nuitee white-label",
+      "Search stays"
+    ]
+  ],
+  "src/app/hotels/explore/[slug]/page.tsx": [
+    [
+      "Explore live Nuitee hotel rooms",
+      "Check hotel rooms"
+    ]
+  ],
+  "src/components/travel/DealsDiscovery.tsx": [
+    [
+      "See Klook's current deals",
+      "Explore current deals"
+    ]
+  ],
+  "src/components/travel/IndianWaters.tsx": [
+    [
+      "label:\"Check cruise on GetYourGuide\"",
+      "label:\"Check cruise availability\""
+    ],
+    [
+      "label:\"Search cruises on GetYourGuide\"",
+      "label:\"Explore cruise options\""
+    ]
+  ],
+  "src/components/travel/GTHTransportSearchWidget.tsx": [
+    [
+      "\"Search 12Go flights\"",
+      "\"Search flights\""
+    ]
+  ],
+  "src/components/travel/TransferProviderWidgets.tsx": [
+    [
+      "/> intui.travel",
+      "/> Airport pickups"
+    ],
+    [
+      "/> Kiwitaxi",
+      "/> Private transfers"
+    ]
+  ],
+  "src/components/travel/TransportPlanner.tsx": [
+    [
+      "Continue on {provider.label}",
+      "Continue journey planning"
+    ]
+  ],
+  "src/components/travel/NuiteeFlightHandoff.tsx": [
+    [
+      "Open Nuitee Stays &amp; Flights",
+      "Continue booking"
+    ],
+    [
+      "Our Nuitee booking site also offers flight search.",
+      "The GTH PRO booking site also offers flight search."
+    ]
+  ],
+  "src/components/flights/FlightJourneyServices.tsx": [
+    [
+      "{provider.name}<ArrowUpRight",
+      "{provider.detail}<ArrowUpRight"
+    ],
+    [
+      ">{provider.detail}</span>",
+      ">Review booking options and confirm the terms.</span>"
+    ]
+  ],
+  "src/components/travel/AirportJourneyServices.tsx": [
+    [
+      "name: \"AirHelp compensation\"",
+      "name: \"Flight compensation\""
+    ],
+    [
+      "name: \"Compensair claims\"",
+      "name: \"Flight disruption claims\""
+    ],
+    [
+      "name: \"Yesim travel eSIM\"",
+      "name: \"Travel eSIM\""
+    ],
+    [
+      "name: \"Kiwitaxi & intui.travel\"",
+      "name: \"Airport transfer search\""
+    ],
+    [
+      "name: \"Welcome Pickups\"",
+      "name: \"Airport pickups\""
+    ],
+    [
+      "name: \"GetTransfer.com\"",
+      "name: \"Compare private transfers\""
+    ],
+    [
+      "name: \"Car rentals (QEEQ & Localrent)\"",
+      "name: \"Car rentals\""
+    ],
+    [
+      "name: \"Radical Storage\"",
+      "name: \"Luggage storage\""
+    ],
+    [
+      "Review whether eligible flight delays or cancellations qualify for AirHelp claims.",
+      "Review eligibility for compensation after a flight delay or cancellation."
+    ],
+    [
+      "Check destination data coverage, eSIM support and plan terms through the Yesim affiliate link.",
+      "Review destination coverage, device support and plan terms before booking."
+    ],
+    [
+      "Open the embedded Travelpayouts airport transfer and pickup widgets.",
+      "Search airport transfers and pickup options."
+    ],
+    [
+      "Check pickup service and destination coverage with Welcome Pickups.",
+      "Check pickup services and destination coverage."
+    ]
+  ],
+  "src/components/tours/TiqetsPartnerWidgets.tsx": [
+    [
+      "name: \"Tiqets\", detail: \"Museums",
+      "name: \"Museums & landmarks\", detail: \"Museums"
+    ],
+    [
+      "name: \"Klook\", detail:",
+      "name: \"Activities & attractions\", detail:"
+    ],
+    [
+      "name: \"Go City\", detail:",
+      "name: \"Sightseeing passes\", detail:"
+    ],
+    [
+      "name: \"WeGoTrip\", detail:",
+      "name: \"Audio city walks\", detail:"
+    ],
+    [
+      "name: \"KKday\", detail:",
+      "name: \"Day trips & local experiences\", detail:"
+    ],
+    [
+      "name: \"Tiqets\", detail: \"Find",
+      "name: \"More attraction tickets\", detail: \"Find"
+    ]
+  ],
+  "src/components/tours/TourAffiliateMarketplace.tsx": [
+    [
+      "<span className=\"line-clamp-2\">{item.name}</span>",
+      "<span className=\"line-clamp-2\">{item.category||item.name}</span>"
+    ]
+  ],
+  "src/components/travel/TransferHubShowcase.tsx": [
+    [
+      "`${supplier.action} with ${supplier.name} (external booking)`",
+      "`${supplier.action} (external booking)`"
+    ],
+    [
+      "`${supplier.action} with ${supplier.name}`",
+      "supplier.action"
+    ]
+  ],
+  "src/app/cars/page.tsx": [
+    [
+      "Welcome Pickups · affiliate partner",
+      "Explore airport pickups"
+    ]
+  ],
+  "src/components/real-estate/CampaignPromotions.tsx": [
+    [
+      "`${item.title} on Klook (opens in a new tab)`",
+      "`${item.title} (opens in a new tab)`"
+    ],
+    [
+      "\"Klook · Partner search\"",
+      "\"GTH PRO · Travel search\""
+    ]
+  ],
+  "src/app/(mapped-places)/attractions/osm/[id]/page.tsx": [
+    [
+      ">Klook</span>",
+      ">Attraction tickets</span>"
+    ],
+    [
+      ">GetYourGuide</span>",
+      ">Tours & experiences</span>"
+    ],
+    [
+      "Browse the existing WeGoTrip supplier catalogue.",
+      "Browse our existing audio-tour catalogue."
+    ],
+    [
+      "\"Bus · 12Go\"",
+      "\"Bus journeys\""
+    ],
+    [
+      "\"Train · 12Go\"",
+      "\"Train journeys\""
+    ],
+    [
+      "\"Ferry · 12Go\"",
+      "\"Ferry journeys\""
+    ]
+  ],
+  "src/app/attractions/[qid]/page.tsx": [
+    [
+      "links.map(x=><a key={x.partner}",
+      "links.map((x,index)=><a key={x.partner}"
+    ],
+    [
+      "Browse on {x.partner===\"getyourguide\"?\"GetYourGuide\":\"Viator\"}",
+      "{index===0?\"Explore experiences\":\"More experience options\"}"
+    ]
+  ],
+  "src/app/mega-aggregator/page.tsx": [
+    [
+      "name: \"GetYourGuide · Kolkata Cruise\"",
+      "name: \"Kolkata River Cruise\""
+    ],
+    [
+      "name: \"Klook Experiences\"",
+      "name: \"Explore Experiences\""
+    ],
+    [
+      "name: \"Welcome Pickups\"",
+      "name: \"Airport Pickups\""
+    ],
+    [
+      "name: \"AirHelp\"",
+      "name: \"Flight Compensation\""
+    ],
+    [
+      "name: \"EKTA Travel Insurance\"",
+      "name: \"Travel Insurance\""
+    ]
+  ]
+}

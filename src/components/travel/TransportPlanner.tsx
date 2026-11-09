@@ -143,7 +143,7 @@ export default function TransportPlanner({ mode, initialFrom = "", initialTo = "
           </p>
           <a href={provider.url} target="_blank" rel={mode === "transfer" ? "noopener noreferrer sponsored" : "noopener noreferrer"}
             className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold">
-            Continue on {provider.label} <ArrowUpRight size={16} aria-hidden="true" />
+            Continue journey planning <ArrowUpRight size={16} aria-hidden="true" />
           </a>
         </section>
       )}

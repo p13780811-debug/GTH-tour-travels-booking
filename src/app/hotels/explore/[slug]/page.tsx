@@ -42,7 +42,7 @@ export default async function HotelMarketPage({params}:Props){
          Choose an area before choosing a hotel. Read original local travel guidance, view public source-backed hotel directory records, and confirm exact dates and rooms with the booking provider.
        </p>
        <a href="https://hotel.gthproglobal.com/hotels?language=en&currency=INR" target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
-         <BedDouble size={17} aria-hidden="true"/> Explore live Nuitee hotel rooms <ArrowRight size={16} aria-hidden="true"/>
+         <BedDouble size={17} aria-hidden="true"/> Check hotel rooms <ArrowRight size={16} aria-hidden="true"/>
        </a>
      </div>
    </section>

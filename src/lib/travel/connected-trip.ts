@@ -3,9 +3,9 @@ import {HOTEL_CURRENCY_OPTIONS} from "./hotel-currency";
 import {flightPartnerUrl} from "../flights/fare-search";
 export const TRAVEL_MODES=["hotels","flights","experiences"] as const;
 export type TravelMode=typeof TRAVEL_MODES[number];
-export type ConnectedTrip={country:string;city:string;start:string;end:string;adults:number;rooms:number;children:number[];currency:string;origin:string;destination:string};
-export const EMPTY_CONNECTED_TRIP:ConnectedTrip={country:"",city:"",start:"",end:"",adults:2,rooms:1,children:[],currency:"INR",origin:"",destination:""};
-const fields={country:"tripCountry",city:"tripCity",start:"tripStart",end:"tripEnd",adults:"tripAdults",rooms:"tripRooms",children:"tripChildren",currency:"tripCurrency",origin:"tripFrom",destination:"tripTo"} as const;
+export type ConnectedTrip={country:string;city:string;start:string;end:string;visitDate:string;adults:number;rooms:number;children:number[];currency:string;origin:string;destination:string};
+export const EMPTY_CONNECTED_TRIP:ConnectedTrip={country:"",city:"",start:"",end:"",visitDate:"",adults:2,rooms:1,children:[],currency:"INR",origin:"",destination:""};
+const fields={country:"tripCountry",city:"tripCity",start:"tripStart",end:"tripEnd",visitDate:"tripVisitDate",adults:"tripAdults",rooms:"tripRooms",children:"tripChildren",currency:"tripCurrency",origin:"tripFrom",destination:"tripTo"} as const;
 function day(value:string){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return NaN;
  const stamp=Date.parse(value+"T00:00:00Z");return Number.isFinite(stamp)&&new Date(stamp).toISOString().slice(0,10)===value?stamp:NaN;
@@ -20,6 +20,7 @@ export function parseConnectedTrip(raw:Record<string,unknown>,countries:readonly
  const start=value("start"),end=value("end"),today=day(now.toISOString().slice(0,10));
  if(start&&(!Number.isFinite(day(start))||day(start)<today||day(start)>today+730*86400000))return {ok:false,error:"Choose a valid upcoming departure or check-in date."};
  if(end&&(!start||!Number.isFinite(day(end))||day(end)<day(start)||day(end)>today+730*86400000))return {ok:false,error:"Choose a valid return or check-out date within the next two years."};
+ const visitDate=value("visitDate");if(visitDate&&(!Number.isFinite(day(visitDate))||day(visitDate)<today||day(visitDate)>today+730*86400000))return {ok:false,error:"Choose a valid upcoming visit date within the next two years."};
  const a=value("adults")||"2",r=value("rooms")||"1",ages=value("children");
  if(!/^(?:[1-9]|1\d|20)$/.test(a)||!/^[1-8]$/.test(r)||ages&&!/^\d{1,2}(?:\s*,\s*\d{1,2}){0,7}$/.test(ages))return {ok:false,error:"Check hotel adults, rooms and child ages."};
  const adults=Number(a),rooms=Number(r),children=ages?ages.split(",").map(age=>Number(age.trim())):[];
@@ -27,7 +28,7 @@ export function parseConnectedTrip(raw:Record<string,unknown>,countries:readonly
  const currency=value("currency")||"INR";if(!HOTEL_CURRENCY_OPTIONS.some(item=>item.code===currency))return {ok:false,error:"Choose a supported hotel currency."};
  const origin=value("origin").toUpperCase(),destination=value("destination").toUpperCase();
  if([origin,destination].some(code=>code&&!/^[A-Z]{3}$/.test(code))||origin&&destination&&origin===destination)return {ok:false,error:"Choose different three-letter departure and arrival airport codes."};
- return {ok:true,trip:{country,city,start,end,adults,rooms,children,currency,origin,destination}};
+ return {ok:true,trip:{country,city,start,end,visitDate,adults,rooms,children,currency,origin,destination}};
 }
 export function connectedTripParams(trip:ConnectedTrip,mode:TravelMode):URLSearchParams{
  const params=new URLSearchParams({travelMode:mode});

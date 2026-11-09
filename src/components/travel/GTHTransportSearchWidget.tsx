@@ -34,7 +34,7 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">GTH PRO · Global travel</p>
           <h2 id="gth-ground-search-heading" className="mt-1 text-xl font-bold sm:text-2xl">
-            {activeMode === "bus" ? "Search bus journeys" : activeMode === "train" ? "Search global train journeys" : activeMode === "flight" ? "Search 12Go flights" : "Search ferry journeys"}
+            {activeMode === "bus" ? "Search bus journeys" : activeMode === "train" ? "Search global train journeys" : activeMode === "flight" ? "Search flights" : "Search ferry journeys"}
           </h2>
         </div>
         <nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">

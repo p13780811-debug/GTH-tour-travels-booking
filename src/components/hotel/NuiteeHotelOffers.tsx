@@ -39,7 +39,7 @@ function Card({hotel}:{hotel:DirectoryHotel}){
       <div className="grid gap-2 sm:grid-cols-2">
         <Link prefetch={false} href={detail} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
         <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
-          Search Nuitee rooms <ArrowUpRight size={14} aria-hidden="true"/>
+          Search rooms <ArrowUpRight size={14} aria-hidden="true"/>
         </a>
       </div>
     </div>
@@ -88,7 +88,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
         No independently verified property photo is available in this city directory yet.
         <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="mt-3 block font-semibold underline underline-offset-2">
-          See authentic hotel photos and rooms on Nuitee
+          Explore hotel photos and rooms
         </a>
       </div>
     )}
@@ -139,7 +139,7 @@ export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{
           <div className="mt-3 flex flex-wrap gap-3">
             <Link href={"/hotels/explore/"+m.slug} className="text-xs underline underline-offset-2">City guide</Link>
             <a href={booking} target="_blank" rel="noopener noreferrer sponsored" className="text-xs font-semibold underline underline-offset-2">
-              Nuitee hotels <ArrowUpRight size={12} className="inline" aria-hidden="true"/>
+              Check rooms <ArrowUpRight size={12} className="inline" aria-hidden="true"/>
             </a>
           </div>
         </div>)}

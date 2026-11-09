@@ -69,9 +69,9 @@ export default function FlightJourneyServices() {
             const body = (
               <>
                 <span className="flex items-center justify-between gap-2 text-sm font-semibold">
-                  {provider.name}<ArrowUpRight size={15} className="shrink-0" aria-hidden="true" />
+                  {provider.detail}<ArrowUpRight size={15} className="shrink-0" aria-hidden="true" />
                 </span>
-                <span className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{provider.detail}</span>
+                <span className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Review booking options and confirm the terms.</span>
                 <span className="mt-auto pt-3 text-[11px] font-semibold text-[var(--gold)]">
                   {provider.external ? "Visit booking partner" : "Open booking tool"} →
                 </span>

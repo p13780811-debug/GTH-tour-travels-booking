@@ -29,7 +29,7 @@ test("flight handoff reuses public Aviasales route/dates and never sends hotel p
 });
 test("new connected surface uses existing providers without paid API, fabricated experience routes or homepage changes",()=>{
  const read=p=>readFileSync(p,"utf8"),client=read("src/components/travel/ConnectedTravelWorkspace.tsx"),cta=read("src/components/travel/NuiteeFlightHandoff.tsx");
- assert.match(client,/Open Aviasales search/);assert.match(client,/<NearbyHotelDiscovery/);assert.match(client,/role="tablist"/);assert.match(client,/ArrowLeft/);assert.match(client,/aria-selected/);
+ assert.match(client,/<TravelAirportField/);assert.match(client,/>Search flights /);assert.match(client,/<NearbyHotelDiscovery/);assert.match(client,/role="tablist"/);assert.match(client,/ArrowLeft/);assert.match(client,/aria-selected/);
  assert.match(cta,/href=\{HOTEL_BOOKING_ORIGIN\}/);assert.match(cta,/select its Flights tab/);
  for(const path of ["src/lib/travel/connected-trip.ts","src/components/travel/ConnectedTravelWorkspace.tsx","src/components/travel/NuiteeFlightHandoff.tsx","src/app/travel/page.tsx"]){assert.doesNotMatch(read(path),/process\.env|api\.liteapi\.travel|\/api\/flights\/search|\/flights\/bookings|\/tours\/bookings|price-index|\/data\/places|supabase/i);}
  assert.doesNotMatch(client+cta,/hotel\.gthproglobal\.com\/(flights|experiences)|NUITEE_.*KEY/);

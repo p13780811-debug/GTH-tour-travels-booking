@@ -35,7 +35,7 @@ export default function DealsDiscovery({promos}:{promos:readonly ApprovedKlookPr
     <h1 className="mt-4 max-w-3xl text-3xl font-bold tracking-tight sm:text-5xl">Explore travel deals around the world</h1>
     <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">Choose a destination and discover experiences, or open the booking provider's current deals. Only the provider can confirm prices, eligible promo codes, dates and availability.</p>
     <div className="mt-6 flex flex-wrap gap-3">
-     <a href="/api/travel/klook-deals" target="_blank" rel="sponsored nofollow noopener noreferrer" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">See Klook's current deals <ArrowUpRight size={18} aria-hidden="true"/></a>
+     <a href="/api/travel/klook-deals" target="_blank" rel="sponsored nofollow noopener noreferrer" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold">Explore current deals <ArrowUpRight size={18} aria-hidden="true"/></a>
      <Link href="/activities" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"><Ticket size={17}/> Browse activities</Link>
     </div>
     <p className="mt-3 text-xs text-[var(--text-soft)]">Partner-managed offers · Opens Klook via GTH PRO's existing tracked referral route · No discount is guaranteed.</p>

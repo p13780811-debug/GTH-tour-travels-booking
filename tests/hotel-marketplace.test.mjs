@@ -47,11 +47,11 @@ test("hotel results always open GTH details before optional provider booking", (
   assert.match(result, /This exact hotel has a reviewed booking partner link/);
   assert.match(result, /\/hotels\/partner\//);
   assert.doesNotMatch(result, /hotelProviderSearchUrl|Search this hotel on Booking\.com|Continue to booking partner/);
-  assert.match(detail, /Book Now\{hotel\.partnerName/);
+  assert.match(detail, /Continue booking/);
   assert.match(detail, /href=\{hotel\.partner\}/);
   assert.match(detail, /rel="noopener noreferrer sponsored"/);
   assert.match(detail, /hotelProviderSearchUrl/);
-  assert.match(detail, /Search stays using Nuitee white-label/);
+  assert.match(detail, /Search stays/);
   assert.match(detail, /!hotel.partner&&\(hotel.city\|\|hotel.address\|\|hotel.country\)/);
 });
 
