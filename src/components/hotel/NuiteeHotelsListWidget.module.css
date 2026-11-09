@@ -1,0 +1,9 @@
+.supplier { color: var(--text); color-scheme: light; }
+:global(html.dark) .supplier { color-scheme: dark; }
+
+/* The SDK may specify inline colours. Overrides apply only to neutral surfaces
+ * and text marked inside this supplier list, never the website shell. */
+.supplier [data-gth-nuitee-surface] { background-color: var(--bg-soft) !important; }
+.supplier [data-gth-nuitee-ink="text"] { color: var(--text) !important; }
+.supplier [data-gth-nuitee-ink="muted"] { color: var(--text-soft) !important; }
+.supplier [data-gth-nuitee-border] { border-color: var(--border) !important; }

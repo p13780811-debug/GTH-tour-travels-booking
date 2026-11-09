@@ -5,6 +5,7 @@ const allowed=new Set([
  "src/app/tender/layout.tsx","src/app/tender/TenderForms.module.css",
  "src/app/hotels/page.tsx","src/app/hotels/layout.tsx","src/app/hotels/HotelsLanding.module.css",
  "src/components/hotel/NuiteeHotelOffers.tsx","tests/nuitee-hotel-discovery-seo.test.mjs",
+ "src/components/hotel/NuiteeHotelsListWidget.tsx","src/components/hotel/NuiteeHotelsListWidget.module.css","src/components/hotel/nuitee-widget-theme.ts",
  "scripts/qa-hotel-landing.mjs","scripts/check-hotel-landing-boundaries.mjs",
  ".github/workflows/gth-hotel-landing-qa.yml","docs/releases/hotels-premium-20261109.md"
 ]);

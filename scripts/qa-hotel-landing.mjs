@@ -21,7 +21,7 @@ const sdk=String.raw`(()=>{
   const root=document.querySelector(options.selector);root.dataset.fixture='true';
   const city=options.placeId==='ChIJwe1EZjDG5zsRaYxkjY_tpF0'?'Mumbai':'London';
   const grid=document.createElement('div');grid.setAttribute('aria-label',city+' fixture supplier cards');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:16px';
-  for(let i=1;i<=3;i++){const card=document.createElement('a');card.href='https://gthproglobal.nuitee.link/hotels/fixture-'+i;card.textContent=city+' fixture hotel '+i+' — QA data, not live inventory';card.style.cssText='display:flex;align-items:center;justify-content:center;min-height:180px;padding:24px;border:1px solid var(--border);border-radius:16px;background:var(--bg-soft);color:var(--text);font-size:14px';grid.append(card);}root.append(grid);
+  for(let i=1;i<=3;i++){const card=document.createElement('a');card.href='https://gthproglobal.nuitee.link/hotels/fixture-'+i;card.style.cssText='display:block;min-height:180px;padding:24px;border:1px solid #ddd;border-radius:16px;background:white;font-size:14px';card.innerHTML='<h3>'+city+' fixture hotel '+i+'</h3><p style="color:#999">QA data, not live inventory</p><strong style="color:black">Fixture price</strong><span data-fixture-badge style="display:block;background:rgb(76,175,80);color:white">Supplier badge</span>';grid.append(card);}root.append(grid);
  }}};
 })();`;
 const fixtures=[{id:"osm-12345",name:"Fixture directory hotel",city:"Mumbai",country:"India",image:"/placeholder.jpg",stars:null,affiliate_link:null,source:"OpenStreetMap",booking_ready:false,category:"hotel"}];
@@ -52,6 +52,11 @@ try{
   assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1);
   assert.equal(await frame.locator("html").evaluate(()=>window.__hotelFixture.searches),1,"one SDK initialization after hydration");
   assert.equal(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count(),1,"only the selected supplier list is mounted");
+  const palette=await page.locator('[data-gth-nuitee-supplier-hotels="true"] a').first().evaluate(card=>({background:getComputedStyle(card).backgroundColor,title:getComputedStyle(card.querySelector('h3')).color,price:getComputedStyle(card.querySelector('strong')).color,badge:getComputedStyle(card.querySelector('[data-fixture-badge]')).backgroundColor,expectedBackground:getComputedStyle(document.documentElement).getPropertyValue('--bg-soft').trim()}));
+  assert.equal(palette.title,palette.price,"SDK black prices and inherited titles share readable theme text");
+  assert.equal(palette.badge,"rgb(76, 175, 80)","keep supplier badge colours");
+  assert.equal(palette.title,theme==="night"?"rgb(243, 244, 246)":"rgb(17, 24, 39)");
+  assert.equal(palette.background,theme==="night"?"rgb(15, 23, 42)":"rgb(242, 245, 250)");
   const inHero=await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').evaluate(e=>!!e.closest('[data-travel-hero="true"]'));assert.equal(inHero,true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,`${width}/${theme} overflow`);
   const buttonBox=await frame.getByRole("button",{name:"Find rooms",exact:true}).boundingBox();
@@ -81,7 +86,7 @@ try{
   await page.close();
  }
  blockSdk=true;
- const page=await browser.newPage({viewport:{width:390,height:844}});await page.route("**/*",route);await page.goto(origin+"/hotels",{waitUntil:"networkidle"});await page.getByRole("button",{name:"Retry hotel search",exact:true}).waitFor();await page.getByText(/Live supplier hotel cards are unavailable/).waitFor();
+ const page=await browser.newPage({viewport:{width:390,height:844}});await page.route("**/*",route);await page.goto(origin+"/hotels",{waitUntil:"networkidle"});await page.getByRole("button",{name:"Retry hotel search",exact:true}).waitFor();await page.getByText(/Supplier hotel cards are unavailable/).waitFor();
  assert.match(await page.getByRole("link",{name:"Open secure booking site",exact:true}).getAttribute("href"),/^https:\/\/gthproglobal\.nuitee\.link\//);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:evidence+"/supplier-unavailable.png",fullPage:true});
  blockSdk=false;await page.getByRole("button",{name:"Retry hotel search",exact:true}).click();await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByRole("button",{name:"Find rooms",exact:true}).waitFor();

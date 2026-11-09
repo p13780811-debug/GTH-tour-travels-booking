@@ -2,6 +2,8 @@
 
 import {useEffect,useRef,useState} from "react";
 import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-whitelabel";
+import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
+import styles from "./NuiteeHotelsListWidget.module.css";
 
 type LiteHotelsListOptions={
   selector:string;
@@ -59,7 +61,12 @@ export default function NuiteeHotelsListWidget({
   placeId:string;placeLabel:string;id:string;rows?:number;
 }){
   const initialized=useRef(false);
+  const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
+  useEffect(()=>{
+    const root=supplierRoot.current;
+    return root?connectNuiteeWidgetTheme(root):undefined;
+  },[]);
   useEffect(()=>{
     if(initialized.current)return;
     if(!/^ChIJ[A-Za-z0-9_-]{12,80}$/.test(placeId))return;
@@ -89,18 +96,18 @@ export default function NuiteeHotelsListWidget({
     return ()=>{live=false;};
   },[id,placeId,rows]);
 
-  return <div className="min-w-0" aria-label={"Bookable Nuitee hotel listings near "+placeLabel}>
-    <div id={id} className="min-w-0" data-gth-nuitee-supplier-hotels="true"/>
+  return <div className="min-w-0" aria-label={"Nuitee hotel listings near "+placeLabel}>
+    <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
     {failed?<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-sm text-[var(--text-soft)]">
-      Live supplier hotel cards are unavailable in this browser. You can still browse the official Nuitee White Label directly.
+      Supplier hotel cards are unavailable in this browser. You can still browse the booking site directly.
     </p>:null}
     <p className="mt-2 text-xs text-[var(--text-soft)]">
-      Hotel photos, rooms and prices in this section come from Nuitee. Selecting a supplier hotel opens its matching page on GTH PRO&apos;s Nuitee White Label.
+      Photos and room information are provided by Nuitee. Check your dates, total price and booking conditions on the booking site.
     </p>
     <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
-      Open Nuitee White Label
+      Browse on booking site
     </a>
   </div>;
 }
