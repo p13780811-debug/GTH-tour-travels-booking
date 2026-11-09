@@ -26,6 +26,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
       SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
       NUITEE_PRODUCTION_API_KEY: fixture-private-currency-key
+      NODE_PATH: /tmp/gth-browser-tools/node_modules
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,8 +59,14 @@ jobs:
         run: npm run build
       - name: Acceptance browser
         run: |
-          npm install --no-save --package-lock=false --legacy-peer-deps --no-audit --no-fund playwright@1.56.0
-          npx playwright install --with-deps chromium
+          npm install --prefix /tmp/gth-browser-tools --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.56.0
+          if command -v google-chrome > /dev/null; then
+            echo "GTH_CHROMIUM_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium > /dev/null; then
+            echo "GTH_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            /tmp/gth-browser-tools/node_modules/.bin/playwright install --with-deps chromium
+          fi
       - name: Mobile and desktop, day and night, trip persistence and original Flights
         run: |
           NODE_OPTIONS="--require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs --require=/tmp/gth-travel-experiences-fixture.cjs" npm run start -- --hostname 127.0.0.1 --port 4212 > /tmp/gth-connected-next.log 2>&1 &
