@@ -7,8 +7,8 @@ import {HOTEL_BOOKING_ORIGIN,hotelWhiteLabelUrl,parseHotelBookingSearch} from "@
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import type {HotelProfile} from "@/lib/travel/nuitee-free-hotels";
 type Discovery={scope:{country:string;city:string;page:number};countries:{code:string;name:string}[];nearby:HotelProfile[];items:HotelProfile[];hasMore:boolean;available:boolean;partial?:boolean};
-export default function NearbyHotelDiscovery({currency,onCountry}:{currency:string;onCountry:(country:string)=>void}){
-  const params=useSearchParams(),[query,setQuery]=useState(""),[retry,setRetry]=useState(0),[country,setCountry]=useState(""),[city,setCity]=useState("");
+export default function NearbyHotelDiscovery({currency,onCountry,initialArea,stayQuery,showAreaForm=true}:{currency:string;onCountry:(country:string)=>void;initialArea?:{country:string;city:string};stayQuery?:string;showAreaForm?:boolean}){
+  const params=useSearchParams(),[query,setQuery]=useState(initialArea?.country?new URLSearchParams({country:initialArea.country,...(initialArea.city?{city:initialArea.city}:{})}).toString():""),[retry,setRetry]=useState(0),[country,setCountry]=useState(initialArea?.country||""),[city,setCity]=useState(initialArea?.city||"");
   const [data,setData]=useState<Discovery|null>(null),[loading,setLoading]=useState(true),[moreLoading,setMoreLoading]=useState(false),[error,setError]=useState("");
   const [shown,setShown]=useState(8),currentKey=query+":"+retry;
   const active=useRef("");active.current=currentKey;
@@ -35,8 +35,12 @@ export default function NearbyHotelDiscovery({currency,onCountry}:{currency:stri
     }catch{if(active.current===started)setError("More hotels could not be checked. Your current previews are still here; please retry.");}
     finally{if(active.current===started)setMoreLoading(false);}
   }
-  const selectedCurrency=hotelCurrency(currency),restored=parseHotelBookingSearch(new URLSearchParams(params.toString()));
+  const selectedCurrency=hotelCurrency(currency);
   const href=(hotel:HotelProfile)=>{
+    const fields=new URLSearchParams(stayQuery??params.toString());
+    const ambiguous=["checkin","checkout","occupancies","currency"].some(key=>fields.getAll(key).length>1);
+    fields.delete("placeId");fields.set("hotelId",hotel.id);
+    const restored=ambiguous?null:parseHotelBookingSearch(fields);
     if(restored)return hotelWhiteLabelUrl({...restored,placeId:undefined,hotelId:hotel.id,currency:selectedCurrency});
     const url=new URL("/hotels/"+encodeURIComponent(hotel.id),HOTEL_BOOKING_ORIGIN);url.search=new URLSearchParams({language:"en",currency:selectedCurrency}).toString();return url.toString();
   };
@@ -53,11 +57,11 @@ export default function NearbyHotelDiscovery({currency,onCountry}:{currency:stri
   </article>)}</div>;
   return <section className="mx-auto max-w-7xl px-4 py-8 text-[var(--text)] sm:px-6" aria-labelledby="hotel-local-title">
     <header><p className="text-xs font-semibold uppercase tracking-[.15em] text-[var(--text-soft)]">Closer to you</p><h2 id="hotel-local-title" className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{data?.scope.city?"Start with stays in "+data.scope.city:name?"Discover stays in "+name:"Find your next stay, closer to home."}</h2><p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Explore your area first, then your country and the rest of the world. You can always choose a different location.</p></header>
-    <form className="my-5 grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]" onSubmit={event=>{event.preventDefault();if(city.trim()&&!country){setError("Choose a country before searching a city.");return;}setQuery(country?new URLSearchParams({country,...(city.trim()?{city:city.trim()}:{})}).toString():"");setRetry(n=>n+1);}}>
+    {showAreaForm&&<form className="my-5 grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]" onSubmit={event=>{event.preventDefault();if(city.trim()&&!country){setError("Choose a country before searching a city.");return;}setQuery(country?new URLSearchParams({country,...(city.trim()?{city:city.trim()}:{})}).toString():"");setRetry(n=>n+1);}}>
       <label className="min-w-0 flex-1 text-xs font-semibold">Country<select aria-label="Hotel discovery country" value={country} onChange={event=>setCountry(event.target.value)} className="mt-2 block min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-3 text-sm text-[var(--text)]"><option value="">Use my area automatically</option>{data?.countries.map(item=><option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
       <label className="min-w-0 flex-1 text-xs font-semibold">City (optional)<input aria-label="Hotel discovery city" value={city} maxLength={80} onChange={event=>setCity(event.target.value)} className="mt-2 block min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-3 text-sm text-[var(--text)]" placeholder="Choose a city"/></label>
       <button className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold" type="submit">Explore area</button>
-    </form>
+    </form>}
     {loading&&<p role="status" className="rounded-2xl border border-[var(--border)] p-5 text-sm">Finding hotel previews for your area…</p>}
     {data?.nearby.length? <div className="mb-7"><h3 className="mb-4 text-lg font-semibold">Around {data.scope.city}</h3>{cards(data.nearby)}</div>:null}
     {data?.items.length?<div><h3 className="mb-4 text-lg font-semibold">More stays in {name}</h3>{cards(data.items.slice(0,shown))}</div>:null}

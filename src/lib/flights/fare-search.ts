@@ -39,7 +39,7 @@ function nonnegativeInt(value: unknown, max: number): number | null {
     : null;
 }
 
-function flightPartnerUrl(
+export function flightPartnerUrl(
   link: unknown,
   origin: string,
   destination: string,

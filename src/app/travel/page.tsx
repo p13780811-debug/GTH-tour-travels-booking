@@ -1,4 +1,9 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import ConnectedTravelWorkspace from "@/components/travel/ConnectedTravelWorkspace";
+import TourAffiliateMarketplace from "@/components/tours/TourAffiliateMarketplace";
+import {HOTEL_COUNTRIES} from "@/lib/travel/hotel-audience";
+import {EMPTY_CONNECTED_TRIP,connectedTripParams,parseConnectedTrip,travelMode} from "@/lib/travel/connected-trip";
+import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,22 +38,27 @@ const additional = [
   { name: "Global Marketplace", href: "/mega-aggregator", Icon: MapPinned, detail: "The GTH PRO travel aggregator and providers." },
 ] as const;
 
-export default function TravelHomePage() {
+export default async function TravelHomePage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const query=await searchParams,parsed=parseConnectedTrip(query,HOTEL_COUNTRIES.map(item=>item.code));
+  const trip=parsed.ok?parsed.trip:EMPTY_CONNECTED_TRIP,mode=travelMode(query.travelMode);
+  const experiences={...EMPTY_TOUR_SEARCH,city:trip.city,currency:trip.currency};
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
       <Image src="/maldives-bg.jpg" fill priority sizes="100vw" alt="Tropical island destination" className="-z-20 object-cover" />
       <div className="absolute inset-0 -z-10 bg-black/70" aria-hidden="true" />
-      <div className="mx-auto max-w-7xl px-4 py-16 text-white sm:px-6 md:py-24 lg:py-32">
+      <div className="mx-auto max-w-7xl px-4 py-10 text-white sm:px-6 md:py-14">
         <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]"><Globe2 size={15}/> GTH PRO · GLOBAL TRAVEL</p>
-        <h1 className="mt-7 max-w-4xl text-4xl font-bold leading-tight md:text-6xl">Your world. One connected travel experience.</h1>
-        <p className="mt-6 max-w-2xl text-base leading-8 text-white/85 md:text-lg">Explore global flights, hotels, experiences and destinations with GTH PRO. Each travel module has its own searchable page and clear external booking handoff.</p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <h1 className="mt-5 max-w-4xl text-3xl font-bold leading-tight md:text-5xl">Your world. One connected travel experience.</h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-white/85">A stay you love. A flight that fits. Experiences you remember. Start your journey in one place.</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a href="#travel-search" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold">Plan my trip <ArrowRight size={16}/></a>
           <Link href="/flights" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold">Search flights <ArrowRight size={16}/></Link>
           <Link href="/hotels?view=booking" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Search hotels</Link>
           <Link href="/destinations" className="inline-flex min-h-12 items-center rounded-xl border border-white/40 bg-black/50 px-6 py-3 text-sm font-bold text-white">Discover destinations</Link>
         </div>
       </div>
     </section>
+      <ConnectedTravelWorkspace key={connectedTripParams(trip,"hotels").toString()} trip={trip} initialMode={mode} countries={HOTEL_COUNTRIES} initialError={parsed.ok?undefined:parsed.error} activitiesHref={tourDiscoveryHref("/activities",experiences)} experiences={<TourAffiliateMarketplace search={experiences} basePath="/activities"/>}/>
       <TravelSectionNav />
 
     <section aria-labelledby="travel-services" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">

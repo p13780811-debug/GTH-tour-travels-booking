@@ -5,6 +5,7 @@ import { ArrowUpRight, CheckCircle2, Compass, PlaneTakeoff } from "lucide-react"
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
+import NuiteeFlightHandoff from "@/components/travel/NuiteeFlightHandoff";
 import { flightDestinations } from "@/data/flight/destinations";
 
 type Props = { searchParams: Promise<{ origin?: string; destination?: string; destinationCity?: string; flightSearch?: string }> };
@@ -59,6 +60,7 @@ export default async function FlightsPage({ searchParams }: Props) {
         )}
         <AviasalesWhiteLabel isResultsView={isResultsView} />
         <div className="px-4 sm:px-6">
+          <NuiteeFlightHandoff />
           <FlightJourneyServices />
           <PopularDestinations destinations={flightDestinations} origin={origin} />
 

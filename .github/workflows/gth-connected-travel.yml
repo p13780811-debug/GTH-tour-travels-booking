@@ -1,0 +1,82 @@
+name: GTH connected Travel — preserved suppliers and cost boundary
+on:
+  push:
+    branches: [feat/travel-connected-journey-20261109]
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/travel/page.tsx"
+      - "src/components/travel/ConnectedTravelWorkspace*"
+      - "src/components/travel/NuiteeFlightHandoff.tsx"
+      - "src/lib/travel/connected-trip.ts"
+      - "scripts/qa-connected-travel.mjs"
+      - ".github/workflows/gth-connected-travel.yml"
+permissions:
+  contents: read
+concurrency:
+  group: gth-connected-travel-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  connected-travel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://tender-qa.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
+      SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
+      NUITEE_PRODUCTION_API_KEY: fixture-private-currency-key
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: node scripts/check-connected-travel-boundaries.mjs
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Existing regressions, shared trip validation, types and lint
+        run: |
+          npm run test:security
+          npx tsc --noEmit
+          npm run lint
+          python scripts/check-hotel-css-scope.py
+      - name: Isolated source and allowlisted free-content fixtures
+        run: |
+          node scripts/qa-tender-portal.mjs --fixture-server > /tmp/gth-connected-source-fixture.log 2>&1 &
+          node scripts/qa-nuitee-free-reference.mjs > /tmp/gth-connected-hotel-fixture.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS --max-time 2 http://127.0.0.1:4311/__fixture > /dev/null && curl -fsS --max-time 2 http://127.0.0.1:4312/__fixture > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Production build with original fonts and no production service access
+        env:
+          NODE_OPTIONS: --require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs
+        run: npm run build
+      - name: Acceptance browser
+        run: |
+          npm install --no-save --package-lock=false --legacy-peer-deps --no-audit --no-fund playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Mobile and desktop, day and night, trip persistence and original Flights
+        run: |
+          NODE_OPTIONS="--require=/tmp/gth-tender-network-fixture.cjs --require=/tmp/gth-nuitee-free-fixture.cjs" npm run start -- --hostname 127.0.0.1 --port 4212 > /tmp/gth-connected-next.log 2>&1 &
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 3 http://127.0.0.1:4212/travel > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/gth-connected-next.log; exit 1; fi
+          node scripts/qa-connected-travel.mjs
+          GTH_HOTEL_QA_ORIGIN=http://127.0.0.1:4212 node scripts/qa-hotel-landing.mjs
+      - name: Evidence — explicit fixtures, not live supplier inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gth-connected-travel-fixture-qa
+          path: |
+            /tmp/gth-connected-travel-qa/
+            /tmp/gth-hotel-landing-qa/
+            /tmp/gth-connected-next.log
+          retention-days: 7
