@@ -45,7 +45,11 @@ test("structured data tells the truth, never fake names, ratings or partner appr
  const destination=source("src/app/destinations/[slug]/page.tsx");
  const legacy=source("src/components/GTH_SEO.tsx");
  const home=source("src/components/home/FlagshipHome.tsx");
- assert.match(home,/<SiteIdentitySchema \/>/);
+ const root=source("src/app/layout.tsx");
+ assert.match(root,/<SiteIdentitySchema \/>/);
+ assert.doesNotMatch(home,/<SiteIdentitySchema \/>/);
+ assert.ok(root.indexOf("<SiteIdentitySchema />")>root.indexOf("<head>"));
+ assert.ok(root.indexOf("<SiteIdentitySchema />")<root.indexOf("</head>"));
  assert.match(company,/"@type": "Organization"/);
  assert.match(company,/SITE_CONFIG\.contactEmail/);
  assert.match(blog,/"@type": "BlogPosting"/);
