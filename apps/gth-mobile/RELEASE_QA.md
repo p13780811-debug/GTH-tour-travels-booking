@@ -97,7 +97,11 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 
    ```bash
    jarsigner -keystore /path/to/upload.jks -signedjar gth-pro-play.aab gth-pro-unsigned.aab YOUR_UPLOAD_ALIAS
-   jarsigner -verify -strict -keystore /path/to/upload.jks gth-pro-play.aab YOUR_UPLOAD_ALIAS
+   (
+     read -rs -p 'Upload keystore password: ' GTH_UPLOAD_STOREPASS && printf '\n'
+     export GTH_UPLOAD_STOREPASS
+     jarsigner -verify -strict -keystore /path/to/upload.jks -storepass:env GTH_UPLOAD_STOREPASS gth-pro-play.aab YOUR_UPLOAD_ALIAS
+   )
    keytool -printcert -jarfile gth-pro-play.aab
    ```
 

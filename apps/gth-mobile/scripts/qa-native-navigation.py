@@ -13,6 +13,9 @@ def report_failure(kind,error,tb):
  traceback.print_exception(kind,error,tb)
 sys.excepthook=report_failure
 def adb(*args):return subprocess.check_output(['adb',*args],text=True)
+def screenshot(filename):
+ with (root/filename).open('wb') as output:
+  subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
 def snapshot():
  adb('shell','uiautomator','dump','/sdcard/gth-native-nav.xml')
  return ET.fromstring(adb('shell','cat','/sdcard/gth-native-nav.xml'))
@@ -48,11 +51,11 @@ wait_text('Your world')
 for label in ['Open Flights','Open Hotels','Open Tours & activities','Open Bus journeys','Open Train journeys','Open Ferry journeys','Open Real Estate','Open Public tenders','Explore all services']:
  tree=wait_text(label)
  assert any(n.get('content-desc')==label and n.get('clickable')=='true' for n in tree.iter('node')), 'Primary service not visible: '+label
-with (root/'native-home-large-font.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
+screenshot('native-home-large-font.png')
 tap('Universal search');adb('shell','input','text','Mumbai%stender%shospital%sconstruction')
 filled=wait_text('Mumbai tender hospital construction')
 (root/'home-search-large-font.xml').write_bytes(ET.tostring(filled))
-with (root/'native-search-large-font.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
+screenshot('native-search-large-font.png')
 checkpoint('PASS: all nine Home shortcuts and populated search at Android font scale 1.3')
 adb('shell','input','keyevent','4')
 adb('shell','settings','put','system','font_scale','1.0')
@@ -60,7 +63,9 @@ adb('shell','am','force-stop','com.gthpro.mobile')
 adb('shell','am','start','-W','-n','com.gthpro.mobile/.MainActivity')
 wait_text('Your world')
 for label,heading in [('Discover tab','Discover what matters'),('Saved tab','My Research Desk'),('Services tab','Explore every service')]:
- tap(label);tree=wait_text(heading);(root/(label.split()[0].lower()+'.xml')).write_bytes(ET.tostring(tree))
+ tap(label);tree=wait_text(heading);name=label.split()[0].lower()
+ (root/(name+'.xml')).write_bytes(ET.tostring(tree))
+ screenshot('native-'+name+'.png')
 checkpoint('PASS: Discover, Research Desk and grouped Services native tabs')
 find_service('Bus')
 tap('Bus journeys');wait_text('Continue to GTH PRO');tap('Close');wait_text('Explore every service')
@@ -83,7 +88,7 @@ for _ in range(15):
  time.sleep(1)
 assert browser_activity, 'Live service did not launch the system in-app browser'
 (root/'live-browser-activity.txt').write_text(browser_activity)
-with (root/'native-live-browser.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
+screenshot('native-live-browser.png')
 adb('shell','input','keyevent','4');wait_text('Explore every service')
 checkpoint('PASS: affirmative live-service OS browser launch and Android Back to the native app')
 tap('Open app settings');wait_text('App settings');tap('Night theme')
@@ -95,6 +100,6 @@ wait_text('Your world');tap('Open app settings');wait_text('App settings')
 restored=snapshot()
 assert any(n.get('content-desc')=='Night theme' and n.get('checked')=='true' for n in restored.iter('node')), 'Native night-theme selection did not persist after relaunch'
 (root/'settings-after-relaunch.xml').write_bytes(ET.tostring(restored))
-with (root/'native-settings.png').open('wb') as output:subprocess.run(['adb','exec-out','screencap','-p'],stdout=output,check=True)
+screenshot('native-settings.png')
 checkpoint('PASS: settings, Android Back, persisted night theme and force-stop/relaunch')
 print('PASS: native tabs, cancelled bus/ferry handoffs, settings, Android Back and force-stop/relaunch')
