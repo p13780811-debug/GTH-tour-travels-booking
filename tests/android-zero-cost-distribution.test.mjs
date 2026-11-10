@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {configureReleaseSigning,assertSigningEnvironment} from "../apps/gth-mobile/scripts/configure-release-signing.mjs";
+import {configureReleaseSigning,assertSigningEnvironment} from "../scripts/android/configure-release-signing.mjs";
 
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
