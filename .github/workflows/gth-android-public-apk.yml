@@ -92,7 +92,7 @@ jobs:
           GTH_ANDROID_KEY_ALIAS: ${{ secrets.GTH_ANDROID_KEY_ALIAS }}
           GTH_ANDROID_KEY_PASSWORD: ${{ secrets.GTH_ANDROID_KEY_PASSWORD }}
         run: |
-          node scripts/configure-release-signing.mjs android/app/build.gradle
+          node ../../scripts/android/configure-release-signing.mjs android/app/build.gradle
           cd android
           chmod +x ./gradlew
           ./gradlew :app:assembleRelease --no-daemon --stacktrace
