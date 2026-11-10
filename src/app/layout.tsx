@@ -72,6 +72,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={cn("font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
       {/* Travelpayouts Drive: project-specific, asynchronous AI affiliate tool. */}
       <head>
+        <meta name="impact-site-verification" {...{ value: "4685b008-b330-4148-b4d5-13a7d2dd45a7" }} />
         <SiteIdentitySchema />
         <script id="gth-impact-stat" type="text/javascript" dangerouslySetInnerHTML={{ __html: `(function(i,m,p,a,c,t){c.ire_o=p;c[p]=c[p]||function(){(c[p].a=c[p].a||[]).push(arguments)};t=a.createElement(m);var z=a.getElementsByTagName(m)[0];t.async=1;t.src=i;z.parentNode.insertBefore(t,z)})('https://utt.impactcdn.com/P-A8102593-82f8-43dd-baf2-89d6712f2a581.js','script','impactStat',document,window);impactStat('transformLinks');impactStat('trackImpression');` }} />
         <Script id="gth-travelpayouts-drive" strategy="beforeInteractive">
