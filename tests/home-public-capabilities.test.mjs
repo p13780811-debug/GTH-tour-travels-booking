@@ -40,6 +40,8 @@ test("public capability proof is server-rendered semantic HTML with grounded fea
  for(const url of urls){
    assert.ok(existsSync(new URL("../src/app"+url+"/page.tsx",import.meta.url)),"Non-existent feature route: "+url);
  }
+ assert.match(proof,/href=\{href\} key=\{href\} prefetch=\{false\}/);
+ assert.match(proof,/href="\/mega-aggregator" prefetch=\{false\}/);
  assert.doesNotMatch(proof,/\/admin|\/api|\/app\/|\/search|\/tender\/assistant/);
 });
 
