@@ -35,13 +35,13 @@ test("One directory provides all service routes without three duplicate menus",(
  assert.doesNotMatch(search,/<nav aria-label="Open a service directly"/);
  assert.doesNotMatch(page,/id="travel-services"|aria-label="Additional travel services"/);
 });
-test("Main directory covers 31 implemented routes including real estate and tenders",()=>{
+test("Main directory covers 32 implemented routes including real estate and tenders",()=>{
  const source=hub.split("const services = [")[1]?.split("] as const;")[0]||"";
  const paths=[...source.matchAll(/href: "(\/[^"]+)"/g)].map(x=>x[1]);
- assert.equal(paths.length,31);
+ assert.equal(paths.length,32);
  assert.equal(new Set(paths).size,paths.length);
  for(const route of paths)assert.ok(existsSync(resolve(root,"src/app"+route+"/page.tsx")),route);
- for(const expected of ["/bus","/train","/flights","/hotels","/destinations","/real-estate","/tender","/partners"])
+ for(const expected of ["/stadiums","/bus","/train","/flights","/hotels","/destinations","/real-estate","/tender","/partners"])
    assert.ok(paths.includes(expected),expected);
  assert.match(hub,/primaryServiceHrefs/);
  assert.match(hub,/setShowAll\(true\)/);

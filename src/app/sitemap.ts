@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSeoRecord } from "@/lib/seo/public-listings";
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
 import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
+import { stadiums } from "@/lib/travel/stadiums";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
@@ -14,7 +15,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/hotels/list-your-property",
+  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/hotels/list-your-property",
   "/insurance", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/tender", "/tender/services", "/tender/coverage",
   "/partners", "/contact", "/about", "/verification", "/affiliate-disclosure",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
@@ -95,6 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
+    ...stadiums.map(venue => ({ url: base + "/stadiums/" + venue.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
     // Hotel ID profiles remain noindex until individually approved for original-content publication.
