@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
-import {emptyResearch,normalizeResearch,personalVisitCalendar,RESEARCH_CHECKS,RESEARCH_KEY,RESEARCH_STAGES,type ResearchBook,type ResearchEntry} from "@/lib/real-estate/research-notes";
+import {emptyResearch,normalizeResearch,personalVisitAgendaCalendar,personalVisitCalendar,plannedVisitAgenda,RESEARCH_CHECKS,RESEARCH_KEY,RESEARCH_STAGES,type ResearchBook,type ResearchEntry} from "@/lib/real-estate/research-notes";
 import {downloadResearchText} from "@/lib/real-estate/browser-download";
 export default function ResearchWorkspace({properties}:{properties:{slug:string;title:string;unavailable?:boolean}[]}){
  const [book,setBook]=useState<ResearchBook>({}),[message,setMessage]=useState("");const sessionOnly=useRef(false);
@@ -15,10 +15,24 @@ export default function ResearchWorkspace({properties}:{properties:{slug:string;
   const clean=normalizeResearch(next);setBook(clean);
   try{localStorage.setItem(RESEARCH_KEY,JSON.stringify(clean));sessionOnly.current=false;setMessage(change?"Private research saved on this device.":"Research for this property cleared.");}catch{sessionOnly.current=true;setMessage("Device storage unavailable. These changes exist only in this open page and will be lost on reload.");}
  }
+ const agenda=plannedVisitAgenda(properties,book);
  const field="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]";
  return <section id="research-workspace" aria-labelledby="research-workspace-title" className="gth-glass mt-10 scroll-mt-24 rounded-3xl border border-[var(--border)] p-5 sm:p-8">
   <p className="gold-text text-xs uppercase tracking-widest">From shortlist to informed decision</p><h2 id="research-workspace-title" className="mt-3 text-2xl font-bold">Your private property research workspace</h2><p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Keep private notes, your document checklist and personal visit reminders for saved properties and registry projects. Stored only on this browser, without account sync. Your checklist does not verify a project or approve documents.</p>
   {!properties.length&&<p className="mt-5 text-sm">Save a project from <Link href="/real-estate/registry" className="underline">Registry lookup</Link> or a published listing to start research.</p>}
+  {agenda.length>0&&<section aria-labelledby="visit-agenda-title" className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+   <h3 id="visit-agenda-title" className="font-semibold">Your visit agenda</h3>
+   <p className="mt-2 text-sm text-[var(--text-soft)]">Personal reminders use local calendar time and reserve one hour each. Confirm appointments with the property contacts.</p>
+   <ol className="mt-3 divide-y divide-[var(--border)]">{agenda.map(visit=><li key={visit.slug} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-2 text-sm">
+    <time dateTime={`${visit.date}T${visit.time}`} className="tabular-nums">{visit.date} · {visit.time}</time>
+    <span className="min-w-0 break-words font-semibold">{visit.title}</span>
+    {visit.overlap&&<span className="gth-badge text-xs">Overlapping reminder</span>}
+   </li>)}</ol>
+   <button type="button" className="gth-btn mt-3 min-h-11" onClick={()=>{
+    const calendar=personalVisitAgendaCalendar(agenda);
+    if(calendar)setMessage(downloadResearchText(calendar,"text/calendar;charset=utf-8","gth-property-visit-agenda.ics")?"Visit agenda downloaded.":"Download unavailable.");
+   }}>Download visit agenda</button>
+  </section>}
   <div className="mt-5 space-y-4">{properties.map(property=>{const entry=book[property.slug]||emptyResearch(),calendar=personalVisitCalendar(property.slug,property.title,entry);return <details key={property.slug} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4"><summary className="min-h-11 cursor-pointer font-semibold">{property.title}<span className="ml-2 text-xs font-normal text-[var(--text-soft)]">{entry.stage.replaceAll("_"," ")} · {entry.checks.length}/{RESEARCH_CHECKS.length} personal checks</span></summary>
    <div className="mt-4 grid gap-5 lg:grid-cols-2"><div><label className="block text-sm">Your research stage<select value={entry.stage} onChange={event=>update(property.slug,{stage:event.target.value as ResearchEntry["stage"]})} className={field}>{RESEARCH_STAGES.map(stage=><option key={stage} value={stage}>{stage.replaceAll("_"," ")}</option>)}</select></label><label className="mt-4 block text-sm">Private notes<textarea maxLength={3000} rows={5} value={entry.notes} onChange={event=>update(property.slug,{notes:event.target.value})} className={field+" py-3"}/></label><p className="mt-2 text-xs text-[var(--text-soft)]">Avoid storing identity documents, bank details or passwords here.</p></div>
     <fieldset><legend className="text-sm font-semibold">Your due-diligence checklist</legend><div className="mt-3 space-y-3">{RESEARCH_CHECKS.map(([key,label])=><label key={key} className="flex min-h-11 items-start gap-3 text-sm leading-6"><input type="checkbox" className="mt-1" checked={entry.checks.includes(key)} onChange={event=>update(property.slug,{checks:event.target.checked?[...entry.checks,key]:entry.checks.filter(item=>item!==key)})}/><span>{label}</span></label>)}</div></fieldset>

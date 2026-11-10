@@ -10,6 +10,9 @@ export const RESEARCH_CHECKS=[
 ] as const;
 export type ResearchEntry={stage:typeof RESEARCH_STAGES[number];notes:string;checks:string[];visitDate:string;visitTime:string};
 export type ResearchBook=Record<string,ResearchEntry>;
+type Visit = { slug: string; title: string; date: string; time: string };
+const VISIT_MINUTES = 60;
+const validVisitTime = (value: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 export const emptyResearch=():ResearchEntry=>({stage:"shortlisted",notes:"",checks:[],visitDate:"",visitTime:""});
 const validSlug=(v:string)=>v.length<=160&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
 export function validVisitDate(v:string){if(!/^20\d{2}-\d{2}-\d{2}$/.test(v))return false;const d=new Date(v+"T12:00:00Z");return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===v;}
@@ -26,8 +29,40 @@ export function normalizeResearch(raw:unknown):ResearchBook{
 }
 function fold(line:string){let output="",current="",bytes=0;const encoder=new TextEncoder();for(const char of line){const size=encoder.encode(char).length;if(bytes+size>75){output+=current+"\r\n ";current="";bytes=1;}current+=char;bytes+=size;}return output+current;}
 const escapeIcs=(v:string)=>v.replace(/\\/g,"\\\\").replace(/\r\n|\r|\n/g,"\\n").replace(/;/g,"\\;").replace(/,/g,"\\,");
+function visitMinute(visit: Visit) {
+ if (!validSlug(visit.slug) || !validVisitDate(visit.date) || !validVisitTime(visit.time)) return NaN;
+ // Compare wall-clock times without applying the device's current timezone or DST rules.
+ return Date.parse(`${visit.date}T${visit.time}:00Z`) / 60_000;
+}
+
+export function plannedVisitAgenda(properties: readonly { slug: string; title: string; unavailable?: boolean }[], book: ResearchBook) {
+ const visits = properties.flatMap(({ slug, title, unavailable }) => {
+  const entry = book[slug];
+  if (!entry || unavailable) return [];
+  const visit = { slug, title, date: entry.visitDate, time: entry.visitTime };
+  const minute = visitMinute(visit);
+  return Number.isFinite(minute) ? [{ visit, minute }] : [];
+ }).sort((a, b) => a.minute - b.minute);
+ return visits.map(({ visit, minute }, index) => ({
+  ...visit,
+  overlap: minute - (visits[index - 1]?.minute ?? -Infinity) < VISIT_MINUTES ||
+   (visits[index + 1]?.minute ?? Infinity) - minute < VISIT_MINUTES,
+ }));
+}
+
+export function personalVisitAgendaCalendar(visits: readonly Visit[]): string | null {
+ const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+ const events = visits.slice(0, 50).flatMap(visit => {
+  if (!Number.isFinite(visitMinute(visit))) return [];
+  const start = `${visit.date.replaceAll("-", "")}T${visit.time.replace(":", "")}00`;
+  return ["BEGIN:VEVENT", `UID:gth-${visit.slug}-${start}@gthproglobal.com`, `DTSTAMP:${stamp}`, `DTSTART:${start}`,
+   `DURATION:PT${VISIT_MINUTES}M`, `SUMMARY:${escapeIcs(("Personal property visit: " + visit.title).slice(0, 240))}`,
+   "DESCRIPTION:Personal reminder only. Confirm with the property contact. No appointment has been booked through GTH PRO.", "END:VEVENT"];
+ });
+ if (!events.length) return null;
+ return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//GTH PRO//Personal Property Research//EN", ...events, "END:VCALENDAR", ""].map(fold).join("\r\n");
+}
+
 export function personalVisitCalendar(slug:string,title:string,e:ResearchEntry):string|null{
- if(!validSlug(slug)||!validVisitDate(e.visitDate)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.visitTime))return null;
- const date=e.visitDate.replaceAll("-","")+"T"+e.visitTime.replace(":","")+"00";
- return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GTH PRO//Personal Property Research//EN","BEGIN:VEVENT",`UID:gth-${slug}-${date}@gthproglobal.com`,"DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z"),`DTSTART:${date}`,"DURATION:PT1H",`SUMMARY:${escapeIcs(("Personal property visit: "+title).slice(0,240))}`,"DESCRIPTION:Personal reminder only. Confirm with the property contact. No appointment has been booked through GTH PRO.","END:VEVENT","END:VCALENDAR",""].map(fold).join("\r\n");
+ return personalVisitAgendaCalendar([{ slug, title, date: e.visitDate, time: e.visitTime }]);
 }

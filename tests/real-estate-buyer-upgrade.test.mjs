@@ -11,6 +11,8 @@ function load(path,imports={},globals={}){
 const repayment=load('src/lib/real-estate/repayment.ts');
 const finance=load('src/lib/real-estate/buyer-planning.ts',{'./repayment':repayment});
 const notes=load('src/lib/real-estate/research-notes.ts');
+const commute=load('src/lib/real-estate/discovery-quality.ts');
+const priceChanges=load('src/lib/real-estate/market-evidence.ts');
 const search=load('src/lib/real-estate/registry-search.ts');
 const seo=load('src/lib/real-estate/property-seo.ts');
 const saved=load('src/lib/real-estate/saved-searches.ts',{'./search-region':load('src/lib/real-estate/search-region.ts')});
@@ -36,6 +38,35 @@ test('research accepts only bounded notes, stages, checklist keys and valid date
 });
 test('personal calendar export folds UTF-8 lines and cannot inject an attendee or book a visit',()=>{
  const e={...notes.emptyResearch(),visitDate:'2026-11-02',visitTime:'14:30'};const text=notes.personalVisitCalendar('project-one','Building\rATTENDEE:evil@example.test,'+'世'.repeat(100),e);assert.match(text,/DTSTART:20261102T143000/);assert.match(text.replace(/\r\n /g,''),/No appointment has been booked/);assert.doesNotMatch(text,/\r\nATTENDEE:|METHOD:REQUEST|ORGANIZER:/);for(const line of text.split('\r\n'))assert.ok(new TextEncoder().encode(line).length<=75);assert.equal(notes.personalVisitCalendar('project-one','Building',{...e,visitDate:'2026-02-30'}),null);
+});
+test('visit agenda orders reminders, detects overnight overlaps and excludes unavailable properties and private notes',()=>{
+ const properties=['late','unavailable','early','clear','missing'].map(slug=>({slug,title:slug,unavailable:slug==='unavailable'}));
+ const book=notes.normalizeResearch({
+  early:{visitDate:'2027-01-02',visitTime:'23:30',notes:'private entry'},
+  late:{visitDate:'2027-01-03',visitTime:'00:00'},
+  clear:{visitDate:'2027-01-03',visitTime:'01:00'},
+  unavailable:{visitDate:'2027-01-02',visitTime:'15:00'},
+  missing:{visitDate:'2027-01-02',visitTime:''},
+ });
+ const agenda=notes.plannedVisitAgenda(properties,book);
+ assert.deepEqual([...agenda.map(visit=>[visit.slug,visit.overlap])],[['early',true],['late',true],['clear',false]]);
+ const calendar=notes.personalVisitAgendaCalendar(agenda);
+ assert.deepEqual([...calendar.matchAll(/DTSTART:(\d+T\d+)/g)].map(match=>match[1]),['20270102T233000','20270103T000000','20270103T010000']);
+ assert.doesNotMatch(calendar,/private entry|unavailable|ATTENDEE:/);
+ assert.equal(notes.personalVisitAgendaCalendar([]),null);
+});
+test('commute routes require recorded coordinates and encode the destination as a single parameter',()=>{
+ const url=new URL(commute.commuteDirections(-33.87,151.21,' 東京 & travelmode=walking ','transit'));
+ assert.equal(url.origin,'https://www.google.com');assert.equal(url.pathname,'/maps/dir/');
+ assert.equal(url.searchParams.get('api'),'1');assert.equal(url.searchParams.get('origin'),'-33.87,151.21');
+ assert.equal(url.searchParams.get('destination'),'東京 & travelmode=walking');assert.deepEqual(url.searchParams.getAll('travelmode'),['transit']);
+ for(const [lat,lng,destination,mode] of [[0,0,'Office','driving'],[91,0,'Office','driving'],[1,2,'','driving'],[1,2,'Office\nOther','driving'],[1,2,'Office','unknown']])assert.equal(commute.commuteDirections(lat,lng,destination,mode),null);
+});
+test('asking-price changes respect source precision and require a comparable prior amount',()=>{
+ const decrease=priceChanges.askingPriceChange('900.00','1000.00');assert.equal(decrease.amount,-100);assert.equal(decrease.ratio,-0.1);
+ assert.equal(priceChanges.askingPriceChange('10.02','10.01').amount,0.01);
+ assert.equal(priceChanges.askingPriceChange(100,100).amount,0);
+ for(const previous of [null,0,0.001,true,'0x10',Infinity,1e30])assert.equal(priceChanges.askingPriceChange(100,previous),null);
 });
 test('saved search preserves all hybrid modes, possession, decimals and 4+ bedrooms',()=>{
  for(const listing of ['buy','rent','new_launch','commercial','plots']){const p=new URLSearchParams(saved.normalizeSearchQuery(new URLSearchParams({listing,bedrooms:'4+',possession:'under_construction',currency:'INR',minPrice:'100.50'}).toString()));assert.equal(p.get('listing'),listing);assert.equal(p.get('bedrooms'),'4+');assert.equal(p.get('possession'),'under_construction');assert.equal(p.get('minPrice'),'100.50');}
