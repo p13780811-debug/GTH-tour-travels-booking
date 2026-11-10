@@ -77,7 +77,7 @@ export default function HomeCapabilityProof() {
               <p className={styles.proofCardDescription}>{description}</p>
               <nav className={styles.proofLinks} aria-label={title+" public tools and services"}>
                 {actions.map(({label,href}) => (
-                  <Link href={href} key={href} className={styles.proofLink}>
+                  <Link href={href} key={href} prefetch={false} className={styles.proofLink}>
                     <span>{label}</span><ArrowUpRight size={16} aria-hidden="true"/>
                   </Link>
                 ))}
@@ -92,7 +92,7 @@ export default function HomeCapabilityProof() {
             Public pages explain available workflows; directory records do not by themselves
             guarantee verified inventory, real-time pricing, or a supplier booking.
           </p>
-          <Link href="/mega-aggregator" className={styles.proofExplore}>
+          <Link href="/mega-aggregator" prefetch={false} className={styles.proofExplore}>
             Explore the full ecosystem <ArrowUpRight size={17} aria-hidden="true"/>
           </Link>
         </div>
