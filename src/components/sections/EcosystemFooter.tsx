@@ -1,7 +1,6 @@
 import { SITE_CONFIG } from "@/lib/site-config";
 import Link from "next/link";
 import { ArrowUpRight, Globe2, ShieldCheck } from "lucide-react";
-import HousePromotions from "@/components/sections/HousePromotions";
 
 const columns = [
   { heading: "Travel", links: [
@@ -29,7 +28,6 @@ const columns = [
 export default function EcosystemFooter() {
   return (
     <>
-      <HousePromotions />
     <footer aria-label="GTH PRO ecosystem navigation" className="border-t border-[var(--border)] bg-[var(--card)]/65">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-18">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
