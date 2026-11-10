@@ -38,7 +38,7 @@ export type AttractionAffiliateMapping = Readonly<{
  */
 export function mapAttractionAffiliateDiscovery(row:OsmPlace):AttractionAffiliateMapping{
  if(!validOsmPlace(row))return {
-  status:"invalid_source",source_id:typeof row?.source_id==="string"?row.source_id:"",
+  status:"invalid_source",source_id:"",
   links:[],bookable_on_gth:false,exact_product_match:false,requires_supplier_api:false,
  };
  const links=osmPlaceLinks(row);
