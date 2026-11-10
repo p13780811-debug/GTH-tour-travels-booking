@@ -23,6 +23,11 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
     note: "A provider controls available vehicles, pickup requirements, rates and booking confirmation.",
     cta: "Continue to airport transfers",
   },
+  stadiums: {
+    detail: "Explore stadium calendars, seating sources and selected partner event tickets or venue experiences.",
+    note: "The organizer or supplier confirms dates, available seats, included admission and booking terms.",
+    cta: "Explore stadium guides",
+  },
   cruises: {
     detail: "Explore cruise holidays, harbour sailings and dinner cruises in the GTH PRO cruise collection.",
     note: "Klook and the cruise operator confirm sailing dates, cabin availability, package fares and booking conditions.",

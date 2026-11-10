@@ -7,6 +7,7 @@ export const appServices=[
  {id:"transfers",label:"Airport transfers",href:"/transfers",pillar:"travel",icon:"transfer",keywords:"pickup drop taxi"},
  {id:"cars",label:"Car rentals",href:"/cars",pillar:"travel",icon:"car",keywords:"drive rental"},
  {id:"tours",label:"Tours & activities",href:"/tours",pillar:"travel",icon:"compass",keywords:"experience sightseeing tickets"},
+ {id:"stadiums",label:"Stadium Tickets",href:"/stadiums",pillar:"travel",icon:"compass",keywords:"stadium sports cricket football concert tickets venue tour"},
  {id:"cruises",label:"Cruises",href:"/cruises",pillar:"travel",icon:"compass",keywords:"cruise ship sailing cabin disney harbour dinner"},
  {id:"insurance",label:"Travel protection",href:"/insurance",pillar:"travel",icon:"shield",keywords:"insurance flight claims delay"},
  {id:"destinations",label:"Destinations",href:"/app/destinations",pillar:"travel",icon:"globe",keywords:"cities guides explore"},

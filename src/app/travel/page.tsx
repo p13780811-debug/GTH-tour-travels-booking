@@ -27,6 +27,7 @@ const services = [
   { name: "Travel Insurance", label: "SAFER TRAVEL PLANNING", href: "/insurance", img: "/images/mega/insurance.jpg", Icon: ShieldCheck, detail: "Review medical coverage, exclusions, claims and cancellation terms before considering a policy." },
 ] as const;
 const additional = [
+  { name: "Stadium Tickets", href: "/stadiums", Icon: Ticket, detail: "Official event calendars, seating sources and selected partner tickets or venue experiences." },
   { name: "Bus Travel", href: "/bus", Icon: BusFront, detail: "Road connections and operator booking handoffs." },
   { name: "Train Travel", href: "/train", Icon: TrainFront, detail: "Rail journey planning and connected operator bookings." },
   { name: "Ferry Travel", href: "/ferry", Icon: Ship, detail: "Ferries, speedboats and island connections across supported routes." },

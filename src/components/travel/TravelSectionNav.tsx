@@ -25,6 +25,7 @@ export const TRAVEL_SECTIONS = [
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},
   {href:"/ferry",label:"Ferries",Icon:Ship},
+  {href:"/stadiums",label:"Stadium Tickets",Icon:Ticket},
   {href:"/cruises",label:"Cruises",Icon:Ship},
   {href:"/travel/deals",label:"Deals & offers",Icon:BadgePercent},
   {href:"/insurance",label:"Insurance",Icon:ShieldCheck},

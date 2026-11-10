@@ -51,6 +51,7 @@ const services = [
   { label: "Trains", href: "/train", pillar: "travel", Icon: TrainFront },
   { label: "Buses", href: "/bus", pillar: "travel", Icon: BusFront },
   { label: "Ferries", href: "/ferry", pillar: "travel", Icon: Ship },
+  { label: "Stadium Tickets", href: "/stadiums", pillar: "travel", Icon: Ticket },
   { label: "Cruises", href: "/cruises", pillar: "travel", Icon: Ship },
   { label: "Airport Explorer", href: "/travel/airports", pillar: "travel", Icon: MapPinned },
   { label: "Tours", href: "/tours", pillar: "travel", Icon: Compass },

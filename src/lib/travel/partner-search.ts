@@ -32,12 +32,17 @@ export function buildPartnerSearch(input: Record<string, unknown>): string | nul
   if (!parsed.ok) return null;
   const destination = new URL("https://www.klook.com/en-IN/search/result/");
   destination.searchParams.set("query", `${parsed.destination} ${parsed.category || intent[parsed.kind]}`);
+  return trackKlookDestination(destination, `gth_${parsed.kind}_search`);
+}
+
+export function trackKlookDestination(destination: URL, subId: string): string | null {
+  if (destination.origin !== "https://www.klook.com" || destination.username || destination.password || destination.hash || !/^[a-z0-9_-]{1,80}$/.test(subId)) return null;
   const tracked = new URL("https://tp.media/r");
   tracked.searchParams.set("campaign_id", "137");
   tracked.searchParams.set("marker", "417668");
   tracked.searchParams.set("p", "4110");
   tracked.searchParams.set("trs", "504342");
-  tracked.searchParams.set("sub_id", `gth_${parsed.kind}_search`);
+  tracked.searchParams.set("sub_id", subId);
   tracked.searchParams.set("u", destination.href);
   return tracked.href;
 }
