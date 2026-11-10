@@ -16,7 +16,7 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   category: "Food business website",
   description: "Explore the Thali Treats Palava kitchen website.",
   href: "https://thali.gthproglobal.com/",
-  advertise: true,
+  advertise: false, // Kitchen remains in portfolio; never advertised across GTH PRO.
  },
  {
   id: "gth-pro-portfolio",
