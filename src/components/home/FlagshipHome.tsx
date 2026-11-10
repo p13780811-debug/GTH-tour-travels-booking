@@ -3,6 +3,7 @@ import FlagshipImage from "./FlagshipImage";
 import BrandVideo from "@/components/brand/BrandVideo";
 import SiteIdentitySchema from "@/components/seo/SiteIdentitySchema";
 import HousePromotions from "@/components/sections/HousePromotions";
+import HomeCapabilityProof from "./HomeCapabilityProof";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
@@ -123,7 +124,7 @@ export default function FlagshipHome() {
         <div className={styles.heroCenter}>
           <h1 className={styles.brand} id="flagship-heading" aria-label="GTH PRO">
             <span className={styles.brandSilver}>GTH</span>
-            <span className={styles.brandPro}><span className={styles.brandGold}>PR</span><BrandGlobe /></span>
+            <span className={styles.brandPro}><span className={styles.brandGold}>PR</span><BrandGlobe /><span className="sr-only">O</span></span>
           </h1>
           <p className={styles.ecosystemTitle}>Global Intelligence Ecosystem</p>
           <form action="/search" method="get" role="search" aria-label="GTH PRO Master Search" className={styles.masterSearch}>
@@ -174,6 +175,8 @@ export default function FlagshipHome() {
           </article>
         ))}
       </section>
+
+      <HomeCapabilityProof />
 
       <section className={styles.capabilities} aria-label="GTH PRO technology values">
         {capabilities.map(({title,detail,Icon})=>(

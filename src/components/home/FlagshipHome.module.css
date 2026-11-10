@@ -938,3 +938,155 @@
   .feature svg { width: 20px; height: 20px; }
   .panelEntry { bottom: 111px; right: 12px; min-height: 34px; padding: 7px 11px; font-size: 11px; }
 }
+
+
+/* Homepage-only public capability directory.
+   Extends existing flagship navy/gold tokens, never the site's central theme.
+   Server-rendered semantic links; no JS animation, data fetches, or new assets. */
+.proofSection {
+  background: var(--flag-navy);
+  color: var(--text);
+  border-top: 1px solid var(--flag-edge);
+  border-bottom: 1px solid var(--flag-edge);
+  padding: clamp(36px, 5.5vw, 76px) clamp(16px, 3vw, 44px);
+}
+.proofInner { max-width: 1260px; min-width: 0; margin: 0 auto; }
+.proofIntro { max-width: 890px; margin-bottom: clamp(23px, 3vw, 36px); }
+.proofEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 13px;
+  color: var(--flag-gold);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.proofIntro h2 {
+  margin: 0;
+  max-width: 800px;
+  color: var(--text);
+  font-size: clamp(25px, 3vw, 42px);
+  line-height: 1.18;
+  font-weight: 800;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.proofIntro > p:last-child {
+  margin: 16px 0 0;
+  color: var(--flag-silver);
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.7;
+}
+.proofGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 19px);
+}
+.proofCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(17px, 2vw, 26px);
+  border: 1px solid var(--flag-edge);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--flag-navy) 91%, var(--flag-silver) 9%);
+}
+.proofCardHeading { display: flex; align-items: flex-start; gap: 13px; min-width: 0; }
+.proofCardHeading > svg { flex: none; color: var(--flag-gold); margin-top: 3px; }
+.proofCardEyebrow {
+  margin: 0 0 6px;
+  color: var(--flag-silver);
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 650;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.proofCardHeading h3 {
+  margin: 0;
+  font-size: clamp(20px, 1.9vw, 27px);
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--text);
+}
+.proofCardDescription {
+  flex: 1;
+  min-height: 95px;
+  margin: 16px 0 20px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--flag-silver);
+}
+.proofLinks { display: grid; gap: 7px; }
+.site .proofLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid var(--flag-edge);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--flag-navy);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.proofLink > span { min-width: 0; }
+.proofLink > svg { flex: none; color: var(--flag-gold); }
+.site .proofLink:is(:hover, :focus-visible) {
+  border-color: var(--flag-gold);
+  color: var(--flag-gold);
+}
+.proofFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.proofFooter p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 700px;
+  margin: 0;
+  color: var(--flag-silver);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.proofFooter p svg { flex: none; margin-top: 1px; color: var(--flag-gold); }
+.site .proofExplore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 45px;
+  padding: 11px 16px;
+  border: 1px solid var(--flag-gold);
+  border-radius: 10px;
+  color: var(--flag-gold);
+  font-size: 13px;
+  font-weight: 750;
+}
+.site .proofExplore:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--flag-navy) 80%, var(--flag-gold) 20%);
+}
+@media (max-width: 980px) {
+  .proofGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proofCardDescription { min-height: 0; }
+  .proofCard:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 680px) {
+  .proofSection { padding: 32px 14px 38px; }
+  .proofGrid { grid-template-columns: minmax(0, 1fr); }
+  .proofCard:last-child { grid-column: auto; }
+  .proofCard { padding: 18px; }
+  .proofIntro h2 { font-size: clamp(24px, 6.3vw, 31px); }
+  .proofFooter { align-items: stretch; }
+  .site .proofExplore { width: 100%; }
+}
