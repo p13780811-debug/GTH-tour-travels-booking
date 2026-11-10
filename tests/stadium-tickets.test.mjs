@@ -5,18 +5,18 @@ import vm from "node:vm";
 import ts from "typescript";
 
 function load(path, imports = {}) {
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   const code = ts.transpileModule(readFileSync(path, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   vm.runInNewContext(code, {
-    module, exports: module.exports, URL, URLSearchParams,
+    module: compiledModule, exports: compiledModule.exports, URL, URLSearchParams,
     require: name => {
       if (name in imports) return imports[name];
       throw Error(name);
     },
   });
-  return module.exports;
+  return compiledModule.exports;
 }
 const catalog = load("src/lib/travel/stadiums.ts");
 const partners = load("src/lib/travel/partner-search.ts");
