@@ -11,8 +11,8 @@ function load(path,imports={},globals={}){
 const repayment=load('src/lib/real-estate/repayment.ts');
 const finance=load('src/lib/real-estate/buyer-planning.ts',{'./repayment':repayment});
 const notes=load('src/lib/real-estate/research-notes.ts');
-const commute=load('src/lib/real-estate/commute.ts');
-const priceChanges=load('src/lib/real-estate/asking-price-change.ts');
+const commute=load('src/lib/real-estate/discovery-quality.ts');
+const priceChanges=load('src/lib/real-estate/market-evidence.ts');
 const search=load('src/lib/real-estate/registry-search.ts');
 const seo=load('src/lib/real-estate/property-seo.ts');
 const saved=load('src/lib/real-estate/saved-searches.ts',{'./search-region':load('src/lib/real-estate/search-region.ts')});

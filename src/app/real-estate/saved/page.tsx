@@ -10,7 +10,7 @@ import {getPublishedProjectMedia,projectPhoto} from "@/lib/property-media/publis
 import PropertyImage from "@/components/real-estate/PropertyImage"
 import RecentlyViewed from "@/components/real-estate/RecentlyViewed"
 import ResearchWorkspace from "@/components/real-estate/ResearchWorkspace"
-import CommutePlanner from "@/components/real-estate/CommutePlanner"
+import { CommutePlanner } from "@/components/real-estate/DecisionTools"
 import BottomNav from "@/components/mobile/BottomNav"
 import styles from "@/components/real-estate/Listing.module.css"
 

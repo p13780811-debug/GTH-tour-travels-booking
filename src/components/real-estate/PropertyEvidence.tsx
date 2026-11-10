@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import AskingPriceHistory, {type PriceObservation} from './AskingPriceHistory';
+import {askingPriceChange} from '@/lib/real-estate/market-evidence';
 type Row=Record<string,any>;
 const money=(v:unknown,c:unknown)=>{try{return new Intl.NumberFormat('en',{style:'currency',currency:String(c),maximumFractionDigits:0}).format(Number(v));}catch{return 'Not supplied';}};
 export default function PropertyEvidence({slug,projectId}:{slug:string;projectId:number}){
@@ -13,4 +13,51 @@ export default function PropertyEvidence({slug,projectId}:{slug:string;projectId
  <h3 className="mt-6 text-lg font-semibold">Source-reviewed valuations, transactions & media</h3>{!data.reports.length?<p className="mt-3 text-sm">No current reviewed report, transaction, virtual tour or floor plan is published for this project.</p>:<ul className="mt-4 space-y-4">{data.reports.map(r=><li className="rounded-xl border p-4" key={r.id}><p className="text-xs uppercase opacity-70">{r.kind.replaceAll('_',' ')}</p><a href={r.source_url} target="_blank" rel="noopener noreferrer" className="mt-2 block font-semibold underline">{r.title} ↗</a><p className="mt-2 text-sm">{r.provider_name} · Source date: {r.observed_on}</p><p className="mt-2 text-xs">Reference: {r.credential_reference}{r.expires_on?' · Expires '+r.expires_on:''}</p>{r.amount&&<p className="mt-2 text-sm">Reported amount: {money(r.amount,r.currency)}{r.area_sqft?' · '+r.area_sqft+' ft² · '+(r.area_basis||'basis not supplied'):''}</p>}</li>)}</ul>}
  <h3 className="mt-6 text-lg font-semibold">Independently checked resident reviews</h3>{!data.reviews.length?<p className="mt-3 text-sm">No independently approved resident reviews yet. No generated rating is shown.</p>:<ul className="mt-4 space-y-4">{data.reviews.map(r=><li className="rounded-xl border p-4" key={r.id}><strong>{r.display_name} · {r.rating}/5</strong><p className="mt-2 text-xs">Residency reference independently checked · {new Date(r.published_at).toLocaleDateString()}</p><p className="mt-3 text-sm">{r.review_text}</p></li>)}</ul>}</>}
  <div className="mt-5 flex flex-wrap gap-3"><Link className="gth-btn" href={'/real-estate/workspace?tab=reviews&project='+projectId}>Share a resident review</Link><Link className="gth-btn" href={'/real-estate/workspace?tab=services&project='+projectId}>Request valuation / property support</Link><Link className="gth-btn" href="/real-estate/market-intelligence">Research locality prices</Link><Link className="inline-flex min-h-11 items-center text-sm underline" href={"/real-estate/workspace?tab=services&kind=listing_report&project="+projectId}>Report a property issue</Link></div></section>;
+}
+
+type PriceObservation = {
+  id: string; inventory_id: string; recorded_at: string; listing_type: string;
+  amount: number | string; previous_amount: number | string | null; currency: string;
+}
+
+const percent = new Intl.NumberFormat("en", { style: "percent", maximumFractionDigits: 2, signDisplay: "exceptZero" })
+const observedDate = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" })
+const filters = [["all", "All observations"], ["drops", "Price reductions"], ["rises", "Price increases"]] as const
+
+function observedMoney(value: number | string, currency: string, signed = false) {
+  if (!/^[A-Z]{3}$/.test(currency) || !Number.isFinite(Number(value))) return "Not supplied"
+  return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 2, signDisplay: signed ? "always" : "auto" }).format(Number(value))
+}
+
+function AskingPriceHistory({ observations }: { observations: readonly PriceObservation[] }) {
+  const [filter, setFilter] = useState<typeof filters[number][0]>("all")
+  const rows = observations.map(row => ({ row, change: askingPriceChange(row.amount, row.previous_amount) }))
+  const visible = rows.filter(({ change }) => filter === "all" || (change && (filter === "drops" ? change.amount < 0 : change.amount > 0)))
+
+  return <section className="mt-6" aria-label="Observed asking prices">
+    <h3 className="text-lg font-semibold">Observed asking prices</h3>
+    {rows.length === 0 ? <p className="mt-3 text-sm">No published asking-price observations yet.</p> : <>
+      <p className="mt-2 text-sm text-[var(--text-soft)]">Changes compare consecutive recorded asking prices for the same unit and currency. Sale and rent observations retain their own labels.</p>
+      <div role="group" aria-label="Asking price history filters" className="mt-3 flex flex-wrap gap-2">
+        {filters.map(([key, label]) => <button key={key} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)} className={`gth-btn min-h-11 ${filter === key ? "gth-btn-gold" : ""}`}>{label}</button>)}
+      </div>
+      <p role="status" className="mt-3 text-sm text-[var(--text-soft)]">{visible.length ? `${visible.length} recorded ${visible.length === 1 ? "observation" : "observations"}` : "No recorded observations match this filter."}</p>
+      {visible.length > 0 && <div role="region" tabIndex={0} aria-label="Observed asking-price history" className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[650px] text-left text-sm">
+          <thead><tr>{["Observed (UTC)", "Unit reference", "Purpose", "Asking price", "Prior asking price", "Change"].map(label => <th key={label} scope="col" className="p-3">{label}</th>)}</tr></thead>
+          <tbody>{visible.map(({ row, change }) => {
+            const time = Date.parse(row.recorded_at)
+            return <tr key={row.id} className="border-t border-[var(--border)]">
+              <td className="p-3">{Number.isFinite(time) ? observedDate.format(time) : "Date not supplied"}</td>
+              <th scope="row" className="p-3 font-normal">{row.inventory_id.slice(0, 8)}</th>
+              <td className="p-3">{row.listing_type === "rent" ? "Rent" : row.listing_type === "buy" ? "Sale" : "Not supplied"}</td>
+              <td className="p-3">{observedMoney(row.amount, row.currency)}</td>
+              <td className="p-3">{change && row.previous_amount !== null ? observedMoney(row.previous_amount, row.currency) : "No comparable prior price"}</td>
+              <td className="p-3">{change ? change.amount === 0 ? "No change" : `${observedMoney(change.amount, row.currency, true)} (${percent.format(change.ratio)})` : "—"}</td>
+            </tr>
+          })}</tbody>
+        </table>
+      </div>}
+    </>}
+  </section>
 }
