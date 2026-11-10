@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ArrowUpRight, Building2, FileSearch, Globe2, Hotel, MapPinned, Plane, ShieldCheck} from "lucide-react";
+import {ArrowUpRight, Building2, FileSearch, Globe2, Plane, ShieldCheck} from "lucide-react";
 import styles from "./FlagshipHome.module.css";
 
 /**
