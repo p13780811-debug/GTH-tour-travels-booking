@@ -92,7 +92,7 @@ test("release workflow is manually gated, immutable, certificate-pinned and free
 test("native source, global design, website booking flows and private schemas stay untouched by distribution setup",()=>{
  const pwa=read("src/app/app/page.tsx");
  const identity=read("src/lib/seo/site.ts");
- const signing=read("apps/gth-mobile/scripts/configure-release-signing.mjs");
+ const signing=read("scripts/android/configure-release-signing.mjs");
  assert.match(pwa,/MobileAppDashboard/);
  assert.match(identity,/GTH_PUBLIC_LAUNCH_ENABLED/);
  assert.doesNotMatch(signing,/createClient\(|supabase|NEXT_PUBLIC_|fetch\(|api\.travel/);
