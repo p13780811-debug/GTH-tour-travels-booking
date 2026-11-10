@@ -19,7 +19,8 @@ const source={id:uuid,name:'Reviewed source hotel',city:'Goa',country:'IN',addre
 test('every ecosystem has distinct existing services; search and booking intents retain the correct planner',()=>{
  assert.equal(new Set(services.SERVICES.map(service=>service.label)).size,services.SERVICES.length);
  for(const service of services.SERVICES)assert.ok(routing.firstPartyUrl(service.path),service.label);
- assert.equal(services.SERVICES.length,28);
+ for(const path of ['/real-estate/worldwide','/real-estate/registry/compare','/real-estate/market-intelligence','/tender/coverage'])
+  assert.ok(services.SERVICES.some(service=>service.path===path),path);
  assert.ok(services.filterServices('cruise','travel').some(service=>service.path==='/cruises'));
  assert.ok(services.filterServices('registry','property').some(service=>service.path==='/real-estate/registry'));
  assert.ok(services.filterServices('assistant','tender').some(service=>service.path==='/tender/assistant'));

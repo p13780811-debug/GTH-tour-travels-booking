@@ -7,14 +7,12 @@ const live=loadNative('core/live-website.ts',{'./routing':routing,'expo-web-brow
  openBrowserAsync:async(url,options)=>{calls.push({url,options});return result;},
  WebBrowserPresentationStyle:{FULL_SCREEN:'fullScreen'},
 }});
-test('live canonical service pages request new HTML while exits and signed links retain their parameters',()=>{
- for(const path of ['/mega-aggregator','/hotels','/flights','/real-estate','/tender','/hotels/stay/osm:node-1']){
-  const url=new URL(live.liveWebsiteUrl(path,1234));
-  assert.equal(url.origin,routing.SITE_ORIGIN);assert.equal(url.searchParams.get('gth_app_refresh'),'1234');
- }
- for(const path of ['/hotels/partner/osm%3Anode-1','/flights/out/yesim?marker=example&u=https%3A%2F%2Fyesim.app%2F','/api/hotels?page=1','/hotels?signature=example'])
-  assert.equal(live.liveWebsiteUrl(path,1234),routing.firstPartyUrl(path));
- for(const path of ['https://evil.example','//evil.example','/\\evil.example'])assert.equal(live.liveWebsiteUrl(path),null);
+test('live services preserve canonical cache keys and existing booking parameters',async()=>{
+ calls=[];result={type:'opened'};
+ const paths=['/mega-aggregator','/hotels','/flights','/real-estate','/tender','/hotels/stay/osm:node-1',
+  '/hotels/partner/osm%3Anode-1','/flights/out/yesim?marker=example&u=https%3A%2F%2Fyesim.app%2F','/hotels?signature=example'];
+ for(const path of paths)await live.openLiveWebsite(path,{bg:'#060b12',text:'#f3f4f6'});
+ assert.deepEqual(calls.map(call=>call.url),paths.map(path=>routing.SITE_ORIGIN+path));
 });
 test('live services use the free OS in-app browser in the app task; locked opens remain retryable',async()=>{
  calls=[];result={type:'opened'};

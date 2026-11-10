@@ -20,11 +20,12 @@ import {ConfirmationDialog,SettingsDialog,type Confirmation} from "./components/
 import {detectPillar,firstPartyUrl,normalizeQuery,queryForCategory,serviceDestination,type Pillar} from "./core/routing";
 import {useNativeBookmarks} from "./core/bookmarks";
 import {useRecentSearches} from "./core/recent-searches";
-import {bookingServiceForQuery,SERVICES as serviceLinks} from "./core/services";
+import {normalizeSavedSearch,savedSearchKey,useSavedSearches} from "./core/saved-searches";
+import {bookingServiceForQuery,SERVICES as serviceLinks,type ServiceGroup} from "./core/services";
 import ServicesHub,{ServiceIcon} from "./components/ServicesHub";
 import {PhotoCreditLine,SourcePhoto} from "./components/SourcePhoto";
 import ResearchNotebook from "./components/ResearchNotebook";
-import {useForegroundRefresh} from "./core/foreground-refresh";
+import SavedComparison from "./components/SavedComparison";
 import {openLiveWebsite} from "./core/live-website";
 
 type Theme=typeof colors.light;
@@ -45,6 +46,18 @@ const panel:{kind:Pillar;heading:string;caption:string;image:ImageSourcePropType
  {kind:"property",heading:"Find your place.",caption:"Explore property and registry records.",image:propertyHero},
  {kind:"tender",heading:"Build what is next.",caption:"Find published business opportunities.",image:tenderHero},
 ];
+const pillarActions:Record<ServiceGroup,readonly string[]>={
+ travel:["Flights","Hotels","Tours & activities","Bus journeys","Train journeys","Ferry journeys","Cruises","Airport transfers","Car rentals","Destinations","Attractions","Travel protection"],
+ property:["Real Estate","Worldwide property","Project registry","Compare registry projects","Property tools","List a property"],
+ tender:["Public tenders","Tender coverage","Tender assistant","Tender services"],
+};
+const propertyIntents=["Buy property","Rent property","New launches","Commercial property","Plots"];
+const searchExamples:Record<DiscoveryKind,readonly string[]>={
+ hotel:["Goa hotels","Mumbai hotels","Singapore hotels"],
+ tour:["Goa tours","Kolkata sightseeing","Dubai activities"],
+ property:["Mumbai property","Thane property","Kolkata homes"],
+ tender:["Construction tenders","IT services tenders","Transport tenders"],
+};
 
 function TextLabel({text,theme}:{text:string;theme:Theme}){
  return <Text style={[styles.eyebrow,{color:theme.accentText}]}>{text.toUpperCase()}</Text>;
@@ -146,6 +159,28 @@ function Journey({theme,onOpen}:{theme:Theme;onOpen:(kind:Pillar)=>void}){
   </ScrollView>
  </View>;
 }
+function PillarActions({group,theme,onOpen}:{group:ServiceGroup;theme:Theme;onOpen:(label:string,path:string)=>void}){
+ const actions=pillarActions[group].flatMap(label=>serviceLinks.filter(service=>service.label===label));
+ return <View style={{gap:9,marginBottom:14}}>
+  <Text accessibilityRole="header" style={{color:theme.text,fontSize:15,fontWeight:"800"}}>
+   {group==="travel"?"Plan your trip":group==="property"?"Explore property tools":"Find and prepare bids"}
+  </Text>
+  {group==="property"&&<View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}>
+   {serviceLinks.filter(service=>propertyIntents.includes(service.label)).map(service=><Pressable key={service.path}
+    accessibilityRole="button" accessibilityLabel={service.label} onPress={()=>onOpen(service.label,service.path)}
+    style={[styles.chip,{minHeight:44,backgroundColor:theme.surfaceSoft,borderColor:theme.border}]}>
+    <Text style={{color:theme.text,fontSize:12,fontWeight:"800"}}>{service.label}</Text>
+   </Pressable>)}
+  </View>}
+  <View style={styles.shortcutGrid}>
+   {actions.map(service=><Pressable key={service.path} accessibilityRole="button" accessibilityLabel={service.label+" workspace"}
+    onPress={()=>onOpen(service.label,service.path)} style={({pressed})=>[styles.quickTile,{backgroundColor:theme.surface,borderColor:theme.border,opacity:pressed?0.8:1}]}>
+    <ServiceIcon service={service} theme={theme} size={21}/>
+    <Text style={{color:theme.text,fontSize:12,fontWeight:"800",textAlign:"center"}}>{service.label}</Text>
+   </Pressable>)}
+  </View>
+ </View>;
+}
 function RecordCard({item,theme,bookmarked,onOpen,onToggle,onCredit}:{item:DiscoveryCard;theme:Theme;bookmarked:boolean;onOpen:()=>void;onToggle:()=>void;onCredit:(kind:"page"|"license")=>void}){
  return <View style={[styles.record,{backgroundColor:theme.surface,borderColor:theme.border}]}>
   <View style={{flexDirection:"row",alignItems:"center",gap:8}}>
@@ -204,13 +239,17 @@ function NativeApp(){
  const [term,setTerm]=useState("");
  const [kind,setKind]=useState<NativeChoice>("all");
  const [tenderRegion,setTenderRegion]=useState<string>("IN");
+ const [deadlineFirst,setDeadlineFirst]=useState(false);
  const [detail,setDetail]=useState<DiscoveryCard|null>(null);
  const [savedKind,setSavedKind]=useState<DiscoveryKind|"all">("all");
+ const [comparisonOpen,setComparisonOpen]=useState(false);
  const discovery=useNativeDiscovery(kind,term,tenderRegion);
- useForegroundRefresh(discovery.refresh);
  const {items:results,slices,warnings,total,pending,error}=discovery;
  const bookmarks=useNativeBookmarks();
  const recent=useRecentSearches();
+ const savedSearches=useSavedSearches();
+ const currentSearch=normalizeSavedSearch(kind,term,tenderRegion);
+ const searchIsSaved=!!currentSearch&&savedSearches.items.some(item=>savedSearchKey(item)===savedSearchKey(currentSearch));
  const savedPaths=useMemo(()=>new Set(bookmarks.items.map(item=>item.webPath)),[bookmarks.items]);
  const savedItems=bookmarks.items.filter(item=>savedKind==="all"||item.kind===savedKind);
  useEffect(()=>{
@@ -220,11 +259,12 @@ function NativeApp(){
   if(Platform.OS==="web")return;
   const listener=BackHandler.addEventListener("hardwareBackPress",()=>{
    if(detail){setDetail(null);return true;}
+   if(comparisonOpen){setComparisonOpen(false);return true;}
    if(tab!=="home"){setTab("home");Keyboard.dismiss();return true;}
    return false;
   });
   return ()=>listener.remove();
- },[detail,tab]);
+ },[comparisonOpen,detail,tab]);
  function openSite(path:string){
   const target=firstPartyUrl(path);
   if(!target){Alert.alert("Link unavailable","Only official GTH PRO destinations are supported.");return;}
@@ -268,19 +308,25 @@ function NativeApp(){
   setTerm(cleaned);setQuery(cleaned);setKind(category);setDetail(null);setTab("discover");
  }
  function openPillar(pillar:Pillar){
-  if(kind===pillar&&!term)discovery.refresh();
   setTab("discover");setTerm("");setQuery("");setKind(pillar);setDetail(null);
  }
  function clearDeviceData(type:"saved"|"history"){
   setSettingsOpen(false);
   setConfirmation({title:type==="saved"?"Clear saved records?":"Clear search history?",
    message:"This removes the selected data from this device only. This action cannot be undone.",confirmLabel:"Clear from this device",
-   action:()=>{if(type==="saved"){bookmarks.clear();setSavedKind("all");setDetail(null);}else recent.clear();}});
+   action:()=>{if(type==="saved"){bookmarks.clear();setSavedKind("all");setDetail(null);setComparisonOpen(false);}else recent.clear();}});
  }
  const activeItem=detail?(results.find(item=>item.kind===detail.kind&&item.id===detail.id)||detail):null;
  const savedItem=activeItem?bookmarks.items.find(item=>item.webPath&&item.webPath===activeItem.webPath):undefined;
  const resultView=tab==="discover"&&(!["all","travel"].includes(kind)||!!term);
- const visibleRecords=activeItem?[]:resultView?results:tab==="saved"?savedItems:[];
+ const orderedResults=useMemo(()=>{
+  if(kind!=="tender"||!deadlineFirst)return results;
+  const rows=results.map(item=>({item,deadline:Date.parse(item.facts?.find(fact=>fact.label==="Deadline (UTC)")?.value??"")}));
+  const now=Date.now();
+  const rank=(deadline:number)=>deadline>=now?deadline:Infinity;
+  return rows.sort((a,b)=>rank(a.deadline)-rank(b.deadline)).map(row=>row.item);
+ },[deadlineFirst,kind,results]);
+ const visibleRecords=activeItem||comparisonOpen?[]:resultView?orderedResults:tab==="saved"?savedItems:[];
  return <SafeAreaView edges={["top","left","right"]} style={{flex:1,backgroundColor:theme.bg}}>
   <StatusBar barStyle={dark?"light-content":"dark-content"} backgroundColor={theme.bg}/>
   <Header theme={theme} openSettings={()=>setSettingsOpen(true)}/>
@@ -289,7 +335,7 @@ function NativeApp(){
    onMode={appearance.select} onClose={()=>setSettingsOpen(false)} onClearSaved={()=>clearDeviceData("saved")}
    onClearHistory={()=>clearDeviceData("history")} onWebsite={openSite}/>}
   {confirmation&&<ConfirmationDialog request={confirmation} theme={theme} onClose={()=>setConfirmation(null)}/>}
-  {(bookmarks.storageError||recent.storageError||appearance.storageError)&&<View accessibilityRole="alert"
+  {(bookmarks.storageError||recent.storageError||savedSearches.storageError||appearance.storageError)&&<View accessibilityRole="alert"
     style={[styles.info,{margin:12,backgroundColor:theme.surface,borderColor:theme.border}]}>
    <Text style={{flex:1,fontSize:12,lineHeight:18,color:theme.muted}}>
     Device storage is unavailable. Changes may not persist. Restart to retry reading existing device data.
@@ -301,7 +347,7 @@ function NativeApp(){
     style={{minWidth:44,minHeight:44,justifyContent:"center"}}><Text style={{color:theme.accentText,fontWeight:"800"}}>Retry</Text></Pressable>
   </View>}
   <FlatList<DiscoveryCard> keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={{paddingHorizontal:18,paddingBottom:28}}
-   style={{flex:1}} key={tab+(activeItem?"-detail":"")} data={visibleRecords}
+   style={{flex:1}} key={tab+(activeItem?"-detail":comparisonOpen?"-compare":"")} data={visibleRecords}
    initialNumToRender={8} maxToRenderPerBatch={8} windowSize={7}
    onRefresh={!activeItem&&resultView?discovery.refresh:undefined} refreshing={resultView&&discovery.refreshing}
    keyExtractor={item=>item.kind+":"+item.id}
@@ -324,6 +370,10 @@ function NativeApp(){
      <Text style={{fontSize:11,lineHeight:18,color:theme.muted,marginTop:8}}>
       {activeItem.loadedAt?"Source snapshot loaded "+new Date(activeItem.loadedAt).toLocaleString("en-GB"):"Saved source reference"}. Open the original for current details.
      </Text>
+     {tab==="discover"&&!discovery.stale&&<Pressable accessibilityRole="button" accessibilityLabel="Refresh source details"
+      onPress={discovery.refresh} style={{minHeight:44,justifyContent:"center"}}>
+      <Text style={{color:theme.accentText,fontWeight:"800"}}>Refresh source details</Text>
+     </Pressable>}
      {activeItem.tag&&<Text style={{fontSize:12,color:theme.accentText,marginTop:8}}>{activeItem.tag}</Text>}
      {!!activeItem.facts?.length&&<View style={{gap:10,marginTop:20}}>
       <Text accessibilityRole="header" style={{color:theme.text,fontSize:17,fontWeight:"800"}}>At a glance</Text>
@@ -359,7 +409,7 @@ function NativeApp(){
     </View>
    </>:tab==="home"?<>
     <Hero theme={theme} query={query} setQuery={setQuery} onSearch={()=>enterSearch("all")} onQuick={q=>enterSearch("all",q)}/>
-    <ServiceShortcuts theme={theme} onOpen={item=>openSite(item.path)} onExplore={()=>openSite("/mega-aggregator")}/>
+    <ServiceShortcuts theme={theme} onOpen={item=>openSite(item.path)} onExplore={()=>setTab("services")}/>
     {recent.ready&&recent.items.length>0&&<View style={[styles.recent,{backgroundColor:theme.surface,borderColor:theme.border}]}>
      <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:12}}>
       <View style={{flexDirection:"row",alignItems:"center",gap:8}}>
@@ -400,7 +450,7 @@ function NativeApp(){
       <Search size={20} color={theme.accentText}/>
       <TextInput value={query} onChangeText={setQuery} onSubmitEditing={()=>enterSearch(kind)}
        returnKeyType="search" accessibilityLabel="Search source records" autoCorrect={false} multiline={false} numberOfLines={1}
-       placeholder="City, project or notice" placeholderTextColor={theme.muted}
+       placeholder={kind==="property"?"City or project":kind==="tender"?"Tender keyword or sector":kind==="hotel"?"City or hotel":kind==="tour"?"Destination or experience":"City, project or notice"} placeholderTextColor={theme.muted}
        style={[styles.searchInput,{color:theme.text}]}/>
       <Pressable accessibilityRole="button" accessibilityLabel="Submit source search" onPress={()=>enterSearch(kind)}
        style={[styles.searchGo,{backgroundColor:theme.accent}]}><ArrowRight size={20} color={theme.onAccent}/></Pressable>
@@ -414,7 +464,8 @@ function NativeApp(){
        <Text style={{fontSize:12,fontWeight:"800",color:kind===filter.kind?theme.accentText:theme.text}}>{filter.title}</Text>
       </Pressable>)}
      </ScrollView>
-     {!["all","travel"].includes(kind)&&<View style={{gap:8,marginBottom:16}}>
+     {(kind==="property"||kind==="tender")&&!term&&<PillarActions group={kind} theme={theme} onOpen={(_label,path)=>openSite(path)}/>}
+     {!(["all","travel"].includes(kind)||(kind==="property"||kind==="tender")&&!term)&&<View style={{gap:8,marginBottom:16}}>
       <Action label={kind==="hotel"?"Search rooms & rates":kind==="property"?"Open live property search":kind==="tender"?"Open live tender workspace":"Open live tours & activities"}
        theme={theme} onPress={()=>openSite(serviceDestination[kind as DiscoveryKind])}/>
       <Text style={{fontSize:12,lineHeight:19,color:theme.muted}}>Use the latest website features in app. Published research records are shown below.</Text>
@@ -454,20 +505,34 @@ function NativeApp(){
       <Plane size={33} color={theme.accentText}/>
       <Text style={[styles.sectionTitle,{color:theme.text,textAlign:"center"}]}>Where to next?</Text>
       <Text style={{textAlign:"center",fontSize:12,color:theme.muted}}>Flight fares require an origin, destination and travel dates. Continue to the existing search.</Text>
-      <View style={{width:"100%",gap:10}}>
-       <Action label="Explore hotels & stays" theme={theme} onPress={()=>{setKind("hotel");setTerm("");}}/>
-       <Action label="Discover tours & activities" theme={theme} secondary onPress={()=>{setKind("tour");setTerm("");}}/>
-       <Action label="Search flights on GTH PRO" theme={theme} secondary onPress={()=>openSite("/flights")}/>
-       <Action label="Search bus journeys" theme={theme} secondary onPress={()=>openSite("/bus")}/>
-       <Action label="Search train journeys" theme={theme} secondary onPress={()=>openSite("/train")}/>
-       <Action label="Search ferry journeys" theme={theme} secondary onPress={()=>openSite("/ferry")}/>
-      </View>
+      <View style={{width:"100%",marginTop:10}}><PillarActions group="travel" theme={theme} onOpen={(label,path)=>{
+       if(label==="Hotels"||label==="Tours & activities")setKind(label==="Hotels"?"hotel":"tour");
+       else openSite(path);
+      }}/></View>
      </View>:<>
       <View style={{flexDirection:"row",flexWrap:"wrap",gap:6,justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
        <Text style={{color:theme.text,fontSize:17,fontWeight:"800"}}>{kind==="all"?"Across the GTH PRO ecosystem":kind==="travel"?"Travel experiences & stays":kind==="hotel"?"Stays & hotels":kind==="property"?"Property research":kind==="tender"?"Public tenders":"Experiences"}</Text>
-       <Text accessibilityLiveRegion="polite" style={{color:theme.muted,fontSize:11}}>{pending?"Searching":results.length+" shown"+
+       {!!term&&<Text accessibilityLiveRegion="polite" style={{color:theme.muted,fontSize:11}}>{pending?"Searching":results.length+" shown"+
         (slices.length>0&&slices.every(slice=>slice.totalIsExact)?" · "+total+" matches":discovery.hasMore?" · More available":"")}</Text>
+       }
       </View>
+      {!term&&kind!=="all"&&kind!=="travel"&&<View style={{gap:8,marginBottom:12}}>
+       <Text style={{color:theme.muted,fontSize:12}}>Choose a search or enter your own above.</Text>
+       <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}>
+        {searchExamples[kind].map(example=><Pressable key={example} accessibilityRole="button" accessibilityLabel={"Explore "+example}
+         onPress={()=>enterSearch(kind,example)} style={[styles.chip,{backgroundColor:theme.surface,borderColor:theme.border,minHeight:44}]}>
+         <Text style={{color:theme.text,fontWeight:"700",fontSize:12}}>{example}</Text>
+        </Pressable>)}
+       </View>
+      </View>}
+      {currentSearch&&savedSearches.ready&&<View style={{marginBottom:12}}>
+       <Action label={searchIsSaved?"Remove saved search":"Save this search"} theme={theme} secondary
+        onPress={()=>savedSearches.toggle(currentSearch)}/>
+      </View>}
+      {kind==="tender"&&results.length>1&&<View style={{marginBottom:12}}>
+       <Action label={deadlineFirst?"Restore source order":"Sort loaded tenders by upcoming deadline"} theme={theme} secondary
+        onPress={()=>setDeadlineFirst(value=>!value)}/>
+      </View>}
       {(kind==="all"||kind==="travel")&&slices.length>0&&<ScrollView horizontal showsHorizontalScrollIndicator={false}
        contentContainerStyle={{gap:8,marginBottom:12}}>
        {slices.map(slice=><Pressable key={slice.kind} accessibilityRole="button"
@@ -493,19 +558,38 @@ function NativeApp(){
        <Text style={{flex:1,color:theme.muted,fontSize:12}}>{error}</Text>
        <Pressable accessibilityRole="button" onPress={discovery.retry} style={{minHeight:44,minWidth:44,justifyContent:"center"}}><Text style={{color:theme.accentText,fontWeight:"800"}}>Retry</Text></Pressable>
       </View>}
-      {!pending&&!error&&results.length===0&&<View style={[styles.empty,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+      {!!term&&!pending&&!error&&results.length===0&&<View style={[styles.empty,{backgroundColor:theme.surface,borderColor:theme.border}]}>
        <Search color={theme.accentText} size={28}/>
        <Text style={{color:theme.text,fontSize:16,fontWeight:"800"}}>No published results found</Text>
        <Text style={{color:theme.muted,textAlign:"center",fontSize:12,lineHeight:18}}>Try another city or term. GTH PRO never fabricates availability or records.</Text>
       </View>}
       {warnings.length>0&&!pending&&!error&&<Action label="Retry unavailable sources" theme={theme} secondary onPress={discovery.retry}/>}
      </>}
-   </>:tab==="saved"?<>
+   </>:tab==="saved"?(comparisonOpen?<SavedComparison theme={theme} items={bookmarks.items} initialKind={savedKind} onClose={()=>setComparisonOpen(false)}/>:<>
     <View style={{paddingTop:13,marginBottom:12}}>
      <TextLabel theme={theme} text="YOUR PRIVATE SPACE"/>
      <Text style={[styles.sectionTitle,{color:theme.text,marginTop:6}]}>My Research Desk</Text>
      <Text style={{fontSize:12,color:theme.muted,marginTop:5}}>Saved only on this phone · no account sync or automatic sharing</Text>
     </View>
+    {bookmarks.items.length>=2&&<Action label="Compare saved records" theme={theme} secondary onPress={()=>setComparisonOpen(true)}/>}
+    {savedSearches.items.length>0&&<View style={{gap:8,marginTop:12,marginBottom:14}}>
+     <Text accessibilityRole="header" style={{color:theme.text,fontWeight:"800",fontSize:16}}>Saved searches</Text>
+     <Text style={{color:theme.muted,fontSize:12,lineHeight:18}}>Run a saved search when you want current results.</Text>
+     {savedSearches.items.map(item=><View key={savedSearchKey(item)} style={[styles.info,{backgroundColor:theme.surface,borderColor:theme.border}]}>
+      <Pressable accessibilityRole="button" accessibilityLabel={"Run saved search "+item.term} style={{flex:1,minHeight:44,justifyContent:"center",gap:4}}
+       onPress={()=>{
+        const region=item.choice==="all"||item.choice==="tender"?item.region:tenderRegion;
+        if(item.choice===kind&&item.term===term&&region===tenderRegion)discovery.retry();
+        setQuery(item.term);setTerm(item.term);setKind(item.choice);setTenderRegion(region);setDetail(null);setTab("discover");
+       }}>
+       <Text style={{color:theme.text,fontWeight:"800"}}>{item.term}</Text>
+       <Text style={{color:theme.muted,fontSize:12}}>{filters.find(filter=>filter.kind===item.choice)?.title}
+        {(item.choice==="all"||item.choice==="tender")?" · "+(tenderRegions.find(region=>region.code===item.region)?.label??item.region):""}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={"Remove saved search "+item.term} onPress={()=>savedSearches.toggle(item)}
+       style={{minHeight:44,minWidth:44,justifyContent:"center"}}><Text style={{color:theme.accentText,fontWeight:"800"}}>Remove</Text></Pressable>
+     </View>)}
+    </View>}
     {!bookmarks.ready&&<ActivityIndicator color={theme.accentText}/>}
     {bookmarks.ready&&bookmarks.items.length===0&&<View style={[styles.empty,{borderColor:theme.border,backgroundColor:theme.surface}]}>
      <Bookmark size={36} color={theme.accentText}/>
@@ -526,7 +610,7 @@ function NativeApp(){
      <Text style={{color:theme.text,fontSize:16,fontWeight:"800",textAlign:"center"}}>No saved records in this category</Text>
      <Action label="Show all saved records" theme={theme} onPress={()=>setSavedKind("all")}/>
     </View>}
-   </>:<ServicesHub theme={theme} onOpen={item=>openSite(item.path)}/>}
+   </>):<ServicesHub theme={theme} onOpen={item=>openSite(item.path)}/>}
    </>}
    ListFooterComponent={!activeItem&&resultView?<View style={{marginTop:10,gap:8}}>
     {discovery.morePending?<ActivityIndicator color={theme.accentText} accessibilityLabel={discovery.refreshing?"Refreshing source records":"Loading more results"}/>:
@@ -536,7 +620,7 @@ function NativeApp(){
      Open original details to confirm sources, prices, deadlines and current provider availability.
     </Text>
    </View>:null}/>
-  <BottomBar tab={tab} setTab={next=>{setTab(next);setDetail(null);}} theme={theme}/>
+  <BottomBar tab={tab} setTab={next=>{setTab(next);setDetail(null);setComparisonOpen(false);}} theme={theme}/>
  </SafeAreaView>;
 }
 export default function App(){return <SafeAreaProvider><NativeApp/></SafeAreaProvider>;}

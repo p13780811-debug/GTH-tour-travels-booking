@@ -2,8 +2,8 @@
 
 ## Scope and production guard
 - App sources: `apps/gth-mobile/`; this is **not** the original GTH PRO website or its PWA.
-- Work stays in **PR #153**. On 9 November the owner authorized merging the finished app and OSM SEO together after final checks; use the existing one-shot main deployment, without a second manual promotion.
-- Website, global CSS, Supabase/RLS, supplier APIs, importers and production domains are never edited by app release QA.
+- The original native app and OSM SEO shipped together in **PR #153**. Android release hardening and the native workspace upgrades are in **PR #182**.
+- The Android release branch disables its Vercel preview. Website routes, global CSS, Supabase/RLS, supplier APIs, importers and production domains remain outside the Android release scope.
 - Native research reads existing public GTH PRO APIs. Live services open the canonical website in the OS in-app browser after explicit consent; all booking, authentication and private workflows retain the existing website controls.
 
 ## Automated acceptance gates
@@ -12,7 +12,7 @@
 3. TypeScript, security/routing/source adapter tests and Android JS export pass.
 4. 320, 360, 390, 428 px web-rendered screenshots and key native navigation pass.
 5. Android release-variant **QA** APK builds, has bundled Hermes JavaScript, and APK signature verifies.
-6. **Test-only** Android AAB builds. It is not Play Store-signed.
+6. An **unsigned** Play candidate passes bundletool validation, application ID and version checks, the API 36 minimum, Android manifest privacy checks and 16 KB packaging and ELF alignment checks.
 7. Android emulator installs the QA APK and proves native Home appears without Metro.
 8. Record the exact PR commit SHA and GitHub Actions run for all evidence.
 
@@ -53,14 +53,15 @@ On a physical Android phone, install the matching standalone QA APK **from the e
   canonical `/hotels` Nuitée booking form appears. Do not add directory mode
   filters to this booking entry. Cancel must retain
   the native hotel screen; no unverified directory record becomes bookable.
-- Confirm Home shortcuts and the live hub launch current canonical website
-  pages in the system in-app browser; Android Back returns to GTH PRO. Known
-  public page opens use a new navigation revision, while affiliate exits and
-  signed URLs retain their original parameters. A simulated website HTML v1→v2
-  must appear on the next open without reinstalling the app.
-- Load two source pages, change their fixtures, then background/foreground the
-  app. Changed/removed records must refresh without losing pagination or private
-  notes. Verify stale notices on failure and successful recovery on retry.
+- Confirm Home shortcuts and the live hub open the canonical website URLs in
+  the system in-app browser, preserving affiliate or signed parameters. Android
+  Back returns to GTH PRO.
+- Load two source pages and background/foreground the app. Source request count
+  must stay flat until manual refresh. On refresh, changed and removed records
+  must update without losing pagination or private notes. Verify stale notices
+  on failure and successful recovery on retry.
+- Open all three workspaces with no search term, save a search and compare
+  two saved records offline. These actions must complete without API requests.
 - Check old PWA saved paths migrate to current canonical record pages, saved
   metadata/photos refresh by exact ID, and offline snapshots remain clearly dated.
 - Check selected bottom tabs, category/region filters and actions in both themes;
@@ -90,13 +91,31 @@ On a physical Android phone, install the matching standalone QA APK **from the e
   production signing/publishing remain separate, unverified release gates.
 
 ## Play Store / production signing gate
-This repo intentionally contains **no** production keystore, passwords, service credentials or upload tokens.
-- Confirm permanent `com.gthpro.mobile` app ID ownership and app listing name first. The package ID is provisional until approved.
-- Generate and back up a **separate** production upload key securely; place signing material in protected secrets or a managed signing service, never in source, build logs, screenshots, or downloadable QA artifacts.
-- Sign the production AAB with the protected upload key, test Play App Signing compatibility, then use a controlled internal testing track before public release.
-- Confirm `android.versionCode` advances for each successive submission.
-- Complete Play Console identity, privacy policy, data-safety declarations, screenshots, store assets, content rating and required permissions review.
-- Require explicit owner approval for any Play upload, GitHub PR merge or live-site deployment.
+
+1. In Play Console, check the owner account and existing app record for `com.gthpro.mobile`. Confirm the next unused version code there. For the first upload, use `1` if it is available. Keep the registered upload key if one already exists.
+2. Run **GTH Independent Native Mobile — isolated CI** from the reviewed Android release branch or `main` with the `play_version_code` input. Download `gth-pro-play-unsigned-<commit>` from the successful run and retain its commit and artifact digest alongside the device acceptance evidence.
+3. On an owner-controlled signing machine, use the upload keystore and alias registered for this Play Console app. For a first release with no upload key, create and securely back up a separate key and register its public certificate during Play App Signing setup. Enter the signing password at the prompt. Keep keys and passwords out of GitHub and chat.
+
+   ```bash
+   jarsigner -keystore /path/to/upload.jks -signedjar gth-pro-play.aab gth-pro-unsigned.aab YOUR_UPLOAD_ALIAS
+   (
+     read -rs -p 'Upload keystore password: ' GTH_UPLOAD_STOREPASS && printf '\n'
+     export GTH_UPLOAD_STOREPASS
+     jarsigner -verify -strict -keystore /path/to/upload.jks -storepass:env GTH_UPLOAD_STOREPASS gth-pro-play.aab YOUR_UPLOAD_ALIAS
+   )
+   keytool -printcert -jarfile gth-pro-play.aab
+   ```
+
+   Match the certificate SHA-256 against Play Console's **Upload key certificate** before upload. Google Play signs the device installs with its app signing key.
+4. Complete Play Console app access, content rating, ads and Data safety using the actual app and its web handoffs. Use `https://www.gthproglobal.com/privacy-policy` as the policy candidate and verify that the published text covers Android behavior. Native search sends queries to GTH PRO over HTTPS. The app stores saved records, private notes and history on-device, with Android cloud backup disabled. GTH PRO pages and booking suppliers have separate online flows. Review their integration and each dependency before declaring collection or sharing.
+5. Upload to the appropriate testing track, install the Play-distributed build on a physical phone, and complete the device and supplier handoff checks above. Submit to Production once Play Console eligibility, the listing, and acceptance checks are complete.
+
+### Store listing draft
+
+- App name: **GTH PRO**
+- Short description: **Explore travel, real estate and public tenders in one app.**
+- Full description: **Discover flights, stays, experiences and ground transport. Research property records and explore public tenders. Save records and add private notes to revisit your research. When you continue to a booking or other online service, the relevant website opens. Availability, prices and booking terms are shown by the service provider.**
+- Screenshots: Capture Home, Discover, Saved and Services from the accepted Android build. Use real app screens and omit personal records, private notes and account information.
 
 ## Honest status
 Passing CI proves **build and automated testing only**. It does not prove physical device compatibility, real supplier booking/payments, or a published Play Store app. Keep the status **release candidate** until all checks above are documented.

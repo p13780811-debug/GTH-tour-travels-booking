@@ -19,7 +19,7 @@ export function useNativeDiscovery(choice:SearchChoice,term:string,tenderRegion:
   const version=++generation.current;
   moreController.current?.abort();moreLock.current=false;setMorePending(false);setRefreshing(false);setRefreshQueued(false);
   const empty=combineSlices([]);current.current=empty;setData(empty);setError("");
-  if((choice==="all"||choice==="travel")&&!term.trim()){setPending(false);return;}
+  if(!term.trim()){setPending(false);return;}
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),11_000);
   setPending(true);

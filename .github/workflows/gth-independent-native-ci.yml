@@ -7,6 +7,11 @@ on:
       - ".github/workflows/gth-independent-native-ci.yml"
       - "tsconfig.json"
   workflow_dispatch:
+    inputs:
+      play_version_code:
+        description: "Build an unsigned Play candidate with this unused version code"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -17,7 +22,7 @@ concurrency:
 
 jobs:
   mobile:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     defaults:
       run:
@@ -79,10 +84,10 @@ jobs:
           retention-days: 3
 
   android-standalone-qa-apk:
-    name: Standalone QA Android APK — no Metro required, not Play Store
+    name: Android QA APK and unsigned Play candidate
     needs: mobile
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (inputs.play_version_code != '' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/gth-android-play-release'))
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     defaults:
       run:
@@ -105,18 +110,17 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Generate local Android project without touching website
         run: npx expo prebuild --platform android --non-interactive --clean
-      - name: Compile self-contained QA APK and test AAB with bundled Hermes JavaScript
+      - name: Compile self-contained QA APK with bundled Hermes JavaScript
+        if: github.event_name == 'pull_request'
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
-      - name: Verify signed APK, bundle and immutable package identity
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify QA APK signature and bundled JavaScript
+        if: github.event_name == 'pull_request'
         run: |
           apk="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$apk"
-          aab="android/app/build/outputs/bundle/release/app-release.aab"
-          test -s "$aab"
-          unzip -Z1 "$aab" | grep -qx 'base/manifest/AndroidManifest.xml'
           unzip -Z1 "$apk" | grep -qx 'assets/index.android.bundle'
           test "$(unzip -Z1 "$apk" | grep -c '^classes[0-9]*\.dex$')" -gt 0
           apksigner_bin="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
@@ -124,6 +128,7 @@ jobs:
           "$apksigner_bin" verify "$apk"
           ls -lh "$apk"
       - name: Upload self-contained QA APK (NOT Play Store-signed)
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: gth-pro-native-standalone-qa-apk-not-play-store
@@ -131,11 +136,24 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Upload test AAB (NOT Play Store signed)
+      - name: Build unsigned Play bundle and check its packaged manifest and native libraries
+        env:
+          PLAY_VERSION_CODE: ${{ inputs.play_version_code }}
+        run: |
+          version_code="${PLAY_VERSION_CODE:-$(node -p 'require("./app.json").expo.android.versionCode')}"
+          python3 scripts/check-play-bundle.py prepare "$version_code"
+          (cd android && chmod +x ./gradlew && ./gradlew :app:bundleRelease --no-daemon --stacktrace)
+          bundletool="$RUNNER_TEMP/gth-bundletool.jar"
+          curl -fsSL --retry 3 https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar -o "$bundletool"
+          echo "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  $bundletool" | sha256sum -c -
+          bundle=android/app/build/outputs/bundle/release/app-release.aab
+          python3 scripts/check-play-bundle.py verify "$version_code" "$bundletool" "$bundle"
+          mv "$bundle" "$RUNNER_TEMP/gth-pro-unsigned.aab"
+      - name: Upload unsigned Play candidate
         uses: actions/upload-artifact@v4
         with:
-          name: gth-pro-native-aab-test-only
-          path: apps/gth-mobile/android/app/build/outputs/bundle/release/app-release.aab
+          name: gth-pro-play-unsigned-${{ github.sha }}
+          path: ${{ runner.temp }}/gth-pro-unsigned.aab
           if-no-files-found: error
           retention-days: 7
 
@@ -143,7 +161,7 @@ jobs:
     name: Android emulator — native install and home screen
     needs: android-standalone-qa-apk
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -160,7 +178,7 @@ jobs:
       - name: Install and verify on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_6

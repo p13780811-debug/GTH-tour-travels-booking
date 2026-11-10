@@ -1,6 +1,7 @@
 import {execFileSync} from "node:child_process";
 import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
+import assert from "node:assert/strict";
 
 const root=fileURLToPath(new URL("../../../",import.meta.url));
 const git=(...args)=>execFileSync("git",args,{cwd:root,encoding:"utf8"});
@@ -21,11 +22,17 @@ const approvedOsmSeo=new Set([
  "scripts/qa-osm-place-seo.mjs","docs/releases/osm-places-seo-20261109.md",
 ]);
 const unexpected=[...new Set(paths)].filter(path=>!path.startsWith("apps/gth-mobile/")&&
- path!==".github/workflows/gth-independent-native-ci.yml"&&path!=="tsconfig.json"&&!approvedOsmSeo.has(path));
+ path!==".github/workflows/gth-independent-native-ci.yml"&&path!=="tsconfig.json"&&path!=="vercel.json"&&!approvedOsmSeo.has(path));
 if(unexpected.length)throw Error("Consolidated app/OSM PR changes protected files:\n"+unexpected.join("\n"));
 const baseline=git("show","origin/main:tsconfig.json");
 const current=readFileSync(new URL("../../../tsconfig.json",import.meta.url),"utf8");
 const allowed=baseline.includes('"apps/gth-mobile/**"')?baseline:
  baseline.replace('"supabase/functions/**"','"supabase/functions/**",\n    "apps/gth-mobile/**"');
 if(current!==allowed)throw Error("Only the isolated native-folder exclusion may differ in website tsconfig.json");
-console.log("PASS: only native app and exact owner-approved OSM SEO files differ; homepage, booking engines, shared CSS, database and deployment files match main.");
+if(paths.includes("vercel.json")){
+ const baselineVercel=JSON.parse(git("show","origin/main:vercel.json"));
+ baselineVercel.git.deploymentEnabled["feat/gth-android-play-release"]=false;
+ assert.deepStrictEqual(JSON.parse(readFileSync(new URL("../../../vercel.json",import.meta.url),"utf8")),baselineVercel,
+  "Vercel changes are limited to disabling the Android release branch preview.");
+}
+console.log("PASS: native scope, approved OSM scope and Android branch preview suppression only. Homepage, booking engines, shared CSS and database files match main.");
