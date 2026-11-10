@@ -40,6 +40,7 @@ jobs:
         env:
           RELEASE_ENABLED: ${{ vars.GTH_SIGNED_ANDROID_RELEASE_ENABLED }}
           RELEASE_TAG: ${{ inputs.release_tag }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           test "$RELEASE_ENABLED" = "true" || { echo "Signed APK publishing is disabled by default"; exit 1; }
@@ -53,8 +54,6 @@ jobs:
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release tag is already published and must not be overwritten"; exit 1
           fi
-        env:
-          GH_TOKEN: ${{ github.token }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
