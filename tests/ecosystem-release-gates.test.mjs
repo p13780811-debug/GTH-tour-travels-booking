@@ -71,8 +71,8 @@ test("affiliate application contact and owned-project advertising are truthful",
  assert.match(projects,/https:\/\/thali\.gthproglobal\.com\//);
  assert.doesNotMatch(projects,/https:\/\/thali-treats-palava\.lovable\.app\//);
  assert.doesNotMatch(ads,/Google Ads sponsored placement|Guaranteed results/);
- assert.match(footer,/<HousePromotions \/>/);
- assert.match(home,/<HousePromotions flagship \/>/);
+ assert.doesNotMatch(footer,/<HousePromotions \/>/);
+ assert.doesNotMatch(home,/<HousePromotions flagship \/>/);
  const legacy=source("src/components/real-estate/OwnerProjectAds.tsx");
  assert.match(legacy,/portfolioProjects\.filter/);
  assert.match(home,/BrandVideo name="logo-motion"/);
