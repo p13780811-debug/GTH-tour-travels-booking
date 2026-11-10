@@ -1,8 +1,6 @@
 import { SITE_CONFIG } from "@/lib/site-config";
 import FlagshipImage from "./FlagshipImage";
 import BrandVideo from "@/components/brand/BrandVideo";
-import SiteIdentitySchema from "@/components/seo/SiteIdentitySchema";
-import HousePromotions from "@/components/sections/HousePromotions";
 import HomeCapabilityProof from "./HomeCapabilityProof";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
@@ -100,7 +98,6 @@ function BrandGlobe() {
 export default function FlagshipHome() {
   return (
     <main className={styles.site} id="main-content">
-      <SiteIdentitySchema />
       <a className={styles.skipLink} href="#pillars">Skip to platforms</a>
       <section className={styles.hero} aria-labelledby="flagship-heading">
         <div className={styles.earth} aria-hidden="true" />
@@ -185,7 +182,6 @@ export default function FlagshipHome() {
           </div>
         ))}
       </section>
-      <HousePromotions flagship />
       <footer className={styles.cityFooter}>
         <div className={styles.cityOverlay}/>
         <div className={styles.footerContent}>
