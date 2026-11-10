@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       play_version_code:
-        description: "Build an unsigned Play candidate from main with this unused version code"
+        description: "Build an unsigned Play candidate with this unused version code"
         required: false
         type: string
 
@@ -86,7 +86,7 @@ jobs:
   android-standalone-qa-apk:
     name: Android QA APK and unsigned Play candidate
     needs: mobile
-    if: github.event_name == 'pull_request' || (github.ref == 'refs/heads/main' && inputs.play_version_code != '')
+    if: github.event_name == 'pull_request' || (inputs.play_version_code != '' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/gth-android-play-release'))
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     defaults:

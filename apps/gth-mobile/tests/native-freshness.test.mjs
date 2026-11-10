@@ -8,7 +8,7 @@ const routing=loadNative('core/routing.ts');
 const catalog=loadNative('core/catalog.ts',{'./routing':routing});
 const card=(id,title=id)=>({id,title,kind:'hotel',subtitle:'Published location',source:'Public source',webPath:null});
 
-test('public source requests bypass response cache and record retrieval time separately from source facts',async()=>{
+test('public source requests respect response cache policy and record retrieval time separately from source facts',async()=>{
  const original=globalThis.fetch;
  try{
   let options;
@@ -17,12 +17,12 @@ test('public source requests bypass response cache and record retrieval time sep
    return new Response(JSON.stringify([{id:'osm:node-1',name:'Published hotel'}]),{headers:{'content-type':'application/json'}});
   };
   const data=await catalog.getSourceCards('hotel','Goa',new AbortController().signal);
-  assert.equal(options.cache,'no-store');
+  assert.equal(options.cache,undefined);
   assert.ok(Number.isFinite(Date.parse(data.items[0].loadedAt)));
   assert.equal(catalog.recordExtras(data.items[0]).loadedAt,data.items[0].loadedAt);
  }finally{globalThis.fetch=original;}
 });
-test('foreground refresh replaces the complete loaded window, removes old records and preserves its cursor',async()=>{
+test('manual refresh replaces the complete loaded window, removes old records and preserves its cursor',async()=>{
  const pages=[];
  const unified=loadNative('core/unified-search.ts',{'./routing':routing,'./catalog':{getSourceCards:async(kind,q,signal,region,page)=>{
   pages.push(page);return {items:[card(page===1?'new':'retained','Updated source '+page)],total:2,totalIsExact:true,hasNext:page===1};
@@ -50,29 +50,7 @@ test('a failed refresh keeps a visibly stale snapshot and never mixes half-refre
  assert.equal(recovered.slices[0].stale,false);assert.equal(recovered.warnings.length,0);
  assert.deepEqual(recovered.items.map(item=>item.id),['new-1','new-2']);
 });
-test('native foreground transitions refresh with the latest callback and remove their listener on unmount',async()=>{
- let change,removed=0,first=0,latest=0;
- const lifecycle=loadNative('core/foreground-refresh.ts',{react:React,'react-native':{AppState:{currentState:'active',addEventListener:(event,callback)=>{
-  assert.equal(event,'change');change=callback;return {remove:()=>removed++};
- }}}});
- function Component({callback}){lifecycle.useForegroundRefresh(callback);return null;}
- let renderer;await act(async()=>{renderer=create(React.createElement(Component,{callback:()=>first++}));});
- await act(async()=>change('active'));assert.equal(first,0,'Initial activation must not duplicate the initial request');
- await act(async()=>change('background'));
- await act(async()=>renderer.update(React.createElement(Component,{callback:()=>latest++})));
- await act(async()=>change('active'));assert.equal(first,0);assert.equal(latest,1);
- await act(async()=>{change('inactive');change('active');});assert.equal(latest,2);
- await act(async()=>renderer.unmount());assert.equal(removed,1);
-});
-test('fresh first-party photo versions bypass stale image URLs without changing supplier or signed URLs',()=>{
- const stamp='2026-11-09T01:00:00.000Z';
- const photo='https://www.gthproglobal.com/api/property-media/a1234567-1234-4123-8123-123456789abc';
- assert.equal(new URL(catalog.sourcePhotoRequestUri(photo,stamp)).searchParams.get('gth_source_revision'),stamp);
- for(const original of ['https://upload.wikimedia.org/wikipedia/commons/a/ab/Photo.jpg',photo+'?signature=example','https://partner.example/photo.jpg'])
-  assert.equal(catalog.sourcePhotoRequestUri(original,stamp),original);
- assert.equal(catalog.sourcePhotoRequestUri(photo,'invalid'),photo);
-});
-test('foreground refresh queued during pagination keeps the newly loaded window instead of resetting it',async()=>{
+test('manual refresh queued during pagination keeps the newly loaded window instead of resetting it',async()=>{
  const pages=[];let releasePage,fresh=false;
  const unified=loadNative('core/unified-search.ts',{'./routing':routing,'./catalog':{getSourceCards:async(kind,q,signal,region,page=1)=>{
   pages.push(page);

@@ -2,15 +2,15 @@ import React,{useEffect,useState} from "react";
 import {Image,Pressable,Text,View} from "react-native";
 import {ImageOff} from "lucide-react-native";
 import colors from "../theme/generated.json";
-import {sourcePhotoRequestUri,type DiscoveryCard} from "../core/catalog";
+import type {DiscoveryCard} from "../core/catalog";
 
 type Theme=typeof colors.light;
 export function SourcePhoto({item,theme,large=false}:{item:DiscoveryCard;theme:Theme;large?:boolean}){
  const [failed,setFailed]=useState(false);
- const uri=item.image?sourcePhotoRequestUri(item.image,item.loadedAt):undefined;
+ const uri=item.image;
  useEffect(()=>setFailed(false),[uri]);
  const frame=large?{height:180,width:"100%" as const,borderRadius:15}:{height:64,width:64,borderRadius:13};
- return uri&&!failed?<Image key={uri} source={{uri,cache:"reload"}} resizeMode="cover" onError={()=>setFailed(true)}
+ return uri&&!failed?<Image key={uri} source={{uri}} resizeMode="cover" onError={()=>setFailed(true)}
    accessibilityLabel={"Source image for "+item.title} style={frame}/>:
   <View accessibilityLabel="Source photo unavailable" style={[frame,{backgroundColor:theme.surfaceSoft,alignItems:"center",justifyContent:"center",gap:8}]}>
    <ImageOff size={large?30:23} color={theme.muted}/>

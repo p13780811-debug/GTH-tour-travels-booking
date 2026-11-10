@@ -73,7 +73,7 @@ export async function retryNativeSources(previous:SearchSlice[],raw:string,signa
  return combineSlices(slices);
 }
 
-/** Re-read the loaded window on foreground/pull-to-refresh. Refreshing pages
+/** Re-read the loaded window on a user-initiated refresh. Refreshing pages
  * replaces old source data, including removals, without discarding pagination
  * or any personal notebook. Failed sources retain an explicitly stale snapshot. */
 export async function refreshNativeSources(previous:SearchSlice[],raw:string,signal:AbortSignal,tenderRegion="IN"):Promise<SearchOutcome>{

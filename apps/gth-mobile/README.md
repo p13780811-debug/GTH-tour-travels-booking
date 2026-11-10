@@ -55,20 +55,31 @@ Supabase policies, importers, or global CSS.
 - Day/night action text uses readable central-theme colors; gold button fills
   and the approved brand remain. Licensed image credits survive bookmarking;
   missing/failed photos have an accessible fallback.
-- Native source requests use `cache: no-store`. Foreground and pull-to-refresh
-  revalidate all loaded source pages, including changes and removals; a refresh
-  requested during pagination is queued without losing the loaded window.
+- Browsing the app or returning to it makes no automatic source requests.
+  Search, pagination and manual refresh use the existing public endpoints and
+  respect their cache policy. A refresh requested during pagination is queued
+  without losing the loaded window.
 - Source updates refresh matching saved references by exact IDs while retaining
   personal notes/checks. Previous PWA saved paths migrate to canonical detail
   pages. Offline references show their retrieval time; failed refreshes have an
   explicit stale notice instead of silently pretending to be current.
-- Known public website pages get a fresh navigation revision, and owned source
-  images get a retrieval revision. Signed URLs, API routes and affiliate exits
-  keep their existing query parameters. No browser cookies or user research are
-  erased to clear a cache, and no background polling or OTA account is required.
+- Website and image handoffs use their canonical URLs and preserve existing
+  query parameters. The app uses local storage for saved searches, record
+  comparisons, notes and checklists. Opening a saved search sends a request
+  only when the user chooses to run it.
 - Functional preview QA uses explicit test-only API fixtures; Android emulator QA also exercises tabs, settings, cancelled handoff, Android Back and force-stop/relaunch. Fixture outcomes do not certify supplier bookings.
-- Isolated CI compiles an installable, self-contained Android QA APK and a test-only AAB; emulator launch smoke and phone-width visual QA are automated.
+- Isolated CI compiles an installable Android QA APK and an unsigned Play candidate. Emulator launch and phone-width visual QA are automated.
 - See [RELEASE_QA.md](./RELEASE_QA.md) for the physical-device and Play Store release gates.
+
+## Mobile workflow benchmark
+
+Reviewed 10 November 2026. The sample spans specialist apps, regional property markets and official procurement platforms.
+
+| Area | Workflows seen in the benchmark | GTH PRO Android coverage |
+| --- | --- | --- |
+| Travel | Route and date search, category filters, maps, fare alerts, saved trips and booking management. [Trip.com](https://play.google.com/store/apps/details?id=ctrip.english), [Booking.com](https://play.google.com/store/apps/details?id=com.booking), [MakeMyTrip](https://play.google.com/store/apps/details?id=com.makemytrip), [Skyscanner](https://play.google.com/store/apps/details?id=net.skyscanner.android.main), [12Go](https://play.google.com/store/apps/details?id=co.go12.ticketapp) | Native service discovery, saved searches, stay and experience comparison. Existing web services handle live fares, availability and bookings. Price monitoring and cross-provider booking management require supported data and booking access. |
+| Real Estate | Buy and rent intent, map and listing filters, saved searches, alerts and viewing schedules. [Zillow](https://zillow.zendesk.com/hc/en-us/articles/360000808587-How-do-I-search-for-homes-on-the-Zillow-mobile-app-iPhone), [Rightmove](https://play.google.com/store/apps/details?id=com.rightmove.android), [Magicbricks](https://www.magicbricks.com/help/category-content-detail/how-do-i-search-a-property-on-magicbricks), [Property Finder](https://play.google.com/store/apps/details?id=ae.propertyfinder.propertyfinder), [Domain](https://www.domain.com.au/app/), [Property24](https://play.google.com/store/apps/details?id=com.korbitec.property24), [QuintoAndar](https://www.quintoandar.com.br/ajuda/artigo/tudo-que-voce-precisa-saber-sobre-visitas-2wPr1yTvmZG0PXssiytZhU) | Native research, saved searches and side-by-side comparison. The existing property site provides listing modes, registry, map, buyer tools and submission. Search alerts and native map coverage depend on approved inventory and coordinates. |
+| Tenders | Search by country, buyer and sector, saved queries, follow-up alerts, deadlines and official submission. [TED](https://ted.europa.eu/en/), [SAM.gov](https://sam.gov/opportunities), [UNGM](https://help.ungm.org/hc/en-us/articles/360012912939-How-to-be-notified-of-relevant-procurement-opportunities), [CPPP](https://eprocure.gov.in/cppp/), [UK Contracts Finder](https://www.gov.uk/contracts-finder), [Victoria Tenders](https://www.tenders.vic.gov.au/help?path=help.tender.search), [ChileCompra](https://www.chilecompra.cl/mercado-publico/), [South Africa eTenders](https://www.etenders.gov.za/Home/Opportunities) | Native region search, saved queries, loaded deadline sorting, notice comparison and preparation notes. Coverage follows the existing sources. Official submission and amendments remain with the issuer. |
 
 ## Local development
 ```bash

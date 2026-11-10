@@ -2,8 +2,8 @@
 
 ## Scope and production guard
 - App sources: `apps/gth-mobile/`; this is **not** the original GTH PRO website or its PWA.
-- Work stays in **PR #153**. On 9 November the owner authorized merging the finished app and OSM SEO together after final checks; use the existing one-shot main deployment, without a second manual promotion.
-- Website, global CSS, Supabase/RLS, supplier APIs, importers and production domains are never edited by app release QA.
+- The original native app and OSM SEO shipped together in **PR #153**. Android release hardening and the native workspace upgrades are in **PR #182**.
+- The Android release branch disables its Vercel preview. Website routes, global CSS, Supabase/RLS, supplier APIs, importers and production domains remain outside the Android release scope.
 - Native research reads existing public GTH PRO APIs. Live services open the canonical website in the OS in-app browser after explicit consent; all booking, authentication and private workflows retain the existing website controls.
 
 ## Automated acceptance gates
@@ -53,14 +53,15 @@ On a physical Android phone, install the matching standalone QA APK **from the e
   canonical `/hotels` Nuitée booking form appears. Do not add directory mode
   filters to this booking entry. Cancel must retain
   the native hotel screen; no unverified directory record becomes bookable.
-- Confirm Home shortcuts and the live hub launch current canonical website
-  pages in the system in-app browser; Android Back returns to GTH PRO. Known
-  public page opens use a new navigation revision, while affiliate exits and
-  signed URLs retain their original parameters. A simulated website HTML v1→v2
-  must appear on the next open without reinstalling the app.
-- Load two source pages, change their fixtures, then background/foreground the
-  app. Changed/removed records must refresh without losing pagination or private
-  notes. Verify stale notices on failure and successful recovery on retry.
+- Confirm Home shortcuts and the live hub open the canonical website URLs in
+  the system in-app browser, preserving affiliate or signed parameters. Android
+  Back returns to GTH PRO.
+- Load two source pages and background/foreground the app. Source request count
+  must stay flat until manual refresh. On refresh, changed and removed records
+  must update without losing pagination or private notes. Verify stale notices
+  on failure and successful recovery on retry.
+- Open all three workspaces with no search term, save a search and compare
+  two saved records offline. These actions must complete without API requests.
 - Check old PWA saved paths migrate to current canonical record pages, saved
   metadata/photos refresh by exact ID, and offline snapshots remain clearly dated.
 - Check selected bottom tabs, category/region filters and actions in both themes;
@@ -92,7 +93,7 @@ On a physical Android phone, install the matching standalone QA APK **from the e
 ## Play Store / production signing gate
 
 1. In Play Console, check the owner account and existing app record for `com.gthpro.mobile`. Confirm the next unused version code there. For the first upload, use `1` if it is available. Keep the registered upload key if one already exists.
-2. Run **GTH Independent Native Mobile — isolated CI** from `main` with the `play_version_code` input. Download `gth-pro-play-unsigned-<commit>` from the successful run and retain its commit and artifact digest alongside the device acceptance evidence.
+2. Run **GTH Independent Native Mobile — isolated CI** from the reviewed Android release branch or `main` with the `play_version_code` input. Download `gth-pro-play-unsigned-<commit>` from the successful run and retain its commit and artifact digest alongside the device acceptance evidence.
 3. On an owner-controlled signing machine, use the upload keystore and alias registered for this Play Console app. For a first release with no upload key, create and securely back up a separate key and register its public certificate during Play App Signing setup. Enter the signing password at the prompt. Keep keys and passwords out of GitHub and chat.
 
    ```bash

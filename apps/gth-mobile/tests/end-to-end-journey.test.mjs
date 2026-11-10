@@ -101,9 +101,9 @@ test("native interface uses original GTH CSS theme and meaningful Android naviga
  const extras=source("src/core/bookmarks.ts");
  assert.match(app,/BackHandler\.addEventListener/);
  assert.match(app,/setKind\(pillar\);setDetail\(null\)/);
- assert.match(app,/Explore hotels & stays/);
- assert.match(app,/Discover tours & activities/);
- assert.match(app,/Search flights on GTH PRO/);
+ assert.match(app,/PillarActions group="travel"/);
+ assert.match(app,/PillarActions group=\{kind\}/);
+ assert.match(app,/setTab\("services"\)/);
  assert.match(app,/Tender search region/);
  assert.match(app,/Tender region /);
  assert.match(app,/useNativeDiscovery\(kind,term,tenderRegion\)/);

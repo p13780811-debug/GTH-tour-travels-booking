@@ -40,7 +40,18 @@ try{
  const page=await context.newPage();const errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  await page.goto('http://127.0.0.1:4100');
- await page.getByRole('tab',{name:'Services tab',exact:true}).click();
+ await page.getByRole('tab',{name:'Discover tab',exact:true}).click();
+ await page.getByRole('button',{name:'Property',exact:true}).click();
+ await page.getByRole('button',{name:'Project registry workspace',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Tenders',exact:true}).click();
+ await page.getByRole('button',{name:'Tender assistant workspace',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Travel',exact:true}).click();
+ await page.getByRole('button',{name:'Cruises workspace',exact:true}).waitFor();
+ assert.equal(apiCalls.length,0,'Browsing empty workspaces must not load source pages');
+ await page.getByRole('tab',{name:'Home tab',exact:true}).click();
+ await page.getByRole('button',{name:'Explore all services',exact:true}).click();
+ await page.getByText('Explore every service',{exact:true}).waitFor();
+ assert.equal(handoffs.length,0,'The Home service index opens natively');
  await page.getByRole('textbox',{name:'Find a service',exact:true}).fill('Cruises');
  await page.getByRole('button',{name:'Cruises · Live GTH PRO service',exact:true}).click();
  await page.getByRole('button',{name:'Close',exact:true}).click();
@@ -57,7 +68,7 @@ try{
  await page.getByRole('button',{name:'Continue',exact:true}).click();
  const hub=await hubPromise;await hub.waitForLoadState();
  assert.equal(new URL(hub.url()).pathname,'/mega-aggregator');
- assert.ok(new URL(hub.url()).searchParams.has('gth_app_refresh'));
+ assert.equal(new URL(hub.url()).search,'');
  await hub.getByText('QA website version 1',{exact:true}).waitFor();
  const firstVersionUrl=hub.url();await hub.close();
  websiteVersion=2;
@@ -66,7 +77,7 @@ try{
  await page.getByRole('button',{name:'Continue',exact:true}).click();
  const upgraded=await upgradePromise;await upgraded.waitForLoadState();
  await upgraded.getByText('QA website version 2',{exact:true}).waitFor();
- assert.notEqual(upgraded.url(),firstVersionUrl,'A website UI upgrade must not be hidden by an old navigation cache');
+ assert.equal(upgraded.url(),firstVersionUrl,'The native app must reuse the canonical website cache key');
  await upgraded.close();
  await page.getByRole('tab',{name:'Home tab',exact:true}).click();
  await page.getByRole('button',{name:'Search Goa hotels',exact:true}).click();
@@ -75,7 +86,7 @@ try{
  await page.getByRole('button',{name:'Continue',exact:true}).click();
  const roomSearch=await roomSearchPromise;await roomSearch.waitForLoadState();
  assert.equal(new URL(roomSearch.url()).pathname,'/hotels');
- assert.ok(new URL(roomSearch.url()).searchParams.has('gth_app_refresh'));
+ assert.equal(new URL(roomSearch.url()).search,'');
  assert.equal(new URL(roomSearch.url()).searchParams.get('view'),null,'The live booking entry must not switch to directory mode');
  await roomSearch.close();
  await page.getByRole('tab',{name:'Home tab',exact:true}).click();
@@ -87,11 +98,15 @@ try{
  const popupPromise=page.waitForEvent('popup');
  await page.getByRole('button',{name:'Open Cruises',exact:true}).click();
  const popup=await popupPromise;await popup.waitForLoadState();
- assert.equal(new URL(popup.url()).pathname,'/cruises');assert.ok(new URL(popup.url()).searchParams.has('gth_app_refresh'));await popup.close();
+ assert.equal(popup.url(),'https://www.gthproglobal.com/cruises');await popup.close();
  await page.getByRole('textbox',{name:'Universal search',exact:true}).fill('Goa');
  await page.getByRole('button',{name:'Search GTH PRO',exact:true}).click();
  await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).waitFor();
  await page.getByText('Tender search region',{exact:true}).waitFor();
+ const beforeSaveSearch=apiCalls.length;
+ await page.getByRole('button',{name:'Save this search',exact:true}).click();
+ await page.getByRole('button',{name:'Remove saved search',exact:true}).waitFor();
+ assert.equal(apiCalls.length,beforeSaveSearch,'Saving a search must not query the server');
  await page.getByRole('button',{name:'Load more results',exact:true}).click();
  await page.getByRole('button',{name:'Details for QA Hotel Second',exact:true}).waitFor();
  const successfulCalls=apiCalls.filter(url=>url.pathname!=='/api/tours').length;
@@ -116,6 +131,8 @@ try{
  const shares=await page.evaluate(()=>window.__qaShares);
  assert.equal(shares.length,1);assert.ok(!JSON.stringify(shares).includes('QA private'));
  await page.screenshot({path:capture+'/native-research-notebook-390-light.png',fullPage:true});
+ await page.getByRole('button',{name:'Back to results',exact:true}).click();
+ await page.getByRole('button',{name:'Save QA Hotel Second',exact:true}).click();
  await page.getByRole('tab',{name:'Saved tab',exact:true}).click();
  await page.getByRole('button',{name:'Saved: Tenders',exact:true}).click();
  await page.getByText('No saved records in this category',{exact:true}).waitFor();
@@ -124,6 +141,15 @@ try{
  await page.getByRole('tab',{name:'Saved tab',exact:true}).click();
  const beforeOffline=apiCalls.length;
  await context.setOffline(true);
+ await page.getByRole('button',{name:'Run saved search Goa',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Compare saved records',exact:true}).click();
+ await page.getByRole('checkbox',{name:'Compare QA Hotel Original',exact:true}).click();
+ await page.getByRole('checkbox',{name:'Compare QA Hotel Second',exact:true}).click();
+ await page.getByText('2 of 3 selected',{exact:true}).waitFor();
+ await page.getByText('Stay type',{exact:true}).waitFor();
+ assert.equal(apiCalls.length,beforeOffline,'Comparing saved records must not query the server');
+ await page.screenshot({path:capture+'/native-compare-saved-390-light.png',fullPage:true});
+ await page.getByRole('button',{name:'Back to saved records',exact:true}).click();
  await page.getByRole('button',{name:'Details for QA Hotel Original',exact:true}).click();
  assert.equal(await page.getByRole('textbox',{name:'Private research note',exact:true}).inputValue(),'QA private: ask about accessible rooms');
  assert.equal(await page.getByRole('checkbox',{name:'Read cancellation and check-in terms',exact:true}).getAttribute('aria-checked'),'true');
@@ -141,11 +167,14 @@ try{
   Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});
   document.dispatchEvent(new Event('visibilitychange'));
  });
- updated=true;await foreground();
+ updated=true;const beforeForeground=apiCalls.length;await foreground();
+ await page.getByText('QA Hotel Original',{exact:true}).waitFor();
+ assert.equal(apiCalls.length,beforeForeground,'Foregrounding must not refresh loaded source pages');
+ await page.getByRole('button',{name:'Refresh source details',exact:true}).click();
  await page.getByText('QA Hotel Updated',{exact:true}).waitFor();
  assert.equal(await page.getByRole('textbox',{name:'Private research note',exact:true}).inputValue(),'QA private: ask about accessible rooms');
  assert.deepEqual(apiCalls.filter(url=>url.pathname==='/api/hotels'&&url.searchParams.get('city')==='Goa').slice(-2).map(url=>url.searchParams.get('page')),['1','2']);
- outage=true;await foreground();
+ outage=true;await page.getByRole('button',{name:'Refresh source details',exact:true}).click();
  await page.getByText('Unable to refresh this reference. Previously loaded details are shown.',{exact:true}).waitFor();
  outage=false;await page.getByRole('button',{name:'Refresh latest source records',exact:true}).click();
  await page.getByText('Unable to refresh this reference. Previously loaded details are shown.',{exact:true}).waitFor({state:'hidden'});
@@ -171,5 +200,5 @@ try{
   await screen.screenshot({path:`${capture}/native-service-hub-${width}-${colorScheme}.png`,fullPage:true});
   await preview.close();
  }
- console.log('PASS: live website UI v1 to v2 without reinstall, canonical in-app handoffs, source-window recovery/foreground refresh, stale notices, private notes/checklists, public-only sharing, offline details and eight themed service screenshots');
+ console.log('PASS: canonical in-app handoffs, zero-request foreground and offline comparison, manual source refresh, stale notices, private notes/checklists, public-only sharing and eight themed service screenshots');
 }finally{await browser.close();}

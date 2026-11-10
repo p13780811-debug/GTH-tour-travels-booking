@@ -35,19 +35,6 @@ export function approvedCreditUrl(raw:unknown):string|null{
    url.hostname==="creativecommons.org"&&/^\/(?:licenses|publicdomain)\//.test(url.pathname))?url.toString():null;
  }catch{return null;}
 }
-/** Version only our public image endpoints. Never alter supplier, signed or
- * affiliate URLs; a fresh API read must not leave an old first-party photo. */
-export function sourcePhotoRequestUri(image:string,loadedAt?:string):string{
- if(!loadedAt||!Number.isFinite(Date.parse(loadedAt)))return image;
- try{
-  const url=new URL(image);
-  if(["www.gthproglobal.com","gthproglobal.com"].includes(url.hostname)&&!url.search&&
-    (url.pathname.startsWith("/images/")||url.pathname.startsWith("/api/property-media/"))){
-   url.searchParams.set("gth_source_revision",loadedAt);return url.toString();
-  }
- }catch{/* Keep the already validated source URL unchanged. */}
- return image;
-}
 /** Revalidate saved media as strictly as new API records; keep the license with
  * the image after a restart. Commons images without usable credit are omitted. */
 export function recordExtras(raw:unknown):Pick<DiscoveryCard,"image"|"photoCredit"|"facts"|"loadedAt">{
@@ -160,7 +147,7 @@ export function endpointFor(kind:DiscoveryKind,raw:string,tenderRegion="IN",page
  return SITE_ORIGIN+routes[kind]+"?"+params.toString();
 }
 export async function getSourceCards(kind:DiscoveryKind,query:string,signal:AbortSignal,tenderRegion="IN",page=1):Promise<DiscoveryResponse>{
- const result=await fetch(endpointFor(kind,query,tenderRegion,page),{method:"GET",signal,cache:"no-store",headers:{"Accept":"application/json"}});
+ const result=await fetch(endpointFor(kind,query,tenderRegion,page),{method:"GET",signal,headers:{"Accept":"application/json"}});
  if(!result.ok)throw Error("Source temporarily unavailable.");
  if(!(result.headers.get("content-type")||"").toLowerCase().includes("json"))
   throw Error("Unexpected source response.");

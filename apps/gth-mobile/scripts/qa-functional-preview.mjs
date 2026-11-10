@@ -42,7 +42,7 @@ try{
  await page.getByRole('button',{name:'Continue',exact:true}).click();
  const popup=await popupPromise;await popup.waitForLoadState();
  assert.equal(new URL(popup.url()).pathname,'/hotels/stay/osm:node-101');
- assert.ok(new URL(popup.url()).searchParams.has('gth_app_refresh'));
+ assert.equal(new URL(popup.url()).search,'');
  assert.equal(handoffs,1);await popup.close();
  await page.getByRole('button',{name:'Open app settings',exact:true}).click();
  await page.getByRole('radio',{name:'Night theme',exact:true}).click();
