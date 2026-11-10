@@ -102,10 +102,11 @@ test("event expiry uses venue local date and retains a multi-day event through i
 
 test("web discovery, app service gateway and sitemap include stadiums", () => {
   for (const file of [
-    "src/app/travel/page.tsx", "src/app/mega-aggregator/EcosystemHub.tsx",
+    "src/app/mega-aggregator/EcosystemHub.tsx",
     "src/components/travel/TravelSectionNav.tsx", "src/lib/mobile/app-dashboard.ts",
     "src/app/sitemap.ts",
   ]) assert.ok(readFileSync(file, "utf8").includes('"/stadiums"'), file);
+  assert.ok(readFileSync("src/app/travel/page.tsx", "utf8").includes("<TravelSectionNav"));
   assert.ok(readFileSync("src/app/app/services/[id]/page.tsx", "utf8").includes("  stadiums: {"));
   const page = readFileSync("src/app/stadiums/[slug]/page.tsx", "utf8");
   assert.match(page, /generateStaticParams/);
