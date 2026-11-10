@@ -6,7 +6,7 @@
  * The default Expo release variant can use a QA/debug key: never publish it.
  */
 import {readFileSync,writeFileSync} from "node:fs";
-import {fileURLToPath,pathToFileURL} from "node:url";
+import {pathToFileURL} from "node:url";
 import {resolve} from "node:path";
 
 const requiredEnvs=[
