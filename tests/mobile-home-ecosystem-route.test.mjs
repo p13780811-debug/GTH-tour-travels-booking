@@ -14,6 +14,7 @@ test("mobile bottom Home opens the approved Ecosystem instead of old app dashboa
   'href: "/tender", appHref: "/app/tenders"',
  ])assert.ok(nav.includes(pair),pair);
  assert.match(nav,/const target = isApp \? appHref : href/);
+ assert.match(nav,/prefetch=\{name==="Home"\?false:undefined\}/);
  assert.match(nav,/pathname\.startsWith\(appHref \+ "\/"\)/);
  assert.match(nav,/env\(safe-area-inset-bottom/);
 });
