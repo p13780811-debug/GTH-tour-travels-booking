@@ -5,6 +5,7 @@ import { ArrowUpRight, Ticket } from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import { findStadium, stadiums, upcomingStadiumEvents } from "@/lib/travel/stadiums";
 import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
+import { stadiumPartnerSearchLinks } from "@/lib/travel/stadium-partner-discovery";
 import { destinationFlightHref } from "@/lib/destinations/ecosystem";
 import { isPublicLaunch, safeStructuredData, siteUrl } from "@/lib/seo/site";
 
@@ -40,6 +41,7 @@ export default async function StadiumPage({ params }: Props) {
     return href ? [{ ...product, href }] : [];
   });
   const flightCity = venue.flightCity ?? venue.city;
+  const partnerSearch = stadiumPartnerSearchLinks(venue.name);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [{
@@ -107,6 +109,28 @@ export default async function StadiumPage({ params }: Props) {
           <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">{product.provider === "klook" ? "Klook" : "GetYourGuide"} confirms included access, dates, prices and availability. Affiliate link.</p>
         </article>)}</div>
         <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>
+      </section>}
+      {partnerSearch && <section aria-labelledby="stadium-specific-partner-search" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
+        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Find more events and venue tours</h2>
+        <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
+          Search for {venue.name} in our existing partner catalogues. These links open supplier search
+          results, not a confirmed match admission or a claim of available seats.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a href={partnerSearch.klook} target="_blank" rel="noopener noreferrer sponsored"
+            className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+            Search event tickets <ArrowUpRight size={16} aria-hidden="true"/>
+          </a>
+          <a href={partnerSearch.getyourguide} target="_blank" rel="noopener noreferrer sponsored"
+            className="gth-btn inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+            Explore stadium tours <ArrowUpRight size={16} aria-hidden="true"/>
+          </a>
+        </div>
+        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
+          Providers independently confirm any matching product, admission type, dates, ticket availability,
+          price and checkout. Tours do not include live games unless explicitly stated.
+          Eligible affiliate bookings may generate a commission.
+        </p>
       </section>}
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
         <h2 className="text-2xl font-bold">Plan your trip</h2>

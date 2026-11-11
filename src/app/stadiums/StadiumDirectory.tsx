@@ -10,7 +10,7 @@ export default function StadiumDirectory({ venues }: { venues: readonly Stadium[
   const [sport, setSport] = useState<StadiumSport | "">("");
   const results = filterStadiums(venues, query, sport);
 
-  return <section aria-label="Find a stadium" className="mt-6">
+  return <section id="stadium-directory" aria-label="Find a stadium" className="mt-8 scroll-mt-24">
     <div className="gth-glass grid gap-4 rounded-2xl border border-[var(--border)] p-5 sm:grid-cols-2">
       <label className="text-sm font-semibold">Venue, city, country or team
         <input type="search" value={query} maxLength={80} onChange={event => setQuery(event.target.value)}
@@ -41,6 +41,11 @@ export default function StadiumDirectory({ venues }: { venues: readonly Stadium[
         <div className="mt-auto pt-5">
           <Link prefetch={false} href={`/stadiums/${venue.slug}`} className="gth-btn-gold flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold"
             aria-label={`Explore ${venue.name} events and visitor guide`}>Explore venue<ArrowUpRight size={16} aria-hidden="true"/></Link>
+          <a href={venue.schedule.url} target="_blank" rel="noopener noreferrer"
+            className="gth-btn mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold"
+            aria-label={`Open official calendar source for ${venue.name}`}>
+            Official events calendar <ArrowUpRight size={15} aria-hidden="true"/>
+          </a>
         </div>
       </article>)}
     </div>}

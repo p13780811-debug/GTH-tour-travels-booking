@@ -41,7 +41,7 @@ export const stadiums: readonly Stadium[] = [
     overview: "Eden Gardens is a cricket ground in central Kolkata. Use the Cricket Association of Bengal notices for local announcements and confirm the venue for city-level fixtures before booking a trip.",
     seating: "Check the stand, entry gate and any bag restrictions on the event ticket. Use the organizer’s seating layout for your match.",
     schedule: bcciHomeSeason,
-    tickets: { label: "Cricket Association of Bengal notices", url: "https://mail.cricketassociationofbengal.com/notice.php" },
+    tickets: { label: "Cricket Association of Bengal notices", url: "https://www.cricketassociationofbengal.com/notice.php" },
   },
   {
     slug: "wankhede-stadium", name: "Wankhede Stadium", city: "Mumbai", country: "India",
@@ -95,10 +95,22 @@ export const stadiums: readonly Stadium[] = [
     seating: "The MCC Members’ Reserve has its own seating maps. For general admission and accessible seating, use the layout for the specific event.",
     schedule: { label: "MCG event calendar", url: "https://www.mcg.org.au/events" },
     seatMap: { label: "MCC Members’ Reserve seating maps", url: "https://www.mcc.org.au/members-reserve/seating-maps" },
-    events: [{
-      label: "Australia vs England men’s T20I", starts: "2026-11-21",
-      url: "https://www.mcg.org.au/events/2026/november/australia-v-england-mens-t20i-21-nov-2026",
-    }],
+    // Event facts checked against MCG's published 2026/27 international programme.
+    // Never label these as live ticket availability; dates may change.
+    events: [
+      {
+        label: "Australia vs England men’s T20I", starts: "2026-11-21",
+        url: "https://www.mcg.org.au/events/2026/november/australia-v-england-mens-t20i-21-nov-2026",
+      },
+      {
+        label: "Australia vs New Zealand Boxing Day Test", starts: "2026-12-26", ends: "2026-12-30",
+        url: "https://www.mcg.org.au/events/2026/december/boxing-day-test-day-1-australia-v-new-zealand",
+      },
+      {
+        label: "Australia vs England 150th Anniversary Test", starts: "2027-03-11", ends: "2027-03-15",
+        url: "https://www.mcg.org.au/news/2026/march/international-cricket-schedule-confirmed-for-202627",
+      },
+    ],
     products: [{
       label: "MCG guided tour", kind: "Venue experience", provider: "getyourguide",
       url: "https://www.getyourguide.com/melbourne-l202/melbourne-melbourne-cricket-ground-mcg-guided-tour-t115996/",
@@ -123,6 +135,16 @@ export const stadiums: readonly Stadium[] = [
     seating: "Compare sections with the National Stadium seat viewer and use your event’s seating layout for stage configuration, accessible seats and entry details.",
     schedule: { label: "The Kallang event calendar", url: "https://thekallang.com.sg/calendar" },
     seatMap: { label: "National Stadium seat viewer", url: "https://www.thekallang.com.sg/en/plan-your-visit/stadium-seat-view.html" },
+    events: [
+      {
+        label: "Guns N’ Roses World Tour — Singapore", starts: "2026-11-25",
+        url: "https://www.thekallang.com.sg/en/things-to-do/events/guns-n--roses-world-tour-2026.html",
+      },
+      {
+        label: "Jay Chou Carnival II World Tour — Singapore", starts: "2027-01-08", ends: "2027-01-10",
+        url: "https://www.thekallang.com.sg/en/things-to-do/events/jay-chou--carnival---world-tour-2027-in-singapore.html",
+      },
+    ],
   },
   {
     slug: "tokyo-dome", name: "Tokyo Dome", city: "Tokyo", country: "Japan",

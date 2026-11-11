@@ -93,8 +93,15 @@ test("affiliate handoffs reject foreign origins, search links, credentials and i
 
 test("event expiry uses venue local date and retains a multi-day event through its last day", () => {
   const venue = catalog.findStadium("melbourne-cricket-ground");
-  assert.equal(catalog.upcomingStadiumEvents(venue, new Date("2026-11-21T12:59:00Z")).length, 1);
-  assert.equal(catalog.upcomingStadiumEvents(venue, new Date("2026-11-21T13:00:00Z")).length, 0);
+  assert.equal(catalog.upcomingStadiumEvents(venue, new Date("2026-11-21T12:59:00Z")).length, 3);
+  const afterT20=catalog.upcomingStadiumEvents(venue, new Date("2026-11-21T13:00:00Z"));
+  assert.equal(afterT20.some(item=>item.starts==="2026-11-21"),false);
+  assert.deepEqual(Array.from(afterT20,item=>item.starts),["2026-12-26","2027-03-11"]);
+  assert.equal(catalog.upcomingStadiumEvents(venue, new Date("2027-03-15T13:00:00Z")).length,0);
+  const singapore=catalog.findStadium("singapore-national-stadium");
+  assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2026-11-24T12:00:00Z")).length,2);
+  assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2026-11-25T16:00:00Z")).length,1);
+  assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2027-01-10T16:00:00Z")).length,0);
   const race = catalog.findStadium("silverstone");
   assert.equal(catalog.upcomingStadiumEvents(race, new Date("2027-07-04T12:00:00Z")).length, 1);
   assert.equal(catalog.upcomingStadiumEvents(race, new Date("2027-07-04T23:00:00Z")).length, 0);
