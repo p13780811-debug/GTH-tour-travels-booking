@@ -11,7 +11,7 @@ function harness(outcome) {
   const snapshots = new Map();
   let seenSlug = "";
   const query = {
-    select(fields) { assert.equal(fields, "id,title,slug"); return this; },
+    select(fields) { assert.equal(fields, "id,title,slug,registry_evidence"); return this; },
     eq(field,value) { assert.equal(field,"slug"); seenSlug=value; return this; },
     limit(value) { assert.equal(value,1); return this; },
     async abortSignal(signal) {
@@ -51,7 +51,7 @@ function harness(outcome) {
       throw Error("Unexpected dependency "+name);
     },
   });
-  return {load:compiled.exports.readPublicProjectForPage,calls:()=>calls,slug:()=>seenSlug};
+  return {load:compiled.exports.readPublicProjectForPage,parse:compiled.exports.parseHistoricalProjectSnapshot,calls:()=>calls,slug:()=>seenSlug};
 }
 
 test("valid property stays indexable during repeated crawler requests with cached public data",async()=>{
@@ -89,4 +89,38 @@ test("SEO detail route shares cached source for metadata and content, with exist
  assert.match(page,/robots: \{ index: \(isIndexableProperty\(property\)/);
  assert.match(page,/if \(!property\) notFound\(\)/);
  assert.doesNotMatch(page,/PropertyService\.getBySlug/);
+ assert.match(page,/Recorded historical project facts/);
+ assert.match(page,/not a\s+verified live project-detail record/);
+});
+
+test("historical CSV evidence improves specific factual content without implying live verification",()=>{
+ const h=harness({data:[]});
+ const snapshot=h.parse({
+  kind:"operator_supplied_historic_csv_snapshot",
+  source_project_status:"On-Going Project",
+  source_project_type:"Residential",
+  source_postal_code:"400077",
+  proposed_completion_date:"2018-11-30",
+  source_last_modified:"2021-07-21",
+  private_contact:"must not display",
+ });
+ assert.equal(snapshot.projectType,"Residential");
+ assert.equal(snapshot.proposedCompletion,"2018-11-30");
+ assert.equal(snapshot.postalCode,"400077");
+ assert.equal(snapshot.recordedStatus,"On-Going Project");
+ assert.equal(snapshot.sourceModified,"2021-07-21");
+ assert.equal("private_contact" in snapshot,false);
+ assert.equal(h.parse({...snapshot,kind:"unverified"}),null);
+ assert.equal(h.parse({kind:"operator_supplied_historic_csv_snapshot",proposed_completion_date:"not-a-date"}),null);
+});
+
+test("database evidence JSON never leaks wholesale into the rendered public page payload",async()=>{
+ const h=harness({data:[{id:20,title:"RERA record",slug:"rera-record",registry_evidence:{
+  kind:"operator_supplied_historic_csv_snapshot",source_project_type:"Residential",private_contact:"secret",
+ }}]});
+ const page=await h.load("rera-record");
+ assert.equal(page.title,"RERA record");
+ assert.equal(page.historicalRegistry.projectType,"Residential");
+ assert.equal("registry_evidence" in page,false);
+ assert.equal(JSON.stringify(page).includes("secret"),false);
 });
