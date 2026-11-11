@@ -17,6 +17,7 @@ function compile(path, deps, globals = {}) {
       throw new Error("Unexpected dependency "+name);
     },
     Response,URL,
+    process:{env:{NEXT_PUBLIC_SUPABASE_URL:"https://test.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"public-mock-key"}},
     AbortSignal:{timeout:ms=>{assert.equal(ms,12000);return {timeoutMs:ms};}},
     ...globals,
   });
