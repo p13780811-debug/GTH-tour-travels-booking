@@ -32,7 +32,11 @@ function tag(html, regex) { return decode(html.match(regex)?.[1] || ""); }
 let sitemapPaths = [];
 try {
   const robots = await get("/robots.txt");
-  publicDisallow = [...robots.matchAll(/^Disallow:\\s*(\\/[^\\s#]*)/gim)].map(match => match[1]);
+  publicDisallow = robots.split("\n")
+    .map(line => line.trim())
+    .filter(line => line.toLowerCase().startsWith("disallow:"))
+    .map(line => line.slice("disallow:".length).trim().split(" ")[0].split("#")[0])
+    .filter(value => value.startsWith("/"));
   if (!robots.includes("Sitemap: " + origin + "/sitemap.xml")) errors.push("robots.txt: missing correct Sitemap");
   if (!robots.includes("Sitemap: " + origin + "/sitemap-index.xml")) errors.push("robots.txt: missing property sitemap index");
   const xml = await get("/sitemap.xml");
