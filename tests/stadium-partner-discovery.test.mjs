@@ -110,7 +110,9 @@ test("stadium event previews use only official reviewed fixtures, with time-base
       seen.add(venue.slug+event.url);
     }
   }
-  assert.ok(seen.size>=4);
+  assert.ok(seen.size>=6);
+  assert.equal(catalog.findStadium("eden-gardens").tickets.url,
+    "https://www.cricketassociationofbengal.com/notice.php");
 });
 
 test("stadium discovery is an existing affiliate handoff, not a fabricated real-time booking system",()=>{
