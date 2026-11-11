@@ -122,6 +122,35 @@ export default async function PropertyPage({ params }: PageProps) {
                     The official search link is not a verified direct project-detail link.
                 </p>
             </div>
+            {property.historicalRegistry && <section aria-labelledby="historical-project-record-heading"
+                className="gth-glass mt-5 rounded-2xl p-5">
+                <h3 id="historical-project-record-heading" className="text-lg font-semibold">
+                    Recorded historical project facts
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+                    These fields come from a historic operator-supplied MahaRERA CSV snapshot, not a
+                    verified live project-detail record. They do not establish current construction,
+                    approval, completion or availability.
+                </p>
+                <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                    {([
+                        ["Project type recorded", property.historicalRegistry.projectType],
+                        ["Postal code recorded", property.historicalRegistry.postalCode],
+                        ["Proposed completion date in snapshot", property.historicalRegistry.proposedCompletion],
+                        ["Status recorded at snapshot time", property.historicalRegistry.recordedStatus],
+                        ["Source last modified (historic)", property.historicalRegistry.sourceModified],
+                    ] as const).filter(([,value])=>Boolean(value)).map(([label,value])=>(
+                        <div key={label} className="min-w-0 border-b border-[var(--border)] pb-2">
+                            <dt className="text-[var(--text-soft)]">{label}</dt>
+                            <dd className="mt-1 break-words font-medium">{value}</dd>
+                        </div>
+                    ))}
+                </dl>
+                <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+                    The project registration reference and historical facts above are for research only.
+                    Verify the latest registration record and dates on the official MahaRERA website.
+                </p>
+            </section>}
         </aside>}
     </>
 }
