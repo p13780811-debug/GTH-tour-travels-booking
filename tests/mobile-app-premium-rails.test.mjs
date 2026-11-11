@@ -65,7 +65,7 @@ test("Destination list uses the same equal-size horizontal cards on mobile and d
 });
 test("App navigation still provides direct real product flows and safe-area bottom inset",()=>{
  const nav=f("src/components/MobileNav.tsx");
- for(const link of ["/app","/flights","/hotels","/real-estate","/tender"])assert.ok(nav.includes('href: "'+link+'"'));
+ for(const link of ["/mega-aggregator","/flights","/hotels","/real-estate","/tender"])assert.ok(nav.includes('href: "'+link+'"'));
  assert.match(nav,/env\(safe-area-inset-bottom/);
  const home=f("src/app/app/page.tsx");
  assert.match(home,/env\(safe-area-inset-bottom\)/);
