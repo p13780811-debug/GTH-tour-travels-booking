@@ -149,7 +149,8 @@ for (let i = 0; i < paths.length; i += 4) {
       const problems = [];
       if (title.trim().length < 12 || title.trim().length > 120) problems.push("title");
       if (description.trim().length < 60 || description.trim().length > 300) problems.push("description");
-      if (canonical.replaceAll(/[/]+$/, "") !== expected.replaceAll(/[/]+$/, "")) {
+      if ((canonical.endsWith("/") ? canonical.slice(0, -1) : canonical) !==
+          (expected.endsWith("/") ? expected.slice(0, -1) : expected)) {
         problems.push("canonical");
         recordIssue("canonical_mismatch", path + ": " + (canonical || "missing canonical"));
       }
