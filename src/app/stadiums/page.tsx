@@ -4,6 +4,7 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import { stadiums } from "@/lib/travel/stadiums";
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import StadiumDirectory from "./StadiumDirectory";
+import StadiumPartnerDiscovery from "./StadiumPartnerDiscovery";
 
 export const metadata: Metadata = {
   title: "Stadium Tickets & Venue Guides | GTH PRO",
@@ -22,6 +23,7 @@ export default function StadiumsPage() {
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">Find a venue, explore its official calendar and seating information, then plan your journey. Selected venues also have partner links for game tickets or guided experiences.</p>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Event organizers and suppliers confirm dates, available seats, final prices and ticket terms. Check whether your selected product includes event admission.</p>
       </header>
+      <StadiumPartnerDiscovery/>
       <StadiumDirectory venues={stadiums}/>
       <footer className="mt-8 text-sm leading-6 text-[var(--text-soft)]">
         <p>Some experience links are affiliate links. GTH PRO may earn a commission when a qualifying booking is completed.</p>
