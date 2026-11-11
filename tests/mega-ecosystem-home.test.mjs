@@ -67,3 +67,20 @@ test("flagship homepage is separate from the working ecosystem gateway",()=>{
   assert.ok(mobile.includes('href: "/mega-aggregator", appHref: "/app/ecosystem"'));
   assert.ok(footer.includes('href="/"'));
 });
+
+test("ecosystem pillar cards reuse the actual flagship photos by category",()=>{
+  const flagship=load("src/components/home/FlagshipHome.tsx");
+  const source=load("src/components/sections/EcosystemPillars.tsx");
+  for(const asset of [
+    "/images/travel.jpg",
+    "/images/real-estate.jpg",
+    "/images/tender.jpg"
+  ]){
+    assert.ok(flagship.includes('image: "'+asset+'"'),"flagship missing "+asset);
+    assert.ok(source.includes('image: "'+asset+'"'),"ecosystem missing "+asset);
+    assert.equal(source.split('image: "'+asset+'"').length-1,1,"duplicate pillar image "+asset);
+  }
+  for(const reused of ["/dubai.jpg","/images/cities/dubai.jpg","/images/cities/maldives.jpg"]){
+    assert.ok(!source.includes('image: "'+reused+'"'),"stale pillar image "+reused);
+  }
+});
