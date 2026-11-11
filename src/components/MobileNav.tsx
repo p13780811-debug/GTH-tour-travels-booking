@@ -25,7 +25,7 @@ export default function MobileNav() {
           const target = isApp ? appHref : href;
           const active = isApp ? (pathname === appHref || (appHref !== "/app" && pathname.startsWith(appHref + "/"))) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
           return (
-            <Link key={href} href={target} aria-current={active ? "page" : undefined}
+            <Link key={href} href={target} prefetch={name==="Home"?false:undefined} aria-current={active ? "page" : undefined}
               className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
               <Icon size={21} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
               <span className="truncate">{name}</span>
