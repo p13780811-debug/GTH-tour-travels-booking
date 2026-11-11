@@ -95,8 +95,8 @@ test("sitemap routes read one requested shard without exact counts",async()=>{
     params:Promise.resolve({kind:"properties",page:"0.xml"}),
   });
   assert.equal(valid.status,200);
-  assert.match(valid.headers.get("content-type"),/application\\/xml/);
-  assert.match(await valid.text(),/real-estate\\/sample-project/);
+  assert.ok(valid.headers.get("content-type").includes("application/xml"));
+  assert.ok((await valid.text()).includes("real-estate/sample-project"));
   assert.equal(h.requested.length,0,"no extra expensive count requests");
   const outOfRange=await route.GET(new Request("https://www.gthproglobal.com/seo-sitemaps/properties/2.xml"),{
     params:Promise.resolve({kind:"properties",page:"2.xml"}),
@@ -129,7 +129,7 @@ test("sitemap index still owns whole-catalogue counts, individual shards are one
   const root=read("src/app/sitemap-index.xml/route.ts");
   const shard=read("src/app/seo-sitemaps/[kind]/[page]/route.ts");
   assert.match(root,/seoShardCounts/);
-  assert.match(shard,/seoShard\\(kind,index\\)/);
-  assert.match(shard,/if\\(!urls.length\\)/);
+  assert.ok(shard.includes("seoShard(kind,index)"));
+  assert.ok(shard.includes("if(!urls.length)"));
   assert.doesNotMatch(shard,/seoShardPages|seoShardCounts/);
 });
