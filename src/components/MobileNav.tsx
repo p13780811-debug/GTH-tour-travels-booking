@@ -6,7 +6,7 @@ import { BriefcaseBusiness, Building2, Home, Hotel, Plane } from "lucide-react";
 
 /** One reusable five-tab app bar, scoped to small screens. Real Estate keeps its approved own navigation. */
 const items = [
-  { href: "/app", appHref: "/app", name: "Home", Icon: Home, matches: ["/app", "/", "/mega-aggregator"] },
+  { href: "/mega-aggregator", appHref: "/app", name: "Home", Icon: Home, matches: ["/mega-aggregator"] },
   { href: "/flights", appHref: "/app/flights", name: "Flights", Icon: Plane, matches: ["/flights", "/travel"] },
   { href: "/hotels", appHref: "/app/hotels", name: "Hotels", Icon: Hotel, matches: ["/hotels"] },
   { href: "/real-estate", appHref: "/app/property", name: "Property", Icon: Building2, matches: ["/real-estate"] },
