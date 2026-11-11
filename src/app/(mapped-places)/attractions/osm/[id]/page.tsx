@@ -8,7 +8,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {getOsmPlace,relatedOsmPlaces} from "@/lib/travel/osm-place-reader";
 import {isIndexableOsmPlace,osmPlacePath,osmPlaceSeo,osmPlaceLinks,osmPlaceSchema} from "@/lib/travel/osm-place";
 import {directoryHref} from "@/lib/travel/osmAttractions";
-import {ATTRACTION_TICKET_PARTNERS,attractionTicketQueryLabel} from "@/lib/travel/attraction-ticket-partners";
+import {ATTRACTION_TICKET_PARTNERS,attractionTicketQueryLabel,isTicketOrientedCategory} from "@/lib/travel/attraction-ticket-partners";
 
 // Never enumerate the imported directory at build time. One requested page is
 // generated, then shared as ISR HTML for 24 hours. Source cache is shared too.
@@ -100,12 +100,13 @@ export default async function OsmPlacePage({params}:Props){
        <span className="text-xs leading-6 text-[var(--text-soft)]">Browse KKday through our existing tracked Travelpayouts link. This opens partner discovery; it is not an exact ticket for {item.name}.</span>
        <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse partner listings <ArrowUpRight size={16}/></span>
      </a>
-     <a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} target="_blank" rel="noopener noreferrer nofollow"
+     {isTicketOrientedCategory(item.category)&&<a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} target="_blank" rel="noopener noreferrer nofollow"
        className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
        <span className="text-base font-bold">Tiqets museums & attraction entry</span>
        <span className="text-xs leading-6 text-[var(--text-soft)]">Search the independent Tiqets catalogue for matching admission options. Direct website link; affiliate tracking has not yet been verified.</span>
        <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse supplier tickets <ArrowUpRight size={16}/></span>
      </a>
+}
      <Link prefetch={false} href={links.tours} className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">Audio & self-guided tours</span><span className="text-xs leading-6 text-[var(--text-soft)]">Browse our existing audio-tour catalogue. Choose a matching product.</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Explore supplier tours <ArrowUpRight size={16}/></span></Link>
     </div>
     <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">Affiliate disclosure: eligible bookings may earn GTH PRO a commission. Providers confirm inventory, final prices, payment and cancellation. <Link prefetch={false} href="/affiliate-disclosure" className="underline">How affiliate links work</Link>.</p>
