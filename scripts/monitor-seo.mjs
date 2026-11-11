@@ -7,16 +7,36 @@ const origin = "https://www.gthproglobal.com";
 const seedPaths = ["/", "/travel", "/flights", "/hotels", "/tours", "/tender", "/real-estate", "/destinations/mumbai", "/blog/how-to-compare-flight-fares"];
 const errors = [];
 const warnings = [];
+// Website-side diagnostics only: these six categories are NOT the six
+// Google Search Console report rows (which require authenticated GSC data).
+const indexingDiagnostics = Object.fromEntries([
+  "robots_blocked", "noindex", "redirect", "http_failure",
+  "canonical_mismatch", "content_quality",
+].map(category => [category, []]));
+const responseHeaders = new Map();
+let publicDisallow = [];
+const recordIssue = (category, detail) => {
+  if (indexingDiagnostics[category]) indexingDiagnostics[category].push(detail);
+};
 const decode = (s) => s.replace(/&amp;/g, "&").replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"');
 async function get(path) {
   const response = await fetch(origin + path, { redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(20000) });
-  if (response.status !== 200) throw new Error("HTTP " + response.status);
+  responseHeaders.set(path, {xRobotsTag: response.headers.get("x-robots-tag") || ""});
+  if (response.status !== 200) {
+    recordIssue(response.status >= 300 && response.status < 400 ? "redirect" : "http_failure", path + ": HTTP " + response.status);
+    throw new Error("HTTP " + response.status);
+  }
   return response.text();
 }
 function tag(html, regex) { return decode(html.match(regex)?.[1] || ""); }
 let sitemapPaths = [];
 try {
   const robots = await get("/robots.txt");
+  publicDisallow = robots.split("\n")
+    .map(line => line.trim())
+    .filter(line => line.toLowerCase().startsWith("disallow:"))
+    .map(line => line.slice("disallow:".length).trim().split(" ")[0].split("#")[0])
+    .filter(value => value.startsWith("/"));
   if (!robots.includes("Sitemap: " + origin + "/sitemap.xml")) errors.push("robots.txt: missing correct Sitemap");
   if (!robots.includes("Sitemap: " + origin + "/sitemap-index.xml")) errors.push("robots.txt: missing property sitemap index");
   const xml = await get("/sitemap.xml");
@@ -118,6 +138,9 @@ for (let i = 0; i < paths.length; i += 4) {
   await Promise.all(paths.slice(i, i + 4).map(async path => {
     try {
       const html = await get(path);
+      if (publicDisallow.some(prefix => path === prefix || path.startsWith(prefix + "/"))) {
+        recordIssue("robots_blocked", path);
+      }
       const title = tag(html, /<title>([^<]+)<\/title>/i);
       const description = tag(html, /<meta\s+name="description"\s+content="([^"]+)"/i);
       const canonical = tag(html, /<link\s+rel="canonical"\s+href="([^"]+)"/i);
@@ -126,11 +149,24 @@ for (let i = 0; i < paths.length; i += 4) {
       const problems = [];
       if (title.trim().length < 12 || title.trim().length > 120) problems.push("title");
       if (description.trim().length < 60 || description.trim().length > 300) problems.push("description");
-      if (canonical.replace(/\/$/, "") !== expected.replace(/\/$/, "")) problems.push("canonical");
-      if (/noindex|nofollow/i.test(robots)) problems.push("noindex");
+      if ((canonical.endsWith("/") ? canonical.slice(0, -1) : canonical) !==
+          (expected.endsWith("/") ? expected.slice(0, -1) : expected)) {
+        problems.push("canonical");
+        recordIssue("canonical_mismatch", path + ": " + (canonical || "missing canonical"));
+      }
+      if (/noindex|nofollow/i.test(robots) ||
+          /noindex|nofollow/i.test(responseHeaders.get(path)?.xRobotsTag || "")) {
+        problems.push("noindex");
+        recordIssue("noindex", path);
+      }
       // A client-side heading may still appear; surface server markup concerns
       // without falsely treating an intentional loading boundary as a 404.
-      if (!/<h1\b/i.test(html)) warnings.push(path + ": H1 absent in initial server HTML");
+      if (!html.toLowerCase().includes("<h1")) {
+        warnings.push(path + ": H1 absent in initial server HTML");
+        recordIssue("content_quality", path + ": H1 missing");
+      }
+      if (title.trim().length < 12 || description.trim().length < 60)
+        recordIssue("content_quality", path + ": missing or thin title/description");
       if (problems.length) errors.push(path + ": " + problems.join(", "));
       else passed++;
       console.log((problems.length ? "FAIL" : "PASS") + " SEO " + path + (problems.length ? " (" + problems.join(", ") + ")" : ""));
@@ -140,6 +176,11 @@ for (let i = 0; i < paths.length; i += 4) {
   }));
 }
 console.log("PUBLIC_SEO_HEALTH · " + paths.length + " unique pages checked · " + passed + " passed · " + errors.length + " errors · " + warnings.length + " heading warnings");
+for (const [category, details] of Object.entries(indexingDiagnostics)) {
+  console.log("INDEXABILITY_SITE_CHECK " + category + ": " + details.length +
+    (details.length ? " · samples: " + details.slice(0, 3).join("; ") : ""));
+}
+console.log("These are website-side checks only; Google Crawled/Discovered indexing states require Search Console URL Inspection.");
 for (const warning of warnings) console.warn("SEO NOTE: " + warning);
 if (errors.length) {
   for (const error of errors) console.error("SEO FAIL: " + error);

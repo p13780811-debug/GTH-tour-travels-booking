@@ -32,3 +32,17 @@ test("SEO monitors do not mutate pages, fetch private data or falsely claim inde
 test("daily SEO sampling accepts the real-estate property shards advertised by the index",()=>{
  assert.match(read("scripts/monitor-seo.mjs"),/tenders\|properties/);
 });
+
+test("daily SEO monitor categorizes six website failure modes without claiming Google indexing status",()=>{
+ const s=read("scripts/monitor-seo.mjs");
+ for(const category of [
+  "robots_blocked","noindex","redirect","http_failure","canonical_mismatch","content_quality",
+ ])assert.ok(s.includes('"'+category+'"'),"missing audit category "+category);
+ assert.match(s,/response\.headers\.get\("x-robots-tag"\)/);
+ assert.match(s,/response\.status >= 300 && response\.status < 400/);
+ assert.match(s,/const indexingDiagnostics =/);
+ assert.match(s,/publicDisallow\.some/);
+ assert.match(s,/INDEXABILITY_SITE_CHECK/);
+ assert.match(s,/Google Crawled\/Discovered indexing states require Search Console URL Inspection/);
+ assert.doesNotMatch(s,/method:\s*["']POST["']|SUPABASE_SERVICE_ROLE|INDEXING_API_KEY/);
+});
