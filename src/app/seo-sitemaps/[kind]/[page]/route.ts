@@ -1,4 +1,4 @@
-import {seoShard,seoShardCounts,knownSeoKind} from "@/lib/seo/large-sitemaps";
+import {seoShard,seoShardPages,knownSeoKind} from "@/lib/seo/large-sitemaps";
 import {isPublicLaunch} from "@/lib/seo/site";
 export const dynamic="force-dynamic";
 type Props={params:Promise<{kind:string;page:string}>};
@@ -10,7 +10,7 @@ export async function GET(_req:Request,{params}:Props){
   return new Response("Invalid sitemap",{status:404,headers:{"Cache-Control":"no-store"}});
  const index=Number(page.slice(0,-4));
  try{
-  const available=(await seoShardCounts()).find(x=>x.kind===kind)?.pages||0;
+  const available=await seoShardPages(kind);
   if(index>=available)return new Response("Sitemap not published",{status:404,headers:{"Cache-Control":"no-store"}});
   const urls=await seoShard(kind,index);
   const xml='<?xml version="1.0" encoding="UTF-8"?>\n'+
