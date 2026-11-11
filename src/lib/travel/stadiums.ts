@@ -41,7 +41,7 @@ export const stadiums: readonly Stadium[] = [
     overview: "Eden Gardens is a cricket ground in central Kolkata. Use the Cricket Association of Bengal notices for local announcements and confirm the venue for city-level fixtures before booking a trip.",
     seating: "Check the stand, entry gate and any bag restrictions on the event ticket. Use the organizer’s seating layout for your match.",
     schedule: bcciHomeSeason,
-    tickets: { label: "Cricket Association of Bengal notices", url: "https://mail.cricketassociationofbengal.com/notice.php" },
+    tickets: { label: "Cricket Association of Bengal notices", url: "https://www.cricketassociationofbengal.com/notice.php" },
   },
   {
     slug: "wankhede-stadium", name: "Wankhede Stadium", city: "Mumbai", country: "India",
@@ -135,6 +135,16 @@ export const stadiums: readonly Stadium[] = [
     seating: "Compare sections with the National Stadium seat viewer and use your event’s seating layout for stage configuration, accessible seats and entry details.",
     schedule: { label: "The Kallang event calendar", url: "https://thekallang.com.sg/calendar" },
     seatMap: { label: "National Stadium seat viewer", url: "https://www.thekallang.com.sg/en/plan-your-visit/stadium-seat-view.html" },
+    events: [
+      {
+        label: "Guns N’ Roses World Tour — Singapore", starts: "2026-11-25",
+        url: "https://www.thekallang.com.sg/en/things-to-do/events/guns-n--roses-world-tour-2026.html",
+      },
+      {
+        label: "Jay Chou Carnival II World Tour — Singapore", starts: "2027-01-08", ends: "2027-01-10",
+        url: "https://www.thekallang.com.sg/en/things-to-do/events/jay-chou--carnival---world-tour-2027-in-singapore.html",
+      },
+    ],
   },
   {
     slug: "tokyo-dome", name: "Tokyo Dome", city: "Tokyo", country: "Japan",
