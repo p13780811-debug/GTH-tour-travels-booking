@@ -59,6 +59,7 @@ test("each OSM detail offers contextual existing Klook/GYG search plus correctly
  assert.match(files.detail,/attractionTicketQueryLabel\(item\.category\)/);
  assert.match(files.detail,/ATTRACTION_TICKET_PARTNERS\.kkday\.href/);
  assert.match(files.detail,/ATTRACTION_TICKET_PARTNERS\.tiqets\.href/);
+ assert.match(files.detail,/isTicketOrientedCategory\(item\.category\)&&<a href=\{ATTRACTION_TICKET_PARTNERS\.tiqets\.href\}/);
  assert.match(files.detail,/rel="sponsored noopener noreferrer"/);
  assert.match(files.detail,/rel="noopener noreferrer nofollow"/);
  assert.match(files.detail,/not an exact ticket for \{item\.name\}/);
