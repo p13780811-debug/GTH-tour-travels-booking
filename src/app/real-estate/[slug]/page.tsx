@@ -5,14 +5,14 @@ import { isIndexableProperty, propertySeo, validPropertySlug } from "@/lib/real-
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { getPublishedProjectMedia, projectCover, publishedMediaUrl } from "@/lib/property-media/published-media"
-import { PropertyService } from "@/lib/real-estate/propertyService"
+import {readPublicProjectForPage} from "@/lib/real-estate/public-property-page"
 import { supabase } from "@/lib/supabase"
 import {RecordPropertyView} from "@/components/real-estate/RecentlyViewed"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site"
 
 const readProperty = cache(async (slug: string) => {
-    const property = validPropertySlug(slug) ? await PropertyService.getBySlug(slug) : null
+    const property = validPropertySlug(slug) ? await readPublicProjectForPage(slug) : null
     if (!property) return null
     const [units, publishedMedia] = await Promise.all([
         supabase.from("property_inventory").select("id,project_id,listing_type,property_type,bedrooms,bathrooms,area_sqft,price_amount,currency,description,submitter_role,verified,published_at,media_urls,possession_status,area_basis")
