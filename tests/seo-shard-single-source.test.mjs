@@ -6,12 +6,12 @@ import ts from "typescript";
 
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 function compile(path, deps, globals = {}) {
-  const module = {exports:{}};
+  const compiledModule = {exports:{}};
   const js = ts.transpileModule(read(path), {
     compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},
   }).outputText;
   vm.runInNewContext(js, {
-    module,exports:module.exports,
+    module:compiledModule,exports:compiledModule.exports,
     require:name=>{
       if (name in deps) return deps[name];
       throw new Error("Unexpected dependency "+name);
@@ -21,7 +21,7 @@ function compile(path, deps, globals = {}) {
     AbortSignal:{timeout:ms=>{assert.equal(ms,12000);return {timeoutMs:ms};}},
     ...globals,
   });
-  return module.exports;
+  return compiledModule.exports;
 }
 function setup(opts = {}) {
   const requested = [];
