@@ -8,6 +8,7 @@ import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {getOsmPlace,relatedOsmPlaces} from "@/lib/travel/osm-place-reader";
 import {isIndexableOsmPlace,osmPlacePath,osmPlaceSeo,osmPlaceLinks,osmPlaceSchema} from "@/lib/travel/osm-place";
 import {directoryHref} from "@/lib/travel/osmAttractions";
+import {ATTRACTION_TICKET_PARTNERS,attractionTicketQueryLabel} from "@/lib/travel/attraction-ticket-partners";
 
 // Never enumerate the imported directory at build time. One requested page is
 // generated, then shared as ISR HTML for 24 hours. Source cache is shared too.
@@ -88,11 +89,23 @@ export default async function OsmPlacePage({params}:Props){
    </div>
    <section id="experiences" aria-labelledby="partner-options" className="mt-8 scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
     <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]">Your next step</p>
-    <h2 id="partner-options" className="mt-2 text-2xl font-bold">Experiences around {item.name}</h2>
+    <h2 id="partner-options" className="mt-2 text-2xl font-bold">Find tickets and experiences around {item.name}</h2>
     <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">These links search for the recorded place and location. Results may include nearby or similarly named experiences; they are not a confirmed ticket for this map record. Select your dates and travellers with the provider.</p>
-    <div className="mt-5 grid gap-3 sm:grid-cols-3">
-     <a href={links.klook} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">Attraction tickets</span><span className="text-xs leading-6 text-[var(--text-soft)]">Search activities and attraction tickets</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Search this place <ArrowUpRight size={16}/></span></a>
+    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+     <a href={links.klook} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">{attractionTicketQueryLabel(item.category)}</span><span className="text-xs leading-6 text-[var(--text-soft)]">Search this place by name and source location; only the provider confirms a matching offer</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Search this place <ArrowUpRight size={16}/></span></a>
      <a href={links.getyourguide} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">Tours & experiences</span><span className="text-xs leading-6 text-[var(--text-soft)]">Search independent tours and experiences</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Search this place <ArrowUpRight size={16}/></span></a>
+     <a href={ATTRACTION_TICKET_PARTNERS.kkday.href} target="_blank" rel="sponsored noopener noreferrer"
+       className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
+       <span className="text-base font-bold">KKday attractions & local experiences</span>
+       <span className="text-xs leading-6 text-[var(--text-soft)]">Browse KKday through our existing tracked Travelpayouts link. This opens partner discovery; it is not an exact ticket for {item.name}.</span>
+       <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse partner listings <ArrowUpRight size={16}/></span>
+     </a>
+     <a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} target="_blank" rel="noopener noreferrer nofollow"
+       className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
+       <span className="text-base font-bold">Tiqets museums & attraction entry</span>
+       <span className="text-xs leading-6 text-[var(--text-soft)]">Search the independent Tiqets catalogue for matching admission options. Direct website link; affiliate tracking has not yet been verified.</span>
+       <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse supplier tickets <ArrowUpRight size={16}/></span>
+     </a>
      <Link prefetch={false} href={links.tours} className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">Audio & self-guided tours</span><span className="text-xs leading-6 text-[var(--text-soft)]">Browse our existing audio-tour catalogue. Choose a matching product.</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Explore supplier tours <ArrowUpRight size={16}/></span></Link>
     </div>
     <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">Affiliate disclosure: eligible bookings may earn GTH PRO a commission. Providers confirm inventory, final prices, payment and cancellation. <Link prefetch={false} href="/affiliate-disclosure" className="underline">How affiliate links work</Link>.</p>
