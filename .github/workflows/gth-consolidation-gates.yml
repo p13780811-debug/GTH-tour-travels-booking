@@ -108,6 +108,7 @@ jobs:
             ':!src/lib/real-estate/emi.ts' \
             ':!src/lib/real-estate/lead-server.ts' \
             ':!src/lib/real-estate/property-seo.ts' \
+            ':(exclude,literal)src/lib/real-estate/public-property-page.ts' \
             ':!src/lib/real-estate/explorer.ts' \
             ':!src/lib/real-estate/saved-searches.ts' \
             ':(exclude,literal)src/app/api/real-estate/dossier/[slug]/route.ts' \

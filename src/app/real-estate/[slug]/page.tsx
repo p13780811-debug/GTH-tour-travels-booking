@@ -5,14 +5,14 @@ import { isIndexableProperty, propertySeo, validPropertySlug } from "@/lib/real-
 import type { Metadata } from "next"
 import { approvedMedia } from "@/lib/real-estate/approved-media"
 import { getPublishedProjectMedia, projectCover, publishedMediaUrl } from "@/lib/property-media/published-media"
-import { PropertyService } from "@/lib/real-estate/propertyService"
+import {readPublicProjectForPage} from "@/lib/real-estate/public-property-page"
 import { supabase } from "@/lib/supabase"
 import {RecordPropertyView} from "@/components/real-estate/RecentlyViewed"
 import PropertyDetailClient from "@/components/real-estate/PropertyDetailClient"
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site"
 
 const readProperty = cache(async (slug: string) => {
-    const property = validPropertySlug(slug) ? await PropertyService.getBySlug(slug) : null
+    const property = validPropertySlug(slug) ? await readPublicProjectForPage(slug) : null
     if (!property) return null
     const [units, publishedMedia] = await Promise.all([
         supabase.from("property_inventory").select("id,project_id,listing_type,property_type,bedrooms,bathrooms,area_sqft,price_amount,currency,description,submitter_role,verified,published_at,media_urls,possession_status,area_basis")
@@ -122,6 +122,35 @@ export default async function PropertyPage({ params }: PageProps) {
                     The official search link is not a verified direct project-detail link.
                 </p>
             </div>
+            {property.historicalRegistry && <section aria-labelledby="historical-project-record-heading"
+                className="gth-glass mt-5 rounded-2xl p-5">
+                <h3 id="historical-project-record-heading" className="text-lg font-semibold">
+                    Recorded historical project facts
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+                    These fields come from a historic operator-supplied MahaRERA CSV snapshot, not a
+                    verified live project-detail record. They do not establish current construction,
+                    approval, completion or availability.
+                </p>
+                <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                    {([
+                        ["Project type recorded", property.historicalRegistry.projectType],
+                        ["Postal code recorded", property.historicalRegistry.postalCode],
+                        ["Proposed completion date in snapshot", property.historicalRegistry.proposedCompletion],
+                        ["Status recorded at snapshot time", property.historicalRegistry.recordedStatus],
+                        ["Source last modified (historic)", property.historicalRegistry.sourceModified],
+                    ] as const).filter(([,value])=>Boolean(value)).map(([label,value])=>(
+                        <div key={label} className="min-w-0 border-b border-[var(--border)] pb-2">
+                            <dt className="text-[var(--text-soft)]">{label}</dt>
+                            <dd className="mt-1 break-words font-medium">{value}</dd>
+                        </div>
+                    ))}
+                </dl>
+                <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
+                    The project registration reference and historical facts above are for research only.
+                    Verify the latest registration record and dates on the official MahaRERA website.
+                </p>
+            </section>}
         </aside>}
     </>
 }
