@@ -149,7 +149,7 @@ for (let i = 0; i < paths.length; i += 4) {
       const problems = [];
       if (title.trim().length < 12 || title.trim().length > 120) problems.push("title");
       if (description.trim().length < 60 || description.trim().length > 300) problems.push("description");
-      if (canonical.replace(/\\/$/, "") !== expected.replace(/\\/$/, "")) {
+      if (canonical.replaceAll(/[/]+$/, "") !== expected.replaceAll(/[/]+$/, "")) {
         problems.push("canonical");
         recordIssue("canonical_mismatch", path + ": " + (canonical || "missing canonical"));
       }
@@ -160,7 +160,7 @@ for (let i = 0; i < paths.length; i += 4) {
       }
       // A client-side heading may still appear; surface server markup concerns
       // without falsely treating an intentional loading boundary as a 404.
-      if (!/<h1\\b/i.test(html)) {
+      if (!html.toLowerCase().includes("<h1")) {
         warnings.push(path + ": H1 absent in initial server HTML");
         recordIssue("content_quality", path + ": H1 missing");
       }
