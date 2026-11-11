@@ -37,7 +37,7 @@ test("PWA Home stays inside /app scope, rendering same Ecosystem without a dupli
 test("website flagship homepage remains completely separate from mobile Home",()=>{
  const website=read("src/app/page.tsx");
  assert.match(website,/return <FlagshipHome \/>/);
- assert.match(website,/alternates: \{canonical: "\/"\}/);
+ assert.match(website,/alternates:\s*\{\s*canonical:\s*"\/"\s*\}/);
  const nav=read("src/components/MobileNav.tsx");
  assert.doesNotMatch(nav,/name: "Home"[^\n]+matches: \[[^\]]*"\/"/);
  const wrapper=read("src/components/LayoutWrapper.tsx");
