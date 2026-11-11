@@ -57,8 +57,11 @@ export const readPublicProjectForPage = unstable_cache(
         .limit(1)
         .abortSignal(AbortSignal.timeout(8000));
       if (error) throw new Error("public source unavailable");
-      if (!data?.[0]) return null;
-      const {registry_evidence, ...publicFields} = data[0];
+      // Dynamic PostgREST select expressions cannot be fully inferred by supabase-js.
+      // Validate the runtime row shape before narrowing to the requested public fields.
+      const row = data?.[0] as unknown as Record<string, unknown> | undefined;
+      if (!row || typeof row !== "object" || Array.isArray(row)) return null;
+      const {registry_evidence, ...publicFields} = row;
       const property = transformProperty(publicFields);
       // Store only allowlisted, provenance-labelled historic fields in the
       // cached page payload; never serialize the full evidence JSON.
