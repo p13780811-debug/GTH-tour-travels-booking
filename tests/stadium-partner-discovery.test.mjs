@@ -7,12 +7,12 @@ import ts from "typescript";
 const read=path=>readFileSync(path,"utf8");
 function load(path,requires={}){
   const output=ts.transpileModule(read(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-  const module={exports:{}};
-  vm.runInNewContext(output,{module,exports:module.exports,URL,URLSearchParams,require:ref=>{
+  const mod={exports:{}};
+  vm.runInNewContext(output,{module:mod,exports:mod.exports,URL,URLSearchParams,require:ref=>{
     assert.ok(ref in requires,ref+" unexpected");
     return requires[ref];
   }});
-  return module.exports;
+  return mod.exports;
 }
 const partner=load("src/lib/travel/partner-search.ts");
 const discovery=load("src/lib/travel/stadium-partner-discovery.ts",{
