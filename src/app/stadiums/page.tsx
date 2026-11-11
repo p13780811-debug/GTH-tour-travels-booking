@@ -6,6 +6,10 @@ import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import StadiumDirectory from "./StadiumDirectory";
 import StadiumPartnerDiscovery from "./StadiumPartnerDiscovery";
+import StadiumUpcomingEvents from "./StadiumUpcomingEvents";
+
+// Refresh editorial event visibility hourly; no live API, cron or DB traffic.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Stadium Tickets & Venue Guides | GTH PRO",
@@ -25,6 +29,7 @@ export default function StadiumsPage() {
         <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Event organizers and suppliers confirm dates, available seats, final prices and ticket terms. Check whether your selected product includes event admission.</p>
       </header>
       <StadiumPartnerDiscovery/>
+      <StadiumUpcomingEvents/>
       <section className="mt-8" aria-labelledby="stadium-exact-offers-heading">
         <header>
           <h2 id="stadium-exact-offers-heading" className="text-2xl font-bold sm:text-3xl">Reviewed event & club experiences</h2>
