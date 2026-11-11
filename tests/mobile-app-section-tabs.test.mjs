@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 const f=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("App bottom tabs stay in app including internal details",()=>{
  const nav=f("src/components/MobileNav.tsx");
- for(const route of ["/app","/app/flights","/app/hotels","/app/property","/app/tenders"])
+ for(const route of ["/app/ecosystem","/app/flights","/app/hotels","/app/property","/app/tenders"])
   assert.ok(nav.includes('appHref: "'+route+'"'),"Missing "+route);
  assert.match(nav,/const target = isApp \? appHref : href/);
  assert.match(nav,/pathname\.startsWith\(appHref \+ "\/"\)/);

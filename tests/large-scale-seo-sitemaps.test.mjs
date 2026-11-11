@@ -14,7 +14,7 @@ test("Sitemap index is launch-gated and discovers every approved pillar in pagin
  assert.match(shards,/<urlset/);
  assert.match(index,/seoShardCounts/);
  assert.match(shards,/knownSeoKind/);
- assert.match(shards,/index>=available/);
+ assert.match(shards,/if\(!urls\.length\)/);
  assert.match(shards,/SEO sitemap|Sitemap unavailable/);
  assert.match(helper,/SEO_PAGE_SIZE=1000/);
  assert.match(helper,/SEO_MAX_PAGES=500/);

@@ -9,6 +9,7 @@ import {publishedMedia} from "@/lib/travel/guideMedia";
 import GuideDiscoveryRails from "@/components/travel/GuideDiscoveryRails";
 import {cachedSourceProgress,cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
+import {ATTRACTION_TICKET_PARTNERS} from "@/lib/travel/attraction-ticket-partners";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
@@ -51,6 +52,55 @@ export default async function AttractionsDirectory({searchParams}:Props){
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs text-[var(--text-soft)]">Imported public map records</p><p className="mt-2 text-2xl font-bold">{stats?stats.total.toLocaleString("en-IN"):"Unavailable"}</p></div>
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs text-[var(--text-soft)]">Countries with imported records</p><p className="mt-2 text-2xl font-bold">{stats?stats.countriesWithRecords:"Unavailable"}</p></div>
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"><p className="text-xs text-[var(--text-soft)]">Last completed source sync</p><p className="mt-2 text-sm font-semibold">{stats?.runs[0]?stats.runs[0].country_name+" · "+new Date(stats.runs[0].completed_at).toLocaleDateString("en-IN",{dateStyle:"medium"}):"No completed runs recorded yet"}</p></div>
+   </section>
+   <section aria-labelledby="attraction-tickets" className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+    <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">GTH PRO · Existing travel affiliate programs</p>
+    <h2 id="attraction-tickets" className="mt-2 text-xl font-bold sm:text-2xl">Explore attraction tickets and local experiences</h2>
+    <p className="mt-3 max-w-4xl text-sm leading-7 text-[var(--text-soft)]">
+      Our source-mapped directory contains real geographic places, not a live ticket feed.
+      Use the filters below to find a museum, theme park or landmark; each place guide
+      offers contextual partner searches. KKday and Tiqets provide independent travel
+      experiences and attraction-ticket browsing, but neither confirms tickets for every
+      mapped place.
+    </p>
+    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+     <article className="flex min-w-0 flex-col rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+      <h3 className="text-base font-bold">Tours, activities and attraction entry</h3>
+      <p className="my-3 flex-1 text-xs leading-6 text-[var(--text-soft)]">
+       KKday offers tours, attraction tickets and local activities. This is our
+       existing Travelpayouts-tracked partner link; choose a matching product on the provider site.
+      </p>
+      <a href={ATTRACTION_TICKET_PARTNERS.kkday.href} rel="noopener noreferrer sponsored" target="_blank"
+       className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+       Browse partner experiences <ArrowRight size={16} aria-hidden="true"/>
+      </a>
+      <p className="mt-2 text-xs text-[var(--text-soft)]">KKday · Existing tracked referral, not a place-specific ticket</p>
+     </article>
+     <article className="flex min-w-0 flex-col rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+      <h3 className="text-base font-bold">Museums, landmarks and digital tickets</h3>
+      <p className="my-3 flex-1 text-xs leading-6 text-[var(--text-soft)]">
+       Tiqets focuses on museums and visitor attractions, including eligible mobile-entry
+       and skip-the-line options. Exact ticket types depend on the selected attraction.
+      </p>
+      <a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} rel="noopener noreferrer nofollow" target="_blank"
+       className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+       Explore attraction tickets <ArrowRight size={16} aria-hidden="true"/>
+      </a>
+      <p className="mt-2 text-xs text-[var(--text-soft)]">Tiqets · Direct supplier browsing; affiliate attribution not yet confirmed</p>
+     </article>
+    </div>
+    <div className="mt-5 flex flex-wrap gap-2" aria-label="Explore attraction categories">
+     {([["museum","Museums"],["theme-park","Theme parks"],["zoo","Zoos"],["fort","Forts"],["monument","Monuments"],["attraction","Landmarks"]] as const).map(([category,label])=>
+      <Link key={category} prefetch={false} href={directoryHref({category})}
+       className="inline-flex min-h-10 items-center rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-xs font-semibold hover:border-[var(--gold)]">
+       {label}
+      </Link>)}
+    </div>
+    <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
+     This directory is not a supplier inventory count. No admission price, discount, live
+     availability, approved product match or skip-the-line entitlement is inferred from a
+     map record. <Link href="/affiliate-disclosure" prefetch={false} className="underline">Affiliate disclosure</Link>.
+    </p>
    </section>
    <form role="search" action="/attractions" method="get" className="mt-7 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
     <label className="text-xs font-semibold">Search mapped place
