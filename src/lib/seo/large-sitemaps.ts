@@ -91,6 +91,22 @@ export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:
  }));
  return output;
 }
+/**
+ * A single sitemap shard must never depend on counts for unrelated sources.
+ * For example, an unavailable hotel or tender view must not cause an otherwise
+ * healthy property sitemap to return HTTP 503 to Googlebot.
+ *
+ * Use the same RLS-scoped public view, launch gate, and bounded count as the
+ * full sitemap index without querying the other five catalogues.
+ */
+export async function seoShardPages(kind:SeoKind):Promise<number>{
+ if(!isPublicLaunch())return 0;
+ const cfg=CONFIG[kind];
+ const {count,error}=await db().from(cfg.view).select(cfg.key,{head:true,count:"exact"})
+  .abortSignal(AbortSignal.timeout(12_000));
+ if(error)throw new Error("SEO count unavailable: "+kind);
+ return Math.min(SEO_MAX_PAGES,Math.ceil(Math.max(0,count||0)/SEO_PAGE_SIZE));
+}
 export async function seoShard(kind:SeoKind,page:number):Promise<MetadataRoute.Sitemap>{
  if(!isPublicLaunch()||!Number.isInteger(page)||page<0||page>=SEO_MAX_PAGES)return [];
  const cfg=CONFIG[kind],start=page*SEO_PAGE_SIZE;
