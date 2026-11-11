@@ -1,4 +1,4 @@
-import {seoShard,seoShardPages,knownSeoKind} from "@/lib/seo/large-sitemaps";
+import {seoShard,knownSeoKind} from "@/lib/seo/large-sitemaps";
 import {isPublicLaunch} from "@/lib/seo/site";
 export const dynamic="force-dynamic";
 type Props={params:Promise<{kind:string;page:string}>};
@@ -10,9 +10,10 @@ export async function GET(_req:Request,{params}:Props){
   return new Response("Invalid sitemap",{status:404,headers:{"Cache-Control":"no-store"}});
  const index=Number(page.slice(0,-4));
  try{
-  const available=await seoShardPages(kind);
-  if(index>=available)return new Response("Sitemap not published",{status:404,headers:{"Cache-Control":"no-store"}});
+  // One bounded public RLS read decides whether this shard has any eligible URLs.
+  // An exact count first needlessly delays Googlebot and doubles database traffic.
   const urls=await seoShard(kind,index);
+  if(!urls.length)return new Response("Sitemap not published",{status:404,headers:{"Cache-Control":"no-store"}});
   const xml='<?xml version="1.0" encoding="UTF-8"?>\n'+
    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+
    urls.map(e=>"<url><loc>"+ESC(e.url)+"</loc>"+
