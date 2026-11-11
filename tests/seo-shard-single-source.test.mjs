@@ -75,16 +75,19 @@ test("an outage of the requested source is a retryable error, not a missing site
   assert.deepEqual(h.requested,["gth_seo_properties_v1"]);
 });
 
-test("property sitemap route uses only its own count and preserves XML and 404/503 behavior",async()=>{
+test("sitemap routes read one requested shard without exact counts",async()=>{
   const h=setup();
+  const requestedShards=[];
   const route=compile("src/app/seo-sitemaps/[kind]/[page]/route.ts",{
     "@/lib/seo/large-sitemaps":{
-      seoShardPages:h.shards.seoShardPages,
       knownSeoKind:kind=>kind==="properties",
-      seoShard:async()=>[{
-        url:"https://www.gthproglobal.com/real-estate/sample-project",
-        changeFrequency:"weekly",priority:0.5,
-      }],
+      seoShard:async(kind,page)=>{
+        requestedShards.push({kind,page});
+        return page===0?[{
+          url:"https://www.gthproglobal.com/real-estate/sample-project",
+          changeFrequency:"weekly",priority:0.5,
+        }]:[];
+      },
     },
     "@/lib/seo/site":h.site,
   });
@@ -92,9 +95,9 @@ test("property sitemap route uses only its own count and preserves XML and 404/5
     params:Promise.resolve({kind:"properties",page:"0.xml"}),
   });
   assert.equal(valid.status,200);
-  assert.match(valid.headers.get("content-type"),/application\/xml/);
-  assert.match(await valid.text(),/real-estate\/sample-project/);
-  assert.deepEqual(h.requested,["gth_seo_properties_v1"]);
+  assert.match(valid.headers.get("content-type"),/application\\/xml/);
+  assert.match(await valid.text(),/real-estate\\/sample-project/);
+  assert.equal(h.requested.length,0,"no extra expensive count requests");
   const outOfRange=await route.GET(new Request("https://www.gthproglobal.com/seo-sitemaps/properties/2.xml"),{
     params:Promise.resolve({kind:"properties",page:"2.xml"}),
   });
@@ -103,12 +106,30 @@ test("property sitemap route uses only its own count and preserves XML and 404/5
     params:Promise.resolve({kind:"other",page:"0.xml"}),
   });
   assert.equal(invalid.status,404);
+  assert.deepEqual(requestedShards,[{kind:"properties",page:0},{kind:"properties",page:2}]);
 });
 
-test("sitemap index still owns whole-catalogue counts, while individual shards do not",()=>{
+test("source read failures remain HTTP 503 and do not invent an empty sitemap",async()=>{
+  const route=compile("src/app/seo-sitemaps/[kind]/[page]/route.ts",{
+    "@/lib/seo/large-sitemaps":{
+      knownSeoKind:kind=>kind==="properties",
+      seoShard:async()=>{throw new Error("temporary backend outage");},
+    },
+    "@/lib/seo/site":{isPublicLaunch:()=>true},
+  });
+  const response=await route.GET(new Request("https://www.gthproglobal.com/seo-sitemaps/properties/0.xml"),{
+    params:Promise.resolve({kind:"properties",page:"0.xml"}),
+  });
+  assert.equal(response.status,503);
+  assert.equal(response.headers.get("Cache-Control"),"no-store");
+  assert.equal((await response.text()).includes("backend outage"),false);
+});
+
+test("sitemap index still owns whole-catalogue counts, individual shards are one-query only",()=>{
   const root=read("src/app/sitemap-index.xml/route.ts");
   const shard=read("src/app/seo-sitemaps/[kind]/[page]/route.ts");
   assert.match(root,/seoShardCounts/);
-  assert.match(shard,/seoShardPages\(kind\)/);
-  assert.doesNotMatch(shard,/seoShardCounts/);
+  assert.match(shard,/seoShard\\(kind,index\\)/);
+  assert.match(shard,/if\\(!urls.length\\)/);
+  assert.doesNotMatch(shard,/seoShardPages|seoShardCounts/);
 });
