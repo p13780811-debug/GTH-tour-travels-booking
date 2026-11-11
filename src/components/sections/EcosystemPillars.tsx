@@ -72,20 +72,22 @@ export default function EcosystemPillars() {
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {pillars.map(({id,number,title,eyebrow,description,href,cta,image,Icon,detail}) => (
-            <article key={id} className="gth-master-pillar group relative isolate min-h-[365px] overflow-hidden rounded-[28px] border border-white/15 bg-slate-950 text-white shadow-sm transition-transform duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-[var(--gold)] md:min-h-[415px]">
-              <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="-z-20 object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black via-black/80 to-black/15" aria-hidden="true" />
-              <div className="flex h-full flex-col justify-between p-6 md:p-7">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/25 bg-black/25 backdrop-blur"><Icon size={21} aria-hidden="true" /></span>
-                  <span className="text-xs font-semibold tracking-[0.22em] text-white/75">PILLAR {number}</span>
+            <article key={id} className="gth-master-pillar group flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)]">
+              {/* Keep the source photo visible instead of hiding it beneath a full-card black gradient. */}
+              <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--bg-soft)] sm:h-44 md:h-48">
+                <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
+                <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4" aria-hidden="true">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card-strong)] text-[var(--text)] backdrop-blur-sm"><Icon size={20} /></span>
+                  <span className="rounded-full border border-[var(--border)] bg-[var(--card-strong)] px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] text-[var(--text)] backdrop-blur-sm">PILLAR {number}</span>
                 </div>
-                <div className="mt-16">
-                  <p className="text-xs font-semibold uppercase tracking-[0.17em] text-amber-200">{eyebrow}</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/85">{description}</p>
-                  <p className="mt-4 border-t border-white/20 pt-4 text-xs font-medium text-white/65">{detail}</p>
-                  <Link href={href} className="mt-5 inline-flex min-h-11 w-full items-center justify-between rounded-xl border border-white/30 bg-white/10 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/20">
+              </div>
+              <div className="flex flex-1 flex-col p-5 md:p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--gold)]">{eyebrow}</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text)] md:text-3xl">{title}</h2>
+                <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
+                <div className="mt-auto pt-5">
+                  <p className="border-t border-[var(--border)] pt-3 text-xs font-medium text-[var(--text-soft)]">{detail}</p>
+                  <Link href={href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
                     {cta} <ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
