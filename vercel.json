@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
+      "fix/impact-site-meta-20261111": false,
       "feat/stadium-tickets-20261111": false,
       "feat/travel-connected-journey-20261109": false,
       "fix/attractions-progress-cpu-cache-20261103": false,
