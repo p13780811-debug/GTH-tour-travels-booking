@@ -42,7 +42,6 @@ function hotelTarget(query:string):string{
  const city=matchCity(cleaned);
  if(city){
   const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();
-  if(remainder.length>=2)params.q=remainder;
   return "/app/hotels?"+queryString({view:"booking",city:city.name,...(remainder?{name:remainder}:{})});
  }
  // For other cities, reuse the existing global hotel results search by city.
