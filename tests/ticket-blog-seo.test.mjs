@@ -44,7 +44,7 @@ test("all ticket guides are connected to existing Blog, sitemap, hub, categories
  assert.ok(blogIndex.includes('category=Tickets')||blogIndex.includes('"Tickets"'));
  assert.ok(blogIndex.includes('id="ticket-guides"'));
  assert.ok(blogDetail.includes('TicketBlogLinks slug={ticketGuide.slug}'));
- assert.ok(blogDetail.includes('datePublished:ticketGuide.publishedAt'));
+ assert.ok(blogDetail.includes('datePublished:datedGuide.publishedAt') && blogDetail.includes('const datedGuide=ticketGuide||ecosystemGuide'), 'Ticket and new ecosystem guides must retain sourced publication metadata');
  assert.ok(sitemap.includes('...blogs.map(article => ({ url: base + "/blog/" + article.slug'));
  assert.ok(ticketHub.includes('ticketBlogGuides.map(guide=>'));
  assert.ok(ticketCategory.includes('guide.ticketCategory===selected.slug'));

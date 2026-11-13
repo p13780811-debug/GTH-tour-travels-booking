@@ -2,12 +2,13 @@ import {expandedBlogs} from "./blogExpansion";
 import {globalRouteBlogs} from "./blogGlobalRoutes";
 import {groundTransportBlogs} from "./blogGroundTransport";
 import {ticketBlogGuides} from "./blogTickets";
+import {ecosystemGuides} from "./blogEcosystem";
 export interface Blog {
   slug: string;
   title: string;
   description: string;
   image: string;
-  category: "Flights" | "Hotels" | "Experiences" | "Planning" | "Safety" | "Tickets";
+  category: "Flights" | "Hotels" | "Experiences" | "Planning" | "Safety" | "Tickets" | "Real Estate" | "Tenders";
   content: string;
 }
 
@@ -207,4 +208,5 @@ Use [Destinations](/destinations) for inspiration, then arrange [Flights](/fligh
   ...globalRouteBlogs,
   ...groundTransportBlogs,
   ...ticketBlogGuides,
+  ...ecosystemGuides,
 ];
