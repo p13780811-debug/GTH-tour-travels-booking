@@ -36,21 +36,21 @@ const hotelWords=/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?|lodging|gu
 /**
  * Public hotel searches mean supplier booking, not an incomplete GTH OSM
  * directory. A bare city name is NOT a Nuitee placeId: the SDK must confirm
- * an actual supplier place selection before showing dated room inventory.
+ * a real supplier destination before showing dated room inventory.
  */
 function hotelTarget(query:string):string{
  const cleaned=trimKeywords(query,hotelWords);
  const city=matchCity(cleaned);
  if(city){
-  const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\\s+/g," ").trim();
+  const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();
   return "/app/hotels?"+queryString({
    view:"booking",city:city.name,...(remainder.length>=2?{name:remainder}:{})
   });
  }
- const byCity=query.match(/\\b(?:hotels?|resorts?|stays?|rooms?|accommodations?)\\s+(?:in|near|at)\\s+([\\p{L}\\p{M}][\\p{L}\\p{M} .'-]{1,65})$/iu);
+ const byCity=query.match(/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?)\s+(?:in|near|at)\s+([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})$/iu);
  if(byCity)return "/app/hotels?"+queryString({view:"booking",city:clean(byCity[1])});
- const beforeHotel=query.match(/^([\\p{L}\\p{M}][\\p{L}\\p{M} .'-]{1,65})\\s+(?:hotels?|resorts?|stays?)$/iu);
- if(beforeHotel&&beforeHotel[1].trim().split(/\\s+/).length<=2)
+ const beforeHotel=query.match(/^([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})\s+(?:hotels?|resorts?|stays?)$/iu);
+ if(beforeHotel&&beforeHotel[1].trim().split(/\s+/).length<=2)
   return "/app/hotels?"+queryString({view:"booking",city:clean(beforeHotel[1])});
  return "/app/hotels?"+queryString({view:"booking",...(cleaned?{name:cleaned}:{})});
 }
