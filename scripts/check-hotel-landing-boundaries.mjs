@@ -30,9 +30,23 @@ const baseBranch=process.env.GITHUB_BASE_REF;
 if(baseBranch&&!/^[A-Za-z0-9._/-]+$/.test(baseBranch))throw Error("Invalid PR base ref");
 const diffBase=baseBranch?"origin/"+baseBranch:baseline;
 const paths=[git("diff","--name-only",diffBase,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
-// Explicitly reviewed, public routing / user-intent regression surface of PR #207.
-// No admin, API, database, RLS, middleware, secret, theme or provider SDK paths.
+// Explicitly reviewed PR #207 + consolidation public UX/handoff paths.
+// No admin, server API, database, RLS, middleware, environment, secrets or theme files.
 const reviewedPublicHandoffs=new Set([
+ "src/app/app/page.tsx",
+ "src/app/app/ecosystem/page.tsx",
+ "src/app/app/hotels/page.tsx",
+ "src/app/attractions/cities/page.tsx",
+ "src/app/hotels/results/page.tsx",
+ "src/app/hotels/results/HotelResults.tsx",
+ "src/components/MobileNav.tsx",
+ "src/app/mega-aggregator/EcosystemHeroCarousel.tsx",
+ "src/app/manifest.ts",
+ "src/components/HotelSearch.tsx",
+ "src/components/sections/HeroSearch.tsx",
+ "src/components/sections/HotelScroll.tsx",
+ "tests/mobile-ecosystem-home-unification.test.mjs",
+ "tests/consolidated-pr204-206-207-release.test.mjs",
  "src/app/destinations/[slug]/page.tsx",
  "src/app/hotels/[slug]/page.tsx",
  "src/app/search/page.tsx",

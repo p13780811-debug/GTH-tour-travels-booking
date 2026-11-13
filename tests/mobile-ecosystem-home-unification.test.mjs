@@ -18,10 +18,12 @@ test("mobile Home, app logo and PWA launch resolve to one preserved dashboard",(
  const legacy=read("src/app/app/ecosystem/page.tsx");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
  assert.match(page,/<MobileAppDashboard data=\{data\}\/>/);
- assert.match(nav,/appHref: "\/app", name: "Home"/);
+ assert.match(nav,/href: "\/", appHref: "\/app", name: "Home"/);
  assert.match(logo,/href="\/app" aria-label="GTH PRO Home"/);
  assert.match(manifest,/start_url: "\/app"/);
  assert.match(legacy,/redirect\("\/app"\)/);
+ // Website Home stays \"/\" and the PWA Home stays \"/app\"; ecosystem remains a separate website destination.
+ assert.match(read("src/components/home/FlagshipHome.tsx"),/href="\/mega-aggregator"/);
  assert.doesNotMatch(legacy,/MegaAggregator|loadMobileDiscovery|fetch\(/);
 });
 test("the mobile UI reuses the approved photography without new APIs or CSS themes",()=>{
