@@ -27,13 +27,13 @@ try{
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  const page=await ctx.newPage();
  // The same existing service engines must handle global search: no endless
- // Explore re-render and no hotel name search for "Goa hotel".
+ // Explore re-render and no non-bookable hotel directory for "Goa hotel".
  await page.goto(base+"/app/search?q=Goa+hotel",{waitUntil:"domcontentloaded",timeout:60000});
- await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
- assert.ok(page.url().includes("/app/hotels?directory=1&destination=goa"),page.url());
+ await page.getByRole("heading",{name:"Hotels",exact:true}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/app/hotels?view=booking&city=Goa"),page.url());
  await page.goto(base+"/app/explore?q=hotels+in+Goa",{waitUntil:"domcontentloaded",timeout:60000});
- await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
- assert.ok(page.url().includes("destination=goa"),page.url());
+ await page.getByRole("heading",{name:"Hotels",exact:true}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("view=booking&city=Goa"),page.url());
  await page.goto(base+"/app/search?q=road+construction+tender",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Open tenders"}).waitFor({timeout:25000});
  assert.ok(page.url().includes("/app/tenders?q=road+construction"),page.url());
@@ -73,5 +73,5 @@ try{
  assert.equal(await external.getAttribute("target"),"_blank");
  assert.equal(await external.getAttribute("href"),"/transfers");
  await ctx.close();
- console.log("PASS: app search routes to hotels/tenders/property/tickets, four Android widths, federated Goa search, save/revisit/delete and safe handoff");
+ console.log("PASS: app search routes to Nuitee booking/tenders/property/tickets, four Android widths, federated Goa search, save/revisit/delete and safe handoff");
 }finally{await browser.close();}
