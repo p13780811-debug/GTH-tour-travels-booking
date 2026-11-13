@@ -12,6 +12,7 @@ import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, MapPin, Plane, 
  */
 export const TRAVEL_SECTIONS = [
   {href:"/flights",label:"Flights",Icon:Plane},
+  {href:"/tickets",label:"Worldwide Tickets",Icon:Ticket},
   {href:"/travel/airports",label:"Airport Explorer",Icon:MapPin},
   {href:"/hotels",label:"Hotels",Icon:Hotel},
   {href:"/tours",label:"Tours",Icon:Compass},
@@ -25,7 +26,6 @@ export const TRAVEL_SECTIONS = [
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},
   {href:"/ferry",label:"Ferries",Icon:Ship},
-  {href:"/tickets",label:"Worldwide Tickets",Icon:Ticket},
   {href:"/stadiums",label:"Stadium Tickets",Icon:Ticket},
   {href:"/cruises",label:"Cruises",Icon:Ship},
   {href:"/travel/deals",label:"Deals & offers",Icon:BadgePercent},
