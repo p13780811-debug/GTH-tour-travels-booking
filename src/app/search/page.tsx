@@ -9,6 +9,7 @@ import {
   Hotel, MapPin, Plane, Ticket, Search, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { destinations } from "@/data/destinations";
+import { knownStadiumTicketHref } from "@/lib/travel/stadium-ticket-routing";
 import { blogs } from "@/data/blogs";
 
 // Do not index infinite query-result combinations, including after public launch.
@@ -33,6 +34,7 @@ function cleanPlace(text: string): string {
 }
 
 function inferredCategory(query: string): SearchCategory {
+  if (knownStadiumTicketHref(query)) return "ticket";
   if (/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?)\b/i.test(query)) return "tender";
   if (/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|[1-9]\s*bhk)\b/i.test(query)) return "property";
   if (/\b(hotels?|resorts?|stays?|accommodation|lodging|guesthouses?|rooms?)\b/i.test(query)) return "hotel";
@@ -96,7 +98,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     const subject = q.replace(/^(?:find|read|travel|blog|blogs|guide|guides|article|articles)\s+/i, "").trim();
     return withParam("/blog", "search", subject, "#journal");
   }
-  if (category === "ticket") return withParam("/tickets","q",q);
+  if (category === "ticket") return knownStadiumTicketHref(q) || withParam("/tickets","q",q);
   if (category === "flight") {
     // Flight results require actual airport codes and a future departure date.
     // Do not fabricate these from place names or display fake fare availability.
@@ -111,7 +113,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
 
 const sections = [
   { id: "property", title: "Real Estate", detail: "Search projects, villas, apartments and listings", Icon: Building2 },
-  { id: "hotel", title: "Hotels", detail: "Find hotels by destination and compare source listings", Icon: Hotel },
+  { id: "hotel", title: "Hotels", detail: "Find Nuitee bookable stays; city lookup requires supplier selection", Icon: Hotel },
   { id: "flight", title: "Flights", detail: "Search flight routes, dates and observed fares", Icon: Plane },
   { id: "tender", title: "Tenders", detail: "Research current source-backed procurement notices", Icon: FileSearch },
   { id: "ticket", title: "Worldwide Tickets", detail: "Discover official event and stadium ticket sources, not guaranteed live seats", Icon: Ticket },
