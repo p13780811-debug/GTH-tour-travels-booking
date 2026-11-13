@@ -44,18 +44,19 @@ function hotelTarget(query:string):string{
   const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();
   const params:Record<string,string>={directory:"1",destination:city.slug};
   if(remainder.length>=2)params.q=remainder;
-  return "/app/hotels?"+queryString(params);
+  return "/app/hotels?"+queryString({view:"booking",city:city.name});
  }
  // For other cities, reuse the existing global hotel results search by city.
  const byCity=query.match(/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?)\s+(?:in|near|at)\s+([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})$/iu);
  if(byCity){
   const place=clean(byCity[1]);
-  return "/hotels/results?"+queryString({city:place});
+  return "/app/hotels?"+queryString({view:"booking",city:place});
  }
  const beforeHotel=query.match(/^([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})\s+(?:hotels?|resorts?|stays?)$/iu);
- if(beforeHotel&&beforeHotel[1].trim().split(/\s+/).length<=2)return "/hotels/results?"+queryString({city:clean(beforeHotel[1])});
- // The hotel's *name* search comes from the established app directory.
- return "/app/hotels?"+queryString({directory:"1",...(cleaned?{q:cleaned}:{})});
+ if(beforeHotel&&beforeHotel[1].trim().split(/\s+/).length<=2)return "/app/hotels?"+queryString({view:"booking",city:clean(beforeHotel[1])});
+ // Unknown hotel text must NOT be interpreted as source-backed available rooms.
+ // Keep the user in the Nuitee booking form to select a real supplier place.
+ return "/app/hotels?"+queryString({view:"booking",...(cleaned?{name:cleaned}:{})});
 }
 export function resolveUniversalTarget(raw:unknown,requested?:unknown):UniversalTarget{
  const query=clean(raw);
