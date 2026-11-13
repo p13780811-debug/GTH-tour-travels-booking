@@ -66,7 +66,7 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
      a.name.localeCompare(b.name));
    return {
      display:selected,
-     mode:terms.length===0?"browse":selected.length?"matching":"not-found",
+     mode:!selected.length?"not-found":terms.length===0?"browse":"matching",
      total:items.length
    };
  },[query,category,region]);
@@ -98,7 +98,6 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
        <p role="status" aria-live="polite" className="text-sm text-[var(--text-soft)]">
          {mode==="matching"?`${display.length} relevant source ${display.length===1?"match":"matches"}`:
-          mode==="suggestions"?"Suggested sources; the exact event is not verified in our index.":
           mode==="not-found"?"No matching reviewed venue or ticket source. Unrelated results are hidden.":
           `${display.length} sources from ${total} indexed guides and destinations`}
        </p>
