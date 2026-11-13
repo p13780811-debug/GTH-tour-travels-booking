@@ -24,7 +24,7 @@ test("destination shortlist, 3-item comparison, private notes and grid/list have
  assert.match(client,/dialog\.current\?\.showModal\(\)/);
  assert.match(client,/overflow-x-auto p-4 sm:p-6/);
  assert.ok(client.includes('encodeURIComponent(item.title)+"#discover"'));
- for(const route of ['/hotels/results?city=','/tours?city=','destinationFlightHref(item.title)'])assert.ok(client.includes(route),route);
+ for(const route of ['/hotels?view=booking&city=','/tours?city=','destinationFlightHref(item.title)'])assert.ok(client.includes(route),route);
  assert.ok(client.includes('encodeURIComponent(item.title)+"#discover"'));
  assert.ok(!client.includes('href="/flights"'));
 });
