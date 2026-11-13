@@ -100,6 +100,8 @@ test("city hotel CTAs lead to the Nuitee widget with explicit city, never OSM as
  assert.match(detail,/Public hotel directory in/);
  assert.match(detail,/Book stays in/);
  assert.match(landing,/Choose \{initialCity\} from the Nuitee destination suggestions/);
+ assert.match(landing,/showOffers=\{!initialCity\} showNearby=\{!initialCity\}/);
+ assert.match(read("src/components/hotel/HotelsDiscoveryPlacement.tsx"),/showOffers&&<NuiteeHotelOffers/);
  assert.match(booking,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
  assert.match(booking,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
  assert.doesNotMatch(venueRouter.knownStadiumTicketHref.toString(),/api\.liteapi\.travel|fetch\(/);
