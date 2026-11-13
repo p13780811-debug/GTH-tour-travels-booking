@@ -25,7 +25,7 @@ const categories:Category[]=["All","Flights","Hotels","Experiences","Planning","
 type Props={searchParams:Promise<{category?:string|string[];search?:string|string[]}>};
 function filterLink(category:Category,search:string){
   const params=new URLSearchParams();
-  if(category!=="All")params.set("category",category);
+  if(category!=="All")params.set("category", category);
   if(search)params.set("search",search);
   return "/blog"+(params.size?"?"+params.toString():"")+"#journal";
 }
@@ -37,14 +37,13 @@ export default async function BlogList({searchParams}:Props){
     ? params.category as Category:"All";
   const search=typeof params.search==="string"?params.search.trim().slice(0,70):"";
   const query=search.toLowerCase();
-  const articles=blogs.filter(article=>(selected==="All"||article.category===selected)&&
+  const articles = blogs.filter(article=>(selected==="All"||article.category===selected)&&
     (!query||[article.title,article.description,article.category,article.content].some(value=>value.toLowerCase().includes(query))));
   const lead=blogs[0];
   const featured=ecosystemGuides.filter(guide=>guide.pillar==="Travel").slice(0,2);
   const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
   return <main className="min-h-screen min-w-0 overflow-x-clip bg-[var(--bg)] text-[var(--text)]">
-    <TravelSectionNav/>
-    <header className="border-b border-[var(--border)]">
+    <header data-travel-hero="true" className="border-b border-[var(--border)]">
       <div className="mx-auto grid max-w-7xl min-w-0 items-center gap-7 px-4 py-8 sm:px-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] md:py-12">
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
@@ -58,6 +57,8 @@ export default async function BlogList({searchParams}:Props){
           </p>
           <nav aria-label="Knowledge hub shortcuts" className="mt-6 flex flex-wrap gap-2">
             <Link href="/blog#journal" className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Browse articles <ArrowRight size={16}/></Link>
+            <Link href="/flights" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Flights</Link>
+            <Link href="/hotels" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Hotels</Link>
             <Link href="/real-estate/guides" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Property guides</Link>
             <Link href="/knowledge/tenders" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Tender guides</Link>
           </nav>
@@ -74,6 +75,7 @@ export default async function BlogList({searchParams}:Props){
         </Link>
       </div>
     </header>
+    <TravelSectionNav/>
 
     <section id="ecosystem-guides" aria-labelledby="ecosystem-guides-heading" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
       <h2 id="ecosystem-guides-heading" className="text-2xl font-bold sm:text-3xl">One knowledge hub. Three connected pillars.</h2>
@@ -114,7 +116,7 @@ export default async function BlogList({searchParams}:Props){
     <section aria-labelledby="ground-travel-guides" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
       <h2 id="ground-travel-guides" className="text-xl font-bold sm:text-2xl">Bus and rail planning guides</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {groundTransportBlogs.slice(0,3).map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
+        {groundTransportBlogs.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
           className="gth-glass flex min-h-24 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
           <strong className="text-sm leading-6">{guide.title}</strong><span className="mt-3 text-xs text-[var(--text-soft)]">Read transport guide</span>
         </Link>)}
@@ -146,7 +148,7 @@ export default async function BlogList({searchParams}:Props){
         <button type="submit" className="gth-btn gth-btn-gold min-h-12 rounded-xl px-6 text-sm font-semibold">Search guides</button>
       </form>
       <nav aria-label="Filter articles by category" className="mt-5 flex min-w-0 gap-2 overflow-x-auto pb-3">
-        {categories.map(category=><Link key={category} href={filterLink(category,search)} aria-current={selected===category?"page":undefined}
+        {categories.map(category=><Link key={category} href={filterLink(category, search)} aria-current={selected===category?"page":undefined}
           className={"gth-btn inline-flex min-h-10 shrink-0 items-center rounded-full px-4 text-xs font-semibold "+(selected===category?"gth-btn-gold":"")}>
           {category}
         </Link>)}
