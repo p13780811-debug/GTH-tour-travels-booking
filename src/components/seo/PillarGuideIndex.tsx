@@ -9,7 +9,7 @@ export default function PillarGuideIndex({pillar}:{pillar:Pillar}){
  const guides=ecosystemGuides.filter(item=>item.pillar===pillar);
  const property=pillar==="Real Estate";
  const base=property?"/real-estate":"/tender";
- const page=base+"/guides";
+ const page=property?"/real-estate/guides":"/knowledge/tenders";
  const pathways=property?[
    {href:"/real-estate",label:"Property explorer"},
    {href:"/real-estate/registry",label:"Project registry"},
