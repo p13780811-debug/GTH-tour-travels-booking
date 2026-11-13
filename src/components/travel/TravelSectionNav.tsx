@@ -12,6 +12,7 @@ import {BookOpen, BusFront, CarFront, Compass, Hotel, MapPinned, MapPin, Plane, 
  */
 export const TRAVEL_SECTIONS = [
   {href:"/flights",label:"Flights",Icon:Plane},
+  {href:"/tickets",label:"Worldwide Tickets",Icon:Ticket},
   {href:"/travel/airports",label:"Airport Explorer",Icon:MapPin},
   {href:"/hotels",label:"Hotels",Icon:Hotel},
   {href:"/tours",label:"Tours",Icon:Compass},

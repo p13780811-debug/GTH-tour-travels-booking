@@ -28,7 +28,8 @@ export default function StadiumDirectory({ venues }: { venues: readonly Stadium[
     <p role="status" aria-live="polite" className="my-5 text-sm text-[var(--text-soft)]">{results.length} venue guides</p>
     {results.length === 0 ? <div className="gth-glass rounded-2xl p-6">
       <h2 className="text-xl font-bold">Try another venue or city</h2>
-      <p className="mt-2 text-[var(--text-soft)]">This collection covers selected venues. Clear your filters to explore the directory.</p>
+      <p className="mt-2 text-[var(--text-soft)]">This collection covers selected venues. Clear your filters to explore the directory, or check official global event sources below.</p>
+      <a href="#global-ticket-directory" className="gth-btn mt-4 mr-3 inline-flex min-h-12 items-center rounded-xl px-5">Browse official sources</a>
       <button onClick={() => { setQuery(""); setSport(""); }} className="gth-btn-gold mt-4 min-h-12 rounded-xl px-5">Clear filters</button>
     </div> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {results.map(venue => <article key={venue.slug} className="gth-glass flex min-w-0 flex-col rounded-2xl border border-[var(--border)] p-5">
