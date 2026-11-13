@@ -1,4 +1,4 @@
-export type AppPillar="all"|"travel"|"property"|"tender";
+export type AppPillar="all"|"travel"|"property"|"tender"|"tickets";
 export const appServices=[
  {id:"flights",label:"Flights",href:"/app/flights",pillar:"travel",icon:"plane",keywords:"air airport airline tickets"},
  {id:"hotels",label:"Hotels",href:"/app/hotels",pillar:"travel",icon:"hotel",keywords:"stay rooms booking"},
@@ -7,7 +7,8 @@ export const appServices=[
  {id:"transfers",label:"Airport transfers",href:"/transfers",pillar:"travel",icon:"transfer",keywords:"pickup drop taxi"},
  {id:"cars",label:"Car rentals",href:"/cars",pillar:"travel",icon:"car",keywords:"drive rental"},
  {id:"tours",label:"Tours & activities",href:"/tours",pillar:"travel",icon:"compass",keywords:"experience sightseeing tickets"},
- {id:"stadiums",label:"Stadium Tickets",href:"/stadiums",pillar:"travel",icon:"compass",keywords:"stadium sports cricket football concert tickets venue tour"},
+ {id:"stadiums",label:"Stadium Tickets",href:"/stadiums",pillar:"tickets",icon:"ticket",keywords:"stadium sports cricket football concert tickets venue tour"},
+ {id:"tickets",label:"Worldwide Tickets",href:"/tickets",pillar:"tickets",icon:"ticket",keywords:"events stadium cricket football concert theatre festivals cinema museum live tickets"},
  {id:"cruises",label:"Cruises",href:"/cruises",pillar:"travel",icon:"compass",keywords:"cruise ship sailing cabin disney harbour dinner"},
  {id:"insurance",label:"Travel protection",href:"/insurance",pillar:"travel",icon:"shield",keywords:"insurance flight claims delay"},
  {id:"destinations",label:"Destinations",href:"/app/destinations",pillar:"travel",icon:"globe",keywords:"cities guides explore"},
@@ -37,6 +38,7 @@ export const appPromotions=[
  {id:"fly",pillar:"travel",eyebrow:"Your next journey",title:"Take your plans further.",description:"Search flights, then arrange your airport transfer.",action:"Search flights",href:"/app/flights",image:"/images/mega/flights.jpg"},
  {id:"property",pillar:"property",eyebrow:"Property discovery",title:"Explore your next move.",description:"Browse project records and view their source details.",action:"Explore properties",href:"/app/property",image:"/images/real-estate.jpg"},
  {id:"tender",pillar:"tender",eyebrow:"Business opportunities",title:"Find your next opportunity.",description:"Explore published tender notices and official documents.",action:"Explore tenders",href:"/app/tenders",image:"/images/tender.jpg"},
+ {id:"tickets",pillar:"tickets",eyebrow:"Events worldwide",title:"Find your next live event.",description:"Discover official ticket sources and venue guides; verify seats with sellers.",action:"Explore tickets",href:"/tickets",image:"/images/editorial/sports.svg"},
 ] as const;
 export function filterAppServices(pillar:AppPillar,query:string){
  const needle=query.trim().toLocaleLowerCase().slice(0,70);
