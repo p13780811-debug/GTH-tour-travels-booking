@@ -90,7 +90,7 @@ test("hotel discovery has real linked destination imagery separate from property
   assert.match(page,/image:"\/images\/cities\/mumbai\.jpg"/);
   assert.match(page,/image:"\/images\/cities\/goa\.jpg"/);
   assert.match(page,/<Image src=\{place\.image\}/);
-  assert.match(page,/href=\{"\/hotels\/"\+place\.slug\}/);
+  assert.match(page,/href=\{"\/hotels\?"\+new URLSearchParams\(\{view:"booking",city:place\.city\}\)\.toString\(\)\}/);
   assert.match(page,/Destination photographs illustrate the cities, not any individual hotel/);
   assert.doesNotMatch(page,/index%illustrations\.length/);
 });
