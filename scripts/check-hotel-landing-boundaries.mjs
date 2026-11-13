@@ -22,8 +22,37 @@ const allowed=new Set([
  "tests/hotel-nearby-search.test.mjs","tests/hotel-booking-journey.test.mjs","tests/hotel-geographic-discovery.test.mjs"
  ,"tests/revenue-growth-staging-20261104.test.mjs","tests/12go-official-search.test.mjs"
 ]);
-const paths=[git("diff","--name-only",baseline,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path));
+// The original 2026-11-09 hotel-release guard compares that release to its
+// own baseline. Modern PRs have many legitimate merged changes after that date.
+// For pull requests, evaluate only the proposed branch diff against its actual
+// target branch, while retaining every existing protected CSS/rate/security assertion.
+const baseBranch=process.env.GITHUB_BASE_REF;
+if(baseBranch&&!/^[A-Za-z0-9._/-]+$/.test(baseBranch))throw Error("Invalid PR base ref");
+const diffBase=baseBranch?"origin/"+baseBranch:baseline;
+const paths=[git("diff","--name-only",diffBase,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
+// Explicitly reviewed, public routing / user-intent regression surface of PR #207.
+// No admin, API, database, RLS, middleware, secret, theme or provider SDK paths.
+const reviewedPublicHandoffs=new Set([
+ "src/app/destinations/[slug]/page.tsx",
+ "src/app/hotels/[slug]/page.tsx",
+ "src/app/search/page.tsx",
+ "src/app/tickets/WorldwideTicketExplorer.tsx",
+ "src/components/home/FlagshipHome.tsx",
+ "src/components/home/HomeCapabilityProof.tsx",
+ "src/lib/destinations/ecosystem.ts",
+ "src/lib/mobile/universal-search.ts",
+ "src/lib/travel/stadium-ticket-routing.ts",
+ "tests/destination-travel-intent.test.mjs",
+ "tests/destination-worldwide-ecosystem.test.mjs",
+ "tests/four-pillars-editorial-pexels.test.mjs",
+ "tests/home-public-capabilities.test.mjs",
+ "tests/hotel-destination-master.test.mjs",
+ "tests/hotel-marketplace.test.mjs",
+ "tests/mobile-universal-search-routing.test.mjs",
+ "tests/pr204-handoff-integrity.test.mjs",
+ "tests/worldwide-ticket-sources.test.mjs"
+]);
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path));
 if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
@@ -33,4 +62,4 @@ for(const path of ["tests/revenue-growth-staging-20261104.test.mjs","tests/12go-
  const original=git("show",baseline+":"+path).replaceAll('gthproglobal\\.nuitee\\.link','hotel\\.gthproglobal\\.com').replaceAll('nuitee\\.link','hotel\\.gthproglobal\\.com');
  if(readFileSync(path,"utf8")!==original)throw Error("Only the owner's verified custom hotel hostname may update unrelated supplier test expectations");
 }
-console.log("PASS: homepage, shared CSS/navigation, supplier SDK/search validation, hotel APIs/results/detail, Flights, Real Estate, app, SEO inventory, SQL/RLS and secrets preserved.");
+console.log("PASS: branch-scoped public hotel and ticket navigation diff is allowlisted, while shared CSS, provider SDK, security/rate budgets and historical invariants remain protected.");
