@@ -38,9 +38,9 @@ function Card({hotel}:{hotel:DirectoryHotel}){
       <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">Directory location only. No verified room price or availability; Nuitee search does not guarantee an exact hotel match.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <Link prefetch={false} href={detail} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
-        <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
-          Search rooms <ArrowUpRight size={14} aria-hidden="true"/>
-        </a>
+        <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:hotel.city}).toString()} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
+          Find bookable stays <ArrowUpRight size={14} aria-hidden="true"/>
+        </Link>
       </div>
     </div>
   </article>;
@@ -87,9 +87,9 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">{hotels.map(hotel=><Card key={String(hotel.id)} hotel={hotel}/>)}</div>:
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
         No independently verified property photo is available in this city directory yet.
-        <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency=INR"} target="_blank" rel="noopener noreferrer sponsored" className="mt-3 block font-semibold underline underline-offset-2">
-          Explore hotel photos and rooms
-        </a>
+        <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:market.supplierCity,country:market.countryCode}).toString()} className="mt-3 block font-semibold underline underline-offset-2">
+          Search bookable stays in {market.supplierCity}
+        </Link>
       </div>
     )}
   </div>;
@@ -138,9 +138,9 @@ export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{
           <p className="mt-1 text-xs text-[var(--text-soft)]">{m.country}</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <Link href={"/hotels/explore/"+m.slug} className="text-xs underline underline-offset-2">City guide</Link>
-            <a href={booking} target="_blank" rel="noopener noreferrer sponsored" className="text-xs font-semibold underline underline-offset-2">
-              Check rooms <ArrowUpRight size={12} className="inline" aria-hidden="true"/>
-            </a>
+            <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:m.supplierCity,country:m.countryCode}).toString()} className="text-xs font-semibold underline underline-offset-2">
+              Search stays <ArrowUpRight size={12} className="inline" aria-hidden="true"/>
+            </Link>
           </div>
         </div>)}
       </div>
