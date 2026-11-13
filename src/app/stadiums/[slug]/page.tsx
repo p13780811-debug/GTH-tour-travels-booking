@@ -111,26 +111,23 @@ export default async function StadiumPage({ params }: Props) {
         <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>
       </section>}
       {partnerSearch && <section aria-labelledby="stadium-specific-partner-search" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
-        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Find more events and venue tours</h2>
+        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Verified venue information</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-          Search for {venue.name} in our existing partner catalogues. These links open supplier search
-          results, not a confirmed match admission or a claim of available seats.
+          {venue.name} is in {venue.city}, {venue.country}. Use the official source to check real events,
+          admission rules and the current ticket announcement.
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <a href={partnerSearch.klook} target="_blank" rel="noopener noreferrer sponsored"
-            className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-            Search event tickets <ArrowUpRight size={16} aria-hidden="true"/>
-          </a>
-          <a href={partnerSearch.getyourguide} target="_blank" rel="noopener noreferrer sponsored"
-            className="gth-btn inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-            Explore stadium tours <ArrowUpRight size={16} aria-hidden="true"/>
-          </a>
-        </div>
-        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-          Providers independently confirm any matching product, admission type, dates, ticket availability,
-          price and checkout. Tours do not include live games unless explicitly stated.
-          Eligible affiliate bookings may generate a commission.
-        </p>
+        <a href={partnerSearch.officialUrl} target="_blank" rel="noopener noreferrer"
+          className="gth-btn-gold mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+          {partnerSearch.officialLabel} <ArrowUpRight size={16} aria-hidden="true"/>
+        </a>
+        {products.length===0 && <p className="mt-4 text-sm leading-6 text-[var(--text-soft)]">
+          No exact stadium tour from an approved supplier is currently linked to this venue.
+          We do not send your search to a similarly named town, attraction or unrelated supplier product.
+          An official stadium notice does not guarantee a tour or match ticket.
+        </p>}
+        {products.length>0 && <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
+          Exact reviewed supplier experiences appear above. Confirm entry dates, inclusions and price with the supplier.
+        </p>}
       </section>}
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
         <h2 className="text-2xl font-bold">Plan your trip</h2>
