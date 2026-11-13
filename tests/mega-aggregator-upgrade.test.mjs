@@ -24,7 +24,7 @@ test("All pillar searches submit to the existing first-party search engine",()=>
  assert.match(search,/action="\/search" method="get"/);
  assert.match(search,/name="q"/);
  assert.match(search,/name="category"/);
- for(const value of ["all","hotel","flight","tour","property","tender"])assert.ok(search.includes('value:"'+value+'"'));
+ for(const value of ["all","hotel","flight","tour","property","tender","ticket"])assert.ok(search.includes('value:"'+value+'"'));
  assert.match(siteSearch,/redirect\(targetFor\(intent, query\)\)/);
  assert.doesNotMatch(search,/fetch\(|localStorage|API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
 });
@@ -57,7 +57,13 @@ test("Service search covers all real pillars without dead routes",()=>{
  const routes=[...chunk.matchAll(/href: "(\/[^"]+)"/g)].map(x=>x[1]);
  assert.ok(routes.length>=30);
  assert.equal(new Set(routes).size,routes.length,"No duplicate service routes");
- for(const route of routes)assert.ok(existsSync(new URL("../src/app"+route+"/page.tsx",import.meta.url)),route);
+ for(const route of routes){
+  const direct=existsSync(new URL("../src/app"+route+"/page.tsx",import.meta.url));
+  const category=route.startsWith("/tickets/")&&
+   ["sports","concerts","theatre","comedy","festivals","attractions","museums","theme-parks","cinema"].includes(route.slice("/tickets/".length))&&
+   existsSync(new URL("../src/app/tickets/[category]/page.tsx",import.meta.url));
+  assert.ok(direct||category,route);
+ }
 });
 
 test("Feature branch is not automatically deployed or merged to live",()=>{
