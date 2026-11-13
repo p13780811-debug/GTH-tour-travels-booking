@@ -274,7 +274,7 @@ export const crossTravelGuides:readonly EcosystemGuide[]=[
         "description": "Review approved provider-managed deals"
       },
       {
-        "label": "Tours",
+        "label": "Guided Tours",
         "href": "/tours",
         "description": "Browse reviewed supplier experiences"
       },
