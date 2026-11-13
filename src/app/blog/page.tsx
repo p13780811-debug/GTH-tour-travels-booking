@@ -1,245 +1,181 @@
-import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import type { CSSProperties } from "react";
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
-import { blogs, type Blog } from "@/data/blogs";
-import { groundTransportBlogs } from "@/data/blogGroundTransport";
+import {ArrowRight,BookOpen,Compass,Search,Ticket,Building2,Landmark} from "lucide-react";
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import {blogs,type Blog} from "@/data/blogs";
+import {groundTransportBlogs} from "@/data/blogGroundTransport";
 import {ticketBlogGuides} from "@/data/blogTickets";
 import {ecosystemGuides} from "@/data/blogEcosystem";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
-export const metadata: Metadata = {
-  title: "GTH PRO Knowledge Hub | Travel, Real Estate & Tender Guides",
-  description: "GTH PRO practical research library for worldwide travel bookings, property due diligence, public tender eligibility, event tickets and supplier handoffs.",
-  alternates: { canonical: "/blog" },
-  openGraph: {
-    title: "The Global Knowledge Journal | GTH PRO",
-    description: "Independent global research guides for travel, property and procurement decisions, with source-aware links and supplier disclosures.",
-    type: "website",
-    images: [{ url: "/images/global-city.jpg", alt: "GTH PRO Global Travel Journal" }],
+export const metadata:Metadata={
+  title:"GTH PRO Global Knowledge Blog | Travel, Property & Tender Guides",
+  description:"Source-aware travel, real estate, procurement and ticket research. Read practical guides and follow verified official or existing supplier links.",
+  alternates:{canonical:"/blog"},
+  openGraph:{
+    title:"GTH PRO Global Knowledge Blog",
+    description:"Original guides for travel, property and tender decisions, with contextual research tools and supplier disclosures.",
+    type:"website",images:[{url:"/images/global-city.jpg",alt:"GTH PRO global research guides"}],
   },
 };
-
-type Category = Blog["category"] | "All";
-const categories: Category[] = ["All", "Flights", "Hotels", "Experiences", "Planning", "Safety", "Tickets", "Real Estate", "Tenders"];
-type Props = { searchParams: Promise<{ category?: string | string[]; search?: string | string[] }> };
-const palette = {
-  "--bg": "#061426",
-  "--text": "#f7f9fd",
-  "--text-soft": "#c2cfdf",
-  "--border": "rgba(234,198,113,.25)",
-  "--card": "rgba(8,24,42,.87)",
-  "--gold": "#eac671",
-} as CSSProperties;
-function readingTime(content: string) {
-  return Math.max(2, Math.ceil(content.trim().split(/\s+/).length / 190));
+type Category=Blog["category"]|"All";
+const categories:Category[]=["All","Flights","Hotels","Experiences","Planning","Safety","Tickets","Real Estate","Tenders"];
+type Props={searchParams:Promise<{category?:string|string[];search?:string|string[]}>};
+function filterLink(category:Category,search:string){
+  const params=new URLSearchParams();
+  if(category!=="All")params.set("category",category);
+  if(search)params.set("search",search);
+  return "/blog"+(params.size?"?"+params.toString():"")+"#journal";
 }
-function filterLink(category: Category, search: string) {
-  const params = new URLSearchParams();
-  if (category !== "All") params.set("category", category);
-  if (search) params.set("search", search);
-  const query = params.toString();
-  return "/blog" + (query ? "?" + query : "") + "#journal";
-}
+function readingTime(text:string){return Math.max(2,Math.ceil(text.trim().split(/\s+/).length/190));}
 
-export default async function BlogList({ searchParams }: Props) {
-  const params = await searchParams;
-  const selected: Category = typeof params.category === "string" && categories.includes(params.category as Category)
-    ? params.category as Category : "All";
-  const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
-  const query = search.toLowerCase();
-  const articles = blogs.filter((article) =>
-    (selected === "All" || article.category === selected)
-    && (!query || [article.title, article.description, article.category, article.content].some((value) => value.toLowerCase().includes(query))));
-  const lead = blogs[0];
+export default async function BlogList({searchParams}:Props){
+  const params=await searchParams;
+  const selected:Category=typeof params.category==="string"&&categories.includes(params.category as Category)
+    ? params.category as Category:"All";
+  const search=typeof params.search==="string"?params.search.trim().slice(0,70):"";
+  const query=search.toLowerCase();
+  const articles=blogs.filter(article=>(selected==="All"||article.category===selected)&&
+    (!query||[article.title,article.description,article.category,article.content].some(value=>value.toLowerCase().includes(query))));
+  const lead=blogs[0];
+  const featured=ecosystemGuides.filter(guide=>guide.pillar==="Travel").slice(0,2);
   const mapped=await listMappedCities({pageSize:48}).catch(()=>null);
-
-  return (
-    <main style={palette} className="min-h-screen bg-[#061426] text-[#f7f9fd]">
-      <section className="relative isolate overflow-hidden border-b border-[#eac671]/25" data-travel-hero="true">
-        <Image src="/images/global-city.jpg" alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#020b1d]/95 via-[#041426]/92 to-[#08213d]/70" />
-        <div className="mx-auto grid max-w-[1400px] items-center gap-10 px-5 py-14 sm:px-8 md:py-20 lg:min-h-[470px] lg:grid-cols-[1.1fr_.9fr]">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#eac671]/40 bg-[#041326]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-[.2em] text-[#efd18d]">
-              <BookOpen size={15} /> GTH PRO / Global Knowledge Journal
-            </p>
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-.04em] sm:text-5xl lg:text-[60px]">
-              Better decisions begin <span className="text-[#f0d38d]">with knowledge.</span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-[#d2dceb] sm:text-base">
-              Independent research for travel, real estate and tender decisions. Understand sources, costs, eligibility and supplier or authority handoffs before acting.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3 text-xs">
-              <Link href="/destinations" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/35 bg-[#0b2037]/80 px-4 text-[#fce5af]">
-                <Globe2 size={17} /> Destination Collection
-              </Link>
-              <Link href="/guides" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/35 bg-[#0b2037]/80 px-4 text-[#fce5af]">
-                <Compass size={17} /> Planning Resources
-              </Link>
-            </div>
-          </div>
-          <Link href={"/blog/" + lead.slug} className="group relative isolate flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl border border-[#eac671]/35 bg-[#071d34] p-6 shadow-[0_15px_40px_rgba(0,0,0,.35)] sm:min-h-[300px]">
-            <Image src={lead.image} alt={lead.title} fill sizes="(max-width: 1024px) 100vw, 44vw" className="absolute inset-0 -z-10 object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#020b1d]/95 via-[#041224]/60 to-[#031327]/15" />
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#f6d687]">Featured Research</p>
-            <h2 className="mt-3 max-w-sm text-2xl font-semibold leading-tight text-white sm:text-3xl">{lead.title}</h2>
-            <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#ffe3a0]">Read the guide <ArrowUpRight size={17} /></span>
-          </Link>
-        </div>
-      </section>
-      <TravelSectionNav />
-
-      <MappedCityDiscovery cities={mapped?.items??[]} title="Explore real cities before your next trip"/>
-
-      <section aria-labelledby="ground-travel-guides" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
-        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
-          <h2 id="ground-travel-guides" className="text-2xl font-bold sm:text-3xl">New: Bus & Rail Travel Guides</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-            Original route-by-route research, station and boarding checks, and safer partner booking handoffs.
-            No imaginary ticket prices, seats or live departure claims.
+  return <main className="min-h-screen min-w-0 overflow-x-clip bg-[var(--bg)] text-[var(--text)]">
+    <TravelSectionNav/>
+    <header className="border-b border-[var(--border)]">
+      <div className="mx-auto grid max-w-7xl min-w-0 items-center gap-7 px-4 py-8 sm:px-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] md:py-12">
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
+            <BookOpen size={17} aria-hidden="true"/> GTH PRO Global Knowledge
           </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {groundTransportBlogs.map((guide) => (
-              <Link key={guide.slug} href={"/blog/" + guide.slug}
-                className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 transition hover:underline">
-                <span className="text-base font-semibold">{guide.title}</span>
-                <span className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">
-                  Read guide <ArrowRight size={16} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/bus" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Bus Routes</Link>
-            <Link href="/train" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">Explore Rail Routes</Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="ecosystem-guides" aria-labelledby="ecosystem-guides-heading" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
-        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">One platform · Three pillars</p>
-          <h2 id="ecosystem-guides-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Research guides across GTH PRO</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Original, source-aware articles across our Travel, Real Estate and Tender services. Each guide connects to practical on-site tools and relevant official or verified supplier destinations.</p>
-          <nav aria-label="GTH PRO pillar editorial guides" className="mt-5 grid gap-3 md:grid-cols-3">
-            {[{href:"/blog?category=Planning#journal",label:"Travel planning",desc:"Hotels, transfers, tickets and travel choices"},
-              {href:"/real-estate/guides",label:"Real Estate guides",desc:"Registry records, ownership, due diligence and listings"},
-              {href:"/knowledge/tenders",label:"Tender guides",desc:"Eligibility, bid submissions and public procurement"}].map(item=>
-               <Link key={item.href} href={item.href} className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
-                <span className="text-base font-semibold">{item.label}</span>
-                <span className="mt-2 text-xs text-[var(--text-soft)]">{item.desc}</span>
-               </Link>
-            )}
+          <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            Better decisions begin with knowledge.
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">
+            Independent research for Travel, Real Estate and Tenders. Learn what to verify, compare practical options and continue to official or supplier-controlled sources.
+          </p>
+          <nav aria-label="Knowledge hub shortcuts" className="mt-6 flex flex-wrap gap-2">
+            <Link href="/blog#journal" className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Browse articles <ArrowRight size={16}/></Link>
+            <Link href="/real-estate/guides" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Property guides</Link>
+            <Link href="/knowledge/tenders" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Tender guides</Link>
           </nav>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-            {ecosystemGuides.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
-              className="rounded-xl border border-[var(--border)] p-3 text-sm hover:underline">
-              <span className="text-xs font-bold text-[var(--gold)]">{guide.pillar}</span>
-              <span className="mt-1 block font-semibold">{guide.title}</span>
-            </Link>)}
-          </div>
         </div>
-      </section>
-
-      <section id="ticket-guides" aria-labelledby="ticket-guides-heading" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
-        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">GTH PRO Worldwide Tickets</p>
-          <h2 id="ticket-guides-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Ticket buying guides, worldwide</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-            Practical guides for sports, concerts, theatres, museums, festivals and more, with public ticket sources and relevant GTH PRO travel links.
-            No article claims live seats or guaranteed prices.
-          </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {ticketBlogGuides.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
-              className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
-              <span className="text-base font-semibold">{guide.title}</span>
-              <span className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">Read ticket guide <ArrowRight size={16} aria-hidden="true"/></span>
-            </Link>)}
+        <Link href={"/blog/"+lead.slug} className="gth-glass group min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]">
+          <div className="relative aspect-[16/9] overflow-hidden">
+            <Image src={lead.image} alt={lead.title} fill priority sizes="(max-width: 768px) 100vw, 38vw" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
           </div>
-          <Link href="/tickets" className="gth-btn-gold mt-5 inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Worldwide Ticket Finder</Link>
+          <div className="p-4 sm:p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--gold)]">Featured article</p>
+            <h2 className="mt-2 text-lg font-semibold leading-snug">{lead.title}</h2>
+            <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--text-soft)]">Read guide <ArrowRight size={16}/></span>
+          </div>
+        </Link>
+      </div>
+    </header>
+
+    <section id="ecosystem-guides" aria-labelledby="ecosystem-guides-heading" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
+      <h2 id="ecosystem-guides-heading" className="text-2xl font-bold sm:text-3xl">One knowledge hub. Three connected pillars.</h2>
+      <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+        Read useful guidance before booking a trip, researching property or preparing a bid. Every article connects to the relevant GTH PRO tools.
+      </p>
+      <nav aria-label="Explore GTH PRO research pillars" className="mt-6 grid min-w-0 gap-4 sm:grid-cols-3">
+        {[
+          {href:"/blog?category=Planning#journal",label:"Travel",detail:"Hotels, flights, transfers and experiences",Icon:Compass},
+          {href:"/real-estate/guides",label:"Real Estate",detail:"Registry, ownership and property research",Icon:Building2},
+          {href:"/knowledge/tenders",label:"Tenders",detail:"Eligibility, documents and official sources",Icon:Landmark},
+        ].map(({href,label,detail,Icon})=><Link key={href} href={href}
+          className="gth-glass flex min-w-0 items-start gap-3 rounded-2xl border border-[var(--border)] p-5 hover:underline">
+          <Icon size={21} aria-hidden="true" className="shrink-0 text-[var(--gold)]"/>
+          <span className="min-w-0"><strong className="block text-base">{label}</strong><span className="mt-2 block text-sm leading-6 text-[var(--text-soft)]">{detail}</span></span>
+        </Link>)}
+      </nav>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {featured.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug} className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm font-semibold hover:underline">
+          <span>{guide.title}</span><ArrowRight size={17} className="shrink-0" aria-hidden="true"/>
+        </Link>)}
+      </div>
+    </section>
+
+    <section id="ticket-guides" aria-labelledby="ticket-guides-heading" className="border-y border-[var(--border)] bg-[var(--card)]">
+      <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Ticket size={16}/> Worldwide Tickets</p>
+        <h2 id="ticket-guides-heading" className="mt-2 text-2xl font-bold">Ticket research and event admission</h2>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {ticketBlogGuides.slice(0,6).map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug} className="flex min-h-24 flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 hover:underline">
+            <strong className="text-sm leading-6">{guide.title}</strong><span className="mt-3 text-xs text-[var(--text-soft)]">Read guide</span>
+          </Link>)}
         </div>
-      </section>
+        <Link href="/blog?category=Tickets#journal" className="gth-btn mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">All ticket guides <ArrowRight size={16}/></Link>
+      </div>
+    </section>
 
-      <section id="journal" className="mx-auto max-w-[1400px] scroll-mt-12 px-5 py-12 sm:px-8 md:py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#eac671]"><Sparkles size={15} /> GTH PRO Editorial</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">The Knowledge Library</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#c2cfdf]">Thoughtful planning guides, not promotional hotel inventories or unverified live travel offers.</p>
-          </div>
-          <span className="rounded-full border border-[#eac671]/30 px-4 py-2 text-xs text-[#c9d6e8]" role="status">{articles.length} {articles.length === 1 ? "guide" : "guides"}</span>
+    <section aria-labelledby="ground-travel-guides" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
+      <h2 id="ground-travel-guides" className="text-xl font-bold sm:text-2xl">Bus and rail planning guides</h2>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {groundTransportBlogs.slice(0,3).map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
+          className="gth-glass flex min-h-24 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
+          <strong className="text-sm leading-6">{guide.title}</strong><span className="mt-3 text-xs text-[var(--text-soft)]">Read transport guide</span>
+        </Link>)}
+      </div>
+      <nav className="mt-4 flex flex-wrap gap-2" aria-label="Ground transportation research">
+        <Link href="/bus" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Buses</Link>
+        <Link href="/train" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Trains</Link>
+        <Link href="/ferry" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Ferries</Link>
+      </nav>
+    </section>
+
+    <section id="journal" aria-labelledby="journal-heading" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-9 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Research library</p>
+          <h2 id="journal-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Explore every guide</h2>
+          <p className="mt-2 text-sm text-[var(--text-soft)]">Travel, tickets, real estate and tenders. No fictional prices, live seats or procurement approvals.</p>
         </div>
-
-        <form role="search" action="/blog" method="get" className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-          {selected !== "All" && <input type="hidden" name="category" value={selected} />}
-          <label className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#eac671]/35 bg-[#0b2037] px-4">
-            <Search size={18} className="shrink-0 text-[#eac671]" />
-            <span className="sr-only">Search editorial guides</span>
-            <input type="search" name="search" maxLength={70} defaultValue={search} placeholder="Search topics, flights, hotels or safety..."
-              className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-[#a8bbd3]" />
-          </label>
-          <button type="submit" className="gth-btn-gold min-h-12 rounded-xl px-7 text-sm font-bold">Search Guides</button>
-        </form>
-        <nav aria-label="Browse travel editorial categories" className="mt-6 flex gap-2 overflow-x-auto pb-3">
-          {categories.map((category) => (
-            <Link key={category} href={filterLink(category, search)} aria-current={selected === category ? "page" : undefined}
-              className={"shrink-0 rounded-full border px-4 py-2.5 text-xs font-semibold transition " +
-                (selected === category
-                  ? "border-[#f6d68a] bg-[#eac671] text-[#081323]"
-                  : "border-[#eac671]/35 bg-[#0b2037] text-[#e4eaf4] hover:border-[#eac671]/75")}>
-              {category}
-            </Link>
-          ))}
-        </nav>
-
-        {articles.length ? (
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {articles.map((article) => (
-              <Link key={article.slug} href={"/blog/" + article.slug}
-                className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0b2037] shadow-[0_10px_30px_rgba(0,0,0,.2)] transition duration-300 hover:-translate-y-1 hover:border-[#eac671]/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f6d68a]">
-                <div className="relative h-[225px] overflow-hidden sm:h-[250px]">
-                  <Image src={article.image} alt={article.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#061426]/65 to-transparent" />
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[.1em]">
-                    <span className="text-[#f0d38d]">{article.category}</span>
-                    <span className="text-[#b9c9df]">{readingTime(article.content)} min read</span>
-                  </div>
-                  <h3 className="mt-4 text-xl font-semibold leading-snug text-white">{article.title}</h3>
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#c3cfde]">{article.description}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-semibold text-[#f2d48e]">Read Article <ArrowRight size={16} /></span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div role="status" className="mt-7 rounded-2xl border border-[#eac671]/30 bg-[#0b2037] p-9 text-center">
-            <p className="text-lg font-semibold">No guides match your search</p>
-            <p className="mt-3 text-sm text-[#c2cfdf]">Try another topic or explore all editorial guides.</p>
-            <Link href="/blog#journal" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#f2d48e] underline">Browse all guides <ArrowRight size={16} /></Link>
-          </div>
-        )}
-      </section>
-
-      <section className="border-t border-[#eac671]/20 bg-[#041021]">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-start justify-between gap-5 px-5 py-9 sm:px-8 md:flex-row md:items-center">
-          <div>
-            <p className="text-sm font-semibold text-[#ffe1a0]">Research before reserving.</p>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#bdc9da]">Travel requirements, fares and cancellations can change. Confirm current information with official authorities and booking providers.</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/flights" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm text-[#ffe1a0]"><Plane size={17} /> Flights</Link>
-            <Link href="/hotels" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm text-[#ffe1a0]"><Hotel size={17} /> Hotels</Link>
-            <Link href="/destinations" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm text-[#ffe1a0]"><Compass size={17} /> Destinations</Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+        <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-xs text-[var(--text-soft)]">{articles.length} articles</span>
+      </div>
+      <form role="search" action="/blog" method="get" className="mt-6 flex min-w-0 flex-col gap-3 sm:flex-row">
+        {selected!=="All"&&<input type="hidden" name="category" value={selected}/>}
+        <label className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4">
+          <Search size={18} className="shrink-0 text-[var(--gold)]"/>
+          <span className="sr-only">Search guides</span>
+          <input type="search" name="search" maxLength={70} defaultValue={search} placeholder="Search topics, cities, property or tenders"
+            className="min-w-0 w-full bg-transparent text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-soft)]"/>
+        </label>
+        <button type="submit" className="gth-btn gth-btn-gold min-h-12 rounded-xl px-6 text-sm font-semibold">Search guides</button>
+      </form>
+      <nav aria-label="Filter articles by category" className="mt-5 flex min-w-0 gap-2 overflow-x-auto pb-3">
+        {categories.map(category=><Link key={category} href={filterLink(category,search)} aria-current={selected===category?"page":undefined}
+          className={"gth-btn inline-flex min-h-10 shrink-0 items-center rounded-full px-4 text-xs font-semibold "+(selected===category?"gth-btn-gold":"")}>
+          {category}
+        </Link>)}
+      </nav>
+      {articles.length?
+        <div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {articles.map(article=><Link key={article.slug} href={"/blog/"+article.slug}
+            className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] transition hover:shadow-lg">
+            <div className="relative aspect-[16/10] w-full overflow-hidden">
+              <Image src={article.image} alt={article.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
+            </div>
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex flex-wrap justify-between gap-2 text-xs text-[var(--text-soft)]">
+                <span className="font-bold text-[var(--gold)]">{article.category}</span><span>{readingTime(article.content)} min read</span>
+              </div>
+              <h3 className="mt-3 text-lg font-bold leading-snug">{article.title}</h3>
+              <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--text-soft)]">{article.description}</p>
+              <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold">Read article <ArrowRight size={16}/></span>
+            </div>
+          </Link>)}
+        </div>:
+        <div role="status" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-7 text-center">
+          <p className="font-bold">No matching guides found.</p>
+          <p className="mt-2 text-sm text-[var(--text-soft)]">Try a different keyword or category.</p>
+          <Link href="/blog#journal" className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Show all guides</Link>
+        </div>}
+    </section>
+    <div className="border-t border-[var(--border)]">
+      <MappedCityDiscovery cities={mapped?.items??[]} title="Explore destinations for your next journey"/>
+    </div>
+  </main>;
 }
