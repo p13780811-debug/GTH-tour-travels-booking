@@ -162,7 +162,6 @@ export default async function TenderPage({searchParams}: Props) {
             <ClipboardCheck size={17} aria-hidden="true"/> {t("guided")} <ArrowRight size={17} aria-hidden="true"/>
           </Link>
           <Link href="/tender/services" className="gth-btn inline-flex items-center justify-center gap-2">Paid bid assistance · Request quote</Link>
-          <Link href="/tender/guides" className="gth-btn inline-flex items-center justify-center gap-2">Tender research guides</Link>
           <Link href="/tender/saved" className="gth-btn inline-flex items-center justify-center gap-2">
             Saved tenders & comparison
           </Link>
