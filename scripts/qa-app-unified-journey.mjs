@@ -6,6 +6,25 @@ const base="http://127.0.0.1:3000",folder="/tmp/gth-app-journey-qa/";
 await mkdir(folder,{recursive:true});
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
+ // Regression: users arriving on the public mobile flagship or Ecosystem can
+ // visibly enter the unified app and their device-local Research Desk.
+ const linksContext=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ const linksPage=await linksContext.newPage();
+ await linksPage.goto(base+"/",{waitUntil:"domcontentloaded",timeout:60000});
+ const flagshipLinks=linksPage.getByRole("region",{name:"Super App and Research Desk shortcuts"});
+ assert.ok(await flagshipLinks.getByRole("link",{name:"Open Super App"}).isVisible());
+ assert.ok(await flagshipLinks.getByRole("link",{name:"My Research Desk"}).isVisible());
+ await flagshipLinks.getByRole("link",{name:"Open Super App"}).click();
+ await linksPage.getByRole("heading",{name:"One world. Your next move."}).waitFor({timeout:25000});
+ const appQuick=linksPage.getByRole("navigation",{name:"Super App quick access"});
+ assert.ok(await appQuick.getByRole("link",{name:"My Research Desk"}).isVisible());
+ await linksPage.goto(base+"/mega-aggregator",{waitUntil:"domcontentloaded",timeout:60000});
+ const ecosystemLinks=linksPage.getByRole("navigation",{name:"Super App access and Research Desk"});
+ assert.ok(await ecosystemLinks.getByRole("link",{name:"Open Super App"}).isVisible());
+ await ecosystemLinks.getByRole("link",{name:"My Research Desk"}).click();
+ await linksPage.getByRole("heading",{name:"Everything you saved. One place."}).waitFor({timeout:25000});
+ await linksPage.screenshot({path:folder+"research-desk-entry-390.png",fullPage:true});
+ await linksContext.close();
  for(const width of [320,360,390,428]){
   const context=await browser.newContext({viewport:{width,height:820},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const page=await context.newPage();

@@ -24,6 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { name: "Hotels", short_name: "Hotels", url: "/app/hotels" },
       { name: "Real Estate", short_name: "Property", url: "/app/property" },
       { name: "Tender", short_name: "Tender", url: "/app/tenders" },
+      { name: "Research Desk", short_name: "Desk", url: "/app/board" },
     ],
   };
 }

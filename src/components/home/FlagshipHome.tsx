@@ -170,6 +170,20 @@ export default function FlagshipHome() {
         <p className={styles.tagline}><span>From opportunities to real results</span></p>
       </section>
 
+      {/* Direct, static entry points remain reachable on mobile even when the
+          flagship route hides the global bottom bar. No data is fetched. */}
+      <section aria-label="Super App and Research Desk shortcuts"
+        className="relative z-10 border-y border-[var(--flag-edge)] bg-[var(--flag-navy)] px-3 py-3 sm:py-4">
+        <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 sm:gap-3">
+          <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
+            Open Super App <ArrowUpRight size={16} aria-hidden="true"/>
+          </Link>
+          <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--flag-edge)] px-2 py-3 text-center text-xs font-bold text-[var(--flag-gold)] sm:text-sm">
+            My Research Desk <ArrowUpRight size={16} aria-hidden="true"/>
+          </Link>
+        </div>
+      </section>
+
       <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel, Tender and Worldwide Tickets platforms">
         {pillars.map(({id,title,image,alt,href,eyebrow,description,Icon,links})=>(
           <article key={id} className={styles.pillar}>
