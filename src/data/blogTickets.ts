@@ -191,7 +191,7 @@ A pass may cover only certain screening blocks, and some programmes require adva
 
 ## Before going to the theatre
 
-Save the booking reference through the ticket merchant, confirm the theatre address and allow for entry queues. Explore [cinema ticket sources](/tickets/cinema) and [GTH PRO destinations](/destinations) if you are in a new city. The worldwide directory lists source websites, not real-time cinema showtimes.`},
+Save the booking reference through the ticket merchant, confirm the theatre address and allow for entry queues. Explore [cinema ticket sources](/tickets/cinema) and [GTH PRO destinations](/destinations) if you are in a new city. If you are planning a movie night around a larger trip, compare [hotels](/hotels) and [airport transfers](/transfers) for the actual venue location. The worldwide directory lists source websites, not real-time cinema showtimes.`},
   {slug:"india-sports-concert-theatre-ticket-guide",title:"India Event Tickets: Cricket, Concerts, Comedy and Cinema",description:"A practical India-focused event ticket guide covering organizer announcements, seller domains, venue gates and mobile ticket delivery.",category:"Tickets",image:"/images/cities/mumbai.jpg",publishedAt:"2026-11-13",market:"India",
    content:`## Confirm the organizer's ticket announcement
 
