@@ -9,7 +9,7 @@ export type StadiumDiscoveryEvent={
   country:string; sport:string; venueSlug:string; officialUrl:string;
 };
 type Props={events:readonly StadiumDiscoveryEvent[]};
-const normalize=(s:string)=>s.normalize("NFKD").replace(/\\p{M}/gu,"").toLowerCase();
+const normalize=(s:string)=>s.normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase();
 export default function StadiumEventDiscovery({events}:Props){
   const [query,setQuery]=useState("");
   const [sport,setSport]=useState("");
@@ -19,7 +19,7 @@ export default function StadiumEventDiscovery({events}:Props){
   const countries=useMemo(()=>Array.from(new Set(events.map(e=>e.country))).sort(),[events]);
   const results=useMemo(()=>events.filter(e=>{
     const text=normalize([e.title,e.venue,e.city,e.country,e.sport].join(" "));
-    const terms=normalize(query.slice(0,80)).trim().split(/\\s+/).filter(Boolean);
+    const terms=normalize(query.slice(0,80)).trim().split(/\s+/).filter(Boolean);
     return terms.every(t=>text.includes(t))&&(!sport||e.sport===sport)&&
       (!country||e.country===country)&&(!from||(e.ends??e.starts)>=from);
   }),[events,query,sport,country,from]);
