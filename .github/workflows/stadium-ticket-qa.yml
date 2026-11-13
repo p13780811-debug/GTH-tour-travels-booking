@@ -1,10 +1,14 @@
-name: Stadium ticket discovery QA
+name: Worldwide ticket discovery QA
 on:
   pull_request:
     paths:
       - "src/app/stadiums/**"
+      - "src/app/tickets/**"
+      - "src/components/travel/TravelSectionNav.tsx"
+      - "src/lib/travel/worldwide-ticket-sources.ts"
       - "src/lib/travel/stadium*.ts"
       - "tests/stadium-ticket-destinations.test.mjs"
+      - "tests/worldwide-ticket-sources.test.mjs"
       - ".github/workflows/stadium-ticket-qa.yml"
   workflow_dispatch:
 permissions:
@@ -18,8 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Validate official ticket destination registry
-        run: node --test tests/stadium-ticket-destinations.test.mjs
+      - name: Validate ticket sources, categories, fallbacks and URL safety
+        run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs
       - name: Ensure no broken in-page official sources anchor
         run: |
           if grep -R 'href="#official-stadium-sources"' src/app/stadiums; then
