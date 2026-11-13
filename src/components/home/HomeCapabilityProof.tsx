@@ -50,7 +50,7 @@ const capabilityGroups = [
   },
   {
     id:"tickets",
-    title:"Worldwide Tickets",
+    title: "Worldwide Tickets",
     eyebrow:"Events, sports and venue research",
     Icon:Ticket,
     description:"Find public ticket-source directories for stadium events, music, theatre, festivals and attractions. Sellers confirm final availability and pricing.",
