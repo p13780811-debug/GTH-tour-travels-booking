@@ -45,7 +45,7 @@ export default function GuidePartnerHandoffs({city}:{city:string|null}){
   <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
    <Link href={hotelHref} className="flex min-h-[154px] flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
     <span className="flex items-center gap-2 text-base font-bold"><Hotel size={19} aria-hidden="true"/> Search hotels</span>
-    <span className="mt-2 flex-1 text-xs leading-6 text-[var(--text-soft)]">Browse destination listings; a specific property only offers booking when its actual partner link is available.</span>
+    <span className="mt-2 flex-1 text-xs leading-6 text-[var(--text-soft)]">Open the connected Nuitee booking search. Select a real supplier destination, stay dates and guests to view live hotel options.</span>
     <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">Find a stay <ArrowUpRight size={16} aria-hidden="true"/></span>
    </Link>
    {offers.map(({slug,title,description,Icon,href})=>
