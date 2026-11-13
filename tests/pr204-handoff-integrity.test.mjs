@@ -75,7 +75,7 @@ test("only complete, uniquely reviewed stadium names navigate directly",()=>{
 test("ticket explorer must show only matching reviewed sources or an honest no-result state",()=>{
  const explorer=read("src/app/tickets/WorldwideTicketExplorer.tsx");
  assert.match(explorer,/terms\.every\(term=>tokens\.has\(term\)\)/);
- assert.match(explorer,/mode:terms\.length===0\?"browse":selected\.length\?"matching":"not-found"/);
+ assert.match(explorer,/mode:!selected\.length\?"not-found":terms\.length===0\?"browse":"matching"/);
  assert.doesNotMatch(explorer,/const partial=exact\.length\?exact/);
  assert.doesNotMatch(explorer,/const selected=partial\.length\?partial:scored/);
  assert.match(explorer,/No verified matching venue or ticket-source listing/);
