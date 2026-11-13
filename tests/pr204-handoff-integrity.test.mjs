@@ -37,12 +37,13 @@ test("the original four-pillar navigation links and PR204 ticket additions point
   "/real-estate","/real-estate/tools","/real-estate/post-property",
   "/tender","/tender/assistant","/partners","/blog","/about",
   "/verification","/app","/app/ecosystem","/app/search","/app/explore",
-  "/app/hotels","/app/property","/app/tenders",
+  "/app/hotels",
  ];
  for(const route of routes){
   const path="src/app"+(route==="/"?"/page.tsx":route+"/page.tsx");
   assert.ok(existsSync(new URL("../"+path,import.meta.url)),"Missing internal route "+route);
  }
+ assert.ok(existsSync(new URL("../src/app/app/[section]/page.tsx",import.meta.url)));
  assert.ok(existsSync(new URL("../src/app/tickets/[category]/page.tsx",import.meta.url)));
  assert.ok(existsSync(new URL("../src/app/stadiums/[slug]/page.tsx",import.meta.url)));
 });
