@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import {readFileSync,existsSync} from "node:fs";
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
-test("mobile website Home and PWA Home point to their own canonical landing pages",()=>{
+test("mobile website Home icon and PWA Home icon both open GTH PRO Home",()=>{
  const nav=read("src/components/MobileNav.tsx");
- assert.match(nav,/href: "\/", appHref: "\/app", name: "Home"/);
+ assert.match(nav,/href: "\/app", appHref: "\/app", name: "Home"/);
  for(const pair of [
   'href: "/flights", appHref: "/app/flights"',
   'href: "/hotels", appHref: "/app/hotels"',
@@ -24,7 +24,7 @@ test("PWA launches the ecosystem-and-dashboard unified Home without provider dup
  const approved=read("src/app/mega-aggregator/page.tsx");
  const manifest=read("src/app/manifest.ts");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
- assert.match(page,/<MobileAppDashboard data=\{data\}\/>/);
+ assert.match(page,/<MobileAppDashboard mode="tools"\/>/);
  assert.match(alias,/redirect\("\/app"\)/);
  assert.match(alias,/robots:\{index:false,follow:false\}/);
  assert.match(manifest,/scope: "\/app"/);
@@ -42,7 +42,7 @@ test("website flagship keeps its own canonical page and separate Ecosystem link"
  assert.match(website,/alternates:\s*\{\s*canonical:\s*"\/"\s*\}/);
  assert.match(read("src/components/home/FlagshipHome.tsx"),/href="\/mega-aggregator"/);
  const nav=read("src/components/MobileNav.tsx");
- assert.match(nav,/href: "\/", appHref: "\/app", name: "Home"/);
+ assert.match(nav,/href: "\/app", appHref: "\/app", name: "Home"/);
  const wrapper=read("src/components/LayoutWrapper.tsx");
  assert.match(wrapper,/!isRealEstate && !isFlagship && <MobileNav \/>/);
 });

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import {mobileAppHref} from "@/lib/mobile/routes";
 import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront, Ticket } from "lucide-react";
 
 const pillars = [
@@ -52,16 +53,16 @@ const quickLinks = [
   { title: "Worldwide Tickets", href: "/tickets", Icon: Ticket },
 ] as const;
 
-export default function EcosystemPillars() {
+export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) {
   return (
-    <section id="ecosystem-pillars" aria-labelledby="ecosystem-pillar-heading" className="relative scroll-mt-20 overflow-hidden bg-[var(--bg)] py-14 md:py-20">
+    <section id="ecosystem-pillars" aria-labelledby="ecosystem-pillar-heading" className={"relative scroll-mt-20 overflow-hidden bg-[var(--bg)] "+(appHome?"py-8 md:py-12":"py-14 md:py-20")}>
       <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-[70%] -translate-x-1/2 rounded-full bg-[var(--gold)]/5 blur-3xl" aria-hidden="true" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-9 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gold)]"><Globe2 size={16} aria-hidden="true" /> GTH PRO · Global Technical Hub</p>
             <h1 id="ecosystem-pillar-heading" className="gth-master-heading mt-4 text-3xl font-semibold leading-tight tracking-tight text-[var(--text)] sm:text-4xl md:text-5xl">
-              One global ecosystem. <span className="gold-text">Four defining pillars.</span>
+              {appHome?"Your world.":"One global ecosystem."} <span className="gold-text">{appHome?"Four paths, one Home.":"Four defining pillars."}</span>
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] md:text-base">
               From journeys and property discovery to procurement research and worldwide tickets—navigate the entire GTH PRO world from one central gateway.
@@ -72,9 +73,9 @@ export default function EcosystemPillars() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={appHome?"flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto touch-auto pb-4 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible xl:grid-cols-4":"grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"}>
           {pillars.map(({id,number,title,eyebrow,description,href,cta,image,Icon,detail}) => (
-            <article key={id} className="gth-master-pillar group flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)]">
+            <article key={id} className={"gth-master-pillar group flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)] "+(appHome?"w-[76vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink":"")} >
               {/* Keep the source photo visible instead of hiding it beneath a full-card black gradient. */}
               <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--bg-soft)] sm:h-44 md:h-48">
                 <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
@@ -89,7 +90,7 @@ export default function EcosystemPillars() {
                 <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
                 <div className="mt-auto pt-5">
                   <p className="border-t border-[var(--border)] pt-3 text-xs font-medium text-[var(--text-soft)]">{detail}</p>
-                  <Link href={href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
+                  <Link href={appHome?(id==="travel"?"/app/destinations":mobileAppHref(href)):href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
                     {cta} <ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
@@ -101,7 +102,7 @@ export default function EcosystemPillars() {
         <nav aria-label="Popular ecosystem destinations" className="mt-8 flex flex-wrap items-center gap-2">
           <span className="mr-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-soft)]">Quick access</span>
           {quickLinks.map(({title,href,Icon})=>(
-            <Link key={href} href={href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+            <Link key={href} href={appHome?mobileAppHref(href):href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
               <Icon size={15} aria-hidden="true" /> {title}
             </Link>
           ))}

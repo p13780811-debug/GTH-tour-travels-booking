@@ -13,13 +13,14 @@ import AppServiceGrid,{AppRecentServices} from "./AppServiceGrid";
 import useAppServicePreferences from "./useAppServicePreferences";
 import {recordAppService,toggleAppFavourite} from "@/lib/mobile/app-preferences";
 const tabs=[{id:"all",name:"All",Icon:LayoutGrid},{id:"travel",name:"Travel",Icon:Plane},{id:"property",name:"Property",Icon:Building2},{id:"tender",name:"Tenders",Icon:BriefcaseBusiness},{id:"tickets",name:"Tickets",Icon:Ticket}] as const;
-export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
+export default function MobileAppDashboard({data={destinations:[],hotels:[],properties:[],tenders:[]},mode="full"}:{data?:MobileDiscoveryData;mode?:"full"|"tools"}){
  const [pillar,setPillar]=useState<AppPillar>("all"),[query,setQuery]=useState(""),[expanded,setExpanded]=useState(false);
  const [editing,setEditing]=useState(false);
  const {preferences,update}=useAppServicePreferences();
  const select=(id:string)=>update(value=>recordAppService(value,id));
  const id=useId(),services=filterAppServices(pillar,query).sort((a,b)=>{const ai=preferences.favourites.indexOf(a.id),bi=preferences.favourites.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi);}),shown=query||expanded||editing?services:services.slice(0,8);
  return <div className="mx-auto w-full max-w-6xl">
+  {mode==="full"&&<>
   <div className="px-4 pt-4 sm:px-6">
    <section aria-labelledby="app-home-heading" className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-7">
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -62,7 +63,8 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </section>
   </div>
   <AppJourneyCards />
-  <AppResearchQuickAccess />
+  </>}
+  {mode==="full"&&<AppResearchQuickAccess />}
   <div className="px-4 pt-3 sm:px-6">
    <div className="flex flex-wrap items-center justify-between gap-2">
     <div>
@@ -93,6 +95,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </section>
    {!editing&&!query&&<AppRecentServices recent={preferences.recent} onSelect={select} onClear={()=>update(value=>({...value,recent:[]}))}/>}
    {pillar!=="all"&&<AppPromoCarousel key={pillar} pillar={pillar}/>}
+   {mode==="full"&&<>
    <div className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"><AppInstall /></div>
    {(pillar==="all"||pillar==="travel")&&<>
     <MobileDiscoveryRail kind="destination" heading="Places to explore" description="Swipe for destination guides" href="/app/destinations" items={data.destinations} appLinks/>
@@ -100,6 +103,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </>}
    {(pillar==="all"||pillar==="property")&&<MobileDiscoveryRail kind="property" heading="Property discovery" description="Project records · source-aware details" href="/app/property" items={data.properties} appLinks/>}
    {(pillar==="all"||pillar==="tender")&&<MobileDiscoveryRail kind="tender" heading="Open tenders" description="Published notices · official documents" href="/app/tenders" items={data.tenders} appLinks/>}
+   </>}
    {(pillar==="all"||pillar==="tickets")&&<section aria-label="Tickets and stadium discovery" className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
     <h2 className="text-base font-bold">Worldwide tickets & stadiums</h2>
     <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Discover official event sources and venue guides. Ticket sellers confirm actual events, seats and prices.</p>

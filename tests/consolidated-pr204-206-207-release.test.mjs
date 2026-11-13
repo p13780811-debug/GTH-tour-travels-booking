@@ -41,5 +41,5 @@ test("Safe hotel discovery and exact venue routing never claim invented prices o
  assert.match(tickets,/No matching reviewed venue or ticket source/);
  assert.doesNotMatch(tickets,/mode==="fallback"/);
  const nav=read("src/components/MobileNav.tsx");
- assert.match(nav,/href: "\/", appHref: "\/app", name: "Home"/);
+ assert.match(nav,/href: "\/app", appHref: "\/app", name: "Home"/);
 });

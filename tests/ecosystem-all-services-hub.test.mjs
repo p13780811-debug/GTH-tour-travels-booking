@@ -21,7 +21,9 @@ test("One mobile-compact hero and one first-party search on the page only",()=>{
  assert.match(page,/<EcosystemUnifiedSearch \/>/);
  assert.match(page,/<EcosystemPillars \/>/);
  assert.match(page,/<EcosystemHub \/>/);
- assert.match(search,/action="\/search" method="get"/);
+ assert.match(search,/action=\{appHome\?"\/app\/search":"\/search"\} method="get"/);
+ assert.match(page,/<EcosystemUnifiedSearch \/>/);
+ assert.match(read("src/app/app/page.tsx"),/<EcosystemUnifiedSearch appHome\/>/);
  assert.doesNotMatch(search,/12Go|Klook|GetYourGuide/);
 });
 test("One directory provides all service routes without three duplicate menus",()=>{

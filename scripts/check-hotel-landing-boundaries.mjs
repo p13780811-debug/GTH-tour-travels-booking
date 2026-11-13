@@ -33,6 +33,18 @@ const paths=[git("diff","--name-only",diffBase,"HEAD"),git("diff","--name-only",
 // Explicitly reviewed PR #207 + consolidation public UX/handoff paths.
 // No admin, server API, database, RLS, middleware, environment, secrets or theme files.
 const reviewedPublicHandoffs=new Set([
+ "src/app/mega-aggregator/EcosystemUnifiedSearch.tsx",
+ "src/app/mega-aggregator/EcosystemHub.tsx",
+ "src/components/sections/EcosystemPillars.tsx",
+ "src/components/mobile/MobileAppDashboard.tsx",
+ "src/components/mobile/MobileDiscoveryRail.tsx",
+ "src/components/mobile/MobileSupplierShowcase.tsx",
+ "tests/super-app-home-supplier-ux.test.mjs",
+ "tests/mega-aggregator-upgrade.test.mjs",
+ "tests/ecosystem-all-services-hub.test.mjs",
+ "tests/mega-aggregator-hero-carousel.test.mjs",
+ "tests/super-app-research-desk-entry.test.mjs",
+ "scripts/qa-app-unified-journey.mjs",
  "src/app/app/page.tsx",
  "src/app/app/ecosystem/page.tsx",
  "src/app/app/hotels/page.tsx",

@@ -21,7 +21,9 @@ test("Only the ecosystem page gains a working universal search, preserving origi
 });
 
 test("All pillar searches submit to the existing first-party search engine",()=>{
- assert.match(search,/action="\/search" method="get"/);
+ assert.match(search,/action=\{appHome\?"\/app\/search":"\/search"\} method="get"/);
+ assert.match(read("src/app/app/page.tsx"),/<EcosystemUnifiedSearch appHome\/>/);
+ assert.match(page,/<EcosystemUnifiedSearch \/>/);
  assert.match(search,/name="q"/);
  assert.match(search,/name="category"/);
  for(const value of ["all","hotel","flight","tour","property","tender","ticket"])assert.ok(search.includes('value:"'+value+'"'));

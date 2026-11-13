@@ -27,7 +27,9 @@ test("floating first-party search overlaps the shorter mobile carousel",()=>{
  assert.match(page,/<EcosystemHeroCarousel \/>/);
  assert.match(page,/mx-auto -mt-10 w-full/);
  assert.match(hero,/aspect-\[2\/1\]/);
- assert.match(search,/action="\/search" method="get"/);
+ assert.match(search,/action=\{appHome\?"\/app\/search":"\/search"\} method="get"/);
+ assert.match(page,/<EcosystemUnifiedSearch \/>/);
+ assert.match(read("src/app/app/page.tsx"),/<EcosystemUnifiedSearch appHome\/>/);
 });
 test("no custom backgrounds or duplicated intro/hero panels",()=>{
  assert.doesNotMatch(hero,/bg-black|bg-gradient|style=\{|gth-glass|from-black|via-black/);
