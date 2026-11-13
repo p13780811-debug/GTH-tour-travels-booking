@@ -29,7 +29,7 @@ function partnerTarget(slug:string,host:string):string|null{
 }
 
 export default function GuidePartnerHandoffs({city}:{city:string|null}){
- const hotelHref=city?"/hotels/results?city="+encodeURIComponent(city):"/hotels";
+ const hotelHref=city?"/hotels?view=booking&city="+encodeURIComponent(city):"/hotels";
  const offers=featured.flatMap(item=>{
   const href=partnerTarget(item.slug,item.host);
   return href?[{...item,href}]:[];
