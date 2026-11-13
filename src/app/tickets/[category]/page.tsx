@@ -4,6 +4,7 @@ import {notFound} from "next/navigation";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {ticketCategories} from "@/lib/travel/worldwide-ticket-sources";
+import {ticketBlogGuides} from "@/data/blogTickets";
 import WorldwideTicketExplorer from "../WorldwideTicketExplorer";
 
 type Props={params:Promise<{category:string}>};
@@ -33,6 +34,14 @@ export default async function TicketCategoryPage({params}:Props){
       <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">{selected.description} Discover public event sources worldwide; GTH PRO does not claim live inventory or guaranteed seat availability.</p>
     </header>
     <WorldwideTicketExplorer initialCategory={selected.slug}/>
+    {ticketBlogGuides.filter(guide=>guide.ticketCategory===selected.slug).map(guide=>
+      <section key={guide.slug} className="gth-glass mt-7 rounded-2xl border border-[var(--border)] p-5 sm:p-7">
+        <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Ticket research guide</p>
+        <h2 className="mt-2 text-xl font-bold sm:text-2xl">{guide.title}</h2>
+        <p className="mt-2 text-sm text-[var(--text-soft)]">{guide.description}</p>
+        <Link href={"/blog/"+guide.slug} className="gth-btn-gold mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Read guide and source links</Link>
+      </section>
+    )}
     <p className="mt-5 text-sm text-[var(--text-soft)]">Explore more: <Link href="/tickets" className="font-semibold underline">All ticket categories</Link> · <Link href="/stadiums" className="font-semibold underline">Stadium guides</Link> · <Link href="/hotels" className="font-semibold underline">Hotels</Link></p>
    </div>
  </main>;
