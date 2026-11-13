@@ -7,6 +7,8 @@ import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import StadiumDirectory from "./StadiumDirectory";
 import StadiumPartnerDiscovery from "./StadiumPartnerDiscovery";
 import StadiumUpcomingEvents from "./StadiumUpcomingEvents";
+import StadiumEventDiscovery from "./StadiumEventDiscovery";
+import { upcomingStadiumEvents } from "@/lib/travel/stadiums";
 
 // Refresh editorial event visibility hourly; no live API, cron or DB traffic.
 export const revalidate = 3600;
@@ -19,6 +21,12 @@ export const metadata: Metadata = {
 };
 
 export default function StadiumsPage() {
+  const reviewedEvents=stadiums.flatMap(venue=>upcomingStadiumEvents(venue).map(event=>({
+    id:venue.slug+"-"+event.starts+"-"+event.label,
+    title:event.label,starts:event.starts,ends:event.ends,
+    venue:venue.name,city:venue.city,country:venue.country,
+    sport:venue.sports[0],venueSlug:venue.slug,officialUrl:event.url,
+  }))).sort((a,b)=>a.starts.localeCompare(b.starts));
   return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
     <TravelSectionNav/>
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
@@ -28,7 +36,13 @@ export default function StadiumsPage() {
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">Find a venue, explore its official calendar and seating information, then plan your journey. Selected venues also have partner links for game tickets or guided experiences.</p>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Event organizers and suppliers confirm dates, available seats, final prices and ticket terms. Check whether your selected product includes event admission.</p>
       </header>
+      <nav aria-label="Explore stadium tickets" className="mt-5 flex flex-wrap gap-3">
+        <a href="#stadium-event-discovery" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Explore upcoming events</a>
+        <a href="#stadium-directory" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Browse stadiums</a>
+        <a href="#stadium-exact-offers-heading" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Reviewed ticket experiences</a>
+      </nav>
       <StadiumPartnerDiscovery/>
+      <StadiumEventDiscovery events={reviewedEvents}/>
       <StadiumUpcomingEvents/>
       <section className="mt-8" aria-labelledby="stadium-exact-offers-heading">
         <header>
