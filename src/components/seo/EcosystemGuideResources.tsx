@@ -33,7 +33,7 @@ export default function EcosystemGuideResources({slug}:{slug:string}){
  const getYourGuide=guide.gygCruiseDestination?buildCruiseProviderSearch(guide.gygCruiseDestination,"gyg","sightseeing"):null;
  const klook=guide.klookSearchDestination?buildPartnerSearch({kind:"activities",destination:guide.klookSearchDestination}):null;
  const pillarHome=guide.pillar==="Real Estate"?"/real-estate":guide.pillar==="Tenders"?"/tender":"/travel";
- const pillarGuides=guide.pillar==="Real Estate"?"/real-estate/guides":guide.pillar==="Tenders"?"/tender/guides":"/blog";
+ const pillarGuides=guide.pillar==="Real Estate"?"/real-estate/guides":guide.pillar==="Tenders"?"/knowledge/tenders":"/blog";
  const services=[
   {href:"/flights",label:"Flights"},{href:"/hotels",label:"Hotels"},{href:"/tours",label:"Tours"},
   {href:"/activities",label:"Activities"},{href:"/tickets",label:"Worldwide Tickets"},
@@ -107,7 +107,7 @@ export default function EcosystemGuideResources({slug}:{slug:string}){
    <nav aria-label="GTH PRO knowledge pillars" className="mt-6 flex flex-wrap gap-2">
     {[{href:pillarGuides,label:guide.pillar+" guides"},{href:pillarHome,label:guide.pillar+" hub"},
     {href:"/blog",label:"All blog articles"},{href:"/real-estate/guides",label:"Property guides"},
-    {href:"/tender/guides",label:"Tender guides"},{href:"/tickets",label:"Ticket guides"}].map(x=>
+    {href:"/knowledge/tenders",label:"Tender guides"},{href:"/tickets",label:"Ticket guides"}].map(x=>
      <Link key={x.href+x.label} href={x.href} className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-xs font-semibold">{x.label}</Link>
     )}
    </nav>
