@@ -1,0 +1,35 @@
+name: GTH End-to-End Search and Booking Handoff QA
+on:
+  pull_request:
+    paths:
+      - "src/app/hotels/**"
+      - "src/app/app/hotels/**"
+      - "src/app/app/search/**"
+      - "src/app/stadiums/**"
+      - "src/app/search/**"
+      - "src/lib/travel/stadium-intent.ts"
+      - "src/lib/travel/stadium-partner-discovery.ts"
+      - "src/lib/mobile/universal-search.ts"
+      - "src/components/hotel/HotelBookingExperience.tsx"
+      - "src/components/travel/**"
+      - "src/components/sections/HotelScroll.tsx"
+      - "tests/gth-end-to-end-handoffs.test.mjs"
+      - "tests/stadium-partner-discovery.test.mjs"
+      - "tests/mobile-universal-search-routing.test.mjs"
+      - ".github/workflows/gth-handoff-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  handoff-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned dependencies
+        run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Cross-pillar booking, hotel and stadium routing checks
+        run: node --test tests/gth-end-to-end-handoffs.test.mjs tests/mobile-universal-search-routing.test.mjs tests/stadium-partner-discovery.test.mjs
