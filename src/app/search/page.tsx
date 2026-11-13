@@ -37,6 +37,7 @@ function inferredCategory(query: string): SearchCategory {
   if (/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|[1-9]\s*bhk)\b/i.test(query)) return "property";
   if (/\b(hotels?|resorts?|stays?|accommodation|lodging|guesthouses?|rooms?)\b/i.test(query)) return "hotel";
   if (/\b(flights?|airfares?|airlines?|air tickets?)\b/i.test(query)) return "flight";
+  if (/\b(stadiums?|cricket|afl|rugby|football matches?|concerts?|live events?|sports? tickets?)\b/i.test(query)) return "ticket";
   if (/\b(tours?|activities|sightseeing|excursions?|experiences|things to do)\b/i.test(query)) return "tour";
   if (/\b(tickets?|stadiums?|cricket|afl|rugby|football matches?|sports? events?|concerts?|theat(?:re|er)|comedy shows?|festivals?|cinema|museums?|theme parks?|live events?)\b/i.test(query)) return "ticket";
   if (/\b(blogs?|guides?|articles?|travel tips|checklists?|how to)\b/i.test(query)) return "blog";
@@ -77,10 +78,10 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
   }
   if (category === "hotel") {
     const cityPhrase = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
-    if (cityPhrase) return withParam("/hotels", "city", cleanPlace(cityPhrase[1]));
+    if (cityPhrase) return "/hotels?" + new URLSearchParams({view:"booking",city:cleanPlace(cityPhrase[1])}).toString();
     const hotelName = cleanPlace(q);
     const knownCity = destinations.some((place) => place.name.toLowerCase() === hotelName.toLowerCase());
-    return withParam("/hotels", knownCity ? "city" : "name", hotelName);
+    return "/hotels?" + new URLSearchParams({view:"booking",[knownCity?"city":"name"]:hotelName}).toString();
   }
   if (category === "tour") return withParam("/tours", "city", cleanPlace(q));
   if (category === "destination") {
@@ -106,7 +107,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
 
 const sections = [
   { id: "property", title: "Real Estate", detail: "Search projects, villas, apartments and listings", Icon: Building2 },
-  { id: "hotel", title: "Hotels", detail: "Find hotels by destination and compare source listings", Icon: Hotel },
+  { id: "hotel", title: "Hotels", detail: "Choose a destination and dates for supplier-hosted Nuitee room booking", Icon: Hotel },
   { id: "flight", title: "Flights", detail: "Search flight routes, dates and observed fares", Icon: Plane },
   { id: "tender", title: "Tenders", detail: "Research current source-backed procurement notices", Icon: FileSearch },
   { id: "ticket", title: "Worldwide Tickets", detail: "Discover official event and stadium ticket sources, not guaranteed live seats", Icon: Ticket },
