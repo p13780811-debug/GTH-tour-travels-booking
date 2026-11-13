@@ -2,16 +2,17 @@ import "server-only";
 import {listAppRecords,normalizeAppQuery,type AppListing,type AppQuery} from "./catalog";
 import type {MobileSection} from "./routes";
 
-export type ExplorePillar="all"|"travel"|"property"|"tender";
+export type ExplorePillar="all"|"travel"|"property"|"tender"|"ticket";
 const SECTION_GROUPS:Record<ExplorePillar,readonly MobileSection[]>={
  all:["destinations","hotels","property","tenders"],
  travel:["destinations","hotels"],
  property:["property"],
  tender:["tenders"],
+ ticket:[],
 };
 export function normalizeExploreQuery(params:Record<string,string|string[]|undefined>){
  const raw=typeof params.pillar==="string"?params.pillar:"all";
- const pillar:ExplorePillar=raw==="travel"||raw==="property"||raw==="tender"?raw:"all";
+ const pillar:ExplorePillar=raw==="travel"||raw==="property"||raw==="tender"||raw==="ticket"?raw:"all";
  const q=normalizeAppQuery(params).q;
  return {q,pillar};
 }
