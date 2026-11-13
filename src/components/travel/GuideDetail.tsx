@@ -16,7 +16,7 @@ export default function GuideDetail({guide,media,indexable,places=[]}:Props){
  const code=full?guide.countryCode:"FR";
  const links=[
   {name:"Explore tours & tickets",href:city?"/tours?city="+encodeURIComponent(city):"/tours",Icon:Compass},
-  {name:"Search hotels",href:city?"/hotels/results?city="+encodeURIComponent(city):"/hotels",Icon:Hotel},
+  {name:"Search hotels",href:city?"/hotels?view=booking&city="+encodeURIComponent(city):"/hotels",Icon:Hotel},
   {name:"Plan a trip",href:"/ai-trip",Icon:BookOpen},
   {name:"Travel insurance",href:"/insurance",Icon:Compass},
   {name:"Airport transfers",href:"/transfers",Icon:Plane},
