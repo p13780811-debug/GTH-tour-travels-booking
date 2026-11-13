@@ -1,6 +1,7 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import HotelResults from "./HotelResults";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Hotel Search Results | GTH PRO",
@@ -36,12 +37,14 @@ export default async function Page({ searchParams }: PageProps) {
     <main className="min-h-screen bg-[var(--bg)] px-4 py-10 text-[var(--text)]">
       <div className="mx-auto max-w-7xl">
 <header data-travel-hero="true">
-        <h1 className="text-2xl font-bold md:text-4xl">Hotel listings</h1>
+        <h1 className="text-2xl font-bold md:text-4xl">Hotel source directory</h1>
         <p className="mt-2 text-sm text-[var(--text-soft)]">
-          Source-backed listings only. Confirm prices, dates and room availability with the booking partner.
+          Research-only accommodation records, not Nuitee live room inventory. For actual booking dates and current rooms, use our hosted Nuitee search.
         </p>
 </header>
 <TravelSectionNav />
+        <Link href={"/hotels?"+new URLSearchParams({view:"booking",...(city?{city}:{}),...(destination?{destination}:{}),...(name?{name}:{})}).toString()}
+          className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 text-sm font-semibold">Book a stay on Nuitee</Link>
         {hasScope ? (
           <div className="mt-8">
             <HotelResults scope={{ city, destination, name, country, category, sort, source, checkin, checkout, adults }} />
