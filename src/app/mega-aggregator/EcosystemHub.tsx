@@ -81,7 +81,7 @@ const services = [
   { label: "Contact GTH PRO", href: "/contact", pillar: "business", Icon: Globe2 },
 ] as const;
 
-// Eight balanced entry points appear first on mobile. All 31 remain searchable,
+// Curated entry points appear first on mobile. All services remain searchable,
 // and the full directory can be expanded without repeating page menus.
 const primaryServiceHrefs = new Set<string>([
   "/hotels", "/flights", "/tours", "/bus", "/train",
