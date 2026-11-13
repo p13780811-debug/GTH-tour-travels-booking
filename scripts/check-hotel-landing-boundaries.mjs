@@ -41,6 +41,8 @@ const reviewedPublicHandoffs=new Set([
  "src/components/mobile/MobileSupplierShowcase.tsx",
  "tests/super-app-home-supplier-ux.test.mjs",
  "tests/mega-aggregator-upgrade.test.mjs",
+ "tests/ecosystem-all-services-hub.test.mjs",
+ "tests/mega-aggregator-hero-carousel.test.mjs",
  "tests/super-app-research-desk-entry.test.mjs",
  "scripts/qa-app-unified-journey.mjs",
  "src/app/app/page.tsx",
