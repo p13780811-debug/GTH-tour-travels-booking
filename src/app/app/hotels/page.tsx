@@ -9,7 +9,7 @@ export const dynamic="force-dynamic";
 type Query=Record<string,string|string[]|undefined>;
 export default async function AppHotels({searchParams}:{searchParams:Promise<Query>}){
  const query=await searchParams;
- const directory=query.directory==="1"||["q","category","country","destination","page"].some(key=>typeof query[key]==="string");
+ const directory=query.directory==="1"||query.view==="directory";
  if(directory)return <MobileAppSection params={Promise.resolve({section:"hotels"})} searchParams={Promise.resolve(query)}/>;
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
