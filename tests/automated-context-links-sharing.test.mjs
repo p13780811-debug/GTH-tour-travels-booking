@@ -70,3 +70,13 @@ test("the original property EMI, coordinate-gated commute and live-source protec
   assert.doesNotMatch(app,/https?:\/\/.*\.apk/i);
   assert.match(read("src/components/home/FlagshipHome.tsx"),/href="\/app".*gth-btn-gold/);
 });
+
+test("legacy tender release guard remains active only for its own fixed-baseline branch; all new PRs still run full checks",()=>{
+  const workflow=read(".github/workflows/gth-tender-portal-upgrade.yml");
+  assert.match(workflow,/github\.event_name == 'push' \|\| github\.head_ref == 'feat\/tender-decision-revenue-global-20261109'/);
+  assert.match(workflow,/run: node scripts\/check-tender-upgrade-boundaries\.mjs/);
+  assert.match(workflow,/npm run test:security/);
+  assert.match(workflow,/npx tsc --noEmit/);
+  assert.match(workflow,/npm run build/);
+  assert.match(workflow,/node scripts\/qa-tender-portal\.mjs/);
+});
