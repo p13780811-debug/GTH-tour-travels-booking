@@ -59,7 +59,11 @@ if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS
 const rate=readFileSync("src/lib/security/rate-limit.ts","utf8").replace(' | "hotel_content"','').replace('  hotel_content: { minute: 30, day: 1000, globalMinute: 30, globalDay: 1000 },\n','');
 if(rate!==git("show",baseline+":src/lib/security/rate-limit.ts"))throw Error("Only the new hotel metadata refresh budget may extend existing limiter policies");
 for(const path of ["tests/revenue-growth-staging-20261104.test.mjs","tests/12go-official-search.test.mjs"]){
- const original=git("show",baseline+":"+path).replaceAll('gthproglobal\\.nuitee\\.link','hotel\\.gthproglobal\\.com').replaceAll('nuitee\\.link','hotel\\.gthproglobal\\.com');
+ // Current PRs must preserve the supplier-related tests byte-for-byte as in
+ // their target branch; the historical hostname-only transform remains for
+ // the original release branch comparison.
+ const original=baseBranch?git("show",diffBase+":"+path):
+  git("show",baseline+":"+path).replaceAll('gthproglobal\\.nuitee\\.link','hotel\\.gthproglobal\\.com').replaceAll('nuitee\\.link','hotel\\.gthproglobal\\.com');
  if(readFileSync(path,"utf8")!==original)throw Error("Only the owner's verified custom hotel hostname may update unrelated supplier test expectations");
 }
 console.log("PASS: branch-scoped public hotel and ticket navigation diff is allowlisted, while shared CSS, provider SDK, security/rate budgets and historical invariants remain protected.");
