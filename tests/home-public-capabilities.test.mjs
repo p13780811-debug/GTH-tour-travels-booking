@@ -35,11 +35,13 @@ test("public capability proof is server-rendered semantic HTML with grounded fea
    "/real-estate","/real-estate/registry","/real-estate/tools",
    "/flights","/hotels","/tours","/destinations",
    "/tender","/tender/services","/partners",
-   "/tickets","/stadiums","/blog"
+   "/tickets","/stadiums","/blog?category=Tickets#journal"
  ];
  assert.deepEqual(urls,expected);
  for(const url of urls){
-   assert.ok(existsSync(new URL("../src/app"+url+"/page.tsx",import.meta.url)),"Non-existent feature route: "+url);
+   const parsed=new URL(url,"https://www.gthproglobal.com");
+   assert.ok(existsSync(new URL("../src/app"+parsed.pathname+"/page.tsx",import.meta.url)),"Non-existent feature route: "+url);
+   if(url.includes("Tickets"))assert.equal(parsed.searchParams.get("category"),"Tickets");
  }
  assert.match(proof,/href=\{href\} key=\{href\} prefetch=\{false\}/);
  assert.match(proof,/href="\/mega-aggregator" prefetch=\{false\}/);
