@@ -78,7 +78,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
           <select id="ecosystem-universal-category" name="category" value={category}
             onChange={event=>setCategory(event.target.value as SearchCategory)}
             className="gth-input mt-2 block min-h-12 w-full min-w-0">
-            {categories[pillar].map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+            {categories[pillar].filter(option=>!appHome||option.value!=="blog").map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </label>
         <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold sm:col-span-2 lg:col-span-1">
