@@ -4,6 +4,7 @@ import {ArrowUpRight} from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {ticketCategories} from "@/lib/travel/worldwide-ticket-sources";
+import {ticketBlogGuides} from "@/data/blogTickets";
 import WorldwideTicketExplorer from "./WorldwideTicketExplorer";
 
 export const metadata:Metadata={
@@ -29,6 +30,19 @@ export default function TicketsPage(){
       className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">{category.label}</Link>)}
    </nav>
    <WorldwideTicketExplorer/>
+   <section id="ticket-editorial-guides" aria-labelledby="ticket-editorial-heading" className="gth-glass mt-8 rounded-2xl border border-[var(--border)] p-5 sm:p-7">
+     <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Knowledge before booking</p>
+     <h2 id="ticket-editorial-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Worldwide ticket guides</h2>
+     <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Research admission types, seller rules, cancellation terms and local event planning. Each guide links to relevant public ticket sources and GTH PRO travel services.</p>
+     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+       {ticketBlogGuides.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
+         className="flex min-h-24 flex-col justify-between rounded-xl border border-[var(--border)] p-4 text-sm hover:underline">
+         <span className="font-semibold">{guide.title}</span>
+         <span className="mt-3 text-xs text-[var(--text-soft)]">Read ticket guide</span>
+       </Link>)}
+     </div>
+     <Link href="/blog?category=Tickets#journal" className="gth-btn mt-5 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">View all ticket articles</Link>
+   </section>
    <section aria-labelledby="ticket-trip-planning-title" className="gth-glass mt-8 rounded-2xl border border-[var(--border)] p-5 sm:p-7">
     <h2 id="ticket-trip-planning-title" className="text-xl font-bold sm:text-2xl">Plan the entire trip with GTH PRO</h2>
     <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Once you confirm an event and venue with the seller, explore related travel services.</p>
