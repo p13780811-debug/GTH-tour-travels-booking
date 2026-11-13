@@ -55,9 +55,9 @@ const capabilityGroups = [
     Icon:Ticket,
     description:"Find public ticket-source directories for stadium events, music, theatre, festivals and attractions. Sellers confirm final availability and pricing.",
     actions:[
-      {label:"Explore worldwide ticket sources",href:"/tickets"},
-      {label:"Browse stadium and venue guides",href:"/stadiums"},
-      {label:"Read ticket buying guides",href:"/blog"},
+      {label:"Explore worldwide ticket sources", href: "/tickets"},
+      {label:"Browse stadium and venue guides", href: "/stadiums"},
+      {label:"Read ticket buying guides", href: "/blog"},
     ],
   },
 ] as const;
