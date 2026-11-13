@@ -7,7 +7,7 @@ on:
       - "src/data/blogs.ts"
       - "src/app/blog/**"
       - "src/app/real-estate/guides/**"
-      - "src/app/tender/guides/**"
+      - "src/app/knowledge/tenders/**"
       - "src/components/seo/EcosystemGuideResources.tsx"
       - "src/components/seo/PillarGuideIndex.tsx"
       - "src/app/sitemap.ts"
