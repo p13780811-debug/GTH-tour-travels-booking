@@ -208,7 +208,7 @@
 .pillars {
   position: relative;
   display:grid;
-  grid-template-columns: 1.08fr 1fr 1.08fr;
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:4px;
   background:#010b1d;
 }
@@ -1103,4 +1103,15 @@
   .proofIntro h2 { font-size: clamp(24px, 6.3vw, 31px); }
   .proofFooter { align-items: stretch; }
   .site .proofExplore { width: 100%; }
+}
+
+/* Four-pillar flagship layout. Homepage CSS module only; other pages keep global theme. */
+@media (min-width:981px) and (max-width:1330px) {
+ .pillars {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (min-width:681px) and (max-width:980px) {
+ .pillars {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:680px) {
+ .pillars {grid-template-columns:minmax(0,1fr);}
 }
