@@ -21,7 +21,7 @@ export const metadata:Metadata={
   },
 };
 type Category=Blog["category"]|"All";
-const categories:Category[]=["All","Flights","Hotels","Experiences","Planning","Safety","Tickets","Real Estate","Tenders"];
+const categories:Category[]=["All","Flights","Hotels","Experiences","Planning","Safety","Tickets","Real Estate", "Tenders"];
 type Props={searchParams:Promise<{category?:string|string[];search?:string|string[]}>};
 function filterLink(category:Category,search:string){
   const params=new URLSearchParams();
