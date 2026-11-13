@@ -57,7 +57,7 @@ const capabilityGroups = [
     actions:[
       {label:"Explore worldwide ticket sources",href:"/tickets"},
       {label:"Browse stadium and venue guides",href:"/stadiums"},
-      {label:"Read ticket buying guides",href:"/blog?category=Tickets#journal"},
+      {label:"Read ticket buying guides",href:"/blog"},
     ],
   },
 ] as const;
