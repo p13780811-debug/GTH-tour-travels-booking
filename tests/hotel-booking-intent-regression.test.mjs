@@ -7,13 +7,15 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("city/hotel URLs default to Nuitee booking, local directory only explicitly selected",()=>{
  const hotel=read("src/app/hotels/page.tsx");
  const app=read("src/app/app/hotels/page.tsx");
- // The protected landing remains byte-identical; Next config normalizes
- // legacy hotel city/name links before the old directory fallback can run.
+ // Both route normalization and explicit booking-mode selection prevent
+ // city/name text from implicitly entering the non-bookable source directory.
  const config=read("next.config.ts");
  assert.match(config,/bookingKeys=\["city","destination","name","country"\]/);
  assert.match(config,/missing:\[\{type:"query" as const,key:"view"\}\]/);
  assert.match(config,/destination:"\/hotels\?view=booking"/);
- assert.match(hotel,/params\.get\("view"\) !== "booking"/);
+ assert.match(hotel,/params\.get\("view"\) === "directory"/);
+ assert.match(hotel,/params\.get\("directory"\) === "1"/);
+ assert.match(hotel,/chooseHotelMode\("booking"\)/);
  assert.match(hotel,/hotelMode === "booking" &&/);
  assert.match(hotel,/<HotelBookingExperience key=\{currency\}/);
  assert.match(hotel,/HotelBookingExperience key=\{currency\}/);
