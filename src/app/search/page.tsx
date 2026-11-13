@@ -76,11 +76,16 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     return withParam("/tender", "q", subject || q, "#tender-find");
   }
   if (category === "hotel") {
-    const cityPhrase = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
-    if (cityPhrase) return withParam("/hotels", "city", cleanPlace(cityPhrase[1]));
-    const hotelName = cleanPlace(q);
-    const knownCity = destinations.some((place) => place.name.toLowerCase() === hotelName.toLowerCase());
-    return withParam("/hotels", knownCity ? "city" : "name", hotelName);
+    // Booking intent must never fall through to local OSM/directory results.
+    // A city name alone is NOT a supplier placeId: the existing LiteAPI SearchBar
+    // provides a verified place selection before Nuitee shows live room results.
+    const after = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
+    const before = q.match(/^(.+?)\s+(?:hotels?|resorts?|stays?)$/i);
+    const candidate = cleanPlace(after?.[1] || before?.[1] || q);
+    const knownCity = destinations.some((place) => place.name.toLowerCase() === candidate.toLowerCase());
+    const scope = /^[\p{L}\p{M}\s.'-]{2,80}$/u.test(candidate) ? candidate : "";
+    const params = new URLSearchParams({view:"booking", ...(scope ? {[knownCity || after || before ? "city" : "name"]:scope} : {})});
+    return "/hotels?" + params.toString();
   }
   if (category === "tour") return withParam("/tours", "city", cleanPlace(q));
   if (category === "destination") {
@@ -260,7 +265,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
             <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {hotelMatches.map(item => (
                 <Link key={"hotel-" + item.id} href={"/hotels?" + new URLSearchParams({
-                  name: item.name, ...(item.city ? { city: item.city } : {}),
+                  view:"directory", name: item.name, ...(item.city ? { city: item.city } : {}),
                 }).toString()}
                   className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
                   <Hotel size={25} className="text-[var(--gold)]" />
