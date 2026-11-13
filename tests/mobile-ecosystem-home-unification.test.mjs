@@ -17,8 +17,8 @@ test("mobile Home, app logo and PWA launch resolve to one preserved dashboard",(
  const manifest=read("src/app/manifest.ts");
  const legacy=read("src/app/app/ecosystem/page.tsx");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
- assert.match(page,/<MobileAppDashboard data=\{data\}\/>/);
- assert.match(nav,/href: "\/", appHref: "\/app", name: "Home"/);
+ assert.match(page,/<MobileAppDashboard mode="tools"\/>/);
+ assert.match(nav,/href: "\/app", appHref: "\/app", name: "Home"/);
  assert.match(logo,/href="\/app" aria-label="GTH PRO Home"/);
  assert.match(manifest,/start_url: "\/app"/);
  assert.match(legacy,/redirect\("\/app"\)/);
@@ -31,7 +31,7 @@ test("the mobile UI reuses the approved photography without new APIs or CSS them
  const app=read("src/app/app/page.tsx");
  const dashboard=read("src/components/mobile/MobileAppDashboard.tsx");
  assert.match(hero,/embedded=false/);
- assert.match(hero,/Featured ecosystem journeys/);
+ assert.match(hero,/Featured GTH PRO journeys/);
  assert.match(hero,/\/images\/mega\/hotels\.jpg/);
  assert.match(dashboard,/<AppJourneyCards \/>/);
  assert.match(dashboard,/<AppResearchQuickAccess \/>/);

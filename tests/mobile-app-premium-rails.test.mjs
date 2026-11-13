@@ -5,7 +5,10 @@ const f=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
 test("Mobile home is source-backed and hero is compact, without 3 giant vertical pillars",()=>{
  const page=f("src/app/app/page.tsx")+f("src/components/mobile/MobileAppDashboard.tsx");
- assert.match(page,/loadMobileDiscovery\(\)/);
+ assert.doesNotMatch(f("src/app/app/page.tsx"),/loadMobileDiscovery\(\)/);
+ assert.match(page,/<EcosystemPillars appHome\/>/);
+ assert.match(page,/<EcosystemHub appHome\/>/);
+ assert.match(page,/<MobileSupplierShowcase\/>/);
  assert.match(page,/MobileDiscoveryRail kind="destination"/);
  assert.match(page,/MobileDiscoveryRail kind="hotel"/);
  assert.match(page,/MobileDiscoveryRail kind="property"/);
@@ -65,7 +68,7 @@ test("Destination list uses the same equal-size horizontal cards on mobile and d
 });
 test("App navigation still provides direct real product flows and safe-area bottom inset",()=>{
  const nav=f("src/components/MobileNav.tsx");
- for(const link of ["/","/flights","/hotels","/real-estate","/tender"])assert.ok(nav.includes('href: "'+link+'"'));
+ for(const link of ["/app","/flights","/hotels","/real-estate","/tender"])assert.ok(nav.includes('href: "'+link+'"'));
  assert.match(nav,/env\(safe-area-inset-bottom/);
  const home=f("src/app/app/page.tsx");
  assert.match(home,/env\(safe-area-inset-bottom\)/);

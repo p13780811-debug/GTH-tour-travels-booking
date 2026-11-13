@@ -21,7 +21,7 @@ test("three ecosystem cards show real photos in a compact theme-aware card layou
   for (const name of ["Tours & Travels", "Real Estate", "Tenders"]) {
     assert.ok(pillars.includes('title: "' + name + '"'));
   }
-  assert.match(pillars, /className="gth-master-pillar group flex min-w-0 flex-col/);
+  assert.match(pillars, /gth-master-pillar group flex min-w-0 flex-col/);
   assert.match(pillars, /className="relative h-40 shrink-0 overflow-hidden bg-\[var\(--bg-soft\)\]/);
   assert.match(pillars, /<Image src=\{image\} alt="" fill sizes=/);
   assert.match(pillars, /bg-\[var\(--card\)\]/);
@@ -34,5 +34,5 @@ test("three ecosystem cards show real photos in a compact theme-aware card layou
 test("Mobile website and PWA Home have explicit single destinations without changing the flagship landing route", () => {
   assert.match(homepage, /return <FlagshipHome \/>/);
   assert.match(mega, /<EcosystemPillars \/>/);
-  assert.match(mobileNav, /href: "\/", appHref: "\/app", name: "Home"/);
+  assert.match(mobileNav, /href: "\/app", appHref: "\/app", name: "Home"/);
 });
