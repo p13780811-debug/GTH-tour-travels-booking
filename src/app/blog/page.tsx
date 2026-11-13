@@ -78,15 +78,16 @@ export default async function BlogList({searchParams}:Props){
     <TravelSectionNav/>
 
     <section id="ecosystem-guides" aria-labelledby="ecosystem-guides-heading" className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
-      <h2 id="ecosystem-guides-heading" className="text-2xl font-bold sm:text-3xl">One knowledge hub. Three connected pillars.</h2>
+      <h2 id="ecosystem-guides-heading" className="text-2xl font-bold sm:text-3xl">One knowledge hub. Four connected pillars.</h2>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
         Read useful guidance before booking a trip, researching property or preparing a bid. Every article connects to the relevant GTH PRO tools.
       </p>
-      <nav aria-label="Explore GTH PRO research pillars" className="mt-6 grid min-w-0 gap-4 sm:grid-cols-3">
+      <nav aria-label="Explore GTH PRO research pillars" className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {href:"/blog?category=Planning#journal",label:"Travel",detail:"Hotels, flights, transfers and experiences",Icon:Compass},
           {href:"/real-estate/guides",label:"Real Estate",detail:"Registry, ownership and property research",Icon:Building2},
           {href:"/knowledge/tenders",label:"Tenders",detail:"Eligibility, documents and official sources",Icon:Landmark},
+          {href:"/tickets",label:"Worldwide Tickets",detail:"Sports, live events, stadium and ticket-source research",Icon:Ticket},
         ].map(({href,label,detail,Icon})=><Link key={href} href={href}
           className="gth-glass flex min-w-0 items-start gap-3 rounded-2xl border border-[var(--border)] p-5 hover:underline">
           <Icon size={21} aria-hidden="true" className="shrink-0 text-[var(--gold)]"/>
