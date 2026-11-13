@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import {mobileAppHref} from "@/lib/mobile/routes";
 import {
   BookOpen,
   BriefcaseBusiness,
@@ -29,7 +30,7 @@ import {
  * The Ecosystem page is a directory, not a second implementation of existing
  * provider search / ticketing engines. All destinations are real GTH PRO routes.
  * No synthetic offers, prices, reviews, inventory, ratings or bookings.
- * This component is imported ONLY from /mega-aggregator.
+ * Reused by the website directory and the unified mobile GTH PRO Home.
  */
 type Pillar = "travel" | "property" | "tender" | "ticket" | "business";
 type Selection = "all" | Pillar;
@@ -88,7 +89,7 @@ const primaryServiceHrefs = new Set<string>([
   "/real-estate", "/tender", "/tickets", "/partners",
 ]);
 
-export default function EcosystemHub() {
+export default function EcosystemHub({appHome=false}:{appHome?:boolean}={}) {
   const [active, setActive] = useState<Selection>("all");
   const [serviceQuery, setServiceQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -108,7 +109,7 @@ export default function EcosystemHub() {
         <div className="mx-auto w-full max-w-7xl min-w-0 px-3 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">One global ecosystem</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{appHome?"GTH PRO · All services":"One global ecosystem"}</p>
               <h2 id="ecosystem-directory-heading" className="mt-2 text-2xl font-bold tracking-tight sm:text-4xl">
                 Everything GTH PRO, in one place.
               </h2>
@@ -146,7 +147,7 @@ export default function EcosystemHub() {
             {visibleServices.map(service => {
               const Icon = service.Icon;
               return (
-                <Link key={service.href} href={service.href}
+                <Link key={service.href} href={appHome?mobileAppHref(service.href):service.href}
                   className="group flex min-h-28 min-w-0 flex-col items-center justify-start rounded-2xl border border-[var(--border)] bg-[var(--card)] px-1 py-3 text-center transition-colors hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:min-h-32 sm:px-2 sm:py-4">
                   <span className="mb-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--gold)] transition-transform group-hover:-translate-y-0.5 sm:h-12 sm:w-12">
                     <Icon size={25} strokeWidth={1.8} aria-hidden="true" />

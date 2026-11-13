@@ -33,7 +33,7 @@ const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>=
   tender:[{value:"tender",label:"Tender notices"}],
   ticket:[{value:"ticket",label:"Events, sports, concerts and stadiums"}],
 };
-export default function EcosystemUnifiedSearch() {
+export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean}={}) {
   const [pillar,setPillar]=useState<Pillar>("all");
   const [category,setCategory]=useState<SearchCategory>("all");
   const [query,setQuery]=useState("");
@@ -49,7 +49,7 @@ export default function EcosystemUnifiedSearch() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">GTH PRO · Universal discovery</p>
-          <h2 id="ecosystem-search-title" className="mt-2 text-xl font-bold sm:text-2xl">Search one ecosystem, explore every pillar.</h2>
+          <h2 id="ecosystem-search-title" className="mt-2 text-xl font-bold sm:text-2xl">{appHome?"Search the entire GTH PRO world.":"Search one ecosystem, explore every pillar."}</h2>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ export default function EcosystemUnifiedSearch() {
         ))}
       </div>
 
-      <form action="/search" method="get" role="search" aria-label="Universal ecosystem search"
+      <form action={appHome?"/app/search":"/search"} method="get" role="search" aria-label={appHome?"GTH PRO Home search":"Universal ecosystem search"}
         className="mt-4 grid min-w-0 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
         <label htmlFor="ecosystem-universal-keyword" className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">
           {pillar==="property"?"Project, property or city":pillar==="tender"?"Tender keyword or sector":pillar==="ticket"?"Event, sport, city or stadium":"What would you like to find?"}

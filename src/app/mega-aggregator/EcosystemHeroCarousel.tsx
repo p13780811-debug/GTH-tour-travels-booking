@@ -18,7 +18,7 @@ const slides=[
 export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolean}={}){
   const [active,setActive]=useState(0);
   const [paused,setPaused]=useState(false);
-  const touchX=useRef<number|null>(null);
+  const touchStart=useRef<{x:number;y:number}|null>(null);
 
   useEffect(()=>{
     if(paused||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
@@ -26,26 +26,30 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
     return ()=>window.clearInterval(timer);
   },[paused,active]);
 
-  function swipe(start:number|null,end:number|undefined){
-    if(start===null||end===undefined)return;
-    const delta=end-start;
-    if(Math.abs(delta)<45)return;
-    setActive(index=>(index+(delta<0?1:slides.length-1))%slides.length);
+  function swipe(end:{x:number;y:number}|null){
+    const start=touchStart.current;
+    touchStart.current=null;
+    if(!start||!end)return;
+    const dx=end.x-start.x,dy=end.y-start.y;
+    // A vertical gesture must remain browser-owned scrolling, not a slide change.
+    if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy)*1.25)return;
+    setActive(index=>(index+(dx<0?1:slides.length-1))%slides.length);
   }
 
   return (
-    <section aria-labelledby={embedded?undefined:"ecosystem-mobile-hero-title"} aria-label={embedded?"Featured ecosystem journeys":undefined} className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
+    <section aria-labelledby={embedded?undefined:"ecosystem-mobile-hero-title"} aria-label={embedded?"Featured GTH PRO journeys":undefined} className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
       {!embedded&&<div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">GTH PRO · Global Ecosystem</p>
         <h1 id="ecosystem-mobile-hero-title" className="mt-2 max-w-2xl text-2xl font-bold leading-tight text-[var(--text)] sm:text-3xl">
           Your world. One connected gateway.
         </h1>
       </div>}
-      <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl border border-[var(--border)] sm:aspect-[21/9]"
+      <div className="relative aspect-[2/1] w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] sm:aspect-[21/9]"
         onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}
         onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}
-        onTouchStart={event=>{touchX.current=event.touches[0]?.clientX??null;}}
-        onTouchEnd={event=>{swipe(touchX.current,event.changedTouches[0]?.clientX);touchX.current=null;}}>
+        onTouchStart={event=>{const p=event.touches[0];touchStart.current=p?{x:p.clientX,y:p.clientY}:null;}}
+        onTouchEnd={event=>{const p=event.changedTouches[0];swipe(p?{x:p.clientX,y:p.clientY}:null);}}
+        onTouchCancel={()=>{touchStart.current=null;}}>
         {slides.map((slide,index)=>(
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
