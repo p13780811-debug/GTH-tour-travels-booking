@@ -38,12 +38,14 @@ test("direct official offices, information and generic platforms are distinct",(
  assert.equal(byId["eventbrite"].kind,"discovery-platform");
  assert.equal(byId["bookmyshow"].kind,"ticket-platform");
 });
-test("worldwide hub is connected, internally navigable and has non-empty fallbacks",()=>{
+test("worldwide hub uses verified matches or a clearly empty state instead of unrelated fallbacks",()=>{
  const app=readFileSync(new URL("../src/app/tickets/WorldwideTicketExplorer.tsx",import.meta.url),"utf8");
  const page=readFileSync(new URL("../src/app/tickets/page.tsx",import.meta.url),"utf8");
  const nav=readFileSync(new URL("../src/components/travel/TravelSectionNav.tsx",import.meta.url),"utf8");
- assert.ok(app.includes('mode==="fallback"'));
- assert.ok(app.includes("const pool=relevant.length?relevant:items.filter"));
+ assert.ok(app.includes('mode==="not-found"'));
+ assert.ok(app.includes("terms.every(term=>tokens.has(term))"));
+ assert.ok(app.includes("No verified matching venue or ticket-source listing"));
+ assert.ok(!app.includes("const pool=relevant.length?relevant:items.filter"));
  assert.ok(page.includes("WorldwideTicketExplorer"));
  assert.ok(nav.includes('href:"/tickets"'));
  assert.ok(app.includes('kind:"venue-guide"'));
