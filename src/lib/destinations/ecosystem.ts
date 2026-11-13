@@ -3,6 +3,7 @@
  * This file is a directory of discovery actions, not an inventory count or booking guarantee.
  */
 import {flightDestinations} from "@/data/flight/destinations";
+import {stadiums} from "@/lib/travel/stadiums";
 
 export type DestinationService = {
   key:string;
@@ -33,6 +34,8 @@ export function destinationServices(place:{slug:string;name:string;country:strin
  const country=place.country ? ISO[place.country] : undefined;
  const realEstate=new URLSearchParams({city:place.name});
  if(place.country)realEstate.set("country",place.country);
+ const localVenues=stadiums.filter(venue=>venue.city.toLocaleLowerCase("en")===place.name.toLocaleLowerCase("en")&&(!place.country||venue.country===place.country));
+ const localVenue=localVenues.length===1?localVenues[0]:null;
  const tender=new URLSearchParams({scope:"world"});
  if(country)tender.set("country",country);
  return [
@@ -51,7 +54,7 @@ export function destinationServices(place:{slug:string;name:string;country:strin
   {key:"tenders",label:"Global tenders",description:country?"Discover country opportunities":"Search published opportunities",href:"/tender?"+tender.toString(),scope:country?"country":"global",pillar:"Tenders"},
   {key:"tender-assistant",label:"Tender assistant",description:"Explore eligibility guidance",href:"/tender/assistant",scope:"global",pillar:"Tenders"},
   {key:"tickets",label:"Worldwide event tickets",description:"Research event sellers and official ticket sources",href:"/tickets?"+new URLSearchParams({q:place.name}).toString(),scope:"global",pillar:"Tickets"},
-  {key:"stadiums",label:"Stadium and venue guides",description:"Browse venue and event calendars",href:"/stadiums",scope:"global",pillar:"Tickets"},
+  {key:"stadiums",label:"Stadium and venue guides",description:localVenue?"Open the reviewed local venue and official calendar":"Browse venue and event calendars",href:localVenue?"/stadiums/"+localVenue.slug:"/stadiums",scope:localVenue?"destination":"global",pillar:"Tickets"},
   {key:"list-hotel",label:"List your hotel",description:"Owner hotel submissions",href:"/hotels/list-your-property",scope:"global",pillar:"Travel"},
  ];
 }
