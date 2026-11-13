@@ -1,3 +1,4 @@
+import {Suspense} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowUpRight,Hotel,Ticket} from "lucide-react";
@@ -98,7 +99,9 @@ export default async function MobileSupplierShowcase(){
     </div>
     <Link href="/tours" className="inline-flex min-h-11 shrink-0 items-center gap-1 text-xs font-bold text-[var(--gold)]">Explore all <ArrowUpRight size={15} aria-hidden="true"/></Link>
    </div>
-   <SupplierExperiences/>
+   <Suspense fallback={<p role="status" className="mx-4 mt-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs text-[var(--text-soft)] sm:mx-6">Checking original supplier tours and activities…</p>}>
+    <SupplierExperiences/>
+   </Suspense>
   </section>
  </div>;
 }
