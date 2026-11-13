@@ -18,14 +18,14 @@ const {destinations}=moduleFrom("src/data/destinations.ts");
 const route=moduleFrom("src/lib/mobile/universal-search.ts",{"@/data/destinations":{destinations}});
 const href=(q,c)=>route.resolveUniversalTarget(q,c).href;
 
-test("Goa hotel and other curated city stays go directly to existing app hotel results",()=>{
+test("City hotel queries open Nuitee booking, not the local directory",()=>{
  for(const query of ["Goa hotel","hotels in Goa","Goa hotels","hotel Goa","find rooms in Goa"]){
-  assert.equal(href(query),"/app/hotels?directory=1&destination=goa",query);
+  assert.equal(href(query),"/app/hotels?view=booking&city=Goa",query);
  }
- assert.equal(href("Taj hotel in Goa"),"/app/hotels?directory=1&destination=goa&q=Taj");
- assert.equal(href("Hotels in Mumbai"),"/app/hotels?directory=1&destination=mumbai");
- assert.equal(href("hotels near Palava"),"/hotels/results?city=Palava");
- assert.equal(href("The Taj Palace hotel"),"/app/hotels?directory=1&q=The+Taj+Palace");
+ assert.equal(href("Taj hotel in Goa"),"/app/hotels?view=booking&city=Goa&name=Taj");
+ assert.equal(href("Hotels in Mumbai"),"/app/hotels?view=booking&city=Mumbai");
+ assert.equal(href("hotels near Palava"),"/app/hotels?view=booking&city=Palava");
+ assert.equal(href("The Taj Palace hotel"),"/app/hotels?view=booking&name=The+Taj+Palace");
 });
 test("existing specialist engines receive compatible query keys",()=>{
  assert.equal(href("road construction tender"),"/app/tenders?q=road+construction");
@@ -46,7 +46,7 @@ test("unsafe URL content is only encoded as text, never used as redirect destina
   assert.ok(link.startsWith("/"),link);
   assert.ok(!link.startsWith("//"),link);
  }
- assert.equal(href("Goa hotel","__proto__"),"/app/hotels?directory=1&destination=goa");
+ assert.equal(href("Goa hotel","__proto__"),"/app/hotels?view=booking&city=Goa");
  assert.equal(route.normalizeUniversalCategory("__proto__"),"all");
 });
 test("all entry points use the same dispatcher; old Explore URLs redirect on specialist intent",()=>{
