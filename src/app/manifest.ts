@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/app",
     name: "GTH PRO — Global Technical Hub",
     short_name: "GTH PRO",
-    description: "One mobile ecosystem for Travel, Real Estate and Tender discovery.",
+    description: "One mobile ecosystem for Travel, Real Estate, Tenders and worldwide Tickets.",
     start_url: "/app",
     scope: "/app",
     display: "standalone",

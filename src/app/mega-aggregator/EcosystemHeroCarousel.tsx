@@ -15,7 +15,7 @@ const slides=[
  * Photo backgrounds have no handmade CSS, filters or gradient overlays.
  * The fixed heading is intentionally retained outside the images for legibility.
  */
-export default function EcosystemHeroCarousel(){
+export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolean}={}){
   const [active,setActive]=useState(0);
   const [paused,setPaused]=useState(false);
   const touchX=useRef<number|null>(null);
@@ -34,13 +34,13 @@ export default function EcosystemHeroCarousel(){
   }
 
   return (
-    <section aria-labelledby="ecosystem-mobile-hero-title" className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
-      <div className="mb-3">
+    <section aria-labelledby={embedded?undefined:"ecosystem-mobile-hero-title"} aria-label={embedded?"Featured ecosystem journeys":undefined} className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
+      {!embedded&&<div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">GTH PRO · Global Ecosystem</p>
         <h1 id="ecosystem-mobile-hero-title" className="mt-2 max-w-2xl text-2xl font-bold leading-tight text-[var(--text)] sm:text-3xl">
           Your world. One connected gateway.
         </h1>
-      </div>
+      </div>}
       <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl border border-[var(--border)] sm:aspect-[21/9]"
         onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}
         onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}
