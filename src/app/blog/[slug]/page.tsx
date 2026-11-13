@@ -1,194 +1,168 @@
-import TravelSectionNav from "@/components/travel/TravelSectionNav";
-import type { CSSProperties } from "react";
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import {notFound} from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { ArrowLeft, ArrowRight, BookOpen, Compass, Hotel, Plane, ShieldCheck } from "lucide-react";
-import { blogs } from "@/data/blogs";
+import {ArrowLeft,ArrowRight,BookOpen,ShieldCheck,Compass} from "lucide-react";
+import {blogs} from "@/data/blogs";
 import {ticketBlogGuides} from "@/data/blogTickets";
 import {ecosystemGuides} from "@/data/blogEcosystem";
 import EcosystemGuideResources from "@/components/seo/EcosystemGuideResources";
 import TicketBlogLinks from "@/components/travel/TicketBlogLinks";
-import {isPublicLaunch} from "@/lib/seo/site";
-import { siteUrl } from "@/lib/seo/site";
+import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import JsonLd from "@/components/seo/JsonLd";
 
-type Props = { params: Promise<{ slug: string }> };
-
-export function generateStaticParams() {
-  return blogs.map((blog) => ({ slug: blog.slug }));
+type Props={params:Promise<{slug:string}>};
+export function generateStaticParams(){
+  return blogs.map(blog=>({slug:blog.slug}));
 }
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const blog = blogs.find((article) => article.slug === slug);
-  if (!blog) return { title: "Guide not found | GTH PRO", robots: { index: false } };
-  const ecosystemGuide=ecosystemGuides.find(article=>article.slug===slug);
+export async function generateMetadata({params}:Props):Promise<Metadata>{
+  const {slug}=await params;
+  const blog=blogs.find(item=>item.slug===slug);
+  if(!blog)return {title:"Guide not found | GTH PRO",robots:{index:false}};
+  const ecosystemGuide=ecosystemGuides.find(item=>item.slug===slug);
+  const section=ecosystemGuide?.pillar==="Real Estate"?"Property":ecosystemGuide?.pillar==="Tenders"?"Tender":"Travel";
   return {
-    title: `${blog.title} | GTH PRO ${ecosystemGuide?.pillar==="Real Estate"?"Property":ecosystemGuide?.pillar==="Tenders"?"Tender":"Travel"} Guides`,
-    robots: { index: isPublicLaunch(), follow: true },
-    description: blog.description,
-    openGraph: {
-      title: blog.title,
-      description: blog.description,
-      images: [{ url: blog.image, alt: blog.title }],
-      type: "article",
-    },
-    alternates: { canonical: `/blog/${blog.slug}` },
+    title:blog.title+" | GTH PRO "+section+" Guides",
+    description:blog.description,
+    robots:{index:isPublicLaunch(),follow:true},
+    alternates:{canonical:"/blog/"+blog.slug},
+    openGraph:{title:blog.title,description:blog.description,type:"article",images:[{url:blog.image,alt:blog.title}]},
   };
 }
 
-export default async function BlogPage({ params }: Props) {
-  const { slug } = await params;
-  const blog = blogs.find((article) => article.slug === slug);
-  if (!blog) notFound();
-
-  const related = blogs.filter((item) => item.slug !== blog.slug &&
-    item.category === blog.category).slice(0, 3);
-  const more = related.length ? related : blogs.filter((item) => item.slug !== blog.slug).slice(0, 3);
-
+export default async function BlogPage({params}:Props){
+  const {slug}=await params;
+  const blog=blogs.find(article=>article.slug===slug);
+  if(!blog)notFound();
   const ticketGuide=ticketBlogGuides.find(item=>item.slug===slug);
   const ecosystemGuide=ecosystemGuides.find(item=>item.slug===slug);
   const datedGuide=ticketGuide||ecosystemGuide;
-  const articleData = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: blog.title,
-    description: blog.description,
-    image: siteUrl(blog.image),
-    mainEntityOfPage: siteUrl(`/blog/${blog.slug}`),
-    publisher: { "@id": siteUrl("/") + "#organization" },
-    inLanguage: "en",
+  const related=blogs.filter(item=>item.slug!==blog.slug&&item.category===blog.category).slice(0,3);
+  const more=related.length?related:blogs.filter(item=>item.slug!==blog.slug).slice(0,3);
+  const pillar=ecosystemGuide?.pillar||"Travel";
+  const hubHref=pillar==="Tenders"?"/knowledge/tenders":pillar==="Real Estate"?"/real-estate/guides":"/blog";
+  const minutes=Math.max(2,Math.ceil(blog.content.trim().split(/\s+/).length/190));
+  const articleData={
+    "@context":"https://schema.org","@type":"BlogPosting",
+    headline:blog.title,description:blog.description,
+    image:siteUrl(blog.image),mainEntityOfPage:siteUrl("/blog/"+blog.slug),
+    publisher:{"@id":siteUrl("/")+"#organization"},
+    inLanguage:"en",
     ...(datedGuide?{datePublished:datedGuide.publishedAt,dateModified:datedGuide.publishedAt,
       author:{"@type":"Organization",name:"GTH PRO",url:siteUrl("/about")}}:{}),
   };
-  const breadcrumbData=ecosystemGuide?{
-    "@context":"https://schema.org",
-    "@type":"BreadcrumbList",
+  const breadcrumbData={
+    "@context":"https://schema.org","@type":"BreadcrumbList",
     itemListElement:[
-      {"@type":"ListItem",position:1,name:"GTH PRO",item:siteUrl("/")},
-      {"@type":"ListItem",position:2,name:ecosystemGuide.pillar+" guides",
-       item:siteUrl(ecosystemGuide.pillar==="Real Estate"?"/real-estate/guides":ecosystemGuide.pillar==="Tenders"?"/knowledge/tenders":"/blog")},
-      {"@type":"ListItem",position:3,name:blog.title,item:siteUrl("/blog/"+blog.slug)}
-    ]
-  }:null;
-  const minutes = Math.max(2, Math.ceil(blog.content.trim().split(/\s+/).length / 190));
-  const palette = {
-    "--bg": "#061426",
-    "--text": "#f6f8fe",
-    "--text-soft": "#c2cfdf",
-    "--border": "rgba(234,198,113,.25)",
-    "--card": "rgba(9,26,45,.9)",
-    "--gold": "#eac671",
-  } as CSSProperties;
-
-  return (
-    <main style={palette} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
-      <JsonLd data={articleData} />
-      {breadcrumbData&&<JsonLd data={breadcrumbData}/>}
-      <header className="relative isolate overflow-hidden border-b border-[#eac671]/25" data-travel-hero="true">
-        <Image src={blog.image} alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#031021]/98 via-[#061426]/92 to-[#07172c]/75" />
-        <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 md:py-24">
-          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-3 text-xs font-semibold text-[#ffe3a4]">
-            <Link href="/blog" className="inline-flex items-center gap-2 hover:underline"><ArrowLeft size={15} /> GTH PRO Knowledge Hub</Link>
-            <span className="text-[#9facbf]">/</span>
-            <span className="text-[#d8e2f0]">{blog.category}</span>
+      {"@type":"ListItem",position:1,name:"GTH PRO Knowledge",item:siteUrl("/blog")},
+      {"@type":"ListItem",position:2,name:pillar+" guides",item:siteUrl(hubHref)},
+      {"@type":"ListItem",position:3,name:blog.title,item:siteUrl("/blog/"+blog.slug)},
+    ],
+  };
+  const researchLinks=pillar==="Real Estate"?
+    [{href:"/real-estate",label:"Property explorer"},{href:"/real-estate/registry",label:"Project registry"},{href:"/real-estate/tools",label:"Property tools"},{href:hubHref,label:"Property guides"}]:
+    pillar==="Tenders"?
+    [{href:"/tender",label:"Tender discovery"},{href:"/tender/coverage",label:"Source coverage"},{href:hubHref,label:"Tender guides"},{href:"/tender/services",label:"Tender assistance"}]:
+    [{href:"/flights",label:"Flights"},{href:"/hotels",label:"Hotels"},{href:"/activities",label:"Activities"},{href:"/tickets",label:"Tickets"},{href:"/destinations",label:"Destinations"}];
+  return <main className="min-h-screen min-w-0 overflow-x-clip bg-[var(--bg)] text-[var(--text)]">
+    <JsonLd data={articleData}/>
+    <JsonLd data={breadcrumbData}/>
+    {(pillar==="Travel")&&<TravelSectionNav/>}
+    <header className="border-b border-[var(--border)]">
+      <div className="mx-auto grid max-w-7xl min-w-0 items-center gap-7 px-4 py-8 sm:px-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)] md:py-12">
+        <div className="min-w-0">
+          <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-semibold text-[var(--text-soft)]">
+            <Link href="/blog" className="inline-flex items-center gap-1 underline"><ArrowLeft size={14}/> GTH PRO Knowledge</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={hubHref} className="underline">{pillar}</Link>
           </nav>
-          <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-[#eac671]/40 bg-[#061426]/75 px-4 py-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#f0d38d]">
-            <BookOpen size={16} /> GTH PRO / Editorial Intelligence
+          <p className="mt-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
+            <BookOpen size={16} aria-hidden="true"/> GTH PRO editorial research
           </p>
-          <h1 className="mt-6 max-w-5xl text-4xl font-semibold leading-[1.13] tracking-[-.04em] sm:text-5xl lg:text-[60px]">{blog.title}</h1>
-          <p className="mt-6 max-w-3xl text-base leading-8 text-[#d1dceb] sm:text-lg">{blog.description}</p>
-          <div className="mt-7 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#d1dceb]">
-            <span className="rounded-full border border-[#eac671]/30 bg-[#081b30]/80 px-4 py-2">{blog.category}</span>
-            <span className="rounded-full border border-[#eac671]/30 bg-[#081b30]/80 px-4 py-2">{minutes} min read</span>
-            <span className="rounded-full border border-[#eac671]/30 bg-[#081b30]/80 px-4 py-2">{ecosystemGuide?ecosystemGuide.pillar:"Travel Planning"}</span>
+          <h1 className="mt-3 break-words text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{blog.title}</h1>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">{blog.description}</p>
+          <div className="mt-5 flex flex-wrap gap-2 text-xs text-[var(--text-soft)]">
+            <span className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">{blog.category}</span>
+            <span className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">{minutes} min read</span>
+            <span className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">{pillar} research</span>
           </div>
         </div>
-      </header>
-      {(!ecosystemGuide||ecosystemGuide.pillar==="Travel")&&<TravelSectionNav />}
-
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-8 px-5 py-10 sm:px-8 md:py-16 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <article aria-label={blog.title} className="min-w-0 overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6 shadow-[0_18px_50px_rgba(0,0,0,.2)] sm:p-9 lg:p-12">
-          <div className="mb-8 flex items-center gap-3 border-b border-[#eac671]/20 pb-6">
-            <BookOpen size={20} className="shrink-0 text-[#f0d38d]" />
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.14em] text-[#f0d38d]">{ecosystemGuide?.pillar==="Real Estate"?"Research Before Buying":ecosystemGuide?.pillar==="Tenders"?"Verify Before Bidding":"Knowledge Before Booking"}</p>
-              <p className="mt-1 text-sm text-[#c6d3e3]">A source-aware guide from the GTH PRO global knowledge library.</p>
-            </div>
-          </div>
-          <div className="prose prose-base max-w-none prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-[#f9fafc] prose-h2:mt-10 prose-h2:text-2xl prose-h3:text-xl prose-p:leading-8 prose-p:text-[#cedae8] prose-li:leading-7 prose-li:text-[#d0dbe7] prose-strong:text-white prose-blockquote:border-[#eac671] prose-blockquote:text-[#e6ebf5]">
-            <ReactMarkdown
-              components={{
-                a: ({ href, children }) =>
-                  href?.startsWith("/") && !href.startsWith("//")
-                    ? <Link href={href} className="font-semibold text-[#ffe19a] underline underline-offset-4">{children}</Link>
-                    : ecosystemGuide&&href?.startsWith("https://")&&ecosystemGuide.resources.some(resource=>resource.href===href)
-                      ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#ffe19a] underline underline-offset-4">{children}</a>
-                      : <span>{children}</span>,
-              }}
-            >
-              {blog.content}
-            </ReactMarkdown>
-          </div>
-          {ticketGuide&&<TicketBlogLinks slug={ticketGuide.slug}/>}
-          {ecosystemGuide&&<EcosystemGuideResources slug={ecosystemGuide.slug}/>}
-          <div className="mt-12 rounded-xl border border-[#eac671]/30 bg-[#06182c] p-6">
-            <p className="flex items-center gap-2 text-sm font-semibold text-[#ffe09c]"><ShieldCheck size={19} /> Important research and booking information</p>
-            <p className="mt-3 text-sm leading-7 text-[#c6d3e3]">
-              Source records and legal requirements can change. Confirm current details with the relevant issuing authority, qualified professional or booking provider before making a financial decision.
-            </p>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3 border-t border-[#eac671]/20 pt-7">
-            <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm font-semibold text-[#f4d990]"><ArrowLeft size={17} /> All Travel Guides</Link>
-            <Link href="/destinations" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/40 px-5 text-sm font-semibold text-[#f4d990]"><Compass size={17} /> Destinations</Link>
-          </div>
-        </article>
-
-        <aside className="space-y-5 self-start lg:sticky lg:top-24">
-          <div className="rounded-2xl border border-[#eac671]/30 bg-[#0c2037] p-6">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-white"><BookOpen size={20} className="text-[#f0d38d]" /> Continue researching</h2>
-            <nav aria-label="Travel research tools" className="mt-6 space-y-3 text-sm">
-              <Link href="/flights" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Plane size={17} className="text-[#f0d38d]" /> Compare Flights</Link>
-              <Link href="/hotels" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Hotel size={17} className="text-[#f0d38d]" /> Explore Hotels</Link>
-              <Link href="/activities" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Compass size={17} className="text-[#f0d38d]" /> Browse Activities</Link>
-              <Link href="/destinations" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Compass size={17} className="text-[#f0d38d]" /> Explore Destinations</Link>
-              <Link href="/tickets" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Worldwide Tickets</Link>
-              <Link href="/real-estate/guides" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Real Estate research</Link>
-              <Link href="/knowledge/tenders" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Tender research</Link>
-            </nav>
-          </div>
-          <div className="rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6 text-sm leading-7 text-[#cbd7e6]">
-            <p className="font-semibold text-[#ffe19a]">Editorial standards</p>
-            <p className="mt-3">These guides are informational research, not guaranteed supplier inventory, verified property ownership, official tender eligibility or professional legal and financial advice.</p>
-          </div>
-        </aside>
+        <div className="relative aspect-[16/10] min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]">
+          <Image src={blog.image} alt={blog.title} fill priority sizes="(max-width: 768px) 100vw, 35vw" className="object-cover"/>
+        </div>
       </div>
-
-      <section className="border-t border-[#eac671]/20 bg-[#041123]">
-        <div className="mx-auto max-w-[1320px] px-5 py-12 sm:px-8 md:py-16">
-          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#f0d38d]">Further Reading</p>
-          <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">More from the travel journal</h2>
-          <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {more.map((item) => (
-              <Link href={"/blog/" + item.slug} key={item.slug}
-                className="group min-w-0 overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0d2037] transition hover:-translate-y-1 hover:border-[#eac671]/70">
-                <div className="relative h-44 overflow-hidden">
-                  <Image src={item.image} alt={item.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                </div>
-                <div className="p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[.12em] text-[#f0d38d]">{item.category}</p>
-                  <h3 className="mt-3 text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#f0d38d]">Read Guide <ArrowRight size={16} /></p>
-                </div>
-              </Link>
-            ))}
+    </header>
+    <div className="mx-auto grid max-w-7xl min-w-0 gap-7 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <article aria-label={blog.title} className="gth-glass min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] p-5 sm:p-7 lg:p-9">
+        <div className="mb-6 flex items-start gap-3 border-b border-[var(--border)] pb-5">
+          <BookOpen size={20} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
+          <div>
+            <p className="text-sm font-bold">
+              {pillar==="Real Estate"?"Research before buying":pillar==="Tenders"?"Verify before bidding":"Knowledge before booking"}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--text-soft)]">Source-aware guidance from GTH PRO Global.</p>
           </div>
         </div>
-      </section>
-    </main>
-  );
+        <div className="prose prose-base max-w-none break-words prose-headings:font-semibold prose-headings:text-[var(--text)] prose-h2:mt-8 prose-h2:text-xl prose-h3:text-lg prose-p:leading-8 prose-p:text-[var(--text-soft)] prose-li:text-[var(--text-soft)] prose-li:leading-7 prose-strong:text-[var(--text)] prose-blockquote:text-[var(--text-soft)]">
+          <ReactMarkdown components={{
+            a:({href,children})=>
+              href?.startsWith("/")&&!href.startsWith("//")
+                ? <Link href={href} className="font-semibold text-[var(--gold)] underline underline-offset-4">{children}</Link>
+                : ecosystemGuide&&href?.startsWith("https://")&&ecosystemGuide.resources.some(resource=>resource.href===href)
+                  ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--gold)] underline underline-offset-4">{children}</a>
+                  : <span>{children}</span>
+          }}>{blog.content}</ReactMarkdown>
+        </div>
+        {ticketGuide&&<TicketBlogLinks slug={ticketGuide.slug}/>}
+        {ecosystemGuide&&<EcosystemGuideResources slug={ecosystemGuide.slug}/>}
+        <div className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
+          <h2 className="flex items-center gap-2 text-sm font-bold"><ShieldCheck size={18} className="text-[var(--gold)]" aria-hidden="true"/> Check current source information</h2>
+          <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+            Availability, prices, regulations and official procurement conditions may change. Confirm critical details with the original authority, seller or qualified professional before paying or applying.
+          </p>
+        </div>
+        <nav aria-label="Article navigation" className="mt-6 flex flex-wrap gap-2 border-t border-[var(--border)] pt-6">
+          <Link href="/blog" className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"><ArrowLeft size={16}/> All articles</Link>
+          <Link href={hubHref} className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"><Compass size={16}/> {pillar} guides</Link>
+        </nav>
+      </article>
+      <aside className="min-w-0 space-y-4 self-start lg:sticky lg:top-24">
+        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5">
+          <h2 className="text-base font-bold">Continue researching</h2>
+          <nav aria-label="Related GTH PRO research tools" className="mt-4 grid gap-2">
+            {researchLinks.map(item=><Link href={item.href} key={item.href}
+              className="gth-btn flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 text-sm font-semibold">
+              <span>{item.label}</span><ArrowRight size={16} className="shrink-0" aria-hidden="true"/>
+            </Link>)}
+          </nav>
+        </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+          <h2 className="text-sm font-bold">Editorial standards</h2>
+          <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+            Independent research, not a promise of live stock, verified title, official tender eligibility or investment returns.
+          </p>
+        </div>
+      </aside>
+    </div>
+    <section aria-labelledby="further-reading" className="border-t border-[var(--border)] bg-[var(--card)]">
+      <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
+        <h2 id="further-reading" className="text-2xl font-bold">Related knowledge guides</h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {more.map(item=><Link href={"/blog/"+item.slug} key={item.slug}
+            className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] hover:shadow-lg">
+            <div className="relative aspect-[16/10] overflow-hidden">
+              <Image src={item.image} alt={item.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
+            </div>
+            <div className="flex flex-1 flex-col p-4">
+              <p className="text-xs font-bold text-[var(--gold)]">{item.category}</p>
+              <h3 className="mt-2 text-base font-semibold leading-6">{item.title}</h3>
+              <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold">Read guide <ArrowRight size={16}/></span>
+            </div>
+          </Link>)}
+        </div>
+      </div>
+    </section>
+  </main>;
 }
