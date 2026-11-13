@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {redirect} from "next/navigation";
 import {resolveUniversalTarget} from "@/lib/mobile/universal-search";
-import {ArrowLeft,ArrowRight,Bookmark,Building2,FileSearch,Globe2,Hotel,Search,ShieldCheck} from "lucide-react";
+import {ArrowLeft,ArrowRight,Bookmark,Building2,FileSearch,Globe2,Hotel,Search,ShieldCheck,Ticket} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
 import {appQueryHref} from "@/lib/mobile/catalog";
@@ -12,7 +12,7 @@ import type {MobileSection} from "@/lib/mobile/routes";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Discover Everywhere | GTH PRO App",
- description:"One source-aware search across destinations, hotels, real estate and public tenders.",
+ description:"One source-aware search across travel, real estate, tenders and worldwide event ticket sources.",
  robots:{index:false,follow:false}};
 
 type Props={searchParams:Promise<Record<string,string|string[]|undefined>>};
@@ -21,6 +21,7 @@ const choices=[
  {id:"travel",title:"Travel",Icon:Hotel,description:"Destinations & hotels"},
  {id:"property",title:"Property",Icon:Building2,description:"Project records"},
  {id:"tender",title:"Tenders",Icon:FileSearch,description:"Published notices"},
+ {id:"ticket",title:"Tickets",Icon:Ticket,description:"Event and stadium sources"},
 ] as const;
 
 const meta:Record<"destinations"|"hotels"|"property"|"tenders",{kind:MobileDiscoveryKind;heading:string;description:string}>={
@@ -70,15 +71,15 @@ export default async function GlobalAppExplore({searchParams}:Props){
       Find the next opportunity. Anywhere.
      </h1>
      <p className="mt-2 max-w-xl text-xs leading-5 text-[var(--text-soft)] sm:text-sm">
-      One starting point for travel, property and public tenders. Real records, their original specialist tools.
+      One starting point for travel, property, tenders and tickets. Discover original specialist research tools.
      </p>
      <form action="/app/search" method="get" role="search" className="mt-4">
       {pillar!=="all"&&<input type="hidden" name="category" value={pillar}/>}
       <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
        <Search size={19} aria-hidden="true" className="ml-2 shrink-0 text-[var(--gold)]"/>
-       <input name="q" aria-label="Search global destinations, property and tenders"
+       <input name="q" aria-label="Search global destinations, property, tenders and event tickets"
         type="search" minLength={2} maxLength={70} required defaultValue={q}
-        placeholder="Goa hotels, Mumbai flats, tenders…"
+        placeholder="Goa hotels, Mumbai flats, cricket tickets…"
         className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm outline-none"/>
        <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-4 text-xs font-bold sm:text-sm">
         Search <ArrowRight size={15} aria-hidden="true"/>
@@ -89,7 +90,7 @@ export default async function GlobalAppExplore({searchParams}:Props){
       Searches use existing GTH PRO service engines; prices and availability require source confirmation.
      </p>
     </div>
-    <nav aria-label="Choose a discovery ecosystem" className="-mx-4 mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:px-0">
+    <nav aria-label="Choose a discovery ecosystem" className="-mx-4 mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-5 sm:px-0">
      {choices.map(({id,title,Icon,description})=><Link key={id} href={exploreHref(q,id)}
        aria-current={pillar===id?"page":undefined}
        className={"flex min-h-14 min-w-[118px] shrink-0 snap-start items-center gap-2 rounded-xl border px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] sm:min-w-0 "+
