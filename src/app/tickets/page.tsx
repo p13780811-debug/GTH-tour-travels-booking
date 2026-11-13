@@ -33,7 +33,7 @@ export default function TicketsPage(){
     <h2 id="ticket-trip-planning-title" className="text-xl font-bold sm:text-2xl">Plan the entire trip with GTH PRO</h2>
     <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Once you confirm an event and venue with the seller, explore related travel services.</p>
     <div className="mt-4 flex flex-wrap gap-3">
-     {[{href:"/stadiums",label:"Stadium & venue guides"},{href:"/hotels",label:"Hotels"},{href:"/flights",label:"Flights"},{href:"/transfers",label:"Airport transfers"},{href:"/attractions",label:"Attractions"}].map(item=>
+     {[{href:"/stadiums",label:"Stadium & venue guides"},{href:"/hotels",label:"Hotels"},{href:"/flights",label:"Flights"},{href:"/train",label:"Train tickets"},{href:"/bus",label:"Bus tickets"},{href:"/ferry",label:"Ferry tickets"},{href:"/cruises",label:"Cruises"},{href:"/transfers",label:"Airport transfers"},{href:"/attractions",label:"Attractions"},{href:"/activities",label:"Activities"}].map(item=>
        <Link href={item.href} key={item.href} className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">{item.label}<ArrowUpRight size={15} aria-hidden="true"/></Link>
      )}
     </div>
