@@ -9,10 +9,11 @@ export type TicketBlogGuide=Blog & {
   publishedAt:string;
   ticketCategory?:TicketCategory;
   market?:string;
+  photoCredit?:{creator:string;license:string;source:string};
 };
 
 export const ticketBlogGuides:readonly TicketBlogGuide[]=[
-  {slug:"how-to-find-sports-match-tickets-worldwide",title:"How to Find Genuine Sports Match Tickets Worldwide",description:"Research official match tickets for cricket, football, basketball and racing without confusing fixture calendars, venue tours and seat availability.",category:"Tickets",image:"/images/cities/london.jpg",publishedAt:"2026-11-13",ticketCategory:"sports",
+  {slug:"how-to-find-sports-match-tickets-worldwide",title:"How to Find Genuine Sports Match Tickets Worldwide",description:"Research official match tickets for cricket, football, basketball and racing without confusing fixture calendars, venue tours and seat availability.",category:"Tickets",image:"/images/editorial/sports.svg",publishedAt:"2026-11-13",ticketCategory:"sports",
    content:`## Start with the match, not the ticket advertisement
 
 A sports ticket search should begin with the competition, two teams or drivers, approximate date and host venue. An international tournament can have separate organizers for qualification, group stages and finals. A stadium may sell concerts or guided tours alongside matches; a guided tour **does not include game admission** unless the selected product explicitly says so. Research [stadium and venue guides](/stadiums) before visiting a new ground.
@@ -32,7 +33,7 @@ Compare the seat block, entrance gate, accessible seating, restricted views and 
 ## Plan around a confirmed event
 
 Only after you have confirmed the venue and admission date should you compare [hotels](/hotels), [flights](/flights) and [airport transfers](/transfers). Keep a copy of the entry rules and QR-code delivery instructions offline. [GTH PRO Worldwide Tickets](/tickets) includes independent sources even when there is no affiliate commission; it does not show live seat inventory.`},
-  {slug:"concert-tickets-worldwide-buying-checklist",title:"Concert Tickets Worldwide: A Safe Booking Checklist",description:"Compare primary concert ticket sellers, presales, standing versus seated admission, venue entry rules and refund terms before a live show.",category:"Tickets",image:"/images/cities/singapore.jpg",publishedAt:"2026-11-13",ticketCategory:"concerts",
+  {slug:"concert-tickets-worldwide-buying-checklist",title:"Concert Tickets Worldwide: A Safe Booking Checklist",description:"Compare primary concert ticket sellers, presales, standing versus seated admission, venue entry rules and refund terms before a live show.",category:"Tickets",image:"/images/editorial/concerts.svg",publishedAt:"2026-11-13",ticketCategory:"concerts",
    content:`## Identify the actual concert date and promoter
 
 Artists may announce multiple cities, extra dates and separate presale periods. Search the artist's official tour announcement and the venue calendar together. An old tour poster, fan-club page or ticket marketplace landing screen does not establish that a particular concert is still on sale. Open the relevant [concert ticket source directory](/tickets/concerts) to locate a local ticketing platform.
@@ -52,7 +53,7 @@ Review service charges, foreign-currency conversion, mobile delivery, ticket tra
 ## Build the trip around the venue
 
 For an evening arena show, consider late transport availability, hotel check-in and safe routes home. Large venues often publish bag restrictions and accessible entrance advice. Compare [hotels](/hotels), [flights](/flights) and [transfers](/transfers) after the event is confirmed. [Worldwide Ticket Finder](/tickets) offers source discovery, not a synchronized live concert feed.`},
-  {slug:"theatre-musical-opera-ticket-guide",title:"Theatre, Musicals and Opera Tickets: Choose the Right Performance",description:"A practical guide to theatre tickets, performance dates, seating charts, accessibility, intermissions and official box-office policies.",category:"Tickets",image:"/images/cities/london.jpg",publishedAt:"2026-11-13",ticketCategory:"theatre",
+  {slug:"theatre-musical-opera-ticket-guide",title:"Theatre, Musicals and Opera Tickets: Choose the Right Performance",description:"A practical guide to theatre tickets, performance dates, seating charts, accessibility, intermissions and official box-office policies.",category:"Tickets",image:"/images/editorial/theatre.svg",publishedAt:"2026-11-13",ticketCategory:"theatre",
    content:`## Book a performance, not just a show title
 
 A theatre production can have a different cast, matinee schedule or venue across its run. Check the date, curtain time and theatre address before choosing seats. Touring productions may perform in a different building from the original West End or Broadway run. Start with [worldwide theatre ticket sources](/tickets/theatre) and compare the public box-office information.
@@ -72,7 +73,7 @@ Some theatre districts have official day-of-performance booths or lotteries, but
 ## Practical itinerary links
 
 Consider where the theatre is relative to your accommodation and late-evening transport. See [hotels](/hotels), [destination guides](/destinations) and [transfers](/transfers). Explore [theatre and musical ticket sources](/tickets/theatre) for public starting points; the relevant provider controls actual booking.`},
-  {slug:"stand-up-comedy-show-tickets-guide",title:"Stand-Up Comedy Tickets: Clubs, Festivals and Show Entry Rules",description:"Check stand-up comedy show listings, minimum ages, seating arrangements, start times and venue policies before buying tickets.",category:"Tickets",image:"/images/cities/mumbai.jpg",publishedAt:"2026-11-13",ticketCategory:"comedy",
+  {slug:"stand-up-comedy-show-tickets-guide",title:"Stand-Up Comedy Tickets: Clubs, Festivals and Show Entry Rules",description:"Check stand-up comedy show listings, minimum ages, seating arrangements, start times and venue policies before buying tickets.",category:"Tickets",image:"/images/editorial/comedy.svg",publishedAt:"2026-11-13",ticketCategory:"comedy",
    content:`## Confirm the comedian, venue and show format
 
 Comedy listings can include a solo headline performance, a mixed-bill club night, an open-mic session or a recorded special. The same performer may host multiple sets in one city with different admission prices. Check the organizer's description and event date instead of assuming a social-media clip represents the show being sold.
@@ -92,7 +93,7 @@ A listing for 'entry' might cover a club night but not a particular performer. V
 ## Make the evening simple
 
 For out-of-town shows, consider the return journey before booking late slots. Browse [hotels](/hotels), [local destinations](/destinations) and [airport transfers](/transfers) around your chosen city. GTH PRO helps locate ticket sources, but does not confirm live comedy-show availability.`},
-  {slug:"music-festival-tickets-camping-and-passes",title:"Festival Tickets: Day Passes, Camping, Entry and Travel Planning",description:"Understand festival admission tiers, campsite access, lineup changes, re-entry rules, weather contingencies and ticket transfers.",category:"Tickets",image:"/images/cities/goa.jpg",publishedAt:"2026-11-13",ticketCategory:"festivals",
+  {slug:"music-festival-tickets-camping-and-passes",title:"Festival Tickets: Day Passes, Camping, Entry and Travel Planning",description:"Understand festival admission tiers, campsite access, lineup changes, re-entry rules, weather contingencies and ticket transfers.",category:"Tickets",image:"/images/editorial/festivals.svg",publishedAt:"2026-11-13",ticketCategory:"festivals",
    content:`## Decide what a festival pass includes
 
 A one-day pass may only admit its holder on a specified date, while a weekend ticket can exclude camping, parking or shuttle transport. Premium viewing areas, backstage experiences and hospitality packages are often separate products. Compare a festival's official ticket tiers, not just the badge name printed on a reseller's listing.
@@ -112,7 +113,7 @@ Avoid screenshots of barcodes or accounts offered by strangers. A legitimate fes
 ## Prepare for the whole stay
 
 Weather, hydration, accessibility and safe transport home matter as much as the show schedule. Compare [festival ticket sources](/tickets/festivals), [hotels](/hotels), [flights](/flights) and [airport transfers](/transfers). There is no promise of particular lineup availability within [GTH PRO Tickets](/tickets).`},
-  {slug:"attraction-entry-tickets-guided-tour-differences",title:"Attraction Tickets vs Guided Tours: What Is Included?",description:"Compare sightseeing entry tickets, guided tours, skip-the-line options, audio guides and city passes without paying twice for access.",category:"Tickets",image:"/images/cities/paris.jpg",publishedAt:"2026-11-13",ticketCategory:"attractions",
+  {slug:"attraction-entry-tickets-guided-tour-differences",title:"Attraction Tickets vs Guided Tours: What Is Included?",description:"Compare sightseeing entry tickets, guided tours, skip-the-line options, audio guides and city passes without paying twice for access.",category:"Tickets",image:"/images/editorial/attractions.svg",publishedAt:"2026-11-13",ticketCategory:"attractions",
    content:`## Separate admission from a guided experience
 
 An attraction product might be entry-only, a reserved timed slot, a licensed guide, transport to the venue or an exterior walking tour. A city tour that stops outside a monument does not necessarily include admission. Read 'included' and 'not included' lists before comparing prices. Use [GTH PRO attraction discovery](/attractions) to identify a place before choosing a supplier.
@@ -132,7 +133,7 @@ A pass has value only if it covers the attractions you actually plan to visit, o
 ## Stay focused on the real venue
 
 Visit the [attraction ticket sources](/tickets/attractions), [activities](/activities), [destinations](/destinations) and [hotels](/hotels) for a workable itinerary. Provider pages—not an editorial directory—confirm current opening hours and bookings.`},
-  {slug:"museum-timed-entry-tickets-worldwide",title:"Museum Tickets Worldwide: Timed Entry, Exhibitions and Official Sources",description:"A research checklist for museum entry: timed reservations, exhibition supplements, free-entry rules, accessibility and ticket authenticity.",category:"Tickets",image:"/images/cities/paris.jpg",publishedAt:"2026-11-13",ticketCategory:"museums",
+  {slug:"museum-timed-entry-tickets-worldwide",title:"Museum Tickets Worldwide: Timed Entry, Exhibitions and Official Sources",description:"A research checklist for museum entry: timed reservations, exhibition supplements, free-entry rules, accessibility and ticket authenticity.",category:"Tickets",image:"/images/editorial/museums.svg",publishedAt:"2026-11-13",ticketCategory:"museums",
    content:`## Check the exact museum and exhibition
 
 A city can have several institutions with similar names, plus separate buildings, galleries and special exhibitions. An ordinary permanent-collection admission may not include a temporary exhibition, audio guide or guided tour. Confirm the official museum name, address and selected product before payment.
@@ -152,7 +153,7 @@ The museum's visitor-information page may list hours and policies but not provid
 ## Build a comfortable museum day
 
 Allow time to explore one important institution instead of scheduling many distant museums back to back. Check local transport and book [hotels](/hotels) only after your dates are fixed. Research nearby [attractions](/attractions) and other [activities](/activities) for optional stops.`},
-  {slug:"theme-park-family-tickets-planning",title:"Theme Park Tickets for Families: Dates, Parks and Pass Options",description:"Plan park admissions with park-specific tickets, multi-day options, attraction reservations, height limits and family logistics.",category:"Tickets",image:"/images/cities/singapore.jpg",publishedAt:"2026-11-13",ticketCategory:"theme-parks",
+  {slug:"theme-park-family-tickets-planning",title:"Theme Park Tickets for Families: Dates, Parks and Pass Options",description:"Plan park admissions with park-specific tickets, multi-day options, attraction reservations, height limits and family logistics.",category:"Tickets",image:"/images/editorial/theme-parks.svg",publishedAt:"2026-11-13",ticketCategory:"theme-parks",
    content:`## Make sure the admission covers the right park
 
 A destination resort can contain multiple separately ticketed parks, water parks or entertainment districts. A one-park ticket may not include park hopping; a hotel stay may not include admission. Compare the selected park, entry date, pass duration and re-entry rules on the operator's official checkout.
@@ -172,7 +173,7 @@ Add parking, shuttles, lockers, food, express access and optional experiences. A
 ## Connect the rest of the holiday
 
 Browse [theme park ticket sources](/tickets/theme-parks), [hotels](/hotels), [flights](/flights) and [transfers](/transfers). Leave a buffer before your departure flight, especially when visiting parks far from the airport. GTH PRO does not claim live entrance stock.`},
-  {slug:"cinema-film-screening-ticket-booking-guide",title:"Cinema and Film Festival Tickets: Screenings, Formats and Seating",description:"Avoid booking the wrong movie showtime by checking screen format, language, seat selection, age classification and festival pass rules.",category:"Tickets",image:"/images/cities/mumbai.jpg",publishedAt:"2026-11-13",ticketCategory:"cinema",
+  {slug:"cinema-film-screening-ticket-booking-guide",title:"Cinema and Film Festival Tickets: Screenings, Formats and Seating",description:"Avoid booking the wrong movie showtime by checking screen format, language, seat selection, age classification and festival pass rules.",category:"Tickets",image:"/images/editorial/cinema.svg",publishedAt:"2026-11-13",ticketCategory:"cinema",
    content:`## Verify the film and the exact showing
 
 A cinema ticket should match the title, chosen date, local start time, city, theatre and auditorium. The same film may be offered in several languages or with subtitles. A film-festival screening might include a Q&A, special presentation or venue different from a normal multiplex.
@@ -272,7 +273,7 @@ Some popular museums use advance booking or release windows rather than walk-in 
 ## Travel and transport
 
 Plan enough time between Tokyo, Osaka or other regions and the venue; local train operating hours matter after late concerts. Research [train](/train), [hotels](/hotels) and [flights](/flights) after securing a valid event date. Find public starting points in [Worldwide Tickets](/tickets).`},
-  {slug:"australia-cricket-afl-music-ticket-guide",title:"Australia Tickets: Cricket, AFL, Rugby, Concerts and Theatre",description:"Choose Australian sports and live-event ticket sources while checking reserved seating, regional travel and venue-specific rules.",category:"Tickets",image:"/images/cities/default.jpg",publishedAt:"2026-11-13",market:"Australia",
+  {slug:"australia-cricket-afl-music-ticket-guide",title:"Australia Tickets: Cricket, AFL, Rugby, Concerts and Theatre",description:"Choose Australian sports and live-event ticket sources while checking reserved seating, regional travel and venue-specific rules.",category:"Tickets",image:"https://upload.wikimedia.org/wikipedia/commons/3/3e/Sydney_Cricket_Ground.jpg",photoCredit:{creator:"ToadofTruth",license:"CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:Sydney_Cricket_Ground.jpg"},publishedAt:"2026-11-13",market:"Australia",
    content:`## Check which sport and which venue
 
 Australia's sports calendar includes international cricket, AFL, rugby, motorsports and other events. A ticket to a stadium guided tour does not cover a match. Find the precise fixture date and home venue on the competition or stadium website before checking admission.
