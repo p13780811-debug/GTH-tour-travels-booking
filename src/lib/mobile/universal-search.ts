@@ -34,28 +34,25 @@ const trimKeywords=(text:string,re:RegExp)=>text.replace(re," ").replace(/\s+/g,
 const hotelWords=/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?|lodging|guest\s*houses?|hostels?|motels?|search|find|book|booking|available|best|cheap|top|in|near|at|around|for)\b/gi;
 
 /**
- * A location is not a hotel name. "Goa hotel" must go to Goa's hotel listings
- * instead of looking for a property literally named "Goa hotel".
+ * Public hotel searches mean supplier booking, not an incomplete GTH OSM
+ * directory. A bare city name is NOT a Nuitee placeId: the SDK must confirm
+ * an actual supplier place selection before showing dated room inventory.
  */
 function hotelTarget(query:string):string{
  const cleaned=trimKeywords(query,hotelWords);
  const city=matchCity(cleaned);
  if(city){
-  const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();
-  const params:Record<string,string>={directory:"1",destination:city.slug};
-  if(remainder.length>=2)params.q=remainder;
-  return "/app/hotels?"+queryString(params);
+  const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\\s+/g," ").trim();
+  return "/app/hotels?"+queryString({
+   view:"booking",city:city.name,...(remainder.length>=2?{name:remainder}:{})
+  });
  }
- // For other cities, reuse the existing global hotel results search by city.
- const byCity=query.match(/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?)\s+(?:in|near|at)\s+([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})$/iu);
- if(byCity){
-  const place=clean(byCity[1]);
-  return "/hotels/results?"+queryString({city:place});
- }
- const beforeHotel=query.match(/^([\p{L}\p{M}][\p{L}\p{M} .'-]{1,65})\s+(?:hotels?|resorts?|stays?)$/iu);
- if(beforeHotel&&beforeHotel[1].trim().split(/\s+/).length<=2)return "/hotels/results?"+queryString({city:clean(beforeHotel[1])});
- // The hotel's *name* search comes from the established app directory.
- return "/app/hotels?"+queryString({directory:"1",...(cleaned?{q:cleaned}:{})});
+ const byCity=query.match(/\\b(?:hotels?|resorts?|stays?|rooms?|accommodations?)\\s+(?:in|near|at)\\s+([\\p{L}\\p{M}][\\p{L}\\p{M} .'-]{1,65})$/iu);
+ if(byCity)return "/app/hotels?"+queryString({view:"booking",city:clean(byCity[1])});
+ const beforeHotel=query.match(/^([\\p{L}\\p{M}][\\p{L}\\p{M} .'-]{1,65})\\s+(?:hotels?|resorts?|stays?)$/iu);
+ if(beforeHotel&&beforeHotel[1].trim().split(/\\s+/).length<=2)
+  return "/app/hotels?"+queryString({view:"booking",city:clean(beforeHotel[1])});
+ return "/app/hotels?"+queryString({view:"booking",...(cleaned?{name:cleaned}:{})});
 }
 export function resolveUniversalTarget(raw:unknown,requested?:unknown):UniversalTarget{
  const query=clean(raw);
