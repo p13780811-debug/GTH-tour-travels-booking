@@ -15,7 +15,7 @@ import JsonLd from "@/components/seo/JsonLd";
 
 type Props={params:Promise<{slug:string}>};
 export function generateStaticParams(){
-  return blogs.map(blog=>({slug:blog.slug}));
+  return blogs.map((blog) => ({ slug: blog.slug }));
 }
 export async function generateMetadata({params}:Props):Promise<Metadata>{
   const {slug}=await params;
@@ -45,7 +45,7 @@ export default async function BlogPage({params}:Props){
   const hubHref=pillar==="Tenders"?"/knowledge/tenders":pillar==="Real Estate"?"/real-estate/guides":"/blog";
   const minutes=Math.max(2,Math.ceil(blog.content.trim().split(/\s+/).length/190));
   const articleData={
-    "@context":"https://schema.org","@type":"BlogPosting",
+    "@context":"https://schema.org","@type": "BlogPosting",
     headline:blog.title,description:blog.description,
     image:siteUrl(blog.image),mainEntityOfPage:siteUrl("/blog/"+blog.slug),
     publisher:{"@id":siteUrl("/")+"#organization"},
@@ -67,10 +67,9 @@ export default async function BlogPage({params}:Props){
     [{href:"/tender",label:"Tender discovery"},{href:"/tender/coverage",label:"Source coverage"},{href:hubHref,label:"Tender guides"},{href:"/tender/services",label:"Tender assistance"}]:
     [{href:"/flights",label:"Flights"},{href:"/hotels",label:"Hotels"},{href:"/activities",label:"Activities"},{href:"/tickets",label:"Tickets"},{href:"/destinations",label:"Destinations"}];
   return <main className="min-h-screen min-w-0 overflow-x-clip bg-[var(--bg)] text-[var(--text)]">
-    <JsonLd data={articleData}/>
+    <JsonLd data={articleData} />
     <JsonLd data={breadcrumbData}/>
-    {(pillar==="Travel")&&<TravelSectionNav/>}
-    <header className="border-b border-[var(--border)]">
+    <header data-travel-hero="true" className="border-b border-[var(--border)]">
       <div className="mx-auto grid max-w-7xl min-w-0 items-center gap-7 px-4 py-8 sm:px-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)] md:py-12">
         <div className="min-w-0">
           <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-2 text-xs font-semibold text-[var(--text-soft)]">
@@ -94,6 +93,7 @@ export default async function BlogPage({params}:Props){
         </div>
       </div>
     </header>
+    {(pillar==="Travel")&&<TravelSectionNav/>}
     <div className="mx-auto grid max-w-7xl min-w-0 gap-7 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1fr)_280px]">
       <article aria-label={blog.title} className="gth-glass min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] p-5 sm:p-7 lg:p-9">
         <div className="mb-6 flex items-start gap-3 border-b border-[var(--border)] pb-5">
@@ -150,7 +150,7 @@ export default async function BlogPage({params}:Props){
       <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6">
         <h2 id="further-reading" className="text-2xl font-bold">Related knowledge guides</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {more.map(item=><Link href={"/blog/"+item.slug} key={item.slug}
+          {more.map(item=><Link href={"/blog/" + item.slug} key={item.slug}
             className="gth-glass group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] hover:shadow-lg">
             <div className="relative aspect-[16/10] overflow-hidden">
               <Image src={item.image} alt={item.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-300 group-hover:scale-105"/>
