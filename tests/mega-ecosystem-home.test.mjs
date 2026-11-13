@@ -64,7 +64,8 @@ test("flagship homepage is separate from the working ecosystem gateway",()=>{
   assert.ok(!homepage.includes("GTHHomeV13"));
   assert.ok(!homepage.includes("<MegaAggregator />"));
   assert.ok(mega.includes('<HeroSlider />'));
-  assert.ok(mobile.includes('href: "/mega-aggregator", appHref: "/app/ecosystem"'));
+  assert.ok(mobile.includes('href: "/", appHref: "/app"'));
+  assert.match(load("src/app/app/ecosystem/page.tsx"),/redirect\("\/app"\)/);
   assert.ok(footer.includes('href="/"'));
 });
 

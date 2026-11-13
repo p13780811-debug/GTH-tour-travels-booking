@@ -31,8 +31,8 @@ test("three ecosystem cards show real photos in a compact theme-aware card layou
   assert.match(pillars, /<Link href=\{href\} className=/);
 });
 
-test("UI changes do not reroute the mobile Home button or modify the official website landing route", () => {
+test("Mobile website and PWA Home have explicit single destinations without changing the flagship landing route", () => {
   assert.match(homepage, /return <FlagshipHome \/>/);
   assert.match(mega, /<EcosystemPillars \/>/);
-  assert.match(mobileNav, /href: "\/mega-aggregator", appHref: "\/app\/ecosystem", name: "Home"/);
+  assert.match(mobileNav, /href: "\/", appHref: "\/app", name: "Home"/);
 });

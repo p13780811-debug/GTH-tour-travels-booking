@@ -1,4 +1,5 @@
 import {destinations} from "@/data/destinations";
+import {knownStadiumTicketHref} from "@/lib/travel/stadium-ticket-routing";
 
 /**
  * Navigation only: reuse existing Travel, hotel directory, flight, property and
@@ -17,6 +18,7 @@ export function normalizeUniversalCategory(raw:unknown):UniversalCategory {
  return typeof raw==="string"&&CATEGORIES.some(c=>c===raw)?raw as UniversalCategory:"all";
 }
 function detectedKind(text:string):UniversalCategory{
+ if(knownStadiumTicketHref(text))return "ticket";
  if(/\b(tenders?|procurement|e-?procurement|rfp|bids?|bid notices?|gem)\b/i.test(text))return "tender";
  if(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|housing|[1-9]\s*bhk|(?:maha)?rera|registry|registration)\b/i.test(text))return "property";
  if(/\b(hotels?|resorts?|stays?|accommodations?|lodging|guest\s*houses?|hostels?|motels?|rooms?)\b/i.test(text))return "hotel";
@@ -83,7 +85,7 @@ export function resolveUniversalTarget(raw:unknown,requested?:unknown):Universal
  if(category==="tender")return {category,href:"/app/tenders?"+queryString({
   q:trimKeywords(query,/\b(?:find|search|tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|for|in)\b/gi)||query
  })};
- if(category==="ticket")return {category,href:"/tickets?"+queryString({q:query})};
+ if(category==="ticket")return {category,href:knownStadiumTicketHref(query)||"/tickets?"+queryString({q:query})};
  if(category==="flight")return {category,href:"/app/flights"};
  if(category==="tour")return {category,href:"/tours?"+queryString({
   city:trimKeywords(query,/\b(?:find|search|tours?|activities|attractions?|sightseeing|excursions?|experiences|things to do|in|near|at)\b/gi)||query

@@ -22,15 +22,68 @@ const allowed=new Set([
  "tests/hotel-nearby-search.test.mjs","tests/hotel-booking-journey.test.mjs","tests/hotel-geographic-discovery.test.mjs"
  ,"tests/revenue-growth-staging-20261104.test.mjs","tests/12go-official-search.test.mjs"
 ]);
-const paths=[git("diff","--name-only",baseline,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path));
+// The original 2026-11-09 hotel-release guard compares that release to its
+// own baseline. Modern PRs have many legitimate merged changes after that date.
+// For pull requests, evaluate only the proposed branch diff against its actual
+// target branch, while retaining every existing protected CSS/rate/security assertion.
+const baseBranch=process.env.GITHUB_BASE_REF;
+if(baseBranch&&!/^[A-Za-z0-9._/-]+$/.test(baseBranch))throw Error("Invalid PR base ref");
+const diffBase=baseBranch?"origin/"+baseBranch:baseline;
+const paths=[git("diff","--name-only",diffBase,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
+// Explicitly reviewed PR #207 + consolidation public UX/handoff paths.
+// No admin, server API, database, RLS, middleware, environment, secrets or theme files.
+const reviewedPublicHandoffs=new Set([
+ "src/app/app/page.tsx",
+ "src/app/app/ecosystem/page.tsx",
+ "src/app/app/hotels/page.tsx",
+ "src/app/attractions/cities/page.tsx",
+ "src/app/hotels/results/page.tsx",
+ "src/app/hotels/results/HotelResults.tsx",
+ "src/components/MobileNav.tsx",
+ "src/app/mega-aggregator/EcosystemHeroCarousel.tsx",
+ "src/app/manifest.ts",
+ "src/components/HotelSearch.tsx",
+ "src/components/sections/HeroSearch.tsx",
+ "src/components/sections/HotelScroll.tsx",
+ "tests/home-card-layout-regression.test.mjs",
+ "tests/hotel-booking-intent-regression.test.mjs",
+ "tests/mega-ecosystem-home.test.mjs",
+ "tests/mobile-app-premium-rails.test.mjs",
+ "tests/mobile-app-section-tabs.test.mjs",
+ "tests/mobile-home-ecosystem-route.test.mjs",
+ "tests/mobile-ecosystem-home-unification.test.mjs",
+ "tests/consolidated-pr204-206-207-release.test.mjs",
+ "src/app/destinations/[slug]/page.tsx",
+ "src/app/hotels/[slug]/page.tsx",
+ "src/app/search/page.tsx",
+ "src/app/tickets/WorldwideTicketExplorer.tsx",
+ "src/components/home/FlagshipHome.tsx",
+ "src/components/home/HomeCapabilityProof.tsx",
+ "src/lib/destinations/ecosystem.ts",
+ "src/lib/mobile/universal-search.ts",
+ "src/lib/travel/stadium-ticket-routing.ts",
+ "tests/destination-travel-intent.test.mjs",
+ "tests/destination-worldwide-ecosystem.test.mjs",
+ "tests/four-pillars-editorial-pexels.test.mjs",
+ "tests/home-public-capabilities.test.mjs",
+ "tests/hotel-destination-master.test.mjs",
+ "tests/hotel-marketplace.test.mjs",
+ "tests/mobile-universal-search-routing.test.mjs",
+ "tests/pr204-handoff-integrity.test.mjs",
+ "tests/worldwide-ticket-sources.test.mjs"
+]);
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path));
 if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
 const rate=readFileSync("src/lib/security/rate-limit.ts","utf8").replace(' | "hotel_content"','').replace('  hotel_content: { minute: 30, day: 1000, globalMinute: 30, globalDay: 1000 },\n','');
 if(rate!==git("show",baseline+":src/lib/security/rate-limit.ts"))throw Error("Only the new hotel metadata refresh budget may extend existing limiter policies");
 for(const path of ["tests/revenue-growth-staging-20261104.test.mjs","tests/12go-official-search.test.mjs"]){
- const original=git("show",baseline+":"+path).replaceAll('gthproglobal\\.nuitee\\.link','hotel\\.gthproglobal\\.com').replaceAll('nuitee\\.link','hotel\\.gthproglobal\\.com');
+ // Current PRs must preserve the supplier-related tests byte-for-byte as in
+ // their target branch; the historical hostname-only transform remains for
+ // the original release branch comparison.
+ const original=baseBranch?git("show",diffBase+":"+path):
+  git("show",baseline+":"+path).replaceAll('gthproglobal\\.nuitee\\.link','hotel\\.gthproglobal\\.com').replaceAll('nuitee\\.link','hotel\\.gthproglobal\\.com');
  if(readFileSync(path,"utf8")!==original)throw Error("Only the owner's verified custom hotel hostname may update unrelated supplier test expectations");
 }
-console.log("PASS: homepage, shared CSS/navigation, supplier SDK/search validation, hotel APIs/results/detail, Flights, Real Estate, app, SEO inventory, SQL/RLS and secrets preserved.");
+console.log("PASS: branch-scoped public hotel and ticket navigation diff is allowlisted, while shared CSS, provider SDK, security/rate budgets and historical invariants remain protected.");

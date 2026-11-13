@@ -91,7 +91,7 @@ export default function SearchSection({ city }: { city?: string }) {
 
         if (!query) { setSearchError("Enter a destination to continue."); return; }
         if (tab === "hotels") {
-            router.push(`/hotels?city=${encodeURIComponent(query)}`);
+            router.push(`/hotels?view=booking&city=${encodeURIComponent(query)}`);
         } else if (tab === "tours") {
             router.push(`/tours?city=${encodeURIComponent(query.toLowerCase().replace(/\s+/g, "-"))}`);
         }

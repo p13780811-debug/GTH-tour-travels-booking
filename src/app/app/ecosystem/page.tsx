@@ -1,17 +1,11 @@
+import {redirect} from "next/navigation";
 import type {Metadata} from "next";
-import MegaAggregator from "@/app/mega-aggregator/page";
 
-/**
- * Mobile PWA-only route for the bottom Home tab.
- * Reuses the approved Ecosystem page verbatim without sending installed PWA
- * users outside its /app scope. The public website homepage "/" is unchanged.
- */
-export const revalidate=3600;
+/** Backward-compatible in-app route: one Home, never a second dashboard. */
 export const metadata:Metadata={
- title:"GTH PRO Ecosystem | Mobile App",
- description:"Explore the existing GTH PRO Travel, Real Estate, Tender and Worldwide Tickets ecosystem.",
+ title:"GTH PRO Home | Mobile App",
  robots:{index:false,follow:false},
 };
 export default function MobileEcosystemHome(){
- return <MegaAggregator/>;
+ redirect("/app");
 }

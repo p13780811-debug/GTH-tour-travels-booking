@@ -35,8 +35,8 @@ test("ticket intent routes to existing curated source explorer, not invented inv
  const explorer=file("src/app/tickets/WorldwideTicketExplorer.tsx");
  const megaSearch=file("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx");
  for(const source of [desktop,mobile,megaSearch])assert.ok(source.includes('"ticket"'),"Missing ticket category");
- assert.ok(desktop.includes('if (category === "ticket") return withParam("/tickets","q",q);'));
- assert.ok(mobile.includes('if(category==="ticket")return {category,href:"/tickets?"'));
+ assert.ok(desktop.includes('if (category === "ticket") return knownStadiumTicketHref(q) || withParam("/tickets","q",q);'));
+ assert.ok(mobile.includes('if(category==="ticket")return {category,href:knownStadiumTicketHref(query)||"/tickets?"'));
  assert.ok(ticketPage.includes('const initialQuery=typeof params.q==="string"?params.q.slice(0,100):""'));
  assert.ok(explorer.includes('useState(initialQuery.slice(0,100))'));
  assert.doesNotMatch(desktop,/style=\{theme\}|const theme\s*=\s*\{/);

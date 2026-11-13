@@ -81,9 +81,9 @@ export default async function HotelCityPage({ params }: Props) {
             Discover available hotel listings, then confirm room type, cancellation rules,
             taxes and final prices directly with the booking partner.
           </p>
-          <Link href={`/hotels?city=${encodeURIComponent(parsed.city)}`}
+          <Link href={`/hotels?${new URLSearchParams({view:"booking",city:parsed.city}).toString()}`}
             className="gth-btn-gold mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold">
-            <BedDouble size={18} /> Search hotels in {parsed.city}
+            <BedDouble size={18} /> Search Nuitee stays in {parsed.city}
           </Link>
         </div>
       </section>

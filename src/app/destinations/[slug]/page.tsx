@@ -132,7 +132,7 @@ export default async function DestinationPage({ params }: Props) {
             </p>
             <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-3">
               <Link href="#destination-ecosystem" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
-              <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Hotels</Link>
+              <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Book stays</Link>
               <Link href={toursHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
               <Link href={flightsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
             </nav>
@@ -180,11 +180,11 @@ export default async function DestinationPage({ params }: Props) {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Source-backed accommodation</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Hotels in {destination.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">Only available source catalog records are displayed. Provider handles final booking and prices.</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Public hotel directory in {destination.name}</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">These are source-backed location records, not available Nuitee rooms. Use the separate booking search to select a supplier-verified city, dates and guests.</p>
             </div>
             <Link href={hotelsHref}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">All Hotels <ArrowRight size={15}/></Link>
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Book stays in {destination.name} <ArrowRight size={15}/></Link>
           </div>
           <HotelResults city={destination.name} destination={slug} compactRail/>
         </div>
