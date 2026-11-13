@@ -211,7 +211,7 @@ Concerts, theatre and comedy may have age restrictions or late-entry policies. F
 
 ## Travel carefully
 
-For an event requiring an overnight stay, review [hotels](/hotels), [train options](/train), [flights](/flights) and [transfers](/transfers) after verifying the venue. Treat any site that promises guaranteed tickets for an unannounced sale with caution.`},
+For an event requiring an overnight stay, review [hotels](/hotels), [train options](/train), [flights](/flights) and [transfers](/transfers) after verifying the venue. Be cautious of anyone claiming a confirmed allotment before the organizer announces a sale.`},
   {slug:"uk-football-west-end-concert-tickets-guide",title:"UK Tickets: Football, West End Theatre and Arena Concerts",description:"Find reliable UK event sources and understand football home allocations, West End performance times and arena ticket rules.",category:"Tickets",image:"/images/cities/london.jpg",publishedAt:"2026-11-13",market:"United Kingdom",
    content:`## Football ticket eligibility matters
 
