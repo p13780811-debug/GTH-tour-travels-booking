@@ -58,11 +58,11 @@ test("guide discovery shows actual imported source counts and sorts by source co
  assert.match(rail,/Country directory: /);
  assert.match(rail,/Import in progress/);
  assert.match(rail,/href="\/ai-trip"/);
- assert.match(rail,/\/hotels\/results\?city=/);
+ assert.match(rail,/\/hotels\?view=booking&city=/);
 });
-test("guide funnel uses existing live city-filtered hotel, trip and insurance routes",()=>{
+test("guide funnel routes hotel booking through supplier mode, alongside trip and insurance tools",()=>{
  const detail=read("src/components/travel/GuideDetail.tsx");
- assert.match(detail,/\/hotels\/results\?city=/);
+ assert.match(detail,/\/hotels\?view=booking&city=/);
  assert.match(detail,/name:"Plan a trip",href:"\/ai-trip"/);
  assert.match(detail,/name:"Travel insurance",href:"\/insurance"/);
  assert.match(detail,/affiliate-disclosure/);
@@ -82,7 +82,7 @@ test("final editorial guide booking step uses only existing approved partner des
  assert.match(handoff,/findFlightPartner\(slug\)/);
  assert.match(handoff,/u\.hostname===host/);
  assert.match(handoff,/rel="noopener noreferrer sponsored"/);
- assert.match(handoff,/\/hotels\/results\?city=/);
+ assert.match(handoff,/\/hotels\?view=booking&city=/);
  assert.match(handoff,/href="\/affiliate-disclosure"/);
  assert.doesNotMatch(handoff,/src="https:\/\/tpwidg|https:\/\/klook\.tpo\.lv\//);
 });
