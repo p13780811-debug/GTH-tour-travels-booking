@@ -35,6 +35,11 @@ try{
   assert.ok(await page.getByRole("link",{name:/Explore Real Estate/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Tender Vision/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).isVisible());
+  // The four visual pillars must honor native app handoffs when available.
+  assert.equal(await page.getByRole("link",{name:/Explore Travel/}).getAttribute("href"),"/app/destinations");
+  assert.equal(await page.getByRole("link",{name:/Explore Real Estate/}).getAttribute("href"),"/app/property");
+  assert.equal(await page.getByRole("link",{name:/Explore Tender Vision/}).getAttribute("href"),"/app/tenders");
+  assert.equal(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).getAttribute("href"),"/tickets");
   assert.equal(await page.locator('form[action="/app/search"]').count(),1);
   assert.ok(await page.getByRole("link",{name:"Open my Research Desk"}).isVisible());
   assert.ok(await page.getByRole("link",{name:"Search all GTH PRO ecosystems"}).isVisible());
