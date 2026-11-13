@@ -8,7 +8,6 @@ import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSe
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
 import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
 import { stadiums } from "@/lib/travel/stadiums";
-import {ticketCategories} from "@/lib/travel/worldwide-ticket-sources";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
@@ -98,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...stadiums.map(venue => ({ url: base + "/stadiums/" + venue.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
-    ...ticketCategories.map(category=>({url:base+"/tickets/"+category.slug,changeFrequency:"monthly" as const,priority:0.55})),
+    ...["sports","concerts","theatre","comedy","festivals","attractions","museums","theme-parks","cinema"].map(category=>({url:base+"/tickets/"+category,changeFrequency:"monthly" as const,priority:0.55})),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
     // Hotel ID profiles remain noindex until individually approved for original-content publication.
