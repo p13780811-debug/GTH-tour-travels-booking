@@ -95,9 +95,10 @@ function HotelsContent() {
     const router=useRouter();
     const currency=hotelCurrency(params.get("currency"));
     const changeCurrency=(value:string)=>{const next=new URLSearchParams(params.toString());next.set("currency",hotelCurrency(value));router.replace("/hotels?"+next,{scroll:false});};
-    // Preserve existing city/destination directory links. New visits use supplier booking.
-    const directoryRequested = params.get("view") === "directory" ||
-      (params.get("view") !== "booking" && ["city", "destination", "name", "country"].some(key => params.has(key)));
+    // Only an explicit directory request opens our non-bookable local catalog.
+    // A city or hotel name sent from global search must never silently switch
+    // a supplier booking request into the separate OSM/public directory.
+    const directoryRequested = params.get("view") === "directory";
     const [hotelMode, setHotelMode] = useState<"booking" | "directory">(directoryRequested ? "directory" : "booking");
     useEffect(() => { setHotelMode(directoryRequested ? "directory" : "booking"); }, [directoryRequested]);
 
@@ -327,7 +328,12 @@ function HotelsContent() {
                             onClick={() => setHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
                     </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
                     {/* SEARCH */}
-                    {hotelMode === "booking" && <HotelBookingExperience key={currency} currency={currency} />}
+                    {hotelMode === "booking" && <>
+                      {initialCity && <p role="status" className="mx-auto mt-4 max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm leading-6 text-[var(--text-soft)]">
+                        Booking hotels in <strong className="text-[var(--text)]">{initialCity}</strong>? Select this destination in the Nuitee search field, then choose dates and guests to open the supplier&apos;s actual hotel results. A city name by itself is not a verified supplier Place ID.
+                      </p>}
+                      <HotelBookingExperience key={currency} currency={currency} />
+                    </>}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
