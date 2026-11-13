@@ -23,7 +23,12 @@ test("destination links are real, local search pages and are not dead anchors",(
   const place={slug:name.toLowerCase().replaceAll(" ","-"),name,country:"India"};
   const services=links.destinationServices(place);
   const byKey=key=>services.find(x=>x.key===key);
-  assert.equal(byKey("hotels").href,"/hotels?destination="+encodeURIComponent(place.slug));
+  const hotel=new URL(byKey("hotels").href,"https://www.gthproglobal.com");
+  assert.equal(hotel.pathname,"/hotels");
+  assert.equal(hotel.searchParams.get("view"),"booking");
+  assert.equal(hotel.searchParams.get("city"),name);
+  assert.equal(hotel.searchParams.get("country"),"IN");
+  assert.equal(hotel.searchParams.has("destination"),false);
   const tours=new URL(byKey("tours").href,"https://www.gthproglobal.com");
   assert.equal(tours.pathname,"/tours");
   assert.equal(tours.searchParams.get("city"),name);
