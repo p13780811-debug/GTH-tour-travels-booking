@@ -1,6 +1,41 @@
 import {execFileSync} from "node:child_process";
 import {readFileSync} from "node:fs";
 const baseline="5d198ab775e5dd44f92f4d8f721a87728e7e06bd";
+// The October hotel-landing branch used an immutable 2026-10-24 baseline.
+// It is an intentionally narrow historical review: it cannot be used to
+// compare all post-launch main-branch releases (with four new pillars).
+// For subsequent PRs, check only changes made by THIS PR against current main,
+// and enforce independent source/booking and sensitive-file boundaries.
+// Historical branch validation below stays unchanged.
+const prBranch=process.env.GITHUB_HEAD_REF||process.env.GITHUB_REF_NAME||"";
+if(prBranch!=="fix/hotels-search-first-20261024"){
+ const changed=git("diff","--name-only","origin/main...HEAD").trim().split("\n").filter(Boolean);
+ const protectedPaths=new Set([
+  "src/app/globals.css","src/components/Navbar.tsx",
+  "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-provider-search.ts",
+  "src/components/hotel/NuiteeHotelsListWidget.tsx",
+  "src/app/api/hotels/route.ts","src/app/api/hotels/discovery/route.ts",
+ ]);
+ const blocked=changed.filter(path=>protectedPaths.has(path)||
+  path.startsWith("supabase/migrations/")||path.startsWith("src/lib/security/")||
+  /^\.env(?:\.|$)/.test(path)||path.startsWith("src/app/api/bookings/"));
+ if(blocked.length)throw Error("Protected supplier, security or global-theme boundaries changed:\n"+blocked.join("\n"));
+ const booking=readFileSync("src/app/hotels/page.tsx","utf8");
+ const app=readFileSync("src/app/app/hotels/page.tsx","utf8");
+ const widget=readFileSync("src/components/hotel/HotelBookingExperience.tsx","utf8");
+ const source=readFileSync("src/app/hotels/results/page.tsx","utf8");
+ if(!booking.includes('params.get("view") === "directory" || params.get("directory") === "1"')||
+    !booking.includes("HotelBookingExperience")||
+    !app.includes('query.directory==="1"||query.view==="directory"')||
+    !widget.includes("hotelWhiteLabelUrl")||
+    !widget.includes("hotelWidgetSearchParams")||
+    !source.includes("Hotel source directory")||
+    !source.includes('view:"booking"'))
+   throw Error("Hotel supplier booking versus research directory contract is not preserved");
+ console.log("PASS: current PR diff is isolated from approved Nuitee SDK, global CSS, protected Navbar, booking APIs, RLS and secrets; booking and catalog are distinct.");
+ process.exit(0);
+}
+
 const git=(...args)=>execFileSync("git",args,{encoding:"utf8"});
 const allowed=new Set([
  "src/app/tender/layout.tsx","src/app/tender/TenderForms.module.css",
