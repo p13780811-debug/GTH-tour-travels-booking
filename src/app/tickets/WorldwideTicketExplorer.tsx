@@ -41,8 +41,8 @@ const regionMatches=(source:string,selected:string)=>
  (selected==="United States"&&source.includes("USA"))||
  (selected==="Canada"&&source.includes("Canada"))||
  (selected==="United Kingdom"&&source==="Europe");
-export default function WorldwideTicketExplorer({initialCategory=""}:{initialCategory?:TicketCategory|""}){
- const [query,setQuery]=useState("");
+export default function WorldwideTicketExplorer({initialCategory="",initialQuery=""}:{initialCategory?:TicketCategory|"";initialQuery?:string}){
+ const [query,setQuery]=useState(initialQuery.slice(0,100));
  const [category,setCategory]=useState<TicketCategory|"">(initialCategory);
  const [region,setRegion]=useState("");
  const [showAll,setShowAll]=useState(false);
