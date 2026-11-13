@@ -35,6 +35,12 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const router = useRouter();
   const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
   const query = useSearchParams();
+  // A text-only city cannot be converted to a supplier Place ID safely.
+  // Carry the intent visibly, then require the official Nuitee destination picker.
+  const cityInput=(query.get("city")||query.get("destination")||"").replace(/-/g," ").trim().slice(0,80);
+  const hotelInput=(query.get("name")||"").trim().slice(0,80);
+  const cityHint=/^[\p{L}\p{M}\s.\x27-]{2,80}$/u.test(cityInput)?cityInput:"";
+  const hotelHint=/^[\p{L}\p{M}\p{N}\s.\x27&-]{2,80}$/u.test(hotelInput)?hotelInput:"";
   const restored = parseHotelBookingSearch(new URLSearchParams(query.toString()));
   const restoredQuery = restored ? hotelBookingParams(restored).toString() : "";
   const [bookingQuery, setBookingQuery] = useState(restoredQuery);
@@ -204,6 +210,11 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
       </div>
     </div>
     {showSearch && searchToggle}
+    {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
+      {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
+      Select the matching place from the Nuitee location suggestions below, then choose dates and guests.
+      GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
+    </p>}
     {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}

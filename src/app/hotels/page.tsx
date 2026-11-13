@@ -95,11 +95,17 @@ function HotelsContent() {
     const router=useRouter();
     const currency=hotelCurrency(params.get("currency"));
     const changeCurrency=(value:string)=>{const next=new URLSearchParams(params.toString());next.set("currency",hotelCurrency(value));router.replace("/hotels?"+next,{scroll:false});};
-    // Preserve existing city/destination directory links. New visits use supplier booking.
-    const directoryRequested = params.get("view") === "directory" ||
-      (params.get("view") !== "booking" && ["city", "destination", "name", "country"].some(key => params.has(key)));
+    // Location text is a supplier booking hint; research directory is opt-in.
+    const directoryRequested = params.get("view") === "directory" || params.get("directory") === "1";
     const [hotelMode, setHotelMode] = useState<"booking" | "directory">(directoryRequested ? "directory" : "booking");
     useEffect(() => { setHotelMode(directoryRequested ? "directory" : "booking"); }, [directoryRequested]);
+    const chooseHotelMode=(mode:"booking"|"directory")=>{
+      setHotelMode(mode);
+      const next=new URLSearchParams(params.toString());
+      next.delete("directory");
+      next.set("view",mode);
+      router.replace("/hotels?"+next.toString(),{scroll:false});
+    };
 
     const initialDestination = (params.get("destination")||"").trim().slice(0,80);
     const initialName = (params.get("name") || "").trim().slice(0, 80);
@@ -322,9 +328,9 @@ function HotelsContent() {
 
                     <div className={styles.controlsBar}><div className={styles.modes} role="group" aria-label="Hotel experience">
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "booking"}
-                            onClick={() => setHotelMode("booking")}><BedDouble size={17} aria-hidden="true" /> Book a stay</button>
+                            onClick={() => chooseHotelMode("booking")}><BedDouble size={17} aria-hidden="true" /> Book a stay</button>
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "directory"}
-                            onClick={() => setHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
+                            onClick={() => chooseHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
                     </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
                     {/* Booking city is a search hint, never a guessed supplier placeId. */}
                     {hotelMode === "booking" && initialCity && <p role="status" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)]">
@@ -717,7 +723,7 @@ function HotelsContent() {
                                                   className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                                                     {hotel.booking_ready?"Open exact hotel on partner":"View hotel details"} <ChevronRight size={15} aria-hidden="true"/>
                                                 </a>
-                                                {!hotel.booking_ready && <button type="button" onClick={()=>{setHotelMode("booking");window.scrollTo({top:0,behavior:"smooth"});}}
+                                                {!hotel.booking_ready && <button type="button" onClick={()=>{chooseHotelMode("booking");window.scrollTo({top:0,behavior:"smooth"});}}
                                                   className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold">
                                                     Search bookable stays <ChevronRight size={14} aria-hidden="true"/>
                                                   </button>}
@@ -766,12 +772,13 @@ export default function HotelsPage() {
                                 Find source-attributed stays by destination. Verify room availability,
                                 taxes, cancellation rules and final prices with the booking partner.
                             </p>
-                            <form action="/hotels" method="GET" role="search"
+                            <form action="/hotels" method="GET" role="search" data-hotel-search-intent="supplier-booking"
                                 className="mt-7 flex max-w-3xl flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-3 sm:flex-row sm:items-end">
                                 <div className="min-w-0 flex-1">
                                     <label htmlFor="hotel-first-render-city" className="mb-2 block text-xs font-semibold">
                                         City or destination
                                     </label>
+                                    <input type="hidden" name="view" value="booking"/>
                                     <input id="hotel-first-render-city" name="city" maxLength={80}
                                         placeholder="e.g. Mumbai, Dubai, London"
                                         className="min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--gold)]" />

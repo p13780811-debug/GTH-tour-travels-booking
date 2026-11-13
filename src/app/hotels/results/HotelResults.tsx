@@ -72,7 +72,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
   <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
-  <Link href={"/hotels?"+hotelSearchParams({city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,category:effectiveCategory,sort:effectiveSort,source:effectiveSource},1)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Explore hotel directory <ArrowRight size={16}/></Link>
+  <Link href={"/hotels?"+new URLSearchParams({view:"booking",...(effectiveCity?{city:effectiveCity}:{}),...(effectiveDestination?{destination:effectiveDestination}:{}),...(effectiveName?{name:effectiveName}:{})}).toString()} className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Search rooms with Nuitee <ArrowRight size={16}/></Link>
  </div>;
  return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>

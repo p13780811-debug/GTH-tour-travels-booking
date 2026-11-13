@@ -11,7 +11,7 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
  const query=await searchParams;
  // Local hotel guides are separate from supplier rate search. Query text,
  // city and dates never implicitly switch the app into local directory mode.
- const directory=query.directory==="1";
+ const directory=query.directory==="1"||query.view==="directory";
  if(directory)return <MobileAppSection params={Promise.resolve({section:"hotels"})} searchParams={Promise.resolve(query)}/>;
  const rawCity=typeof query.city==="string"?query.city:typeof query.destination==="string"?query.destination:"";
  const bookingCity=/^[\p{L}\p{M}\s.'-]{2,80}$/u.test(rawCity.trim())?rawCity.trim():"";
