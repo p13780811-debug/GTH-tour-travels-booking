@@ -42,7 +42,6 @@ function hotelTarget(query:string):string{
  const city=matchCity(cleaned);
  if(city){
   const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();
-  const params:Record<string,string>={directory:"1",destination:city.slug};
   if(remainder.length>=2)params.q=remainder;
   return "/app/hotels?"+queryString({view:"booking",city:city.name,...(remainder?{name:remainder}:{})});
  }
