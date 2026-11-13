@@ -395,7 +395,7 @@ function HotelsContent() {
             </section>
       <TravelSectionNav />
             {hotelMode === "booking" ? <div>
-              <HotelsDiscoveryPlacement currency={currency} />
+              <HotelsDiscoveryPlacement currency={currency} showOffers={!initialCity} showNearby={!initialCity} />
               <section className={styles.guides} aria-labelledby="hotel-inspiration-title">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                   <div><p className={styles.sectionLabel}>A change of scenery</p>
