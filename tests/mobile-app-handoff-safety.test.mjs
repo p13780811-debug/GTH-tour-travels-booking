@@ -16,16 +16,16 @@ const preferences=evalModule(read("src/lib/mobile/app-preferences.ts"),{"./app-d
 const services=dashboard.appServices;
 
 test("existing shortcuts and Cruises remain inside the explicit app handoff flow",()=>{
- assert.equal(services.length,16);
- for(const id of ["flights","hotels","property","tenders","transfers","cars","tours","insurance","destinations","esim","saved-property","property-tools","saved-tenders","tender-help","cruises","stadiums"])assert.ok(services.some(s=>s.id===id));
- assert.equal(new Set(services.map(s=>s.id)).size,16);
+ assert.equal(services.length,17);
+ for(const id of ["flights","hotels","property","tenders","transfers","cars","tours","insurance","destinations","esim","saved-property","property-tools","saved-tenders","tender-help","cruises","stadiums","tickets"])assert.ok(services.some(s=>s.id===id));
+ assert.equal(new Set(services.map(s=>s.id)).size,17);
  for(const service of services){
   const target=dashboard.mobileServiceHref(service);
   assert.ok(target.startsWith("/app/"),`${service.id} escaped the app: ${target}`);
   assert.ok(service.href.startsWith("/")&&!service.href.startsWith("//"));
   assert.equal(preferences.appServiceForPath(target),service.id);
  }
- assert.equal(dashboard.mobileWebServices().length,11);
+ assert.equal(dashboard.mobileWebServices().length,12);
  assert.equal(dashboard.mobileServiceHref(services.find(s=>s.id==="flights")),"/app/flights");
  assert.equal(dashboard.mobileServiceHref(services.find(s=>s.id==="transfers")),"/app/services/transfers");
 });
