@@ -210,7 +210,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
       </div>
     </div>
     {showSearch && searchToggle}
-    {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
+    {showSearch && searchPath==="/hotels" && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
       {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
       Select the matching place from the Nuitee location suggestions below, then choose dates and guests.
       GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
