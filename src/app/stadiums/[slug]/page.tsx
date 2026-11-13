@@ -136,7 +136,7 @@ export default async function StadiumPage({ params }: Props) {
         <h2 className="text-2xl font-bold">Plan your trip</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Explore stays in {venue.city}, flights to {flightCity} and airport transfers. Choose your dates and airport in each service, then check the journey to the venue.</p>
         <nav aria-label="Plan your stadium trip" className="mt-4 flex flex-wrap gap-3">
-          <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
+          <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ view:"booking", city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
           <Link prefetch={false} href={destinationFlightHref(flightCity)} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Flights to {flightCity}</Link>
           <Link prefetch={false} href="/transfers" className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Choose airport transfer</Link>
         </nav>
