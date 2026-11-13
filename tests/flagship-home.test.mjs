@@ -139,12 +139,12 @@ test("new flagship floating master search routes every platform through existing
 test("master search targets existing filtered pages without placeholder destinations or prices", () => {
   const search = source("src/app/search/page.tsx");
   for (const route of ["/real-estate", "/hotels", "/flights", "/tours", "/destinations", "/tender", "/tickets", "/blog"]) {
-    assert.ok(search.includes('"' + route + '"'), "Missing real search route " + route);
+    assert.ok(route==="/hotels"?search.includes('"/hotels?"')&&search.includes('view:"booking"'):search.includes('"' + route + '"'), "Missing real search route " + route);
     assert.ok(existsSync(new URL("../src/app" + route + "/page.tsx", import.meta.url)), "Route not found: " + route);
   }
   assert.match(search, /new URLSearchParams/);
   assert.match(search, /if \(category === "hotel"\) \{/);
-  assert.match(search, /knownCity \? "city" : "name"/);
+  assert.match(search, /knownCity \|\| after \|\| before \? "city" : "name"/);
   assert.match(search, /hotelMatches\.map/);
   assert.match(search, /tenderMatches\.map/);
   assert.match(search, /searchPublicTenders/);
@@ -190,7 +190,7 @@ test("entity master search returns real hotel name matches and verified-source t
   const hotelApi = source("src/app/api/hotels/route.ts");
   const hotelPage = source("src/app/hotels/page.tsx");
   assert.match(search, /const knownCity = destinations\.some/);
-  assert.match(search, /knownCity \? "city" : "name"/);
+  assert.match(search, /knownCity \|\| after \|\| before \? "city" : "name"/);
   assert.match(search, /db\.from\("hotels"\)/);
   assert.match(search, /db\.from\("hotel_catalog"\)/);
   assert.match(search, /db\.from\("properties"\)/);

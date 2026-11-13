@@ -52,7 +52,7 @@ test("Tours, Attractions, Guides, Blogs and Destinations surface actual mapped c
  assert.match(rail,/\.records\.toLocaleString/);
  assert.match(rail,/\.country_name/);
  assert.match(rail,/tours\?city=/);
- assert.match(rail,/hotels\/results\?city=/);
+ assert.match(rail,/hotels\?view=booking&city=/);
 });
 test("Editorial blog expands with at least 15 distinct original complete articles and existing images",()=>{
  const blog=read("src/data/blogs.ts"),expanded=read("src/data/blogExpansion.ts");

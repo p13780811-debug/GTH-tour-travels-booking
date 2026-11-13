@@ -110,33 +110,29 @@ export default async function StadiumPage({ params }: Props) {
         </article>)}</div>
         <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>
       </section>}
-      {partnerSearch && <section aria-labelledby="stadium-specific-partner-search" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
-        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Find more events and venue tours</h2>
+      {partnerSearch ? <section aria-labelledby="stadium-specific-partner-search" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
+        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Reviewed exact venue experiences</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-          Search for {venue.name} in our existing partner catalogues. These links open supplier search
-          results, not a confirmed match admission or a claim of available seats.
+          These are individually reviewed product links for {partnerSearch.venueName} in {partnerSearch.city}, not fuzzy keyword search results.
+          Confirm the included admission and dates with the supplier.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <a href={partnerSearch.klook} target="_blank" rel="noopener noreferrer sponsored"
-            className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-            Search event tickets <ArrowUpRight size={16} aria-hidden="true"/>
-          </a>
-          <a href={partnerSearch.getyourguide} target="_blank" rel="noopener noreferrer sponsored"
-            className="gth-btn inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
-            Explore stadium tours <ArrowUpRight size={16} aria-hidden="true"/>
-          </a>
+          {partnerSearch.klook&&<ExternalLink href={partnerSearch.klook} sponsored>{partnerSearch.klookLabel||"View reviewed venue ticket"}</ExternalLink>}
+          {partnerSearch.getyourguide&&<ExternalLink href={partnerSearch.getyourguide} sponsored>{partnerSearch.getyourguideLabel||"View reviewed venue experience"}</ExternalLink>}
         </div>
-        <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-          Providers independently confirm any matching product, admission type, dates, ticket availability,
-          price and checkout. Tours do not include live games unless explicitly stated.
-          Eligible affiliate bookings may generate a commission.
+      </section> : <section aria-labelledby="stadium-no-verified-tour" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
+        <h2 id="stadium-no-verified-tour" className="text-xl font-bold">No verified partner stadium tour listed</h2>
+        <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
+          We have no reviewed, exact-match partner tour product for {venue.name}. Generic supplier searches can match unrelated
+          places with similar names, so we do not present those as {venue.name} tours. Check the official calendar and
+          venue notices above for confirmed events, access rules or tour announcements.
         </p>
       </section>}
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
         <h2 className="text-2xl font-bold">Plan your trip</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Explore stays in {venue.city}, flights to {flightCity} and airport transfers. Choose your dates and airport in each service, then check the journey to the venue.</p>
         <nav aria-label="Plan your stadium trip" className="mt-4 flex flex-wrap gap-3">
-          <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
+          <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ view:"booking", city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
           <Link prefetch={false} href={destinationFlightHref(flightCity)} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Flights to {flightCity}</Link>
           <Link prefetch={false} href="/transfers" className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Choose airport transfer</Link>
         </nav>

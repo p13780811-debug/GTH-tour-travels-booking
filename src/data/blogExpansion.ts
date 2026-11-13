@@ -18,7 +18,7 @@ Marine Drive can be a separate end-of-day stop, not an obligatory item squeezed 
 - Save a realistic map with only two or three activity clusters.
 - Check museum tickets and timings on the official venue site.
 - Confirm transport back to your accommodation, particularly after dark.
-- Use [Mumbai destination research](/guides/mumbai), then [mapped Mumbai places](/attractions?country=IN&city=Mumbai), [hotels](/hotels/results?city=Mumbai) and [tour offers](/tours?city=Mumbai).
+- Use [Mumbai destination research](/guides/mumbai), then [mapped Mumbai places](/attractions?country=IN&city=Mumbai), [hotels](/hotels?view=booking&city=Mumbai) and [tour offers](/tours?city=Mumbai).
 
 OpenStreetMap records are community contributed, not guaranteed admissions or current operating venues.`},
   {slug:"paris-museum-seine-neighbourhood-route",title:"Paris Museums and the Seine: A Neighbourhood-Based Day",category:"Experiences",description:"Build a Paris route around one booked museum, nearby streets and a flexible river walk.",image:"/images/cities/paris.jpg",content:`## Choose the anchor before the stops
@@ -75,7 +75,7 @@ Check the correct stop or ferry landing rather than assuming every riverfront po
 
 ## Next steps
 
-Use [Australia travel planning](/guides/australia), explore [real Brisbane map records](/attractions?country=AU&city=Brisbane), and check [Brisbane tours](/tours?city=Brisbane) or [hotels](/hotels/results?city=Brisbane).
+Use [Australia travel planning](/guides/australia), explore [real Brisbane map records](/attractions?country=AU&city=Brisbane), and check [Brisbane tours](/tours?city=Brisbane) or [hotels](/hotels?view=booking&city=Brisbane).
 
 Supplier schedules, parks guidance and venue access must be verified directly before booking.`},
   {slug:"segovia-daytrip-timing-heritage",title:"Segovia Heritage Day Trip: Route and Ticket Decisions",category:"Planning",description:"A practical way to combine central sights without assuming every monument is open.",image:"/images/cities/barcelona.jpg",content:`## Start with how you will arrive
@@ -115,7 +115,7 @@ Look for step-free access details from official venues where relevant. Summer he
 - Verify current ticket inventory and what each option includes.
 - Read cancellation rules and meeting-point instructions.
 - Use [Spanish mapped cities](/attractions/cities?country=ES) for source-linked exploration.
-- Compare [Barcelona tours](/tours?city=Barcelona) and [hotels](/hotels/results?city=Barcelona).
+- Compare [Barcelona tours](/tours?city=Barcelona) and [hotels](/hotels?view=booking&city=Barcelona).
 
 Source mapping is a research starting point; supplier availability and precise admissions must be confirmed elsewhere.`},
   {slug:"pune-mumbai-short-break-logistics",title:"Pune or Mumbai for a Short City Break? A Logistics Checklist",category:"Planning",description:"Compare travel time, neighbourhood focus and actual hotel location before deciding.",image:"/images/cities/pune.jpg",content:`## Compare the day you have, not just the distance on a map
@@ -136,7 +136,7 @@ Rail, coach and road choices vary by time and actual terminals. Compare operator
 - Check travel-day service notices and seasonal weather.
 - Leave a return buffer and keep a backup route.
 - Explore [Mumbai mapped attractions](/attractions?country=IN&city=Mumbai) and [Pune mapped attractions](/attractions?country=IN&city=Pune).
-- Compare [Mumbai tours](/tours?city=Mumbai) or [Pune hotels](/hotels/results?city=Pune).
+- Compare [Mumbai tours](/tours?city=Mumbai) or [Pune hotels](/hotels?view=booking&city=Pune).
 
 Directory counts are public map data, not evidence of tour seats or real-time traffic.`},
   {slug:"dubai-creek-downtown-itinerary",title:"Dubai Creek and Downtown: Build a Two-District Itinerary",category:"Planning",description:"Combine historic and modern Dubai without losing the day to transfers.",image:"/images/cities/dubai.jpg",content:`## Treat Creek and Downtown as separate visits
@@ -156,7 +156,7 @@ If a Downtown attraction is important, identify its entrance and actual booking 
 - Allow for hot weather and water breaks.
 - Confirm metro, taxi or transfer routes from your hotel.
 - Book desert experiences separately with a licensed supplier and weather checks.
-- Start with the [Dubai guide](/guides/dubai), [Dubai tours](/tours?city=Dubai) and [hotels](/hotels/results?city=Dubai).
+- Start with the [Dubai guide](/guides/dubai), [Dubai tours](/tours?city=Dubai) and [hotels](/hotels?view=booking&city=Dubai).
 
 Check supplier availability and exact pickup or entrance details independently.`},
   {slug:"france-region-by-region-trip",title:"France Region by Region: Avoid an Overpacked Itinerary",category:"Planning",description:"Choose Paris plus one region rather than racing between distant attractions.",image:"/images/cities/paris.jpg",content:`## Think in regions before attractions

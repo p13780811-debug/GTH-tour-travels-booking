@@ -37,7 +37,7 @@ test("Destination articles have distinct slugs, matching city assets and complet
     assert.ok(description.length >= 65, "Description too thin: " + slug);
     assert.ok(content.split(/\s+/).length >= 200, "Article too thin: " + slug);
     assert.ok(content.includes("## "));
-    assert.ok(content.includes("/hotels/results?city="));
+    assert.ok(content.includes("/hotels?view=booking&city="));
     assert.ok(content.includes("/tours?city="));
     assert.match(content, /check|confirm|verify/i);
     assert.doesNotMatch(content, /guaranteed tickets|confirmed reservation|exclusive deal|live ticket prices/i);

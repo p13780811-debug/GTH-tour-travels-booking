@@ -44,7 +44,7 @@ export default function MappedCityDiscovery({cities,title="More source-mapped ci
      </Link>
      <div className="flex items-center justify-between gap-2">
       <Link href={"/tours?city="+encodeURIComponent(item.city)} className="underline">Search tours</Link>
-      <Link href={"/hotels/results?city="+encodeURIComponent(item.city)} className="inline-flex items-center gap-1 underline"><Hotel size={13}/> Hotels</Link>
+      <Link href={"/hotels?view=booking&city="+encodeURIComponent(item.city)} className="inline-flex items-center gap-1 underline"><Hotel size={13}/> Hotels</Link>
      </div>
     </div>
    </article>)}

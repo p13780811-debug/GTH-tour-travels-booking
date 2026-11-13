@@ -41,7 +41,7 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
        <div className="mt-auto flex flex-wrap gap-x-3 gap-y-2 pt-4 text-xs">
         <Link href={"/guides/"+item.slug} className="inline-flex items-center gap-1 font-semibold underline"><BookOpen size={13}/> Explore guide</Link>
         <Link href={"/attractions?country="+item.countryCode} className="underline">Browse mapped places</Link>
-        <Link href={item.city?"/hotels/results?city="+encodeURIComponent(item.city):"/hotels"} className="underline">Find hotels</Link>
+        <Link href={item.city?"/hotels?view=booking&city="+encodeURIComponent(item.city):"/hotels"} className="underline">Find hotels</Link>
         <Link href="/ai-trip" className="underline">Plan trip</Link>
        </div>
        {picture&&<p className="mt-3 text-[10px] leading-4 text-[var(--text-soft)]">
