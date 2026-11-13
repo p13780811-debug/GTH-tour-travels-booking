@@ -42,15 +42,15 @@ test("official supplier list supplies authentic photos and its own exact White L
  assert.doesNotMatch(widget,/NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_NUITEE/);
 });
 
-test("unmapped directory hotel booking CTA goes direct to supplier domain, not in-app search",()=>{
+test("directory booking CTAs preserve city and enter the existing supplier widget, not OSM inventory",()=>{
  assert.match(provider,/https:\/\/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
  assert.doesNotMatch(provider,/\/hotels\?view=booking/);
- assert.match(offers,/HOTEL_BOOKING_ORIGIN\+"\/hotels\?language=en&currency=INR"/);
- assert.doesNotMatch(offers,/href="\/hotels\?view=booking"/);
- assert.match(guide,/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
- assert.doesNotMatch(guide,/href="\/hotels\?view=booking"/);
+ assert.match(offers,/new URLSearchParams\(\{view:"booking",city:hotel\.city\}\)/);
+ assert.match(offers,/new URLSearchParams\(\{view:"booking",city:market\.supplierCity,country:market\.countryCode\}\)/);
+ assert.match(offers,/new URLSearchParams\(\{view:"booking",city:m\.supplierCity,country:m\.countryCode\}\)/);
+ assert.match(guide,/new URLSearchParams\(\{view:"booking",city:market\.supplierCity,country:market\.countryCode\}\)/);
+ assert.doesNotMatch(guide,/placeId:\s*"[^"]+"/);
 });
-
 test("18 bounded city guides and SEO sitemap stay unchanged",()=>{
  const slugs=[...markets.matchAll(/\{slug:"([^"]+)",city:/g)].map(v=>v[1]);
  assert.equal(slugs.length,18);
