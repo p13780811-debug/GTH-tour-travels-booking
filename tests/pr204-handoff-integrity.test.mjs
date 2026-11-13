@@ -48,6 +48,12 @@ test("the original four-pillar navigation links and PR204 ticket additions point
  assert.ok(existsSync(new URL("../src/app/stadiums/[slug]/page.tsx",import.meta.url)));
 });
 
+test("ticket-specific editorial buttons open ticket guides instead of generic blog",()=>{
+ const flagship=read("src/components/home/FlagshipHome.tsx");
+ const proof=read("src/components/home/HomeCapabilityProof.tsx");
+ assert.match(flagship,/Event Guides",href:"\/blog\?category=Tickets#journal"/);
+ assert.match(proof,/Read ticket buying guides", href: "\/blog\?category=Tickets#journal"/);
+});
 test("Kolkata hotels and stadium cards never switch to OSM booking or overseas Eden tours",()=>{
  const links=cityRoutes.destinationServices({slug:"kolkata",name:"Kolkata",country:"India"});
  const hotel=new URL(links.find(row=>row.key==="hotels").href,"https://www.gthproglobal.com");
