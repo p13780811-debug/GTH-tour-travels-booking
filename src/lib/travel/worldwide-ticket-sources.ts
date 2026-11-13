@@ -416,6 +416,146 @@ export const worldwideTicketSources: readonly WorldwideTicketSource[] = [
     "url": "https://in.bookmyshow.com/explore/movies",
     "kind": "ticket-platform",
     "keywords": "Mumbai Kolkata Chennai Pune Delhi Hyderabad cinema film movie multiplex Bollywood"
+  },
+  {
+    "id": "webtickets-za",
+    "name": "Webtickets — South Africa",
+    "region": "South Africa",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "attractions",
+      "museums",
+      "cinema"
+    ],
+    "url": "https://www.webtickets.co.za/v2/",
+    "kind": "ticket-platform",
+    "keywords": "Cape Town Johannesburg Durban Pretoria Gauteng South Africa rugby cricket film movies"
+  },
+  {
+    "id": "sympla-br",
+    "name": "Sympla — Brazil",
+    "region": "Brazil",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "attractions"
+    ],
+    "url": "https://www.sympla.com.br/",
+    "kind": "ticket-platform",
+    "keywords": "Sao Paulo Rio de Janeiro Brasil Brazil Brasilia Belo Horizonte Recife ingressos shows"
+  },
+  {
+    "id": "ticketmaster-nz",
+    "name": "Ticketmaster — New Zealand",
+    "region": "New Zealand",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "attractions"
+    ],
+    "url": "https://www.ticketmaster.co.nz/",
+    "kind": "ticket-platform",
+    "keywords": "Auckland Wellington Christchurch Hamilton Rotorua New Zealand rugby music"
+  },
+  {
+    "id": "ticketmaster-nl",
+    "name": "Ticketmaster — Netherlands",
+    "region": "Netherlands",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals"
+    ],
+    "url": "https://www.ticketmaster.nl/",
+    "kind": "ticket-platform",
+    "keywords": "Amsterdam Rotterdam Utrecht Eindhoven Den Haag Holland Netherlands music"
+  },
+  {
+    "id": "loket-id",
+    "name": "LOKET — Indonesia",
+    "region": "Indonesia",
+    "categories": [
+      "concerts",
+      "comedy",
+      "festivals",
+      "attractions"
+    ],
+    "url": "https://www.loket.com/",
+    "kind": "ticket-platform",
+    "keywords": "Jakarta Bandung Bali Surabaya Yogyakarta Indonesia konser event"
+  },
+  {
+    "id": "sm-tickets-ph",
+    "name": "SM Tickets — Philippines",
+    "region": "Philippines",
+    "categories": [
+      "concerts",
+      "sports",
+      "theatre",
+      "festivals"
+    ],
+    "url": "https://www.smtickets.com/",
+    "kind": "ticket-platform",
+    "keywords": "Manila Quezon City Cebu Philippines concerts arena"
+  },
+  {
+    "id": "cityline-hk",
+    "name": "Cityline — Hong Kong",
+    "region": "Hong Kong",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "cinema"
+    ],
+    "url": "https://www.cityline.com/",
+    "kind": "ticket-platform",
+    "keywords": "Hong Kong Kowloon HK tickets events live shows"
+  },
+  {
+    "id": "tix-africa",
+    "name": "Tix Africa — African events",
+    "region": "Multiple markets",
+    "categories": [
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "attractions"
+    ],
+    "url": "https://tix.africa/",
+    "kind": "ticket-platform",
+    "keywords": "Nigeria Lagos Abuja Ghana Accra Kenya Nairobi South Africa Rwanda Senegal Cote d'Ivoire Africa"
+  },
+  {
+    "id": "webook-sa",
+    "name": "webook — Saudi Arabia events",
+    "region": "Saudi Arabia",
+    "categories": [
+      "sports",
+      "concerts",
+      "theatre",
+      "comedy",
+      "festivals",
+      "attractions"
+    ],
+    "url": "https://webook.com/en/explore",
+    "kind": "ticket-platform",
+    "keywords": "Riyadh Jeddah Dammam Saudi Saudi Arabia football cricket music family events"
   }
 ];
 
