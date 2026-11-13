@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { destinations } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
+import {reviewedStadiumGuideHref} from "@/lib/travel/stadium-intent";
 
 // Do not index infinite query-result combinations, including after public launch.
 export const dynamic = "force-dynamic";
@@ -33,6 +34,7 @@ function cleanPlace(text: string): string {
 }
 
 function inferredCategory(query: string): SearchCategory {
+  if(reviewedStadiumGuideHref(query))return "ticket";
   if (/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?)\b/i.test(query)) return "tender";
   if (/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|houses?|[1-9]\s*bhk)\b/i.test(query)) return "property";
   if (/\b(hotels?|resorts?|stays?|accommodation|lodging|guesthouses?|rooms?)\b/i.test(query)) return "hotel";
@@ -92,7 +94,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     const subject = q.replace(/^(?:find|read|travel|blog|blogs|guide|guides|article|articles)\s+/i, "").trim();
     return withParam("/blog", "search", subject, "#journal");
   }
-  if (category === "ticket") return withParam("/tickets","q",q);
+  if (category === "ticket") return reviewedStadiumGuideHref(q) || withParam("/tickets","q",q);
   if (category === "flight") {
     // Flight results require actual airport codes and a future departure date.
     // Do not fabricate these from place names or display fake fare availability.
