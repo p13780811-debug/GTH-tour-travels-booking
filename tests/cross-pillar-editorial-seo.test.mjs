@@ -74,18 +74,17 @@ test("SEO hierarchy: all articles, main pillar guide hubs, sitemap and related l
  const article=read("src/app/blog/[slug]/page.tsx");
  const sitemap=read("src/app/sitemap.ts");
  const property=read("src/app/real-estate/page.tsx");
- const tender=read("src/app/tender/page.tsx");
- assert.ok(blog.includes("...ecosystemGuides"));
+  assert.ok(blog.includes("...ecosystemGuides"));
  assert.ok(blog.includes('"Real Estate" | "Tenders"'));
  assert.ok(index.includes('"Real Estate", "Tenders"'));
  assert.ok(index.includes('id="ecosystem-guides"'));
  assert.ok(article.includes("EcosystemGuideResources slug={ecosystemGuide.slug}"));
  assert.ok(article.includes("datePublished:datedGuide.publishedAt"));
  assert.ok(article.includes("BreadcrumbList"));
- assert.ok(sitemap.includes('"/real-estate/guides"')&&sitemap.includes('"/tender/guides"'));
+ assert.ok(sitemap.includes('"/real-estate/guides"')&&sitemap.includes('"/knowledge/tenders"'));
  assert.ok(sitemap.includes('...blogs.map(article => ({ url: base + "/blog/" + article.slug'));
- assert.ok(property.includes('href="/real-estate/guides"')&&tender.includes('href="/tender/guides"'));
- for(const path of ["src/app/real-estate/guides/page.tsx","src/app/tender/guides/page.tsx"]) {
+ assert.ok(property.includes('href="/real-estate/guides"')&&index.includes('href:"/knowledge/tenders"'));
+ for(const path of ["src/app/real-estate/guides/page.tsx","src/app/knowledge/tenders/page.tsx"]) {
   const page=read(path);
   assert.ok(page.includes("PillarGuideIndex")&&page.includes("isPublicLaunch()")&&page.includes("siteUrl("));
  }
