@@ -176,7 +176,7 @@ export default function FlagshipHome() {
         className="relative z-10 border-y border-[var(--flag-edge)] bg-[var(--flag-navy)] px-3 py-3 sm:py-4">
         <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 sm:gap-3">
           <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
-            Open Super App <ArrowUpRight size={16} aria-hidden="true"/>
+            Open / Install App <ArrowUpRight size={16} aria-hidden="true"/>
           </Link>
           <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--flag-edge)] px-2 py-3 text-center text-xs font-bold text-[var(--flag-gold)] sm:text-sm">
             My Research Desk <ArrowUpRight size={16} aria-hidden="true"/>
