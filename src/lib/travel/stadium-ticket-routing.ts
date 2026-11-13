@@ -5,7 +5,7 @@ import {stadiums} from "./stadiums";
  */
 const normalize=(value:string)=>value.normalize("NFKD").replace(/\p{M}/gu,"")
  .toLocaleLowerCase("en").replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/\s+/g," ");
-const intent=/\b(?:find|search|book|buy|official|live|cricket|sports?|matches?|games?|events?|tickets?|stadiums?|venues?|tours?|guides?|for|in|near|at)\b/gi;
+const intent=/\b(?:find|search|book|buy|official|live|cricket|sports?|match(?:es)?|games?|events?|tickets?|stadiums?|venues?|tours?|guides?|for|in|near|at)\b/gi;
 
 export function knownStadiumTicketHref(input:unknown):string|null {
  if(typeof input!=="string"||input.length>100)return null;
