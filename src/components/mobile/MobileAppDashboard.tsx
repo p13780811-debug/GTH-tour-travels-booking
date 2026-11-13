@@ -1,7 +1,7 @@
 "use client";
 import {useId,useState} from "react";
 import Link from "next/link";
-import {ArrowUpRight,Bookmark,BriefcaseBusiness,Building2,LayoutGrid,Plane,Search,Sparkles} from "lucide-react";
+import {ArrowUpRight,Bookmark,BriefcaseBusiness,Building2,LayoutGrid,Plane,Search,Sparkles,Ticket} from "lucide-react";
 import AppJourneyCards from "@/components/mobile/AppJourneyCards";
 import AppResearchQuickAccess from "@/components/mobile/AppResearchQuickAccess";
 import AppPromoCarousel from "@/components/mobile/AppPromoCarousel";
@@ -12,7 +12,7 @@ import type {MobileDiscoveryData} from "@/lib/mobile/discovery";
 import AppServiceGrid,{AppRecentServices} from "./AppServiceGrid";
 import useAppServicePreferences from "./useAppServicePreferences";
 import {recordAppService,toggleAppFavourite} from "@/lib/mobile/app-preferences";
-const tabs=[{id:"all",name:"All",Icon:LayoutGrid},{id:"travel",name:"Travel",Icon:Plane},{id:"property",name:"Property",Icon:Building2},{id:"tender",name:"Tenders",Icon:BriefcaseBusiness}] as const;
+const tabs=[{id:"all",name:"All",Icon:LayoutGrid},{id:"travel",name:"Travel",Icon:Plane},{id:"property",name:"Property",Icon:Building2},{id:"tender",name:"Tenders",Icon:BriefcaseBusiness},{id:"tickets",name:"Tickets",Icon:Ticket}] as const;
 export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
  const [pillar,setPillar]=useState<AppPillar>("all"),[query,setQuery]=useState(""),[expanded,setExpanded]=useState(false);
  const [editing,setEditing]=useState(false);
@@ -39,10 +39,16 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
     <form action="/app/search" method="get" role="search" className="mt-4 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
      <Search size={20} className="ml-2 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
      <input name="q" type="search" minLength={2} maxLength={70} required
-      aria-label="Search destinations, properties and tenders"
-      placeholder="Where to next? Hotels, homes, tenders…"
+      aria-label="Search hotels, property, tenders and tickets"
+      placeholder="Hotels, homes, tenders, stadium tickets…"
       className="h-11 min-w-0 flex-1 bg-transparent px-1 text-sm text-[var(--text)] outline-none"/>
-     <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-xl px-4 text-xs font-bold sm:text-sm">
+     <label className="sr-only" htmlFor="app-home-search-category">Search pillar</label>
+     <select id="app-home-search-category" name="category" defaultValue="all" aria-label="Choose search pillar"
+      className="min-h-11 max-w-[91px] shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)] px-1 text-xs text-[var(--text)] sm:max-w-none sm:px-3">
+      <option value="all">All</option><option value="travel">Travel</option>
+      <option value="property">Property</option><option value="tender">Tenders</option><option value="ticket">Tickets</option>
+     </select>
+     <button type="submit" className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-xl px-3 text-xs font-bold sm:px-4 sm:text-sm">
       Search <ArrowUpRight size={16} aria-hidden="true"/>
      </button>
     </form>
@@ -51,6 +57,7 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
      <Link href="/app/search?q=Goa+hotel" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Goa hotels</Link>
      <Link href="/app/search?q=Mumbai+property" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Mumbai homes</Link>
      <Link href="/app/search?q=construction+tender" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Tenders</Link>
+     <Link href="/app/search?q=cricket+stadium+tickets&category=ticket" className="inline-flex min-h-9 items-center rounded-full border border-[var(--border)] px-3 font-semibold">Stadium tickets</Link>
     </div>
    </section>
   </div>
@@ -66,9 +73,9 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </div>
    <label className="mt-3 flex min-h-12 items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4">
     <Search size={20} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
-    <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Filter quick service shortcuts" placeholder="Filter services: flights, hotels…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
+    <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Filter quick service shortcuts" placeholder="Filter services: flights, hotels, tickets…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
    </label>
-   <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-4 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1">
+   <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-5 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1">
     {tabs.map(({id:tab,name,Icon},index)=><button key={tab} id={`${id}-${tab}`} type="button" role="tab" aria-selected={pillar===tab} aria-controls={`${id}-panel`} tabIndex={pillar===tab?0:-1}
      onClick={()=>{setPillar(tab);setExpanded(false);}}
      onKeyDown={event=>{let next=index;if(event.key==="ArrowRight")next=(index+1)%tabs.length;else if(event.key==="ArrowLeft")next=(index+tabs.length-1)%tabs.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=tabs.length-1;else return;event.preventDefault();setPillar(tabs[next].id);setExpanded(false);document.getElementById(`${id}-${tabs[next].id}`)?.focus();}}
@@ -93,6 +100,13 @@ export default function MobileAppDashboard({data}:{data:MobileDiscoveryData}){
    </>}
    {(pillar==="all"||pillar==="property")&&<MobileDiscoveryRail kind="property" heading="Property discovery" description="Project records · source-aware details" href="/app/property" items={data.properties} appLinks/>}
    {(pillar==="all"||pillar==="tender")&&<MobileDiscoveryRail kind="tender" heading="Open tenders" description="Published notices · official documents" href="/app/tenders" items={data.tenders} appLinks/>}
+   {(pillar==="all"||pillar==="tickets")&&<section aria-label="Tickets and stadium discovery" className="mx-4 mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
+    <h2 className="text-base font-bold">Worldwide tickets & stadiums</h2>
+    <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Discover official event sources and venue guides. Ticket sellers confirm actual events, seats and prices.</p>
+    <nav className="mt-3 grid gap-2 sm:grid-cols-3">
+      {[{href:"/tickets",label:"Ticket finder"},{href:"/stadiums",label:"Stadium guides"},{href:"/blog?category=Tickets#journal",label:"Buying guides"}].map(item=><Link key={item.href} href={item.href} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-xs font-semibold">{item.label}</Link>)}
+    </nav>
+   </section>}
   </div>
   <footer className="mx-4 mt-4 border-t border-[var(--border)] py-5 text-xs leading-6 text-[var(--text-soft)] sm:mx-6">
    <p>Fares and room availability are confirmed by booking providers. Property records and tender notices retain their source details.</p>
