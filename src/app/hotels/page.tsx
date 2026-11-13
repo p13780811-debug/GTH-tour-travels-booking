@@ -449,14 +449,14 @@ function HotelsContent() {
               <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
               <nav aria-label="Explore hotel destination guides" className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
                 {featuredDestinations.map(place=>
-                  <Link key={place.slug} href={"/hotels/"+place.slug}
+                  <Link key={place.slug} href={"/hotels?"+new URLSearchParams({view:"booking",city:place.city}).toString()}
                     className="group flex w-44 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-48">
                     <span className="relative block h-24 w-full overflow-hidden">
                       <Image src={place.image} alt={place.city+" destination scenery"} fill sizes="(max-width: 640px) 176px, 192px"
                         className="object-cover transition-transform duration-200 group-hover:scale-105"/>
                     </span>
                     <span className="flex min-h-12 items-center justify-between gap-2 px-3 text-sm font-semibold">
-                      Hotels in {place.city}<ChevronRight size={15} aria-hidden="true"/>
+                      Find stays in {place.city}<ChevronRight size={15} aria-hidden="true"/>
                     </span>
                   </Link>
                 )}
