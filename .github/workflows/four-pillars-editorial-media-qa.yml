@@ -1,0 +1,31 @@
+name: GTH Four Pillars and Editorial Media QA
+on:
+  pull_request:
+    paths:
+      - "src/app/search/**"
+      - "src/app/app/**"
+      - "src/app/tickets/**"
+      - "src/components/home/**"
+      - "src/components/mobile/**"
+      - "src/components/sections/EcosystemPillars.tsx"
+      - "src/components/seo/SiteIdentitySchema.tsx"
+      - "src/lib/editorial/**"
+      - "src/data/blogTickets.ts"
+      - "src/data/blogCrossTender.ts"
+      - "public/images/editorial/**"
+      - "tests/four-pillars-editorial-pexels.test.mjs"
+      - ".github/workflows/four-pillars-editorial-media-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  four-pillars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Four-pillar routes, image truthfulness and Pexels secret boundaries
+        run: node --test tests/four-pillars-editorial-pexels.test.mjs

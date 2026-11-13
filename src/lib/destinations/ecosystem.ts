@@ -10,7 +10,7 @@ export type DestinationService = {
   description:string;
   href:string;
   scope:"destination"|"country"|"global";
-  pillar:"Travel"|"Real Estate"|"Tenders";
+  pillar:"Travel"|"Real Estate"|"Tenders"|"Tickets";
 };
 const ISO:Readonly<Record<string,string>>={
  "India":"IN","United Arab Emirates":"AE","France":"FR","Indonesia":"ID","Thailand":"TH",
@@ -51,6 +51,8 @@ export function destinationServices(place:{slug:string;name:string;country:strin
   {key:"post-property",label:"List a property",description:"Owner property submission",href:"/real-estate/post-property",scope:"global",pillar:"Real Estate"},
   {key:"tenders",label:"Global tenders",description:country?"Discover country opportunities":"Search published opportunities",href:"/tender?"+tender.toString(),scope:country?"country":"global",pillar:"Tenders"},
   {key:"tender-assistant",label:"Tender assistant",description:"Explore eligibility guidance",href:"/tender/assistant",scope:"global",pillar:"Tenders"},
+  {key:"tickets",label:"Worldwide event tickets",description:"Research event sellers and official ticket sources",href:"/tickets?"+new URLSearchParams({q:place.name}).toString(),scope:"global",pillar:"Tickets"},
+  {key:"stadiums",label:"Stadium and venue guides",description:"Browse venue and event calendars",href:"/stadiums",scope:"global",pillar:"Tickets"},
   {key:"list-hotel",label:"List your hotel",description:"Owner hotel submissions",href:"/hotels/list-your-property",scope:"global",pillar:"Travel"},
  ];
 }

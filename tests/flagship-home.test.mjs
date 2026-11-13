@@ -16,8 +16,8 @@ test("root is the cinematic flagship, not the previous demo or mega aggregator",
   assert.match(flagship, /Global Intelligence Ecosystem/);
   assert.match(flagship, /function BrandGlobe\(\)/);
   assert.match(flagship, /styles\.earth/);
-  for (const name of ["Real Estate", "Travel", "Tender"]) assert.ok(flagship.includes(name));
-  assert.match(css, /\.pillars[\s\S]*grid-template-columns:\s*1\.08fr 1fr 1\.08fr/);
+  for (const name of ["Real Estate", "Travel", "Tender", "Worldwide Tickets"]) assert.ok(flagship.includes(name));
+  assert.match(css, /\.pillars[\s\S]*grid-template-columns:\s*repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)/);
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
 });
@@ -103,7 +103,7 @@ test("hero has one clear platform navigation and borderless tabs", () => {
   const hero = flagship.slice(flagship.indexOf("<section className={styles.hero}"), flagship.indexOf("<section className={styles.pillars}"));
   assert.doesNotMatch(hero, /styles\.sectorNav/);
   assert.doesNotMatch(css, /\.sectorNav/);
-  for (const href of ["/real-estate", "/travel", "/tender"]) {
+  for (const href of ["/real-estate", "/travel", "/tender", "/tickets"]) {
     assert.equal(hero.split('href="' + href + '"').length - 1, 1, href + " appears once in the hero navigation");
   }
   assert.match(css, /\.topNav a\s*\{[^}]*border:\s*0;/);
@@ -123,7 +123,7 @@ test("new flagship floating master search routes every platform through existing
   assert.match(flagship, /action="\/search" method="get"/);
   assert.match(flagship, /name="q" required maxLength=\{100\}/);
   assert.match(flagship, /name="category" defaultValue="all"/);
-  for (const cat of ["property", "hotel", "flight", "tour", "destination", "tender", "blog"]) {
+  for (const cat of ["property", "hotel", "flight", "tour", "destination", "tender", "ticket", "blog"]) {
     assert.ok(flagship.includes('value="' + cat + '"'), "Missing searchable category: " + cat);
   }
   assert.match(css, /\.masterSearch\s*\{/);
@@ -138,7 +138,7 @@ test("new flagship floating master search routes every platform through existing
 
 test("master search targets existing filtered pages without placeholder destinations or prices", () => {
   const search = source("src/app/search/page.tsx");
-  for (const route of ["/real-estate", "/hotels", "/flights", "/tours", "/destinations", "/tender", "/blog"]) {
+  for (const route of ["/real-estate", "/hotels", "/flights", "/tours", "/destinations", "/tender", "/tickets", "/blog"]) {
     assert.ok(search.includes('"' + route + '"'), "Missing real search route " + route);
     assert.ok(existsSync(new URL("../src/app" + route + "/page.tsx", import.meta.url)), "Route not found: " + route);
   }

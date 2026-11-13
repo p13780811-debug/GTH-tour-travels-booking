@@ -5,7 +5,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "tender-eligibility-prequalification-checklist",
     "title": "Tender Eligibility and Prequalification: A Step-by-Step Bidder Checklist",
     "description": "Learn how to review mandatory bidder criteria, certifications, experience thresholds and source-issued tender conditions before preparing a bid.",
-    "image": "/images/cities/delhi.jpg",
+    "image": "/images/editorial/tender-eligibility.svg",
     "resources": [
       {
         "label": "Search tenders",
@@ -37,7 +37,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "gem-versus-cppp-public-procurement-india",
     "title": "GeM vs CPPP vs ePublishing: Where to Find Indian Government Tenders",
     "description": "Understand the difference between Indian procurement portals, published notices, bid documents and official submissions.",
-    "image": "/images/cities/delhi.jpg",
+    "image": "/images/editorial/tender-portals.svg",
     "resources": [
       {
         "label": "India tender search",
@@ -69,7 +69,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "earnest-money-deposit-tender-performance-security",
     "title": "Tender EMD, Bid Security and Performance Guarantees Explained",
     "description": "A bidder's planning guide to EMD, bid bonds, exemptions, performance security and the risks of missing official financial conditions.",
-    "image": "/images/cities/kolkata.jpg",
+    "image": "/images/editorial/tender-security.svg",
     "resources": [
       {
         "label": "Tender search",
@@ -101,7 +101,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "tender-corrigendum-bid-deadline-document-control",
     "title": "Tender Corrigenda and Deadlines: Avoid Outdated Bid Documents",
     "description": "Organize official amendments, revised schedules, buyer clarifications and document versions before tender submission.",
-    "image": "/images/cities/london.jpg",
+    "image": "/images/editorial/tender-amendments.svg",
     "resources": [
       {
         "label": "Search open tenders",
@@ -133,7 +133,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "rfp-technical-financial-bid-response-checklist",
     "title": "RFP Response Checklist: Technical Proposal, Financial Bid and Compliance",
     "description": "Prepare a readable response to a request for proposal without missing mandatory formats, supporting evidence or separate price envelopes.",
-    "image": "/images/cities/singapore.jpg",
+    "image": "/images/editorial/tender-rfp.svg",
     "resources": [
       {
         "label": "Find RFP opportunities",
@@ -165,7 +165,7 @@ export const crossTenderGuides:readonly EcosystemGuide[]=[
     "slug": "international-tenders-ungm-ted-world-bank-guide",
     "title": "International Tenders: UNGM, TED, World Bank and Country Portals",
     "description": "Compare official international procurement sources, notice eligibility, local laws, bidding currencies and document languages.",
-    "image": "/images/cities/paris.jpg",
+    "image": "/images/editorial/tender-international.svg",
     "resources": [
       {
         "label": "Worldwide tender discovery",

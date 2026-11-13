@@ -5,9 +5,9 @@ import {destinations} from "@/data/destinations";
  * tender search engines. Never interpret text as an authenticated booking,
  * source ID, live price or a verified property.
  */
-export type UniversalCategory="all"|"travel"|"hotel"|"flight"|"tour"|"property"|"tender"|"destination";
+export type UniversalCategory="all"|"travel"|"hotel"|"flight"|"tour"|"property"|"tender"|"ticket"|"destination";
 export type UniversalTarget={category:UniversalCategory;href:string};
-const CATEGORIES:readonly UniversalCategory[]=["all","travel","hotel","flight","tour","property","tender","destination"];
+const CATEGORIES:readonly UniversalCategory[]=["all","travel","hotel","flight","tour","property","tender","ticket","destination"];
 const clean=(input:unknown)=>typeof input==="string"
  ?input.replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim().slice(0,70):"";
 const queryString=(data:Record<string,string>)=>new URLSearchParams(data).toString();
@@ -21,6 +21,7 @@ function detectedKind(text:string):UniversalCategory{
  if(/\b(real estate|properties|property|villas?|apartments?|flats?|penthouses?|plots?|homes?|housing|[1-9]\s*bhk|(?:maha)?rera|registry|registration)\b/i.test(text))return "property";
  if(/\b(hotels?|resorts?|stays?|accommodations?|lodging|guest\s*houses?|hostels?|motels?|rooms?)\b/i.test(text))return "hotel";
  if(/\b(flights?|airfares?|airlines?|air\s*tickets?)\b/i.test(text))return "flight";
+ if(/\b(tickets?|stadiums?|cricket|afl|rugby|football matches?|sporting events?|concerts?|theat(?:re|er)|comedy shows?|festivals?|cinema|museums?|theme parks?|live events?)\b/i.test(text))return "ticket";
  if(/\b(tours?|activities|attractions?|sightseeing|excursions?|experiences|things to do)\b/i.test(text))return "tour";
  if(/\b(destinations?|cities|travel to|visit|places to visit)\b/i.test(text))return "destination";
  return "all";
@@ -66,7 +67,7 @@ export function resolveUniversalTarget(raw:unknown,requested?:unknown):Universal
   const homepage:Record<UniversalCategory,string>={
    all:"/app/explore",travel:"/app/destinations",hotel:"/app/hotels",
    flight:"/app/flights",tour:"/tours",property:"/app/property",
-   tender:"/app/tenders",destination:"/app/destinations"
+   tender:"/app/tenders",ticket:"/tickets",destination:"/app/destinations"
   };
   return {category,href:homepage[category]};
  }
@@ -83,6 +84,7 @@ export function resolveUniversalTarget(raw:unknown,requested?:unknown):Universal
  if(category==="tender")return {category,href:"/app/tenders?"+queryString({
   q:trimKeywords(query,/\b(?:find|search|tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|for|in)\b/gi)||query
  })};
+ if(category==="ticket")return {category,href:"/tickets?"+queryString({q:query})};
  if(category==="flight")return {category,href:"/app/flights"};
  if(category==="tour")return {category,href:"/tours?"+queryString({
   city:trimKeywords(query,/\b(?:find|search|tours?|activities|attractions?|sightseeing|excursions?|experiences|things to do|in|near|at)\b/gi)||query

@@ -18,7 +18,7 @@ try{
   assert.equal(await page.locator('form[action="/app/search"]').count(),1);
   assert.ok(await page.getByRole("link",{name:"Open my Research Desk"}).isVisible());
   assert.ok(await page.getByRole("link",{name:"Search all GTH PRO ecosystems"}).isVisible());
-  assert.ok(await page.getByRole("searchbox",{name:"Search destinations, properties and tenders"}).isVisible());
+  assert.ok(await page.getByRole("searchbox",{name:"Search hotels, property, tenders and tickets"}).isVisible());
   const dimensions=await page.evaluate(()=>({screen:window.innerWidth,document:document.documentElement.scrollWidth}));
   assert.ok(dimensions.document<=dimensions.screen+2,`Root horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
   if(width===390)await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
@@ -40,9 +40,12 @@ try{
  await page.goto(base+"/app/search?q=Lodha+project&category=property",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Properties"}).waitFor({timeout:25000});
  assert.ok(page.url().includes("/app/property?q=Lodha+project"),page.url());
+ await page.goto(base+"/app/search?q=cricket+stadium+tickets&category=ticket",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Worldwide Ticket Finder"}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/tickets?q=cricket+stadium+tickets"),page.url());
  await page.goto(base+"/app/explore",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Find the next opportunity. Anywhere."}).waitFor({timeout:25000});
- const search=page.getByRole("searchbox",{name:"Search global destinations, property and tenders"});
+ const search=page.getByRole("searchbox",{name:"Search global destinations, property, tenders and event tickets"});
  await search.fill("Goa");
  await page.getByRole("button",{name:"Search",exact:true}).click();
  await page.getByRole("heading",{name:"Results for “Goa”"}).waitFor({timeout:60000});
@@ -70,5 +73,5 @@ try{
  assert.equal(await external.getAttribute("target"),"_blank");
  assert.equal(await external.getAttribute("href"),"/transfers");
  await ctx.close();
- console.log("PASS: app search routes directly to hotels/tenders/property, four Android widths, federated Goa search, save/revisit/delete and safe handoff");
+ console.log("PASS: app search routes to hotels/tenders/property/tickets, four Android widths, federated Goa search, save/revisit/delete and safe handoff");
 }finally{await browser.close();}

@@ -3,7 +3,7 @@ import FlagshipImage from "./FlagshipImage";
 import BrandVideo from "@/components/brand/BrandVideo";
 import HomeCapabilityProof from "./HomeCapabilityProof";
 import Link from "next/link";
-import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
+import { ArrowUpRight, Building2, ChartNoAxesCombined, Database, FileSearch, Globe2, Hotel, MapPinned, Plane, Ticket, Search, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import styles from "./FlagshipHome.module.css";
 
 const pillars = [
@@ -53,6 +53,22 @@ const pillars = [
       { label: "Find Opportunities", href: "/tender", Icon: Search },
       { label: "Tender Assistant", href: "/tender/assistant", Icon: Sparkles },
       { label: "Business Partners", href: "/partners", Icon: Users },
+    ],
+  },
+  {
+    id:"tickets",
+    title:"Worldwide Tickets",
+    image:"/images/editorial/sports.svg",
+    alt:"Original event and stadium ticket editorial illustration",
+    href:"/tickets",
+    eyebrow:"Sports · Concerts · Events",
+    description:"Discover ticket sources and venue guides",
+    Icon:Ticket,
+    links:[
+      {label:"Ticket Finder",href:"/tickets",Icon:Ticket},
+      {label:"Stadium Guides",href:"/stadiums",Icon:MapPinned},
+      {label:"Ticket Categories",href:"/tickets",Icon:Search},
+      {label:"Event Guides",href:"/blog",Icon:Globe2},
     ],
   },
 ] as const;
@@ -116,6 +132,7 @@ export default function FlagshipHome() {
             <Link href="/real-estate">Real Estate</Link>
             <Link href="/travel">Travel</Link>
             <Link href="/tender">Tender</Link>
+            <Link href="/tickets">Tickets</Link>
           </nav>
         </header>
         <div className={styles.heroCenter}>
@@ -129,7 +146,7 @@ export default function FlagshipHome() {
               <Search size={21} strokeWidth={1.8} aria-hidden="true" />
               <label htmlFor="gth-master-query" className="sr-only">Search across the GTH PRO ecosystem</label>
               <input id="gth-master-query" type="search" name="q" required maxLength={100}
-                autoComplete="off" placeholder="Search cities, hotels, villas, tenders, guides..." />
+                autoComplete="off" placeholder="Search hotels, property, tenders, tickets..." />
             </div>
             <label htmlFor="gth-master-category" className="sr-only">Choose a GTH PRO platform</label>
             <select id="gth-master-category" name="category" defaultValue="all">
@@ -140,6 +157,7 @@ export default function FlagshipHome() {
               <option value="tour">Tours</option>
               <option value="destination">Destinations</option>
               <option value="tender">Tenders</option>
+              <option value="ticket">Worldwide Tickets</option>
               <option value="blog">Travel Guides</option>
             </select>
             <button type="submit" className={`gth-btn-gold ${styles.masterSearchSubmit}`}>
@@ -148,11 +166,11 @@ export default function FlagshipHome() {
           </form>
         </div>
         <div className={styles.motto} aria-hidden="true"><span>IDEAS TO IMPACT</span><small>POWERED BY TECHNOLOGY</small></div>
-        <a className={styles.scrollCue} href="#pillars" aria-label="Explore our three connected platforms">Explore three platforms <span aria-hidden="true">↓</span></a>
+        <a className={styles.scrollCue} href="#pillars" aria-label="Explore our four connected platforms">Explore four platforms <span aria-hidden="true">↓</span></a>
         <p className={styles.tagline}><span>From opportunities to real results</span></p>
       </section>
 
-      <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel and Tender platforms">
+      <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel, Tender and Worldwide Tickets platforms">
         {pillars.map(({id,title,image,alt,href,eyebrow,description,Icon,links})=>(
           <article key={id} className={styles.pillar}>
             <FlagshipImage src={image} alt={alt} priority={id==="travel"} className={styles.pillarImage} />
@@ -185,9 +203,9 @@ export default function FlagshipHome() {
       <footer className={styles.cityFooter}>
         <div className={styles.cityOverlay}/>
         <div className={styles.footerContent}>
-          <p className={styles.footerEyebrow}>One global vision. Three connected platforms.</p>
+          <p className={styles.footerEyebrow}>One global vision. Four connected platforms.</p>
           <Link href="/mega-aggregator" className={styles.portalLink}><Globe2 aria-hidden="true" size={28}/><span>Enter the GTH PRO Ecosystem</span><ArrowUpRight aria-hidden="true" size={25}/></Link>
-          <p className={styles.footerCategory}>Real Estate <span>·</span> Travel <span>·</span> Tenders</p>
+          <p className={styles.footerCategory}>Real Estate <span>·</span> Travel <span>·</span> Tenders <span>·</span> Tickets</p>
           <div className={styles.footerSmall}><span>© {new Date().getFullYear()} GTH PRO · Global Technical Hub</span><span className="inline-flex flex-wrap justify-center gap-x-4 gap-y-2"><Link href="/about">About</Link><Link href="/verification">Verification</Link><Link href="/affiliate-disclosure">Affiliate Disclosure</Link><Link href="/contact">Contact & Partnerships</Link><a href={`mailto:${SITE_CONFIG.supportEmail}`}>{SITE_CONFIG.supportEmail}</a></span></div>
         </div>
       </footer>

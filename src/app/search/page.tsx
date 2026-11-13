@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { searchPublicTenders } from "@/lib/tender/catalog";
 import {
   ArrowRight, BookOpen, Building2, Compass, FileSearch, Globe2,
-  Hotel, MapPin, Plane, Search, ShieldCheck, Sparkles,
+  Hotel, MapPin, Plane, Ticket, Search, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { destinations } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
@@ -16,13 +15,13 @@ import { blogs } from "@/data/blogs";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Master Search | GTH PRO Global Ecosystem",
-  description: "Search the GTH PRO ecosystem and continue to real property, hotel, tender, tour, destination and editorial results.",
+  description: "Search the GTH PRO ecosystem and continue to real property, hotels, tender notices, ticket sources, tours, destinations and editorial results.",
   robots: { index: false, follow: true },
 };
 
-type SearchCategory = "all" | "property" | "hotel" | "flight" | "tour" | "destination" | "tender" | "blog";
+type SearchCategory = "all" | "property" | "hotel" | "flight" | "tour" | "destination" | "tender" | "ticket" | "blog";
 type Props = { searchParams: Promise<{ q?: string | string[]; category?: string | string[] }> };
-const categoryIds: SearchCategory[] = ["all", "property", "hotel", "flight", "tour", "destination", "tender", "blog"];
+const categoryIds: SearchCategory[] = ["all", "property", "hotel", "flight", "tour", "destination", "tender", "ticket", "blog"];
 
 function cleanPlace(text: string): string {
   const place = text
@@ -39,6 +38,7 @@ function inferredCategory(query: string): SearchCategory {
   if (/\b(hotels?|resorts?|stays?|accommodation|lodging|guesthouses?|rooms?)\b/i.test(query)) return "hotel";
   if (/\b(flights?|airfares?|airlines?|air tickets?)\b/i.test(query)) return "flight";
   if (/\b(tours?|activities|sightseeing|excursions?|experiences|things to do)\b/i.test(query)) return "tour";
+  if (/\b(tickets?|stadiums?|cricket|afl|rugby|football matches?|sports? events?|concerts?|theat(?:re|er)|comedy shows?|festivals?|cinema|museums?|theme parks?|live events?)\b/i.test(query)) return "ticket";
   if (/\b(blogs?|guides?|articles?|travel tips|checklists?|how to)\b/i.test(query)) return "blog";
   if (/\b(destinations?|places? to visit|cities|travel to|visit)\b/i.test(query)) return "destination";
   return "all";
@@ -91,6 +91,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     const subject = q.replace(/^(?:find|read|travel|blog|blogs|guide|guides|article|articles)\s+/i, "").trim();
     return withParam("/blog", "search", subject, "#journal");
   }
+  if (category === "ticket") return withParam("/tickets","q",q);
   if (category === "flight") {
     // Flight results require actual airport codes and a future departure date.
     // Do not fabricate these from place names or display fake fare availability.
@@ -108,19 +109,13 @@ const sections = [
   { id: "hotel", title: "Hotels", detail: "Find hotels by destination and compare source listings", Icon: Hotel },
   { id: "flight", title: "Flights", detail: "Search flight routes, dates and observed fares", Icon: Plane },
   { id: "tender", title: "Tenders", detail: "Research current source-backed procurement notices", Icon: FileSearch },
+  { id: "ticket", title: "Worldwide Tickets", detail: "Discover official event and stadium ticket sources, not guaranteed live seats", Icon: Ticket },
   { id: "tour", title: "Tours", detail: "Discover tours and experiences by location", Icon: Compass },
   { id: "destination", title: "Destinations", detail: "Explore global cities and editorial destination guides", Icon: MapPin },
-  { id: "blog", title: "Travel Journal", detail: "Read practical planning, hotel and safety articles", Icon: BookOpen },
+  { id: "blog", title: "Knowledge Blog", detail: "Read Travel, Property, Tender and Tickets research guides", Icon: BookOpen },
 ] as const;
 
-const theme = {
-  "--bg": "#061426",
-  "--text": "#f6f8fe",
-  "--text-soft": "#c3cfdf",
-  "--card": "rgba(7,24,44,.92)",
-  "--border": "rgba(234,198,113,.3)",
-  "--gold": "#eac671",
-} as CSSProperties;
+
 
 export default async function MasterSearchResults({ searchParams }: Props) {
   const params = await searchParams;
@@ -193,34 +188,32 @@ export default async function MasterSearchResults({ searchParams }: Props) {
     [item.title, item.description, item.category, item.content].some(value => value.toLowerCase().includes(term))).slice(0, 4) : [];
 
   return (
-    <main style={theme} className="min-h-screen bg-[#061426] text-[#f6f8fe]">
-      <section className="relative isolate overflow-hidden border-b border-[#eac671]/25">
-        <Image src="/images/global-earth.jpg" alt="" fill priority sizes="100vw" className="absolute -z-20 object-cover object-center" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#020b1d]/95 via-[#061426]/90 to-[#061426]/68" />
+    <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
+      <section className="relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]">
         <div className="mx-auto max-w-[1200px] px-5 py-14 sm:px-8 md:py-20">
-          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold tracking-[.14em] text-[#ffe29d]">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold tracking-[.14em] text-[var(--gold)]">
             <Globe2 size={18} /> GTH PRO / GLOBAL INTELLIGENCE ECOSYSTEM
           </Link>
           <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-            {query ? <>Explore results for <span className="text-[#efd087]">{query}</span></> : <>Explore the <span className="text-[#efd087]">GTH PRO ecosystem.</span></>}
+            {query ? <>Explore results for <span className="text-[var(--gold)]">{query}</span></> : <>Explore the <span className="text-[var(--gold)]">GTH PRO ecosystem.</span></>}
           </h1>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-[#d4dfea] sm:text-base">
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">
             {query
               ? "Continue this search within the relevant GTH PRO platform. Destination and editorial matches below come from our existing published catalog."
               : "Search multiple industries through one entry point. Choose a platform for direct results, or search all for connected discovery."}
           </p>
           <form role="search" method="get" action="/search"
-            className="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-[#eac671]/45 bg-[#06172c]/95 p-3 shadow-[0_14px_38px_rgba(0,0,0,.3)] sm:grid-cols-[minmax(0,1fr)_170px_auto] sm:items-center">
+            className="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_14px_38px_rgba(0,0,0,.3)] sm:grid-cols-[minmax(0,1fr)_170px_auto] sm:items-center">
             <label className="flex min-h-12 min-w-0 items-center gap-3 px-3">
-              <Search size={20} className="shrink-0 text-[#eac671]" />
+              <Search size={20} className="shrink-0 text-[var(--gold)]" />
               <span className="sr-only">Search any GTH PRO topic</span>
               <input name="q" type="search" maxLength={100} required defaultValue={query}
                 placeholder="e.g. Hotels in Mumbai, villas in Dubai, tenders..."
-                className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-[#b8c6d8]" />
+                className="w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-soft)]" />
             </label>
             <label className="sr-only" htmlFor="result-category">Platform</label>
             <select id="result-category" name="category" defaultValue="all"
-              className="min-h-12 min-w-0 rounded-xl border border-[#eac671]/30 bg-[#0e243c] px-3 text-sm text-white">
+              className="min-h-12 min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]">
               <option value="all">All GTH PRO</option>
               <option value="property">Real Estate</option>
               <option value="hotel">Hotels</option>
@@ -228,6 +221,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
               <option value="tour">Tours</option>
               <option value="destination">Destinations</option>
               <option value="tender">Tenders</option>
+              <option value="ticket">Tickets & Events</option>
               <option value="blog">Travel Guides</option>
             </select>
             <button type="submit" className="gth-btn-gold min-h-12 rounded-xl px-6 text-sm font-bold">Search</button>
@@ -236,21 +230,21 @@ export default async function MasterSearchResults({ searchParams }: Props) {
       </section>
 
       <section className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 md:py-16">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.15em] text-[#eac671]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.15em] text-[var(--gold)]">
           <Sparkles size={17} /> {query ? "Search across the platforms" : "Choose a platform"}
         </p>
         <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">Explore connected platforms</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-[#c3cfdf]">
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
           These cards open each platform's actual search or discovery page; they do not claim a shared live inventory or guaranteed results.
         </p>
         <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sections.map(({ id, title, detail, Icon }) => (
             <Link key={id} href={targetFor(id, query)}
-              className="group flex min-w-0 flex-col rounded-2xl border border-[#eac671]/25 bg-[#0d233b] p-6 transition duration-200 hover:-translate-y-1 hover:border-[#efd087]/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffe49b]">
-              <Icon className="text-[#f2d48d]" size={28} strokeWidth={1.65} />
+              className="group flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 transition duration-200 hover:-translate-y-1 hover:border-[var(--gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
+              <Icon className="text-[var(--gold)]" size={28} strokeWidth={1.65} />
               <h3 className="mt-5 text-xl font-semibold">{title}</h3>
-              <p className="mt-3 flex-1 text-sm leading-6 text-[#c5d2e2]">{detail}</p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#f2d48d]">
+              <p className="mt-3 flex-1 text-sm leading-6 text-[var(--text-soft)]">{detail}</p>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--gold)]">
                 {query ? "Search in " + title : "Explore " + title} <ArrowRight size={16} />
               </span>
             </Link>
@@ -259,72 +253,72 @@ export default async function MasterSearchResults({ searchParams }: Props) {
       </section>
 
       {(places.length > 0 || articles.length > 0 || hotelMatches.length > 0 || propertyMatches.length > 0 || tenderMatches.length > 0) && (
-        <section className="border-t border-[#eac671]/20 bg-[#07182b]">
+        <section className="border-t border-[var(--border)] bg-[var(--card)]">
           <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 md:py-16">
             <h2 className="text-2xl font-semibold sm:text-3xl">Matching public records and guides</h2>
-            <p className="mt-3 text-sm text-[#c5d2e2]">Real public catalog matches only. Open each match for its source-aware details or filtered results.</p>
+            <p className="mt-3 text-sm text-[var(--text-soft)]">Real public catalog matches only. Open each match for its source-aware details or filtered results.</p>
             <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {hotelMatches.map(item => (
                 <Link key={"hotel-" + item.id} href={"/hotels?" + new URLSearchParams({
                   name: item.name, ...(item.city ? { city: item.city } : {}),
                 }).toString()}
-                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
-                  <Hotel size={25} className="text-[#f2d48d]" />
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">{item.source}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-white">{item.name}</h3>
-                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.city || "Location not specified"}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                  className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
+                  <Hotel size={25} className="text-[var(--gold)]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">{item.source}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">{item.name}</h3>
+                  <p className="mt-2 text-sm text-[var(--text-soft)]">{item.city || "Location not specified"}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[var(--gold)]">
                     View matching hotel listing <ArrowRight size={16} />
                   </span>
                 </Link>
               ))}
               {propertyMatches.map(item => (
                 <Link key={"property-" + item.slug} href={"/real-estate/" + item.slug}
-                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
-                  <Building2 size={25} className="text-[#f2d48d]" />
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">Public property record</p>
-                  <h3 className="mt-2 text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.city || "Location not specified"}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                  className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
+                  <Building2 size={25} className="text-[var(--gold)]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">Public property record</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[var(--text-soft)]">{item.city || "Location not specified"}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[var(--gold)]">
                     View property record <ArrowRight size={16} />
                   </span>
                 </Link>
               ))}
               {tenderMatches.map(item => (
                 <Link key={"tender-" + item.id} href={"/tender/" + item.id}
-                  className="flex min-w-0 flex-col rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-5 hover:border-[#efd087]/70">
-                  <FileSearch size={25} className="text-[#f2d48d]" />
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#eac671]">Published tender · {item.country_code}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm text-[#c5d2e2]">{item.buyer}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#f2d48d]">
+                  className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
+                  <FileSearch size={25} className="text-[var(--gold)]" />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">Published tender · {item.country_code}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[var(--text-soft)]">{item.buyer}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[var(--gold)]">
                     View tender notice <ArrowRight size={16} />
                   </span>
                 </Link>
               ))}
               {places.map(place => (
                 <Link key={"destination-" + place.slug} href={"/destinations/" + place.slug}
-                  className="group overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0d233b]">
+                  className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
                   <div className="relative h-40">
                     <Image src={place.image_url} alt={place.name} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover transition-transform group-hover:scale-105" />
                   </div>
                   <div className="p-5">
-                    <p className="text-xs uppercase tracking-wide text-[#eac671]">Destination guide</p>
+                    <p className="text-xs uppercase tracking-wide text-[var(--gold)]">Destination guide</p>
                     <h3 className="mt-2 text-lg font-semibold">{place.name}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-[#c5d2e2]">{place.description}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-[var(--text-soft)]">{place.description}</p>
                   </div>
                 </Link>
               ))}
               {articles.map(article => (
                 <Link key={"article-" + article.slug} href={"/blog/" + article.slug}
-                  className="group overflow-hidden rounded-2xl border border-[#eac671]/25 bg-[#0d233b]">
+                  className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
                   <div className="relative h-40">
                     <Image src={article.image} alt={article.title} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover transition-transform group-hover:scale-105" />
                   </div>
                   <div className="p-5">
-                    <p className="text-xs uppercase tracking-wide text-[#eac671]">Travel Journal · {article.category}</p>
+                    <p className="text-xs uppercase tracking-wide text-[var(--gold)]">Knowledge Blog · {article.category}</p>
                     <h3 className="mt-2 text-lg font-semibold">{article.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-[#c5d2e2]">{article.description}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-[var(--text-soft)]">{article.description}</p>
                   </div>
                 </Link>
               ))}
@@ -334,15 +328,15 @@ export default async function MasterSearchResults({ searchParams }: Props) {
       )}
       {query && !hotelMatches.length && !propertyMatches.length && !tenderMatches.length && !places.length && !articles.length && (
         <section className="mx-auto max-w-[1200px] px-5 pb-10 sm:px-8">
-          <p role="status" className="rounded-2xl border border-[#eac671]/30 bg-[#0d233b] p-6 text-sm leading-7 text-[#d4dfea]">
+          <p role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7 text-[var(--text-soft)]">
             No matching published record found for “{query}” in the currently connected catalogs.
             This is not confirmation that a hotel, property or tender does not exist.
             Choose a platform above to broaden your search.
           </p>
         </section>
       )}
-      <div className="mx-auto flex max-w-[1200px] items-start gap-3 px-5 py-9 text-xs leading-6 text-[#aebed2] sm:px-8">
-        <ShieldCheck size={19} className="mt-0.5 shrink-0 text-[#eac671]" />
+      <div className="mx-auto flex max-w-[1200px] items-start gap-3 px-5 py-9 text-xs leading-6 text-[var(--text-soft)] sm:px-8">
+        <ShieldCheck size={19} className="mt-0.5 shrink-0 text-[var(--gold)]" />
         Search routes lead to existing GTH PRO discovery tools. Confirm booking, eligibility, prices and current availability with relevant providers.
       </div>
     </main>

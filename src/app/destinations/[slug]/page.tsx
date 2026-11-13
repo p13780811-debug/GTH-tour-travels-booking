@@ -138,7 +138,7 @@ export default async function DestinationPage({ params }: Props) {
             </nav>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><Sparkles size={17}/> One destination · three pillars</p>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><Sparkles size={17}/> One destination · four pillars</p>
             <h2 className="mt-4 text-xl font-semibold">Plan, stay, invest and discover.</h2>
             <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
               Start with destination context, move to relevant travel options, explore source-backed property listings and access public tender intelligence.

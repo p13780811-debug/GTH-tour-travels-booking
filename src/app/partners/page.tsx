@@ -1,7 +1,7 @@
 import { SITE_CONFIG } from "@/lib/site-config";
 import type {Metadata} from "next";
 import Link from "next/link";
-import {ArrowRight, Building2, Globe2, Plane, ShieldCheck, BriefcaseBusiness, BadgeCheck, Handshake} from "lucide-react";
+import {ArrowRight, Building2, Globe2, Plane, ShieldCheck, BriefcaseBusiness, BadgeCheck, Handshake, Ticket} from "lucide-react";
 export const metadata:Metadata={
   title:"Developers, Agents & Travel Partners | GTH PRO",
   description:"Explore how property developers, agents and travel suppliers can introduce verified inventory or request a commercial partnership review with GTH PRO.",
@@ -13,7 +13,8 @@ const pillars=[
  {Icon:BadgeCheck,title:"Registered Project Claims",desc:"Builders, owners and authorized agents can request a review of exact MahaRERA project identity and privately upload rights-cleared photo evidence.",href:"/real-estate/claim-project",action:"Claim an existing project"},
  {Icon:Plane,title:"Hotel Owners & Managers",desc:"Submit real hotel inventory and original property photos for an administrator-reviewed public listing. No Google billing required.",href:"/hotels/list-your-property",action:"List your hotel"},
  {Icon:Plane,title:"Travel Suppliers",desc:"Tours, transfers and transportation providers can propose source-backed integrations.",href:"/partners/apply?type=travel_supplier",action:"Supplier application"},
- {Icon:BriefcaseBusiness,title:"Affiliate & B2B Partners",desc:"Introduce a travel affiliate or distribution programme; commercial participation is subject to approval.",href:"/partners/apply?type=affiliate",action:"Partnership enquiry"}
+ {Icon:BriefcaseBusiness,title:"Affiliate & B2B Partners",desc:"Introduce a travel affiliate or distribution programme; commercial participation is subject to approval.",href:"/partners/apply?type=affiliate",action:"Partnership enquiry"},
+ {Icon:Ticket,title:"Events & Ticket Sources",desc:"Explore the independent worldwide ticket directory, or propose a verifiable event source for review. No supplier approval is implied.",href:"/tickets",action:"Explore ticket sources"}
 ] as const;
 export default function PartnersPage(){
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -22,7 +23,7 @@ export default function PartnersPage(){
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]"><Globe2 size={16}/> Global Technical Hub · Business ecosystem</p>
         <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight md:text-5xl">Grow with the GTH PRO ecosystem.</h1>
         <p className="mt-5 max-w-3xl text-sm leading-8 text-[var(--text-soft)] md:text-base">
-          A direct entry point for property developers, real-estate agents, travel suppliers and prospective affiliate programmes.
+          A direct entry point for property developers, real-estate agents, travel suppliers, event source partners and prospective affiliate programmes.
           Introduce genuine services and projects for review—no fabricated partners or automatic publication.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">

@@ -12,17 +12,17 @@ const pillars=load("src/components/sections/EcosystemPillars.tsx");
 const footer=load("src/components/sections/EcosystemFooter.tsx");
 const tender=load("src/app/tender/page.tsx");
 
-test("ecosystem homepage retains the exact hero slider component and introduces 3 pillars",()=>{
+test("ecosystem homepage retains the exact hero slider component and introduces 4 pillars",()=>{
   assert.match(mega, /<HeroSlider \/>/);
   assert.match(mega, /<EcosystemPillars \/>/);
   assert.doesNotMatch(mega, /<EcosystemFooter \/>/);
   assert.match(mega, /canonical: "\/mega-aggregator"/);
-  for(const name of ["Tours & Travels","Real Estate","Tenders"])assert.ok(pillars.includes(name));
+  for(const name of ["Tours & Travels","Real Estate","Tenders","Tickets & Events"])assert.ok(pillars.includes(name));
   assert.doesNotMatch(mega, /href="\/(partners|studios|about|careers|cookies|security)"/);
   assert.doesNotMatch(mega, /Exclusive Mega Deals/);
 });
 
-test("all internal three-pillar entry points lead to existing routes",()=>{
+test("all internal four-pillar entry points lead to existing routes",()=>{
  const sources=[mega,hero,nav,mobile,pillars,footer,tender];
  const links=[];
  for(const s of sources){

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ArrowUpRight, Building2, FileSearch, Globe2, Plane, ShieldCheck} from "lucide-react";
+import {ArrowUpRight, Building2, FileSearch, Globe2, Plane, Ticket, ShieldCheck} from "lucide-react";
 import styles from "./FlagshipHome.module.css";
 
 /**
@@ -48,6 +48,18 @@ const capabilityGroups = [
       {label: "Explore business partnerships", href: "/partners"},
     ],
   },
+  {
+    id:"tickets",
+    title: "Worldwide Tickets",
+    eyebrow:"Events, sports and venue research",
+    Icon:Ticket,
+    description:"Find public ticket-source directories for stadium events, music, theatre, festivals and attractions. Sellers confirm final availability and pricing.",
+    actions:[
+      {label:"Explore worldwide ticket sources", href: "/tickets"},
+      {label:"Browse stadium and venue guides", href: "/stadiums"},
+      {label:"Read ticket buying guides", href: "/blog"},
+    ],
+  },
 ] as const;
 
 export default function HomeCapabilityProof() {
@@ -56,10 +68,10 @@ export default function HomeCapabilityProof() {
       <div className={styles.proofInner}>
         <header className={styles.proofIntro}>
           <p className={styles.proofEyebrow}><ShieldCheck size={16} aria-hidden="true"/> Explore the GTH PRO platform</p>
-          <h2 id="gth-public-capabilities">Three connected platforms. Real tools and searchable public pages.</h2>
+          <h2 id="gth-public-capabilities">Four connected platforms. Real tools and searchable public pages.</h2>
           <p>
             GTH PRO is more than a homepage: explore property records and buyer tools, travel
-            discovery and partner booking paths, and public tender research. Choose a service
+            discovery and partner booking paths, public tender research and worldwide event ticket sources. Choose a service
             below to open its own dedicated page.
           </p>
         </header>

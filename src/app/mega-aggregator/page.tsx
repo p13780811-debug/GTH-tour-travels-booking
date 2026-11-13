@@ -18,13 +18,13 @@ const supabase = createClient(
 )
 export const revalidate = 3600
 export const metadata = {
-    title: "GTH PRO | Global Travel, Real Estate & Tender Ecosystem",
-    description: "GTH PRO connects international travel discovery, real estate intelligence and tender opportunity research in one three-pillar global ecosystem.",
+    title: "GTH PRO | Global Travel, Real Estate, Tender & Tickets Ecosystem",
+    description: "GTH PRO connects international travel discovery, real estate intelligence and tender opportunity research in one four-pillar global ecosystem.",
     alternates: { canonical: "/mega-aggregator" },
-    keywords: ["GTH PRO", "global travel", "flights", "hotels", "tours", "real estate", "tender intelligence"],
+    keywords: ["GTH PRO", "global travel", "flights", "hotels", "tours", "real estate", "tender intelligence", "worldwide tickets", "stadium events"],
     openGraph: {
-        title: "GTH PRO — One Ecosystem. Three Global Pillars.",
-        description: "Explore travel, real estate and tender intelligence through one connected global gateway.",
+        title: "GTH PRO — One Ecosystem. Four Global Pillars.",
+        description: "Explore travel, real estate, tender intelligence and worldwide tickets through one connected global gateway.",
         images: ["/images/og/gth-travel.jpg"],
     },
 };

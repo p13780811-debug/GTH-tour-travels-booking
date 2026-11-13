@@ -1,19 +1,20 @@
 "use client";
 
 import {useState} from "react";
-import {BriefcaseBusiness, Building2, Globe2, Plane, Search} from "lucide-react";
+import {BriefcaseBusiness, Building2, Globe2, Plane, Search, Ticket} from "lucide-react";
 
 /** Uses the existing /search route and its validated pillar-specific routing.
  * No duplicate provider API, invented results, client token or CSS theme.
  */
-type Pillar = "all" | "travel" | "property" | "tender";
-type SearchCategory = "all" | "hotel" | "flight" | "tour" | "destination" | "blog" | "property" | "tender";
+type Pillar = "all" | "travel" | "property" | "tender" | "ticket";
+type SearchCategory = "all" | "hotel" | "flight" | "tour" | "destination" | "blog" | "property" | "tender" | "ticket";
 
 const tabs = [
   {id:"all", label:"All GTH PRO", Icon:Globe2, initial:"all"},
   {id:"travel", label:"Travel", Icon:Plane, initial:"hotel"},
   {id:"property", label:"Real Estate", Icon:Building2, initial:"property"},
   {id:"tender", label:"Tenders", Icon:BriefcaseBusiness, initial:"tender"},
+  {id:"ticket", label:"Tickets", Icon:Ticket, initial:"ticket"},
 ] as const;
 const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>={
   all:[
@@ -21,6 +22,7 @@ const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>=
     {value:"flight",label:"Flights"}, {value:"tour",label:"Tours & experiences"},
     {value:"destination",label:"Destinations"}, {value:"blog",label:"Guides & articles"},
     {value:"property",label:"Real Estate"}, {value:"tender",label:"Tender opportunities"},
+    {value:"ticket",label:"Worldwide Tickets & Events"},
   ],
   travel:[
     {value:"hotel",label:"Hotels"}, {value:"flight",label:"Flights"},
@@ -29,6 +31,7 @@ const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>=
   ],
   property:[{value:"property",label:"Properties and projects"}],
   tender:[{value:"tender",label:"Tender notices"}],
+  ticket:[{value:"ticket",label:"Events, sports, concerts and stadiums"}],
 };
 export default function EcosystemUnifiedSearch() {
   const [pillar,setPillar]=useState<Pillar>("all");
@@ -64,10 +67,10 @@ export default function EcosystemUnifiedSearch() {
       <form action="/search" method="get" role="search" aria-label="Universal ecosystem search"
         className="mt-4 grid min-w-0 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
         <label htmlFor="ecosystem-universal-keyword" className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">
-          {pillar==="property"?"Project, property or city":pillar==="tender"?"Tender keyword or sector":"What would you like to find?"}
+          {pillar==="property"?"Project, property or city":pillar==="tender"?"Tender keyword or sector":pillar==="ticket"?"Event, sport, city or stadium":"What would you like to find?"}
           <input id="ecosystem-universal-keyword" type="search" name="q" autoComplete="off"
             maxLength={100} value={query} onChange={event=>setQuery(event.target.value)}
-            placeholder={pillar==="property"?"Mumbai apartments, plots…":pillar==="tender"?"Construction, procurement, IT…":"Mumbai hotels, Paris tours, property, tenders…"}
+            placeholder={pillar==="property"?"Mumbai apartments, plots…":pillar==="tender"?"Construction, procurement, IT…":pillar==="ticket"?"Cricket Mumbai, concerts London…":"Mumbai hotels, tickets, property, tenders…"}
             className="gth-input mt-2 block min-h-12 w-full min-w-0"/>
         </label>
         <label htmlFor="ecosystem-universal-category" className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">

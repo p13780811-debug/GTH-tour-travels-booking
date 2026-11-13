@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_CONFIG } from "@/lib/site-config";
-import { ArrowUpRight, Building2, Globe2, Hotel, Landmark, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Building2, Globe2, Hotel, Landmark, ShieldCheck, Ticket } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Official Website Verification & Transparency | GTH PRO",
-  description: "Verify the public identity of GTH PRO, its three digital platforms, travel white-label and affiliate model, open-source attraction data and independent booking disclosures.",
+  description: "Verify the public identity of GTH PRO, its four digital platforms, travel white-label and affiliate model, open-source attraction data and independent booking disclosures.",
   alternates: { canonical: "/verification" },
   openGraph: {
     title: "GTH PRO | Official Website Verification & Transparency",
@@ -33,6 +33,12 @@ const pillars = [
     href: "/tender",
     Icon: Landmark,
     description: "Source-aware public procurement research and tender preparation guidance. GTH PRO is not a government tender portal or issuing authority; official source documents control eligibility and submission."
+  },
+  {
+    name:"Worldwide tickets and stadium source research",
+    href:"/tickets",
+    Icon:Ticket,
+    description:"Public event ticket-source discovery, stadium/venue guides and ticket buying research. GTH PRO does not guarantee ticket inventory, admission, prices or seller authorization."
   }
 ] as const;
 
@@ -45,8 +51,8 @@ export default function VerificationPage() {
         </p>
         <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight md:text-5xl">Verify GTH PRO Global</h1>
         <p className="mt-5 max-w-4xl text-base leading-8 text-[var(--text-soft)]">
-          GTH PRO (Global Technical Hub) is a digital initiative of Etios Profession, connecting three
-          independent areas of discovery: real estate, travel technology and public tenders.
+          GTH PRO (Global Technical Hub) is a digital initiative of Etios Profession, connecting four
+          independent areas of discovery: real estate, travel technology, public tenders and worldwide ticket-source research.
           This is the official GTH PRO website. We publish our actual services, source limitations
           and supplier handoff model to help visitors evaluate the platform.
         </p>
@@ -58,8 +64,8 @@ export default function VerificationPage() {
     </header>
 
     <section className="mx-auto max-w-6xl px-5 py-12 sm:px-8" aria-labelledby="platforms">
-      <h2 id="platforms" className="text-2xl font-semibold">Three connected digital platforms</h2>
-      <div className="mt-6 grid gap-5 md:grid-cols-3">
+      <h2 id="platforms" className="text-2xl font-semibold">Four connected digital platforms</h2>
+      <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {pillars.map(({name,href,description,Icon})=>
           <article key={href} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
             <Icon size={27} className="text-[var(--gold)]" aria-hidden="true"/>

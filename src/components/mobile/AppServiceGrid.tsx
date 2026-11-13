@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import {Bookmark,BriefcaseBusiness,Building2,Calculator,CarFront,Compass,FileCheck2,Globe2,Heart,Hotel,Plane,Route,ShieldCheck,Smartphone} from "lucide-react";
+import {Bookmark,BriefcaseBusiness,Building2,Calculator,CarFront,Compass,FileCheck2,Globe2,Heart,Hotel,Plane,Route,ShieldCheck,Smartphone,Ticket} from "lucide-react";
 import {Star} from "lucide-react";
 import {appServices,mobileServiceHref} from "@/lib/mobile/app-dashboard";
-const icons={plane:Plane,hotel:Hotel,building:Building2,briefcase:BriefcaseBusiness,transfer:Route,car:CarFront,compass:Compass,shield:ShieldCheck,globe:Globe2,sim:Smartphone,heart:Heart,calculator:Calculator,bookmark:Bookmark,file:FileCheck2};
+const icons={plane:Plane,hotel:Hotel,building:Building2,briefcase:BriefcaseBusiness,transfer:Route,car:CarFront,compass:Compass,shield:ShieldCheck,globe:Globe2,sim:Smartphone,heart:Heart,calculator:Calculator,bookmark:Bookmark,file:FileCheck2,ticket:Ticket};
 export default function AppServiceGrid({services,favourites,editing,onToggle,onSelect}:{services:readonly (typeof appServices[number])[];favourites:string[];editing:boolean;onToggle:(id:string)=>void;onSelect:(id:string)=>void}){
  return <div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6">{services.map(service=>{const Icon=icons[service.icon],pinned=favourites.includes(service.id);return <div key={service.id} className="min-w-0">
  <Link href={mobileServiceHref(service)} onClick={()=>onSelect(service.id)} aria-label={`${service.label}${pinned?', favourite':''}`} className="group flex min-h-24 min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-1 py-3 text-center shadow-[var(--shadow)] transition-transform duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--gold)] motion-reduce:transform-none">

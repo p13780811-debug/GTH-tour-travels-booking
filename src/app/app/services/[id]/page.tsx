@@ -23,6 +23,11 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
     note: "A provider controls available vehicles, pickup requirements, rates and booking confirmation.",
     cta: "Continue to airport transfers",
   },
+  tickets: {
+    detail: "Browse GTH PRO worldwide event-ticket source directories for sports, music, theatre and stadiums.",
+    note: "This is a curated research directory, not a live ticket inventory. Sellers independently confirm dates, seats, prices and booking conditions.",
+    cta: "Explore worldwide tickets",
+  },
   stadiums: {
     detail: "Explore stadium calendars, seating sources and selected partner event tickets or venue experiences.",
     note: "The organizer or supplier confirms dates, available seats, included admission and booking terms.",
@@ -91,7 +96,9 @@ export default async function AppServiceGateway({
       ? { href: "/app/property", label: "Browse property records in app" }
       : service.pillar === "tender"
         ? { href: "/app/tenders", label: "Browse published tenders in app" }
-        : { href: "/app/destinations", label: "Explore destinations in app" };
+        : service.pillar === "tickets"
+          ? { href: "/app/search?category=ticket", label: "Search ticket sources in app" }
+          : { href: "/app/destinations", label: "Explore destinations in app" };
 
   return (
     <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
@@ -106,7 +113,7 @@ export default async function AppServiceGateway({
         </Link>
         <section className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">
-            GTH PRO · {service.pillar === "travel" ? "Travel" : service.pillar === "property" ? "Real Estate" : "Tender"}
+            GTH PRO · {service.pillar === "travel" ? "Travel" : service.pillar === "property" ? "Real Estate" : service.pillar === "tickets" ? "Tickets & Events" : "Tender"}
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">{service.label}</h1>
           <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">

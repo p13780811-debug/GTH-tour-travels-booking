@@ -40,14 +40,14 @@ export const metadata: Metadata = {
   applicationName: "GTH PRO",
   icons: { apple: [{ url: "/app-icon/180", sizes: "180x180", type: "image/png" }] },
   title: { default: "GTH PRO | Global Technical Hub", template: "%s" },
-  description: "GTH PRO unites Tours & Travels, Real Estate and Tender Intelligence with source-aware discovery and business onboarding.",
-  keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence"],
+  description: "GTH PRO unites Travel, Real Estate, Tender Intelligence and worldwide ticket-source discovery with source-aware research and booking handoffs.",
+  keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence", "worldwide event tickets", "stadium ticket guides"],
   robots: publicLaunch
     ? { index: true, follow: true }
     : { index: false, follow: false, nocache: true },
   openGraph: {
-    title: "GTH PRO — One Global Ecosystem. Three Pillars.",
-    description: "Global Technical Hub for travel, real estate and tender intelligence.",
+    title: "GTH PRO — One Global Ecosystem. Four Pillars.",
+    description: "Global Technical Hub for travel, real estate, tender intelligence and worldwide ticket sources.",
     images: [{ url: "/images/global-earth.jpg", alt: "GTH PRO — Global Technical Hub" }],
     type: "website",
     siteName: "GTH PRO",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "GTH PRO — Global Technical Hub",
-    description: "Discover travel, property markets and tender intelligence.",
+    description: "Discover travel, property markets, tender intelligence and event ticket sources.",
     images: ["/images/global-earth.jpg"],
   },
 };

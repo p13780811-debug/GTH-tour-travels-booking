@@ -26,15 +26,16 @@ test("public capability proof is server-rendered semantic HTML with grounded fea
  assert.doesNotMatch(proof,/"use client"|useEffect|useState|fetch\(|setInterval|<script|iframe|dangerouslySetInnerHTML/);
  assert.match(proof,/<section className=\{styles\.proofSection\}/);
  assert.match(proof,/aria-labelledby="gth-public-capabilities"/);
- assert.match(proof,/Three connected platforms\. Real tools and searchable public pages\./);
- for(const label of ["Real Estate","Travel","Tender"]){
+ assert.match(proof,/Four connected platforms\. Real tools and searchable public pages\./);
+ for(const label of ["Real Estate","Travel","Tender","Worldwide Tickets"]){
    assert.ok(proof.includes('title: "'+label+'"'),"Missing platform: "+label);
  }
  const urls=[...proof.matchAll(/href: "(\/[^"]+)"/g)].map(x=>x[1]);
  const expected=[
    "/real-estate","/real-estate/registry","/real-estate/tools",
    "/flights","/hotels","/tours","/destinations",
-   "/tender","/tender/services","/partners"
+   "/tender","/tender/services","/partners",
+   "/tickets","/stadiums","/blog"
  ];
  assert.deepEqual(urls,expected);
  for(const url of urls){

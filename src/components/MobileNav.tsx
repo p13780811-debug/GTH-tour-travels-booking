@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BriefcaseBusiness, Building2, Home, Hotel, Plane } from "lucide-react";
+import { BriefcaseBusiness, Building2, Home, Hotel, Plane, Ticket } from "lucide-react";
 
 /** One reusable five-tab app bar, scoped to small screens. Real Estate keeps its approved own navigation. */
 const items = [
@@ -11,6 +11,7 @@ const items = [
   { href: "/hotels", appHref: "/app/hotels", name: "Hotels", Icon: Hotel, matches: ["/hotels"] },
   { href: "/real-estate", appHref: "/app/property", name: "Property", Icon: Building2, matches: ["/real-estate"] },
   { href: "/tender", appHref: "/app/tenders", name: "Tenders", Icon: BriefcaseBusiness, matches: ["/tender"] },
+  { href: "/tickets", appHref: "/app/search?category=ticket", name: "Tickets", Icon: Ticket, matches: ["/tickets", "/stadiums"] },
 ];
 
 export default function MobileNav() {
@@ -20,14 +21,14 @@ export default function MobileNav() {
     <nav aria-label="GTH PRO mobile app navigation"
       className={`fixed inset-x-0 bottom-0 z-[180] border-t border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] backdrop-blur-xl ${isApp ? "" : "md:hidden"}`}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="mx-auto grid max-w-lg grid-cols-5 px-1">
+      <div className="mx-auto grid max-w-lg grid-cols-6 px-1">
         {items.map(({href,appHref,name,Icon,matches}) => {
           const target = isApp ? appHref : href;
           const active = isApp ? (pathname === appHref || (appHref !== "/app" && pathname.startsWith(appHref + "/"))) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
           return (
             <Link key={href} href={target} prefetch={name==="Home"?false:undefined} aria-current={active ? "page" : undefined}
-              className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
-              <Icon size={21} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
+              className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
+              <Icon size={19} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
               <span className="truncate">{name}</span>
             </Link>
           );

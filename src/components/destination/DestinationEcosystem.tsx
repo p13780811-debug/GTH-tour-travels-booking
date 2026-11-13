@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
  ArrowRight,BookOpen,BriefcaseBusiness,Building2,Bus,CarFront,ClipboardList,
- Compass,FileText,Hotel,MapPin,Plane,Route,TrainFront,WalletCards,
+ Compass,FileText,Hotel,MapPin,Plane,Route,TrainFront,WalletCards,Ticket,
  type LucideIcon
 } from "lucide-react";
 import {destinationServices,destinationScopeLabel,type DestinationService} from "@/lib/destinations/ecosystem";
@@ -10,6 +10,7 @@ const serviceIcons:Record<string,LucideIcon>={
  cars:CarFront,bus:Bus,train:TrainFront,guides:BookOpen,blog:FileText,
  properties:Building2,"post-property":Building2,tenders:ClipboardList,
  "tender-assistant":BriefcaseBusiness,"list-hotel":WalletCards,
+ tickets:Ticket,stadiums:Ticket,
 };
 export default function DestinationEcosystem({slug,name,country}:{
  slug:string;name:string;country:string|null;
@@ -19,10 +20,11 @@ export default function DestinationEcosystem({slug,name,country}:{
   {pillar:"Travel",title:"Travel & experiences",subtitle:"Stay, move and explore with working GTH PRO travel services."},
   {pillar:"Real Estate",title:"Property marketplace",subtitle:"Find published property listings or submit an owner enquiry."},
   {pillar:"Tenders",title:"Tender intelligence",subtitle:"Explore public procurement and eligibility tools by supported jurisdiction."},
+  {pillar:"Tickets",title:"Stadium and event ticket sources",subtitle:"Research sources for the destination; no exact-event availability is promised."},
  ] as const;
  return <section id="destination-ecosystem" className="border-y border-[var(--border)] bg-[var(--bg-soft)]">
   <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16">
-   <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">GTH PRO · Three pillars connected</p>
+   <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">GTH PRO · Four pillars connected</p>
    <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Everything around {name}</h2>
    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
     Open the matching service directly. Local search filters are applied only when a provider supports them;

@@ -9,7 +9,7 @@ import MegaAggregator from "@/app/mega-aggregator/page";
 export const revalidate=3600;
 export const metadata:Metadata={
  title:"GTH PRO Ecosystem | Mobile App",
- description:"Explore the existing GTH PRO Travel, Real Estate and Tender ecosystem.",
+ description:"Explore the existing GTH PRO Travel, Real Estate, Tender and Worldwide Tickets ecosystem.",
  robots:{index:false,follow:false},
 };
 export default function MobileEcosystemHome(){
