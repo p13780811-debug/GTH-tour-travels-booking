@@ -30,14 +30,13 @@ export function destinationFlightHref(name:string):string{
  return "/flights?"+params.toString()+"#flight-search";
 }
 export function destinationServices(place:{slug:string;name:string;country:string|null}):DestinationService[]{
- const slug=encodeURIComponent(place.slug);
  const country=place.country ? ISO[place.country] : undefined;
  const realEstate=new URLSearchParams({city:place.name});
  if(place.country)realEstate.set("country",place.country);
  const tender=new URLSearchParams({scope:"world"});
  if(country)tender.set("country",country);
  return [
-  {key:"hotels",label:"Hotels & stays",description:"Search public hotel listings",href:"/hotels?destination="+slug,scope:"destination",pillar:"Travel"},
+  {key:"hotels",label:"Hotels & stays",description:"Open the Nuitee booking search for this city",href:"/hotels?"+new URLSearchParams({view:"booking",city:place.name,...(country?{country}:{})}).toString(),scope:"destination",pillar:"Travel"},
   {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name),scope:"destination",pillar:"Travel"},
   {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
