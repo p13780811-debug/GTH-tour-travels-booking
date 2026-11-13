@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront, Ticket } from "lucide-react";
 
 const pillars = [
   {
@@ -39,6 +39,7 @@ const pillars = [
     Icon: BriefcaseBusiness,
     detail: "Research · Readiness · Sources",
   },
+  {id:"tickets",number:"04",title:"Tickets & Events",eyebrow:"Worldwide stadium and event sources",description:"Discover independent official ticket sources, sports venues and event guides. Suppliers confirm admission, availability and prices.",href:"/tickets",cta:"Explore Worldwide Tickets",image:"/images/editorial/sports.svg",Icon:Ticket,detail:"Sports · Concerts · Theatre · Stadiums"},
 ] as const;
 
 const quickLinks = [
@@ -48,6 +49,7 @@ const quickLinks = [
   { title: "Tours", href: "/tours", Icon: Compass },
   { title: "Rail & Transit", href: "/train", Icon: TrainFront },
   { title: "Travel Protection", href: "/insurance", Icon: ShieldCheck },
+  { title: "Worldwide Tickets", href: "/tickets", Icon: Ticket },
 ] as const;
 
 export default function EcosystemPillars() {
@@ -59,10 +61,10 @@ export default function EcosystemPillars() {
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gold)]"><Globe2 size={16} aria-hidden="true" /> GTH PRO · Global Technical Hub</p>
             <h1 id="ecosystem-pillar-heading" className="gth-master-heading mt-4 text-3xl font-semibold leading-tight tracking-tight text-[var(--text)] sm:text-4xl md:text-5xl">
-              One global ecosystem. <span className="gold-text">Three defining pillars.</span>
+              One global ecosystem. <span className="gold-text">Four defining pillars.</span>
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] md:text-base">
-              From journeys to property discovery and procurement research—navigate the entire GTH PRO world from one central gateway.
+              From journeys and property discovery to procurement research and worldwide tickets—navigate the entire GTH PRO world from one central gateway.
             </p>
           </div>
           <Link href="/contact" className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
@@ -70,7 +72,7 @@ export default function EcosystemPillars() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {pillars.map(({id,number,title,eyebrow,description,href,cta,image,Icon,detail}) => (
             <article key={id} className="gth-master-pillar group flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)]">
               {/* Keep the source photo visible instead of hiding it beneath a full-card black gradient. */}
