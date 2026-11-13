@@ -8,7 +8,6 @@ import { usePathname } from "next/navigation"
 
 import {
     Search,
-    Ticket,
     Menu,
     X,
     Sparkles,
@@ -108,7 +107,6 @@ function EcosystemNavbar() {
         { name: "Travel", href: "/travel", icon: Plane, mega: false },
         { name: "Real Estate", href: "/real-estate", icon: Building2, mega: false },
         { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
-        { name: "Tickets", href: "/tickets", icon: Ticket, mega: false },
         { name: "Destinations", href: "/destinations", icon: MapPinned, mega: false },
         { name: "Guides", href: "/guides", icon: Compass, mega: false },
         { name: "Blog", href: "/blog", icon: BookOpen, mega: false },
