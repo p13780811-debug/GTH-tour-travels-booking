@@ -10,12 +10,12 @@ function load(path,imports={}){
  const js=ts.transpileModule(read(path),{compilerOptions:{
   target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS
  }}).outputText;
- const module={exports:{}};
- new Function("module","exports","require",js)(module,module.exports,id=>{
+ const loadedModule={exports:{}};
+ new Function("module","exports","require",js)(loadedModule,loadedModule.exports,id=>{
   if(!(id in imports))throw Error("Unexpected import "+id+" in "+path);
   return imports[id];
  });
- return module.exports;
+ return loadedModule.exports;
 }
 const stadiums=load("src/lib/travel/stadiums.ts");
 const venueRouter=load("src/lib/travel/stadium-ticket-routing.ts",{"./stadiums":stadiums});
