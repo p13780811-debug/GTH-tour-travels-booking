@@ -9,6 +9,7 @@ import StadiumPartnerDiscovery from "./StadiumPartnerDiscovery";
 import StadiumUpcomingEvents from "./StadiumUpcomingEvents";
 import StadiumEventDiscovery from "./StadiumEventDiscovery";
 import StadiumOfficialSources from "./StadiumOfficialSources";
+import StadiumTicketDestinations from "./StadiumTicketDestinations";
 import { upcomingStadiumEvents } from "@/lib/travel/stadiums";
 
 // Refresh editorial event visibility hourly; no live API, cron or DB traffic.
@@ -78,6 +79,7 @@ export default function StadiumsPage() {
         </div>
       </section>
       <StadiumDirectory venues={stadiums}/>
+      <StadiumTicketDestinations/>
       <StadiumOfficialSources/>
       <footer className="mt-8 text-sm leading-6 text-[var(--text-soft)]">
         <p>Some experience links are affiliate links. GTH PRO may earn a commission when a qualifying booking is completed.</p>
