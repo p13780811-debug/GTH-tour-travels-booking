@@ -11,6 +11,7 @@ import EcosystemGuideResources from "@/components/seo/EcosystemGuideResources";
 import TicketBlogLinks from "@/components/travel/TicketBlogLinks";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
+import {findEditorialPexelsPhoto} from "@/lib/editorial/pexels";
 import JsonLd from "@/components/seo/JsonLd";
 
 type Props={params:Promise<{slug:string}>};
@@ -39,6 +40,7 @@ export default async function BlogPage({params}:Props){
   const ticketGuide=ticketBlogGuides.find(item=>item.slug===slug);
   const ecosystemGuide=ecosystemGuides.find(item=>item.slug===slug);
   const datedGuide=ticketGuide||ecosystemGuide;
+  const pexelsPhoto=await findEditorialPexelsPhoto(blog.slug);
   const related=blogs.filter(item=>item.slug!==blog.slug&&item.category===blog.category).slice(0,3);
   const more=related.length?related:blogs.filter(item=>item.slug!==blog.slug).slice(0,3);
   const pillar=ecosystemGuide?.pillar||"Travel";
@@ -88,8 +90,13 @@ export default async function BlogPage({params}:Props){
             <span className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">{pillar} research</span>
           </div>
         </div>
-        <div className="relative aspect-[16/10] min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]">
-          <Image src={blog.image} alt={blog.title} fill priority sizes="(max-width: 768px) 100vw, 35vw" className="object-cover"/>
+        <div className="min-w-0">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-[var(--border)]">
+            <Image src={pexelsPhoto?.src||blog.image} alt={pexelsPhoto?.alt||blog.title} fill priority sizes="(max-width: 768px) 100vw, 35vw" className="object-cover"/>
+          </div>
+          {pexelsPhoto&&<p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
+            Illustrative photo by {pexelsPhoto.photographer} via <a href={pexelsPhoto.source} target="_blank" rel="noopener noreferrer" className="underline">Pexels</a>. Not an exact event, venue or official tender photograph.
+          </p>}
         </div>
       </div>
     </header>
