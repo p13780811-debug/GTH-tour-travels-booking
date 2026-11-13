@@ -66,7 +66,7 @@ export default async function MappedCitiesPage({searchParams}:Props){
         </Link>
         <div className="mt-3 flex items-center justify-between gap-3 text-xs">
          <Link className="underline" href={"/tours?city="+encodeURIComponent(city.city)}>Search experiences</Link>
-         <Link className="underline" href={"/hotels/results?city="+encodeURIComponent(city.city)}>Find hotels</Link>
+         <Link className="underline" href={"/hotels?view=booking&city="+encodeURIComponent(city.city)}>Find hotels</Link>
         </div>
        </article>)}
       </div>}
