@@ -42,10 +42,10 @@ test("article page retains structured SEO and safe supplier links",()=>{
   assert.ok(body.includes("isPublicLaunch()"));
 });
 test("legacy tender knowledge URL redirects before dynamic UUID validation",()=>{
-  const legacy=read("src/app/tender/guides/page.tsx");
+  const legacy=read("next.config.ts");
   const canonical=read("src/app/knowledge/tenders/page.tsx");
   const detail=read("src/app/tender/[id]/page.tsx");
-  assert.ok(legacy.includes('permanentRedirect("/knowledge/tenders")'));
+  assert.ok(legacy.includes('source:"/tender/guides",destination:"/knowledge/tenders",permanent:true'));
   assert.ok(canonical.includes('siteUrl("/knowledge/tenders")'));
   assert.ok(detail.includes("getPublicTender(id)"));
   assert.ok(!legacy.includes("getPublicTender"));
