@@ -156,6 +156,9 @@ export default async function BlogPage({ params }: Props) {
               <Link href="/hotels" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Hotel size={17} className="text-[#f0d38d]" /> Explore Hotels</Link>
               <Link href="/activities" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Compass size={17} className="text-[#f0d38d]" /> Browse Activities</Link>
               <Link href="/destinations" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Compass size={17} className="text-[#f0d38d]" /> Explore Destinations</Link>
+              <Link href="/tickets" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Worldwide Tickets</Link>
+              <Link href="/real-estate/guides" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Real Estate research</Link>
+              <Link href="/tender/guides" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Tender research</Link>
             </nav>
           </div>
           <div className="rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6 text-sm leading-7 text-[#cbd7e6]">
