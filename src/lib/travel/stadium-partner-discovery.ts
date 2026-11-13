@@ -27,7 +27,16 @@ export function reviewedStadiumMatches(input:unknown):StadiumPartnerSearchLinks[
  const requested=parsed.destination.replace(/\b(?:guided|stadium|venue|ground|tours?|tickets?|matches?|admission|book|booking)\b/gi," ")
   .replace(/\s+/g," ").trim();
  if(requested.length<2)return [];
- return filterStadiums(stadiums,requested,"").slice(0,8).flatMap(venue=>{
+ return filterStadiums(stadiums,requested,"").filter(venue=>{
+  const q=requested.toLocaleLowerCase("en");
+  const fullName=venue.name.toLocaleLowerCase("en");
+  const shortName=fullName.replace(/\b(?:stadium|ground|circuit)\b/gi," ").replace(/\s+/g," ").trim();
+  const city=venue.city.toLocaleLowerCase("en");
+  // Partial token hits are not evidence of a specific venue. "Eden" alone
+  // should not return Eden Gardens when it can mean an unrelated town.
+  return q===city||q.includes(fullName)||(shortName.length>=5&&q.includes(shortName))||
+    (q.length>=6&&Boolean(venue.aliases?.toLocaleLowerCase("en").includes(q)));
+ }).slice(0,8).flatMap(venue=>{
   const official=venue.tickets??venue.schedule;
   try{
    const u=new URL(official.url);
