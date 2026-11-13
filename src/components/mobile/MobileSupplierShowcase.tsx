@@ -42,7 +42,7 @@ function HotelStays(){
      </div>
     </Link>)}
   </div>
-  <div className="mx-4 mt-2 overflow-x-auto touch-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"
+  <div role="region" className="mx-4 mt-2 overflow-x-auto touch-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"
    aria-label="Nuitee supplier hotel cards">
    <div className="min-w-[290px]">
     <div className="mb-2 flex items-center gap-2 text-xs font-semibold"><Hotel size={15} className="text-[var(--gold)]"/> Hotels near Mumbai · Nuitee</div>
