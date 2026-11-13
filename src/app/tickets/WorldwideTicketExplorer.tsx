@@ -47,26 +47,26 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
  const [region,setRegion]=useState("");
  const [showAll,setShowAll]=useState(false);
  const regions=useMemo(()=>Array.from(new Set(items.map(item=>item.region).filter(r=>r!=="Worldwide"&&r!=="Multiple markets"))).sort(),[]);
+ // Exact-token matching prevents "Eden" from matching "Sweden" or suppliers
+ // elsewhere. If a venue/event is not indexed we never display random tours
+ // or ticket merchants as if they were exact matches.
  const {display,mode,total}=useMemo(()=>{
    const relevant=items.filter(item=>
      (!category||item.categories.includes(category))&&regionMatches(item.region,region)
    );
-   const pool=relevant.length?relevant:items.filter(item=>!category||item.categories.includes(category));
-   const terms=normalize(query.slice(0,100)).trim().split(/\s+/).filter(Boolean);
-   const scored=pool.map(item=>{
-     const haystack=normalize([item.name,item.region,item.keywords,...item.categories].join(" "));
-     const hits=terms.filter(term=>haystack.includes(term)).length;
-     return {item,hits};
-   });
-   const exact=terms.length?scored.filter(x=>x.hits===terms.length):scored;
-   const partial=exact.length?exact:scored.filter(x=>x.hits>0);
-   const selected=partial.length?partial:scored;
-   selected.sort((a,b)=>b.hits-a.hits||
-     Number(a.item.kind!=="venue-guide")-Number(b.item.kind!=="venue-guide")||
-     a.item.name.localeCompare(b.item.name));
+   const intentWords=new Set(["find","search","buy","book","official","tickets","ticket","stadium","stadiums","venue","venues","event","events","tour","tours","for","in","near","at"]);
+   const terms=normalize(query.slice(0,100)).split(/[^\p{L}\p{N}]+/u).filter(term=>term.length>1&&!intentWords.has(term));
+   const selected=terms.length?relevant.filter(item=>{
+     const tokens=new Set(normalize([item.name,item.region,item.keywords,...item.categories].join(" "))
+       .split(/[^\p{L}\p{N}]+/u).filter(Boolean));
+     return terms.every(term=>tokens.has(term));
+   }):relevant;
+   selected.sort((a,b)=>
+     Number(b.kind==="venue-guide")-Number(a.kind==="venue-guide")||
+     a.name.localeCompare(b.name));
    return {
-     display:selected.map(({item})=>item),
-     mode:terms.length===0?"browse":exact.length?"matching":partial.length?"suggestions":"fallback",
+     display:selected,
+     mode:terms.length===0?"browse":selected.length?"matching":"not-found",
      total:items.length
    };
  },[query,category,region]);
@@ -99,12 +99,15 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
        <p role="status" aria-live="polite" className="text-sm text-[var(--text-soft)]">
          {mode==="matching"?`${display.length} relevant source ${display.length===1?"match":"matches"}`:
           mode==="suggestions"?"Suggested sources; the exact event is not verified in our index.":
-          mode==="fallback"?"No exact match in our curated index. Browse alternative ticket sources below.":
+          mode==="not-found"?"No matching reviewed venue or ticket source. Unrelated results are hidden.":
           `${display.length} sources from ${total} indexed guides and destinations`}
        </p>
        {(query||region||category!==initialCategory)&&<button type="button" onClick={reset} className="gth-btn min-h-11 rounded-xl px-4 text-sm font-semibold">Clear search</button>}
      </div>
    </div>
+   {mode==="not-found"&&<p role="status" className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm leading-6 text-[var(--text-soft)]">
+     No verified matching venue or ticket-source listing was found for these terms and filters. <Link href="/stadiums" className="font-semibold underline">Browse official stadium guides</Link>, or change the search. Generic destination tours are not venue or match tickets.
+   </p>}
    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
      {shown.map(item=><article key={item.id} className="gth-glass flex min-w-0 flex-col rounded-2xl border border-[var(--border)] p-5">
        <p className="text-xs font-semibold text-[var(--gold)]">{item.region} · {item.categories.map(c=>ticketCategories.find(t=>t.slug===c)?.label).join(" / ")}</p>
