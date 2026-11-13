@@ -29,11 +29,15 @@ try{
  // The same existing service engines must handle global search: no endless
  // Explore re-render and no hotel name search for "Goa hotel".
  await page.goto(base+"/app/search?q=Goa+hotel",{waitUntil:"domcontentloaded",timeout:60000});
- await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
- assert.ok(page.url().includes("/app/hotels?directory=1&destination=goa"),page.url());
+ await page.getByRole("heading",{name:"Hotels",exact:true}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("/app/hotels?view=booking&city=Goa"),page.url());
  await page.goto(base+"/app/explore?q=hotels+in+Goa",{waitUntil:"domcontentloaded",timeout:60000});
- await page.getByRole("heading",{name:"Hotels & stays"}).waitFor({timeout:25000});
- assert.ok(page.url().includes("destination=goa"),page.url());
+ await page.getByRole("heading",{name:"Hotels",exact:true}).waitFor({timeout:25000});
+ assert.ok(page.url().includes("view=booking&city=Goa"),page.url());
+ await page.goto(base+"/app/search?q=Eden+Gardens+stadium+tour",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:/Eden Gardens/i}).waitFor({timeout:25000});
+ assert.ok(page.url().endsWith("/stadiums/eden-gardens"),page.url());
+ assert.equal(await page.locator('a[href*="getyourguide.com/s/"]').count(),0);
  await page.goto(base+"/app/search?q=road+construction+tender",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Open tenders"}).waitFor({timeout:25000});
  assert.ok(page.url().includes("/app/tenders?q=road+construction"),page.url());
