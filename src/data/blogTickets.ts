@@ -9,7 +9,6 @@ export type TicketBlogGuide=Blog & {
   publishedAt:string;
   ticketCategory?:TicketCategory;
   market?:string;
-  photoCredit?:{creator:string;license:string;source:string};
 };
 
 export const ticketBlogGuides:readonly TicketBlogGuide[]=[
@@ -273,7 +272,7 @@ Some popular museums use advance booking or release windows rather than walk-in 
 ## Travel and transport
 
 Plan enough time between Tokyo, Osaka or other regions and the venue; local train operating hours matter after late concerts. Research [train](/train), [hotels](/hotels) and [flights](/flights) after securing a valid event date. Find public starting points in [Worldwide Tickets](/tickets).`},
-  {slug:"australia-cricket-afl-music-ticket-guide",title:"Australia Tickets: Cricket, AFL, Rugby, Concerts and Theatre",description:"Choose Australian sports and live-event ticket sources while checking reserved seating, regional travel and venue-specific rules.",category:"Tickets",image:"https://upload.wikimedia.org/wikipedia/commons/3/3e/Sydney_Cricket_Ground.jpg",photoCredit:{creator:"ToadofTruth",license:"CC BY-SA 4.0",source:"https://commons.wikimedia.org/wiki/File:Sydney_Cricket_Ground.jpg"},publishedAt:"2026-11-13",market:"Australia",
+  {slug:"australia-cricket-afl-music-ticket-guide",title:"Australia Tickets: Cricket, AFL, Rugby, Concerts and Theatre",description:"Choose Australian sports and live-event ticket sources while checking reserved seating, regional travel and venue-specific rules.",category:"Tickets",image:"/images/editorial/australia.svg",publishedAt:"2026-11-13",market:"Australia",
    content:`## Check which sport and which venue
 
 Australia's sports calendar includes international cricket, AFL, rugby, motorsports and other events. A ticket to a stadium guided tour does not cover a match. Find the precise fixture date and home venue on the competition or stadium website before checking admission.
