@@ -12,7 +12,7 @@ export function knownStadiumTicketHref(input:unknown):string|null {
  const cleaned=normalize(input.replace(intent," "));
  if(cleaned.length<4)return null;
  const matches=stadiums.filter(stadium=>{
-  const name=normalize(stadium.name),city=normalize(stadium.city);
+  const name=normalize(stadium.name.replace(intent," ")),city=normalize(stadium.city);
   return cleaned===name||cleaned===name+" "+city||cleaned===city+" "+name;
  });
  return matches.length===1?"/stadiums/"+matches[0].slug:null;
