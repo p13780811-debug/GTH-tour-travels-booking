@@ -8,7 +8,8 @@ test("Destination pages link their hotel section and marketplace to destination 
  assert.match(page,/<HotelResults city=\{destination\.name\} destination=\{slug\} compactRail/);
  assert.ok(page.includes("href={hotelsHref}"));
  const service=read("src/lib/destinations/ecosystem.ts");
- assert.ok(service.includes('href:"/hotels?destination="+slug'));
+ assert.match(service,/href:"\/hotels\?"\+new URLSearchParams\(\{view:"booking",city:place\.name/);
+ assert.doesNotMatch(service,/href:"\/hotels\?destination="/);
 });
 test("Master hotel API validates destination slugs, resolves real active source name and queries source regions",()=>{
  const api=read("src/app/api/hotels/route.ts");
