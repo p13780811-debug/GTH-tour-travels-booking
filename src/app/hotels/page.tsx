@@ -326,6 +326,10 @@ function HotelsContent() {
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "directory"}
                             onClick={() => setHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
                     </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
+                    {/* Booking city is a search hint, never a guessed supplier placeId. */}
+                    {hotelMode === "booking" && initialCity && <p role="status" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)]">
+                      Booking search for <strong className="text-[var(--text)]">{initialCity}</strong>. Choose {initialCity} from the Nuitee destination suggestions below, select your stay dates and guests, then open matching supplier hotel results. The separate OSM directory is not booking inventory.
+                    </p>}
                     {/* SEARCH */}
                     {hotelMode === "booking" && <HotelBookingExperience key={currency} currency={currency} />}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
