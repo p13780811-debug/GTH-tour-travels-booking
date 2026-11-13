@@ -68,7 +68,7 @@ const pillars = [
       {label:"Ticket Finder",href:"/tickets",Icon:Ticket},
       {label:"Stadium Guides",href:"/stadiums",Icon:MapPinned},
       {label:"Ticket Categories",href:"/tickets/sports",Icon:Search},
-      {label:"Event Guides",href:"/blog?category=Tickets#journal",Icon:Globe2},
+      {label:"Event Guides",href:"/blog",Icon:Globe2},
     ],
   },
 ] as const;
