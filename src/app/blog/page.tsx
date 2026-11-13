@@ -7,23 +7,24 @@ import { ArrowRight, ArrowUpRight, BookOpen, Compass, Globe2, Hotel, Plane, Sear
 import { blogs, type Blog } from "@/data/blogs";
 import { groundTransportBlogs } from "@/data/blogGroundTransport";
 import {ticketBlogGuides} from "@/data/blogTickets";
+import {ecosystemGuides} from "@/data/blogEcosystem";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const metadata: Metadata = {
-  title: "Travel Journal & Guides | GTH PRO",
-  description: "GTH PRO's travel knowledge platform: expert-style research checklists on flights, hotels, destinations, experiences and secure booking decisions.",
+  title: "GTH PRO Knowledge Hub | Travel, Real Estate & Tender Guides",
+  description: "GTH PRO practical research library for worldwide travel bookings, property due diligence, public tender eligibility, event tickets and supplier handoffs.",
   alternates: { canonical: "/blog" },
   openGraph: {
-    title: "The Global Travel Journal | GTH PRO",
-    description: "Practical, carefully written travel guides connecting destination inspiration to informed decisions.",
+    title: "The Global Knowledge Journal | GTH PRO",
+    description: "Independent global research guides for travel, property and procurement decisions, with source-aware links and supplier disclosures.",
     type: "website",
     images: [{ url: "/images/global-city.jpg", alt: "GTH PRO Global Travel Journal" }],
   },
 };
 
 type Category = Blog["category"] | "All";
-const categories: Category[] = ["All", "Flights", "Hotels", "Experiences", "Planning", "Safety", "Tickets"];
+const categories: Category[] = ["All", "Flights", "Hotels", "Experiences", "Planning", "Safety", "Tickets", "Real Estate", "Tenders"];
 type Props = { searchParams: Promise<{ category?: string | string[]; search?: string | string[] }> };
 const palette = {
   "--bg": "#061426",
@@ -64,13 +65,13 @@ export default async function BlogList({ searchParams }: Props) {
         <div className="mx-auto grid max-w-[1400px] items-center gap-10 px-5 py-14 sm:px-8 md:py-20 lg:min-h-[470px] lg:grid-cols-[1.1fr_.9fr]">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-[#eac671]/40 bg-[#041326]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-[.2em] text-[#efd18d]">
-              <BookOpen size={15} /> GTH PRO / Global Travel Journal
+              <BookOpen size={15} /> GTH PRO / Global Knowledge Journal
             </p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-.04em] sm:text-5xl lg:text-[60px]">
-              Better journeys begin <span className="text-[#f0d38d]">with knowledge.</span>
+              Better decisions begin <span className="text-[#f0d38d]">with knowledge.</span>
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-[#d2dceb] sm:text-base">
-              Destination intelligence, research checklists and helpful explanations for decisions that matter before you book.
+              Independent research for travel, real estate and tender decisions. Understand sources, costs, eligibility and supplier or authority handoffs before acting.
             </p>
             <div className="mt-7 flex flex-wrap gap-3 text-xs">
               <Link href="/destinations" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#eac671]/35 bg-[#0b2037]/80 px-4 text-[#fce5af]">
@@ -115,6 +116,31 @@ export default async function BlogList({ searchParams }: Props) {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/bus" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Bus Routes</Link>
             <Link href="/train" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">Explore Rail Routes</Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="ecosystem-guides" aria-labelledby="ecosystem-guides-heading" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
+        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">One platform · Three pillars</p>
+          <h2 id="ecosystem-guides-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Research guides across GTH PRO</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Original, source-aware articles across our Travel, Real Estate and Tender services. Each guide connects to practical on-site tools and relevant official or verified supplier destinations.</p>
+          <nav aria-label="GTH PRO pillar editorial guides" className="mt-5 grid gap-3 md:grid-cols-3">
+            {[{href:"/blog?category=Planning#journal",label:"Travel planning",desc:"Hotels, transfers, tickets and travel choices"},
+              {href:"/real-estate/guides",label:"Real Estate guides",desc:"Registry records, ownership, due diligence and listings"},
+              {href:"/tender/guides",label:"Tender guides",desc:"Eligibility, bid submissions and public procurement"}].map(item=>
+               <Link key={item.href} href={item.href} className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
+                <span className="text-base font-semibold">{item.label}</span>
+                <span className="mt-2 text-xs text-[var(--text-soft)]">{item.desc}</span>
+               </Link>
+            )}
+          </nav>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {ecosystemGuides.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
+              className="rounded-xl border border-[var(--border)] p-3 text-sm hover:underline">
+              <span className="text-xs font-bold text-[var(--gold)]">{guide.pillar}</span>
+              <span className="mt-1 block font-semibold">{guide.title}</span>
+            </Link>)}
           </div>
         </div>
       </section>
