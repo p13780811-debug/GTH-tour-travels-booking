@@ -31,7 +31,7 @@ import {
  * No synthetic offers, prices, reviews, inventory, ratings or bookings.
  * This component is imported ONLY from /mega-aggregator.
  */
-type Pillar = "travel" | "property" | "tender" | "business";
+type Pillar = "travel" | "property" | "tender" | "ticket" | "business";
 type Selection = "all" | Pillar;
 
 const filters: readonly { key: Selection; label: string }[] = [
@@ -39,6 +39,7 @@ const filters: readonly { key: Selection; label: string }[] = [
   { key: "travel", label: "Travel" },
   { key: "property", label: "Real Estate" },
   { key: "tender", label: "Tenders" },
+  { key: "ticket", label: "Tickets & Events" },
   { key: "business", label: "Partners & Support" },
 ];
 
@@ -51,7 +52,10 @@ const services = [
   { label: "Trains", href: "/train", pillar: "travel", Icon: TrainFront },
   { label: "Buses", href: "/bus", pillar: "travel", Icon: BusFront },
   { label: "Ferries", href: "/ferry", pillar: "travel", Icon: Ship },
-  { label: "Stadium Tickets", href: "/stadiums", pillar: "travel", Icon: Ticket },
+  { label: "Stadium Tickets", href: "/stadiums", pillar: "ticket", Icon: Ticket },
+  { label: "Worldwide Ticket Finder", href: "/tickets", pillar: "ticket", Icon: Ticket },
+  { label: "Sports Tickets", href: "/tickets/sports", pillar: "ticket", Icon: Ticket },
+  { label: "Concert Tickets", href: "/tickets/concerts", pillar: "ticket", Icon: Ticket },
   { label: "Cruises", href: "/cruises", pillar: "travel", Icon: Ship },
   { label: "Airport Explorer", href: "/travel/airports", pillar: "travel", Icon: MapPinned },
   { label: "Tours", href: "/tours", pillar: "travel", Icon: Compass },
@@ -81,7 +85,7 @@ const services = [
 // and the full directory can be expanded without repeating page menus.
 const primaryServiceHrefs = new Set<string>([
   "/hotels", "/flights", "/tours", "/bus", "/train",
-  "/real-estate", "/tender", "/partners",
+  "/real-estate", "/tender", "/tickets", "/partners",
 ]);
 
 export default function EcosystemHub() {
@@ -109,7 +113,7 @@ export default function EcosystemHub() {
                 Everything GTH PRO, in one place.
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">
-                Travel, worldwide real estate discovery and tender intelligence. Select a service to access its existing search, data and tools.
+                Travel, worldwide real estate discovery, tender intelligence and worldwide event tickets. Select a service to access its existing search, data and tools.
               </p>
             </div>
           </div>
