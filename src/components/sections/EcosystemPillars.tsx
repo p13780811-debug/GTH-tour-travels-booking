@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import {mobileAppHref} from "@/lib/mobile/routes";
 import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront, Ticket } from "lucide-react";
 
 const pillars = [
@@ -89,7 +90,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
                 <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
                 <div className="mt-auto pt-5">
                   <p className="border-t border-[var(--border)] pt-3 text-xs font-medium text-[var(--text-soft)]">{detail}</p>
-                  <Link href={href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
+                  <Link href={appHome?(id==="travel"?"/app/destinations":mobileAppHref(href)):href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
                     {cta} <ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
@@ -101,7 +102,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
         <nav aria-label="Popular ecosystem destinations" className="mt-8 flex flex-wrap items-center gap-2">
           <span className="mr-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-soft)]">Quick access</span>
           {quickLinks.map(({title,href,Icon})=>(
-            <Link key={href} href={href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+            <Link key={href} href={appHome?mobileAppHref(href):href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
               <Icon size={15} aria-hidden="true" /> {title}
             </Link>
           ))}

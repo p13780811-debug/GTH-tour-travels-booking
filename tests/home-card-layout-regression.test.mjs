@@ -28,7 +28,8 @@ test("three ecosystem cards show real photos in a compact theme-aware card layou
   assert.match(pillars, /border-\[var\(--border\)\]/);
   assert.match(pillars, /text-\[var\(--text-soft\)\]/);
   assert.doesNotMatch(pillars, /from-black|via-black\/80|bg-slate-950|mt-16/);
-  assert.match(pillars, /<Link href=\{href\} className=/);
+  assert.match(pillars, /href=\{appHome\?\(id==="travel"\?"\/app\/destinations":mobileAppHref\(href\)\):href\}/);
+  assert.match(pillars, /href=\{appHome\?mobileAppHref\(href\):href\}/);
 });
 
 test("Mobile website and PWA Home have explicit single destinations without changing the flagship landing route", () => {
