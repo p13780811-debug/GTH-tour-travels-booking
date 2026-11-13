@@ -44,6 +44,9 @@ export default async function HotelMarketPage({params}:Props){
        <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:market.supplierCity,country:market.countryCode}).toString()} className="gth-btn-gold mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
          <BedDouble size={17} aria-hidden="true"/> Check hotel rooms <ArrowRight size={16} aria-hidden="true"/>
        </Link>
+       <a href="https://hotel.gthproglobal.com/hotels?language=en&currency=INR" target="_blank" rel="noopener noreferrer sponsored" className="mt-4 block w-fit text-xs underline underline-offset-2">
+         Open worldwide Nuitee booking directly (choose your city and dates)
+       </a>
      </div>
    </section>
    <TravelSectionNav/>
