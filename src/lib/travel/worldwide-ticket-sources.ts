@@ -497,8 +497,8 @@ export const worldwideTicketSources: readonly WorldwideTicketSource[] = [
     "keywords": "Jakarta Bandung Bali Surabaya Yogyakarta Indonesia konser event"
   },
   {
-    "id": "sm-tickets-ph",
-    "name": "SM Tickets — Philippines",
+    "id": "ticketmaster-ph",
+    "name": "Ticketmaster — Philippines",
     "region": "Philippines",
     "categories": [
       "concerts",
@@ -506,7 +506,7 @@ export const worldwideTicketSources: readonly WorldwideTicketSource[] = [
       "theatre",
       "festivals"
     ],
-    "url": "https://www.smtickets.com/",
+    "url": "https://ticketmaster.ph/",
     "kind": "ticket-platform",
     "keywords": "Manila Quezon City Cebu Philippines concerts arena"
   },
