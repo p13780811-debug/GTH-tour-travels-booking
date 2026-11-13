@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { blogs, type Blog } from "@/data/blogs";
 import { groundTransportBlogs } from "@/data/blogGroundTransport";
+import {ticketBlogGuides} from "@/data/blogTickets";
 import {listMappedCities} from "@/lib/travel/mappedCities";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 type Category = Blog["category"] | "All";
-const categories: Category[] = ["All", "Flights", "Hotels", "Experiences", "Planning", "Safety"];
+const categories: Category[] = ["All", "Flights", "Hotels", "Experiences", "Planning", "Safety", "Tickets"];
 type Props = { searchParams: Promise<{ category?: string | string[]; search?: string | string[] }> };
 const palette = {
   "--bg": "#061426",
@@ -115,6 +116,25 @@ export default async function BlogList({ searchParams }: Props) {
             <Link href="/bus" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Bus Routes</Link>
             <Link href="/train" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">Explore Rail Routes</Link>
           </div>
+        </div>
+      </section>
+
+      <section id="ticket-guides" aria-labelledby="ticket-guides-heading" className="mx-auto max-w-[1400px] px-5 pt-8 sm:px-8 md:pt-12">
+        <div className="gth-glass rounded-2xl border border-[var(--border)] p-5 sm:p-7">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">GTH PRO Worldwide Tickets</p>
+          <h2 id="ticket-guides-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Ticket buying guides, worldwide</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
+            Practical guides for sports, concerts, theatres, museums, festivals and more, with public ticket sources and relevant GTH PRO travel links.
+            No article claims live seats or guaranteed prices.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {ticketBlogGuides.map(guide=><Link key={guide.slug} href={"/blog/"+guide.slug}
+              className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
+              <span className="text-base font-semibold">{guide.title}</span>
+              <span className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--text-soft)]">Read ticket guide <ArrowRight size={16} aria-hidden="true"/></span>
+            </Link>)}
+          </div>
+          <Link href="/tickets" className="gth-btn-gold mt-5 inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold">Explore Worldwide Ticket Finder</Link>
         </div>
       </section>
 

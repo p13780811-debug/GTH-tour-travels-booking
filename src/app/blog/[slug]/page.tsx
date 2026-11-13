@@ -7,6 +7,9 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Hotel, Plane, ShieldCheck } from "lucide-react";
 import { blogs } from "@/data/blogs";
+import {ticketBlogGuides} from "@/data/blogTickets";
+import TicketBlogLinks from "@/components/travel/TicketBlogLinks";
+import {isPublicLaunch} from "@/lib/seo/site";
 import { siteUrl } from "@/lib/seo/site";
 import JsonLd from "@/components/seo/JsonLd";
 
@@ -22,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!blog) return { title: "Guide not found | GTH PRO", robots: { index: false } };
   return {
     title: `${blog.title} | GTH PRO Travel Guides`,
+    robots: { index: isPublicLaunch(), follow: true },
     description: blog.description,
     openGraph: {
       title: blog.title,
@@ -42,6 +46,7 @@ export default async function BlogPage({ params }: Props) {
     item.category === blog.category).slice(0, 3);
   const more = related.length ? related : blogs.filter((item) => item.slug !== blog.slug).slice(0, 3);
 
+  const ticketGuide=ticketBlogGuides.find(item=>item.slug===slug);
   const articleData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -51,6 +56,8 @@ export default async function BlogPage({ params }: Props) {
     mainEntityOfPage: siteUrl(`/blog/${blog.slug}`),
     publisher: { "@id": siteUrl("/") + "#organization" },
     inLanguage: "en",
+    ...(ticketGuide?{datePublished:ticketGuide.publishedAt,dateModified:ticketGuide.publishedAt,
+      author:{"@type":"Organization",name:"GTH PRO",url:siteUrl("/about")}}:{}),
   };
   const minutes = Math.max(2, Math.ceil(blog.content.trim().split(/\s+/).length / 190));
   const palette = {
@@ -109,6 +116,7 @@ export default async function BlogPage({ params }: Props) {
               {blog.content}
             </ReactMarkdown>
           </div>
+          {ticketGuide&&<TicketBlogLinks slug={ticketGuide.slug}/>}
           <div className="mt-12 rounded-xl border border-[#eac671]/30 bg-[#06182c] p-6">
             <p className="flex items-center gap-2 text-sm font-semibold text-[#ffe09c]"><ShieldCheck size={19} /> Important travel information</p>
             <p className="mt-3 text-sm leading-7 text-[#c6d3e3]">
