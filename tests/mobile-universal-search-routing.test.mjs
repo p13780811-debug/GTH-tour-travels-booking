@@ -15,7 +15,9 @@ function moduleFrom(path,required={}){
  return obj.exports;
 }
 const {destinations}=moduleFrom("src/data/destinations.ts");
-const route=moduleFrom("src/lib/mobile/universal-search.ts",{"@/data/destinations":{destinations}});
+const stadiums=moduleFrom("src/lib/travel/stadiums.ts");
+const venues=moduleFrom("src/lib/travel/stadium-ticket-routing.ts",{"./stadiums":stadiums});
+const route=moduleFrom("src/lib/mobile/universal-search.ts",{"@/data/destinations":{destinations},"@/lib/travel/stadium-ticket-routing":venues});
 const href=(q,c)=>route.resolveUniversalTarget(q,c).href;
 
 test("City hotel queries open Nuitee booking, not the local directory",()=>{
@@ -26,6 +28,14 @@ test("City hotel queries open Nuitee booking, not the local directory",()=>{
  assert.equal(href("Hotels in Mumbai"),"/app/hotels?view=booking&city=Mumbai");
  assert.equal(href("hotels near Palava"),"/app/hotels?view=booking&city=Palava");
  assert.equal(href("The Taj Palace hotel"),"/app/hotels?view=booking&name=The+Taj+Palace");
+});
+test("Eden Gardens routes only to Kolkata reviewed venue, never Australia tours",()=>{
+ assert.equal(href("Eden Gardens"),"/stadiums/eden-gardens");
+ assert.equal(href("Eden Gardens stadium tickets"),"/stadiums/eden-gardens");
+ assert.equal(href("Kolkata Eden Gardens tickets","ticket"),"/stadiums/eden-gardens");
+ assert.equal(href("Eden","ticket"),"/tickets?q=Eden");
+ assert.equal(href("Sweden tickets","ticket"),"/tickets?q=Sweden+tickets");
+ assert.equal(href("Kolkata tickets","ticket"),"/tickets?q=Kolkata+tickets");
 });
 test("existing specialist engines receive compatible query keys",()=>{
  assert.equal(href("road construction tender"),"/app/tenders?q=road+construction");
