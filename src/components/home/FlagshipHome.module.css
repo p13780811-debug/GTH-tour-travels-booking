@@ -1093,7 +1093,7 @@
 @media (max-width: 980px) {
   .proofGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .proofCardDescription { min-height: 0; }
-  .proofCard:last-child { grid-column: 1 / -1; }
+  .proofCard:last-child { grid-column: auto; }
 }
 @media (max-width: 680px) {
   .proofSection { padding: 32px 14px 38px; }
@@ -1105,14 +1105,5 @@
   .site .proofExplore { width: 100%; }
 }
 
-/* Four-pillar flagship layout. Homepage CSS module only; other pages keep global theme. */
-@media (min-width:981px) and (max-width:1330px) { .proofGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (min-width:981px) and (max-width:1330px) {
- .pillars {grid-template-columns:repeat(2,minmax(0,1fr));}
-}
-@media (min-width:681px) and (max-width:980px) {
- .pillars {grid-template-columns:repeat(2,minmax(0,1fr));}
-}
-@media (max-width:680px) {
- .pillars {grid-template-columns:minmax(0,1fr);}
-}
+/* Four approved desktop pillars; preserve the original phone/tablet swipe UX. */
+@media (min-width:981px) and (max-width:1199px) { .proofGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
