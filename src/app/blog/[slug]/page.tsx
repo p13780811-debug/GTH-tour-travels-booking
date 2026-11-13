@@ -70,7 +70,7 @@ export default async function BlogPage({ params }: Props) {
     itemListElement:[
       {"@type":"ListItem",position:1,name:"GTH PRO",item:siteUrl("/")},
       {"@type":"ListItem",position:2,name:ecosystemGuide.pillar+" guides",
-       item:siteUrl(ecosystemGuide.pillar==="Real Estate"?"/real-estate/guides":ecosystemGuide.pillar==="Tenders"?"/tender/guides":"/blog")},
+       item:siteUrl(ecosystemGuide.pillar==="Real Estate"?"/real-estate/guides":ecosystemGuide.pillar==="Tenders"?"/knowledge/tenders":"/blog")},
       {"@type":"ListItem",position:3,name:blog.title,item:siteUrl("/blog/"+blog.slug)}
     ]
   }:null;
@@ -158,7 +158,7 @@ export default async function BlogPage({ params }: Props) {
               <Link href="/destinations" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><Compass size={17} className="text-[#f0d38d]" /> Explore Destinations</Link>
               <Link href="/tickets" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Worldwide Tickets</Link>
               <Link href="/real-estate/guides" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Real Estate research</Link>
-              <Link href="/tender/guides" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Tender research</Link>
+              <Link href="/knowledge/tenders" className="flex min-h-11 items-center gap-3 rounded-xl border border-[#eac671]/15 px-3 text-[#dbe5f1] hover:border-[#eac671]/50"><BookOpen size={17} className="text-[#f0d38d]" /> Tender research</Link>
             </nav>
           </div>
           <div className="rounded-2xl border border-[#eac671]/25 bg-[#0c2037] p-6 text-sm leading-7 text-[#cbd7e6]">
