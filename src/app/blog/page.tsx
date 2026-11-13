@@ -128,7 +128,7 @@ export default async function BlogList({ searchParams }: Props) {
           <nav aria-label="GTH PRO pillar editorial guides" className="mt-5 grid gap-3 md:grid-cols-3">
             {[{href:"/blog?category=Planning#journal",label:"Travel planning",desc:"Hotels, transfers, tickets and travel choices"},
               {href:"/real-estate/guides",label:"Real Estate guides",desc:"Registry records, ownership, due diligence and listings"},
-              {href:"/tender/guides",label:"Tender guides",desc:"Eligibility, bid submissions and public procurement"}].map(item=>
+              {href:"/knowledge/tenders",label:"Tender guides",desc:"Eligibility, bid submissions and public procurement"}].map(item=>
                <Link key={item.href} href={item.href} className="flex min-h-28 flex-col justify-between rounded-xl border border-[var(--border)] p-4 hover:underline">
                 <span className="text-base font-semibold">{item.label}</span>
                 <span className="mt-2 text-xs text-[var(--text-soft)]">{item.desc}</span>
