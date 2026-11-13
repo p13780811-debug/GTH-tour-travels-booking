@@ -22,7 +22,7 @@ test("knowledge hub retains its SEO article filters and pillar links",()=>{
   assert.match(body,/id="ecosystem-guides"/);
   assert.match(body,/id="ticket-guides"/);
   assert.match(body,/id="journal"/);
-  assert.ok(body.includes('"Real Estate","Tenders"'));
+  assert.ok(body.includes('"Real Estate", "Tenders"'));
   assert.ok(body.includes('href:"/knowledge/tenders"'));
   assert.ok(body.includes('href="/real-estate/guides"'));
   assert.ok(body.includes('ticketBlogGuides.slice(0,6)'));
