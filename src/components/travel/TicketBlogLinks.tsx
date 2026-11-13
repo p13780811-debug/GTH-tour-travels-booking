@@ -10,12 +10,13 @@ import {ticketDestinations} from "@/lib/travel/stadium-ticket-destinations";
 export default function TicketBlogLinks({slug}:{slug:string}){
  const guide=ticketBlogGuides.find(article=>article.slug===slug);
  if(!guide)return null;
+ const topic=guide.ticketCategory;
  const providers=worldwideTicketSources.filter(source=>
-   (guide.ticketCategory?source.categories.includes(guide.ticketCategory):
+   (topic?source.categories.includes(topic):
      source.region===guide.market||source.region==="Worldwide"||source.region==="Multiple markets")&&
    isPublicTicketUrl(source.url)
  );
- const sports=guide.ticketCategory==="sports"?
+ const sports=topic==="sports"?
    ticketDestinations.filter(source=>source.kind==="official-tickets"&&isPublicTicketUrl(source.url)).slice(0,4):[];
  const relevant=providers.filter(source=>source.region!=="Worldwide"&&source.region!=="Multiple markets")
    .concat(providers.filter(source=>source.region==="Worldwide"||source.region==="Multiple markets")).slice(0,8);
