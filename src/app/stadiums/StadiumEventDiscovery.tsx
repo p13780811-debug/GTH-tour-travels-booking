@@ -47,7 +47,7 @@ export default function StadiumEventDiscovery({events}:Props){
       <p role="status" aria-live="polite" className="text-sm text-[var(--text-soft)]">{results.length} reviewed upcoming {results.length===1?"event":"events"}</p>
       {(query||sport||country||from)&&<button type="button" onClick={()=>{setQuery("");setSport("");setCountry("");setFrom("");}} className="gth-btn min-h-11 rounded-xl px-4 text-sm">Clear filters</button>}
     </div>
-    {results.length===0?<div className="gth-glass rounded-2xl border border-[var(--border)] p-5"><p className="font-semibold">No matching reviewed events</p><p className="mt-2 text-sm text-[var(--text-soft)]">Try another filter or browse official venue calendars below. This is not a claim that no tickets exist.</p></div>:
+    {results.length===0?<div className="gth-glass rounded-2xl border border-[var(--border)] p-5"><p className="font-semibold">No matching reviewed events</p><p className="mt-2 text-sm text-[var(--text-soft)]">Try another filter or browse official venue calendars below. This is not a claim that no tickets exist.</p><a href="#official-stadium-sources" className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Find official league and organizer sources</a></div>:
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{results.map(e=><article key={e.id} className="gth-glass flex flex-col rounded-2xl border border-[var(--border)] p-5">
       <p className="flex items-center gap-2 text-xs font-semibold text-[var(--gold)]"><CalendarDays size={16} aria-hidden="true"/>{e.sport}</p>
       <h3 className="mt-3 text-lg font-bold">{e.title}</h3>
