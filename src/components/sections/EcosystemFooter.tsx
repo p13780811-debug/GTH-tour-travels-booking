@@ -16,6 +16,11 @@ const columns = [
     ["Tender Gateway","/tender"], ["Tender Readiness","/tender#readiness"],
     ["Travel Guides","/guides"], ["Editorial","/blog"],
   ] },
+  { heading: "Tickets & Events", links: [
+    ["Worldwide Ticket Finder","/tickets"],["Stadium & Venue Guides","/stadiums"],
+    ["Sports Tickets","/tickets/sports"],["Concert Tickets","/tickets/concerts"],
+    ["Ticket Buying Guides","/blog?category=Tickets#journal"],
+  ] },
   { heading: "Company & Support", links: [
     ["About GTH PRO","/about"], ["Verification & Transparency","/verification"], ["Contact","/contact"], ["Travel Insurance","/insurance"],
     ["Privacy Policy","/privacy-policy"], ["Terms & Conditions","/terms-and-conditions"],
@@ -36,13 +41,13 @@ export default function EcosystemFooter() {
               <Globe2 size={27} className="text-[var(--gold)]" aria-hidden="true" /> GTH <span className="gold-text">PRO</span>
             </Link>
             <p className="mt-5 text-sm leading-7 text-[var(--text-soft)]">
-              Global Technical Hub connects Tours & Travels, Real Estate and developing Tender Intelligence in one ecosystem.
+              Global Technical Hub connects Travel, Real Estate, Tender Intelligence and worldwide ticket-source discovery in one ecosystem.
             </p>
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-2 text-xs text-[var(--text-soft)]">
               <ShieldCheck size={15} aria-hidden="true" /> Confirm bookings and policy terms with each provider
             </div>
           </div>
-          <nav aria-label="Ecosystem footer links" className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4">
+          <nav aria-label="Ecosystem footer links" className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 xl:grid-cols-5">
             {columns.map(({heading,links})=>(
               <div key={heading}>
                 <h2 className="text-sm font-semibold text-[var(--text)]">{heading}</h2>
