@@ -39,7 +39,7 @@ export default function StadiumsPage() {
       </header>
       <nav aria-label="Explore stadium tickets" className="mt-5 flex flex-wrap gap-3">
         <a href="#stadium-event-discovery" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Explore upcoming events</a>
-        <a href="#global-ticket-directory" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Browse stadiums</a>
+        <a href="#stadium-directory" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Browse stadiums</a>
         <a href="#stadium-exact-offers-heading" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Reviewed ticket experiences</a>
       </nav>
       <StadiumPartnerDiscovery/>
