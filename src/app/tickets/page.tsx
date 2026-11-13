@@ -13,7 +13,10 @@ export const metadata:Metadata={
  alternates:{canonical:siteUrl("/tickets")},
  robots:{index:isPublicLaunch(),follow:true},
 };
-export default function TicketsPage(){
+type Props={searchParams:Promise<{q?:string|string[]}>};
+export default async function TicketsPage({searchParams}:Props){
+ const params=await searchParams;
+ const initialQuery=typeof params.q==="string"?params.q.slice(0,100):"";
  return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
   <TravelSectionNav/>
   <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
@@ -29,7 +32,7 @@ export default function TicketsPage(){
     {ticketCategories.map(category=><Link key={category.slug} href={"/tickets/"+category.slug}
       className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">{category.label}</Link>)}
    </nav>
-   <WorldwideTicketExplorer/>
+   <WorldwideTicketExplorer initialQuery={initialQuery}/>
    <section id="ticket-editorial-guides" aria-labelledby="ticket-editorial-heading" className="gth-glass mt-8 rounded-2xl border border-[var(--border)] p-5 sm:p-7">
      <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Knowledge before booking</p>
      <h2 id="ticket-editorial-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Worldwide ticket guides</h2>
