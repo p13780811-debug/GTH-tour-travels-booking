@@ -53,7 +53,7 @@ test("every ecosystem link points to an existing app route; country-filtered ten
  assert.match(service,/const tender=new URLSearchParams\(\{scope:"world"\}\)/);
  assert.match(service,/if\(country\)tender\.set\("country",country\)/);
  assert.match(service,/new URLSearchParams\(\{city:place\.name\}\)/);
- assert.match(service,/href:"\/hotels\?destination="\+slug/);
+ assert.match(service,/href:"\/hotels\?"\+new URLSearchParams\(\{view:"booking",city:place\.name/);
  assert.ok(service.includes('href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover"'));
  assert.ok(service.includes('href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover"'));
 });
