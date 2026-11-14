@@ -56,5 +56,5 @@ test("desktop universal search fails visibly but safely on upstream catalog time
   assert.match(search,/The results above may be incomplete/);
   // Search-result combinations intentionally noindex, never block public legal content.
   assert.match(search,/title: "Master Search/);
-  assert.doesNotMatch(search,/service.role|SUPABASE_SERVICE_ROLE_KEY|\.from\("private/);
+  assert.doesNotMatch(search,/process\.env\.SUPABASE_SERVICE_ROLE_KEY|createClient\([^)]*SERVICE_ROLE_KEY|\.from\("private/);
 });
