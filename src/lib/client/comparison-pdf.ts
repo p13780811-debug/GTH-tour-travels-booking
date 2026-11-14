@@ -104,3 +104,21 @@ export function downloadComparisonPdf(kind:string,items:ComparisonItem[]){
  const a=document.createElement("a");a.href=objectUrl;a.download=`gth-pro-${clean(kind,28).toLowerCase().replace(/[^a-z0-9]+/g,"-")}-comparison.pdf`;
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),3000);
 }
+
+
+/** Same locally rendered one-page PDF engine, with a fixed first-party CTA. */
+export function downloadTenderReadinessCanvas(canvas:HTMLCanvasElement){
+ if(typeof window==="undefined"||canvas.width!==1684||canvas.height!==1190)throw Error("Invalid report canvas");
+ const payload=canvas.toDataURL("image/jpeg",0.85).split(",")[1];
+ if(!payload)throw Error("Report canvas could not be encoded");
+ const jpeg=Uint8Array.from(atob(payload),char=>char.charCodeAt(0));
+ const pdf=pdfFromJpeg(jpeg,[{
+  url:"https://gthproglobal.com/tender/services?service=eligibility_review",
+  x:145,y:975,w:1390,h:110
+ }]);
+ const objectUrl=URL.createObjectURL(new Blob([pdf],{type:"application/pdf"}));
+ const a=document.createElement("a");
+ a.href=objectUrl;a.download="gth-pro-bid-readiness-report.pdf";
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(objectUrl),3000);
+}
