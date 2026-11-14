@@ -4,6 +4,7 @@ import {useEffect,useRef,useState} from "react";
 import {Check,Search,BookmarkPlus,BookmarkCheck,X} from "lucide-react";
 import {catalogSlugs,MAX_CATALOG_PROJECTS} from "@/lib/real-estate/broker-catalog";
 import {normalizeSaved,normalizeSavedTitles,SAVED_KEY,SAVED_TITLES_KEY} from "@/lib/real-estate/saved";
+import BrokerVoiceInput from "@/components/real-estate/BrokerVoiceInput";
 
 type Project={slug:string;title:string;city:string;source:"registry"|"listing"|"saved"};
 type Source="registry"|"listing";
@@ -43,7 +44,7 @@ export default function BrokerProjectPicker({selected,onChange}:{selected:string
    controller.current?.abort();controller.current=null;setLoading(false);
    if(showSaved){setShowSaved(false);return;}
    try{
-     const slugs=normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY)||"[]"));
+     const slugs=normalizeSaved(JSON.parse(localStorage.getItem(SAVED_KEY)||"[]")).filter(slug=>catalogSlugs(slug)[0]===slug);
      const names=normalizeSavedTitles(JSON.parse(localStorage.getItem(SAVED_TITLES_KEY)||"{}"));
      setSaved(slugs.map(slug=>({slug,title:names[slug]||readable(slug),city:"",source:"saved"})));
      setLabels(old=>({...names,...old}));
@@ -100,6 +101,7 @@ export default function BrokerProjectPicker({selected,onChange}:{selected:string
      </select>
      <button type="submit" disabled={loading} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:opacity-50"><Search size={16}/>{loading?"Searching…":"Search projects"}</button>
    </form>
+   <BrokerVoiceInput onTranscript={text=>{setQuery(text);setResults([]);setNotice("");}}/>
    <button type="button" aria-expanded={showSaved} onClick={loadSaved} className="gth-btn mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"><BookmarkPlus size={17}/>Pick from Saved Properties</button>
    {notice&&<p role="status" className="mt-3 text-xs text-[var(--text-soft)]">{notice}</p>}
    {(showSaved||results.length>0)&&<div role="region" aria-label={showSaved?"Saved property choices":"Project search results"} className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-2">
