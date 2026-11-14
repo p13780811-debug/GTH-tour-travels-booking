@@ -11,6 +11,7 @@ import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, da
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
 import { tenderFilterHref } from "@/lib/tender/urls";
 import { TenderWorkspaceToolbar } from "@/components/tender/TenderDiscoveryActions";
+import BidReadinessReport from "@/components/tender/BidReadinessReport";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Tender Opportunities & Procurement Intelligence | GTH PRO",
@@ -181,6 +182,7 @@ export default async function TenderPage({searchParams}: Props) {
         </aside>
       </div>
     </section>
+    <div className="px-4 sm:px-6"><BidReadinessReport/></div>
     {result?.ok?<TenderMarketOverview filters={searchFilters} language={language} stats={marketStats} view="status"/>:null}
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14" aria-labelledby="tender-find">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
