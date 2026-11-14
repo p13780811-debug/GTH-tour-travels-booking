@@ -5,6 +5,7 @@ import dynamic from "next/dynamic"
 import Link from "next/link"
 import JourneyNav from "./JourneyNav"
 import SmartSynergy from "@/components/ecosystem/SmartSynergy"
+import LocalWatchButton from "@/components/engagement/LocalWatchButton"
 import LocalityIntelligence from "@/components/real-estate/LocalityIntelligence"
 import { CommutePlanner } from "./DecisionTools"
 import { MapPin, Share2, ArrowLeft, Building2, MessageSquare, BadgeCheck, FileCheck2 } from "lucide-react"
@@ -76,6 +77,7 @@ export default function PropertyDetailClient({ slug, initialData, related = [], 
             <div className="flex gap-3 items-center"><SavePropertyButton slug={slug} className="gth-btn inline-flex items-center justify-center" /><button onClick={share} className={`gth-btn inline-flex items-center justify-center gap-2`}><Share2 size={16} aria-hidden="true" />Share</button><Link className="gth-btn inline-flex items-center justify-center" href={`/real-estate/${encodeURIComponent(slug)}/dossier`}>Export dossier</Link></div>
         </div>
         {shareMessage && <p role="status" className="mb-4">{shareMessage}</p>}
+        {!isRegistryProject&&<LocalWatchButton kind="property" id={slug} title={property.title} path={"/real-estate/"+encodeURIComponent(slug)} snapshot={property.formatted_price||""}/>}
         <header className={styles.projectHeader}>
             <div><h1 className={styles.projectTitle}>{property.title}</h1><p className="flex items-center gap-2 mt-5 opacity-70"><MapPin size={18} className="gold-text shrink-0" aria-hidden="true" />{[property.location || property.city, property.country && property.country !== "Country not provided" ? property.country : ""].filter(Boolean).join(" · ") || "Location not provided"}</p><div className={styles.trustPills}>{isRegistryProject && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Registry record</span>}{hasInventory && <span className={styles.trustPill}><FileCheck2 size={14} aria-hidden="true" />Reviewed inventory</span>}{property.verified && <span className={styles.trustPill}><BadgeCheck size={14} aria-hidden="true" />GTH Verified</span>}</div></div>
             {isRegistryProject ? <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Project status</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{hasInventory ? `${inventory.length} active ${inventory.length === 1 ? "listing" : "listings"}` : property.data_quality_limited ? "Details pending review" : "Registry only"}</p><p className="text-sm opacity-70 mt-3">{hasInventory ? "Published inventory below is separate from the official MahaRERA registry record." : "No active unit inventory, current price or listing contact has been supplied to GTH PRO."}</p></div> : <div className="gth-glass rounded-3xl p-6"><p className="text-xs uppercase tracking-widest opacity-70">Listed price</p><p className="gold-text text-2xl md:text-3xl font-bold mt-3">{property.formatted_price || "Price on request"}</p><p className="text-sm opacity-70 mt-3">Confirm current pricing and availability.</p></div>}

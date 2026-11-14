@@ -2,7 +2,7 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Clock3, Compass, Hotel, MapPin, Plane, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, Compass, Hotel, MapPin, Plane, ShieldCheck, Ticket } from "lucide-react";
 import { airportByCode, airports } from "@/lib/travel/nuiteeAirportDirectory";
 
 type Props = { params: Promise<{ iata: string }> };
@@ -46,6 +46,11 @@ export default async function AirportGuidePage({ params }: Props) {
   const otherAirports = airports
     .filter(item => item.code !== airport.code && item.countryCode === airport.countryCode)
     .slice(0, 5);
+  // Destination hints go to existing discovery pages, without new API requests.
+  // No hotel inventory, event ticket availability or proximity is inferred.
+  const hotelHref="/hotels?"+new URLSearchParams({view:"booking",city:airport.city,country:airport.countryCode});
+  const tourHref="/tours?"+new URLSearchParams({city:airport.city});
+  const ticketsHref="/tickets?"+new URLSearchParams({q:airport.city});
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -101,9 +106,10 @@ export default async function AirportGuidePage({ params }: Props) {
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {[
                   { title: "Flight dates and fares", text: "Use the flight provider search to confirm available routes, final prices and baggage conditions. Airport reference data is not a flight offer.", href: "/flights", Icon: Plane },
-                  { title: "Accommodation", text: "Compare hotels based on arrival time and where you need to stay. Confirm the property location with the provider.", href: "/hotels", Icon: Hotel },
+                  { title: "Accommodation", text: `Start a hotel booking search for ${airport.city}. Confirm the exact destination and dates with the booking provider.`, href: hotelHref, Icon: Hotel },
                   { title: "Ground transfer", text: "Check pickup location, meeting instructions, luggage policy and the correct airport code before booking transportation.", href: "/transfers", Icon: MapPin },
-                  { title: "Destination activities", text: "Explore tours and attractions, then check availability and terms with the operator or booking partner.", href: "/tours", Icon: Compass },
+                  { title: "Destination activities", text: `Browse source-backed ${airport.city} tours and check each product with its operator.`, href: tourHref, Icon: Compass },
+                  { title: "Stadium tickets & events", text: `Search curated ${airport.city} venue and ticket sources. Results are guides, not guaranteed live events or seats.`, href: ticketsHref, Icon: Ticket },
                 ].map(({ title, text, href, Icon }) => (
                   <Link key={href} href={href} className="gth-glass rounded-2xl border border-[var(--border)] p-5">
                     <Icon size={23} aria-hidden="true" /><h3 className="mt-3 text-lg font-bold">{title}</h3>

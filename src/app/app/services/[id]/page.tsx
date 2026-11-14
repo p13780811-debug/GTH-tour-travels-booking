@@ -68,6 +68,11 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
     note: "Any estimate is indicative; confirm finance eligibility, costs and property facts independently.",
     cta: "Open property tools",
   },
+  "broker-catalog": {
+    detail: "Generate an offline branded QR for public property research records; disclose your business number only with consent.",
+    note: "A self-published collection is not a verified broker endorsement, marketing authorization or live property inventory.",
+    cta: "Create broker QR catalog",
+  },
   "saved-tenders": {
     detail: "Review tenders saved in your existing GTH PRO Tender workspace.",
     note: "Official procurement notices and eligibility remain controlled by issuing authorities.",

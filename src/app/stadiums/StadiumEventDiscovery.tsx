@@ -2,6 +2,7 @@
 
 import {useMemo,useState} from "react";
 import Link from "next/link";
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
 import {ArrowUpRight,CalendarDays,Search} from "lucide-react";
 
 export type StadiumDiscoveryEvent={
@@ -54,6 +55,7 @@ export default function StadiumEventDiscovery({events}:Props){
       <p className="mt-2 text-sm text-[var(--text-soft)]">{e.venue} · {e.city}, {e.country}</p>
       <p className="mt-2 text-sm"><time dateTime={e.starts}>{e.starts}</time>{e.ends&&<> – <time dateTime={e.ends}>{e.ends}</time></>}</p>
       <div className="mt-auto flex flex-wrap gap-3 pt-5"><a href={e.officialUrl} target="_blank" rel="noopener noreferrer" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Official event source <ArrowUpRight size={16} aria-hidden="true"/></a><Link prefetch={false} href={"/stadiums/"+e.venueSlug} className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm">Venue guide</Link></div>
+      <ShareFeedbackActions title={e.title} path={"/stadiums/"+encodeURIComponent(e.venueSlug)}/>
     </article>)}</div>}
     <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">Dates and venues may change. Organizers control ticket release, eligibility and prices. No on-site checkout or unverified availability is shown.</p>
   </section>;

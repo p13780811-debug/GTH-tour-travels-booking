@@ -6,6 +6,8 @@ import {projectPhoto} from "@/lib/property-media/published-media"
 import Link from "next/link"
 import { MapPin, BedDouble, Bath, Maximize, BadgeCheck, FileCheck2 } from "lucide-react"
 import SavePropertyButton from "./SavePropertyButton"
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions"
+import LocalWatchButton from "@/components/engagement/LocalWatchButton"
 import PropertyImage from "./PropertyImage"
 import styles from "./Listing.module.css"
 
@@ -28,6 +30,8 @@ export default function PropertyCardPro({ p }: any) {
     <dl className={styles.cardFacts}>{[{label:"Beds",value:p.beds || "—",Icon:BedDouble},{label:"Baths",value:p.baths || "—",Icon:Bath},{label:"Reported area",value:p.sqft ? `${p.sqft} ft² · ${Math.round(Number(p.sqft) * 0.092903)} m²` : "—",Icon:Maximize}].map(({label,value,Icon}) => <div key={label}><Icon size={16} className="gold-text" aria-hidden="true" /><dt className="sr-only">{label}</dt><dd>{value} {label === "Beds" ? "beds" : label === "Baths" ? "baths" : ""}</dd></div>)}</dl>
    </>}
    <div className={styles.cardFooter}><Link href={detailUrl} className="text-sm underline">{registryOnly ? "View project record" : "View details"}</Link>{registryOnly ? <Link href={`${detailUrl}#enquiry`} className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>Request details</Link> : <Link href={`${detailUrl}#enquiry`} className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>Enquire</Link>}</div>
+   <ShareFeedbackActions title={typeof p.title==="string"?p.title:"Property listing"} path={detailUrl}/>
+   {!registryOnly&&<LocalWatchButton kind="property" id={p.slug} title={typeof p.title==="string"?p.title:"Property listing"} path={detailUrl} snapshot={typeof p.formatted_price==="string"?p.formatted_price:""}/>}
    {registryOnly && officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className="text-xs underline opacity-70 mt-3 self-start">Official MahaRERA source</a>}
   </div>
  </article>

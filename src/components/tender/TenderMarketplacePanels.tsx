@@ -12,6 +12,8 @@ import { tenderText } from "@/lib/tender/i18n";
 import { marketplaceText } from "@/lib/tender/marketplace-copy";
 import { tenderFilterHref } from "@/lib/tender/urls";
 import { TenderSaveCompare } from "./TenderDiscoveryActions";
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
+import LocalWatchButton from "@/components/engagement/LocalWatchButton";
 
 const categories = [
   {key:"works",Icon:Hammer},
@@ -164,6 +166,8 @@ export function TenderMarketCard({tender,language}:{
     </div>
     <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--text-soft)]"><ShieldCheck size={14} aria-hidden="true"/>{m("deadlineNote")}</p>
     <TenderSaveCompare id={tender.id} title={tender.title}/>
+    <ShareFeedbackActions title={tender.title} path={"/tender/"+encodeURIComponent(tender.id)}/>
+    <LocalWatchButton kind="tender" id={tender.id} title={tender.title} path={"/tender/"+encodeURIComponent(tender.id)} deadline={tender.deadline_at}/>
     <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
       <Link prefetch={false} href={"/tender/"+tender.id}
         className="gth-btn inline-flex items-center gap-2 justify-center">

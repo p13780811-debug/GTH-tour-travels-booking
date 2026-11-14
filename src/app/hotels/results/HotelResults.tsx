@@ -2,6 +2,8 @@
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
+import ComparisonPdfButton from "@/components/engagement/ComparisonPdfButton";
 import {HOTEL_TYPES} from "@/components/hotel/HotelCatalogPulse";
 import {hotelSearchParams,validatedHotelStay,type HotelSearchScope} from "@/lib/travel/hotel-search-params";
 import {ArrowRight,BedDouble,Hotel,MapPin} from "lucide-react";
@@ -18,12 +20,14 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const placeLabel=effectiveCity||effectiveDestination.replaceAll("-"," ")||effectiveName||effectiveCountry||"your search";
  const stay=validatedHotelStay(scope?.checkin,scope?.checkout,scope?.adults);
  const staySuffix=stay?"?"+new URLSearchParams({checkin:stay.checkin,checkout:stay.checkout,...(stay.adults?{adults:String(stay.adults)}:{})}).toString():"";
+ const hotelPath=(hotel:Stay)=>hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix;
  const filterHref=(overrides:Partial<HotelSearchScope>)=>"/hotels/results?"+hotelSearchParams({
   city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,
   category:effectiveCategory,sort:effectiveSort,source:effectiveSource,
   checkin:scope?.checkin,checkout:scope?.checkout,adults:scope?.adults,...overrides
  },1).toString();
  const [items,setItems]=useState<Stay[]>([]);
+ const [selectedHotelIds,setSelectedHotelIds]=useState<string[]>([]);
  const [retryCount,setRetryCount]=useState(0);
  const requestKey=JSON.stringify([effectiveCity,effectiveDestination,effectiveName,effectiveCountry,effectiveCategory,effectiveSort,effectiveSource]);
  const activeKey=useRef(requestKey);
@@ -36,7 +40,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  },n);
  useEffect(()=>{
   const controller=new AbortController();
-  setItems([]);setLoading(true);setLoadingMore(false);setError("");setPage(1);setTotal(0);setMore(false);
+  setItems([]);setSelectedHotelIds([]);setLoading(true);setLoadingMore(false);setError("");setPage(1);setTotal(0);setMore(false);
   fetch(query(1),{signal:controller.signal,cache:"no-store"}).then(async r=>{
    if(!r.ok)throw Error("Hotel catalog unavailable");const v:unknown=await r.json();
    if(!Array.isArray(v))throw Error("Invalid hotel data");
@@ -61,6 +65,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
   }catch{if(activeKey.current===startedFor)setError("More hotels could not be loaded; retry.");}
   finally{if(activeKey.current===startedFor)setLoadingMore(false);}
  }
+ const comparedHotels=items.filter(hotel=>selectedHotelIds.includes(String(hotel.id)));
  if(loading)return <p role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">Searching hotel listings for {placeLabel}…</p>;
  if(error&&!items.length)return <div role="alert" className="gth-glass rounded-2xl border border-[var(--border)] p-6 text-sm">
   <p>{error}</p>
@@ -76,11 +81,16 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  </div>;
  return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
+  {!compactRail&&<section aria-label="Compare hotels" className="gth-glass flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] p-4">
+    <p className="text-xs text-[var(--text-soft)]">{selectedHotelIds.length}/3 selected · Source-based hotel comparison only; no live prices or availability</p>
+    <ComparisonPdfButton kind="hotel" items={comparedHotels.map(hotel=>({title:hotel.name,path:hotelPath(hotel),fields:{"Location":[hotel.city,hotel.country].filter(Boolean).join(", ")||"Not recorded","Category":hotel.category||"Not recorded","Source":hotel.source||"Not recorded","Booking link":hotel.booking_ready?"Reviewed exact partner handoff":"No reviewed exact partner handoff","Room rate":"Not verified","Availability":"Not verified"}}))}/>
+    {selectedHotelIds.length>0&&<button className="gth-btn min-h-11 rounded-xl px-4" type="button" onClick={()=>setSelectedHotelIds([])}>Clear comparison</button>}
+  </section>}
   
   {compactRail&&<div role="region" aria-label={"Hotels in "+city+" horizontal cards"} tabIndex={0}
     className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
-    {items.map((hotel)=><Link key={String(hotel.id)} href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined}
-      className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg">
+    {items.map((hotel)=><article key={String(hotel.id)} className="w-60 shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1"><Link href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined}
+      className="group flex h-64 w-full snap-start flex-col overflow-hidden rounded-2xl text-[var(--text)] transition hover:-translate-y-1">
       <div className="relative h-32 shrink-0 overflow-hidden bg-[var(--bg-soft)]">
         <HotelPropertyImage src={hotel.image} name={hotel.name}
           className="h-full w-full object-cover"
@@ -92,7 +102,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
         <p className="mt-1 line-clamp-1 flex items-center gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13} aria-hidden="true"/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
         <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">{hotel.booking_ready?"Open exact partner hotel":"View hotel & source"} <ArrowRight size={15}/></span>
       </div>
-    </Link>)}
+    </Link><div className="px-2 pb-2"><ShareFeedbackActions title={hotel.name} path={hotelPath(hotel)}/></div></article>)}
   </div>}
 
   {!compactRail&&<nav aria-label="Mobile accommodation categories" className="flex gap-2 overflow-x-auto pb-2 lg:hidden">
@@ -152,6 +162,10 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
       <Link href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">{hotel.booking_ready?"Open verified partner hotel":"View hotel & source"} <ArrowRight size={16}/></Link>
       <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "This exact hotel has a reviewed booking partner link" : "No exact partner booking link yet"}</p>
+     </div>
+     <div className="mt-2 flex flex-wrap items-center gap-3">
+       <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={selectedHotelIds.includes(String(hotel.id))} disabled={!selectedHotelIds.includes(String(hotel.id))&&selectedHotelIds.length>=3} onChange={e=>setSelectedHotelIds(old=>e.target.checked?[...old,String(hotel.id)]:old.filter(id=>id!==String(hotel.id)))} />Compare</label>
+       <ShareFeedbackActions title={hotel.name} path={hotelPath(hotel)}/>
      </div>
     </div>
    </article>)}

@@ -7,6 +7,13 @@ on:
       - "src/components/mobile/**"
       - "src/lib/mobile/**"
       - "scripts/qa-app-unified-journey.mjs"
+      - "scripts/qa-growth-bundle.mjs"
+      - "src/components/engagement/**"
+      - "src/components/real-estate/BrokerCatalogGenerator.tsx"
+      - "src/app/real-estate/broker-catalog/**"
+      - "src/app/real-estate/mini-catalog/**"
+      - "src/app/hotels/results/HotelResults.tsx"
+      - "src/lib/client/**"
       - ".github/workflows/gth-app-unified-journey-qa.yml"
   push:
     branches: [main]
@@ -15,6 +22,13 @@ on:
       - "src/components/mobile/**"
       - "src/lib/mobile/**"
       - "scripts/qa-app-unified-journey.mjs"
+      - "scripts/qa-growth-bundle.mjs"
+      - "src/components/engagement/**"
+      - "src/components/real-estate/BrokerCatalogGenerator.tsx"
+      - "src/app/real-estate/broker-catalog/**"
+      - "src/app/real-estate/mini-catalog/**"
+      - "src/app/hotels/results/HotelResults.tsx"
+      - "src/lib/client/**"
       - ".github/workflows/gth-app-unified-journey-qa.yml"
   workflow_dispatch:
 permissions:
@@ -53,6 +67,8 @@ jobs:
           if [ "$ok" -ne 1 ]; then tail -100 /tmp/gth-app-dev.log; exit 1; fi
       - name: Android size and actual discovery to Research Desk interactions
         run: node scripts/qa-app-unified-journey.mjs
+      - name: Real mobile browser growth bundle — QR, PDF and WhatsApp share
+        run: node scripts/qa-growth-bundle.mjs
       - name: Capture QA screenshots
         if: always()
         uses: actions/upload-artifact@v4

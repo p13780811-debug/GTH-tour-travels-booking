@@ -15,6 +15,7 @@ export const appServices=[
  {id:"esim",label:"Travel eSIM",href:"/flights/out/yesim",pillar:"travel",icon:"sim",keywords:"data internet roaming connectivity"},
  {id:"saved-property",label:"Saved properties",href:"/real-estate/saved",pillar:"property",icon:"heart",keywords:"shortlist homes"},
  {id:"property-tools",label:"Property tools",href:"/real-estate/tools",pillar:"property",icon:"calculator",keywords:"emi repayment planning"},
+ {id:"broker-catalog",label:"Broker QR catalog",href:"/real-estate/broker-catalog",pillar:"property",icon:"building",keywords:"agent promoter QR marketing catalog share"},
  {id:"saved-tenders",label:"Saved tenders",href:"/tender/saved",pillar:"tender",icon:"bookmark",keywords:"shortlist watchlist"},
  {id:"tender-help",label:"Tender services",href:"/tender/services",pillar:"tender",icon:"file",keywords:"help assistance document quote"},
 ] as const;

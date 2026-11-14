@@ -84,7 +84,44 @@ const reviewedPublicHandoffs=new Set([
  "tests/pr204-handoff-integrity.test.mjs",
  "tests/worldwide-ticket-sources.test.mjs"
 ]);
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path));
+// Precisely scoped, independently tested PR #211 growth additions. This
+// branch adds browser-only share/QR/PDF/watch tools without changing supplier
+// SDKs, global CSS, private APIs, database policies or existing booking hosts.
+const reviewedGrowthFiles=new Set([
+ ".github/workflows/context-links-sharing-qa.yml",
+ ".github/workflows/gth-app-unified-journey-qa.yml",
+ ".github/workflows/gth-tender-portal-upgrade.yml",
+ "scripts/qa-growth-bundle.mjs",
+ "src/app/app/services/[id]/page.tsx",
+ "src/app/flights/page.tsx",
+ "src/app/real-estate/broker-catalog/page.tsx",
+ "src/app/real-estate/mini-catalog/page.tsx",
+ "src/app/real-estate/registry/compare/page.tsx",
+ "src/app/real-estate/saved/page.tsx",
+ "src/app/real-estate/tools/page.tsx",
+ "src/app/stadiums/StadiumEventDiscovery.tsx",
+ "src/app/stadiums/StadiumUpcomingEvents.tsx",
+ "src/app/travel/airports/[iata]/page.tsx",
+ "src/components/engagement/ComparisonPdfButton.tsx",
+ "src/components/engagement/LocalWatchButton.tsx",
+ "src/components/engagement/ShareFeedbackActions.tsx",
+ "src/components/mobile/AppInstall.tsx",
+ "src/components/real-estate/BrokerCatalogGenerator.tsx",
+ "src/components/real-estate/PropertyCardPro.tsx",
+ "src/components/real-estate/PropertyDetailClient.tsx",
+ "src/components/tender/TenderMarketplacePanels.tsx",
+ "src/components/tender/TenderSavedWorkspace.tsx",
+ "src/lib/client/comparison-pdf.ts",
+ "public/sw.js",
+ "src/lib/client/vendor/qrcodegen.ts",
+ "src/lib/mobile/app-dashboard.ts",
+ "src/lib/real-estate/broker-catalog.ts",
+ "tests/automated-context-links-sharing.test.mjs",
+ "tests/growth-conversion-bundle.test.mjs",
+ "tests/mobile-app-handoff-safety.test.mjs",
+ ".github/workflows/gth-consolidation-gates.yml"
+]);
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path));
 if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");

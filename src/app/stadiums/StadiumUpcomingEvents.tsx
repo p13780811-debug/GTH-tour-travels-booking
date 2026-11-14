@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
 import {ArrowUpRight, CalendarDays, ShieldCheck} from "lucide-react";
 import {stadiums,upcomingStadiumEvents} from "@/lib/travel/stadiums";
 
@@ -48,6 +49,7 @@ export default function StadiumUpcomingEvents(){
             Venue & ticket sources
           </Link>
         </div>
+        <ShareFeedbackActions title={event.label} path={"/stadiums/"+encodeURIComponent(venue.slug)}/>
       </article>)}
     </div>:<div className="gth-glass mt-5 rounded-2xl border border-[var(--border)] p-5">
       <p className="font-semibold">No future dated events in our reviewed shortlist.</p>
