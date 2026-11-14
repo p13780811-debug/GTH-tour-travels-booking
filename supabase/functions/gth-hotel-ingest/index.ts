@@ -94,13 +94,22 @@ Deno.serve(async req=>{
   if(!key||Deno.env.get("SUPABASE_URL")!==ORIGIN)
    return Response.json({error:"Importer temporarily unavailable"},{status:503,headers:HEADERS});
   if(records.length){
-   const response=await fetch(ORIGIN+"/rest/v1/hotel_catalog?on_conflict=source,source_id",{
-    method:"POST",headers:{
+   // Repeated region visits must not rewrite unchanged accommodations,
+   // reset licensed photo enrichment or amplify catalog database writes.
+   // Source corrections require a separate reviewed reconciliation flow.
+   let response:Response;
+   try{
+    response=await fetch(ORIGIN+"/rest/v1/hotel_catalog?on_conflict=source,source_id",{
+     method:"POST",headers:{
       apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",
-      Prefer:"resolution=merge-duplicates,return=minimal"
-    },body:JSON.stringify(records),signal:AbortSignal.timeout(15000)
-   });
-   if(!response.ok)return Response.json({error:"Catalog write failed"},{status:502,headers:HEADERS});
+      Prefer:"resolution=ignore-duplicates,return=minimal"
+     },body:JSON.stringify(records),signal:AbortSignal.timeout(10000)
+    });
+   }catch{
+    return Response.json({error:"Catalog backend temporarily unavailable"},{status:503,headers:HEADERS});
+   }
+   if(!response.ok)return Response.json({error:"Catalog write unavailable"},
+    {status:response.status>=500?503:502,headers:HEADERS});
   }
   return Response.json({accepted:records.length,rejected,source:"OpenStreetMap",verified_room_inventory:false},
     {headers:HEADERS});
