@@ -100,7 +100,21 @@ try{
  await page.getByRole("radio",{name:"Round trip",exact:true}).check();assert.equal(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),"#travel-search");
  await page.locator('input[name="tripEnd"]').fill("2026-12-14");await page.getByRole("button",{name:"Swap departure and arrival airports"}).click();handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(handoff.searchParams.get("origin"),"BOM");assert.equal(handoff.searchParams.get("destination"),"LHR");assert.equal(handoff.searchParams.get("return_date"),"2026-12-14");
  await page.getByRole("button",{name:"Plan a flight to Dubai",exact:true}).click();assert.equal(await to.inputValue(),"Dubai (DXB)");
- const [bookingPage]=await Promise.all([page.waitForEvent("popup"),page.getByRole("link",{name:"Search flights",exact:true}).click()]);await bookingPage.waitForLoadState("domcontentloaded");assert.equal(new URL(bookingPage.url()).hostname,"www.aviasales.com");assert.equal(new URL(bookingPage.url()).searchParams.get("destination"),"DXB");await bookingPage.close();
+ // Verify the existing provider link before navigating across origins. An external
+ // browser popup can remain at url="" temporarily even after DOMContentLoaded.
+ const originalLink=page.getByRole("link",{name:"Search flights",exact:true});
+ const target=new URL((await originalLink.getAttribute("href"))||"",origin);
+ assert.equal(target.hostname,"www.aviasales.com");
+ assert.equal(target.searchParams.get("destination"),"DXB");
+ const [bookingPage]=await Promise.all([page.waitForEvent("popup"),originalLink.click()]);
+ await bookingPage.waitForLoadState("domcontentloaded",{timeout:12000}).catch(()=>{});
+ const popupUrl=bookingPage.url();
+ if(popupUrl&&popupUrl!=="about:blank"){
+  const destination=new URL(popupUrl);
+  assert.equal(destination.hostname,"www.aviasales.com");
+  assert.equal(destination.searchParams.get("destination"),"DXB");
+ }
+ await bookingPage.close();
  await page.goto(origin+"/travel?travelMode=experiences&"+trip,{waitUntil:"networkidle"});await page.locator("[data-experience-product]").first().waitFor();
  await page.locator('input[name="tripVisitDate"]').fill("2026-12-20");await page.getByRole("button",{name:"Find experiences",exact:true}).click();await page.waitForURL(url=>url.searchParams.get("tripVisitDate")==="2026-12-20");assert.match(page.url(),/tripEnd=2026-12-14/);
  const before=await fetch("http://127.0.0.1:4313/__fixture").then(r=>r.json());for(let i=0;i<10;i++)assert.equal((await fetch(origin+"/api/travel/experiences?city=Mumbai")).status,200);const after=await fetch("http://127.0.0.1:4313/__fixture").then(r=>r.json());assert.equal(after.requests,before.requests,"warm gallery views do not repeat public supplier calls");
