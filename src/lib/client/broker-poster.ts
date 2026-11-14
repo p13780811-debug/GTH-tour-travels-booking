@@ -43,7 +43,7 @@ export function downloadBrokerPoster(input:BrokerPoster){
   ctx.fillStyle="#fff";ctx.font="bold "+rowFont+"px Arial,sans-serif";
   ctx.fillText(fit(ctx,value,820),138,y);
  });
- const qrOuter=square?287:612,qrX=(W-qrOuter)/2,qrY=square?670:1047;
+ const qrOuter=square?250:612,qrX=(W-qrOuter)/2,qrY=square?670:1047;
  ctx.fillStyle="#fff";ctx.fillRect(qrX,qrY,qrOuter,qrOuter);
  const quiet=4,moduleSize=(qrOuter-42)/(qr.size+quiet*2);
  ctx.fillStyle="#101820";
@@ -53,7 +53,7 @@ export function downloadBrokerPoster(input:BrokerPoster){
  ctx.font="bold "+(square?26:44)+"px Arial,sans-serif";
  ctx.fillText("SCAN TO VIEW PROJECTS",W/2,qrY+qrOuter+(square?39:70));
  ctx.font=(square?16:25)+"px Arial,sans-serif";ctx.fillStyle="#b9c6d5";
- ctx.fillText("Public research links · Broker identity and availability not verified",W/2,qrY+qrOuter+(square?68:119));
+ ctx.fillText("Public research links · Broker identity and availability not verified",W/2,qrY+qrOuter+(square?51:87));
  ctx.fillStyle="#d6b66b";ctx.fillRect(0,H-(square?75:136),W,3);
  ctx.font="bold "+(square?27:43)+"px Arial,sans-serif";
  ctx.fillText("Powered by gthproglobal.com",W/2,H-(square?25:64));
