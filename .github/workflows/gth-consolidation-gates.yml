@@ -70,6 +70,8 @@ jobs:
             ':!src/components/real-estate/SavePropertyButton.tsx' \
             ':!src/components/real-estate/ProjectInventory.tsx' \
             ':!src/components/real-estate/PropertyCardPro.tsx' \
+            ':!src/components/real-estate/BrokerCatalogGenerator.tsx' \
+            ':!src/lib/real-estate/broker-catalog.ts' \
             ':!src/components/real-estate/EnquiryForm.tsx' \
             ':!src/components/real-estate/OwnerProjectAds.tsx' \
             ':!src/components/real-estate/LeadsDashboard.tsx' \
