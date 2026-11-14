@@ -6,6 +6,7 @@ import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import NuiteeFlightHandoff from "@/components/travel/NuiteeFlightHandoff";
+import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
 import { flightDestinations } from "@/data/flight/destinations";
 
 type Props = { searchParams: Promise<{ origin?: string; destination?: string; destinationCity?: string; flightSearch?: string }> };
@@ -58,6 +59,10 @@ export default async function FlightsPage({ searchParams }: Props) {
             </p>
           </div>
         )}
+        <div className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6">
+          <p className="text-xs leading-5 text-[var(--text-soft)]">Share this GTH PRO flight research route. Supplier-operated prices, itineraries and results are not copied or represented as a verified deal.</p>
+          <ShareFeedbackActions title={destination?("Flight research "+origin+" to "+destination):"Flight search"} path={"/flights"+(destination?"?"+new URLSearchParams({origin,destination}).toString():"")}/>
+        </div>
         <AviasalesWhiteLabel isResultsView={isResultsView} />
         <div className="px-4 sm:px-6">
           <NuiteeFlightHandoff />
