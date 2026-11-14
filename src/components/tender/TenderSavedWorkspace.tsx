@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Bookmark, GitCompareArrows, RefreshCw, X } from "lucide-react";
 import { useTenderWorkspace } from "./useTenderWorkspace";
 import { TenderCsvDownload, TenderDeadlineDownload, TenderSaveCompare } from "./TenderDiscoveryActions";
+import ComparisonPdfButton from "@/components/engagement/ComparisonPdfButton";
 import { formatTenderBudget, TENDER_ID } from "@/lib/tender/discovery-workspace";
 import { safeTenderSource, type PublicTender } from "@/lib/tender/catalog";
 
@@ -69,6 +70,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
         <div className="flex flex-wrap gap-3">
           <button type="button" disabled={loading || !ids.length} onClick={() => setRevision(value => value + 1)} className="gth-btn inline-flex items-center justify-center gap-2"><RefreshCw size={15} aria-hidden="true"/>Refresh notices</button>
           <TenderCsvDownload notices={current} label="Export this view (.csv)"/>
+          {view==="compare"&&<ComparisonPdfButton kind="tender" items={current.slice(0,3).map(tender=>({title:tender.title,path:"/tender/"+encodeURIComponent(tender.id),fields:{"Buyer":tender.buyer||"Not recorded","Country / region":[tender.country_code,tender.region].filter(Boolean).join(" · "),"Category":tender.sector||"Not recorded","Deadline":deadline(tender.deadline_at),"Estimated value":formatTenderBudget(tender.estimated_value,tender.currency),"Official source":tender.source_name||"Not recorded","Reference":tender.source_reference||"Not recorded","Qualification criteria":tender.requirements_verified?"Reviewed source criteria recorded":"Not independently reviewed"}}))}/>
         </div>
       </div>
       {message ? <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">{message}</p> : null}
