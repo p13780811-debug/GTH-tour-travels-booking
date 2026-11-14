@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "src/components/engagement/**"
+      - "public/sw.js"
       - "src/components/real-estate/PropertyCardPro.tsx"
       - "src/components/tender/TenderMarketplacePanels.tsx"
       - "src/app/stadiums/**"
