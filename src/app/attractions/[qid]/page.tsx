@@ -10,7 +10,7 @@ import {isIndexableAttraction} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
 export const dynamic="force-dynamic";
 type Props={params:Promise<{qid:string}>};
-type Data={wikidata_qid:string;name:string;description:string|null;category:string;region_slug:string;country_code:string;
+type Data={wikidata_qid:string;name:string;description:string|null;source_license:string;category:string;region_slug:string;country_code:string;
  latitude:number;longitude:number;wikidata_url:string;image_url:string|null;commons_page:string|null;image_author:string|null;
  image_license:string|null;image_license_url:string|null};
 async function place(qid:string):Promise<Data|null>{
@@ -19,7 +19,7 @@ async function place(qid:string):Promise<Data|null>{
  if(!u||!k)return null;
  try{const db=createClient(u,k,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data,error}=await db.from("gth_open_attractions")
- .select("wikidata_qid,name,description,category,region_slug,country_code,latitude,longitude,wikidata_url,image_url,commons_page,image_author,image_license,image_license_url")
+ .select("wikidata_qid,name,description,source_license,category,region_slug,country_code,latitude,longitude,wikidata_url,image_url,commons_page,image_author,image_license,image_license_url")
  .eq("is_public",true).eq("wikidata_qid",qid).maybeSingle();
  return error?null:data as Data|null;}catch{return null;}
 }

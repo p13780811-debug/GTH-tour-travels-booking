@@ -5,6 +5,7 @@ import { blogs } from "@/data/blogs";
 import { siteOrigin } from "@/lib/seo/site";
 import { createClient } from "@supabase/supabase-js";
 import { isIndexableHotel, isIndexableTender, type HotelSeoRecord, type TenderSeoRecord } from "@/lib/seo/public-listings";
+import { isIndexableAttraction } from "@/lib/seo/large-sitemaps";
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
 import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
 import { stadiums } from "@/lib/travel/stadiums";
@@ -78,10 +79,9 @@ async function publishedRecords(): Promise<DynamicEntry[]> {
   }
   if(attractions.status==="fulfilled"&&!attractions.value.error){
     for(const item of attractions.value.data??[]){
-      if(!/^Q[1-9][0-9]{0,14}$/.test(item.wikidata_qid)||
-        typeof item.name!=="string"||item.name.length<3||
-        typeof item.description!=="string"||item.description.trim().length<90||
-        item.wikidata_url!=="https://www.wikidata.org/wiki/"+item.wikidata_qid)continue;
+      // The detail page and both sitemap generators must use one
+      // licence/source/quality decision, never duplicate a drifting threshold.
+      if(!isIndexableAttraction(item))continue;
       output.push({url:base+"/attractions/"+item.wikidata_qid,changeFrequency:"monthly",priority:0.35});
     }
   }
