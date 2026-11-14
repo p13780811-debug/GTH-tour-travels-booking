@@ -23,7 +23,12 @@ export default function ShareFeedbackActions({title,path}:{
       if(destination.origin!==window.location.origin||!["http:","https:"].includes(destination.protocol))
         throw new Error("External path");
       const label=title.trim().slice(0,160)||"GTH PRO research guide";
-      const text=`GTH PRO · ${label}\n${destination.href}`;
+      const category=path.startsWith("/real-estate/")?"Property research":
+        path.startsWith("/tender/")?"Public tender notice":
+        path.startsWith("/stadiums/")?"Stadium & event guide":
+        path.startsWith("/hotels/")?"Hotel source guide":
+        path.startsWith("/flights")?"Flight-route research":"GTH PRO research";
+      const text=`🌐 *GTH PRO · ${category}*\n*${label}*\n🔎 Explore: ${destination.href}\nVerify live prices, dates, inventory and official sources before booking or bidding.`;
       window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank","noopener,noreferrer");
       setMessage("Choose a WhatsApp chat to send the link. Nothing is sent automatically.");
     }catch{
