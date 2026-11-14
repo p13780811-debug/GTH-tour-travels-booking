@@ -51,8 +51,8 @@ export default function BrokerVoiceInput({onTranscript}:{onTranscript:(text:stri
    recognition.onend=()=>{if(current.current===recognition)current.current=null;setListening(false);};
    current.current=recognition;
    setNotice("");
-   recognition.start();
    setListening(true);
+   recognition.start();
   }catch{
    current.current=null;setListening(false);
    setNotice("Voice typing is unavailable. Please type the project name.");
