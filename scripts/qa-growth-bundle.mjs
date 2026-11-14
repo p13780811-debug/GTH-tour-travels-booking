@@ -9,12 +9,26 @@ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});
  const page=await context.newPage();
+ const clientErrors=[];
+ page.on("pageerror",error=>clientErrors.push(error.message));
  const remoteQrRequests=[];
  page.on("request",req=>{if(/qrserver|quickchart|chart\.googleapis/i.test(req.url()))remoteQrRequests.push(req.url());});
  await page.goto(base+"/real-estate/broker-catalog",{waitUntil:"domcontentloaded",timeout:60000});
  await page.getByRole("heading",{name:"Broker & partner QR toolkit"}).waitFor({timeout:25000});
- await page.getByRole("button",{name:"Generate QR on this device"}).click();
- await page.getByText(/Confirm that you agree to publish/).waitFor();
+ // Next.js SSR can paint controls before React has bound their events in dev.
+ // Wait for the actual interactable/hydrated client component, not just the
+ // server-rendered heading, before checking the consent rejection.
+ await page.waitForLoadState("networkidle",{timeout:30000});
+ const generate=page.getByRole("button",{name:"Generate QR on this device"});
+ const consentWarning=page.getByText(/Confirm that you agree to publish/);
+ for(let attempt=0;attempt<3;attempt++){
+  await generate.click();
+  try{await consentWarning.waitFor({timeout:4000});break;}
+  catch(error){
+   if(attempt===2)throw Error("QR consent control did not respond after hydration: "+JSON.stringify(clientErrors)+"; "+String(error));
+   await page.waitForTimeout(1500);
+  }
+ }
  await page.getByLabel("Your public display name").fill("Example Agency");
  await page.getByLabel("Public business phone").fill("9876543210");
  await page.getByLabel(/Property slugs/).fill("sample-project-one, sample-project-two");
