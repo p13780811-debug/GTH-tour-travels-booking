@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowUpRight, Bookmark, GitCompareArrows, RefreshCw, X } fro
 import { useTenderWorkspace } from "./useTenderWorkspace";
 import { TenderCsvDownload, TenderDeadlineDownload, TenderSaveCompare } from "./TenderDiscoveryActions";
 import ComparisonPdfButton from "@/components/engagement/ComparisonPdfButton";
+import ShareComparisonButton from "@/components/engagement/ShareComparisonButton";
 import { formatTenderBudget, TENDER_ID } from "@/lib/tender/discovery-workspace";
 import { safeTenderSource, type PublicTender } from "@/lib/tender/catalog";
 
@@ -52,6 +53,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
   },[key,revision]);
   const rows = loading || !key ? [] : loaded.rows;
   const current = rows.flatMap(row => row.item ? [row.item] : []);
+  const tenderComparisonItems = current.slice(0,3).map(tender=>({title:tender.title,path:"/tender/"+encodeURIComponent(tender.id),fields:{"Buyer":tender.buyer||"Not recorded","Country / region":[tender.country_code,tender.region].filter(Boolean).join(" · "),"Category":tender.sector||"Not recorded","Deadline":deadline(tender.deadline_at),"Estimated value":formatTenderBudget(tender.estimated_value,tender.currency),"Official source":tender.source_name||"Not recorded","Reference":tender.source_reference||"Not recorded","Qualification criteria":tender.requirements_verified?"Reviewed source criteria recorded":"Not independently reviewed"}}));
   function remove(id: string) {
     const persisted = update(value => ({...value,[view === "saved" ? "saved" : "comparison"]:value[view === "saved" ? "saved" : "comparison"].filter(item => item !== id)}));
     setMessage(persisted ? "Removed from this device's list." : "Removed for this tab session. Browser storage is unavailable.");
@@ -70,7 +72,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
         <div className="flex flex-wrap gap-3">
           <button type="button" disabled={loading || !ids.length} onClick={() => setRevision(value => value + 1)} className="gth-btn inline-flex items-center justify-center gap-2"><RefreshCw size={15} aria-hidden="true"/>Refresh notices</button>
           <TenderCsvDownload notices={current} label="Export this view (.csv)"/>
-          {view==="compare"&&<ComparisonPdfButton kind="tender" items={current.slice(0,3).map(tender=>({title:tender.title,path:"/tender/"+encodeURIComponent(tender.id),fields:{"Buyer":tender.buyer||"Not recorded","Country / region":[tender.country_code,tender.region].filter(Boolean).join(" · "),"Category":tender.sector||"Not recorded","Deadline":deadline(tender.deadline_at),"Estimated value":formatTenderBudget(tender.estimated_value,tender.currency),"Official source":tender.source_name||"Not recorded","Reference":tender.source_reference||"Not recorded","Qualification criteria":tender.requirements_verified?"Reviewed source criteria recorded":"Not independently reviewed"}}))}/>}
+          {view==="compare"&&<ComparisonPdfButton kind="tender" items={tenderComparisonItems}/><ShareComparisonButton kind="tender" items={tenderComparisonItems}/>{current.length>=2&&<a href="#tender-comparison" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Compare Side-by-Side</a>}}
         </div>
       </div>
       {message ? <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">{message}</p> : null}
@@ -81,7 +83,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
         <Link prefetch={false} href="/tender" className="gth-btn gth-btn-gold mt-5 inline-flex items-center justify-center gap-2">Find opportunities <ArrowUpRight size={16} aria-hidden="true"/></Link>
       </section> : null}
       {!loading && view === "compare" && ids.length === 1 ? <p role="status" className="mt-6 text-sm text-[var(--text-soft)]">Select at least one more tender from discovery for a side-by-side comparison.</p> : null}
-      {!loading && view === "compare" && current.length >= 2 ? <section aria-label="Tender comparison" className="mt-7 min-w-0">
+      {!loading && view === "compare" && current.length >= 2 ? <section id="tender-comparison" aria-label="Tender comparison" className="mt-7 min-w-0">
         <p className="mb-3 text-xs leading-6 text-[var(--text-soft)]">Estimated values retain their original currencies. No exchange-rate conversion or eligibility ranking is applied.</p>
         <div className="max-w-full overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--card)]" tabIndex={0} role="region" aria-label="Comparison table; scroll horizontally on small screens">
           <table className="w-full min-w-[44rem] border-collapse text-start text-sm">
