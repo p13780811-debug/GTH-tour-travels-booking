@@ -5,6 +5,7 @@ import {QrCode,Copy,Download} from "lucide-react";
 import {qrcodegen} from "@/lib/client/vendor/qrcodegen";
 import {catalogContact,catalogHref,catalogSlugs,MAX_CATALOG_PROJECTS} from "@/lib/real-estate/broker-catalog";
 import BrokerProjectPicker from "@/components/real-estate/BrokerProjectPicker";
+import {downloadBrokerPoster} from "@/lib/client/broker-poster";
 
 const safeLabel=(text:string)=>text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 /** Render locally as printable SVG; only first-party URL is ever encoded. */
@@ -32,7 +33,8 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
  const [name,setName]=useState(""),[phone,setPhone]=useState("");
  const [rawSlugs,setRawSlugs]=useState(initialSlugs.join(", "));
  const [consent,setConsent]=useState(false);
- const [created,setCreated]=useState<{url:string;svg:string}|null>(null);
+ const [projectNames,setProjectNames]=useState<Record<string,string>>({});
+ const [created,setCreated]=useState<{url:string;svg:string;posterNames:string[];broker:string;phone:string}|null>(null);
  const [status,setStatus]=useState("");
  const slugs=useMemo(()=>catalogSlugs(rawSlugs),[rawSlugs]);
  function generate(){
@@ -44,7 +46,7 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
    if(!href){setStatus("Catalog inputs are invalid.");return;}
    const url=new URL(href,window.location.origin);
    // No third-party QR service. The phone is present only if the broker opts in.
-   try{setCreated({url:url.href,svg:qrSvg(url.href)});}
+   try{setCreated({url:url.href,svg:qrSvg(url.href),posterNames:slugs.map(slug=>projectNames[slug]||slug.replace(/[-_]+/g," ")),broker:name.normalize("NFKC").trim(),phone:phone.trim()});}
    catch{setStatus("Catalog link is too long for QR encoding. Use fewer or shorter property slugs.");}
  }
  async function copy(){
@@ -59,7 +61,7 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
   <div className="mt-4 grid gap-3 sm:grid-cols-2">
    <label className="text-sm font-semibold">Your public display name<input value={name} maxLength={60} onChange={e=>{setName(e.target.value);setCreated(null);}} className="gth-input mt-2" placeholder="Agency or agent name"/></label>
    <label className="text-sm font-semibold">Public business phone<input value={phone} maxLength={16} inputMode="tel" onChange={e=>{setPhone(e.target.value);setCreated(null);}} className="gth-input mt-2" placeholder="+919876543210"/></label>
-   <BrokerProjectPicker selected={slugs} onChange={next=>{setRawSlugs(next.join(", "));setCreated(null);setStatus("");}}/>
+   <BrokerProjectPicker selected={slugs} onLabels={names=>setProjectNames(old=>({...old,...names}))} onChange={next=>{setRawSlugs(next.join(", "));setCreated(null);setStatus("");}}/>
    <details className="sm:col-span-2">
     <summary className="cursor-pointer text-xs font-semibold text-[var(--text-soft)]">Advanced: enter known project slugs manually</summary>
     <label className="mt-3 block text-xs font-semibold">Property slugs (1–5, comma separated)<textarea value={rawSlugs} maxLength={600} rows={2} onChange={e=>{setRawSlugs(e.target.value);setCreated(null);setStatus("");}} className="gth-input mt-2 w-full" placeholder="project-slug-one, project-slug-two"/></label>
@@ -72,6 +74,7 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
     <img src={"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(created.svg)} alt="Locally generated QR code linking to public GTH PRO property mini-catalog" width={270} height={290} className="max-w-full"/>
     <p className="mt-2 break-all text-xs text-[var(--text-soft)]">{created.url}</p>
     <div className="mt-3 flex flex-wrap gap-2">
+      <button type="button" onClick={()=>{try{downloadBrokerPoster({url:created.url,broker:created.broker,phone:created.phone,projects:created.posterNames});setStatus("Poster PNG downloaded on this device. Share it manually to WhatsApp Status.");}catch{setStatus("Poster download failed. Try a modern browser or save the printable QR.");}}} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold"><Download size={15}/>Download Ready-to-Share Poster (PNG)</button>
       <button type="button" onClick={()=>saveSvg(created.svg)} className="gth-btn inline-flex min-h-11 items-center gap-2"><Download size={15}/>Save printable QR</button>
       <button type="button" onClick={()=>void copy()} className="gth-btn inline-flex min-h-11 items-center gap-2"><Copy size={15}/>Copy link</button>
       <a href={created.url} className="gth-btn inline-flex min-h-11 items-center">Preview catalog</a>
