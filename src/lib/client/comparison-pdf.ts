@@ -40,7 +40,7 @@ function pdfFromJpeg(jpeg:Uint8Array,annotations:{url:string;x:number;y:number;w
  for(const a of annotations){
   // Links are first-party HTTPS URLs built from vetted relative paths only.
   const r=[a.x/2,595-(a.y+a.h)/2,(a.x+a.w)/2,595-a.y/2].map(v=>Math.round(v*100)/100);
-  const safePdfUri=a.url.replace(/[\\()]/g,"\\objects.push(mk(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${a.url}) >> >>`));");
+  const safePdfUri=a.url.replace(/[\\()]/g, char => "\\" + char);
   objects.push(mk(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${safePdfUri}) >> >>`));
  }
  const parts:Uint8Array[]=[mk("%PDF-1.4\n%GTH PRO\n")];let offset=parts[0].length;const offsets=[0];
