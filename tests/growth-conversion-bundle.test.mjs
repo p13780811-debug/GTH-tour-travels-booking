@@ -127,8 +127,8 @@ test("voice is opt-in, no automatic search, supports Hindi and English and discl
  assert.match(voice,/SpeechRecognition\?\?browser\.webkitSpeechRecognition/);
  assert.match(voice,/onClick=\{toggle\}/);
  assert.match(voice,/recognition\.start\(\)/);
- assert.match(voice,/recognition\.stop\(\)/);
- assert.match(voice,/recognition\.abort\(\)/);
+ assert.match(voice,/current\.current\.stop\(\)/);
+ assert.match(voice,/current\.current\.abort\(\)/);
  assert.match(voice,/onTranscript\(spoken\)/);
  assert.match(voice,/Hindi \(India\)/);
  assert.match(voice,/English \(India\)/);
