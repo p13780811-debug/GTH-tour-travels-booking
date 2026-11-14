@@ -94,7 +94,7 @@ export default function BrokerProjectPicker({selected,onChange}:{selected:string
    </div>
    <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Just search the project name. No URL or slug required. Choose recorded projects or property listings; availability must be confirmed separately.</p>
    <form className="mt-3 flex flex-col gap-2 sm:flex-row" onSubmit={event=>{event.preventDefault();void search();}}>
-     <input id="broker-project-search" value={query} maxLength={70} onChange={event=>setQuery(event.target.value)} className="gth-input min-w-0 flex-1" placeholder="e.g. Lodha, New Town, Thane" autoComplete="off"/>
+     <input id="broker-project-search" value={query} maxLength={70} onChange={event=>{setQuery(event.target.value);setResults([]);setNotice("");}} className="gth-input min-w-0 flex-1" placeholder="e.g. Lodha, New Town, Thane" autoComplete="off"/>
      <select aria-label="Project search category" value={source} onChange={event=>switchSource(event.target.value as Source)} className="gth-input min-h-11 sm:max-w-48">
        <option value="registry">Registered projects</option>
        <option value="listing">Property listings</option>
