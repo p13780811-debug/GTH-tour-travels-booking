@@ -21,7 +21,7 @@ function publicProject(value:unknown,source:Source):Project|null{
 const readable=(slug:string)=>slug.replaceAll(/[-_]+/g," ").replace(/\b\w/g,part=>part.toUpperCase());
 
 /** Searches only on explicit user action; saved shortlist stays on the current device. */
-export default function BrokerProjectPicker({selected,onChange}:{selected:string[];onChange:(next:string[])=>void}){
+export default function BrokerProjectPicker({selected,onChange,onLabels}:{selected:string[];onChange:(next:string[])=>void;onLabels?:(names:Record<string,string>)=>void}){
  const [query,setQuery]=useState("");
  const [source,setSource]=useState<Source>("registry");
  const [results,setResults]=useState<Project[]>([]);
@@ -38,6 +38,7 @@ export default function BrokerProjectPicker({selected,onChange}:{selected:string
    if(selected.includes(project.slug)){change(selected.filter(s=>s!==project.slug));return;}
    if(selected.length>=MAX_CATALOG_PROJECTS){setNotice("You can select up to five properties.");return;}
    setLabels(previous=>({...previous,[project.slug]:project.title}));
+   onLabels?.({[project.slug]:project.title});
    change([...selected,project.slug]);
  };
  function loadSaved(){
@@ -48,6 +49,7 @@ export default function BrokerProjectPicker({selected,onChange}:{selected:string
      const names=normalizeSavedTitles(JSON.parse(localStorage.getItem(SAVED_TITLES_KEY)||"{}"));
      setSaved(slugs.map(slug=>({slug,title:names[slug]||readable(slug),city:"",source:"saved"})));
      setLabels(old=>({...names,...old}));
+     onLabels?.(names);
      setShowSaved(true);setResults([]);setNotice("");
    }catch{
      setNotice("Saved projects are not accessible on this device.");setSaved([]);setShowSaved(true);
