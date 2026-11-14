@@ -72,7 +72,7 @@ export default function TenderSavedWorkspace({ initialView }: { initialView: "sa
         <div className="flex flex-wrap gap-3">
           <button type="button" disabled={loading || !ids.length} onClick={() => setRevision(value => value + 1)} className="gth-btn inline-flex items-center justify-center gap-2"><RefreshCw size={15} aria-hidden="true"/>Refresh notices</button>
           <TenderCsvDownload notices={current} label="Export this view (.csv)"/>
-          {view==="compare"&&<ComparisonPdfButton kind="tender" items={tenderComparisonItems}/><ShareComparisonButton kind="tender" items={tenderComparisonItems}/>{current.length>=2&&<a href="#tender-comparison" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Compare Side-by-Side</a>}}
+          {view==="compare"&&<><ComparisonPdfButton kind="tender" items={tenderComparisonItems}/><ShareComparisonButton kind="tender" items={tenderComparisonItems}/>{current.length>=2&&<a href="#tender-comparison" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Compare Side-by-Side</a>}</>}
         </div>
       </div>
       {message ? <p role="status" className="mt-4 text-sm text-[var(--text-soft)]">{message}</p> : null}
