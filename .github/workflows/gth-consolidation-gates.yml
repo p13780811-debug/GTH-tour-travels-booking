@@ -70,6 +70,8 @@ jobs:
             ':!src/components/real-estate/SavePropertyButton.tsx' \
             ':!src/components/real-estate/ProjectInventory.tsx' \
             ':!src/components/real-estate/PropertyCardPro.tsx' \
+            ':!src/components/real-estate/BrokerProjectPicker.tsx' \
+            ':!src/components/real-estate/BrokerVoiceInput.tsx' \
             ':!src/components/real-estate/BrokerCatalogGenerator.tsx' \
             ':!src/lib/real-estate/broker-catalog.ts' \
             ':!src/components/real-estate/EnquiryForm.tsx' \
@@ -100,6 +102,7 @@ jobs:
             ':!src/lib/real-estate/recently-viewed.ts' \
             ':!src/lib/real-estate/browser-download.ts' \
             ':!src/lib/real-estate/research-notes.ts' \
+            ':!src/lib/real-estate/saved.ts' \
             ':!src/lib/real-estate/registry-search.ts' \
             ':!src/lib/real-estate/registry-reader.ts' \
             ':!src/app/api/real-estate/search/route.ts' \
