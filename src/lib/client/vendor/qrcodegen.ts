@@ -21,6 +21,7 @@
  *   Software.
  */
 
+/* eslint-disable @typescript-eslint/no-namespace -- This vendored MIT QR encoder uses its original merged TypeScript namespaces. */
 "use strict";
 
 
