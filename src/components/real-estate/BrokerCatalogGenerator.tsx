@@ -4,6 +4,7 @@ import {useMemo,useState} from "react";
 import {QrCode,Copy,Download} from "lucide-react";
 import {qrcodegen} from "@/lib/client/vendor/qrcodegen";
 import {catalogContact,catalogHref,catalogSlugs,MAX_CATALOG_PROJECTS} from "@/lib/real-estate/broker-catalog";
+import BrokerProjectPicker from "@/components/real-estate/BrokerProjectPicker";
 
 const safeLabel=(text:string)=>text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 /** Render locally as printable SVG; only first-party URL is ever encoded. */
@@ -38,7 +39,7 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
    setCreated(null);setStatus("");
    if(!consent){setStatus("Confirm that you agree to publish this name and phone number in the shared catalog link.");return;}
    if(!catalogContact(name,phone)){setStatus("Enter a name (2–60 characters) and a contact number with 10–15 digits.");return;}
-   if(slugs.length<1){setStatus(`Enter 1–${MAX_CATALOG_PROJECTS} existing property slugs, separated by commas.`);return;}
+   if(slugs.length<1){setStatus(`Select 1–${MAX_CATALOG_PROJECTS} projects using search or Saved Properties.`);return;}
    const href=catalogHref(slugs,name,phone);
    if(!href){setStatus("Catalog inputs are invalid.");return;}
    const url=new URL(href,window.location.origin);
@@ -54,11 +55,15 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
  return <section className="gth-glass rounded-3xl border border-[var(--border)] p-5 sm:p-7" aria-label="Broker catalog QR generator">
   <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Free browser tool · no account or API call</p>
   <h2 className="mt-2 text-xl font-bold">Branded property mini-catalog & QR</h2>
-  <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">Choose up to five existing GTH PRO project slugs. The resulting QR and link are generated on your device. You are responsible for confirming your authority to market a project.</p>
+  <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">Search for a project by its name or select from properties saved on this phone. Up to five public records can be included. Your QR is generated on this device. You are responsible for confirming your authority to market a project.</p>
   <div className="mt-4 grid gap-3 sm:grid-cols-2">
    <label className="text-sm font-semibold">Your public display name<input value={name} maxLength={60} onChange={e=>{setName(e.target.value);setCreated(null);}} className="gth-input mt-2" placeholder="Agency or agent name"/></label>
    <label className="text-sm font-semibold">Public business phone<input value={phone} maxLength={16} inputMode="tel" onChange={e=>{setPhone(e.target.value);setCreated(null);}} className="gth-input mt-2" placeholder="+919876543210"/></label>
-   <label className="text-sm font-semibold sm:col-span-2">Property slugs (1–5, comma separated)<textarea value={rawSlugs} maxLength={600} rows={3} onChange={e=>{setRawSlugs(e.target.value);setCreated(null);}} className="gth-input mt-2" placeholder="project-slug-one, project-slug-two"/></label>
+   <BrokerProjectPicker selected={slugs} onChange={next=>{setRawSlugs(next.join(", "));setCreated(null);setStatus("");}}/>
+   <details className="sm:col-span-2">
+    <summary className="cursor-pointer text-xs font-semibold text-[var(--text-soft)]">Advanced: enter known project slugs manually</summary>
+    <label className="mt-3 block text-xs font-semibold">Property slugs (1–5, comma separated)<textarea value={rawSlugs} maxLength={600} rows={2} onChange={e=>{setRawSlugs(e.target.value);setCreated(null);setStatus("");}} className="gth-input mt-2 w-full" placeholder="project-slug-one, project-slug-two"/></label>
+   </details>
   </div>
   <label className="mt-4 flex items-start gap-3 text-xs leading-6 text-[var(--text-soft)]"><input type="checkbox" checked={consent} onChange={e=>{setConsent(e.target.checked);setCreated(null);}} className="mt-1 size-4"/><span>I understand that this link publicly displays my supplied business name and phone, and that anyone with the link may share them. Do not enter private personal numbers without consent.</span></label>
   <button type="button" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold" onClick={generate}><QrCode size={17}/>Generate QR on this device</button>

@@ -29,9 +29,48 @@ try{
    await page.waitForTimeout(1500);
   }
  }
+ // Saved Properties stay on-device. No account, API request or slug knowledge.
+ await page.evaluate(()=>{
+   localStorage.setItem("gth-estate-saved-v1",JSON.stringify(["sample-project-one"]));
+   localStorage.setItem("gth-estate-saved-titles-v1",JSON.stringify({"sample-project-one":"Riverside Residency"}));
+ });
+ await page.getByRole("button",{name:"Pick from Saved Properties"}).click();
+ const savedChoices=page.getByRole("region",{name:"Saved property choices"});
+ await savedChoices.getByText("Riverside Residency").waitFor();
+ await savedChoices.getByRole("button",{name:"Select"}).click();
+ // Browser speech is simulated, never touching a real microphone or vendor.
+ // The speech transcript alone must not issue a property search request.
+ await page.evaluate(()=>{
+   window.SpeechRecognition=class {
+     lang="en-IN"; continuous=false; interimResults=false; maxAlternatives=1;
+     onresult=null; onerror=null; onend=null;
+     start(){window.__voiceTestLang=this.lang;this.onresult?.({results:[[{transcript:"Example Heights"}]]});this.onend?.();}
+     stop(){this.onend?.();}
+     abort(){this.onend?.();}
+   };
+ });
+ await page.getByRole("combobox",{name:"Voice input language"}).selectOption("hi-IN");
+ await page.getByRole("button",{name:"Voice typing"}).click();
+ assert.equal(await page.getByLabel("Find and select projects").inputValue(),"Example Heights");
+ assert.equal(await page.evaluate(()=>window.__voiceTestLang),"hi-IN");
+ let searches=0;
+ await page.route("**/api/real-estate/registry-preview?*",async route=>{
+   searches++;
+   await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({items:[
+     {slug:"sample-project-two",title:"Example Heights",city:"Mumbai",rera_id:"P12345678901"}
+   ]})});
+ });
+ assert.equal(searches,0,"Voice transcription must not run an automatic search.");
+ await page.getByRole("button",{name:"Search projects"}).click();
+ const matched=page.getByRole("region",{name:"Project search results"});
+ await matched.getByText("Example Heights").waitFor({timeout:12000});
+ assert.equal(searches,1,"One explicit search must make exactly one public read.");
+ await matched.getByRole("button",{name:"Select"}).click();
+ await page.getByText("2/5 selected").waitFor();
+ await page.getByText("Advanced: enter known project slugs manually").click();
+ assert.equal(await page.getByLabel(/Property slugs/).inputValue(),"sample-project-one, sample-project-two");
  await page.getByLabel("Your public display name").fill("Example Agency");
  await page.getByLabel("Public business phone").fill("9876543210");
- await page.getByLabel(/Property slugs/).fill("sample-project-one, sample-project-two");
  await page.getByRole("checkbox",{name:/I understand that this link publicly displays/}).check();
  await page.getByRole("button",{name:"Generate QR on this device"}).click();
  const qr=page.getByRole("img",{name:/Locally generated QR code/});
