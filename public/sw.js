@@ -22,3 +22,21 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(fetch(event.request).catch(async () =>
     (await caches.match(OFFLINE)) || Response.error()));
 });
+
+/**
+ * Follow a locally generated opt-in watch notification back to its first-party
+ * research record. No push subscription, background polling or third-party call.
+ */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const path = event.notification.data?.path;
+  if (typeof path !== "string" || path.length > 350 ||
+      !path.startsWith("/") || path.startsWith("//") || path.includes("\\\\")) return;
+  const url = new URL(path, self.location.origin);
+  if (url.origin !== self.location.origin || !["http:", "https:"].includes(url.protocol)) return;
+  event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(async (windows) => {
+    const open = windows.find((client) => client.url === url.href);
+    if (open) await open.focus();
+    else await self.clients.openWindow(url.href);
+  }));
+});
