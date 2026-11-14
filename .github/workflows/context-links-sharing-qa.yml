@@ -31,6 +31,13 @@ on:
       - ".github/workflows/gth-tender-portal-upgrade.yml"
       - "tests/automated-context-links-sharing.test.mjs"
       - "tests/growth-conversion-bundle.test.mjs"
+      - "tests/viral-growth-tools.test.mjs"
+      - "src/components/tender/BidReadinessReport.tsx"
+      - "src/lib/tender/readiness-score.ts"
+      - "src/app/tender/page.tsx"
+      - "src/app/travel/page.tsx"
+      - "src/app/stadiums/**"
+      - "src/lib/client/broker-poster.ts"
       - ".github/workflows/context-links-sharing-qa.yml"
   workflow_dispatch:
 
@@ -47,4 +54,4 @@ jobs:
         with:
           node-version: "22"
       - name: Check context links, WhatsApp safety, app guide and existing property tools
-        run: node --test tests/automated-context-links-sharing.test.mjs tests/growth-conversion-bundle.test.mjs
+        run: node --test tests/automated-context-links-sharing.test.mjs tests/growth-conversion-bundle.test.mjs tests/viral-growth-tools.test.mjs
