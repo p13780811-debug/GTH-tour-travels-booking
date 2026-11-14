@@ -40,7 +40,8 @@ function pdfFromJpeg(jpeg:Uint8Array,annotations:{url:string;x:number;y:number;w
  for(const a of annotations){
   // Links are first-party HTTPS URLs built from vetted relative paths only.
   const r=[a.x/2,595-(a.y+a.h)/2,(a.x+a.w)/2,595-a.y/2].map(v=>Math.round(v*100)/100);
-  objects.push(mk(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${a.url}) >> >>`));
+  const safePdfUri=a.url.replace(/[\\()]/g,"\\objects.push(mk(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${a.url}) >> >>`));");
+  objects.push(mk(`<< /Type /Annot /Subtype /Link /Rect [${r.join(" ")}] /Border [0 0 0] /A << /S /URI /URI (${safePdfUri}) >> >>`));
  }
  const parts:Uint8Array[]=[mk("%PDF-1.4\n%GTH PRO\n")];let offset=parts[0].length;const offsets=[0];
  for(let i=0;i<objects.length;i++){
@@ -60,7 +61,7 @@ export function downloadComparisonPdf(kind:string,items:ComparisonItem[]){
  const canvas=document.createElement("canvas");canvas.width=1684;canvas.height=1190;
  const ctx=canvas.getContext("2d");
  if(!ctx)throw Error("Canvas unavailable.");
- const W=canvas.width,H=canvas.height,colW=455,start=210,x0=200;
+ const W=canvas.width,H=canvas.height,colW=455,x0=200;
  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,W,H);
  ctx.fillStyle="#142840";ctx.fillRect(0,0,W,160);
  ctx.fillStyle="#fff";ctx.font="bold 48px Arial,sans-serif";ctx.fillText("GTH PRO  |  Side-by-side research",65,75);
