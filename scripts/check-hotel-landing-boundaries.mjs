@@ -112,6 +112,7 @@ const reviewedGrowthFiles=new Set([
  "src/components/tender/TenderMarketplacePanels.tsx",
  "src/components/tender/TenderSavedWorkspace.tsx",
  "src/lib/client/comparison-pdf.ts",
+ "public/sw.js",
  "src/lib/client/vendor/qrcodegen.ts",
  "src/lib/mobile/app-dashboard.ts",
  "src/lib/real-estate/broker-catalog.ts",
