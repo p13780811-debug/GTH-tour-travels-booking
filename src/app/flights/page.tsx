@@ -7,6 +7,7 @@ import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import NuiteeFlightHandoff from "@/components/travel/NuiteeFlightHandoff";
 import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
+import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import LocalWatchButton from "@/components/engagement/LocalWatchButton";
 import { flightDestinations } from "@/data/flight/destinations";
 
@@ -47,6 +48,7 @@ export default async function FlightsPage({ searchParams }: Props) {
         </div>
       </section>
       <TravelSectionNav />
+      {city&&<div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6"><ShareTripPlanButton title={"Flight trip to "+city} city={city} airportCode={destination} path="/flights"/></div>}
 
       <div className="mx-auto w-full max-w-7xl pb-16 pt-2 sm:pt-9">
         {(city || (destination && origin !== destination)) && (
