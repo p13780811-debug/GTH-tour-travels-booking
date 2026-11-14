@@ -117,7 +117,8 @@ const reviewedGrowthFiles=new Set([
  "src/lib/real-estate/broker-catalog.ts",
  "tests/automated-context-links-sharing.test.mjs",
  "tests/growth-conversion-bundle.test.mjs",
- "tests/mobile-app-handoff-safety.test.mjs"
+ "tests/mobile-app-handoff-safety.test.mjs",
+ ".github/workflows/gth-consolidation-gates.yml"
 ]);
 const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path));
 if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
