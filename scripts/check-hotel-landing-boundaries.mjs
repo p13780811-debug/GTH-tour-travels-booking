@@ -124,6 +124,18 @@ const reviewedGrowthFiles=new Set([
  "src/lib/real-estate/broker-catalog.ts",
  "tests/automated-context-links-sharing.test.mjs",
  "tests/growth-conversion-bundle.test.mjs",
+ "src/lib/client/broker-poster.ts",
+ "src/lib/tender/readiness-score.ts",
+ "src/components/tender/BidReadinessReport.tsx",
+ "src/components/engagement/ShareComparisonButton.tsx",
+ "src/components/engagement/ShareTripPlanButton.tsx",
+ "src/app/tender/page.tsx",
+ "src/app/travel/page.tsx",
+ "src/app/stadiums/[slug]/page.tsx",
+ "tests/viral-growth-tools.test.mjs",
+ "scripts/qa-viral-growth-tools.mjs",
+ "scripts/check-connected-travel-boundaries.mjs",
+ "scripts/qa-connected-travel.mjs",
  "tests/mobile-app-handoff-safety.test.mjs",
  ".github/workflows/gth-consolidation-gates.yml"
 ]);

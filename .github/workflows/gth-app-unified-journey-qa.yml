@@ -8,6 +8,12 @@ on:
       - "src/lib/mobile/**"
       - "scripts/qa-app-unified-journey.mjs"
       - "scripts/qa-growth-bundle.mjs"
+      - "scripts/qa-viral-growth-tools.mjs"
+      - "src/components/tender/BidReadinessReport.tsx"
+      - "src/lib/tender/readiness-score.ts"
+      - "src/app/tender/page.tsx"
+      - "src/app/travel/page.tsx"
+      - "src/app/stadiums/**"
       - "src/components/engagement/**"
       - "src/components/real-estate/BrokerCatalogGenerator.tsx"
       - "src/components/real-estate/BrokerProjectPicker.tsx"
@@ -27,6 +33,12 @@ on:
       - "src/lib/mobile/**"
       - "scripts/qa-app-unified-journey.mjs"
       - "scripts/qa-growth-bundle.mjs"
+      - "scripts/qa-viral-growth-tools.mjs"
+      - "src/components/tender/BidReadinessReport.tsx"
+      - "src/lib/tender/readiness-score.ts"
+      - "src/app/tender/page.tsx"
+      - "src/app/travel/page.tsx"
+      - "src/app/stadiums/**"
       - "src/components/engagement/**"
       - "src/components/real-estate/BrokerCatalogGenerator.tsx"
       - "src/components/real-estate/BrokerProjectPicker.tsx"
@@ -77,6 +89,8 @@ jobs:
         run: node scripts/qa-app-unified-journey.mjs
       - name: Real mobile browser growth bundle — QR, PDF and WhatsApp share
         run: node scripts/qa-growth-bundle.mjs
+      - name: Real mobile browser viral-growth acceptance — poster, readiness PDF and trip share
+        run: node scripts/qa-viral-growth-tools.mjs
       - name: Capture QA screenshots
         if: always()
         uses: actions/upload-artifact@v4

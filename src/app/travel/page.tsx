@@ -1,4 +1,5 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import ConnectedTravelEntry from "@/components/travel/ConnectedTravelEntry";
 import {Suspense} from "react";
 import workspaceStyles from "@/components/travel/ConnectedTravelWorkspace.module.css";
@@ -55,6 +56,7 @@ export default function TravelHomePage() {
     </section>
       <Suspense fallback={<section className={workspaceStyles.workspace} aria-label="Travel search"><div className={workspaceStyles.searchCard}><div className={workspaceStyles.searchTop}><h2>Where will you go next?</h2></div><nav aria-label="Open a travel search" className={workspaceStyles.categoryLinks}><Link prefetch={false} href="/hotels?view=booking">Search hotels</Link><Link prefetch={false} href="/flights">Search flights</Link><Link prefetch={false} href="/activities">Find experiences</Link></nav><p role="status" className={workspaceStyles.loading}>Preparing your connected search. You can also open a travel search above.</p></div></section>}><ConnectedTravelEntry countries={HOTEL_COUNTRIES}/></Suspense>
       <TravelSectionNav />
+      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>
 
     <section aria-labelledby="travel-services" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
