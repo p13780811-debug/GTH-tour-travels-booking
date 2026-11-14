@@ -10,7 +10,22 @@ on:
       - "src/app/travel/airports/**"
       - "src/components/mobile/AppInstall.tsx"
       - "src/components/home/FlagshipHome.tsx"
+      - "src/lib/client/**"
+      - "src/lib/real-estate/broker-catalog.ts"
+      - "src/components/real-estate/BrokerCatalogGenerator.tsx"
+      - "src/app/real-estate/mini-catalog/**"
+      - "src/app/real-estate/broker-catalog/**"
+      - "src/app/real-estate/registry/compare/**"
+      - "src/app/real-estate/saved/**"
+      - "src/app/real-estate/tools/**"
+      - "src/components/tender/TenderSavedWorkspace.tsx"
+      - "src/app/hotels/results/HotelResults.tsx"
+      - "src/app/flights/page.tsx"
+      - "src/lib/mobile/app-dashboard.ts"
+      - "src/app/app/services/**"
+      - ".github/workflows/gth-tender-portal-upgrade.yml"
       - "tests/automated-context-links-sharing.test.mjs"
+      - "tests/growth-conversion-bundle.test.mjs"
       - ".github/workflows/context-links-sharing-qa.yml"
   workflow_dispatch:
 
@@ -27,4 +42,4 @@ jobs:
         with:
           node-version: "22"
       - name: Check context links, WhatsApp safety, app guide and existing property tools
-        run: node --test tests/automated-context-links-sharing.test.mjs
+        run: node --test tests/automated-context-links-sharing.test.mjs tests/growth-conversion-bundle.test.mjs
