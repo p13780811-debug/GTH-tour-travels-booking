@@ -22,7 +22,7 @@ const columns = [
     ["Ticket Buying Guides","/blog?category=Tickets#journal"],
   ] },
   { heading: "Company & Support", links: [
-    ["About GTH PRO","/about"], ["Verification & Transparency","/verification"], ["Contact","/contact"], ["Travel Insurance","/insurance"],
+    ["About GTH PRO","/about"], ["How GTH PRO Works","/system"], ["Verification & Transparency","/verification"], ["Contact","/contact"], ["Travel Insurance","/insurance"],
     ["Privacy Policy","/privacy-policy"], ["Terms & Conditions","/terms-and-conditions"],
     ["Refund Policy","/refund-policy"], ["Affiliate Disclosure","/affiliate-disclosure"],
     ["Business Partners","/partners"],

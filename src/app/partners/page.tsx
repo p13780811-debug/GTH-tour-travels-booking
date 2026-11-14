@@ -75,7 +75,7 @@ export default function PartnersPage(){
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Business model</dt>
-          <dd className="mt-2 text-sm leading-7 text-[var(--text-soft)]">Independent discovery, original editorial content and referral to separately authorised suppliers where available. GTH PRO does not issue train or bus tickets or collect supplier booking payments on their behalf.</dd>
+          <dd className="mt-2 text-sm leading-7 text-[var(--text-soft)]">Independent travel, real estate, tender and ticket-source discovery; first-party research tools, original editorial content, public-source indexing and supplier-operated white-label or affiliate handoffs where available. GTH PRO does not issue train or bus tickets or collect supplier booking payments on their behalf.</dd>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
           <dt className="text-sm font-semibold">Published digital portfolio</dt>
@@ -92,7 +92,7 @@ export default function PartnersPage(){
         <Link href="/contact" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Contact</Link>
         <Link href="/privacy-policy" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Privacy</Link>
         <Link href="/terms-and-conditions" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Terms</Link>
-        <Link href="/affiliate-disclosure" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Affiliate disclosure</Link>
+        <Link href="/affiliate-disclosure" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">Affiliate disclosure</Link><Link href="/system" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4">How the platform works</Link>
       </nav>
       <p className="mt-7 text-sm leading-7 text-[var(--text-soft)]">
         Legal identity, beneficial-owner details, registration documents, tax particulars, API credentials and traffic evidence,

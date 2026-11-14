@@ -19,7 +19,7 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: ["Global Technical Hub", "GTH PRO Global"],
         url: origin,
-        description: "GTH PRO, a digital initiative of Etios Profession, connects real estate research, travel technology and supplier referrals, official-source tender discovery, and worldwide event and stadium ticket-source research. GTH PRO is an independent platform, not a government agency or booking supplier.",
+        description: "GTH PRO, a digital initiative of Etios Profession, connects independent real estate research and buyer tools, travel technology and supplier-operated booking handoffs, public-source tender intelligence and bid readiness, and worldwide event and stadium ticket-source research. It is not a government agency or a supplier booking operator.",
         logo: siteUrl("/images/gth-logo.png"),
         email: SITE_CONFIG.contactEmail,
         knowsAbout: [
@@ -58,6 +58,7 @@ export default function SiteIdentitySchema() {
         hasPart: [
           { "@type": "WebPage", name: "About GTH PRO", url: siteUrl("/about") },
           { "@type": "WebPage", name: "Verification and Transparency", url: siteUrl("/verification") },
+          { "@type": "WebPage", name: "How GTH PRO Works", url: siteUrl("/system") },
           { "@type": "WebPage", name: "Affiliate Disclosure", url: siteUrl("/affiliate-disclosure") }
         ]
       }

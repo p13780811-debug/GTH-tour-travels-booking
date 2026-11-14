@@ -77,6 +77,16 @@ export default function VerificationPage() {
       </div>
     </section>
 
+    <section className="mx-auto max-w-6xl px-5 pb-12 sm:px-8" aria-labelledby="operating-model">
+      <h2 id="operating-model" className="text-2xl font-semibold">Different products, different operating models</h2>
+      <p className="mt-4 max-w-4xl text-sm leading-8 text-[var(--text-soft)]">
+        Our own property research, buyer tools, public-source indexes, guides and tender preparation interfaces are not all affiliate referrals.
+        Some travel journeys lead to a supplier-operated White Label; others use tracked affiliate links or public source references.
+        A directory entry is not a current offer. Inventory and coverage vary by city, market and provider.
+      </p>
+      <Link href="/system" className="mt-5 inline-flex min-h-11 items-center gap-2 font-semibold text-[var(--gold)] underline">Read the public platform and sourcing overview <ArrowUpRight size={16}/></Link>
+    </section>
+
     <section className="border-y border-[var(--border)] bg-[var(--card)]" aria-labelledby="travel-verification">
       <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
         <h2 id="travel-verification" className="text-2xl font-semibold">Travel infrastructure and supplier relationships</h2>
