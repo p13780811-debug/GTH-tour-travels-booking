@@ -16,7 +16,7 @@ const CONFIG:Record<SeoKind,{view:string;key:string;fields:string;path:string;pr
  hotels:{view:"gth_seo_hotels_v1",key:"id",fields:"id,name,city,country_code,category,source_name,source_url,affiliate_link,created_at",path:"/hotels/stay/",priority:.4,frequency:"weekly"},
  tours:{view:"gth_seo_tours_v1",key:"id",fields:"id,title,city,city_slug,country,provider,source_name,source_url,affiliate_link",path:"/tours/",priority:.4,frequency:"weekly"},
  destinations:{view:"gth_seo_destinations_v1",key:"slug",fields:"slug,name,country,description,source_name,source_url,created_at",path:"/destinations/",priority:.5,frequency:"weekly"},
- attractions:{view:"gth_seo_attractions_v1",key:"wikidata_qid",fields:"wikidata_qid,name,description,wikidata_url,updated_at",path:"/attractions/",priority:.35,frequency:"monthly"},
+ attractions:{view:"gth_seo_attractions_v1",key:"wikidata_qid",fields:"wikidata_qid,name,description,wikidata_url,source_license,updated_at",path:"/attractions/",priority:.35,frequency:"monthly"},
  properties:{view:"gth_seo_properties_v1",key:"slug",fields:"id,title,slug,city,district,rera_id,official_source_url,status,created_at",path:"/real-estate/",priority:.5,frequency:"weekly"},
  tenders:{view:"gth_seo_tenders_v1",key:"id",fields:"id,title,buyer,country_code,sector,summary,deadline_at,source_name,source_reference,source_url,updated_at",path:"/tender/",priority:.5,frequency:"daily"}
 };
@@ -52,7 +52,8 @@ export function isIndexableDestination(row:Record<string,unknown>|null):boolean{
 export function isIndexableAttraction(value:unknown):boolean{
  if(!value||typeof value!=="object")return false;
  const row=value as Record<string,unknown>;
- return typeof row.wikidata_qid==="string"&&QID.test(row.wikidata_qid)&&
+ return row.source_license==="CC0-1.0"&&row.is_public!==false&&
+  typeof row.wikidata_qid==="string"&&QID.test(row.wikidata_qid)&&
   row.wikidata_url==="https://www.wikidata.org/wiki/"+row.wikidata_qid&&
   typeof row.name==="string"&&row.name.trim().length>=3&&
   typeof row.description==="string"&&row.description.trim().length>=90;
