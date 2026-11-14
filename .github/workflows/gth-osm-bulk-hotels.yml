@@ -57,7 +57,7 @@ jobs:
             # existing catalog already includes Western and Northern zones.
             REGION=asia/india/southern-zone
             MODE=import
-            MAX_RECORDS=25000
+            MAX_RECORDS=6000
           elif [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
             day=$((10#$(date -u +%j)))
             hour=$((10#$(date -u +%H)))
@@ -84,7 +84,7 @@ jobs:
               COUNTRY=IN
             fi
             MODE=import
-            MAX_RECORDS=25000
+            MAX_RECORDS=6000
           else
             REGION="$REQUESTED_REGION"
             MODE="$REQUESTED_MODE"

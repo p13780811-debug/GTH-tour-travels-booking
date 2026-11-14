@@ -12,6 +12,7 @@ import re
 import sys
 import time
 from datetime import date, datetime, timedelta, timezone
+from urllib.error import HTTPError
 from pathlib import Path
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
@@ -332,6 +333,11 @@ def main(argv=None):
         except (ValueError, OSError) as exc:
             failures += 1
             stats["sources"][source] = {"error": str(exc)}
+            if isinstance(exc, HTTPError) and exc.code in (502, 503, 504):
+                # Preserve an explicit failure; do not hammer the shared DB
+                # with every other official source while ingress is unavailable.
+                stats["ingestion_paused"] = "Protected database gateway unavailable; remaining sources not submitted"
+                break
         if len(names) > 1:
             time.sleep(0.5)
     print(json.dumps(stats, sort_keys=True))

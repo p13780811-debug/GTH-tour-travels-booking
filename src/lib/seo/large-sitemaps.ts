@@ -1,4 +1,5 @@
 import "server-only";
+import {unstable_cache} from "next/cache";
 import {isIndexableProperty} from "@/lib/real-estate/property-seo";
 import {createClient} from "@supabase/supabase-js";
 import type {MetadataRoute} from "next";
@@ -77,19 +78,23 @@ function db(){
 export function knownSeoKind(x:string):x is SeoKind{
  return SEO_KINDS.some(kind=>kind===x);
 }
+// Count approved, RLS-visible records no more than once per hour per kind.
+// An unavailable DB still fails closed (503); never fabricate empty sitemaps.
+// Per-kind cache entries keep independent shards isolated from other sources.
+const cachedSeoCount=unstable_cache(async(kind:SeoKind):Promise<number>=>{
+ const cfg=CONFIG[kind];
+ const {count,error}=await db().from(cfg.view).select(cfg.key,{head:true,count:"exact"})
+  .abortSignal(AbortSignal.timeout(12_000));
+ if(error)throw new Error("SEO count unavailable: "+kind);
+ return Math.max(0,count||0);
+},["gth-seo-approved-counts-v1"],{revalidate:3600});
+
 export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:number}[]>{
  if(!isPublicLaunch())return [];
- const client=db();
- // Counting every approved record can exceed a normal row-read deadline.
- // Keep counts bounded separately; paginated row reads retain their 5-second limit.
- const signal=AbortSignal.timeout(12_000);
- const output=await Promise.all(SEO_KINDS.map(async kind=>{
-  const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"}).abortSignal(signal);
-  if(error)throw new Error("SEO count unavailable: "+kind);
-  const total=Math.max(0,count||0);
-  return {kind,count:total,pages:Math.min(SEO_MAX_PAGES,Math.ceil(total/SEO_PAGE_SIZE))};
+ return Promise.all(SEO_KINDS.map(async kind=>{
+  const count=await cachedSeoCount(kind);
+  return {kind,count,pages:Math.min(SEO_MAX_PAGES,Math.ceil(count/SEO_PAGE_SIZE))};
  }));
- return output;
 }
 /**
  * A single sitemap shard must never depend on counts for unrelated sources.
@@ -101,11 +106,8 @@ export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:
  */
 export async function seoShardPages(kind:SeoKind):Promise<number>{
  if(!isPublicLaunch())return 0;
- const cfg=CONFIG[kind];
- const {count,error}=await db().from(cfg.view).select(cfg.key,{head:true,count:"exact"})
-  .abortSignal(AbortSignal.timeout(12_000));
- if(error)throw new Error("SEO count unavailable: "+kind);
- return Math.min(SEO_MAX_PAGES,Math.ceil(Math.max(0,count||0)/SEO_PAGE_SIZE));
+ const count=await cachedSeoCount(kind);
+ return Math.min(SEO_MAX_PAGES,Math.ceil(count/SEO_PAGE_SIZE));
 }
 export async function seoShard(kind:SeoKind,page:number):Promise<MetadataRoute.Sitemap>{
  if(!isPublicLaunch()||!Number.isInteger(page)||page<0||page>=SEO_MAX_PAGES)return [];

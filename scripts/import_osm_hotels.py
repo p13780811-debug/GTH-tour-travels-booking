@@ -221,6 +221,10 @@ def main():
                 request_json(base, key, "hotel_catalog?on_conflict=source,source_id",
                              payload=batch, extra={"Prefer": "resolution=merge-duplicates,return=minimal"})
         batch.clear()
+        # Avoid hundreds of back-to-back PostgREST writes on a small shared DB.
+        # Dry-runs remain fast; signed imports retain exact source validation.
+        if args.edge_url and not args.dry_run:
+            time.sleep(2.0)
 
     with args.file.open("r", encoding="utf-8") as stream:
         for line in stream:
