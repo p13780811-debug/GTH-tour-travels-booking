@@ -23,7 +23,7 @@ export default function SavePropertyButton({ slug, title, className = "" }: { sl
    try {
     const names=normalizeSavedTitles(JSON.parse(localStorage.getItem(SAVED_TITLES_KEY)||"{}"))
     if(next.includes(slug) && typeof title==="string" && title.trim().length>=2){
-     names[slug]=title.normalize("NFKC").replace(/[\\u0000-\\u001f\\u007f]/g," ").trim().slice(0,110)
+     names[slug]=title.normalize("NFKC").replace(/[\u0000-\u001f\u007f]/g," ").trim().slice(0,110)
     } else if(!next.includes(slug)) delete names[slug]
     localStorage.setItem(SAVED_TITLES_KEY,JSON.stringify(names))
    }catch{/* Optional labels never block saving or removing a property. */}
