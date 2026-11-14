@@ -23,7 +23,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   protected-portal:
-    runs-on: ubuntu-latest
+    # Playwright 1.56 Chromium does not support GitHub's Ubuntu 26.04 runner image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
       CI: "1"
