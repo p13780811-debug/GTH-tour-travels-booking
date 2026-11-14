@@ -8,7 +8,7 @@ export function normalizeSaved(value: unknown): string[] {
 export const SAVED_TITLES_KEY = "gth-estate-saved-titles-v1"
 export function normalizeSavedTitles(raw: unknown): Record<string,string> {
  if (!raw || Array.isArray(raw) || typeof raw !== "object") return {}
- const result:Record<string,string>={}
+ const result=Object.create(null) as Record<string,string>
  for (const [slug,value] of Object.entries(raw)) {
   if (Object.keys(result).length >= 50) break
   if (!normalizeSaved([slug]).length || typeof value!=="string") continue
