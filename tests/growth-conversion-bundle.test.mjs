@@ -100,3 +100,38 @@ test("notification tap is restricted to same-origin research pages and offline c
  assert.match(sw,/self\.clients\.openWindow\(url\.href\)/);
  assert.doesNotMatch(sw,/addEventListener\("push"|caches\.put\(|\/api\/hotels\/search/i);
 });
+
+test("broker picker searches public records only by user action and saves offline shortlist titles",()=>{
+ const picker=read("src/components/real-estate/BrokerProjectPicker.tsx");
+ const generator=read("src/components/real-estate/BrokerCatalogGenerator.tsx");
+ const saved=read("src/lib/real-estate/saved.ts");
+ const saveButton=read("src/components/real-estate/SavePropertyButton.tsx");
+ assert.match(generator,/BrokerProjectPicker selected=\{slugs\}/);
+ assert.match(generator,/Advanced: enter known project slugs manually/);
+ assert.match(picker,/onSubmit=\{event=>\{event\.preventDefault\(\);void search\(\);\}\}/);
+ assert.match(picker,/Pick from Saved Properties/);
+ assert.match(picker,/registry-preview\?/);
+ assert.match(picker,/\/api\/real-estate\/search\?/);
+ assert.match(picker,/selected\.length>=MAX_CATALOG_PROJECTS/);
+ assert.match(picker,/normalizeSaved\(/);
+ assert.match(picker,/normalizeSavedTitles\(/);
+ assert.match(saved,/SAVED_TITLES_KEY/);
+ assert.match(saved,/normalizeSavedTitles/);
+ assert.match(saveButton,/SAVED_TITLES_KEY/);
+ assert.match(saveButton,/localStorage\.setItem\(SAVED_TITLES_KEY/);
+ assert.match(picker,/BrokerVoiceInput onTranscript=/);
+ assert.doesNotMatch(picker,/supabase|service_role|\bsetInterval\(/i);
+});
+test("voice is opt-in, no automatic search, supports Hindi and English and discloses browser processing",()=>{
+ const voice=read("src/components/real-estate/BrokerVoiceInput.tsx");
+ assert.match(voice,/SpeechRecognition\?\?browser\.webkitSpeechRecognition/);
+ assert.match(voice,/onClick=\{toggle\}/);
+ assert.match(voice,/recognition\.start\(\)/);
+ assert.match(voice,/recognition\.stop\(\)/);
+ assert.match(voice,/recognition\.abort\(\)/);
+ assert.match(voice,/onTranscript\(spoken\)/);
+ assert.match(voice,/Hindi \(India\)/);
+ assert.match(voice,/English \(India\)/);
+ assert.match(voice,/Your browser may use its online speech service/);
+ assert.doesNotMatch(voice,/fetch\(|supabase|MediaRecorder|navigator\.mediaDevices\.getUserMedia/i);
+});
