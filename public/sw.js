@@ -31,7 +31,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const path = event.notification.data?.path;
   if (typeof path !== "string" || path.length > 350 ||
-      !path.startsWith("/") || path.startsWith("//") || path.includes("\\\\")) return;
+      !path.startsWith("/") || path.startsWith("//") || path.includes("\\")) return;
   const url = new URL(path, self.location.origin);
   if (url.origin !== self.location.origin || !["http:", "https:"].includes(url.protocol)) return;
   event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(async (windows) => {
