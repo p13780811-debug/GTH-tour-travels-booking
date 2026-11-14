@@ -89,3 +89,14 @@ test("Tender browser QA uses Playwright 1.56 compatible runner and keeps full se
  assert.match(w,/npm run build/);
  assert.match(w,/npx playwright install --with-deps chromium/);
 });
+
+test("notification tap is restricted to same-origin research pages and offline cache stays private",()=>{
+ const sw=read("public/sw.js");
+ assert.match(sw,/notificationclick/);
+ assert.match(sw,/event\.notification\.close\(\)/);
+ assert.match(sw,/path\.startsWith\("\/"\)/);
+ assert.match(sw,/path\.startsWith\("\/\/"\)/);
+ assert.match(sw,/url\.origin !== self\.location\.origin/);
+ assert.match(sw,/self\.clients\.openWindow\(url\.href\)/);
+ assert.doesNotMatch(sw,/addEventListener\("push"|caches\.put\(|\/api\/hotels\/search/i);
+});
