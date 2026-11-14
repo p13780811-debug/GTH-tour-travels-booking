@@ -53,11 +53,21 @@ try{
 
  // Group share is an explicit button, opens a WhatsApp draft with GTH links.
  await page.goto(base+"/travel",{waitUntil:"domcontentloaded",timeout:60000});
+ await page.getByRole("heading",{name:"Plan a trip with friends"}).waitFor({timeout:20000});
+ // A Next.js dev SSR form can paint before event handlers hydrate.
+ await page.waitForLoadState("networkidle",{timeout:30000}).catch(()=>{});
  await page.getByLabel("Destination city").fill("Kolkata");
  await page.evaluate(()=>{window.__shared="";window.open=(url)=>{window.__shared=String(url);return null;};});
- await page.getByRole("button",{name:"Share Match / Trip Plan with Friends"}).click();
- const share=await page.evaluate(()=>window.__shared);
- assert.ok(share.startsWith("https://wa.me/?text="));
+ const send=page.getByRole("button",{name:"Share Match / Trip Plan with Friends"});
+ let share="";
+ for(let i=0;i<3;i++){
+  await send.click();
+  share=await page.evaluate(()=>window.__shared||"");
+  if(share.startsWith("https://wa.me/?text="))break;
+  await page.waitForTimeout(1200);
+ }
+ const note=await page.locator('[aria-label="Group trip invitation"] [role="status"]').allTextContents();
+ assert.ok(share.startsWith("https://wa.me/?text="),"Group WhatsApp draft was not created: "+JSON.stringify({note,errors}));
  const message=new URL(share).searchParams.get("text")||"";
  assert.match(message,/Kolkata/);
  assert.match(message,/\/hotels\?view=booking&city=Kolkata/);
