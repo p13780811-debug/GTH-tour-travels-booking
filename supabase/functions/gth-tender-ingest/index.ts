@@ -223,22 +223,29 @@ Deno.serve(async (req) => {
       // Unchanged records do not rewrite updated_at, enabling reliable
       // amendment alerts to owner-only preparation workspaces.
       const safeRecords = records.map(({ requirements_verified: _unused, ...fields }) => fields);
-      const response = await fetch(
-        EXPECTED_ORIGIN + "/rest/v1/rpc/upsert_official_tender_batch",
-        {
-          method: "POST",
-          headers: {
-            apikey: key,
-            Authorization: "Bearer " + key,
-            "Content-Type": "application/json",
-            Prefer: "return=representation",
+      let response: Response;
+      try {
+        response = await fetch(
+          EXPECTED_ORIGIN + "/rest/v1/rpc/upsert_official_tender_batch",
+          {
+            method: "POST",
+            headers: {
+              apikey: key,
+              Authorization: "Bearer " + key,
+              "Content-Type": "application/json",
+              Prefer: "return=representation",
+            },
+            body: JSON.stringify({ p_source: source, p_records: safeRecords }),
+            signal: AbortSignal.timeout(10000),
           },
-          body: JSON.stringify({ p_source: source, p_records: safeRecords }),
-          signal: AbortSignal.timeout(18000),
-        },
-      );
+        );
+      } catch {
+        // Backend timeouts are infrastructure failures, not invalid tenders.
+        return Response.json({ error: "Tender backend temporarily unavailable" }, { status: 503, headers: RESPONSE_HEADERS });
+      }
       if (!response.ok) {
-        return Response.json({ error: "Database ingestion failed" }, { status: 502, headers: RESPONSE_HEADERS });
+        return Response.json({ error: "Database ingestion unavailable" },
+          { status: response.status >= 500 ? 503 : 502, headers: RESPONSE_HEADERS });
       }
       const body: unknown = await response.json();
       if (isObj(body) && typeof body.applied_changes === "number" &&
