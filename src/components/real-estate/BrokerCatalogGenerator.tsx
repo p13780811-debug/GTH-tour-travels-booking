@@ -1,7 +1,6 @@
 "use client";
 
 import {useMemo,useState} from "react";
-import Link from "next/link";
 import {QrCode,Copy,Download} from "lucide-react";
 import {qrcodegen} from "@/lib/client/vendor/qrcodegen";
 import {catalogContact,catalogHref,catalogSlugs,MAX_CATALOG_PROJECTS} from "@/lib/real-estate/broker-catalog";
@@ -70,7 +69,7 @@ export default function BrokerCatalogGenerator({initialSlugs=[]}:{initialSlugs?:
     <div className="mt-3 flex flex-wrap gap-2">
       <button type="button" onClick={()=>saveSvg(created.svg)} className="gth-btn inline-flex min-h-11 items-center gap-2"><Download size={15}/>Save printable QR</button>
       <button type="button" onClick={()=>void copy()} className="gth-btn inline-flex min-h-11 items-center gap-2"><Copy size={15}/>Copy link</button>
-      <Link href={created.url} prefetch={false} className="gth-btn inline-flex min-h-11 items-center">Preview catalog</Link>
+      <a href={created.url} className="gth-btn inline-flex min-h-11 items-center">Preview catalog</a>
     </div>
   </div>}
   <p className="mt-4 text-xs leading-5 text-[var(--text-soft)]">This is a public research shortcut, not a verified broker license, project claim or live property inventory. No messages are sent automatically.</p>
