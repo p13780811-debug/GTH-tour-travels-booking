@@ -135,6 +135,7 @@ const reviewedGrowthFiles=new Set([
  "tests/viral-growth-tools.test.mjs",
  "scripts/qa-viral-growth-tools.mjs",
  "scripts/check-connected-travel-boundaries.mjs",
+ "scripts/qa-connected-travel.mjs",
  "tests/mobile-app-handoff-safety.test.mjs",
  ".github/workflows/gth-consolidation-gates.yml"
 ]);
