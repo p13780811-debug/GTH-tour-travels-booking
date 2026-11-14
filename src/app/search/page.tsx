@@ -150,6 +150,8 @@ export default async function MasterSearchResults({ searchParams }: Props) {
   let hotelMatches: HotelMatch[] = [];
   let propertyMatches: { slug: string; title: string; city: string }[] = [];
   let tenderMatches: { id: string; title: string; buyer: string; country_code: string }[] = [];
+  // A temporary source outage is not proof that no published records exist.
+  let sourceSearchUnavailable = false;
   if (query.length >= 2) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -157,14 +159,18 @@ export default async function MasterSearchResults({ searchParams }: Props) {
       try {
         const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
         const escaped = "%" + query.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
+        // A bounded read prevents an unhealthy catalog from holding the entire
+        // universal search request open. Three existing reads; no new queries.
+        const signal = AbortSignal.timeout(4_000);
         const [suppliers, catalog, properties] = await Promise.all([
           db.from("hotels").select("id,name,city").eq("is_public", true)
-            .ilike("name", escaped).order("name").limit(6),
+            .ilike("name", escaped).order("name").limit(6).abortSignal(signal),
           db.from("hotel_catalog").select("source_id,name,city").ilike("name", escaped)
-            .order("name").limit(6),
+            .order("name").limit(6).abortSignal(signal),
           db.from("properties").select("title,slug,city").ilike("title", escaped)
-            .order("title").limit(6),
+            .order("title").limit(6).abortSignal(signal),
         ]);
+        if (suppliers.error || catalog.error || properties.error) sourceSearchUnavailable = true;
         hotelMatches = [
           ...(suppliers.error ? [] : (suppliers.data || []).map(item => ({
             id: String(item.id), name: item.name as string, city: item.city as string, source: "Partner listing",
@@ -181,9 +187,12 @@ export default async function MasterSearchResults({ searchParams }: Props) {
           title: item.title as string, slug: item.slug as string,
           city: typeof item.city === "string" ? item.city : "",
         }));
-      } catch { /* Hotel catalog availability must not break the master results page. */ }
+      } catch { sourceSearchUnavailable = true; /* Never expose catalog failures or credentials. */ }
+    } else {
+      sourceSearchUnavailable = true;
     }
     const notices = await searchPublicTenders({ q: query, country: "", sector: "", page: 1 });
+    if (!notices.ok) sourceSearchUnavailable = true;
     if (notices.ok) tenderMatches = notices.items.slice(0, 6).map(item => ({
       id: item.id, title: item.title, buyer: item.buyer, country_code: item.country_code,
     }));
@@ -333,7 +342,15 @@ export default async function MasterSearchResults({ searchParams }: Props) {
           </div>
         </section>
       )}
-      {query && !hotelMatches.length && !propertyMatches.length && !tenderMatches.length && !places.length && !articles.length && (
+      {query && sourceSearchUnavailable && (
+        <section className="mx-auto max-w-[1200px] px-5 pb-6 sm:px-8">
+          <p role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7 text-[var(--text-soft)]">
+            Some live GTH PRO catalog sources are temporarily unavailable. The results above may be incomplete.
+            You can still open a specialist platform to continue searching; an outage is not an empty inventory.
+          </p>
+        </section>
+      )}
+      {query && !sourceSearchUnavailable && !hotelMatches.length && !propertyMatches.length && !tenderMatches.length && !places.length && !articles.length && (
         <section className="mx-auto max-w-[1200px] px-5 pb-10 sm:px-8">
           <p role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm leading-7 text-[var(--text-soft)]">
             No matching published record found for “{query}” in the currently connected catalogs.

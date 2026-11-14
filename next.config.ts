@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       permanent:false,
     }));
     return [
+      // Legacy public policy links are not canonical pages. Redirect rather than
+      // serving duplicate legal content or letting old crawlers hit a 404.
+      {source:"/privacy",destination:"/privacy-policy",permanent:true},
+      {source:"/terms",destination:"/terms-and-conditions",permanent:true},
       {source:"/tender/guides",destination:"/knowledge/tenders",permanent:true},
       ...bookingRedirects,
     ];
