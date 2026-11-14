@@ -7,6 +7,7 @@ import Link from "next/link"
 import { MapPin, BedDouble, Bath, Maximize, BadgeCheck, FileCheck2 } from "lucide-react"
 import SavePropertyButton from "./SavePropertyButton"
 import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions"
+import LocalWatchButton from "@/components/engagement/LocalWatchButton"
 import PropertyImage from "./PropertyImage"
 import styles from "./Listing.module.css"
 
@@ -30,6 +31,7 @@ export default function PropertyCardPro({ p }: any) {
    </>}
    <div className={styles.cardFooter}><Link href={detailUrl} className="text-sm underline">{registryOnly ? "View project record" : "View details"}</Link>{registryOnly ? <Link href={`${detailUrl}#enquiry`} className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>Request details</Link> : <Link href={`${detailUrl}#enquiry`} className={`gth-btn gth-btn-gold inline-flex items-center justify-center gap-2`}>Enquire</Link>}</div>
    <ShareFeedbackActions title={typeof p.title==="string"?p.title:"Property listing"} path={detailUrl}/>
+   {!registryOnly&&<LocalWatchButton kind="property" id={p.slug} title={typeof p.title==="string"?p.title:"Property listing"} path={detailUrl} snapshot={typeof p.formatted_price==="string"?p.formatted_price:""}/>}
    {registryOnly && officialSource && <a href={officialSource} target="_blank" rel="noopener noreferrer" className="text-xs underline opacity-70 mt-3 self-start">Official MahaRERA source</a>}
   </div>
  </article>
