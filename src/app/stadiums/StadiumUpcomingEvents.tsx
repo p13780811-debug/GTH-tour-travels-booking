@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
+import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import {ArrowUpRight, CalendarDays, ShieldCheck} from "lucide-react";
 import {stadiums,upcomingStadiumEvents} from "@/lib/travel/stadiums";
 
@@ -50,6 +51,7 @@ export default function StadiumUpcomingEvents(){
           </Link>
         </div>
         <ShareFeedbackActions title={event.label} path={"/stadiums/"+encodeURIComponent(venue.slug)}/>
+        <ShareTripPlanButton title={event.label} venue={venue.name} city={venue.city} countryCode={venue.countryCode} eventDate={event.starts} path={"/stadiums/"+encodeURIComponent(venue.slug)}/>
       </article>)}
     </div>:<div className="gth-glass mt-5 rounded-2xl border border-[var(--border)] p-5">
       <p className="font-semibold">No future dated events in our reviewed shortlist.</p>
