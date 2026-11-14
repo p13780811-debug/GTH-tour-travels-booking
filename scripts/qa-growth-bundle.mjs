@@ -50,8 +50,9 @@ try{
  assert.match(svgFile,/Scan to view property research/);
  await page.getByRole("link",{name:"Preview catalog"}).click();
  await page.getByRole("heading",{name:"Property mini-catalog"}).waitFor({timeout:30000});
- assert.ok(await page.getByText("Example Agency").isVisible());
- assert.ok(page.url().includes("phone=9876543210"));
+ assert.ok(page.url().includes("broker=Example+Agency"),"Missing broker parameter: "+page.url());
+ assert.ok(page.url().includes("phone=9876543210"),"Missing phone parameter: "+page.url());
+ await page.getByText("Example Agency",{exact:true}).waitFor({state:"visible",timeout:15000});
  assert.equal(await page.getByRole("link",{name:"View source-backed details"}).count(),2);
  await page.screenshot({path:folder+"broker-catalog-390.png",fullPage:true});
 
