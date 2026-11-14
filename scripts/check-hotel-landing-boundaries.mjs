@@ -116,7 +116,8 @@ const reviewedGrowthFiles=new Set([
  "src/lib/mobile/app-dashboard.ts",
  "src/lib/real-estate/broker-catalog.ts",
  "tests/automated-context-links-sharing.test.mjs",
- "tests/growth-conversion-bundle.test.mjs"
+ "tests/growth-conversion-bundle.test.mjs",
+ "tests/mobile-app-handoff-safety.test.mjs"
 ]);
 const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path));
 if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
