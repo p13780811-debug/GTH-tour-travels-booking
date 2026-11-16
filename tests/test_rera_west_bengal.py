@@ -107,6 +107,19 @@ class WestBengalTests(unittest.TestCase):
         result = fetch_kolkata_listing("wbrera", opener=opener)
         self.assertEqual(result[0]["project_name"], "THE BURJ")
 
+    def test_offline_saved_html_is_accepted_without_http_or_database(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "official-hira.html"
+            path.write_text(document(HIRAROW), encoding="utf-8")
+            output = Path(td) / "hira-stage.jsonl"
+            with contextlib.redirect_stdout(io.StringIO()) as stdout:
+                result = execute(["--provider", "wbhira", "--input", str(path),
+                                  "--output", str(output)])
+            self.assertEqual(result, 0)
+            public = json.loads(output.read_text().strip())
+            self.assertEqual(public["registration"], "HIRA/P/KOL/2019/000383")
+            self.assertEqual(json.loads(stdout.getvalue())["source"], "offline_official_kolkata_html")
+
     def test_cli_requires_optin_and_stages_without_db(self):
         with self.assertRaises(SystemExit):
             execute(["--provider", "wbrera", "--west-bengal-list"])
