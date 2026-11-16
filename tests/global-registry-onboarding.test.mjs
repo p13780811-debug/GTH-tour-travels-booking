@@ -98,7 +98,10 @@ test("authenticated creation writes only a compact pending stub under server-onl
   const api=makeApi({
     login:async()=>({user:{id:"test-owner"}}),
     limit:async(_req,scope,user)=>{assert.equal(scope,"submissions");assert.equal(user,"test-owner");},
-    service:(url,key)=>{assert.equal(url,"https://example.supabase.co");assert.equal(key,"test-fixture-service-only");serviceCalls++;return {from:table=>{assert.equal(table,"global_registry_projects");return chain;}};},
+    service:(url,key)=>{assert.equal(url,"https://example.supabase.co");assert.equal(key,"test-fixture-service-only");serviceCalls++;return {from:table=>{
+      if(table==="properties") return {select(){return this;},eq(){return this;},limit(){return this;},abortSignal:async()=>({data:[],error:null})};
+      assert.equal(table,"global_registry_projects");return chain;
+    }};},
   });
   try{
     const response=await api.POST(post(valid()));
