@@ -152,4 +152,4 @@ For offline regression tests:
 
     python -m unittest discover -s tests -p 'test_rera_*.py'
 
-No merge, deployment, scheduled job, new migration, table permission or production data write is part of this feature branch.
+The branch includes a proposed, unapplied private table migration and scoped RLS grants, but no merge, deployment, scheduled job, official live sync or production database write.
