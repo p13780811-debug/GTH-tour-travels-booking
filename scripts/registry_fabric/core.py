@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import json
 import re
+from datetime import date
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from urllib.parse import parse_qsl, urlsplit
@@ -50,6 +51,7 @@ class RegistryProject:
     country: str
     official_source_url: str
     source_status: str | None
+    source_last_modified: str | None = None
     registry_only: bool = True
     verified: bool = False
 
@@ -136,6 +138,12 @@ def normalize(provider: str, row: dict) -> RegistryProject:
     if source_status and re.search(r"\b(revok(?:ed|ation)|reject(?:ed|ion)|cancelled|withdrawn|suspended)\b",
                                    source_status, re.IGNORECASE):
         raise RegistryValidationError("Revoked/rejected registration quarantined")
+    source_last_modified = clean(field(row, "source_last_modified"), 10)
+    if source_last_modified:
+        try:
+            date.fromisoformat(source_last_modified)
+        except ValueError as exc:
+            raise RegistryValidationError("Invalid source last-modified date") from exc
     # Kolkata district requires an explicitly matching registration district code.
     if provider in ("wbrera", "wbhira") and district.casefold() == "kolkata":
         if registration.split("/")[2] != "KOL":
@@ -150,6 +158,7 @@ def normalize(provider: str, row: dict) -> RegistryProject:
             provider, clean(field(row, "official_source_url", "source_url"), 1000)
         ),
         source_status=source_status,
+        source_last_modified=source_last_modified,
     )
 
 
