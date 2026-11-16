@@ -88,9 +88,13 @@ def official_url(provider: str, value: str | None) -> str:
     url = value or spec["reference_url"]
     if len(url) > 1000:
         raise RegistryValidationError("Registry source URL is oversized")
-    p = urlsplit(url)
+    try:
+        p = urlsplit(url)
+        port = p.port
+    except ValueError as exc:
+        raise RegistryValidationError("Malformed official URL") from exc
     if (p.scheme != "https" or p.hostname not in spec["hosts"] or p.username or p.password
-            or p.port not in (None, 443) or p.fragment):
+            or port not in (None, 443) or p.fragment):
         raise RegistryValidationError("Registry source must be an allowlisted official HTTPS URL")
     for key, _ in parse_qsl(p.query, keep_blank_values=True):
         if key.lower() not in {"procode", "dcode"}:
@@ -120,11 +124,16 @@ def normalize(provider: str, row: dict) -> RegistryProject:
     district = clean(field(row, "district", "district_name"), 120)
     if not title or not district:
         raise RegistryValidationError("Project name and district must be source-backed")
+    if provider == "maharera":
+        known_district_prefix = {"mumbai city": "P519", "mumbai suburban": "P518", "thane": "P517"}
+        required_prefix = known_district_prefix.get(district.casefold())
+        if required_prefix and not registration.startswith(required_prefix):
+            raise RegistryValidationError("Registration prefix conflicts with source district")
     state = clean(field(row, "state"), 80)
     if state and state.casefold() != spec["state"].casefold():
         raise RegistryValidationError("Project state conflicts with selected authority")
     source_status = clean(field(row, "project_status", "status"), 100)
-    if source_status and re.search(r"\b(revok(?:ed|ation)|reject(?:ed|ion)|cancelled)\b",
+    if source_status and re.search(r"\b(revok(?:ed|ation)|reject(?:ed|ion)|cancelled|withdrawn|suspended)\b",
                                    source_status, re.IGNORECASE):
         raise RegistryValidationError("Revoked/rejected registration quarantined")
     # Kolkata district requires an explicitly matching registration district code.
