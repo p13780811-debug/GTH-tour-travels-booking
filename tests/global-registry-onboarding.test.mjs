@@ -90,9 +90,10 @@ test("authenticated creation writes only a compact pending stub under server-onl
   process.env.NEXT_PUBLIC_SUPABASE_URL="https://example.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY="test-fixture-service-only";
   const chain={
-    select(){return this;},eq(){return this;},maybeSingle(){return this;},
-    insert(body){inserted=body;return this;},single(){return this;},
-    abortSignal:async function(){return inserted?{data:{id:42},error:null}:{data:null,error:null};},
+    select(){return this;},eq(){return this;},abortSignal(){return this;},
+    insert(body){inserted=body;return this;},
+    maybeSingle:async()=>({data:null,error:null}),
+    single:async()=>({data:{id:42},error:null}),
   };
   const api=makeApi({
     login:async()=>({user:{id:"test-owner"}}),
