@@ -28,6 +28,7 @@ def args_parser():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--input", type=Path, help="Authorized CSV or JSONL local snapshot")
     source.add_argument("--ids-file", type=Path, help="Known public numeric MahaRERA project IDs")
+    source.add_argument("--west-bengal-list", action="store_true", help="Read one verified official Kolkata project list")
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--source-authorized", action="store_true",
@@ -62,6 +63,11 @@ def execute(argv=None):
         parser.error("Offset/limit exceeds bounded per-run limits")
     if args.enable_network and not args.ids_file:
         parser.error("Network mode requires an explicit known-ID file")
+    if args.west_bengal_list:
+        if args.provider not in ("wbrera", "wbhira") or args.commit:
+            parser.error("Official Kolkata listing is West Bengal staging-only")
+        if not args.enable_network or not args.source_authorized:
+            parser.error("Official Kolkata listing requires source rights and network opt-in")
     if args.ids_file:
         if args.provider != "maharera" or args.commit:
             parser.error("Direct endpoint collection is MahaRERA staging-only until validated")
@@ -72,7 +78,11 @@ def execute(argv=None):
                 or args.enable_network or not args.expected_project_ref):
             parser.error("Only authorized local MahaRERA imports can use existing protected DB writer")
     output = private_output(args.provider, args.output)
-    if args.ids_file:
+    if args.west_bengal_list:
+        from .west_bengal import fetch_kolkata_listing
+        rows = fetch_kolkata_listing(args.provider)
+        projects, report = validate_rows(args.provider, rows, offset=args.offset, limit=args.limit)
+    elif args.ids_file:
         ids = load_known_ids(args.ids_file, offset=args.offset, limit=args.limit)
         rows = read_public_ids(ids, delay=args.delay)
         projects, report = validate_rows(args.provider, rows, limit=len(ids))
@@ -81,8 +91,9 @@ def execute(argv=None):
                                          offset=args.offset, limit=args.limit)
     report.update({
         "provider": args.provider, "mode": "commit" if args.commit else "dry-run",
-        "source": "known_public_ids" if args.ids_file else "authorized_local_snapshot",
-        "publication_status": "not_published", "network": bool(args.ids_file),
+        "source": ("official_kolkata_district_listing" if args.west_bengal_list else
+                   "known_public_ids" if args.ids_file else "authorized_local_snapshot"),
+        "publication_status": "not_published", "network": bool(args.ids_file or args.west_bengal_list),
         "truth": "Public registry reference only; no inventory, ownership or GTH verification",
     })
     if not projects:
