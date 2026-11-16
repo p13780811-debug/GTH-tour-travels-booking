@@ -156,8 +156,13 @@ def _get_url(url: str, *, opener=request.urlopen, max_bytes=MAX_BYTES):
                 if not url.endswith("/robots.txt"):
                     raise RegistryValidationError("Official source did not return HTML")
             raw = response.read(max_bytes + 1)
+    except error.HTTPError as exc:
+        raise RegistryValidationError(f"Official source responded HTTP {exc.code}; no data collected") from None
     except (OSError, error.URLError) as exc:
-        raise RegistryValidationError("West Bengal source not accessible; no data collected") from exc
+        reason = getattr(exc, "reason", exc)
+        raise RegistryValidationError(
+            f"Official HTTPS transport failed ({type(reason).__name__}); no data collected"
+        ) from None
     if len(raw) > max_bytes:
         raise RegistryValidationError("Official source response exceeds size limit")
     return raw.decode("utf-8-sig", errors="replace")
