@@ -28,7 +28,7 @@ function harness(launched=true){
   }});
   return query;
  }};
- const deps={"server-only":{},"@supabase/supabase-js":{createClient:()=>client}};
+ const deps={"server-only":{},"next/cache":{unstable_cache:(fn)=>fn},"@supabase/supabase-js":{createClient:()=>client}};
  const site={isPublicLaunch:()=>launched,siteOrigin:()=>"https://www.gthproglobal.com"};
  const listings={isIndexableHotel:()=>false,isIndexableTender:()=>false};
  const shards=compile("src/lib/seo/large-sitemaps.ts",{...deps,"@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings});

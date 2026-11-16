@@ -48,6 +48,10 @@ async function authorised(req:Request){
 }
 Deno.serve(async req=>{
  if(req.method!=="POST")return Response.json({error:"Method not allowed"},{status:405,headers:H});
+ // Source must never silently re-enable uploads on a future function deploy.
+ // Match the guarded production handler while database recovery is unverified.
+ if(Deno.env.get("GTH_OSM_ATTRACTIONS_WRITES_ENABLED")!=="true")
+  return Response.json({error:"Attraction ingestion paused for database stabilization",writes_disabled:true},{status:503,headers:H});
  let workflowRun="";
  try{workflowRun=await authorised(req);}catch{return Response.json({error:"Unauthorized workflow"},{status:401,headers:H});}
  try{

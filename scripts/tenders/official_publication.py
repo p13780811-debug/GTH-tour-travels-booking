@@ -4,6 +4,7 @@ Never import this in browser code. Only records validated against a documented
 official HTTPS data source by global_ingestion may reach this method.
 """
 import json
+import time
 import os
 import re
 from urllib.parse import urlencode
@@ -76,8 +77,9 @@ def submit_official(records, project_ref):
         expected = f"https://{project_ref}.supabase.co/functions/v1/gth-tender-ingest"
         if endpoint != expected or project_ref != "dqprqjmhxjnrllczqyhz":
             raise ValueError("Unexpected Edge function target")
-        for start in range(0, len(records), 50):
-            chunk = records[start:start + 50]
+        # Small, paced batches protect the shared PostgREST instance.
+        for start in range(0, len(records), 20):
+            chunk = records[start:start + 20]
             names = {r["source_name"] for r in chunk}
             if len(names) != 1:
                 raise ValueError("Mixed source batch")
@@ -86,9 +88,10 @@ def submit_official(records, project_ref):
                 "Authorization": "Bearer " + fresh_oidc_token(oidc),
                 "Content-Type": "application/json",
             })
-            with urlopen(req, timeout=30) as response:
+            with urlopen(req, timeout=20) as response:
                 if response.status != 200:
                     raise ValueError("OIDC ingestion endpoint failed")
+            time.sleep(1.0)
         return
     url = os.environ.get("SUPABASE_URL", "").rstrip("/")
     secret = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_INGESTION_KEY")

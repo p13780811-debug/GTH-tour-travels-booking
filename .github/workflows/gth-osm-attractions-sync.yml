@@ -31,7 +31,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   import-real-source-places:
-    if: github.ref == 'refs/heads/main'
+    # The deployed ingestion function explicitly disables writes during DB stabilization.
+    # Do not download full Geofabrik PBF files every hour only to hit HTTP 503.
+    # Preserve manual dry-run access; re-enable automatic runs only after a
+    # successful DB health check and explicit importer release review.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:

@@ -48,6 +48,7 @@ function setup(opts = {}) {
   const site = {isPublicLaunch:()=>live,siteOrigin:()=> "https://www.gthproglobal.com"};
   const deps = {
     "server-only":{},
+    "next/cache":{unstable_cache:(fn)=>fn},
     "@supabase/supabase-js":{createClient:()=>client},
     "@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},
     "@/lib/seo/public-listings":{isIndexableHotel:()=>false,isIndexableTender:()=>false},
