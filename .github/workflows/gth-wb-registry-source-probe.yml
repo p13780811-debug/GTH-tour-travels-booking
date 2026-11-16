@@ -1,0 +1,47 @@
+name: West Bengal public registry source probe (read-only)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/registry_fabric/**'
+      - 'tests/test_rera_west_bengal.py'
+      - '.github/workflows/gth-wb-registry-source-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wb-public-source-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline parser regression first
+        run: python -m unittest discover -s tests -p 'test_rera_west_bengal.py'
+      - name: Probe robots-approved official Kolkata lists (no credentials or DB)
+        run: |
+          python - <<'PY'
+          from scripts.registry_fabric.west_bengal import fetch_kolkata_listing
+          from scripts.registry_fabric.core import RegistryValidationError
+          results = {}
+          for authority in ("wbrera", "wbhira"):
+              try:
+                  rows = fetch_kolkata_listing(authority)
+                  print(f"{authority}: source_access=confirmed list_rows={len(rows)}")
+                  results[authority] = len(rows)
+              except (RegistryValidationError, OSError) as error:
+                  print(f"{authority}: source_access=blocked reason={type(error).__name__} {error}")
+                  results[authority] = 0
+          if not all(results.values()):
+              raise SystemExit("Official list probe incomplete: no DB write; do not merge")
+          print("Official list reader succeeded for both authorities. No DB write.")
+          PY
