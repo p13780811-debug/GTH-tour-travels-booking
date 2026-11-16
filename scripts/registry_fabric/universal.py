@@ -49,7 +49,7 @@ COUNTRY_AUTHORITY = {
     "MLS": ("US", None), "COUNTY_ASSESSOR": ("US", None),
 }
 REF = re.compile(r"^[A-Z0-9][A-Z0-9./_-]{2,79}$")
-TEXT = re.compile(r"^[^<>\\x00-\\x1f\\x7f]+$")
+TEXT = re.compile(r"^[^<>\x00-\x1f\x7f]+$")
 
 
 @dataclass(frozen=True)
@@ -112,7 +112,7 @@ class UniversalGlobalRegistryAdapter:
         if scope and (scope[0] != code or scope[1] and scope[1] != region):
             raise RegistryValidationError("Authority conflicts with country or state")
         registration = clean(field(row, "registration_id", "registration"), 80)
-        registration = re.sub(r"\\s+", "", registration).upper() if registration else ""
+        registration = re.sub(r"\s+", "", registration).upper() if registration else ""
         if not REF.fullmatch(registration):
             raise RegistryValidationError("Invalid registration or permit reference")
         if authority == "MAHARERA" and not re.fullmatch(r"P[0-9]{11}", registration):
@@ -138,6 +138,10 @@ class UniversalGlobalRegistryAdapter:
         lat, lng = coordinate("lat", 90), coordinate("lng", 180)
         if (lat is None) != (lng is None):
             raise RegistryValidationError("Latitude and longitude must be paired")
+        bytes_used = sum(len(part.encode("utf-8")) for part in (
+            code, region, city, authority, registration, title, developer or "", postal or ""))
+        if bytes_used > 220:
+            raise RegistryValidationError("Compact storage text budget exceeded")
         return UniversalRegistryProject(code, region, city, authority, registration, title,
                                         developer, postal, lat, lng)
 
