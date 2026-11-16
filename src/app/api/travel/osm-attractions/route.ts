@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {listPlaces,validFilters,type DirectoryFilters} from "@/lib/travel/osmAttractions";
 import {cachedSourceProgress} from "@/lib/travel/cachedDiscovery";
+import {mapAttractionAffiliateDiscovery} from "@/lib/travel/attraction-affiliate-mapping";
 export const dynamic="force-dynamic";
 const HEADERS={"Cache-Control":"public, s-maxage=120, stale-while-revalidate=240","X-Content-Type-Options":"nosniff"};
 const ALLOWED=new Set(["country","region","category","q","city","after","limit","view","page"]);
@@ -30,7 +31,8 @@ export async function GET(req:Request){
     const result=await listPlaces(filters);
     return NextResponse.json({...result,
       items:result.items.map(item=>({...item,verified_tickets:false,available_for_booking:false,
-        independently_verified:false,photo_url:null})),
+        independently_verified:false,photo_url:null,
+        partner_discovery:mapAttractionAffiliateDiscovery(item)})),
       filters,region:filters.region||"all",category:filters.category||null,page:filters.page||1,attribution:"© OpenStreetMap contributors (ODbL 1.0), via Geofabrik.",
       note:"Country inferred from licensed extract scope, not independently certified. Mapped places are not bookable tickets."},{headers:HEADERS});
   }catch{return NextResponse.json({error:"Source directory temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
