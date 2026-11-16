@@ -86,13 +86,25 @@ def execute(argv=None):
         ids = load_known_ids(args.ids_file, offset=args.offset, limit=args.limit)
         rows = read_public_ids(ids, delay=args.delay)
         projects, report = validate_rows(args.provider, rows, limit=len(ids))
+    elif args.input.suffix.casefold() in (".html", ".htm"):
+        if args.provider not in ("wbrera", "wbhira"):
+            parser.error("Offline government HTML is only supported for West Bengal")
+        from .west_bengal import MAX_BYTES, parse_listing
+        if (args.input.is_symlink() or not args.input.is_file()
+                or not 0 < args.input.stat().st_size <= MAX_BYTES):
+            raise RegistryValidationError("Official HTML must be a local regular file under 8 MB")
+        content = args.input.read_text(encoding="utf-8-sig")
+        projects, report = validate_rows(args.provider, parse_listing(content, args.provider),
+                                         offset=args.offset, limit=args.limit)
     else:
         projects, report = validate_rows(args.provider, iter_source(args.input),
                                          offset=args.offset, limit=args.limit)
     report.update({
         "provider": args.provider, "mode": "commit" if args.commit else "dry-run",
         "source": ("official_kolkata_district_listing" if args.west_bengal_list else
-                   "known_public_ids" if args.ids_file else "authorized_local_snapshot"),
+                   "known_public_ids" if args.ids_file else
+                   "offline_official_kolkata_html" if args.input and args.input.suffix.casefold() in (".html", ".htm") else
+                   "authorized_local_snapshot"),
         "publication_status": "not_published", "network": bool(args.ids_file or args.west_bengal_list),
         "truth": "Public registry reference only; no inventory, ownership or GTH verification",
     })
