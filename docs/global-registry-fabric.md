@@ -28,6 +28,45 @@ Normalized source identities are prefixed by provider. Registry records are not 
 
 Snapshots must be authorized local CSV/JSONL with a project name, registration reference and explicit district; optional promoter, locality, status and official source URL. Window selection uses --offset and --limit (at most 5000). Each input is capped at 30 MB and 100,000 rows. The only output is a new local JSONL under .gth-rera/registry-fabric by default; that folder is ignored by the existing repository. A dry-run is not a Google-indexable or published page.
 
+## Official West Bengal district collection (Kolkata phase)
+
+The public WBRERA site exposes **Kolkata district listings** using a documented
+navigation link with district code `10001000000032`. The historical HIRA list is
+separate and uses the same district code:
+
+- `https://rera.wb.gov.in/district_project.php?dcode=10001000000032`
+- `https://rera.wb.gov.in/district_project_HIRA.php?dcode=10001000000032`
+
+The public table fields are: Sl No., Project ID, Project Name, Completion Date,
+Registration No. and Registration Date. Each project name points to an authority
+hosted detail page with an explicit `procode`; HIRA details have a distinct
+`project_details_hira.php` path. The new reader parses only this explicit six
+column project table and a single validated official detail link per row.
+Navigation, promoter/contact data and other unrelated tables are excluded.
+
+**Staging-only, opt-in, no paid API, no database writes:**
+
+    python -m scripts.registry_fabric.cli --provider wbrera --west-bengal-list \\
+      --source-authorized --enable-network --offset 0 --limit 100
+    python -m scripts.registry_fabric.cli --provider wbhira --west-bengal-list \\
+      --source-authorized --enable-network --offset 0 --limit 100
+
+The collector makes one normal official GET per district list after a robots.txt
+policy check; the file is capped at 8MB and 50,000 HTML rows. Redirects, changed
+headers, missing links, unknown source schemas and denied robots rules stop the
+run. Use `--offset` for subsequent windows. Source dates and project statuses
+require separately verified detail enrichment, so the current stage is **a public
+listing snapshot**, not a current-compliance or live-inventory certification.
+
+**Environment blocker as of 2026-11-16:** the current execution container cannot
+resolve `rera.wb.gov.in` by DNS. Public web search renders and indexes the
+listing but has not supplied an authorized raw HTML export to this runner.
+Therefore the collector has not yet completed a live network read, and 0 WB
+records have been written to Supabase. If no approved runner with official access
+is available, an operator-provided CSV/JSONL export is supported by the offline CLI
+without changes to this implementation. The exact collection URLs have been
+verified using the government portal's own navigation; no private API is assumed.
+
 ## Direct MahaRERA endpoint research (explicit network authorization)
 
     python -m scripts.registry_fabric.cli --provider maharera \
