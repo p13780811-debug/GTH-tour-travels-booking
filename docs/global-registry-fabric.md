@@ -1,8 +1,8 @@
-# GTH PRO Global Registry Fabric — isolated Phase 1
+# GTH PRO Global Registry Fabric — guarded universal candidate
 
-Status: IMPLEMENTATION CANDIDATE. No live registry sync, production certification, automated bulk import or production deployment is claimed.
+Status: PR CANDIDATE. Offline worldwide reference validation and secured opt-in web onboarding implemented. New SQL migration is not applied to live Supabase. No official global sync, legal-title verification, public auto-publication or deployment claimed.
 
-Existing Real Estate UI, centralized CSS, Next.js routes, marketplace inventory, Supabase RLS policies and Travel supplier integrations remain unchanged.
+Existing deep MahaRERA/WBRERA/HIRA adapters, global CSS design tokens, legacy properties and approved inventory moderation are preserved. New onboarding UI, server API, private table and scoped RLS are additive.
 
 ## What was verified before implementation
 
@@ -122,6 +122,23 @@ Before intentional publication, the operator must verify approved source reuse r
 The CLI reuses the existing rera_csv_import.commit_batches writer. That module validates the exact Supabase project reference, requires enabled private ingestion, uses server-only authentication, and performs 50-row insert-only writes on rera_id conflicts. Existing URLs, media, inventory and owner/moderator edits are not overwritten.
 
 No WBRERA/HIRA writes are permitted through the Maharashtra properties writer. Legacy registry-read filtering and source metadata are MahaRERA-specific. West Bengal publication requires its own separately approved table or scoped source contract, security review, and new query/SEO integration. Do not alter RLS to make cross-state records public.
+
+
+## Universal and Pan-India upgrade
+
+The UniversalGlobalRegistryAdapter accepts a 2-letter ISO country code, one of India's 28 states or 8 union territories (or an international region name), the source authority, and a bounded registration or permit ID. It reuses the existing offline CSV/JSONL preflight; it does not scrape or claim to verify arbitrary government registries. Existing source-specific MahaRERA, WBRERA and HIRA adapters remain in place. GLOBAL_UNLISTED, MLS and COUNTY_ASSESSOR are source categories, not legal-title guarantees.
+
+Offline example: python -m scripts.registry_fabric.cli --provider global --input /private/approved_worldwide.csv --limit 100
+
+The Real Estate no-match results link to the new form at /real-estate/post-property#global-registry-onboarding. The form captures country, state/region, authority, official reference, project name, city and optional promoter/postal code/paired coordinates. The API requires a real user session, strictly validates server-side, rate-limits via the existing fail-closed Upstash policy, and uses a server-only Supabase service key. Unknown fields, HTML and oversized text are rejected. Identical identities are deduplicated; other-owner duplicates are never disclosed or edited.
+
+The new private global_registry_projects table is isolated from the old properties table and has a country+authority+registration composite unique key. It contains only the requested compact reference fields plus submitted_by owner UUID (necessary for security). A 220-byte combined UTF-8 text cap and narrow types prevent raw HTML, JSON, images or scraper payloads from accumulating. PostgreSQL row overhead and indexes add to that figure, so 100,000 rows under 30 MB is a **measurable target, not a guaranteed figure**. Measure pg_total_relation_size including indexes in an authorized staging database before bulk rollout. Live table/overall project MB usage was not confirmed.
+
+Pending registrations receive pending_global_review status. Their owner can immediately attach and submit inventory to the existing listing_submissions moderation workflow. Unverified submissions do not appear as published inventory until the existing independent review approves them. This avoids bypassing current GTH PRO verification, media rights and project ownership restrictions. Source-specific official verification scheduling is not turned on, since public-regulator transport/rights vary and West Bengal live requests timed out. Heavy details must be fetched on-demand only through approved source adapters with bounded cache; none are stored in the compact table.
+
+SQL proposal: supabase/migrations/20261117044500_global_registry_compact_stubs.sql (not deployed). RLS owner-only SELECT, server-role writes, no public client INSERT/UPDATE, no self-approval, and owner-only listing submission link are covered by disposable PostgreSQL tests. No global CSS, supplier connections, legacy registry rows or main branch are changed by this feature.
+
+Release gates: all TypeScript, ESLint, Next.js build, Node/Python and PostgreSQL tests green; confirm correct Supabase project and staging migration; measure storage/index size; verify Redis configuration, source permissions and authenticated end-to-end submission; then production approval. No merge, deployment or production DB writes are part of this branch.
 
 ## Evidence and launch gates
 
