@@ -58,6 +58,8 @@ class RegistryFabricTests(unittest.TestCase):
         with self.assertRaises(RegistryValidationError):
             normalize("wbrera", {**WB, "registration_no": "WBRERA/P/HOW/2026/004535"})
         with self.assertRaises(RegistryValidationError):
+            normalize("maharera", {**MAHA, "district": "Thane"})
+        with self.assertRaises(RegistryValidationError):
             normalize("maharera", {**MAHA, "state": "West Bengal"})
         with self.assertRaises(RegistryValidationError):
             official_url("maharera", "https://evil.example/steal")
