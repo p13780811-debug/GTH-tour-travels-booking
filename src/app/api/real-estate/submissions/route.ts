@@ -180,7 +180,7 @@ export async function POST(req: Request) {
     if (body.agent_registration && !agentRegistration) throw new RequestError("Invalid partner registration",400);
     if (submitterRole === "agent" && base.country.toLowerCase() === "india") {
       if (!agentRegistration) throw new RequestError("Provide your applicable state agent registration", 400);
-      if ((globalRegion === null || globalRegion === "MH") && !/^A[0-9]{11}$/.test(agentRegistration)) {
+      if ((Boolean(registryReference) || globalRegion === "MH") && !/^A[0-9]{11}$/.test(agentRegistration)) {
         throw new RequestError("Maharashtra agents must provide A followed by 11 digits", 400);
       }
     }
