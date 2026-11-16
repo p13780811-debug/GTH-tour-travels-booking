@@ -61,8 +61,8 @@ def execute(argv=None):
     args = parser.parse_args(argv)
     if not 0 <= args.offset <= 100_000 or not 1 <= args.limit <= MAX_RUN_RECORDS:
         parser.error("Offset/limit exceeds bounded per-run limits")
-    if args.enable_network and not args.ids_file:
-        parser.error("Network mode requires an explicit known-ID file")
+    if args.enable_network and not (args.ids_file or args.west_bengal_list):
+        parser.error("Network mode requires an explicit approved public source")
     if args.west_bengal_list:
         if args.provider not in ("wbrera", "wbhira") or args.commit:
             parser.error("Official Kolkata listing is West Bengal staging-only")
