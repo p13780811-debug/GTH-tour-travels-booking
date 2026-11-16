@@ -63,8 +63,18 @@ resolve `rera.wb.gov.in` by DNS. Public web search renders and indexes the
 listing but has not supplied an authorized raw HTML export to this runner.
 Therefore the collector has not yet completed a live network read, and 0 WB
 records have been written to Supabase. If no approved runner with official access
-is available, an operator-provided CSV/JSONL export is supported by the offline CLI
-without changes to this implementation. The exact collection URLs have been
+is available, an operator-provided **saved official HTML page**, CSV, or JSONL
+snapshot is supported by the offline CLI (no HTTP or database writes):
+
+    python -m scripts.registry_fabric.cli --provider wbrera --input /private/kolkata-wbrera.html --limit 100
+    python -m scripts.registry_fabric.cli --provider wbhira --input /private/kolkata-hira.html --limit 100
+
+The HTML input requires the same six-column official project table with a project
+name link to the expected authority-hosted detail path. This permits recovery
+from browser-exported source pages without inventing API endpoints or weakening
+source validation. If a phone can only save a PDF instead of HTML, that PDF
+must be converted and validated separately; it cannot be fed directly to the
+HTML reader. The exact collection URLs have been
 verified using the government portal's own navigation; no private API is assumed.
 
 ## Direct MahaRERA endpoint research (explicit network authorization)
