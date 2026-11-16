@@ -31,8 +31,8 @@ export async function POST(req: Request) {
       .eq("country_code", project.country_code)
       .eq("registry_authority", project.registry_authority)
       .eq("registration_id", project.registration_id)
-      .maybeSingle()
-      .abortSignal(AbortSignal.timeout(6000));
+      .abortSignal(AbortSignal.timeout(6000))
+      .maybeSingle();
     if (lookupError) throw new RequestError("Registry onboarding unavailable", 503);
     if (existing) {
       if (existing.submitted_by !== user.id) {
@@ -45,8 +45,8 @@ export async function POST(req: Request) {
       .from("global_registry_projects")
       .insert({ ...project, submitted_by: user.id, verification_status: "pending_global_review" })
       .select("id")
-      .single()
-      .abortSignal(AbortSignal.timeout(6000));
+      .abortSignal(AbortSignal.timeout(6000))
+      .single();
     if (error) {
       if (error.code === "23505") throw new RequestError("This reference was already submitted. Please retry or claim it.", 409);
       throw new RequestError("Registry onboarding unavailable", 503);
