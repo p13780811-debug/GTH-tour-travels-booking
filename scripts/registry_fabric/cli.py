@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""GTH PRO registry fabric: bounded offline validation or authorized MahaRERA research.
+
+Examples:
+  python -m scripts.registry_fabric.cli --provider maharera --input /private/projects.csv
+  python -m scripts.registry_fabric.cli --provider wbrera --input /private/kolkata.csv
+  python -m scripts.registry_fabric.cli --provider maharera --ids-file /private/known_ids.txt \
+    --source-authorized --enable-network --limit 20
+Default: local staging only; zero network, database writes or deployment.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+from .core import (
+    MAX_RUN_RECORDS, PROVIDERS, RegistryValidationError, iter_source, validate_rows,
+)
+from .maharera import load_known_ids, read_public_ids
+
+
+def args_parser():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--provider", required=True, choices=sorted(PROVIDERS))
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--input", type=Path, help="Authorized CSV or JSONL local snapshot")
+    source.add_argument("--ids-file", type=Path, help="Known public numeric MahaRERA project IDs")
+    parser.add_argument("--offset", type=int, default=0)
+    parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument("--source-authorized", action="store_true",
+                        help="Operator confirms source access and reuse permissions")
+    parser.add_argument("--enable-network", action="store_true",
+                        help="Explicitly permit bounded public detail requests; default is no network")
+    parser.add_argument("--delay", type=float, default=5.0)
+    parser.add_argument("--output", type=Path, help="New private staging JSONL; must not exist")
+    parser.add_argument("--commit", action="store_true", help="Opt in to existing guarded MahaRERA writer")
+    parser.add_argument("--expected-project-ref",
+                        help="Exact pre-approved Supabase project ref for intentional writes")
+    return parser
+
+
+def private_output(provider: str, supplied: Path | None) -> Path:
+    if supplied is None:
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        supplied = Path(".gth-rera/registry-fabric") / (provider + "-" + stamp + ".jsonl")
+    if supplied.suffix.lower() != ".jsonl" or supplied.exists() or supplied.is_symlink():
+        raise RegistryValidationError("Output must be a new JSONL file")
+    parent = supplied.parent
+    if any(x.is_symlink() for x in (parent, *parent.parents)):
+        raise RegistryValidationError("Staging cannot write through a symbolic link")
+    parent.mkdir(parents=True, exist_ok=True)
+    return supplied
+
+
+def execute(argv=None):
+    parser = args_parser()
+    args = parser.parse_args(argv)
+    if not 0 <= args.offset <= 100_000 or not 1 <= args.limit <= MAX_RUN_RECORDS:
+        parser.error("Offset/limit exceeds bounded per-run limits")
+    if args.enable_network and not args.ids_file:
+        parser.error("Network mode requires an explicit known-ID file")
+    if args.ids_file:
+        if args.provider != "maharera" or args.commit:
+            parser.error("Direct endpoint collection is MahaRERA staging-only until validated")
+        if not args.enable_network or not args.source_authorized or args.limit > 100:
+            parser.error("Public endpoint requires access approval, network opt-in and <=100 IDs")
+    if args.commit:
+        if (args.provider != "maharera" or not args.input or not args.source_authorized
+                or args.enable_network or not args.expected_project_ref):
+            parser.error("Only authorized local MahaRERA imports can use existing protected DB writer")
+    output = private_output(args.provider, args.output)
+    if args.ids_file:
+        ids = load_known_ids(args.ids_file, offset=args.offset, limit=args.limit)
+        rows = read_public_ids(ids, delay=args.delay)
+        projects, report = validate_rows(args.provider, rows, limit=len(ids))
+    else:
+        projects, report = validate_rows(args.provider, iter_source(args.input),
+                                         offset=args.offset, limit=args.limit)
+    report.update({
+        "provider": args.provider, "mode": "commit" if args.commit else "dry-run",
+        "source": "known_public_ids" if args.ids_file else "authorized_local_snapshot",
+        "publication_status": "not_published", "network": bool(args.ids_file),
+        "truth": "Public registry reference only; no inventory, ownership or GTH verification",
+    })
+    if not projects:
+        raise RegistryValidationError("No validated public project records")
+    if args.commit and report["rejected"]:
+        raise RegistryValidationError("No database writes: input contains rejected rows")
+    # Stage validated data before any remote operation; never emit raw provider responses.
+    with output.open("x", encoding="utf-8") as handle:
+        for project in projects:
+            handle.write(json.dumps(project.public_dict(), ensure_ascii=False, sort_keys=True) + "\n")
+    report["staging_file"] = str(output)
+    if args.commit:
+        root = Path(__file__).resolve().parents[2]
+        sys.path.insert(0, str(root / "src/app/real-estate/services"))
+        from rera_csv_import import commit_batches
+        rows = [project.maharera_insert() for project in projects]
+        inserted = commit_batches(rows, 50, args.expected_project_ref)
+        report["publication_status"] = "existing_insert_only_writer_completed"
+        report["database_inserted"] = inserted
+        report["database_already_present"] = len(rows) - inserted
+    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+def main(argv=None):
+    try:
+        return execute(argv)
+    except RegistryValidationError as exc:
+        print(json.dumps({"outcome": "stopped", "error": str(exc),
+                          "database_writes": "not_performed_or_unknown"}), file=sys.stderr)
+        return 2
+    except Exception:
+        print(json.dumps({"outcome": "stopped", "error": "Source or publication failed; check private logs",
+                          "database_writes": "unconfirmed; verify before retry"}), file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
