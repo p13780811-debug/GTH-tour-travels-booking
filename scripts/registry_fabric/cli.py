@@ -24,7 +24,7 @@ from .maharera import load_known_ids, read_public_ids
 
 def args_parser():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--provider", required=True, choices=sorted(PROVIDERS))
+    parser.add_argument("--provider", required=True, choices=sorted((*PROVIDERS, "global")))
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--input", type=Path, help="Authorized CSV or JSONL local snapshot")
     source.add_argument("--ids-file", type=Path, help="Known public numeric MahaRERA project IDs")
@@ -63,6 +63,8 @@ def execute(argv=None):
     args = parser.parse_args(argv)
     if not 0 <= args.offset <= 100_000 or not 1 <= args.limit <= MAX_RUN_RECORDS:
         parser.error("Offset/limit exceeds bounded per-run limits")
+    if args.provider == "global" and (not args.input or args.enable_network or args.commit or args.ids_file or args.west_bengal_list):
+        parser.error("Universal fallback is offline staging-only; no trusted worldwide scrape or DB writer")
     if args.maharera_compact_archive:
         if (args.provider != "maharera" or not args.input
                 or args.input.suffix.lower() != ".jsonl" or args.commit or args.enable_network):
@@ -84,7 +86,10 @@ def execute(argv=None):
                 or args.enable_network or not args.expected_project_ref):
             parser.error("Only authorized local MahaRERA imports can use existing protected DB writer")
     output = private_output(args.provider, args.output)
-    if args.west_bengal_list:
+    if args.provider == "global":
+        from .universal import UniversalGlobalRegistryAdapter
+        projects, report = UniversalGlobalRegistryAdapter.validate_rows(iter_source(args.input), offset=args.offset, limit=args.limit)
+    elif args.west_bengal_list:
         from .west_bengal import fetch_kolkata_listing
         rows = fetch_kolkata_listing(args.provider)
         projects, report = validate_rows(args.provider, rows, offset=args.offset, limit=args.limit)
