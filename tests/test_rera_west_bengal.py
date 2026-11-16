@@ -74,7 +74,7 @@ class WestBengalTests(unittest.TestCase):
     def test_fail_closed_on_fake_links_or_conflicting_project(self):
         for bad in (
             WBROW.replace("project_details.php", "project_details_hira.php"),
-            WBROW.replace("rera.wb.gov.in", "other.example"),
+            WBROW.replace("project_details.php?procode", "https://other.example/project_details.php?procode"),
             WBROW.replace("12595000000058", "notanid"),
             WBROW.replace("WBRERA/P/KOL/", "WBRERA/P/HOW/"),
         ):
