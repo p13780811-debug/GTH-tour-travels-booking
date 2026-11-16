@@ -29,6 +29,8 @@ def args_parser():
     source.add_argument("--input", type=Path, help="Authorized CSV or JSONL local snapshot")
     source.add_argument("--ids-file", type=Path, help="Known public numeric MahaRERA project IDs")
     source.add_argument("--west-bengal-list", action="store_true", help="Read one verified official Kolkata project list")
+    parser.add_argument("--maharera-compact-archive", action="store_true",
+                        help="Read legacy 2024 archive JSONL into staging only; no live-status claim")
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--source-authorized", action="store_true",
@@ -61,6 +63,10 @@ def execute(argv=None):
     args = parser.parse_args(argv)
     if not 0 <= args.offset <= 100_000 or not 1 <= args.limit <= MAX_RUN_RECORDS:
         parser.error("Offset/limit exceeds bounded per-run limits")
+    if args.maharera_compact_archive:
+        if (args.provider != "maharera" or not args.input
+                or args.input.suffix.lower() != ".jsonl" or args.commit or args.enable_network):
+            parser.error("Historical compact archive is local MahaRERA staging-only")
     if args.enable_network and not (args.ids_file or args.west_bengal_list):
         parser.error("Network mode requires an explicit approved public source")
     if args.west_bengal_list:
@@ -86,6 +92,11 @@ def execute(argv=None):
         ids = load_known_ids(args.ids_file, offset=args.offset, limit=args.limit)
         rows = read_public_ids(ids, delay=args.delay)
         projects, report = validate_rows(args.provider, rows, limit=len(ids))
+    elif args.maharera_compact_archive:
+        from .archive import convert_historical_compact
+        rows = (convert_historical_compact(row) for row in iter_source(args.input))
+        projects, report = validate_rows(args.provider, rows,
+                                         offset=args.offset, limit=args.limit)
     elif args.input.suffix.casefold() in (".html", ".htm"):
         if args.provider not in ("wbrera", "wbhira"):
             parser.error("Offline government HTML is only supported for West Bengal")
@@ -101,13 +112,21 @@ def execute(argv=None):
                                          offset=args.offset, limit=args.limit)
     report.update({
         "provider": args.provider, "mode": "commit" if args.commit else "dry-run",
-        "source": ("official_kolkata_district_listing" if args.west_bengal_list else
+        "source": ("historical_maharera_compact_archive" if args.maharera_compact_archive else
+                   "official_kolkata_district_listing" if args.west_bengal_list else
                    "known_public_ids" if args.ids_file else
                    "offline_official_kolkata_html" if args.input and args.input.suffix.casefold() in (".html", ".htm") else
                    "authorized_local_snapshot"),
         "publication_status": "not_published", "network": bool(args.ids_file or args.west_bengal_list),
         "truth": "Public registry reference only; no inventory, ownership or GTH verification",
     })
+    if args.maharera_compact_archive:
+        observed = [p.source_last_modified for p in projects if p.source_last_modified]
+        report["freshness"] = {
+            "type": "historical_source_date_not_live",
+            "earliest": min(observed) if observed else None,
+            "latest": max(observed) if observed else None,
+        }
     if not projects:
         raise RegistryValidationError("No validated public project records")
     if args.commit and report["rejected"]:
