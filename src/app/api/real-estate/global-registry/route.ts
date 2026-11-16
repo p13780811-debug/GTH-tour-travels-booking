@@ -25,6 +25,19 @@ export async function POST(req: Request) {
     const service = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
+    // Never create a second Maharashtra project identity already present in
+    // the legacy, authoritative registry. Existing records use the claim flow.
+    if (project.registry_authority === "MAHARERA") {
+      const { data: legacy, error: legacyError } = await service
+        .from("properties")
+        .select("id")
+        .eq("rera_id", project.registration_id)
+        .eq("source_type", "registry")
+        .limit(1)
+        .abortSignal(AbortSignal.timeout(5000));
+      if (legacyError) throw new RequestError("Registry lookup unavailable", 503);
+      if (legacy?.length) throw new RequestError("This MahaRERA project is already indexed. Use Claim Project.", 409);
+    }
     const { data: existing, error: lookupError } = await service
       .from("global_registry_projects")
       .select("id,submitted_by")
