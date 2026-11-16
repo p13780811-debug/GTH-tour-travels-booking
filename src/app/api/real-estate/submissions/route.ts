@@ -162,8 +162,8 @@ export async function POST(req: Request) {
         .select("id,country_code,region_state,city,project_name,submitted_by")
         .eq("id", globalRegistryId)
         .eq("submitted_by", user.id)
-        .maybeSingle()
-        .abortSignal(AbortSignal.timeout(5000));
+        .abortSignal(AbortSignal.timeout(5000))
+        .maybeSingle();
       if (stubError) throw new RequestError("Registry lookup unavailable", 503);
       if (!stub) throw new RequestError("Select a global project you registered", 400);
       base.title = stub.project_name;
