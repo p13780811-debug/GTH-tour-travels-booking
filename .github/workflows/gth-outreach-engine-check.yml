@@ -1,0 +1,32 @@
+name: GTH PRO Real Estate Outreach Engine Checks
+on:
+  push:
+    branches:
+      - feature/real-estate-opt-in-outreach-engine-20261106
+    paths:
+      - scripts/partner_outreach.py
+      - tests/test_partner_outreach_engine.py
+      - .github/workflows/gth-outreach-engine-check.yml
+  pull_request:
+    paths:
+      - scripts/partner_outreach.py
+      - tests/test_partner_outreach_engine.py
+      - .github/workflows/gth-outreach-engine-check.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test permission, dedupe, opt-out, safety
+        run: python -m unittest discover -s tests -p 'test_partner_outreach_engine.py' -v
+# No live sending on CI. Real sending requires an authorized consent ledger,
+# persistent storage and privately configured SMTP credentials.
