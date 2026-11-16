@@ -77,6 +77,30 @@ must be converted and validated separately; it cannot be fed directly to the
 HTML reader. The exact collection URLs have been
 verified using the government portal's own navigation; no private API is assumed.
 
+## Existing 2024 compact MahaRERA staging (local/offline)
+
+The user's Library contains a previously generated private JSONL dataset with
+11,981 unique old Maharashtra registrations: Thane 5752, Mumbai Suburban 5103,
+Mumbai City 1126. A read-only identity join against the live target Supabase
+found 11,747 already published registry registrations and 234 genuinely absent
+IDs (Thane 91, Mumbai Suburban 115, Mumbai City 28); no DB IDs were outside
+that staging set. Existing `properties(rera_id)` has a real unique index.
+
+Historical archives are not today's registry status. The optional compact
+adapter maps only public project names, registration number, promoter,
+district and the original source last-modified date; it intentionally drops
+all raw locations, photos, current-status claims, pricing and sensitive extras:
+
+    python -m scripts.registry_fabric.cli --provider maharera \
+      --maharera-compact-archive \
+      --input /private/GTH-PRO-maharera-import-staging-20261019.jsonl \
+      --offset 0 --limit 5000
+
+Repeat dry-run with offsets 5000 and 10000 to stage the whole old dataset.
+It categorically rejects `--commit` because source currency and revocations
+need an independently verified refreshed official status. This historical
+adapter does not change the existing writer or any database rows.
+
 ## Direct MahaRERA endpoint research (explicit network authorization)
 
     python -m scripts.registry_fabric.cli --provider maharera \
