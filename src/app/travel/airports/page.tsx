@@ -50,7 +50,7 @@ export default function AirportExplorerPage() {
           </h1>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-base">
             Explore airport names, IATA codes and local time zones using a curated
-            directory verified against Nuitee Connect airport reference data.
+            airport directory checked against connected reference data.
             Continue to GTH PRO&apos;s existing flight and travel services for live booking searches.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
