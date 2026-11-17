@@ -97,6 +97,26 @@ export default function TenderBidGenerator({tender}:{tender:PublicTender}) {
     try {await navigator.clipboard.writeText(draft.text);setMessage("Draft copied.");}
     catch {setMessage("Clipboard unavailable; use TXT export.");}
   }
+  function printDraft() {
+    if(!draft || !ready)return;
+    // Print only the generated document, never the full dashboard or its controls.
+    // textContent prevents user-supplied tender fields from becoming executable HTML.
+    const popup=window.open("","_blank","width=850,height=1000");
+    if(!popup){setMessage("Pop-up blocked. Export the TXT draft instead.");return;}
+    popup.opener=null;
+    popup.document.title="GTH PRO Tender Bid Draft";
+    const heading=popup.document.createElement("h1");
+    heading.textContent="GTH PRO • Draft Tender Submission";
+    const body=popup.document.createElement("pre");
+    body.textContent=draft.text;
+    body.style.whiteSpace="pre-wrap";
+    body.style.wordBreak="break-word";
+    body.style.fontFamily="system-ui,sans-serif";
+    body.style.lineHeight="1.5";
+    popup.document.body.append(heading,body);
+    popup.focus();
+    popup.requestAnimationFrame(()=>popup.print());
+  }
   function exportFile(format:"txt"|"csv") {
     if(!draft||!ready)return;
     const name="gth-bid-"+safeFilename(tender.id)+"."+format;
@@ -119,7 +139,7 @@ export default function TenderBidGenerator({tender}:{tender:PublicTender}) {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">{(["company","tax","contact","amount","timeline"] as const).map(key=><label key={key} className="text-sm font-medium">{labels[key]}<input className="mt-1 block min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]" required maxLength={key==="amount"?19:120} inputMode={key==="amount"?"decimal":"text"} value={profile[key]} onChange={e=>change(key,e.target.value)} autoComplete="off"/></label>)}</div>
         <button type="button" disabled={!valid} className="gth-btn gth-btn-gold mt-5 disabled:opacity-50" onClick={()=>{setReady(true);setMessage("Draft ready for review.");}}>{labels.generate}</button>
         {!valid&&<p className="mt-2 text-xs text-[var(--text-soft)]">Complete all fields and enter a positive quoted amount (up to two decimal places).</p>}
-        {ready&&draft&&<><pre className="mt-5 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-xs leading-6">{draft.text}</pre><div className="mt-4 flex flex-wrap gap-2"><button type="button" className="gth-btn" onClick={copy}>Copy</button><button type="button" className="gth-btn" onClick={()=>window.print()}>Print / Save PDF</button><button type="button" className="gth-btn" onClick={()=>exportFile("csv")}>Export BOQ CSV</button><button type="button" className="gth-btn" onClick={()=>exportFile("txt")}>Export TXT</button></div></>}
+        {ready&&draft&&<><pre className="mt-5 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-xs leading-6">{draft.text}</pre><div className="mt-4 flex flex-wrap gap-2"><button type="button" className="gth-btn" onClick={copy}>Copy</button><button type="button" className="gth-btn" onClick={printDraft}>Print / Save PDF</button><button type="button" className="gth-btn" onClick={()=>exportFile("csv")}>Export BOQ CSV</button><button type="button" className="gth-btn" onClick={()=>exportFile("txt")}>Export TXT</button></div></>}
         <p role="status" className="mt-3 text-sm text-[var(--text-soft)]">{message}</p>
       </div>
     </div>}
