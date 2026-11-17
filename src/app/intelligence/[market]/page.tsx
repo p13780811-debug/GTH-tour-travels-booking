@@ -7,6 +7,7 @@ import { marketIndexable, readMarketDecision } from "@/lib/intelligence/market-d
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import { stadiums } from "@/lib/travel/stadiums";
 import MarketBookingHandoffs from "@/components/intelligence/MarketBookingHandoffs";
+import SemanticIntelligenceSearch from "@/components/intelligence/SemanticIntelligenceSearch";
 
 type Props = {params:Promise<{market:string}>};
 export const revalidate = 3600;
@@ -55,6 +56,7 @@ export default async function MarketDecisionPage({params}:Props){
         </div>
         <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">Local currency label: {market.currency}. No foreign exchange conversion, invented prices or automatic country-specific supplier inventory. Last public snapshot: {Number.isFinite(updated.getTime())?updated.toISOString().slice(0,16).replace("T"," ")+" UTC":"Unavailable"}.</p>
       </header>
+      <SemanticIntelligenceSearch country={market.countryCode}/>
       <MarketBookingHandoffs city={market.city} countryCode={market.countryCode}/>
       {snapshot.unavailable.length>0&&<p role="status" className="mt-5 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 text-sm">Some source lookups are temporarily unavailable: {snapshot.unavailable.join(", ")}. Missing data is not a zero-result or no-project claim.</p>}
       <section aria-labelledby="region-property" className="mt-9">
