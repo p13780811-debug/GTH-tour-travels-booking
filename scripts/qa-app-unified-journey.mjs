@@ -65,7 +65,8 @@ try{
    await page.waitForTimeout(450);
    const moved=await page.evaluate(()=>window.scrollY);
    assert.ok(moved>15,"Finger drag on the Mumbai/Goa hero must scroll vertically; received "+moved);
-   await page.getByRole("region",{name:"Nuitee supplier hotel cards"}).waitFor({state:"visible",timeout:30000});
+   await page.getByRole("region",{name:"GTH Worldwide Stays hotel cards"}).waitFor({state:"visible",timeout:30000});
+   assert.ok(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count()>0,"Supplier SDK mount must remain available");
    assert.ok((await page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"}).count())>0);
    await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
   }
