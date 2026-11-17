@@ -50,7 +50,7 @@ export default function HotelBookingLinkReview(){
   <div className="mt-5 space-y-4">
   {items.map(row=><article key={row.id} className="rounded-xl border border-[var(--border)] p-4">
    <h3 className="text-base font-semibold">{row.hotel_name_at_provider}</h3>
-   <p className="mt-2 break-all text-xs text-[var(--text-soft)]">Local source: {row.catalog_source?row.catalog_source+":"+row.catalog_source_id:row.reviewed_hotel_id} · {row.provider} property ID: {row.provider_property_id}</p>
+   <p className="mt-2 break-all text-xs text-[var(--text-soft)]">Local source: {row.catalog_source?row.catalog_source+":"+row.catalog_source_id:row.reviewed_hotel_id} · Provider property ID: {row.provider_property_id}</p>
    <div className="mt-3 flex flex-wrap gap-4 text-xs">
     {row.catalog_source==="osm"&&row.catalog_source_id&&<a href={"https://www.openstreetmap.org/"+row.catalog_source_id} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 underline">Original mapped hotel <ExternalLink size={13}/></a>}
     <a href={row.provider_property_url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 underline">Supplier property page <ExternalLink size={13}/></a>
