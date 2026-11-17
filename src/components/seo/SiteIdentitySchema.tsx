@@ -75,7 +75,7 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: ["Global Technical Hub", "GTH PRO Global"],
         url: origin,
-        description: "GTH PRO Global, an initiative of Etios Profession, operates the GTH Global Booking Engine, GTH Worldwide Stays, GTH Event Concierge, Global Real Estate research, B2B enquiries and multi-country Tender Intelligence. It provides a unified proprietary branded digital gateway and GTH Provider-Operated Handoffs to independent global travel, accommodation and ticket networks. Supplier-reported accommodation networks span millions of listings, but GTH PRO does not own or guarantee that inventory, payment, property title, tender awards or event admission.",
+        description: "GTH PRO Global, an initiative of Etios Profession, operates travel technology through the GTH Global Booking Engine, GTH Worldwide Stays, GTH Event Concierge, Global Real Estate research, B2B enquiries and multi-country Tender Intelligence. It provides a unified proprietary branded digital gateway and supplier-operated booking handoffs (GTH Provider-Operated Handoffs) to independent global travel, accommodation and ticket networks. Supplier-reported accommodation networks span millions of listings, but GTH PRO does not own or guarantee that inventory, payment, property title, tender awards or event admission.",
         logo: siteUrl("/images/gth-logo.png"),
         email: SITE_CONFIG.contactEmail,
         knowsAbout: [
