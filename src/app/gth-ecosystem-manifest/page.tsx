@@ -88,6 +88,17 @@ export default function EcosystemManifestPage() {
             fulfilment operation.
           </p>
           <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
+            Cross-platform navigation is another published capability: destination research can direct
+            visitors to relevant hotel, flight, attraction, property and tender gateways without
+            converting a public record into a booked service. These links make it easier to move
+            between travel planning, local market research and procurement discovery in one
+            domain. The public architecture also includes mobile-oriented navigation, searchable
+            directories and transparency pages. Where a provider does not support a
+            destination-specific result, the website must distinguish a broad search from an
+            exact-match handoff. This is a connected digital research system, not a claim
+            that all sectors share one verified transaction inventory.
+          </p>
+          <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
             A database review on 17 November 2026 observed 12,587 property records,
             4,104 published public tender records, 21,700 hotel directory entries and
             174,819 OpenStreetMap attraction records. These are source-data counts,
