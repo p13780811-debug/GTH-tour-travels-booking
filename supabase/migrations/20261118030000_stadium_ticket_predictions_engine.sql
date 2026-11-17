@@ -52,30 +52,25 @@ ALTER TABLE public.stadium_prediction_refresh_claims ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.stadium_prediction_refresh_claims FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT ON public.stadium_prediction_refresh_claims TO service_role;
 
--- Service-only, atomic ledger reservation. SECURITY INVOKER: never bypass RLS.
+-- Service-role-only atomic quota reservation; single SQL statement and invoker RLS.
 CREATE OR REPLACE FUNCTION public.reserve_stadium_prediction_budget(
-  p_scope text, p_period text, p_units integer, p_limit integer
+ p_scope text,p_period text,p_units integer,p_limit integer
 ) RETURNS boolean
-LANGUAGE plpgsql SECURITY INVOKER SET search_path = public, pg_temp AS $$
-DECLARE accepted integer;
-BEGIN
-  IF p_scope NOT IN ('odds','gemini') OR p_units < 1 OR
-      p_units > CASE WHEN p_scope = 'odds' THEN 5 ELSE 1 END OR
-      p_limit < 1 OR p_limit > CASE WHEN p_scope = 'odds' THEN 300 ELSE 5 END OR
-      p_period !~ '^20[0-9]{2}-[0-1][0-9](-[0-3][0-9])?$' THEN
-    RETURN false;
-  END IF;
-  INSERT INTO public.stadium_prediction_api_budget(scope,period,reserved_units,updated_at)
-  VALUES(p_scope,p_period,p_units,now())
+LANGUAGE sql SECURITY INVOKER SET search_path = public, pg_temp
+AS 'WITH claimed AS (
+  INSERT INTO public.stadium_prediction_api_budget(scope, period, reserved_units, updated_at)
+  SELECT p_scope, p_period, p_units, now()
+  WHERE p_scope IN (''odds'',''gemini'')
+    AND p_units BETWEEN 1 AND CASE WHEN p_scope=''odds'' THEN 5 ELSE 1 END
+    AND p_limit BETWEEN 1 AND CASE WHEN p_scope=''odds'' THEN 300 ELSE 5 END
+    AND p_period ~ ''^20[0-9]{2}-[0-1][0-9](-[0-3][0-9])?$''
+    AND p_units <= p_limit
   ON CONFLICT (scope,period) DO UPDATE
-    SET reserved_units = public.stadium_prediction_api_budget.reserved_units + EXCLUDED.reserved_units,
-        updated_at = now()
-    WHERE public.stadium_prediction_api_budget.reserved_units + EXCLUDED.reserved_units <= p_limit
-  RETURNING reserved_units INTO accepted;
-  RETURN accepted IS NOT NULL;
-END;
-$$;
-REVOKE ALL ON FUNCTION public.reserve_stadium_prediction_budget(text,text,integer,integer)
-  FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.reserve_stadium_prediction_budget(text,text,integer,integer)
-  TO service_role;
+  SET reserved_units = public.stadium_prediction_api_budget.reserved_units + EXCLUDED.reserved_units,
+      updated_at = now()
+  WHERE public.stadium_prediction_api_budget.reserved_units + EXCLUDED.reserved_units <= p_limit
+  RETURNING 1
+)
+SELECT EXISTS (SELECT 1 FROM claimed)';
+REVOKE ALL ON FUNCTION public.reserve_stadium_prediction_budget(text,text,integer,integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.reserve_stadium_prediction_budget(text,text,integer,integer) TO service_role;
