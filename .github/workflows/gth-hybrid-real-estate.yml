@@ -52,7 +52,11 @@ jobs:
             tests/hybrid-real-estate/permissions.sql \
             tests/estate-workspace/bootstrap.sql \
             supabase/migrations/20261029161415_estate_intelligence_workspace.sql \
-            supabase/migrations/20261029230929_estate_discovery_quality.sql; do
+            supabase/migrations/20261029230929_estate_discovery_quality.sql \
+            tests/hybrid-real-estate/pr220-nri-bootstrap.sql \
+            supabase/migrations/20261117000100_nri_investor_leads.sql \
+            supabase/migrations/20261117002000_property_verified_gold_sort.sql \
+            tests/hybrid-real-estate/pr220-gold-security.sql; do
             psql -h 127.0.0.1 -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
           done
           # The workspace fixture is always rolled back, including all test users and data.
