@@ -113,7 +113,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
 
 const sections = [
   { id: "property", title: "Real Estate", detail: "Search projects, villas, apartments and listings", Icon: Building2 },
-  { id: "hotel", title: "Hotels", detail: "Find Nuitee bookable stays; city lookup requires supplier selection", Icon: Hotel },
+  { id: "hotel", title: "Hotels", detail: "Explore GTH Worldwide Stays; select a real destination to see provider availability", Icon: Hotel },
   { id: "flight", title: "Flights", detail: "Search flight routes, dates and observed fares", Icon: Plane },
   { id: "tender", title: "Tenders", detail: "Research current source-backed procurement notices", Icon: FileSearch },
   { id: "ticket", title: "Worldwide Tickets", detail: "Discover official event and stadium ticket sources, not guaranteed live seats", Icon: Ticket },
