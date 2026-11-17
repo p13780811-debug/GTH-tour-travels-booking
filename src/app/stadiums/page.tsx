@@ -7,6 +7,7 @@ import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import StadiumDirectory from "./StadiumDirectory";
 import StadiumPartnerDiscovery from "./StadiumPartnerDiscovery";
 import StadiumUpcomingEvents from "./StadiumUpcomingEvents";
+import TicketPredictionFeed from "@/components/stadium/TicketPredictionFeed";
 import StadiumEventDiscovery from "./StadiumEventDiscovery";
 import StadiumTicketDestinations from "./StadiumTicketDestinations";
 import { upcomingStadiumEvents } from "@/lib/travel/stadiums";
@@ -46,6 +47,7 @@ export default function StadiumsPage() {
       <StadiumPartnerDiscovery/>
       <StadiumEventDiscovery events={reviewedEvents}/>
       <StadiumUpcomingEvents/>
+      <TicketPredictionFeed/>
       <section className="mt-8" aria-labelledby="stadium-exact-offers-heading">
         <header>
           <h2 id="stadium-exact-offers-heading" className="text-2xl font-bold sm:text-3xl">Reviewed event & club experiences</h2>
