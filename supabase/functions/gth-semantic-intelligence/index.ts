@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.49.10";
+import { isServiceCaller } from "./service-auth.ts";
 
 /**
  * GTH PRO native semantic inference: no external AI API, no user PII, no
@@ -79,7 +80,14 @@ async function main(req:Request):Promise<Response>{
  const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
  const endpoint=Deno.env.get("SUPABASE_URL");
  // This service-role JWT is never embedded in a public widget or returned.
- if(!service||!endpoint||req.headers.get("authorization")!=="Bearer "+service)return json({error:"Forbidden"},403);
+ if(!service||!endpoint)return json({error:"Forbidden"},403);
+ const authorized=await isServiceCaller(req.headers.get("authorization"),service,async token=>{
+  const verifier=createClient(endpoint,token,{auth:{persistSession:false,autoRefreshToken:false}});
+  const {error}=await verifier.from("gth_semantic_public_records").select("id",{head:true})
+   .limit(1).abortSignal(AbortSignal.timeout(4000));
+  return !error;
+ });
+ if(!authorized)return json({error:"Forbidden"},403);
  let input:Record<string,unknown>;
  try { const body=await req.text();if(body.length>2000)throw Error(); const parsed=JSON.parse(body);
   if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))throw Error();input=parsed;

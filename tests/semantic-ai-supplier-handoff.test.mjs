@@ -10,7 +10,7 @@ test("native AI uses a real 384-dimension gte-small session and bounded source-v
  assert.match(edge,/raw\.length!==384/);
  assert.match(edge,/BATCH_MAX = 3/);
  assert.match(edge,/input\.operation!=="index"/);
- assert.match(edge,/req\.headers\.get\("authorization"\)!=="Bearer "\+service/);
+ assert.match(edge,/await isServiceCaller\(req\.headers\.get\("authorization"\),service/);
  assert.match(edge,/r\.source_verified!==true/);
  assert.match(edge,/r\.verified!==true/);
  assert.match(edge,/source_license!=="ODbL-1\.0"/);
