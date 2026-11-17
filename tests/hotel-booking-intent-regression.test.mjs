@@ -29,7 +29,8 @@ test("global and mobile search never confuse public OSM listings with live Nuite
  const mobile=read("src/lib/mobile/universal-search.ts");
  assert.match(glob,/if \(category === "hotel"\)/);
  assert.match(glob,/new URLSearchParams\(\{view:"booking"/);
- assert.match(glob,/view:"directory", name: item\.name/);
+ assert.match(glob,/view:"booking", name: item\.name/);
+ assert.doesNotMatch(glob,/view:"directory", name: item\.name/);
  assert.match(mobile,/category==="hotel"\)return \{category,href:hotelTarget\(query\)\}/);
  assert.match(mobile,/view:"booking",city:city\.name/);
  assert.match(mobile,/view:"booking",city:place/);
