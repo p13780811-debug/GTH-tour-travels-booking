@@ -43,8 +43,8 @@ export default async function SupplierTourCatalog({search,basePath}:{search:Tour
  const indiaUsdProducts=items.some(product=>product.currency==="USD" && product.city.country.toLocaleLowerCase()==="india" && product.price!==null);
  const inrReference=indiaUsdProducts?await getUsdInrReference():null;
  if(!all.length&&(result.status==="invalid"||result.status==="empty"))return null;
- return <section aria-label="Original WeGoTrip products" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-  <h2 className="text-xl font-bold">{basePath==="/tours"?"Original supplier tours":"Supplier tickets and experiences"}</h2>
+ return <section aria-label="GTH Experiences reviewed tour products" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+  <h2 className="text-xl font-bold">{basePath==="/tours"?"GTH Experiences · Source-reviewed tours":"Supplier tickets and experiences"}</h2>
   {result.status==="unavailable"&&!all.length?<p role="status" className="mt-3 text-sm text-[var(--text-soft)]">The original supplier catalogue is temporarily unavailable. Search independent booking partners below, or try again later.</p>:<>
    <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Verified supplier products{search.city?" for "+search.city:" from India and worldwide"}. Browse a curated selection, not the provider’s complete inventory. New eligible imports become visible without a redeploy. Original photos, listed prices and booking details remain with the supplier.</p>
    {items.length?<div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(product=><SupplierTourCard key={product.provider+":"+product.id} product={product} inrReference={inrReference}/>)}</div>:
