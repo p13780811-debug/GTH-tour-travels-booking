@@ -74,7 +74,7 @@ test("only fixed, curated routes may become affiliate handoffs", async () => {
     ["train", "Bangkok", "Chiang Mai", "/train/bangkok/chiang-mai"],
     ["bus", "Hanoi", "Sapa", "/bus/hanoi/sapa"],
     ["train", "Hanoi", "Sapa", "/train/hanoi/sapa"],
-    ["ferry", "Phuket", "Koh Phi Phi", "/routes/thailand/phuket-to-koh-phi-phi"],
+    ["ferry", "Koh Phi Phi", "Phuket", "/ferry/koh-phi-phi/phuket"],
     ["bus", "Dubrovnik", "Split", "/bus/dubrovnik/split"],
     ["ferry", "Dubrovnik", "Split", "/ferry/dubrovnik/split"],
   ]) {
