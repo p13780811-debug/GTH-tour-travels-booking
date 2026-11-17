@@ -105,7 +105,7 @@ export default function TenderBidGenerator({tender}:{tender:PublicTender}) {
       ["Company",profile.company],["GST/Tax ID",profile.tax],["Contact",profile.contact],
       ["Description","Quantity","Unit","Currency","Quoted amount","Delivery timeline"],
       ["Provisional lump-sum quotation","1","lot",draft.currency,profile.amount,profile.timeline]
-    ].map(row=>row.map(csvCell).join(",")).join("\r\n");
+    ].map(row=>row.map(value=>csvCell(value??"")).join(",")).join("\r\n");
     downloadTenderFile(format==="csv"?"\uFEFF"+csv:draft.text,name,format==="csv"?"text/csv;charset=utf-8":"text/plain;charset=utf-8");
     setMessage(format.toUpperCase()+" downloaded.");
   }
