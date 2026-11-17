@@ -11,6 +11,7 @@ import {
 import { destinations } from "@/data/destinations";
 import { knownStadiumTicketHref } from "@/lib/travel/stadium-ticket-routing";
 import { blogs } from "@/data/blogs";
+import { parseGthIntent, connectedIntentLinks } from "@/lib/search/connected-intent";
 
 // Do not index infinite query-result combinations, including after public launch.
 export const dynamic = "force-dynamic";
@@ -126,11 +127,17 @@ const sections = [
 
 export default async function MasterSearchResults({ searchParams }: Props) {
   const params = await searchParams;
-  const query = (typeof params.q === "string" ? params.q : "").trim().slice(0, 100);
+  const query = (typeof params.q === "string" ? params.q : "").trim().slice(0, 200);
   const requested = typeof params.category === "string" ? params.category : "all";
   const selected: SearchCategory = categoryIds.includes(requested as SearchCategory) ? requested as SearchCategory : "all";
+  // A compound query must never be misrouted to only the first keyword category.
+  // Matching infrastructure/property relationships still require source verification.
+  const parsedIntent = query && selected === "all"
+    ? parseGthIntent(query, destinations.map(item => item.name)) : null;
+  const connectedTargets = parsedIntent ? connectedIntentLinks(parsedIntent) : [];
+  const multiSector = (parsedIntent?.sectors.length ?? 0) > 1;
   if (query) {
-    const intent = selected !== "all" ? selected : inferredCategory(query);
+    const intent = selected !== "all" ? selected : multiSector ? "all" : inferredCategory(query);
     if (intent === "tender") {
       const subject = query.replace(/\b(tenders?|procurement|e-?procurement|rfp|bidding|bid notices?|find|search|for|in)\b/gi, " ").replace(/\s+/g, " ").trim();
       const results = await searchPublicTenders({ q: subject || query, country: "", sector: "", page: 1 });
@@ -152,7 +159,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
   let tenderMatches: { id: string; title: string; buyer: string; country_code: string }[] = [];
   // A temporary source outage is not proof that no published records exist.
   let sourceSearchUnavailable = false;
-  if (query.length >= 2) {
+  if (query.length >= 2 && !multiSector) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (url && key) {
@@ -223,7 +230,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
             <label className="flex min-h-12 min-w-0 items-center gap-3 px-3">
               <Search size={20} className="shrink-0 text-[var(--gold)]" />
               <span className="sr-only">Search any GTH PRO topic</span>
-              <input name="q" type="search" maxLength={100} required defaultValue={query}
+              <input name="q" type="search" maxLength={200} required defaultValue={query}
                 placeholder="e.g. Hotels in Mumbai, villas in Dubai, tenders..."
                 className="w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-soft)]" />
             </label>
@@ -244,6 +251,40 @@ export default async function MasterSearchResults({ searchParams }: Props) {
           </form>
         </div>
       </section>
+
+      {multiSector && parsedIntent && (
+        <section aria-labelledby="connected-intent-heading" className="border-b border-[var(--border)] bg-[var(--bg)]">
+          <div className="mx-auto max-w-[1200px] px-5 py-8 sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">GTH Connected Intent · Zero paid AI calls</p>
+            <h2 id="connected-intent-heading" className="mt-2 text-xl font-semibold sm:text-2xl">Your request spans several platforms</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
+              Recognized {parsedIntent.sectors.join(" + ")}
+              {parsedIntent.place ? " in " + parsedIntent.place : ""}.
+              This is a structured search interpretation, not a verified property-to-project match.
+              Open the underlying records to verify location, publication, eligibility and freshness.
+            </p>
+            {parsedIntent.budget && (
+              <p className="mt-2 text-sm text-[var(--text-soft)]">
+                Budget mentioned: {parsedIntent.budget.amount.toLocaleString("en-IN")}
+                {parsedIntent.budget.currency ? " " + parsedIntent.budget.currency : " (currency unspecified; no price filter applied)"}.
+                {!parsedIntent.budget.upperBound ? " No maximum-price constraint was inferred." : ""}
+              </p>
+            )}
+            {parsedIntent.needsVerifiedCrossSectorMatch && (
+              <p className="mt-2 text-sm text-[var(--text-soft)]">
+                Any property and government-project proximity must be proven by the published tender location and property coordinates; neither approval nor investment return is implied.
+              </p>
+            )}
+            <div className="mt-5 flex flex-wrap gap-3">
+              {connectedTargets.map(item => (
+                <Link key={item.sector} href={item.href} className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2">
+                  {item.label} <ArrowRight size={16}/>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 md:py-16">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.15em] text-[var(--gold)]">
