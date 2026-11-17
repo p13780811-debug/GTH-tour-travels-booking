@@ -1,9 +1,13 @@
+import EventShockwave from "@/components/intelligence/EventShockwave";
+import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, Ticket } from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
+import MatchDayConcierge from "@/components/travel/MatchDayConcierge";
+import {safeHotelHandoff} from "@/lib/travel/stadium-concierge";
 import { findStadium, stadiums, upcomingStadiumEvents } from "@/lib/travel/stadiums";
 import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
 import { stadiumPartnerSearchLinks } from "@/lib/travel/stadium-partner-discovery";
@@ -69,9 +73,12 @@ export default async function StadiumPage({ params }: Props) {
         <Ticket size={30} className="text-[var(--gold)]" aria-hidden="true"/>
         <p className="mt-4 text-sm font-semibold text-[var(--gold)]">{venue.city}, {venue.country} · {venue.sports.join(" · ")}</p>
         <h1 className="mt-3 text-3xl font-bold sm:text-5xl">{venue.name}</h1>
+        <ViralCardGenerator kind="stadium" title={venue.name} subtitle={venue.city+" · "+venue.country} path={"/stadiums/"+venue.slug}/>
         <ShareTripPlanButton title={venue.name+" stadium visit"} venue={venue.name} city={venue.city} countryCode={venue.countryCode} path={"/stadiums/"+venue.slug}/>
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">{venue.overview}</p>
       </header>
+      <EventShockwave target={{kind:"stadium",id:venue.slug}}/>
+      <MatchDayConcierge slug={venue.slug} name={venue.name} bookingUrl={safeHotelHandoff(venue)}/>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">
           <h2 className="text-2xl font-bold">Events & official sources</h2>
