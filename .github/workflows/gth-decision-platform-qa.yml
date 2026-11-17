@@ -9,6 +9,7 @@ on:
       - "src/app/api/tender/**"
       - "src/app/search/**"
       - "tests/market-booking-handoffs.test.mjs"
+      - "tests/semantic-ai-supplier-handoff.test.mjs"
       - "tests/connected-intent.test.mjs"
       - ".github/workflows/gth-decision-platform-qa.yml"
   workflow_dispatch:
@@ -24,7 +25,7 @@ jobs:
         with:
           node-version: "22"
       - name: Verify independent booking/search and multi-sector intent
-        run: node --test tests/market-booking-handoffs.test.mjs tests/connected-intent.test.mjs
+        run: node --test tests/market-booking-handoffs.test.mjs tests/connected-intent.test.mjs tests/semantic-ai-supplier-handoff.test.mjs
   app-production-build:
     runs-on: ubuntu-latest
     timeout-minutes: 18
