@@ -19,23 +19,23 @@ function safeUrl(value:unknown,osm=false):string|null {
  if(typeof value!=="string"||value.length>1024)return null;
  try { const u=new URL(value);
   if(u.protocol!=="https:"||u.username||u.password||u.port||u.hash||!u.hostname.includes(".")
-    ||/^(localhost|127\\.|10\\.|192\\.168\\.)/.test(u.hostname))return null;
+    ||/^(localhost|127\.|10\.|192\.168\.)/.test(u.hostname))return null;
   if(osm&&u.hostname!=="www.openstreetmap.org")return null;
   return u.href;
  }catch{return null;}
 }
 function clean(value:unknown,max:number):string {
- return typeof value==="string"?value.normalize("NFKC").replace(/[\\u0000-\\u001f\\u007f<>]/g," ").replace(/\\s+/g," ").trim().slice(0,max):"";
+ return typeof value==="string"?value.normalize("NFKC").replace(/[\u0000-\u001f\u007f<>]/g," ").replace(/\s+/g," ").trim().slice(0,max):"";
 }
 function sourceFromRow(sector:Sector,r:Record<string,unknown>):Source|null {
  const title=clean(sector==="hotel_directory"?r.name:r.title??r.name,180);
- const country=clean(sector==="property"?"IN":r.country_code,2).toUpperCase();
+ const country=clean(sector==="property"&&r.country==="India"?"IN":r.country_code,2).toUpperCase();
  const city=clean(r.city??r.region,100)||null;
  const id=clean(sector==="property"?String(r.id??""):sector==="tender"?r.id:r.source_id,150);
  const path = sector==="property"&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(r.slug??""))
    ? "/real-estate/"+r.slug :
    sector==="tender"&&/^[a-f0-9-]{36}$/i.test(id) ? "/tender/"+id :
-   /^(node|way|relation)\\/[1-9][0-9]{0,18}$/.test(id) ?
+   /^(node|way|relation)\/[1-9][0-9]{0,18}$/.test(id) ?
      (sector==="attraction"?"/attractions/osm/":"/hotels/stay/osm:")+id.replace("/","-") : "";
  const osm=sector==="attraction"||sector==="hotel_directory";
  const sourceUrl=safeUrl(sector==="property"?r.official_source_url:r.source_url,osm);
@@ -97,7 +97,7 @@ async function main(req:Request):Promise<Response>{
   });
   if(error)return json({error:"Semantic index temporarily unavailable"},503);
   const results=(Array.isArray(data)?data:[]).filter(r=>
-   r&&typeof r.canonical_path==="string"&&/^\\/(real-estate|tender|attractions|hotels)\\/[\\w/:-]+$/.test(r.canonical_path)
+   r&&typeof r.canonical_path==="string"&&/^\/(real-estate|tender|attractions|hotels)\/[\w/:-]+$/.test(r.canonical_path)
    &&typeof r.similarity==="number"&&r.similarity>=0.35).slice(0,6);
   return json({model:"gte-small",indexed:results.length>0,results});
  }
@@ -106,14 +106,14 @@ async function main(req:Request):Promise<Response>{
  const offset=input.offset===undefined?0:Number(input.offset);
  if(!SECTORS.has(sector)||!Number.isSafeInteger(offset)||offset<0||offset>1000)return json({error:"Invalid indexing scope"},400);
  const select=sector==="tender"?"id,title,region,country_code,status,is_public,source_verified,source_reference,source_url,deadline_at":
-  sector==="property"?"id,title,slug,city,verified,official_source_reference,official_source_url":
+  sector==="property"?"id,title,slug,city,country,verified,official_source_reference,official_source_url":
   sector==="attraction"?"source_id,name,city,country_code,source_license,source_url,is_public":
   "source_id,name,city,country_code,source_license,source_url,source";
  const table=sector==="property"?"properties":sector==="tender"?"tenders":sector==="attraction"?"gth_osm_attractions":"hotel_catalog";
  let q=db.from(table).select(select);
  if(sector==="tender")q=q.eq("is_public",true).eq("source_verified",true).eq("status","published")
   .gt("deadline_at",new Date(Date.now()+3600000).toISOString()).order("deadline_at",{ascending:true});
- else if(sector==="property")q=q.eq("verified",true).not("official_source_url","is",null).order("id",{ascending:true});
+ else if(sector==="property")q=q.eq("country","India").eq("verified",true).not("official_source_url","is",null).order("id",{ascending:true});
  else if(sector==="attraction")q=q.eq("is_public",true).eq("source_license","ODbL-1.0").not("country_code","is",null).order("source_id",{ascending:true});
  else q=q.eq("source","osm").eq("source_license","ODbL-1.0").not("country_code","is",null).order("source_id",{ascending:true});
  const {data,error}=await q.range(offset,offset+11);
