@@ -13,7 +13,18 @@ create table if not exists public.property_nri_inquiries (
  property_id bigint references public.properties(id),
  full_name varchar(150) not null,
  email varchar(150) not null,
- phone_e164 varchar(16) not null check (phone_e164 ~ '^\\+[1-9][0-9]{7,14}$'),
+ phone_e164 varchar(16) not null check (phone_e164 ~ '^[+][1-9][0-9]{7,14}),
+ investor_corridor varchar(30) not null,
+ investor_currency varchar(3) not null,
+ lead_priority text not null default 'NRI_HIGH_VALUE' check(lead_priority='NRI_HIGH_VALUE'),
+ consent_at timestamptz not null default now(),
+ created_at timestamptz not null default now()
+);
+alter table public.property_nri_inquiries enable row level security;
+revoke all on public.property_nri_inquiries from public,anon,authenticated;
+grant select,insert on public.property_nri_inquiries to service_role;
+grant usage,select on sequence public.property_nri_inquiries_id_seq to service_role;
+),
  investor_corridor varchar(30) not null,
  investor_currency varchar(3) not null,
  lead_priority text not null default 'NRI_HIGH_VALUE' check(lead_priority='NRI_HIGH_VALUE'),
