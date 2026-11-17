@@ -8,8 +8,8 @@ import { ArrowUpRight, CarFront, MapPin } from "lucide-react";
 // Do not build script URLs from visitor input.
 const widgets = {
   airport: {
-    title: "intui.travel airport transfers",
-    description: "Search intui.travel airport pickup and drop-off options in its own supplier widget. Confirm geographic coverage and pickup details with the provider.",
+    title: "GTH Mobility · Airport Transfers",
+    description: "Search GTH Mobility airport pickup and drop-off options using the connected supplier widget. Confirm geographic coverage and pickup details with the provider.",
     src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&header=Airport%20transfers%20executed%20by%20local%20Professional%20companies&powered_by=true&color_scheme=bg&b_counter=true&b_benefit=true&b_descr=true&b_about=true&b_map=true&b_reviews=true&b_breadcrumbs=true&b_poweredby=true&b_numbers=true&b_trustpilot=true&b_assortment=true&b_reliable=true&b_extended=true&b_how=true&b_faq=true&b_why=true&b_easybook=true&campaign_id=22&promo_id=1504",
   },
   options: {
