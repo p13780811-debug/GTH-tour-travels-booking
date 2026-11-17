@@ -2,9 +2,9 @@
 import {useState} from "react";
 import {convertCurrency,displayCurrency,INVESTOR_CORRIDORS,type InvestorCurrency} from "@/lib/real-estate/investor-currency";
 type Corridor=keyof typeof INVESTOR_CORRIDORS;
-const codes=["INR","USD","AED","GBP"] as const;
-export default function NriInvestorDesk(){
- const [enabled,setEnabled]=useState(false),[currency,setCurrency]=useState<InvestorCurrency>("INR"),[corridor,setCorridor]=useState<Corridor>("mmr");
+const codes=["INR","USD","AED","GBP","EUR","SGD"] as const;
+export default function NriInvestorDesk({currency,onCurrencyChange}:{currency:InvestorCurrency;onCurrencyChange:(value:InvestorCurrency)=>void}){
+ const [enabled,setEnabled]=useState(false),[corridor,setCorridor]=useState<Corridor>("mmr");
  const [amount,setAmount]=useState(10000000),[roi,setRoi]=useState(5),[rate,setRate]=useState(8.5),[years,setYears]=useState(20);
  const [name,setName]=useState(""),[email,setEmail]=useState(""),[phone,setPhone]=useState(""),[consent,setConsent]=useState(false),[status,setStatus]=useState(""),[success,setSuccess]=useState(false),[busy,setBusy]=useState(false);
  const field="mt-1 block min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 text-[var(--text)]";
@@ -26,7 +26,7 @@ export default function NriInvestorDesk(){
   {enabled&&<div className="mt-5 space-y-5">
    <p className="text-sm text-[var(--text-soft)]">Illustrative currency conversions only; static reference rates, not live FX or transaction quotes. Search corridors do not guarantee available listings.</p>
    <div className="flex flex-wrap gap-2">{Object.entries(INVESTOR_CORRIDORS).map(([key,value])=><button type="button" key={key} aria-pressed={corridor===key} className="gth-btn" onClick={()=>{const selected=key as Corridor;setCorridor(selected);const url=new URL(window.location.href);if(value.country)url.searchParams.set("country",value.country);else url.searchParams.delete("country");if(value.city)url.searchParams.set("city",value.city);else url.searchParams.delete("city");url.searchParams.delete("page");window.history.replaceState(null,"",url);window.dispatchEvent(new Event("gth-search-load"));}}>{value.label}</button>)}</div>
-   <label className="block text-sm">Display currency<select className={field} value={currency} onChange={e=>setCurrency(e.target.value as InvestorCurrency)}>{codes.map(c=><option key={c}>{c}</option>)}</select></label>
+   <label className="block text-sm">Display currency<select className={field} value={currency} onChange={e=>onCurrencyChange(e.target.value as InvestorCurrency)}>{codes.map(c=><option key={c}>{c}</option>)}</select></label>
    <div className="grid gap-4 sm:grid-cols-3">
     <label className="text-sm">Illustrative investment (INR)<input className={field} type="number" min="100000" max="10000000000" value={amount} onChange={e=>setAmount(Math.min(1e10,Math.max(100000,Number(e.target.value)||100000)))}/></label>
     <label className="text-sm">Annual gross yield %<input className={field} type="number" min="0" max="30" step=".1" value={roi} onChange={e=>setRoi(Math.min(30,Math.max(0,Number(e.target.value)||0)))}/></label>
