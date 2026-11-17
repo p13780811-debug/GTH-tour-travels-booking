@@ -145,6 +145,7 @@ const reviewedGrowthFiles=new Set([
 // If any implementation, URL, API, policy or CSS changes later, the blob check
 // fails closed until that precise edit receives another review.
 const reviewedBrandBlobs=new Map([
+  ["tests/pr204-handoff-integrity.test.mjs","1f5db509d6c20d80ed68c3424b135fbd97fb9e62"],
   ["tests/live-public-ux-audit-fixes.test.mjs","4816c40615cc4f46f0cfbf7920c76016e12a85f8"],
   ["tests/cruises-indian-waters.test.mjs","4184e9c907e39fc440732d21b199ba10b365813c"],
   ["tests/consolidated-pr204-206-207-release.test.mjs","a3397a59e8e8997add7f77cfb03df6479e240f06"],
