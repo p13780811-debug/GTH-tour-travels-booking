@@ -106,6 +106,11 @@ export default function SiteIdentitySchema() {
           },
           {
             "@type": "WebPage",
+            name: "How GTH PRO Works",
+            url: siteUrl("/system"),
+          },
+          {
+            "@type": "WebPage",
             name: "GTH PRO Ecosystem Manifest",
             url: siteUrl("/gth-ecosystem-manifest"),
           },
