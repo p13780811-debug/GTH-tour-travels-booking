@@ -82,12 +82,11 @@ test("Legacy RERA villages display recorded district, but no unverified index or
     assert.deepEqual(data.projects.map(x=>x.district),["Pune","Pune"]);
     assert.deepEqual(data.projects.map(x=>x.city),["Mumbai","Mumbai"]);
     assert.equal(data.indexable,false);
-    assert.equal(data.hotels.length,1);
-    assert.equal(data.hotels[0].id,"osm:node-12345");
-    assert.ok(data.hotels[0].distanceKm<5);
+    assert.equal(data.hotels.length,0);
+    assert.equal(data.anchor,null,"Legacy geotags without official source must not justify 5km claims");
     assert.ok(!data.projects.some(x=>x.sourceUrl));
     assert.ok(calls.some(c=>c.table==="properties"&&c.op==="limit"&&c.args[0]===18));
-    assert.ok(calls.some(c=>c.table==="hotel_catalog"&&c.op==="limit"&&c.args[0]===160));
+    assert.ok(!calls.some(c=>c.table==="hotel_catalog"),"No hotel DB read without independent source evidence");
   }finally{
     if(oldUrl===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_URL;else process.env.NEXT_PUBLIC_SUPABASE_URL=oldUrl;
     if(oldKey===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY=oldKey;
