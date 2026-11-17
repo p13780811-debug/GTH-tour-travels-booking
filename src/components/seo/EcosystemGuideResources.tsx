@@ -82,20 +82,20 @@ export default function EcosystemGuideResources({slug}:{slug:string}){
         <Link key={p.slug} href={p.destination} className={css}>{body}</Link>;
      })}
      {whiteLabel&&<a href={whiteLabel} target="_blank" rel="noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">
-      <span>Nuitee-hosted Hotel White Label <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Generic hotel booking search; dates and room quotes only on supplier</span></span>
+      <span>GTH Worldwide Stays <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Generic hotel booking search; dates and room quotes only on supplier</span></span>
       <ArrowUpRight size={16} aria-hidden="true" className="shrink-0"/>
      </a>}
      {getYourGuide&&<a href={getYourGuide} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">
-      <span>GetYourGuide cruise search <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Referral search · not a particular cruise or guaranteed booking</span></span>
+      <span>GTH Cruises · Explore sailings <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Referral search · not a particular cruise or guaranteed booking</span></span>
       <ArrowUpRight size={16} aria-hidden="true" className="shrink-0"/>
      </a>}
      {klook&&<a href={klook} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">
-      <span>Klook destination activity search <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Existing Travelpayouts tracking, supplier-controlled results</span></span>
+      <span>GTH Experiences · Destination activities <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Tracked provider-operated handoff; supplier-controlled results</span></span>
       <ArrowUpRight size={16} aria-hidden="true" className="shrink-0"/>
      </a>}
     </nav>
     <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-     Eligible referral purchases may generate commission. Not every Travelpayouts programme has an individually verified public deep link on GTH PRO.
+     Eligible referral purchases may generate commission. Not every connected provider has an individually verified deep link on GTH PRO.
      Read the <Link href="/affiliate-disclosure" className="underline">affiliate disclosure</Link>.
     </p>
    </div>}
