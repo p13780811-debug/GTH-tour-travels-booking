@@ -83,7 +83,7 @@ export default function TiqetsPartnerWidgets() {
       </div>
       <p className="mt-4 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
         <ShieldCheck size={16} className="mt-1 shrink-0" aria-hidden="true"/>
-        Affiliate-tracked links are marked as sponsored. Tiqets' direct website link is not affiliate-tracked.
+        Affiliate-tracked links are marked as sponsored. Some direct provider links are not affiliate-tracked.
         GTH PRO does not confirm or issue tickets, and displayed providers are not confirmed inventory.
       </p>
     </section>

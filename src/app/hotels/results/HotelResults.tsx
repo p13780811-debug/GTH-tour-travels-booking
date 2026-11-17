@@ -21,6 +21,13 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  const stay=validatedHotelStay(scope?.checkin,scope?.checkout,scope?.adults);
  const staySuffix=stay?"?"+new URLSearchParams({checkin:stay.checkin,checkout:stay.checkout,...(stay.adults?{adults:String(stay.adults)}:{})}).toString():"";
  const hotelPath=(hotel:Stay)=>hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix;
+ // Booking is always offered, including when no OSM record has a reviewed supplier ID.
+ // An exact supplier hotel route is used only after the existing booking_ready review.
+ const hotelBookingHref=(hotel:Stay)=>hotel.booking_ready
+   ?"/hotels/partner/"+encodeURIComponent(String(hotel.id))
+   :"/hotels?"+new URLSearchParams({view:"booking",name:hotel.name,
+     ...(hotel.city?{city:hotel.city}:{}),
+     ...(hotel.country&&/^[A-Z]{2}$/.test(hotel.country)?{country:hotel.country}:{})}).toString();
  const filterHref=(overrides:Partial<HotelSearchScope>)=>"/hotels/results?"+hotelSearchParams({
   city:effectiveCity,destination:effectiveDestination,name:effectiveName,country:effectiveCountry,
   category:effectiveCategory,sort:effectiveSort,source:effectiveSource,
@@ -77,7 +84,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
  if(!items.length)return <div role="status" className="gth-glass rounded-2xl border border-[var(--border)] p-7">
   <h3 className="text-lg font-semibold">Hotel records for {placeLabel} are not imported yet</h3>
   <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">The destination is connected to our real accommodation catalog, but no matching source-backed records are available yet. This does not mean hotels or rooms are unavailable. New licensed records are synchronized automatically.</p>
-  <Link href={"/hotels?"+new URLSearchParams({view:"booking",...(effectiveCity?{city:effectiveCity}:{}),...(effectiveDestination?{destination:effectiveDestination}:{}),...(effectiveName?{name:effectiveName}:{})}).toString()} className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Search rooms with Nuitee <ArrowRight size={16}/></Link>
+  <Link href={"/hotels?"+new URLSearchParams({view:"booking",...(effectiveCity?{city:effectiveCity}:{}),...(effectiveDestination?{destination:effectiveDestination}:{}),...(effectiveName?{name:effectiveName}:{})}).toString()} className="gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Find rooms in GTH Worldwide Stays <ArrowRight size={16}/></Link>
  </div>;
  return <section aria-label={"Hotels in "+placeLabel} className="space-y-5">
   <p className="text-sm text-[var(--text-soft)]"><strong className="text-[var(--text)]">{total.toLocaleString()}</strong> source-backed accommodation records for {placeLabel} · Prices, stars and room availability unverified</p>
@@ -102,7 +109,7 @@ export default function HotelResults({city="",destination="",compactRail=false,s
         <p className="mt-1 line-clamp-1 flex items-center gap-1 text-xs text-[var(--text-soft)]"><MapPin size={13} aria-hidden="true"/>{hotel.city}{hotel.country?", "+hotel.country:""}</p>
         <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">{hotel.booking_ready?"Open exact partner hotel":"View hotel & source"} <ArrowRight size={15}/></span>
       </div>
-    </Link><div className="px-2 pb-2"><ShareFeedbackActions title={hotel.name} path={hotelPath(hotel)}/></div></article>)}
+    </Link><div className="px-2 pb-2"><Link href={hotelBookingHref(hotel)} className="gth-btn gth-btn-gold mb-2 flex min-h-11 items-center justify-center text-xs">{hotel.booking_ready?"Book exact hotel":"Find rooms for this hotel"}</Link><ShareFeedbackActions title={hotel.name} path={hotelPath(hotel)}/></div></article>)}
   </div>}
 
   {!compactRail&&<nav aria-label="Mobile accommodation categories" className="flex gap-2 overflow-x-auto pb-2 lg:hidden">
@@ -161,7 +168,8 @@ export default function HotelResults({city="",destination="",compactRail=false,s
      <p className="mt-3 text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0 · Source location":"Approved hotel supplier record"}</p>
      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row md:flex-col xl:flex-row">
       <Link href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">{hotel.booking_ready?"Open verified partner hotel":"View hotel & source"} <ArrowRight size={16}/></Link>
-      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "This exact hotel has a reviewed booking partner link" : "No exact partner booking link yet"}</p>
+      {!hotel.booking_ready&&<Link href={hotelBookingHref(hotel)} className="gth-btn gth-btn-gold inline-flex min-h-11 flex-1 items-center justify-center gap-2 text-sm font-semibold">Find rooms for this hotel <ArrowRight size={16}/></Link>}
+      <p className="flex-1 self-center text-xs text-[var(--text-soft)]">{hotel.booking_ready ? "This exact hotel has a reviewed booking partner link" : "Exact supplier hotel ID not verified; continue in live booking search"}</p>
      </div>
      <div className="mt-2 flex flex-wrap items-center gap-3">
        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={selectedHotelIds.includes(String(hotel.id))} disabled={!selectedHotelIds.includes(String(hotel.id))&&selectedHotelIds.length>=3} onChange={e=>setSelectedHotelIds(old=>e.target.checked?[...old,String(hotel.id)]:old.filter(id=>id!==String(hotel.id)))} />Compare</label>

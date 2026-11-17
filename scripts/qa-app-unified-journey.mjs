@@ -33,12 +33,12 @@ try{
   await page.getByRole("heading",{name:/Four paths, one Home/}).waitFor({timeout:25000});
   assert.ok(await page.getByRole("link",{name:/Explore Travel/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Real Estate/}).isVisible());
-  assert.ok(await page.getByRole("link",{name:/Explore Tender Vision/}).isVisible());
+  assert.ok(await page.getByRole("link",{name:/Explore Tenders/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).isVisible());
   // The four visual pillars must honor native app handoffs when available.
   assert.equal(await page.getByRole("link",{name:/Explore Travel/}).getAttribute("href"),"/app/destinations");
   assert.equal(await page.getByRole("link",{name:/Explore Real Estate/}).getAttribute("href"),"/app/property");
-  assert.equal(await page.getByRole("link",{name:/Explore Tender Vision/}).getAttribute("href"),"/app/tenders");
+  assert.equal(await page.getByRole("link",{name:/Explore Tenders/}).getAttribute("href"),"/app/tenders");
   assert.equal(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).getAttribute("href"),"/tickets");
   assert.equal(await page.locator('form[action="/app/search"]').count(),1);
   assert.ok(await page.getByRole("link",{name:"Open my Research Desk"}).isVisible());
@@ -65,7 +65,8 @@ try{
    await page.waitForTimeout(450);
    const moved=await page.evaluate(()=>window.scrollY);
    assert.ok(moved>15,"Finger drag on the Mumbai/Goa hero must scroll vertically; received "+moved);
-   await page.getByRole("region",{name:"Nuitee supplier hotel cards"}).waitFor({state:"visible",timeout:30000});
+   await page.getByRole("region",{name:"GTH Worldwide Stays hotel cards"}).waitFor({state:"visible",timeout:30000});
+   assert.ok(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count()>0,"Supplier SDK mount must remain available");
    assert.ok((await page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"}).count())>0);
    await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
   }

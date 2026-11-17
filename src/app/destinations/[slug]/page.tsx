@@ -181,7 +181,7 @@ export default async function DestinationPage({ params }: Props) {
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Source-backed accommodation</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Public hotel directory in {destination.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">These are source-backed location records, not available Nuitee rooms. Use the separate booking search to select a supplier-verified city, dates and guests.</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">These are source-backed location records, not confirmed available rooms. Use the separate booking search to select a supplier-verified city, dates and guests.</p>
             </div>
             <Link href={hotelsHref}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Book stays in {destination.name} <ArrowRight size={15}/></Link>

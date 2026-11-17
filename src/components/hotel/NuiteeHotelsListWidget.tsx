@@ -98,13 +98,13 @@ export default function NuiteeHotelsListWidget({
     return ()=>{live=false;};
   },[id,placeId,rows,displayCurrency]);
 
-  return <div className="min-w-0" aria-label={"Nuitee hotel listings near "+placeLabel}>
+  return <div className="min-w-0" aria-label={"GTH Worldwide Stays listings near "+placeLabel}>
     <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
     {failed?<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-sm text-[var(--text-soft)]">
       Supplier hotel cards are unavailable in this browser. You can still browse the booking site directly.
     </p>:null}
     <p className="mt-2 text-xs text-[var(--text-soft)]">
-      Photos and room information are provided by Nuitee. Check your dates, total price and booking conditions on the booking site.
+      Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
     <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency}
       target="_blank" rel="noopener noreferrer sponsored"

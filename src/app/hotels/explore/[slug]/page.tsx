@@ -16,7 +16,7 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
  const {slug}=await params,market=getHotelMarket(slug);
  if(!market)return {title:"Hotel destination unavailable | GTH PRO",robots:{index:false}};
  const title=`Hotels in ${market.city} | Location Guide & Hotel Discovery | GTH PRO`;
- const description=`Explore hotel locations in ${market.city}, ${market.country}. ${market.tip} Search rooms on the existing Nuitee White Label search.`.slice(0,280);
+ const description=`Explore hotel locations in ${market.city}, ${market.country}. ${market.tip} Search rooms through GTH Worldwide Stays.`.slice(0,280);
  const canonical=siteUrl("/hotels/explore/"+market.slug);
  return {title,description,alternates:{canonical},robots:{index:isPublicLaunch(),follow:true},
    openGraph:{title,description,url:canonical,type:"website"}};
@@ -45,7 +45,7 @@ export default async function HotelMarketPage({params}:Props){
          <BedDouble size={17} aria-hidden="true"/> Check hotel rooms <ArrowRight size={16} aria-hidden="true"/>
        </Link>
        <a href="https://hotel.gthproglobal.com/hotels?language=en&currency=INR" target="_blank" rel="noopener noreferrer sponsored" className="mt-4 block w-fit text-xs underline underline-offset-2">
-         Open worldwide Nuitee booking directly (choose your city and dates)
+         Open GTH Worldwide Stays (choose city and dates)
        </a>
      </div>
    </section>
@@ -70,7 +70,7 @@ export default async function HotelMarketPage({params}:Props){
      <section aria-labelledby="city-supplier-hotel-title" className="mt-10">
        <h2 id="city-supplier-hotel-title" className="text-2xl font-bold">Explore local directory hotels</h2>
        <p className="mb-5 mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-         These source-backed hotel directory cards use existing public records, not Nuitee property IDs. Open GTH PRO hotel details to check location, then use the existing Nuitee booking search to find current rooms. Exact hotel matches are not assumed.
+         These source-backed hotel directory cards use existing public records, not Nuitee property IDs. Open GTH PRO hotel details to check location, then use the GTH Worldwide Stays booking search to find current rooms. Exact hotel matches are not assumed.
        </p>
        <Suspense fallback={<p role="status" className="rounded-xl border border-[var(--border)] p-5 text-sm">Checking available supplier hotel profiles…</p>}>
          <SourceCards market={market}/>

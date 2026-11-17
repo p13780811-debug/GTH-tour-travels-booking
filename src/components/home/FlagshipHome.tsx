@@ -129,6 +129,7 @@ export default function FlagshipHome() {
           </Link>
           <nav className={styles.topNav} aria-label="GTH PRO platforms">
             <Link href="/mega-aggregator" className={styles.ecosystemLink}>Ecosystem <ArrowUpRight size={15}/></Link>
+            <Link href="/intelligence">Decision Desk</Link>
             <Link href="/real-estate">Real Estate</Link>
             <Link href="/travel">Travel</Link>
             <Link href="/tender">Tender</Link>

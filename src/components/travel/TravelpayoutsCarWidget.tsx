@@ -64,7 +64,7 @@ export default function TravelpayoutsCarWidget() {
   return (
     <section id="car-rental-offers" aria-labelledby="car-widget-heading"
       className="scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
-      <p className="hidden sm:block text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Travelpayouts rental partners</p>
+      <p className="hidden sm:block text-xs font-bold uppercase tracking-widest text-[var(--gold)]">GTH Mobility · Rental Search Options</p>
       <h2 id="car-widget-heading" className="mt-0 sm:mt-3 text-xl sm:text-2xl font-semibold">Compare rental-car providers</h2>
 
 

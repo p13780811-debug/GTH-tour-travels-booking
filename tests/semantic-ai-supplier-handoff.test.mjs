@@ -1,0 +1,52 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
+
+test("native AI uses a real 384-dimension gte-small session and bounded source-verified index",()=>{
+ const edge=read("supabase/functions/gth-semantic-intelligence/index.ts");
+ const sql=read("supabase/migrations/20261117101626_gth_semantic_public_index.sql");
+ assert.match(edge,/new Supabase\.ai\.Session\("gte-small"\)/);
+ assert.match(edge,/raw\.length!==384/);
+ assert.match(edge,/BATCH_MAX = 3/);
+ assert.match(edge,/input\.operation!=="index"/);
+ assert.match(edge,/req\.headers\.get\("authorization"\)!=="Bearer "\+service/);
+ assert.match(edge,/r\.source_verified!==true/);
+ assert.match(edge,/r\.verified!==true/);
+ assert.match(edge,/source_license!=="ODbL-1\.0"/);
+ assert.match(edge,/expires_at:new Date\(expiry\)\.toISOString\(\)/);
+ assert.match(sql,/ENABLE ROW LEVEL SECURITY/);
+ assert.match(sql,/SECURITY INVOKER/);
+ assert.match(sql,/GRANT SELECT ON public\.gth_semantic_public_records TO anon, authenticated/);
+ assert.doesNotMatch(sql,/GRANT (?:INSERT|UPDATE|DELETE) ON public\.gth_semantic_public_records TO anon/);
+});
+test("semantic search is explicit user action, rate limited and server-only",()=>{
+ const route=read("src/app/api/intelligence/semantic/route.ts");
+ const ui=read("src/components/intelligence/SemanticIntelligenceSearch.tsx");
+ const desk=read("src/app/intelligence/page.tsx");
+ const market=read("src/app/intelligence/[market]/page.tsx");
+ assert.match(route,/await enforceRateLimit\(req,"ai"\)/);
+ assert.match(route,/process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
+ assert.match(route,/signal:AbortSignal\.timeout\(20000\)/);
+ assert.match(route,/Cross-origin request rejected/);
+ assert.doesNotMatch(ui,/SERVICE_ROLE_KEY|SUPABASE_SECRET/);
+ assert.match(ui,/onSubmit=\{search\}/);
+ assert.match(ui,/No eligible indexed source matched yet/);
+ assert.match(desk,/SemanticIntelligenceSearch country=\{selected\}/);
+ assert.match(market,/SemanticIntelligenceSearch country=\{market\.countryCode\}/);
+});
+test("supplier-native hotel offers use only reviewed place IDs and no OSM match guessing",()=>{
+ const ui=read("src/components/intelligence/MarketSupplierHotelCards.tsx");
+ const handoff=read("src/components/intelligence/MarketBookingHandoffs.tsx");
+ const supplier=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
+ const builder=read("src/lib/travel/hotel-whitelabel.ts");
+ assert.match(ui,/IN:Mumbai/);
+ assert.match(ui,/GB:London/);
+ assert.match(ui,/NuiteeHotelsListWidget/);
+ assert.match(ui,/onClick=\{\(\)=>setVisible\(true\)\}/);
+ assert.doesNotMatch(ui,/hotel_catalog|source_id|fetch\(|SUPABASE_SERVICE_ROLE_KEY/);
+ assert.match(handoff,/MarketSupplierHotelCards city=\{city\} countryCode=\{countryCode\}/);
+ assert.match(supplier,/sdk\.HotelsList\.create\(options\)/);
+ assert.match(supplier,/data-gth-nuitee-supplier-hotels="true"/);
+ assert.match(builder,/search\.hotelId\s*\?\s*`\/hotels\/\$\{encodeURIComponent\(search\.hotelId\)\}`/);
+});

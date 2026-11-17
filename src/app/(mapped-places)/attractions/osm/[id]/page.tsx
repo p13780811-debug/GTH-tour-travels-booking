@@ -1,3 +1,4 @@
+import EventShockwave from "@/components/intelligence/EventShockwave";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -63,6 +64,7 @@ export default async function OsmPlacePage({params}:Props){
     </div>
    </header>
    <TravelSectionNav/>
+   <EventShockwave target={{kind:"osm",id}}/>
    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
     <section aria-labelledby="place-facts" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
      <h2 id="place-facts" className="text-xl font-bold">Know the place</h2>
@@ -96,14 +98,14 @@ export default async function OsmPlacePage({params}:Props){
      <a href={links.getyourguide} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"><span className="text-base font-bold">Tours & experiences</span><span className="text-xs leading-6 text-[var(--text-soft)]">Search independent tours and experiences</span><span className="inline-flex items-center gap-2 text-sm font-semibold underline">Search this place <ArrowUpRight size={16}/></span></a>
      <a href={ATTRACTION_TICKET_PARTNERS.kkday.href} target="_blank" rel="sponsored noopener noreferrer"
        className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
-       <span className="text-base font-bold">KKday attractions & local experiences</span>
-       <span className="text-xs leading-6 text-[var(--text-soft)]">Browse KKday through our existing tracked Travelpayouts link. This opens partner discovery; it is not an exact ticket for {item.name}.</span>
+       <span className="text-base font-bold">GTH Experiences · Local activities</span>
+       <span className="text-xs leading-6 text-[var(--text-soft)]">Browse activities using the GTH Experiences tracked handoff. This opens partner discovery; it is not an exact ticket for {item.name}.</span>
        <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse partner listings <ArrowUpRight size={16}/></span>
      </a>
      {isTicketOrientedCategory(item.category)&&<a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} target="_blank" rel="noopener noreferrer nofollow"
        className="flex min-h-36 flex-col justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
-       <span className="text-base font-bold">Tiqets museums & attraction entry</span>
-       <span className="text-xs leading-6 text-[var(--text-soft)]">Search the independent Tiqets catalogue for matching admission options. Direct website link; affiliate tracking has not yet been verified.</span>
+       <span className="text-base font-bold">GTH Event Concierge · Attractions</span>
+       <span className="text-xs leading-6 text-[var(--text-soft)]">Search the independent ticket provider for matching admission options. Direct website link; affiliate tracking has not yet been verified.</span>
        <span className="inline-flex items-center gap-2 text-sm font-semibold underline">Browse supplier tickets <ArrowUpRight size={16}/></span>
      </a>
 }

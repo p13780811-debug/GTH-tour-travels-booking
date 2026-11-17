@@ -1,3 +1,4 @@
+import {readInfraPulse} from "@/lib/intelligence/infraPulse"
 import { readRegistryRecords } from "@/lib/real-estate/registry-reader"
 import { parseRegistryFilters } from "@/lib/real-estate/registry-search"
 
@@ -11,6 +12,7 @@ export async function GET(req: Request) {
   if (!parsed.ok) return Response.json({error:parsed.error},{status:400,headers:{"Cache-Control":"no-store"}})
   const result = await readRegistryRecords(parsed.filters)
   if (result.error) return Response.json({error:"Registry data service is temporarily unavailable."},{status:503,headers:{"Cache-Control":"no-store"}})
-  const items = result.rows.slice(0,6).map(({slug,title,rera_id,developer,builder_name,city,district}) => ({slug,title,rera_id,developer:developer || builder_name,city:city || district}))
+  const pulses=await readInfraPulse(result.rows.slice(0,6).map(row=>Number(row.id)))
+  const items = result.rows.slice(0,6).map(({id,slug,title,rera_id,developer,builder_name,city,district}) => ({id,infraPulse:pulses[Number(id)],slug,title,rera_id,developer:developer || builder_name,city:city || district}))
   return Response.json({items},{headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})
 }

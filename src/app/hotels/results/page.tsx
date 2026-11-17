@@ -39,12 +39,12 @@ export default async function Page({ searchParams }: PageProps) {
 <header data-travel-hero="true">
         <h1 className="text-2xl font-bold md:text-4xl">Hotel source directory</h1>
         <p className="mt-2 text-sm text-[var(--text-soft)]">
-          Research-only accommodation records, not Nuitee live room inventory. For actual booking dates and current rooms, use our hosted Nuitee search.
+          Research-only accommodation records, not a guarantee of live room inventory. For booking dates and current rooms, use GTH Worldwide Stays; final availability is confirmed by the provider.
         </p>
 </header>
 <TravelSectionNav />
         <Link href={"/hotels?"+new URLSearchParams({view:"booking",...(city?{city}:{}),...(destination?{destination}:{}),...(name?{name}:{})}).toString()}
-          className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 text-sm font-semibold">Book a stay on Nuitee</Link>
+          className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 text-sm font-semibold">Explore GTH Worldwide Stays</Link>
         {hasScope ? (
           <div className="mt-8">
             <HotelResults scope={{ city, destination, name, country, category, sort, source, checkin, checkout, adults }} />

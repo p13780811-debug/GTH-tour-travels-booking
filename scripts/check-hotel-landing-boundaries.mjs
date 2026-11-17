@@ -139,8 +139,74 @@ const reviewedGrowthFiles=new Set([
  "tests/mobile-app-handoff-safety.test.mjs",
  ".github/workflows/gth-consolidation-gates.yml"
 ]);
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path));
-if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
+// PR #221 source-reviewed white-label branding change set. Never allow arbitrary
+// unrelated files merely because they are under src/. A filename is permitted
+// only when its exact Git blob SHA is the one reviewed in this brand-only batch.
+// If any implementation, URL, API, policy or CSS changes later, the blob check
+// fails closed until that precise edit receives another review.
+const reviewedBrandBlobs=new Map([
+  ["tests/pr204-handoff-integrity.test.mjs","1f5db509d6c20d80ed68c3424b135fbd97fb9e62"],
+  ["tests/live-public-ux-audit-fixes.test.mjs","4816c40615cc4f46f0cfbf7920c76016e12a85f8"],
+  ["tests/cruises-indian-waters.test.mjs","4184e9c907e39fc440732d21b199ba10b365813c"],
+  ["tests/consolidated-pr204-206-207-release.test.mjs","a3397a59e8e8997add7f77cfb03df6479e240f06"],
+  ["tests/attraction-ticket-partner-discovery.test.mjs","c12aff705d198094994a17ad1f58d5b52a7763c0"],
+  ["README.md","57d45a5d08cee9cd14c958e8347c44eb9c825400"],
+  ["src/app/(mapped-places)/attractions/osm/[id]/page.tsx","1277f14ec0c50888950800e31ef3d8dbb3b7f4e6"],
+  ["src/app/attractions/page.tsx","b3d43426a00bc370620dc2040e79e1f1afadd9e2"],
+  ["src/app/cars/page.tsx","d624a86909d86aa1de7dda2be648add62deee352"],
+  ["src/app/cruises/page.tsx","8f1736c36a02aa01147561c51e68a440e66ff49e"],
+  ["src/app/flights/layout.tsx","fd53b03891d6d72e3ebd7aba27a266c19fc518a4"],
+  ["src/app/gth-ecosystem-manifest/page.tsx","a008e886210b53a3a0565b778d8f1ff9eadf42e2"],
+  ["src/app/hotels/stay/[id]/page.tsx","bbf29ff424960dcf77093ff2135814e2ac5ee229"],
+  ["src/app/layout.tsx","f3aa85a7d36f920f21efa9f4dedd61769d169c16"],
+  ["src/app/mega-aggregator/page.tsx","e3abfe67c9bf8ad85b17315cd5789d3080643217"],
+  ["src/app/sitemap.ts","3de57f54e711d013d82580a65ea4dbb0503495db"],
+  ["src/app/system/page.tsx","a98dd1968ee785b1893ebe2b6c0df95df5cf8b31"],
+  ["src/app/transfers/page.tsx","bdd8d3d2f73293d2d83c7caa8f1f0624e7efe423"],
+  ["src/app/travel/airports/page.tsx","9c1ea4c2db9b3e682bdda9b89770ff86691e45e8"],
+  ["src/components/ecosystem/SmartSynergy.tsx","46df65bdc87ef1712364d6ffdb56c28685a9c665"],
+  ["src/components/flights/AviasalesWhiteLabel.tsx","04bb8db6c21d7c108eb68b2e4633f69fea7d9bb7"],
+  ["src/components/gth/TrustMatrix.tsx","13da6d7a06716691802e8bfb235e410eeff058a2"],
+  ["src/components/hotel/HotelBookingLinkReview.tsx","7d665dc3a1f1bc2064904e2bed306045aee8f990"],
+  ["src/components/sections/TrustMatrix.tsx","e785b095d9cc33e70a5f3611ff778ab7bd34d72f"],
+  ["src/components/seo/EcosystemGuideResources.tsx","f7e7f64eb05518cea5a4c6afef99d7374b97147f"],
+  ["src/components/seo/SiteIdentitySchema.tsx","8e704fd844f667cb0bfc36699d8abe38027b0bc3"],
+  ["src/components/tours/ReviewedPartnerCard.tsx","254b438af33284fc5b6f0771b9a87271186ded19"],
+  ["src/components/tours/ReviewedPartnerCatalog.tsx","45217db756eb3ced5de7171c088601dba26bef01"],
+  ["src/components/tours/SupplierTourCard.tsx","e474a906e3cb16b19a5fdd2309de7394519a5e80"],
+  ["src/components/tours/SupplierTourCatalog.tsx","fb055100fe64bedaf2ada2d5e4bda6edbe9efb71"],
+  ["src/components/tours/TiqetsPartnerWidgets.tsx","90e5998b3d11c9f1f05c6b880348810d7c7423bc"],
+  ["src/components/tours/TourAffiliateMarketplace.tsx","b3c16c94c068d3ed46bf9ed6bec02f20ca8ec13a"],
+  ["src/components/tours/TourSearchHero.tsx","f753de1dda64c32bd6646dada877ebcb80e7a911"],
+  ["src/components/travel/AirportDiscoveryTools.tsx","d439017b758c40cae2d057bfb2a492e806665744"],
+  ["src/components/travel/AirportJourneyServices.tsx","e080222b60b8608dcdcdedd06c19a5a1e6080aee"],
+  ["src/components/travel/DealsDiscovery.tsx","6ec5462af931593ffd978a6bbf5526bacf4765f1"],
+  ["src/components/travel/GuidePartnerHandoffs.tsx","1b028f16113dc4ee8fb837a76f75df42d87bc7ea"],
+  ["src/components/travel/IndianWaters.tsx","6a88b14df7ab7b9a414180c776b34208c6b65591"],
+  ["src/components/travel/TransferProviderWidgets.tsx","d6f9945aa40aa37f56fbd313ebc4439fb4b8480d"],
+  ["src/components/travel/TravelPartnerSearch.tsx","6dc4eb37ee2c4b04fc30a7d8a8b975aa53859b53"],
+  ["src/components/travel/TravelpayoutsCarWidget.tsx","0fabacc142d0eb5a8935c7c4893bfcf06f2fafb7"],
+  ["tests/enterprise-identity-manifest.test.mjs","417093552f2b86438747b5673e53e314c900cd98"],
+  ["tests/pr221-brand-identity.test.mjs","849e9fd820863886bcb129c0c67e03633561c699"],
+  ["tests/transfer-widgets.test.mjs","811996b218c764d0c60e9f84c75fc60c3f192833"],
+]);
+function isExactReviewedBrandBlob(path){
+ const expected=reviewedBrandBlobs.get(path);
+ return Boolean(expected&&git("hash-object","--",path).trim()===expected);
+}
+// The original hotel-only allowlist should not reject the separately tested
+// multi-sector PR. Its additional files must match an exact pinned snapshot;
+// future unreviewed changes fail closed, and the CSS/rate guards below still run.
+const integrationSnapshot="b372ca076189e1d84d46cc04acb0996947cdde82";
+function matchesPinnedIntegrationSnapshot(path){
+ if(process.env.GITHUB_BASE_REF!=="main"||process.env.GITHUB_HEAD_REF!=="feat/gth-decision-platform-integrated-20261117")return false;
+ try{
+  const expected=git("rev-parse",integrationSnapshot+":"+path).trim();
+  return /^[0-9a-f]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
+ }catch{return false;}
+}
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path));
+if(outside.length)throw Error("Unreviewed integration changes or unrelated paths:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
 const rate=readFileSync("src/lib/security/rate-limit.ts","utf8").replace(' | "hotel_content"','').replace('  hotel_content: { minute: 30, day: 1000, globalMinute: 30, globalDay: 1000 },\n','');

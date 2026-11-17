@@ -129,7 +129,7 @@ export default function TourAffiliateMarketplace({search=EMPTY_TOUR_SEARCH,baseP
             {basePath==="/tours"?"Guided tours · Audio walks · Day trips":"Tickets · City passes · Outdoor experiences"}
           </p>
           <h2 id="tours-partners-heading" className="mt-1.5 text-xl font-bold sm:text-2xl">
-            Explore with global {mode.label.toLowerCase()} partners
+            GTH Experiences · Global {mode.label.toLowerCase()} discovery
           </h2>
           <p className="mt-2 max-w-3xl text-xs leading-5 text-[var(--text-soft)]">
             Browse established travel partners. Supplier bookings and availability are managed outside GTH PRO.

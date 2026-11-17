@@ -9,7 +9,7 @@ import TravelPartnerSearch from "@/components/travel/TravelPartnerSearch";
 
 export const metadata: Metadata = {
   title: "Worldwide Car Rental & Self-Drive Booking | GTH PRO Travel",
-  description: "Plan airport car hire, self-drive rentals, family cars and one-way rentals worldwide. Compare QEEQ and Localrent Travelpayouts partner widgets and confirm actual vehicle prices and booking terms with rental providers.",
+  description: "Plan airport car hire, self-drive rentals, family cars and one-way rentals worldwide. Compare GTH Mobility rental-search options and confirm actual vehicle prices and booking conditions with the chosen provider.",
   alternates: { canonical: "/cars" },
   openGraph: {
     title: "Global Car Rentals & Airport Pickup | GTH PRO",
@@ -40,7 +40,7 @@ const providers = [
 ] as const;
 const faqs = [
   {q:"Can I book a rental car directly with GTH PRO?",a:"No. GTH PRO provides a planning interface, affiliate partner widgets and links to independent booking suppliers. A rental provider confirms the vehicle and completes the reservation."},
-  {q:"How does the destination search work?",a:"Find car rentals opens your destination's Klook search directly through our affiliate link. Choose dates, exact pickup and return details on the provider. The separate optional checklist stays in your browser and does not transfer dates or driving details."},
+  {q:"How does the destination search work?",a:"GTH Mobility opens destination-specific car-rental discovery through a partner-operated handoff. Choose dates, exact pickup and return details on the provider. The separate optional checklist stays in your browser and does not transfer dates or driving details."},
   {q:"Can I rent in a different country or city?",a:"The planner supports international locations. The Localrent widget has a preset country and city, while QEEQ has its own search form. Supported locations depend on the individual supplier."},
   {q:"Can I return the car at another location?",a:"Some suppliers allow one-way returns, subject to availability and possible additional charges. Confirm return location and fees on the supplier website."},
   {q:"Is airport transfer the same as car rental?",a:"No. A car rental generally involves driving yourself; an airport transfer typically includes a driver. You can explore both options through GTH PRO."},
@@ -59,7 +59,7 @@ export default function CarsPage() {
         <h1 className="mt-1 sm:mt-5 max-w-4xl text-2xl sm:text-4xl font-bold tracking-tight md:text-6xl">Rent a car. Explore more of the world.</h1>
         <p className="hidden sm:block mt-5 max-w-3xl text-base leading-8 text-[var(--text-soft)]">
           Plan airport pickup, self-drive holidays, city car hire and one-way journeys.
-          Switch between QEEQ and Localrent partner tools and confirm actual vehicle availability, full prices and policies directly with the booking partner.
+          Explore GTH Mobility car-rental search options and confirm vehicle availability, full prices and policies with the booking provider.
         </p>
         <nav aria-label="Car rental quick links" className="hidden sm:flex mt-8 flex-wrap gap-3">
           <a href="#rental-planner-heading" className="gth-btn-gold inline-flex min-h-12 items-center gap-2 rounded-xl px-5 font-semibold">Plan your rental <ArrowRight size={16}/></a>

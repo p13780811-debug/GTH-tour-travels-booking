@@ -1,0 +1,52 @@
+name: Infra-Pulse and Event-Shockwave QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/lib/intelligence/**'
+      - 'src/components/intelligence/**'
+      - 'src/app/api/intelligence/**'
+      - 'scripts/registry/**'
+      - 'supabase/migrations/*infra_pulse_event_shockwave.sql'
+      - 'tests/intelligence/**'
+      - 'tests/infra-pulse-event-shockwave.test.mjs'
+      - 'tests/test_official_gov_harvester.py'
+      - '.github/workflows/infra-pulse-event-shockwave-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  behavior:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - run: node --test tests/infra-pulse-event-shockwave.test.mjs tests/pr220-currency-gold-viral.test.mjs
+      - run: python -m unittest discover -s tests -p 'test_official_gov_harvester.py'
+  postgres17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env: {POSTGRES_PASSWORD: temporary-ci-only}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test real PostgreSQL geography joins, RLS and private contact schema
+        env: {PGPASSWORD: temporary-ci-only}
+        run: |
+          set -euo pipefail
+          for sql in tests/intelligence/schema-bootstrap.sql supabase/migrations/20261117070740_infra_pulse_event_shockwave.sql tests/intelligence/schema-assertions.sql; do
+            psql -h localhost -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
+          done

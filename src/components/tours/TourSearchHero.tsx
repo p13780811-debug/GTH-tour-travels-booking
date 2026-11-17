@@ -50,7 +50,7 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
       <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold">{mode.action}<ArrowRight size={16} aria-hidden="true"/></button>
      </form>
      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[var(--text-soft)]">
-      <p>Search opens Klook in a new tab through our affiliate link and filters the original supplier cards below. Confirm dates, guests and final prices with the provider.</p>
+      <p>GTH Experiences opens a provider-operated search in a new tab through our referral link and filters the original supplier cards below. Confirm dates, guests and final prices with the provider.</p>
      </div>
     </section>
    </div>

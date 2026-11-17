@@ -187,7 +187,7 @@ export default function AviasalesWhiteLabel({ isResultsView = false, resultsPath
       className="w-full min-w-0 scroll-mt-24">
       <div className="px-4 sm:px-6">
         <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">
-          Aviasales · Travelpayouts White Label
+          GTH Global Booking Engine · Worldwide Flight Search
         </p>
         <h2 id="flight-white-label-heading" className="mt-0 sm:mt-2 text-xl font-bold sm:text-2xl">
           {isResultsView ? "Flight results" : "Find flights for your trip"}
@@ -195,11 +195,11 @@ export default function AviasalesWhiteLabel({ isResultsView = false, resultsPath
 
         <div id="tpwl-search"
           className="mt-2 sm:mt-5 min-h-24 min-w-0 max-w-full [&_iframe]:max-w-full"
-          aria-label="Live Aviasales flight search form" />
+          aria-label="GTH Global Booking Engine flight search" />
       </div>
       <div id="tpwl-tickets"
         className="mt-4 w-full min-w-0 max-w-full [&_iframe]:max-w-full"
-        aria-label="Live Aviasales flight search results" />
+        aria-label="GTH Global Booking Engine flight search results" />
 
       <div className="px-4 sm:px-6">
         {!isResultsView && (

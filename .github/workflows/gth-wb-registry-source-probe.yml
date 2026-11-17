@@ -1,0 +1,31 @@
+name: West Bengal registry adapter tests (offline CI)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/registry_fabric/**'
+      - 'tests/test_rera_*.py'
+      - '.github/workflows/gth-wb-registry-source-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wb-registry-adapters-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-adapters:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: All registry adapter unit tests (offline, fail-closed)
+        run: python -m unittest discover -s tests -p 'test_rera_*.py'
+      - name: Mark external source verification as separate gate
+        run: echo "Live WBRERA/HIRA source access is NOT verified by this offline CI."

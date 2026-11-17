@@ -12,8 +12,8 @@ import { ArrowRight, CarFront, MapPin } from "lucide-react";
 export const metadata: Metadata = {
   alternates: { canonical: "/transfers" },
   title: "Airport Transfer Hub | Private Pickups, Shuttles & Partners | GTH PRO",
-  description: "Explore visual airport pickup, private car, family transfer and shuttle guides. Compare transfer suppliers with existing Kiwitaxi, intui.travel, Welcome Pickups and GetTransfer links.",
-  openGraph: { title: "Airport Transfers, Kiwitaxi & Pickups | GTH PRO", description: "Discover arrival airports and compare airport transfer providers with clearly labeled partner booking options.", url: "/transfers", type: "website", images: ["/images/mega/transfers.jpg"] },
+  description: "Explore visual airport pickup, private car, family transfer and shuttle guides. Compare GTH Mobility airport transfers, private pickups and shuttles through independently operated booking handoffs.",
+  openGraph: { title: "GTH Mobility | Airport Transfers & Private Pickups | GTH PRO", description: "Discover arrival airports and compare airport transfer providers with clearly labeled partner booking options.", url: "/transfers", type: "website", images: ["/images/mega/transfers.jpg"] },
 };
 
 export default function TransfersPage() {
@@ -51,11 +51,11 @@ export default function TransfersPage() {
       <TransferProviderWidgets />
       <details className="gth-glass mb-10 min-w-0 rounded-2xl border border-[var(--border)] p-4 sm:p-6">
         <summary className="cursor-pointer text-sm font-bold">
-          Optional: search other airport transfer activities on Klook
+          More transfer experiences with GTH Mobility
         </summary>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-          This is an additional Klook affiliate destination search, not the Kiwitaxi or intui.travel transfer booking engine.
-          It opens Klook in a new tab; location and availability must be confirmed there.
+          This opens an additional destination-specific partner activity search, not a confirmed private-transfer reservation.
+          It opens the independent provider in a new tab; reconfirm destination and availability there.
         </p>
         <div className="mt-4"><TravelPartnerSearch kind="transfers" /></div>
       </details>

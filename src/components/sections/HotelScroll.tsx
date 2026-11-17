@@ -40,7 +40,7 @@ export default function HotelScroll({city="Goa"}:{city?:string}){
    <div><h2 className="text-2xl font-bold">Hotels in {place||"your destination"}</h2>
     <p className="mt-2 text-sm text-[var(--text-soft)]">Public directory records only. Prices, stars and rooms are not verified live stock.</p></div>
    <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:place||"Goa"})}
-    className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Book a stay with Nuitee <ArrowRight size={16}/></Link>
+    className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Explore GTH Worldwide Stays <ArrowRight size={16}/></Link>
   </div>
   {loading&&<p role="status" className="mt-6 text-sm text-[var(--text-soft)]">Loading recorded hotel descriptions…</p>}
   {error&&<p role="alert" className="mt-6 text-sm text-[var(--text-soft)]">Directory records are unavailable. Use the booking search to check real supplier rooms.</p>}

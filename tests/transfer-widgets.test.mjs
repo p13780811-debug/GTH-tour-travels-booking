@@ -25,8 +25,8 @@ test("two identified transfer partners and third supplied widget retain tracking
   assert.match(code, /b_faq=true/);
   assert.match(code, /currency=USD/);
   assert.match(code, /show_header=true/);
-  assert.match(code, /Kiwitaxi transfer options/);
-  assert.match(code, /intui\.travel airport transfers/);
+  assert.match(code, /GTH Mobility · Private Transfer Options/);
+  assert.match(code, /GTH Mobility · Airport Transfers/);
   assert.match(code, /active === "additional"/);
 });
 
@@ -67,7 +67,7 @@ test("airport extras connect only known internal routes, approved affiliate URLs
   assert.match(source, /https:\/\/radicalstorage\.tpo\.lv\/iDuI1UD0/);
   assert.match(source, /https:\/\/yesim\.tpo\.lv\/yZBVdtqT/);
   assert.match(source, /https:\/\/www\.prioritypass\.com\/en-GB\/airport-lounges/);
-  assert.match(source, /Independent provider links above are not represented as approved Travelpayouts affiliate campaigns/);
+  assert.match(source, /Independent provider links above are not represented as approved GTH network referral campaigns/);
   assert.match(source, /service.kind === "provider"/);
   assert.match(source, /rel=\{service\.kind === "partner" \? "noopener noreferrer sponsored"/);
   assert.doesNotMatch(source, /Math\.random|live guaranteed|booked successfully/i);

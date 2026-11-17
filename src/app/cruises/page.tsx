@@ -8,14 +8,14 @@ import IndianWaters,{indianWaterOptions,filterIndianWaters,indianCruiseHref} fro
 import {cruises,cruisePhotos,cruiseTypes,filterCruises,CRUISE_REVIEWED_ON,type Cruise} from "@/lib/travel/cruises";
 import {buildCruiseProviderSearch,type CruiseSearchType} from "@/lib/travel/cruise-provider-search";
 
-export const metadata:Metadata={title:"Cruises | Cruise Holidays, Harbour & Dinner Sailings | GTH PRO",description:"Explore Disney Adventure, Genting Dream, Royal Caribbean and sightseeing cruises with GTH PRO. Browse reviewed Klook and GetYourGuide cruise product listings and search for more destinations.",alternates:{canonical:"/cruises"}};
+export const metadata:Metadata={title:"Cruises | Cruise Holidays, Harbour & Dinner Sailings | GTH PRO",description:"Explore Disney Adventure, Genting Dream, Royal Caribbean and sightseeing cruises with GTH PRO. Browse GTH Cruises source-reviewed cruise listings and search worldwide sailing destinations.",alternates:{canonical:"/cruises"}};
 
 type Params=Record<string,string|string[]|undefined>;
 function CruiseCard({item}:{item:Cruise}){
  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]" data-cruise={item.slug}>
   <div className="relative aspect-[16/9] overflow-hidden">
    <Image src={item.image} alt={item.photo.alt} fill unoptimized sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" className="object-cover"/>
-   <a href={`/go/cruises/${item.slug}`} target="_blank" rel="noopener noreferrer sponsored" aria-label={`View ${item.title} on Klook`} className="absolute inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--gold)]"/>
+   <a href={`/go/cruises/${item.slug}`} target="_blank" rel="noopener noreferrer sponsored" aria-label={`View booking options for ${item.title}`} className="absolute inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--gold)]"/>
   </div>
   <div className="flex flex-1 flex-col p-5">
    <p className="text-xs text-[var(--text-soft)]">{item.photo.caption}</p>
@@ -25,7 +25,7 @@ function CruiseCard({item}:{item:Cruise}){
    <ul className="mt-4 space-y-2 text-sm">{item.highlights.map(text=><li key={text} className="flex items-start gap-2"><Check size={15} className="mt-1 shrink-0 text-[var(--gold)]" aria-hidden="true"/><span>{text}</span></li>)}</ul>
    <div className="mt-auto pt-5">
     <a href={`/go/cruises/${item.slug}`} target="_blank" rel="noopener noreferrer sponsored" aria-label={`Check dates and packages for ${item.title}`} className="gth-btn-gold flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">Check dates & packages<ArrowUpRight size={16} aria-hidden="true"/></a>
-    <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">Opens this cruise on Klook. Final fares and availability are confirmed there.</p>
+    <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">Opens a GTH Provider-Operated Handoff. Final cruise fares and availability are confirmed by the booking provider.</p>
    </div>
   </div>
  </article>;
@@ -58,7 +58,7 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
    <header className="gth-glass rounded-3xl border border-[var(--border)] p-5 sm:p-8">
     <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Ship size={18} aria-hidden="true"/>GTH PRO · Cruise journeys</p>
     <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">A different way to see the world.</h1>
-    <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">Find your next cruise holiday, harbour escape or dinner on the water. Explore the options here, then choose your dates and package with Klook or GetYourGuide.</p>
+    <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] sm:text-base">Find your next cruise holiday, harbour escape or dinner on the water. Explore the options here, then choose your dates and package through a GTH Provider-Operated Handoff.</p>
     <nav aria-label="Cruise collections" className="mt-5 flex flex-wrap gap-3"><a href="#cruise-options" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Explore cruises<Anchor size={16} aria-hidden="true"/></a>{selectedIndia.length>0&&<a href="#indian-waters" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4 text-sm">Explore Indian Waters</a>}<Link href="/ferry" className="inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] px-4 text-sm">Need a ferry instead?</Link></nav>
    </header>
    <section id="cruise-options" aria-label="Find a cruise" className="mt-6 scroll-mt-24 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
@@ -66,11 +66,11 @@ export default async function CruisesPage({searchParams}:{searchParams:Promise<P
     <form key={valid?`${destination}:${type}:${provider}`:"invalid"} action="/cruises#cruise-options" method="GET" role="search" aria-label="Filter cruise options" className="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.5fr)_auto]">
      <label className="block w-full min-w-0 text-sm font-semibold">Destination or cruise name<input type="search" name="destination" maxLength={80} defaultValue={valid?destination:""} placeholder="Singapore, Goa, Kerala, Mumbai, Andaman…" className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"/></label>
      <label className="block w-full min-w-0 text-sm font-semibold">Cruise type<select aria-label="Cruise type" name="type" defaultValue={valid?type:""} className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">All cruises</option>{cruiseTypes.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
-     <label className="block w-full min-w-0 text-sm font-semibold">Search provider<select aria-label="Search provider" name="provider" defaultValue={valid?provider:""} className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">Auto · GetYourGuide for new destinations</option><option value="gyg">GetYourGuide results</option><option value="klook">Klook results</option></select></label>
+     <label className="block w-full min-w-0 text-sm font-semibold">Search provider<select aria-label="Search provider" name="provider" defaultValue={valid?provider:""} className="mt-2 block min-h-12 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">GTH Cruises · Automatic search</option><option value="gyg">GTH Cruise Discovery</option><option value="klook">GTH Cruise Experiences</option></select></label>
      <button className="gth-btn-gold inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold lg:w-auto" type="submit"><Search size={16} aria-hidden="true"/>Show cruises</button>
      {(destination||type)&&<Link href="/cruises#cruise-options" className="inline-flex min-h-12 items-center px-2 text-sm underline">Clear filters</Link>}
     </form>
-    <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">Known destinations and partial cruise names filter cards here. Enter an exact published cruise title to open its product; other destinations search GetYourGuide. Select Klook to search there instead. Supplier results may vary.</p>
+    <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">Known destinations and partial cruise names filter cards here. Enter an exact published cruise title to open its product; other destinations use GTH Cruise Discovery. Choose GTH Cruise Experiences for alternative supplier results. Supplier results may vary.</p>
     {!valid&&<p role="alert" className="mt-3 text-sm">Choose a valid destination and cruise type. All cruise options are shown below.</p>}
     <p className="mt-4 text-sm text-[var(--text-soft)]" role="status">{selected.length+selectedIndia.length} matching cruise options · {selected.length} international · {selectedIndia.length} Indian waters</p>
    </section>

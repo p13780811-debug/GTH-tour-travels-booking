@@ -81,7 +81,7 @@ export default function AirportDiscoveryTools() {
           <div>
             <h2 id="airport-directory" className="text-2xl font-bold md:text-3xl">Browse the airport directory</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-              {airportIndex.length} unique airport references from read-only Nuitee metadata lookups.
+              {airportIndex.length} unique airport references from read-only connected airport data.
               Search by city, airport name, country, IATA or ICAO code.
             </p>
           </div>

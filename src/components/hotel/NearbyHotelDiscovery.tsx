@@ -69,6 +69,6 @@ export default function NearbyHotelDiscovery({currency,onCountry,initialArea,sta
     {error&&<p role="status" className="mt-4 text-sm leading-6 text-[var(--text-soft)]">{error}<button type="button" onClick={()=>setRetry(n=>n+1)} className="gth-btn ms-3 inline-flex min-h-11 items-center gap-2 px-4"><RotateCcw size={14} aria-hidden="true"/>Retry local hotels</button></p>}
     {data?.partial&&!error&&<p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Some area previews could not be checked. The available hotel profiles are shown above.<button type="button" className="gth-btn ms-3 inline-flex min-h-11 items-center px-4" onClick={()=>setRetry(n=>n+1)}>Retry area previews</button></p>}
     {data&&(data.hasMore||data.items.length>shown)&&<button type="button" disabled={moreLoading} onClick={()=>void more()} className="gth-btn mt-5 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">{moreLoading?"Loading more hotels…":"Explore more in "+name}</button>}
-    <p className="mt-4 text-xs leading-5 text-[var(--text-soft)]">Hotel profiles and photographs are supplied by Nuitee. Choose dates on the booking site to check current rooms, total prices and cancellation terms.</p>
+    <p className="mt-4 text-xs leading-5 text-[var(--text-soft)]">Hotel profiles and photographs are supplied by connected accommodation providers. Choose dates on the booking site to check current rooms, total prices and cancellation terms.</p>
   </section>;
 }

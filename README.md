@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GTH PRO Global — Global Technical Hub
 
-## Getting Started
+**Official website:** https://www.gthproglobal.com  
+**Operator:** GTH PRO, a digital initiative of Etios Profession  
+**Public platform overview:** https://www.gthproglobal.com/system  
+**Verification and transparency:** https://www.gthproglobal.com/verification  
+**Business contact:** official@gthproglobal.com
 
-First, run the development server:
+GTH PRO Global is an operating multi-sector digital platform combining a **GTH Global Booking Engine with real-time provider-operated search and booking handoffs for Worldwide Flights, Hotels, Cruises, Trains, Buses and Ground Transport** with **Real Estate buyer intelligence and B2B leads, Public Tender Intelligence, and Worldwide Ticket-source Discovery**. Connected international accommodation suppliers report networks spanning **millions of accommodation listings**. These supplier-network totals are not GTH PRO-owned hotels or a guaranteed count of available rooms. GTH Provider-Operated Handoffs lead to supplier-controlled booking confirmation. This repository contains the Next.js web application, public discovery pages, server-side endpoints, validation, controlled integrations and deployment tests. It is not the default Next.js starter application.
+
+## Four public platforms
+
+| Platform | Public gateway | Actual operating model |
+|---|---|---|
+| Travel | [Travel](https://www.gthproglobal.com/travel) | Operate first-party worldwide search interfaces and real-time provider handoffs for flights, hotels, tours, cruises, buses, trains, ferries, transfers and destinations, through GTH Worldwide Stays, GTH Flight Search and GTH Mobility booking entry points; partner networks span millions of accommodation listings, with suppliers controlling checkout, current availability and fulfilment. |
+| Real Estate | [Real Estate](https://www.gthproglobal.com/real-estate) | Research 12,500+ property records, source-backed registry references, market evidence, comparisons, saved shortlists, EMI/affordability and rental ROI planning, project claim reviews, broker onboarding, direct B2B enquiries, owner workspaces and buyer CRM; listed records are not all independently verified sale units. |
+| Tender Intelligence | [Tenders](https://www.gthproglobal.com/tender) | Discover 4,000+ published public tender records, source-linked deadlines, sector and country filters, eligibility self-assessment, document and pre-bid planning, bid-readiness stages, and service-enquiry workflows; the issuing authority governs official requirements and submissions. |
+| Worldwide Tickets | [Ticket Finder](https://www.gthproglobal.com/tickets) | Discover independent ticket sources, events and stadium guides; links do not guarantee admission, availability or endorsement. |
+
+The first-party Supabase registry and procurement datasets contained **12,500+ property records** and **4,000+ published public tender records** at the November 2026 audit, alongside separately attributed OpenStreetMap attraction research. These are **stored source references and research records**, not 12,500 independently verified sale listings or tender-award guarantees. Live worldwide travel search and provider handoffs instead draw on separately operated international supplier networks. The local hotel research catalog does **not** cap the independently operated millions-scale hotel accommodation networks, nor imply that all supplier inventory is bookable for every date and destination.
+
+## Architecture and publication boundaries
+
+- **Web application:** Next.js App Router, React and TypeScript, with centralized GTH PRO CSS design tokens, mobile-facing navigation and SEO metadata.
+- **Data:** Supabase PostgreSQL for public catalog references and protected submission workflows; row-level security and server-side validation enforce different read/write scopes.
+- **Hosting:** Vercel production deployment on the official domain, with independent GitHub Actions checks for TypeScript, ESLint, security and production builds.
+- **Travel integrations:** a GTH Global Booking Engine with the GTH Worldwide Stays white-label search, GTH Flight Search, GTH Mobility and independently operated tours, cruises and transport referrals. Connected supplier networks publish millions of accommodation listings globally, but GTH PRO does not claim those networks as owned inventory or guarantee availability for any single itinerary.
+- **SEO:** canonical domain selection, launch-gated crawl/index controls, site identity structured data, source-quality indexing rules and public transparency pages.
+- **Commercial access:** enquiry, listing and partnership request workflows. A submitted lead or registration reference is never automatic approval, government accreditation or confirmed booking inventory.
+
+The canonical public page describing the operating model is [How GTH PRO Works](https://www.gthproglobal.com/system). The [Ecosystem Manifest](https://www.gthproglobal.com/gth-ecosystem-manifest) further describes the service relationships and data provenance once that page is deployed.
+
+## Development and validation
+
+Install dependencies and use the existing package scripts. Keep local or deployment credentials in protected environment settings, **never commit secrets**, and never place privileged database keys in `NEXT_PUBLIC_*` variables.
 
 ```bash
+npm ci --legacy-peer-deps
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx tsc --noEmit
+npm run lint
+npm run test:security
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production releases require a green build, passing relevant regression checks, verified database migrations when applicable, and explicit review of external supplier handoffs. Code committed to a feature branch is **not** equivalent to functionality deployed to the public domain. Do not describe experimental, review-only or unpublished modules as live.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Public trust and verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GTH PRO is not an airline, government procurement agency, official property title registry, ticket issuing authority or universal booking processor. Provider terms govern payments, reservations, refunds, tickets and fulfilment. Consult the [About page](https://www.gthproglobal.com/about), [Affiliate Disclosure](https://www.gthproglobal.com/affiliate-disclosure), [Privacy Policy](https://www.gthproglobal.com/privacy-policy) and [Contact page](https://www.gthproglobal.com/contact) for responsible-use information.

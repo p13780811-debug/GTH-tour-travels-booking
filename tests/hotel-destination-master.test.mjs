@@ -27,7 +27,8 @@ test("No synthetic hotels or borrowed property photos when matching destination 
  const ui=read("src/app/hotels/results/HotelResults.tsx");
  assert.match(ui,/not imported yet/);
  assert.match(ui,/No verified property photo/);
- assert.match(ui,/No exact partner booking link yet/);
+ assert.match(ui,/Exact supplier hotel ID not verified; continue in live booking search/);
+ assert.match(ui,/Find rooms for this hotel/);
  assert.match(ui,/View hotel & source/);
  assert.doesNotMatch(ui,/hotelProviderSearchUrl/);
  assert.match(ui,/\/hotels\/stay\//);

@@ -110,7 +110,7 @@ export default function AirportJourneyServices() {
       <p className="flex items-start gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs leading-6 text-[var(--text-soft)]">
         <Smartphone size={18} className="mt-1 shrink-0" aria-hidden="true" />
         Booking, airport eligibility, travel documents, refunds and customer support are provided by the selected supplier.
-        Independent provider links above are not represented as approved Travelpayouts affiliate campaigns.
+        Independent provider links above are not represented as approved GTH network referral campaigns.
       </p>
     </section>
   );

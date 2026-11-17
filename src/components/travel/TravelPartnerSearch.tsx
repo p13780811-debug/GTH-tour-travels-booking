@@ -21,6 +21,6 @@ export default function TravelPartnerSearch({kind}: {kind: Extract<PartnerSearch
       </label>
       <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">{label.action}<ArrowUpRight size={16} aria-hidden="true"/></button>
     </form>
-    <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">Opens destination search on Klook in a new tab through our affiliate link. Choose dates, exact pickup and final options there. Search keywords do not guarantee availability.</p>
+    <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">Opens destination search through a GTH Provider-Operated Handoff in a new tab. Choose dates, exact pickup and final options there. Search keywords do not guarantee availability.</p>
   </section>;
 }

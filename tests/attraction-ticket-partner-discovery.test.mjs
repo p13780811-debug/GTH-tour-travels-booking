@@ -43,7 +43,7 @@ test("maps use categories to guide searches without claiming that every record n
 test("existing 174k-source attraction directory promotes programs and actual mapped category filters",()=>{
  assert.match(files.index,/ATTRACTION_TICKET_PARTNERS\.kkday\.href/);
  assert.match(files.index,/ATTRACTION_TICKET_PARTNERS\.tiqets\.href/);
- assert.match(files.index,/Direct supplier browsing; affiliate attribution not yet confirmed/);
+ assert.match(files.index,/GTH Event Concierge · Independent ticket-source browsing; tracking not confirmed/);
  assert.match(files.index,/Source category/);
  for(const cat of ["museum","theme-park","zoo","fort","monument","attraction"]){
   assert.ok(files.index.includes('["'+cat+'",'),cat+" not offered");

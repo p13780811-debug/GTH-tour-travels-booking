@@ -19,7 +19,7 @@ test("airport widget has working affiliate alternatives when provider blocks emb
  assert.match(s,/intui\.travel may block embedded booking/);
  assert.match(s,/onClick=\{\(\) => select\("options"\)\}/);
  assert.match(s,/Try another search/);
- assert.match(s,/Kiwitaxi transfer options/);
+ assert.match(s,/GTH Mobility · Private Transfer Options/);
  assert.match(s,/https:\/\/tpo\.lv\/GFuzmgYk/);
  assert.match(s,/rel="noopener noreferrer sponsored"/);
  assert.match(s,/aria-label=\{widgets\[active\]\.title\}/);

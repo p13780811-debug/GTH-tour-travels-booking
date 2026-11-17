@@ -82,7 +82,7 @@ export default async function AirportGuidePage({ params }: Props) {
             <section aria-labelledby="airport-info">
               <h2 id="airport-info" className="text-2xl font-bold">Airport reference details</h2>
               <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-                Reference information was verified from Nuitee Connect airport metadata on 5 November 2026.
+                Airport reference information was checked against connected source data on 5 November 2026.
                 This page does not make a live fare request, create a booking or guarantee a route is operating.
               </p>
               <dl className="mt-6 grid gap-4 sm:grid-cols-2">

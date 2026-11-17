@@ -1,10 +1,11 @@
 export type ExplorerProperty = {
+  infraPulse?: import("../intelligence/contracts").InfraPulse;
   id: number; slug: string; title: string; location?: string; city?: string; country?: string;
   district?: string; developer?: string; builder_name?: string; rera_id?: string;
   property_type?: string; image?: string; formatted_price?: string; beds?: number; baths?: number;
   sqft?: number; verified?: boolean; last_verified_at?: string; registry_only?: boolean;
   data_quality_limited?: boolean; active_inventory_count?: number; inventory_min_price?: number;
-  inventory_currency?: string; official_source_url?: string; ai_score?: number;
+  inventory_currency?: string; is_featured_gold?: boolean; official_source_url?: string; ai_score?: number;
   possession_status?:string; area_basis?:string; lat?: number; lng?: number; completion_date?: string;
   publishedMedia?: import("../property-media/published-media").PublishedMedia[];
 }
