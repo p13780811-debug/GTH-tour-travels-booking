@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/flights" },
   title: "Search Flights & Airport Travel Services | GTH PRO",
   description:
-    "Search Aviasales White Label flights on GTH PRO and explore verified airport transfers, insurance, car rentals and destination booking partners.",
+    "Search worldwide flights with the GTH Global Booking Engine and explore GTH Mobility airport transfers, car rentals and destination travel services.",
   keywords: ["flight fare comparison", "flight discovery", "GTH PRO travel", "airline fares"],
   openGraph: {
     title: "Worldwide Flights & Airport Services | GTH PRO",
