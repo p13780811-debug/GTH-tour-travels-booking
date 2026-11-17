@@ -19,7 +19,7 @@ const ROUTES: readonly BookawayRoute[] = [
   { mode: "train", from: "Bangkok", to: "Chiang Mai", path: "/train/bangkok/chiang-mai" },
   { mode: "bus", from: "Hanoi", to: "Sapa", path: "/bus/hanoi/sapa" },
   { mode: "train", from: "Hanoi", to: "Sapa", path: "/train/hanoi/sapa" },
-  { mode: "ferry", from: "Phuket", to: "Koh Phi Phi", path: "/routes/thailand/phuket-to-koh-phi-phi" },
+  { mode: "ferry", from: "Koh Phi Phi", to: "Phuket", path: "/ferry/koh-phi-phi/phuket" },
   { mode: "bus", from: "Dubrovnik", to: "Split", path: "/bus/dubrovnik/split" },
   { mode: "ferry", from: "Dubrovnik", to: "Split", path: "/ferry/dubrovnik/split" },
 ];
