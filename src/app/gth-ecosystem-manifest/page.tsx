@@ -98,6 +98,43 @@ export default function EcosystemManifestPage() {
           and availability always depend on the selected itinerary and the provider.
         </p>
       </section>
+      <section aria-labelledby="manifest-intelligence" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        <h2 id="manifest-intelligence" className="text-2xl font-semibold">First-party intelligence and business workflow capabilities</h2>
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <article className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <h3 className="text-lg font-semibold">Real Estate research, ROI and direct leads</h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
+              Beyond registry directories, buyers can use monthly EMI and affordability scenarios,
+              ownership-cost stress tests, rental income calculations, locality market evidence,
+              shortlist comparisons and private enquiry workflows. Brokers and owners have listing
+              submission, project-claim review and account workspace options, while administrator
+              access to buyer CRM and lead follow-ups is controlled separately. These tools provide
+              decision support; they do not promise a property's valuation or verify legal title.
+            </p>
+            <nav aria-label="Property intelligence links" className="mt-4 flex flex-wrap gap-4 text-sm">
+              <Link href="/real-estate/tools" className="font-semibold text-[var(--gold)] underline">Buyer planning</Link>
+              <Link href="/real-estate/market-intelligence" className="font-semibold text-[var(--gold)] underline">Market evidence</Link>
+              <Link href="/real-estate/registry" className="font-semibold text-[var(--gold)] underline">Registry research</Link>
+            </nav>
+          </article>
+          <article className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <h3 className="text-lg font-semibold">Tender discovery, eligibility and preparation</h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
+              Procurement research includes source-linked tender searches, deadline awareness,
+              qualifications self-assessment, tender requirements review, device-local document
+              preparation, pre-bid and site-attendance checklists, and structured application
+              readiness guidance. Businesses can request separately reviewed support quotes.
+              Document staging does not upload secret files to an external supplier by default,
+              and readiness results never substitute for the issuing authority's decisions.
+            </p>
+            <nav aria-label="Tender intelligence links" className="mt-4 flex flex-wrap gap-4 text-sm">
+              <Link href="/tender/assistant" className="font-semibold text-[var(--gold)] underline">Eligibility assistant</Link>
+              <Link href="/tender/services" className="font-semibold text-[var(--gold)] underline">Bid support services</Link>
+              <Link href="/tender" className="font-semibold text-[var(--gold)] underline">Tender intelligence</Link>
+            </nav>
+          </article>
+        </div>
+      </section>
       <section aria-labelledby="manifest-architecture" className="border-y border-[var(--border)] bg-[var(--card)]/60">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
           <h2 id="manifest-architecture" className="text-2xl font-semibold">Architecture, data and operating boundaries</h2>
