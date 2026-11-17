@@ -39,6 +39,13 @@ export default function ExplorerCard({ property: p, selected, compareFull, onCom
       <div className={styles.cardBottom}><label title="Compare up to three properties"><input type="checkbox" aria-label={`Compare ${p.title}`} checked={selected} disabled={!selected && compareFull} onChange={onCompare} /><span>{selected ? <><Check size={13} />Selected</> : "Compare"}</span></label><Link href={url}>View details<ArrowUpRight size={14} /></Link></div>
       {converted && inventoryCurrency!==currency && <p className="text-xs text-[var(--text-soft)]">Illustrative static FX conversion from {inventoryCurrency}; not a live rate or offer.</p>}
       {p.is_featured_gold === true && p.verified === true && <span className="gth-badge-gold text-xs">GTH Verified Gold · Independently reviewed</span>}
+      {!p.is_featured_gold && <div className="mt-2 text-xs">
+        <Link className="font-semibold text-[var(--gold)] underline underline-offset-2"
+          href={p.rera_id&&/^P[0-9]{11}$/.test(p.rera_id)?"/real-estate/claim-project?rera="+encodeURIComponent(p.rera_id):"/real-estate/post-property"}>
+          Apply for Gold placement · ₹999/mo | $29/mo
+        </Link>
+        <p className="mt-1 text-[var(--text-soft)]">Pricing proposal, not checkout. Claim or submit your project for independent review first.</p>
+      </div>}
       <ViralCardGenerator kind="property" title={p.title} subtitle={[p.city,p.country].filter(Boolean).join(" · ")} price={converted||undefined} path={url}/>
       <HidePropertyButton slug={p.slug} title={p.title} />
       <PropertyLeadActions property={{ id: Number(p.id), title: p.title, slug: p.slug, rera_id: p.rera_id }} compact />
