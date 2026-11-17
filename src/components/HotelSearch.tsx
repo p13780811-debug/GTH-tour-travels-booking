@@ -38,8 +38,8 @@ export default function HotelSearch(){
    <label className="text-sm font-semibold">Check-out
     <input name="checkout" type="date" min={checkin||undefined} value={checkout} onChange={e=>setCheckout(e.target.value)} className="gth-input mt-2 w-full"/>
    </label>
-   <button type="submit" className="gth-btn-gold min-h-12 self-end rounded-xl px-5 text-sm font-semibold">Choose rooms with Nuitee</button>
+   <button type="submit" className="gth-btn-gold min-h-12 self-end rounded-xl px-5 text-sm font-semibold">Explore GTH Worldwide Stays</button>
    {message&&<p role="alert" className="text-sm sm:col-span-4">{message}</p>}
-   <p className="text-xs text-[var(--text-soft)] sm:col-span-4">Select a matching Nuitee destination and guest count on the provider search. The supplier confirms available hotels and dates.</p>
+   <p className="text-xs text-[var(--text-soft)] sm:col-span-4">Select a matching destination and guest count in GTH Worldwide Stays. The supplier confirms available hotels and dates.</p>
  </form>;
 }
