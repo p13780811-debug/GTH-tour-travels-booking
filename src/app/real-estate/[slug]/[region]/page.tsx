@@ -40,7 +40,7 @@ export default async function RegionMarketHub({params}:PageProps){
     <header className="gth-glass mt-6 rounded-3xl p-6 sm:p-8">
       <p className="gold-text text-xs font-bold uppercase tracking-widest">Hyper-local discovery</p>
       <h1 className="mt-3 text-3xl font-bold">{place.regionName}, {place.countryName} micro-markets</h1>
-      <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Only project records with explicit, officially linked locality fields appear below. Missing micro-market coverage is not filled with unrelated district-wide listings.</p>
+      <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Micro-location discovery uses exact source-recorded locality or legacy RERA village fields. Village records without official source URLs are for research only. Missing micro-market coverage is not filled with unrelated district-wide listings.</p>
     </header>
     <section className="mt-6">
       <h2 className="text-xl font-bold">Recorded localities</h2>
@@ -51,7 +51,7 @@ export default async function RegionMarketHub({params}:PageProps){
             {location.city&&<p className="mt-1 text-xs text-[var(--text-soft)]">{location.city}</p>}
           </Link>
         </li>)}</ul>
-        :<p className="mt-4 text-sm">There are no source-linked micro-locality records ready for this directory yet. Projects can still be researched in the existing registry directory.</p>}
+        :<p className="mt-4 text-sm">There are no usable recorded locality or village names in this region yet. Projects can still be researched in the existing registry directory.</p>}
     </section>
     <div className="mt-6 flex flex-wrap gap-3">
       <Link href="/real-estate/registry" className="gth-btn">Explore registry projects</Link>
