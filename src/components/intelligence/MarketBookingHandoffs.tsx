@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, BedDouble, CarFront, Compass, Plane, Ship, Ticket } from "lucide-react";
 import { marketBookingHandoffs } from "@/lib/intelligence/booking-paths";
+import MarketSupplierHotelCards from "@/components/intelligence/MarketSupplierHotelCards";
 
 const ICONS = { hotel:BedDouble,flight:Plane,tour:Compass,transfer:CarFront,ticket:Ticket,cruise:Ship } as const;
 
@@ -26,5 +27,6 @@ export default function MarketBookingHandoffs({city,countryCode}:{city:string;co
         <span className="text-xs leading-5 text-[var(--text-soft)]">{note}</span>
       </Link>})}
     </div>
+    <MarketSupplierHotelCards city={city} countryCode={countryCode}/>
   </section>;
 }
