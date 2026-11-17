@@ -18,6 +18,8 @@ import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-esta
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
+import NriInvestorDesk from "@/components/real-estate/NriInvestorDesk"
+import type {InvestorCurrency} from "@/lib/real-estate/investor-currency"
 import PartnerHandshake from "@/components/property/PartnerHandshake"
 import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
 import AreaConverter from "@/components/real-estate/AreaConverter"
@@ -42,6 +44,7 @@ export default function RealEstatePage() {
     const [registryAttempt,setRegistryAttempt] = useState(0)
     const [registryValidation,setRegistryValidation] = useState("")
     const [user, setUser] = useState<User | null>(null)
+    const [investorCurrency,setInvestorCurrency] = useState<InvestorCurrency>("INR")
     const [properties, setProperties] = useState<ExplorerProperty[]>([])
     const [activeFilters, setActiveFilters] = useState<[string, string][]>([])
     const [query, setQuery] = useState("")
@@ -195,7 +198,7 @@ export default function RealEstatePage() {
         load(1)
     }
     const changePage = (next:number) => { load(next); document.getElementById("listing-results")?.scrollIntoView({block:"start"}) }
-    const visibleProperties = properties.filter(p=>!hiddenHomes.some(hidden=>hidden.slug===p.slug))
+    const visibleProperties = properties.filter(p=>!hiddenHomes.some(hidden=>hidden.slug===p.slug)).sort((a,b)=>Number(b.is_featured_gold===true && b.verified===true)-Number(a.is_featured_gold===true && a.verified===true))
     const coordinates = visibleProperties.filter(property => typeof property.lat === "number" && typeof property.lng === "number" && Number.isFinite(property.lat) && Number.isFinite(property.lng) && Math.abs(property.lat) <= 90 && Math.abs(property.lng) <= 180)
 
     const showInfo = (kind: "ranking" | "verification", property?: ExplorerProperty) => setDialog({ kind, property })
@@ -208,9 +211,10 @@ export default function RealEstatePage() {
         window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
     }
     return <main className={`gth-container ${styles.page}`}>
+        <NriInvestorDesk currency={investorCurrency} onCurrencyChange={setInvestorCurrency}/>
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={discovery === "registry" ? registryDraft : query} onQuery={discovery === "registry" ? setRegistryDraft : setQuery} onSearch={updateSearch} loading={discovery === "offers" && loading} intent={discovery === "registry" ? "registry" : activeFilters.find(([key]) => key === "listing")?.[1] || "buy"} onIntent={applyIntent} onInfo={showInfo} filters={Object.fromEntries(activeFilters)} onRefine={refine} onFilters={openFilters} /></div>
-        <nav className="scrollbar-hide mt-2 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => {setDiscovery("offers");load(1)}}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
-        {discovery === "registry" && <>{registryValidation && <p role="alert" className="mt-3 text-sm">{registryValidation}</p>}<RegistryDiscovery query={registryQuery} attempt={registryAttempt}/></>}
+        <nav className="scrollbar-hide mt-2 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => {setDiscovery("offers");load(1)}}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><Link className="inline-flex min-h-11 shrink-0 items-center" href="/real-estate/markets">Micro-markets</Link><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
+        {discovery === "registry" && <>{registryValidation && <p role="alert" className="mt-3 text-sm">{registryValidation}</p>}<RegistryDiscovery query={registryQuery} attempt={registryAttempt} currency={investorCurrency}/></>}
         <div hidden={discovery !== "offers"}>
         <button ref={filterToggle} className={styles.filterToggle} onClick={openFilters} aria-controls="explorer-filter-panel" aria-expanded={filtersOpen}><SlidersHorizontal size={14} />{filtersOpen ? "Hide filters" : "Filters"}</button>
         <button type="button" aria-label="Close property filters" tabIndex={filtersOpen ? 0 : -1} className={styles.scrim} data-open={filtersOpen} onClick={() => { setFiltersOpen(false); filterToggle.current?.focus() }} />
@@ -236,7 +240,7 @@ export default function RealEstatePage() {
                 {error && <div className={styles.empty} role="alert"><h3>We could not load the inventory</h3><p>{error}</p><button className={`gth-btn gth-btn-gold ${styles.button}`} onClick={() => load(page)}>Retry</button></div>}
                 {!loading && !error && properties.length === 0 && <div className={styles.empty}><h3>{page > 1 ? "You have reached the end of these results" : activeFilters.length === 0 ? "Verified property offers are coming to this marketplace" : "No reviewed property offers match these filters"}</h3><p>Sale and rental offers appear after submission and photo review. Explore registered projects separately or be among the first to list your property.</p><div className="flex flex-wrap gap-3"><Link href={"/real-estate/registry" + ((activeFilters.find(([key]) => key === "city" || key === "query")?.[1]) ? "?q=" + encodeURIComponent((activeFilters.find(([key]) => key === "city" || key === "query")?.[1] || "").slice(0,70)) : "")} className={`gth-btn gth-btn-gold ${styles.button}`}>Research registered projects</Link><Link href="/real-estate/post-property" className={`gth-btn ${styles.button}`}>Submit a property for review</Link>{activeFilters.length > 0 && <button className={`gth-btn ${styles.button}`} onClick={reset}>Clear search filters</button>}</div></div>}
                 {!loading && !error && view === "map" && <div className={styles.empty}><p>{coordinates.length} results on this page have stored coordinates. Map pins are not location verification.</p>{coordinates.length ? <div className="h-[450px] rounded-xl overflow-hidden"><MapWrapper data={coordinates} /></div> : <p>No mapped listings on this page. Switch to the grid to explore the available records.</p>}</div>}
-                {!loading && !error && view === "list" && <div className={styles.grid}>{visibleProperties.map(property => <ExplorerCard key={property.id} property={property} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
+                {!loading && !error && view === "list" && <div className={styles.grid}>{visibleProperties.map(property => <ExplorerCard key={property.id} property={property} currency={investorCurrency} selected={compared.some(item => item.slug === property.slug)} compareFull={compared.length >= 3} onCompare={() => setCompared(previous => compareSelection(previous, property))} onInfo={kind => showInfo(kind, property)} />)}</div>}
                 <nav aria-label="Property result pages" className={styles.pagination}><button disabled={loading || page === 1} onClick={() => changePage(page - 1)}>Previous</button><span>Page {page}</span><button disabled={loading || Boolean(error) || !hasNext} onClick={() => changePage(page + 1)}>Next</button></nav>
                 <section className={styles.researchTip}><Compass size={25} /><div><h3>A good decision starts with good questions.</h3><p>Compare the recorded details, check the official registration and request current availability before your next step.</p><div className="mt-2 flex flex-wrap gap-3"><Link href="/real-estate/tools" className="text-xs underline">Explore property tools ↗</Link><Link href="/real-estate/guides" className="text-xs underline">Read property research guides ↗</Link></div></div></section>
             </section>

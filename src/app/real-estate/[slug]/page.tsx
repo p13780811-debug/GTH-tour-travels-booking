@@ -1,3 +1,4 @@
+import {readInfraPulse} from "@/lib/intelligence/infraPulse"
 import { realEstateListingSchema } from "@/lib/real-estate/listing-schema"
 import { cache } from "react"
 import { notFound } from "next/navigation"
@@ -45,6 +46,7 @@ export default async function PropertyPage({ params }: PageProps) {
     const { slug } = await params
     const property = await readProperty(slug)
     if (!property) notFound()
+    const infraPulse=(await readInfraPulse([Number(property.id)]))[Number(property.id)]
     const { inventory, publishedMedia } = property
     let related: any[] = []
     if (property.city && property.city !== "City not provided") {
@@ -94,7 +96,7 @@ export default async function PropertyPage({ params }: PageProps) {
     return <>
         {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />}
         <RecordPropertyView slug={slug} title={property.title} city={property.city||""}/>
-        <PropertyDetailClient slug={slug} initialData={property} related={related} inventory={inventory} publishedMedia={publishedMedia} />
+        <PropertyDetailClient slug={slug} initialData={{...property,infraPulse}} related={related} inventory={inventory} publishedMedia={publishedMedia} />
         {indexedRegistry && <aside aria-label="MahaRERA registry record provenance"
             className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
             <div className="gth-glass rounded-2xl p-5">

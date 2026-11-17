@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import ts from 'typescript';import fs from 'node:fs';
 function load(path,deps={}){const exports={};new Function('exports','require',ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(exports,name=>{if(!(name in deps))throw new Error(name);return deps[name]});return exports}
 const validators=load('src/lib/security/validators.ts');const request=load('src/lib/security/request.ts',{'./validators':validators});
+const globalRegistry=load('src/lib/real-estate/global-registry.ts');
 const req=body=>new Request('http://localhost/api/admin/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 function admin(user,client){return load('src/app/api/admin/submissions/route.ts',{'@/lib/security/auth':{authenticatedStorage:async()=>({user,client})},'@/lib/security/request':request})}
 test('user editable role cannot grant moderation',async()=>{const route=admin({app_metadata:{},user_metadata:{role:'admin'}},{rpc(){throw new Error('must not call')}});assert.equal((await route.POST(req({id:'00000000-0000-0000-0000-000000000001',decision:'approved'}))).status,403)});
@@ -12,6 +13,7 @@ test('account submission history is owner scoped even for administrators and nev
  const route = load('src/app/api/real-estate/submissions/route.ts', {
   '@/lib/security/auth': {authenticatedStorage:async()=>({user:{id:'actual-user',app_metadata:{role:'admin'}},client:{from:()=>query}})},
   '@/lib/security/request': request, '@/lib/security/validators': validators,
+  '@/lib/real-estate/global-registry': globalRegistry,
   '@/lib/security/rate-limit': {enforceRateLimit:async()=>{}},
  });
  const response = await route.GET(new Request('http://localhost/api/real-estate/submissions'));
@@ -35,6 +37,7 @@ test('registry-linked submission resolves master project and stores inventory fa
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: table => table === 'properties' ? registryQuery : submissionsQuery } }) },
   '@/lib/security/request': request,
   '@/lib/security/validators': validators,
+  '@/lib/real-estate/global-registry': globalRegistry,
   '@/lib/security/rate-limit': { enforceRateLimit: async () => {} },
  });
  const response = await route.POST(new Request('http://localhost/api/real-estate/submissions', {
@@ -65,6 +68,7 @@ test('unknown registry reference is rejected without creating a duplicate submis
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: table => table === 'properties' ? registryQuery : submissionsQuery } }) },
   '@/lib/security/request': request,
   '@/lib/security/validators': validators,
+  '@/lib/real-estate/global-registry': globalRegistry,
   '@/lib/security/rate-limit': { enforceRateLimit: async () => {} },
  });
  const response = await route.POST(new Request('http://localhost/api/real-estate/submissions', {
@@ -88,6 +92,7 @@ test('global submission preserves currency and normalizes square metres to squar
   '@/lib/security/auth': { authenticatedStorage: async () => ({ user: { id: 'owner-1' }, client: { from: () => submissionsQuery } }) },
   '@/lib/security/request': request,
   '@/lib/security/validators': validators,
+  '@/lib/real-estate/global-registry': globalRegistry,
   '@/lib/security/rate-limit': { enforceRateLimit: async () => {} },
  });
  const response = await route.POST(new Request('http://localhost/api/real-estate/submissions', {

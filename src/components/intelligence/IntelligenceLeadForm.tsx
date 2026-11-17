@@ -1,0 +1,28 @@
+"use client";
+import {useId,useRef,useState} from "react";
+import Link from "next/link";
+import {INVESTOR_CURRENCIES,type IntelligenceTarget} from "@/lib/intelligence/contracts";
+export default function IntelligenceLeadForm({kind,propertyId,target,initialCurrency="INR"}:{kind:"infra"|"hospitality";propertyId?:number;target?:IntelligenceTarget;initialCurrency?:string}){
+ const id=useId(),requestId=useRef(""),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[saved,setSaved]=useState(false),[whatsapp,setWhatsapp]=useState<string|null>(null);
+ return <form aria-busy={busy} className="mt-4 grid gap-3 text-sm sm:grid-cols-2 [&_input:not([type=checkbox])]:mt-1 [&_input:not([type=checkbox])]:min-h-11 [&_input:not([type=checkbox])]:w-full [&_input:not([type=checkbox])]:rounded-lg [&_input:not([type=checkbox])]:border [&_input:not([type=checkbox])]:border-[var(--border)] [&_input:not([type=checkbox])]:bg-[var(--bg-soft)] [&_input:not([type=checkbox])]:px-3" onSubmit={async event=>{
+  event.preventDefault();if(busy||saved)return;const form=new FormData(event.currentTarget);setBusy(true);setMessage("");requestId.current ||= crypto.randomUUID();
+  try{
+   const response=await fetch("/api/intelligence/leads",{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify({kind,property_id:propertyId,target,request_id:requestId.current,full_name:form.get("full_name"),email:form.get("email"),phone:form.get("phone"),currency:form.get("currency"),services:kind==="infra"?["investor_dossier"]:form.getAll("services"),group_size:kind==="infra"?null:Number(form.get("group_size")),notes:form.get("notes"),consent:form.get("consent")==="yes",website_check:form.get("website_check")})});
+   const result=await response.json();if(!response.ok||result.received!==true)throw new Error(result.error||"The request could not be confirmed. Please retry.");
+   setSaved(true);setMessage("Request saved privately. Reference: "+result.reference+". Availability and any supplier quotation require confirmation.");
+   if(typeof result.whatsapp_url==="string"&&/^https:\/\/wa\.me\/[1-9]\d{7,14}\?text=/.test(result.whatsapp_url))setWhatsapp(result.whatsapp_url);
+  }catch(error){setMessage(error instanceof Error?error.message:"Request unavailable.");}finally{setBusy(false);}
+ }}>
+  <label htmlFor={id+"-name"}>Full name<input id={id+"-name"} name="full_name" autoComplete="name" minLength={2} maxLength={150} required disabled={busy||saved}/></label>
+  <label htmlFor={id+"-email"}>Email<input id={id+"-email"} name="email" type="email" autoComplete="email" maxLength={150} required disabled={busy||saved}/></label>
+  <label htmlFor={id+"-phone"}>WhatsApp number with country code<input id={id+"-phone"} name="phone" type="tel" placeholder="+91…" pattern="\+[1-9][0-9]{7,14}" maxLength={16} required disabled={busy||saved}/></label>
+  <label htmlFor={id+"-currency"}>Preferred currency<select id={id+"-currency"} name="currency" defaultValue={initialCurrency} disabled={busy||saved} className="mt-1 min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-soft)] px-3">{INVESTOR_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label>
+  {kind==="hospitality"&&<><fieldset className="sm:col-span-2"><legend>Request services</legend><div className="mt-2 flex flex-wrap gap-4">{[["corporate_hospitality","Corporate boxes / hospitality"],["group_transport","Group ground transport"],["hotel_blocks","Bulk hotel blocks"]].map(([value,label])=><label key={value} className="flex items-center gap-2"><input type="checkbox" name="services" value={value} disabled={busy||saved}/>{label}</label>)}</div></fieldset><label htmlFor={id+"-group"}>Estimated group size<input id={id+"-group"} type="number" name="group_size" min={1} max={5000} defaultValue={2} required disabled={busy||saved}/></label></>}
+  <label className="sm:col-span-2" htmlFor={id+"-notes"}>Request details (optional)<textarea id={id+"-notes"} name="notes" maxLength={1000} disabled={busy||saved} className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-soft)] p-3"/></label>
+  <label className="sr-only" aria-hidden="true">Leave empty<input name="website_check" tabIndex={-1} autoComplete="off"/></label>
+  <label className="flex items-start gap-3 text-xs leading-6 sm:col-span-2"><input type="checkbox" name="consent" value="yes" required disabled={busy||saved} className="mt-1 size-4 shrink-0"/><span>I request follow-up about this enquiry and agree to storing my contact details privately. <Link href="/privacy-policy" className="underline">Privacy policy</Link>. This is an enquiry, not a booking or guaranteed service.</span></label>
+  <button disabled={busy||saved} className="gth-btn gth-btn-gold min-h-11 sm:col-span-2">{saved?"Request saved":busy?"Saving…":"Save private enquiry"}</button>
+  {message&&<p role="status" className="text-sm sm:col-span-2">{message}</p>}
+  {saved&&<p className="text-xs leading-6 sm:col-span-2">{whatsapp?<><a href={whatsapp} target="_blank" rel="noopener noreferrer" className="gth-btn inline-flex min-h-11 items-center">Open WhatsApp enquiry</a><br/>Press Send in WhatsApp to contact the configured business number. No WhatsApp message was sent automatically.</>:<>The team can follow up using your saved details. For direct contact: <a href="mailto:official@gthproglobal.com" className="underline">official@gthproglobal.com</a>. WhatsApp handoff will appear when a business contact is configured.</>}</p>}
+ </form>;
+}
