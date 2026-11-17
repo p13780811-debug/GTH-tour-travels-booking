@@ -169,6 +169,7 @@ export function TenderMarketCard({tender,language}:{
     <TenderSaveCompare id={tender.id} title={tender.title}/>
     <div className="mt-3"><TenderBidGenerator tender={tender}/></div>
     <ShareFeedbackActions title={tender.title} path={"/tender/"+encodeURIComponent(tender.id)}/>
+    <ViralCardGenerator kind="tender" title={tender.title} subtitle={tender.buyer} price={price} path={"/tender/"+encodeURIComponent(tender.id)}/>
     <LocalWatchButton kind="tender" id={tender.id} title={tender.title} path={"/tender/"+encodeURIComponent(tender.id)} deadline={tender.deadline_at}/>
     <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
       <Link prefetch={false} href={"/tender/"+tender.id}
