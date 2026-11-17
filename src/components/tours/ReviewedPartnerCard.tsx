@@ -2,7 +2,7 @@
 import {useState} from "react";
 import {ArrowUpRight} from "lucide-react";
 import type {ReviewedPartnerProduct} from "@/lib/tours/reviewed-partner-products";
-const LABELS={klook:"Klook",kkday:"KKday",tiqets:"Tiqets"} as const;
+const LABELS={klook:"GTH Experiences",kkday:"GTH Experiences",tiqets:"GTH Event Concierge"} as const;
 /** Only vetted supplier-feed photos; a broken image removes the card, not replaced by stock. */
 export default function ReviewedPartnerCard({product}:{product:ReviewedPartnerProduct}){
  const [failed,setFailed]=useState(false);if(failed)return null;
