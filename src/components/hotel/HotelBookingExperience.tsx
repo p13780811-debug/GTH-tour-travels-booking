@@ -231,6 +231,13 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
     {!handoff && <a className="gth-btn gth-hotel-booking-action mt-3" href={handoff || `${HOTEL_BOOKING_ORIGIN}/?language=en&currency=${displayCurrency}`}
       target="_blank" rel="noopener noreferrer">Open secure booking site <ExternalLink size={16} aria-hidden="true" /></a>}
 
+    <aside className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]" aria-label="Explore hotels without dates">
+      <p>Still choosing where to stay? Browse the GTH PRO hotel directory without dates. Directory listings are for discovery, not proof of live rooms or prices. Exact booking links appear only for independently reviewed hotel matches.</p>
+      <a href="/hotels?view=directory" className="gth-btn mt-3 inline-flex min-h-11 items-center gap-2 font-semibold">
+        Browse hotels without dates <ExternalLink size={16} aria-hidden="true" />
+      </a>
+    </aside>
+
     <div ref={resultSection} className="gth-hotel-booking-results">
       {handoff && <>
         <div className="gth-hotel-booking-heading"><div><h3>{embedResults ? "Your stay, rooms and booking options" : "Your hotel results"}</h3>
