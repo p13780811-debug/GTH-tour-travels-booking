@@ -7,7 +7,7 @@ export default function MatchDayConcierge({slug,name,bookingUrl}:{slug:string;na
  const hotels=data?.hotels||[];
  const checklist=["Check event date, admission ticket, stand and entry gate","Review bag, ID, accessibility and prohibited-items rules","Check official weather forecast and carry suitable rain/sun protection","Confirm metro, shuttle, road closures and last service","Allow extra time; check hotel availability and cancellation terms"];
  function printGuide(){
-  const w=window.open("","_blank","noopener,noreferrer,width=800,height=900");
+  const w=window.open("","_blank","width=800,height=900");
   if(!w)return;
   const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
   const safeUrl=(()=>{try{const u=new URL(data?.bookingUrl||bookingUrl);return u.protocol==="https:"&&u.hostname==="gthproglobal.nuitee.link"?u.toString():"https://gthproglobal.nuitee.link/";}catch{return "https://gthproglobal.nuitee.link/";}})();
