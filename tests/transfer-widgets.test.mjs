@@ -25,8 +25,8 @@ test("two identified transfer partners and third supplied widget retain tracking
   assert.match(code, /b_faq=true/);
   assert.match(code, /currency=USD/);
   assert.match(code, /show_header=true/);
-  assert.match(code, /Kiwitaxi transfer options/);
-  assert.match(code, /intui\.travel airport transfers/);
+  assert.match(code, /GTH Mobility · Private Transfer Options/);
+  assert.match(code, /GTH Mobility · Airport Transfers/);
   assert.match(code, /active === "additional"/);
 });
 
