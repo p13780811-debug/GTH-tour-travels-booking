@@ -35,7 +35,7 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
   },
   cruises: {
     detail: "Explore cruise holidays, harbour sailings and dinner cruises in the GTH PRO cruise collection.",
-    note: "Klook and the cruise operator confirm sailing dates, cabin availability, package fares and booking conditions.",
+    note: "The selected cruise booking provider and vessel operator confirm sailing dates, cabin availability, package fares and booking conditions.",
     cta: "Explore cruise options",
   },
   cars: {
