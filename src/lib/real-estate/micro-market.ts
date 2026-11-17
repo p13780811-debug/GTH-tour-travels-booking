@@ -10,7 +10,7 @@ export type MicroPlace = {
 };
 export type LocalProject = {
   id:number; slug:string; title:string; rera_id:string|null; city:string|null;
-  developer:string|null; sourceUrl:string|null; lat:number|null; lng:number|null;
+  developer:string|null; district:string|null;taluka:string|null;village:string|null;sourceUrl:string|null;lat:number|null;lng:number|null;
 };
 export type LocalHotel = {id:string;name:string;city:string|null;distanceKm:number};
 export type LocalTender = {id:string;title:string;buyer:string;deadline:string;source:string};
@@ -73,7 +73,7 @@ export function safeRegistryEvidence(value:unknown):string|null {
 }
 type SourceProject = {
   id:number;slug:string|null;title:string|null;rera_id:string|null;city:string|null;
-  developer:string|null;official_source_url:string|null;lat:number|null;lng:number|null;
+  developer:string|null;official_source_url:string|null;district:string|null;taluka:string|null;village:string|null;locality:string|null;verified:boolean|null;lat:number|null;lng:number|null;
 };
 type SourceHotel = {source_id:string|null;name:string|null;city:string|null;latitude:number|null;longitude:number|null};
 type SourceTender = {id:string;title:string;buyer:string;deadline_at:string;source_name:string};
@@ -88,7 +88,7 @@ function point(value:{lat:number|null;lng:number|null}):value is {lat:number;lng
     Number.isFinite(value.lat)&&Number.isFinite(value.lng)&&Math.abs(value.lat)<=90&&Math.abs(value.lng)<=180;
 }
 function projectAnchor(records:LocalProject[]):{lat:number;lng:number}|null{
-  const points=records.filter(point);
+  const points=records.filter((p):p is LocalProject & {lat:number;lng:number}=>point(p));
   if(points.length<2)return null;
   const sortedLat=points.map(p=>p.lat).sort((a,b)=>a-b),sortedLng=points.map(p=>p.lng).sort((a,b)=>a-b);
   const mid=Math.floor(points.length/2);
@@ -102,8 +102,11 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
   const db=publicDb();
   if(!db)return {place,projects:[],hotels:[],tenders:[],anchor:null,complete:false,indexable:false} satisfies MicroSnapshot;
   const [{data:rows,error:projectError},{data:tenderRows,error:tenderError}]=await Promise.all([
-    db.from("properties").select("id,slug,title,rera_id,city,developer,official_source_url,lat,lng")
-      .eq("country",place.countryName).eq("state",place.regionName).eq("locality",place.localityName)
+    db.from("properties").select("id,slug,title,rera_id,city,developer,official_source_url,district,taluka,village,locality,verified,lat,lng")
+      .eq("country",place.countryName).eq("state",place.regionName)
+      // Legacy 812 RERA records have a source-recorded village, but a hardcoded "Mumbai" city.
+      // Never use their city field or silently expand a village to its district/taluka.
+      .or("locality.ilike."+place.localityName+",village.ilike."+place.localityName)
       .in("source_type",["registry","rera"]).neq("status","archived")
       .order("id",{ascending:false}).limit(18).abortSignal(AbortSignal.timeout(5000)),
     db.from("tenders").select("id,title,buyer,deadline_at,source_name")
@@ -113,10 +116,14 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
       .abortSignal(AbortSignal.timeout(5000)),
   ]);
   const projects:LocalProject[]=projectError?[]:((rows||[]) as SourceProject[])
-    .filter(p=>p.slug&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug)&&p.title&&p.title.length>=3)
+    .filter(p=>(segmentSlug(p.locality||"")===place.localitySlug||segmentSlug(p.village||"")===place.localitySlug)
+      &&p.slug&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug)&&p.title&&p.title.length>=3)
     .map(p=>({id:p.id,slug:p.slug!,title:p.title!,rera_id:p.rera_id,
-      city:p.city,developer:p.developer,sourceUrl:safeRegistryEvidence(p.official_source_url),lat:p.lat,lng:p.lng}));
-  const anchor=projectAnchor(projects.filter(p=>p.sourceUrl!==null));
+      city:p.city,developer:p.developer,district:p.district,taluka:p.taluka,village:p.village,
+      sourceUrl:safeRegistryEvidence(p.official_source_url),lat:p.lat,lng:p.lng}));
+  // Coordinates are only a provisional spatial anchor if two same-locality
+  // records independently agree; these are not official geocoding guarantees.
+  const anchor=projectAnchor(projects);
   let hotels:LocalHotel[]=[];
   let hotelError=false;
   if(anchor){
@@ -154,18 +161,22 @@ export async function readMicroSnapshot(country:string,region:string,locality:st
 const directoryCache=unstable_cache(async(country:string,region:string)=>{
   const db=publicDb(),place=parseMicroPlace(country,region,"market");
   if(!db||!place)return [] as Array<{name:string;path:string;city:string|null}>;
-  const {data,error}=await db.from("properties").select("locality,city,slug,official_source_url")
+  const {data,error}=await db.from("properties").select("locality,village,district,taluka,city,slug,official_source_url,source_type")
     .eq("country",place.countryName).eq("state",place.regionName)
-    .in("source_type",["registry","rera"]).not("locality","is",null)
-    .not("official_source_url","is",null)
+    .in("source_type",["registry","rera"])
+    .or("locality.not.is.null,village.not.is.null")
     .order("id",{ascending:false}).limit(150).abortSignal(AbortSignal.timeout(5000));
   if(error)return [];
   const found=new Map<string,{name:string;path:string;city:string|null}>();
   for(const r of data||[]){
-    if(!safeRegistryEvidence(r.official_source_url)||typeof r.locality!=="string")continue;
-    const localitySlug=segmentSlug(r.locality);
+    const location=typeof r.locality==="string"&&r.locality.trim()?r.locality:r.village;
+    if(typeof location!=="string"||location.trim().length<3)continue;
+    // Include historical legacy RERA village references but do not imply
+    // officially linked or independently verified status when URL is absent.
+    if(!safeRegistryEvidence(r.official_source_url)&&r.source_type!=="rera")continue;
+    const localitySlug=segmentSlug(location);
     if(!localitySlug||localitySlug.length>80||!slugPattern.test(localitySlug)||found.has(localitySlug))continue;
-    found.set(localitySlug,{name:r.locality.slice(0,80),city:r.city,path:"/real-estate/"+place.countrySlug+"/"+place.regionSlug+"/"+localitySlug});
+    found.set(localitySlug,{name:location.slice(0,80),city:r.district||null,path:"/real-estate/"+place.countrySlug+"/"+place.regionSlug+"/"+localitySlug});
     if(found.size>=30)break;
   }
   return [...found.values()];
