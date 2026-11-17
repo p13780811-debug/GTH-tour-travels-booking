@@ -37,7 +37,7 @@ function buildGraph(){
 
 test("production root metadata is authoritative and old Next.js starter metadata is absent",()=>{
   const layout=read("src/app/layout.tsx");
-  assert.match(layout,/GTH PRO Global \| Travel, Real Estate, Tenders & Worldwide Tickets/);
+  assert.match(layout,/GTH PRO Global \| GTH Global Booking Engine, Real Estate & Tender Intelligence/);
   assert.match(layout,/metadataBase: new URL\(siteOrigin\(\)\)/);
   assert.match(layout,/GTH_PUBLIC_LAUNCH_ENABLED/);
   assert.equal((layout.match(/<SiteIdentitySchema \/>/g)||[]).length,1);
@@ -55,9 +55,9 @@ test("one factual Organization and WebSite graph accurately describes four audit
   const org=data["@graph"].find(n=>n["@type"]==="Organization");
   const site=data["@graph"].find(n=>n["@type"]==="WebSite");
   assert.ok(org&&site);
-  assert.match(org.description,/Live Worldwide Booking Engine/);
-  assert.match(org.description,/global flights, hotels, cruises, trains, buses and ground transport/i);
-  assert.match(org.description,/millions of property listings|millions of accommodation listings/i);
+  assert.match(org.description,/GTH Global Booking Engine/);
+  assert.match(org.description,/GTH Worldwide Stays|global travel/i);
+  assert.match(org.description,/millions of listings|millions of accommodation listings/i);
   assert.doesNotMatch(JSON.stringify(data),/21,700|21k hotels/i);
   assert.match(JSON.stringify(data),/eligibility self-assessment/i);
   assert.match(JSON.stringify(data),/mortgage|affordability/i);
@@ -80,6 +80,14 @@ test("one factual Organization and WebSite graph accurately describes four audit
   assert.doesNotMatch(serialized,/aggregateRating|reviewCount|governmentAgency|taxID|founder|security certified|100% verified|service.role|SUPABASE_SERVICE_ROLE_KEY/i);
   assert.match(org.description,/initiative of Etios Profession/);
   assert.match(org.description,/supplier-operated booking handoffs/);
+  for(const brand of ["GTH Global Booking Engine","GTH Worldwide Stays","GTH Event Concierge","GTH Provider-Operated Handoffs"]){
+    assert.match(serialized,new RegExp(brand));
+  }
+  const forbidden=/Nuitee|Aviasales|GetYourGuide|Ticketmaster|StubHub|Partnerize|CJ Affiliate|Amadeus|Travelpayouts|Klook|WeGoTrip|Tiqets|KKday/i;
+  assert.doesNotMatch(serialized,forbidden,"Branded schema must not advertise supplier network names");
+  for(const doc of ["src/app/gth-ecosystem-manifest/page.tsx","README.md"]){
+    assert.doesNotMatch(read(doc),forbidden,doc);
+  }
 });
 
 test("manifest is a static source-grounded >500-word public document with official identity and release boundaries",()=>{
@@ -87,7 +95,7 @@ test("manifest is a static source-grounded >500-word public document with offici
   const prose=p.replace(/<[^>]*>/g," ").replace(/\{[^{}]*\}/g," ").replace(/import[^\n]*\n/g," ");
   assert.ok(prose.trim().split(/\s+/).length>=500,"Manifest must contain at least 500 words");
   for(const term of ["Worldwide Travel","Global Real Estate","Public Tender Intelligence",
-    "Worldwide Tickets and Venues","Etios Profession","Supabase","12,500","4,000","2.9 million","Live Worldwide Booking Engine"]){
+    "Worldwide Tickets and Venues","Etios Profession","Supabase","12,500","4,000","GTH Worldwide Stays","GTH Global Booking Engine"]){
     assert.ok(p.includes(term),"Manifest should describe audited evidence: "+term);
   }
   assert.doesNotMatch(p,/21,700|21k hotels|local hotel inventory cap/i);
