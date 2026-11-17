@@ -113,6 +113,7 @@ export default function SystemPage() {
         </div>
         <div className="mt-5 flex flex-wrap gap-5 text-sm font-semibold">
           <Link href="/affiliate-disclosure" className="text-[var(--gold)] underline">Affiliate disclosure</Link>
+          <Link href="/gth-ecosystem-manifest" className="text-[var(--gold)] underline">Full ecosystem manifest</Link>
           <Link href="/attractions" className="text-[var(--gold)] underline">Public attraction directory</Link>
           <Link href="/verification" className="text-[var(--gold)] underline">Supplier and source transparency</Link>
         </div>
