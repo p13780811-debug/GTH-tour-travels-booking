@@ -133,7 +133,11 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
       sourceUrl:safeRegistryEvidence(p.official_source_url),lat:p.lat,lng:p.lng}));
   // Coordinates are only a provisional spatial anchor if two same-locality
   // records independently agree; these are not official geocoding guarantees.
-  const anchor=projectAnchor(projects);
+  // The legacy 812 records have no verified official project URLs and sometimes
+  // reuse Mumbai-area coordinates across Pune/Nashik. They can appear as records,
+  // but must never establish hotel proximity or indexable geo claims until linked
+  // to a independently checked official source.
+  const anchor=projectAnchor(projects.filter(p=>p.sourceUrl!==null));
   const eligibleIds=projects.map(p=>p.id).filter(Number.isSafeInteger).slice(0,18);
   let offers:LocalOffer[]=[];
   let offerError=false;
