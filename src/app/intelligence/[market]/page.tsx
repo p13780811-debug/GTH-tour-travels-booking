@@ -90,7 +90,7 @@ export default async function MarketDecisionPage({params}:Props){
         <p className="mt-3 text-sm text-[var(--text-soft)]">The source-attributed OSM directory contains places, not confirmed rooms. Booking search uses the existing GTH provider-operated handoff.</p>
         {snapshot.hotelDirectory.length?<div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{snapshot.hotelDirectory.map((h,i)=><article key={h.url+i} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
           <h3 className="font-semibold">{h.name}</h3><p className="mt-2 text-sm text-[var(--text-soft)]">{h.city} · {h.type}</p>
-          <a href={h.url} target="_blank" rel="noopener noreferrer nofollow" className="mt-3 inline-flex text-sm underline">Map source</a>
+          <div className="mt-3 flex flex-wrap gap-3"><Link href={"/hotels?"+new URLSearchParams({view:"booking",city:h.city,name:h.name,country:market.countryCode}).toString()} className="gth-btn gth-btn-gold inline-flex min-h-11 items-center text-sm">Find this hotel in booking search <ArrowUpRight size={15}/></Link><a href={h.url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex min-h-11 items-center text-sm underline">Map source</a></div>
         </article>)}</div>:<p className="mt-4 text-sm text-[var(--text-soft)]">No matching mapped accommodation directory entries in this snapshot.</p>}
         <Link href={hotelHref} className="gth-btn gth-btn-gold mt-5 inline-flex min-h-11 items-center gap-2">Search GTH Worldwide Stays <ArrowUpRight size={16}/></Link>
       </section>
