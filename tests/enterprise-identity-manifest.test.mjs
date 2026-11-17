@@ -100,3 +100,15 @@ test("manifest is discoverable through existing system and launch gated sitemap,
   assert.doesNotMatch(read("src/app/gth-ecosystem-manifest/page.tsx"),/SiteIdentitySchema|application\/ld\+json/);
   assert.match(read("src/app/sitemap.ts"),/if \(!publicLaunch\) return \[\]/);
 });
+
+test("root repository documentation no longer tells AI crawlers it is a local Next.js demo",()=>{
+  const source=read("README.md");
+  assert.match(source,/# GTH PRO Global/);
+  assert.match(source,/initiative of Etios Profession/);
+  assert.match(source,/www.gthproglobal.com/);
+  for(const pillar of ["Travel","Real Estate","Tender Intelligence","Worldwide Tickets"]){
+    assert.ok(source.includes(pillar),pillar);
+  }
+  assert.doesNotMatch(source,/This is a Next\.js project bootstrapped|create-next-app|Welcome to Next\.js|localhost:3000/i);
+  assert.match(source,/Code committed to a feature branch is \*\*not\*\* equivalent/);
+});
