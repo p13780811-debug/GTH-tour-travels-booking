@@ -1,3 +1,4 @@
+import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import TenderPursuitPlanner from "@/components/tender/TenderPursuitPlanner";
 import TenderBidGenerator from "@/components/tender/TenderBidGenerator";
 import {getCachedPublicTender as getPublicTender} from "@/lib/tender/public-reader";
@@ -67,6 +68,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
         ].map(([label,value])=><div key={label}><dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-soft)]">{label}</dt><dd className="mt-2 break-words text-sm font-semibold">{value}</dd></div>)}
       </dl>
       <TenderSaveCompare id={tender.id} title={tender.title}/>
+      <ViralCardGenerator kind="tender" title={tender.title} subtitle={tender.buyer} price={formatTenderBudget(tender.estimated_value,tender.currency,language)} path={"/tender/"+encodeURIComponent(tender.id)}/>
       <div className="mt-4"><TenderBidGenerator tender={tender}/></div>
       <div className="mt-5 flex flex-wrap items-center gap-3">
       <Link href={`/tender/assistant?tenderId=${encodeURIComponent(tender.id)}`}
