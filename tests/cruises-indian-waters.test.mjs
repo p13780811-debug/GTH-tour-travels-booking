@@ -70,5 +70,5 @@ test('one unified search filters India cards, links exact products and keeps mob
  assert.match(page,/grid-cols-1 items-end gap-3/);
  assert.match(page,/13 matching cruise options|selected.length\+selectedIndia.length/);
  assert.match(ui,/View \$\{option.title\} on the provider/);
- assert.match(page,/View \$\{item.title\} on Klook/);
+ assert.match(page,/View booking options for \$\{item.title\}/);
 });
