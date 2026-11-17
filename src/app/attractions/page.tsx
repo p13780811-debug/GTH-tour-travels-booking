@@ -59,7 +59,7 @@ export default async function AttractionsDirectory({searchParams}:Props){
     <p className="mt-3 max-w-4xl text-sm leading-7 text-[var(--text-soft)]">
       Our source-mapped directory contains real geographic places, not a live ticket feed.
       Use the filters below to find a museum, theme park or landmark; each place guide
-      offers contextual partner searches. KKday and Tiqets provide independent travel
+      offers contextual partner searches. Connected booking services provide independent travel
       experiences and attraction-ticket browsing, but neither confirms tickets for every
       mapped place.
     </p>
@@ -67,26 +67,26 @@ export default async function AttractionsDirectory({searchParams}:Props){
      <article className="flex min-w-0 flex-col rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
       <h3 className="text-base font-bold">Tours, activities and attraction entry</h3>
       <p className="my-3 flex-1 text-xs leading-6 text-[var(--text-soft)]">
-       KKday offers tours, attraction tickets and local activities. This is our
-       existing Travelpayouts-tracked partner link; choose a matching product on the provider site.
+       GTH Experiences connects visitors to tours, attraction tickets and local activities through an
+       existing tracked provider handoff; choose a matching offer on the supplier site.
       </p>
       <a href={ATTRACTION_TICKET_PARTNERS.kkday.href} rel="noopener noreferrer sponsored" target="_blank"
        className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
        Browse partner experiences <ArrowRight size={16} aria-hidden="true"/>
       </a>
-      <p className="mt-2 text-xs text-[var(--text-soft)]">KKday · Existing tracked referral, not a place-specific ticket</p>
+      <p className="mt-2 text-xs text-[var(--text-soft)]">GTH Experiences · Tracked discovery, not a place-specific ticket</p>
      </article>
      <article className="flex min-w-0 flex-col rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
       <h3 className="text-base font-bold">Museums, landmarks and digital tickets</h3>
       <p className="my-3 flex-1 text-xs leading-6 text-[var(--text-soft)]">
-       Tiqets focuses on museums and visitor attractions, including eligible mobile-entry
+       GTH Event Concierge connects visitors to museums and visitor attractions, including selected mobile-entry
        and skip-the-line options. Exact ticket types depend on the selected attraction.
       </p>
       <a href={ATTRACTION_TICKET_PARTNERS.tiqets.href} rel="noopener noreferrer nofollow" target="_blank"
        className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
        Explore attraction tickets <ArrowRight size={16} aria-hidden="true"/>
       </a>
-      <p className="mt-2 text-xs text-[var(--text-soft)]">Tiqets · Direct supplier browsing; affiliate attribution not yet confirmed</p>
+      <p className="mt-2 text-xs text-[var(--text-soft)]">GTH Event Concierge · Independent ticket-source browsing; tracking not confirmed</p>
      </article>
     </div>
     <div className="mt-5 flex flex-wrap gap-2" aria-label="Explore attraction categories">
