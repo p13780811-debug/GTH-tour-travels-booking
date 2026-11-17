@@ -18,6 +18,7 @@ import ExplorerDialog, { type ExplorerDialogState } from "@/components/real-esta
 import { compareSelection, type ExplorerProperty } from "@/lib/real-estate/explorer"
 import { normalizeSaved, SAVED_KEY } from "@/lib/real-estate/saved"
 import GlobalMarkets from "@/components/real-estate/GlobalMarkets"
+import NriInvestorDesk from "@/components/real-estate/NriInvestorDesk"
 import PartnerHandshake from "@/components/property/PartnerHandshake"
 import HomeLoanCalculator from "@/components/property/HomeLoanCalculator"
 import AreaConverter from "@/components/real-estate/AreaConverter"
@@ -208,6 +209,7 @@ export default function RealEstatePage() {
         window.dispatchEvent(new Event("gth-discovery-filters")); load(1)
     }
     return <main className={`gth-container ${styles.page}`}>
+        <NriInvestorDesk/>
         <div id="property-search" className="scroll-mt-24"><ExplorerHero query={discovery === "registry" ? registryDraft : query} onQuery={discovery === "registry" ? setRegistryDraft : setQuery} onSearch={updateSearch} loading={discovery === "offers" && loading} intent={discovery === "registry" ? "registry" : activeFilters.find(([key]) => key === "listing")?.[1] || "buy"} onIntent={applyIntent} onInfo={showInfo} filters={Object.fromEntries(activeFilters)} onRefine={refine} onFilters={openFilters} /></div>
         <nav className="scrollbar-hide mt-2 flex items-center gap-4 overflow-x-auto border-b pb-2 text-sm" aria-label="Property workspace"><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "registry"} onClick={() => {setDiscovery("registry");setFiltersOpen(false)}}>Registered projects</button><button type="button" className="gth-badge min-h-11 shrink-0 aria-pressed:font-semibold aria-pressed:underline" aria-pressed={discovery === "offers"} onClick={() => {setDiscovery("offers");load(1)}}>Sale & rental offers</button><Link className="inline-flex min-h-11 shrink-0 items-center gap-1" href="/real-estate/saved"><Heart size={14}/>Saved {savedCount}</Link><button className="inline-flex min-h-11 shrink-0 items-center gap-1" onClick={() => setDialog({kind:"compare",properties:compared})}><GitCompareArrows size={14}/>Compare {compared.length}</button><a className="inline-flex min-h-11 shrink-0 items-center" href="#buyer-tools">Buyer tools</a></nav>
         {discovery === "registry" && <>{registryValidation && <p role="alert" className="mt-3 text-sm">{registryValidation}</p>}<RegistryDiscovery query={registryQuery} attempt={registryAttempt}/></>}
