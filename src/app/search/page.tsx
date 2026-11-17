@@ -12,6 +12,7 @@ import { destinations } from "@/data/destinations";
 import { knownStadiumTicketHref } from "@/lib/travel/stadium-ticket-routing";
 import { blogs } from "@/data/blogs";
 import { parseGthIntent, connectedIntentLinks } from "@/lib/search/connected-intent";
+import { GTH_MARKETS, gthMarketPath } from "@/lib/intelligence/markets";
 
 // Do not index infinite query-result combinations, including after public launch.
 export const dynamic = "force-dynamic";
@@ -135,6 +136,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
   const parsedIntent = query && selected === "all"
     ? parseGthIntent(query, destinations.map(item => item.name)) : null;
   const connectedTargets = parsedIntent ? connectedIntentLinks(parsedIntent) : [];
+  const relatedMarket = GTH_MARKETS.find(market => parsedIntent?.place?.toLowerCase() === market.city.toLowerCase());
   const multiSector = (parsedIntent?.sectors.length ?? 0) > 1;
   if (query) {
     const intent = selected !== "all" ? selected : multiSector ? "all" : inferredCategory(query);
@@ -276,6 +278,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
               </p>
             )}
             <div className="mt-5 flex flex-wrap gap-3">
+              {relatedMarket&&<Link href={gthMarketPath(relatedMarket)} className="gth-btn inline-flex min-h-11 items-center gap-2">Source-aware regional Decision Desk <ArrowRight size={16}/></Link>}
               {connectedTargets.map(item => (
                 <Link key={item.sector} href={item.href} className="gth-btn gth-btn-gold inline-flex min-h-11 items-center gap-2">
                   {item.label} <ArrowRight size={16}/>
