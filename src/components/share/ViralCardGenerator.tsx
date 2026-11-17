@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type ViralKind = "property" | "tender" | "stadium";
 type Size = "square" | "story";
-const DIMENSIONS: Record<Size,readonly [number,number]> = {
+export const VIRAL_DIMENSIONS: Record<Size,readonly [number,number]> = {
   square:[1080,1080], story:[1080,1920],
 };
 type Props = {
@@ -20,7 +20,7 @@ function safeText(text:unknown,max:number) {
     ? text.normalize("NFKC").replace(/[\u0000-\u001f\u007f<>]/g," ").replace(/\s+/g," ").trim().slice(0,max)
     : "";
 }
-function sourceUrl(path:string) {
+export function viralSourceUrl(path:string) {
   if(!/^\/(?:real-estate|tender|stadiums)(?:\/[a-zA-Z0-9_-]+)*\/?$/.test(path)) return "https://www.gthproglobal.com";
   return "https://www.gthproglobal.com"+path;
 }
@@ -37,7 +37,7 @@ function multiline(ctx:CanvasRenderingContext2D,text:string,x:number,y:number,ma
   if(line && lines<maxLines)ctx.fillText(line,x,y+lines*lineHeight);
 }
 function renderCard({kind,title,subtitle,price,path}:Props,size:Size) {
-  const [w,h]=DIMENSIONS[size];
+  const [w,h]=VIRAL_DIMENSIONS[size];
   const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
   const ctx=canvas.getContext("2d");
   if(!ctx)throw new Error("Canvas unavailable");
@@ -72,7 +72,7 @@ function renderCard({kind,title,subtitle,price,path}:Props,size:Size) {
   ctx.fillText("@official.gthpro",96,h-159);
   ctx.fillStyle="#d6d8e4";ctx.font="22px Arial, sans-serif";
   ctx.fillText("Research and verify details before acting.",96,h-105);
-  return {canvas,url:sourceUrl(path),name:"gthpro-"+kind+"-"+size+".png"};
+  return {canvas,url:viralSourceUrl(path),name:"gthpro-"+kind+"-"+size+".png"};
 }
 
 export default function ViralCardGenerator(props:Props){
