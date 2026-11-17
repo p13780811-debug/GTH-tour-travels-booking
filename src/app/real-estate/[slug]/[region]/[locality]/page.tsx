@@ -90,6 +90,7 @@ export default async function MicroLocalityPage({params}:PageProps){
           {s.projects.slice(0,12).map(project=><li key={project.id} className="py-4">
             <h3 className="font-semibold"><Link className="underline underline-offset-2" href={"/real-estate/"+encodeURIComponent(project.slug)}>{project.title}</Link></h3>
             <p className="mt-1 text-sm text-[var(--text-soft)]">Registration: {project.rera_id||"Not recorded"} · {project.developer||"Developer not recorded"}</p>
+            {project.district&&<p className="mt-1 text-xs text-[var(--text-soft)]">Recorded district: {project.district}{project.taluka?" · Taluka: "+project.taluka:""}{project.village?" · Village: "+project.village:""}. The legacy city value is not used for location verification.</p>}
             {project.sourceUrl?<a className="mt-2 inline-flex text-xs underline" href={project.sourceUrl} target="_blank" rel="noopener noreferrer nofollow">Check official registry reference</a>
             :<p className="mt-1 text-xs text-[var(--text-soft)]">Independent official source not linked; verify before relying on this record.</p>}
           </li>)}
@@ -97,7 +98,7 @@ export default async function MicroLocalityPage({params}:PageProps){
       </section>
       <section className="gth-glass rounded-2xl border border-[var(--border)] p-5" aria-labelledby="local-hotels-title">
         <h2 id="local-hotels-title" className="text-xl font-bold">OSM hotels within 5 km</h2>
-        <p className="mt-2 text-xs text-[var(--text-soft)]">Straight-line radius from the midpoint of source-linked project coordinates, not walking distance, price or bookable availability.</p>
+        <p className="mt-2 text-xs text-[var(--text-soft)]">Straight-line radius from a consistent geocoded project cluster in the recorded village or locality, not walking distance, independently verified coordinates, price or booking availability.</p>
         {s.hotels.length?<ol className="mt-4 space-y-4">{s.hotels.map(h=><li key={h.id} className="text-sm">
           <Link className="font-semibold underline underline-offset-2" href={"/hotels/stay/"+encodeURIComponent(h.id)}>{h.name}</Link>
           <p className="mt-1 text-xs text-[var(--text-soft)]">{h.distanceKm.toFixed(2)} km straight-line · OSM directory record</p>
