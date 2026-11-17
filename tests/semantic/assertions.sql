@@ -24,3 +24,12 @@ DO $$ BEGIN
  IF EXISTS (SELECT FROM public.gth_semantic_match(('[1,'||repeat('0,',382)||'0]')::extensions.vector,'IN',NULL,6)) THEN RAISE EXCEPTION 'Expired source leaked'; END IF;
 END $$;
 RESET ROLE;
+
+DO $$ BEGIN
+ BEGIN
+  INSERT INTO public.gth_semantic_public_records(sector,source_ref,title,excerpt,country_code,canonical_path,source_url,embedding)
+  VALUES ('hotel_directory','invalid-url','Synthetic invalid URL','Disposable URL regression','IN','/hotels/stay/test','http://fixture.invalid',('[1,'||repeat('0,',382)||'0]')::extensions.vector);
+  RAISE EXCEPTION 'Insecure source URL was accepted';
+ EXCEPTION WHEN check_violation THEN NULL;
+ END;
+END $$;

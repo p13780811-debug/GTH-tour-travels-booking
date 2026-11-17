@@ -68,6 +68,6 @@ jobs:
         env: {PGPASSWORD: temporary-ci-only}
         run: |
           set -euo pipefail
-          for sql in tests/semantic/bootstrap.sql supabase/migrations/20261117101626_gth_semantic_public_index.sql supabase/migrations/20261117104931_semantic_public_osm_hotel_path.sql supabase/migrations/20261117132330_semantic_service_role_only_access.sql supabase/migrations/20261117132526_semantic_source_revalidation.sql tests/semantic/assertions.sql; do
+          for sql in tests/semantic/bootstrap.sql supabase/migrations/20261117101626_gth_semantic_public_index.sql supabase/migrations/20261117104931_semantic_public_osm_hotel_path.sql supabase/migrations/20261117132330_semantic_service_role_only_access.sql supabase/migrations/20261117132526_semantic_source_revalidation.sql supabase/migrations/20261117133024_semantic_source_url_constraint.sql tests/semantic/assertions.sql; do
             psql -h localhost -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
           done
