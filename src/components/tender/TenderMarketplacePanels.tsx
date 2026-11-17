@@ -1,3 +1,4 @@
+import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BadgeCheck, BriefcaseBusiness,
