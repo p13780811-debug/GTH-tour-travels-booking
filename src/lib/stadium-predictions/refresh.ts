@@ -118,7 +118,7 @@ function verifiedMatch(event: SeatGeekEvent, odd: OddsEvent): VerifiedMatch | nu
   const date = safeDate(event.datetime_utc);
   const venue = scrub(event.venue.name, 150), title = scrub(event.title, 200);
   const url = safeSeatGeekUrl(event.url);
-  if (!date || !venue || !url || !title || !/^(sports|sport|soccer|basketball|football|baseball|hockey)$/i.test(scrub(event.type, 30))) return null;
+  if (!date || !venue || !url || !title || !/^[a-z0-9_-]{2,40}$/i.test(scrub(event.type, 40))) return null;
   const a = event.performers.map(p => canonical(scrub(p.name, 110))).filter(Boolean);
   if (a.length !== 2 || a[0] === a[1]) return null;
   const teams = [canonical(odd.home_team), canonical(odd.away_team)];
@@ -204,8 +204,8 @@ export async function refreshStadiumPredictions() {
   let saved = 0, oddsRequests = 0;
   for (const sport of ODDS_SPORTS) {
     // Up to 2 calls/day, fixed 1 region x 1 market: at most ~62 requests in a 31-day month.
-    if (!events.some(e => e.datetime_utc && /sports|soccer|basketball/i.test(e.type ?? ""))) break;
-    if (!await reserve(db, "odds", month, 1, MAX_ODDS_MONTH)) break;
+    if (!events.some(e => e.datetime_utc && e.performers?.length === 2 && safeSeatGeekUrl(e.url))) break;
+    if (!await reserve(db, "odds", month, 5, MAX_ODDS_MONTH)) break;
     oddsRequests++;
     const endpoint = new URL("https://api.the-odds-api.com/v4/sports/" + sport + "/odds");
     endpoint.searchParams.set("apiKey", oddsKey);
@@ -221,7 +221,8 @@ export async function refreshStadiumPredictions() {
     } catch { continue; }
     for (const odd of odds) {
       if (saved >= MAX_MATCHES) break;
-      const match = events.map(e => verifiedMatch(e, odd)).find(Boolean) as VerifiedMatch | undefined;
+      const matches = events.map(e => verifiedMatch(e, odd)).filter((m): m is VerifiedMatch => m !== null);
+      const match = matches.length === 1 ? matches[0] : undefined;
       if (!match) continue;
       const bookmakers = (odd.bookmakers ?? []).map(b => ({
         bookmaker: b.key,
