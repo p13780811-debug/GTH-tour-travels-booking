@@ -37,7 +37,7 @@ class LegacyRecoveryTests(unittest.TestCase):
         self.assertIsNone(value.official_source_url)
         self.assertEqual(value.source_status,"historical_unverified")
         self.assertTrue(value.coordinate_review_required)
-        self.assertEqual(len(value.private_review_dict().keys()),13)
+        self.assertEqual(len(value.private_review_dict().keys()),14)
         self.assertNotIn("raw_json",value.private_review_dict())
         self.assertNotIn("verified",value.private_review_dict())
 
