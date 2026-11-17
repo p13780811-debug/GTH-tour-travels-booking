@@ -19,7 +19,7 @@ export default function SmartSynergy({ city, context }: {city: string; context: 
     <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">One connected journey</p>
     {context === "property" ? <>
       <h2 className="mt-2 text-lg font-semibold">Planning a site visit to {destination!.name}?</h2>
-      <p className="mt-2 text-sm text-[var(--text-soft)]">Explore flights in our embedded Aviasales white-label. Choose dates and route to see supplier-operated prices; no fare is promised here.</p>
+      <p className="mt-2 text-sm text-[var(--text-soft)]">Explore worldwide flights with GTH Global Booking Engine. Choose dates and route to see supplier-operated prices; no fare is promised here.</p>
       <Link href={`/flights?destination=${destination!.iata}`} className="gth-btn mt-4 inline-flex min-h-11 items-center gap-2"><Plane size={16}/> Search flights <ArrowUpRight size={15}/></Link>
     </> : <>
       <h2 className="mt-2 text-lg font-semibold">Love {city || "this destination"}? Explore longer-term living.</h2>
