@@ -320,7 +320,7 @@ export default async function MasterSearchResults({ searchParams }: Props) {
             <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {hotelMatches.map(item => (
                 <Link key={"hotel-" + item.id} href={"/hotels?" + new URLSearchParams({
-                  view:"directory", name: item.name, ...(item.city ? { city: item.city } : {}),
+                  view:"booking", name: item.name, ...(item.city ? { city: item.city } : {}),
                 }).toString()}
                   className="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
                   <Hotel size={25} className="text-[var(--gold)]" />
