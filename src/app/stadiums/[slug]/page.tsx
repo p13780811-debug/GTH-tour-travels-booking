@@ -108,7 +108,7 @@ export default async function StadiumPage({ params }: Props) {
           <p className="text-xs font-bold text-[var(--gold)]">{product.kind}</p>
           <h3 className="my-3 text-lg font-semibold">{product.label}</h3>
           <ExternalLink href={product.href} sponsored>{product.kind === "Event tickets" ? "Check game dates & tickets" : "Explore experience"}</ExternalLink>
-          <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">{product.provider === "klook" ? "Klook" : "GetYourGuide"} confirms included access, dates, prices and availability. Affiliate link.</p>
+          <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">The selected ticket provider confirms included access, dates, prices and availability. Affiliate link.</p>
         </article>)}</div>
         <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>
       </section>}
