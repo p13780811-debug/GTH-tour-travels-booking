@@ -50,9 +50,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!result.item) throw new RequestError("Published active tender not found", 404);
     const profile: DecisionProfile = {companyName:name,companyWebsite,capability,preferredCity};
     const pdf = buildTenderDecisionPdf(result.item, profile);
-    const output = new Uint8Array(pdf.length);
-    output.set(pdf);
-    return new Response(output.buffer, {
+    const byteBuffer = new ArrayBuffer(pdf.length);
+    new Uint8Array(byteBuffer).set(pdf);
+    return new Response(byteBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
@@ -60,7 +60,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
         "Content-Security-Policy": "default-src 'none'; sandbox",
-        "Content-Length": String(output.byteLength),
+        "Content-Length": String(byteBuffer.byteLength),
       },
     });
   } catch (error) { return requestError(error); }
