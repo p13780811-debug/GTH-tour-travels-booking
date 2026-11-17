@@ -48,5 +48,5 @@ test("supplier-native hotel offers use only reviewed place IDs and no OSM match 
  assert.match(handoff,/MarketSupplierHotelCards city=\{city\} countryCode=\{countryCode\}/);
  assert.match(supplier,/sdk\.HotelsList\.create\(options\)/);
  assert.match(supplier,/data-gth-nuitee-supplier-hotels="true"/);
- assert.match(builder,/hotelId\?\`\/hotels\/\$\{encodeURIComponent\(search\.hotelId\)\}\`/);
+ assert.match(builder,/search\.hotelId\s*\?\s*`\/hotels\/\$\{encodeURIComponent\(search\.hotelId\)\}`/);
 });
