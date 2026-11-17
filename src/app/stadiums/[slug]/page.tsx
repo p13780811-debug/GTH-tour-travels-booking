@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, Ticket } from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import MatchDayConcierge from "@/components/travel/MatchDayConcierge";
+import {safeHotelHandoff} from "@/lib/travel/stadium-concierge";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import { findStadium, stadiums, upcomingStadiumEvents } from "@/lib/travel/stadiums";
 import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
@@ -72,6 +74,7 @@ export default async function StadiumPage({ params }: Props) {
         <ShareTripPlanButton title={venue.name+" stadium visit"} venue={venue.name} city={venue.city} countryCode={venue.countryCode} path={"/stadiums/"+venue.slug}/>
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">{venue.overview}</p>
       </header>
+      <MatchDayConcierge slug={venue.slug} name={venue.name} bookingUrl={safeHotelHandoff(venue)}/>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">
           <h2 className="text-2xl font-bold">Events & official sources</h2>
