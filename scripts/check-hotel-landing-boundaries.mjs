@@ -145,6 +145,10 @@ const reviewedGrowthFiles=new Set([
 // If any implementation, URL, API, policy or CSS changes later, the blob check
 // fails closed until that precise edit receives another review.
 const reviewedBrandBlobs=new Map([
+  ["tests/live-public-ux-audit-fixes.test.mjs","4816c40615cc4f46f0cfbf7920c76016e12a85f8"],
+  ["tests/cruises-indian-waters.test.mjs","4184e9c907e39fc440732d21b199ba10b365813c"],
+  ["tests/consolidated-pr204-206-207-release.test.mjs","a3397a59e8e8997add7f77cfb03df6479e240f06"],
+  ["tests/attraction-ticket-partner-discovery.test.mjs","c12aff705d198094994a17ad1f58d5b52a7763c0"],
   ["README.md","57d45a5d08cee9cd14c958e8347c44eb9c825400"],
   ["src/app/(mapped-places)/attractions/osm/[id]/page.tsx","1277f14ec0c50888950800e31ef3d8dbb3b7f4e6"],
   ["src/app/attractions/page.tsx","b3d43426a00bc370620dc2040e79e1f1afadd9e2"],
@@ -182,8 +186,8 @@ const reviewedBrandBlobs=new Map([
   ["src/components/travel/TravelPartnerSearch.tsx","6dc4eb37ee2c4b04fc30a7d8a8b975aa53859b53"],
   ["src/components/travel/TravelpayoutsCarWidget.tsx","0fabacc142d0eb5a8935c7c4893bfcf06f2fafb7"],
   ["tests/enterprise-identity-manifest.test.mjs","417093552f2b86438747b5673e53e314c900cd98"],
-  ["tests/pr221-brand-identity.test.mjs","86c26f48a602d4356e1d95c4d1890a8ea1bb11ae"],
-  ["tests/transfer-widgets.test.mjs","513aff731494f530137555f917d1148fabea4998"],
+  ["tests/pr221-brand-identity.test.mjs","849e9fd820863886bcb129c0c67e03633561c699"],
+  ["tests/transfer-widgets.test.mjs","811996b218c764d0c60e9f84c75fc60c3f192833"],
 ]);
 function isExactReviewedBrandBlob(path){
  const expected=reviewedBrandBlobs.get(path);
