@@ -12,10 +12,11 @@ export type LocalProject = {
   id:number; slug:string; title:string; rera_id:string|null; city:string|null;
   developer:string|null; district:string|null;taluka:string|null;village:string|null;sourceUrl:string|null;lat:number|null;lng:number|null;
 };
-export type LocalHotel = {id:string;name:string;city:string|null;distanceKm:number};
+export type LocalHotel = {id:string;name:string;city:string|null;address:string|null;lat:number;lng:number;distanceKm:number};
+export type LocalOffer = {id:string;projectId:number;propertyTitle:string;slug:string;price:number;currency:string;publishedAt:string};
 export type LocalTender = {id:string;title:string;buyer:string;deadline:string;source:string};
 export type MicroSnapshot = {
-  place:MicroPlace; projects:LocalProject[]; hotels:LocalHotel[];
+  place:MicroPlace; projects:LocalProject[]; hotels:LocalHotel[]; offers:LocalOffer[];
   tenders:LocalTender[]; anchor:{lat:number;lng:number}|null;
   complete:boolean; indexable:boolean;
 };
@@ -75,7 +76,8 @@ type SourceProject = {
   id:number;slug:string|null;title:string|null;rera_id:string|null;city:string|null;
   developer:string|null;official_source_url:string|null;district:string|null;taluka:string|null;village:string|null;locality:string|null;verified:boolean|null;lat:number|null;lng:number|null;
 };
-type SourceHotel = {source_id:string|null;name:string|null;city:string|null;latitude:number|null;longitude:number|null};
+type SourceHotel = {source_id:string|null;name:string|null;city:string|null;address:string|null;latitude:number|null;longitude:number|null};
+type SourceOffer = {id:string;project_id:number;price_amount:number|null;currency:string|null;published_at:string|null};
 type SourceTender = {id:string;title:string;buyer:string;deadline_at:string;source_name:string};
 
 function publicDb(){
@@ -108,7 +110,7 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
   const place=parseMicroPlace(country,region,locality);
   if(!place)return null;
   const db=publicDb();
-  if(!db)return {place,projects:[],hotels:[],tenders:[],anchor:null,complete:false,indexable:false} satisfies MicroSnapshot;
+  if(!db)return {place,projects:[],hotels:[],offers:[],tenders:[],anchor:null,complete:false,indexable:false} satisfies MicroSnapshot;
   const [{data:rows,error:projectError},{data:tenderRows,error:tenderError}]=await Promise.all([
     db.from("properties").select("id,slug,title,rera_id,city,developer,official_source_url,district,taluka,village,locality,verified,lat,lng")
       .eq("country",place.countryName).eq("state",place.regionName)
@@ -132,13 +134,33 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
   // Coordinates are only a provisional spatial anchor if two same-locality
   // records independently agree; these are not official geocoding guarantees.
   const anchor=projectAnchor(projects);
+  const eligibleIds=projects.map(p=>p.id).filter(Number.isSafeInteger).slice(0,18);
+  let offers:LocalOffer[]=[];
+  let offerError=false;
+  if(eligibleIds.length){
+    const {data,error}=await db.from("property_inventory")
+      .select("id,project_id,price_amount,currency,published_at")
+      .in("project_id",eligibleIds).eq("status","published").eq("verified",true)
+      .not("price_amount","is",null).order("published_at",{ascending:false})
+      .limit(18).abortSignal(AbortSignal.timeout(5000));
+    offerError=Boolean(error);
+    if(!error){
+      const titles=new Map(projects.map(p=>[p.id,p]));
+      offers=((data||[]) as SourceOffer[]).filter(o=>titles.has(o.project_id)&&
+        typeof o.price_amount==="number"&&Number.isFinite(o.price_amount)&&o.price_amount>0&&
+        typeof o.currency==="string"&&/^[A-Z]{3}$/.test(o.currency)&&o.published_at)
+        .map(o=>({id:o.id,projectId:o.project_id,
+          propertyTitle:titles.get(o.project_id)!.title,slug:titles.get(o.project_id)!.slug,
+          price:o.price_amount!,currency:o.currency!,publishedAt:o.published_at!}));
+    }
+  }
   let hotels:LocalHotel[]=[];
   let hotelError=false;
   if(anchor){
     const latitudeRange=5/111.32;
     const longitudeRange=5/(111.32*Math.max(.06,Math.cos(anchor.lat*Math.PI/180)));
     const {data,error}=await db.from("hotel_catalog")
-      .select("source_id,name,city,latitude,longitude")
+      .select("source_id,name,city,address,latitude,longitude")
       .eq("source","osm").gte("latitude",anchor.lat-latitudeRange)
       .lte("latitude",anchor.lat+latitudeRange)
       .gte("longitude",anchor.lng-longitudeRange)
@@ -149,15 +171,18 @@ const snapshotCache=unstable_cache(async(country:string,region:string,locality:s
       .filter(h=>h.source_id&&/^(node|way|relation)\/[0-9]{1,19}$/.test(h.source_id)&&h.name&&h.name.trim().length>=3)
       .filter(h=>point({lat:h.latitude,lng:h.longitude}))
       .map(h=>({id:"osm:"+h.source_id!.replace("/","-"),name:h.name!.slice(0,125),city:h.city,
+        address:typeof h.address==="string"&&h.address.length<=180?h.address:null,
+        lat:h.latitude!,lng:h.longitude!,
         distanceKm:distanceKm(anchor,{lat:h.latitude!,lng:h.longitude!})}))
       .filter(h=>h.distanceKm<=5).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,5);
   }
   const tenders:LocalTender[]=tenderError?[]:((tenderRows||[]) as SourceTender[])
     .filter(t=>Date.parse(t.deadline_at)>Date.now())
     .map(t=>({id:t.id,title:t.title,buyer:t.buyer,deadline:t.deadline_at,source:t.source_name}));
-  const complete=!projectError&&!tenderError&&!hotelError;
-  const indexable=complete&&Boolean(anchor)&&projects.filter(p=>p.sourceUrl!==null&&p.rera_id).length>=3;
-  return {place,projects,hotels,tenders,anchor,complete,indexable} satisfies MicroSnapshot;
+  const complete=!projectError&&!tenderError&&!hotelError&&!offerError;
+  const indexable=complete&&Boolean(anchor)&&
+    (projects.filter(p=>p.sourceUrl!==null&&p.rera_id).length>=3||offers.length>=2);
+  return {place,projects,hotels,offers,tenders,anchor,complete,indexable} satisfies MicroSnapshot;
 },["gth-zero-cost-micro-location-v1"],{revalidate:21600,tags:["gth-hyperlocal"]});
 
 export async function readMicroSnapshot(country:string,region:string,locality:string):Promise<MicroSnapshot|null>{
