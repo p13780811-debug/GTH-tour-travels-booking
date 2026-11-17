@@ -1,0 +1,52 @@
+name: GTH Private Enquiries and Source Refresh QA
+on:
+  pull_request:
+    paths:
+      - 'src/lib/intelligence/**'
+      - 'src/app/api/admin/intelligence-leads/**'
+      - 'src/app/api/intelligence/leads/**'
+      - 'src/components/admin/EnquiryInbox.tsx'
+      - 'src/components/intelligence/IntelligenceLeadForm.tsx'
+      - 'scripts/registry/**'
+      - 'supabase/functions/gth-intelligence-refresh/**'
+      - 'supabase/migrations/*private_enquiry_operations*'
+      - 'tests/enquiries/**'
+      - 'tests/enquiry-source-operations.test.mjs'
+      - '.github/workflows/gth-enquiry-source-qa.yml'
+      - '.github/workflows/gth-intelligence-refresh.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - run: node --test tests/enquiry-source-operations.test.mjs tests/infra-pulse-event-shockwave.test.mjs
+      - run: python -m unittest discover -s tests -p 'test_maharera_engine.py'
+  private-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_PASSWORD: temporary-ci-only}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify email intake, private access, operator grants and refresh leases
+        env: {PGPASSWORD: temporary-ci-only}
+        run: |
+          set -euo pipefail
+          for sql in tests/semantic/bootstrap.sql tests/enquiries/geography.sql supabase/migrations/20261117070740_infra_pulse_event_shockwave.sql supabase/migrations/20261117101626_gth_semantic_public_index.sql supabase/migrations/20261117104931_semantic_public_osm_hotel_path.sql supabase/migrations/20261117132330_semantic_service_role_only_access.sql supabase/migrations/20261117132526_semantic_source_revalidation.sql supabase/migrations/20261117133024_semantic_source_url_constraint.sql supabase/migrations/20261117141122_private_enquiry_operations_and_semantic_refresh.sql tests/enquiries/assertions.sql; do
+            psql -h localhost -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
+          done

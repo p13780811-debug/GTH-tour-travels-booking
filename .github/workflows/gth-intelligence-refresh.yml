@@ -1,0 +1,35 @@
+name: GTH Public Source Intelligence Refresh
+on:
+  schedule:
+    - cron: "20 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/gth-intelligence-refresh.yml'
+      - 'supabase/functions/gth-intelligence-refresh/**'
+      - 'supabase/functions/gth-semantic-intelligence/**'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: gth-intelligence-refresh
+  cancel-in-progress: false
+jobs:
+  bounded-public-source-refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refresh public sources with short-lived workflow identity
+        shell: bash
+        env:
+          EDGE_URL: https://dqprqjmhxjnrllczqyhz.supabase.co/functions/v1/gth-intelligence-refresh
+        run: |
+          set -euo pipefail
+          token_url="$ACTIONS_ID_TOKEN_REQUEST_URL&audience=gth-intelligence-refresh:dqprqjmhxjnrllczqyhz"
+          token_json="$(curl --fail --silent --show-error --proto '=https' --max-time 15 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$token_url")"
+          workflow_token="$(printf '%s' "$token_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+          test -n "$workflow_token"
+          echo "::add-mask::$workflow_token"
+          curl --fail --silent --show-error --proto '=https' --max-time 150 -H "Authorization: Bearer $workflow_token" -H 'Content-Type: application/json' --data '{}' "$EDGE_URL"
