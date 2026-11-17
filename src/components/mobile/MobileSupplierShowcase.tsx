@@ -24,7 +24,7 @@ function HotelStays(){
    <div>
     <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">Supplier booking · Hotel stays</p>
     <h2 id="app-supplier-hotels" className="mt-1 text-xl font-bold">Discover stays worldwide</h2>
-    <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Nuitee provides hotel photos and booking. Choose your dates to see actual rates.</p>
+    <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">GTH Worldwide Stays displays provider-supplied hotel details. Choose dates to check available rooms and rates.</p>
    </div>
    <Link href="/app/hotels?view=booking" className="inline-flex min-h-11 shrink-0 items-center gap-1 text-xs font-bold text-[var(--gold)]">Find stays <ArrowUpRight size={15} aria-hidden="true"/></Link>
   </div>
@@ -43,9 +43,9 @@ function HotelStays(){
     </Link>)}
   </div>
   <div role="region" className="mx-4 mt-2 overflow-x-auto touch-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"
-   aria-label="Nuitee supplier hotel cards">
+   aria-label="GTH Worldwide Stays hotel cards">
    <div className="min-w-[290px]">
-    <div className="mb-2 flex items-center gap-2 text-xs font-semibold"><Hotel size={15} className="text-[var(--gold)]"/> Hotels near Mumbai · Nuitee</div>
+    <div className="mb-2 flex items-center gap-2 text-xs font-semibold"><Hotel size={15} className="text-[var(--gold)]"/> GTH Worldwide Stays · Mumbai</div>
     <NuiteeHotelsListWidget id="gth-home-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1} currency="INR"/>
    </div>
   </div>
