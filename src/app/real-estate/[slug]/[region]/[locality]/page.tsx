@@ -45,6 +45,22 @@ export default async function MicroLocalityPage({params}:PageProps){
   const jsonld:Record<string,unknown>={
     "@context":"https://schema.org",
     "@graph":[
+      ...(s.offers.length?[{
+        "@type":"RealEstateListing","@id":canonical+"#published-offers",url:canonical,
+        name:"Published property offers in "+p.localityName,
+        offers:s.offers.map(offer=>({
+          "@type":"Offer",price:offer.price,priceCurrency:offer.currency,
+          url:siteUrl("/real-estate/"+offer.slug),
+          itemOffered:{"@type":"Residence",name:offer.propertyTitle}
+        })),
+      }]:[]),
+      ...s.hotels.filter(h=>h.address&&h.city).map(h=>({
+        "@type":"LodgingBusiness","@id":siteUrl("/hotels/stay/"+encodeURIComponent(h.id))+"#lodging",
+        name:h.name,url:siteUrl("/hotels/stay/"+encodeURIComponent(h.id)),
+        address:{"@type":"PostalAddress",streetAddress:h.address,
+          addressLocality:h.city,addressRegion:p.regionName,addressCountry:p.countryCode},
+        geo:{"@type":"GeoCoordinates",latitude:h.lat,longitude:h.lng},
+      })),
       {"@type":"CollectionPage","@id":canonical+"#page",url:canonical,name:titleFor(s),
         description:descriptionFor(s),
         about:{"@type":"Place",name:p.localityName,
@@ -106,6 +122,14 @@ export default async function MicroLocalityPage({params}:PageProps){
         <Link className="gth-btn mt-4 inline-flex" href="/hotels">Search hotels and booking partners</Link>
       </section>
     </div>
+    {s.offers.length>0&&<section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-5" aria-labelledby="local-offers-title">
+      <h2 id="local-offers-title" className="text-xl font-bold">Reviewed published property offers</h2>
+      <p className="mt-2 text-xs text-[var(--text-soft)]">These offers require separate published and verified inventory data. A RERA registration alone is never a sale offer.</p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2">{s.offers.map(o=><li key={o.id} className="rounded-xl border border-[var(--border)] p-4">
+        <Link href={"/real-estate/"+o.slug} className="font-semibold underline">{o.propertyTitle}</Link>
+        <p className="mt-2 text-sm">{new Intl.NumberFormat("en",{style:"currency",currency:o.currency,maximumFractionDigits:0}).format(o.price)}</p>
+      </li>)}</ul>
+    </section>}
     <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-5" aria-labelledby="local-tenders-title">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="local-tenders-title" className="text-xl font-bold">Active regional tenders</h2>
