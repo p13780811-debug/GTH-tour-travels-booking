@@ -209,7 +209,7 @@ export default async function HotelStay({params,searchParams}:PageProps){
        href={hotel.partner} target="_blank" rel="noopener noreferrer sponsored">
        <BedDouble size={17}/> Continue booking <ArrowUpRight size={16}/></a>}
      {!hotel.partner&&<div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--text-soft)]">
-       Exact-property booking is not connected for this directory hotel. Search destinations and dates using the GTH PRO Nuitee white-label. You may need to enter the hotel name again; an exact hotel match or rate is not guaranteed.
+       Exact-property booking is not connected for this directory hotel. Search destinations and dates through GTH Worldwide Stays. You may need to enter the hotel name again; an exact hotel match or rate is not guaranteed.
       </div>}
      {!hotel.partner&&(hotel.city||hotel.address||hotel.country)&&<a className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[var(--border)] px-5 text-sm font-semibold"
        href={hotelProviderSearchUrl([hotel.name,hotel.city||hotel.address,hotel.country].filter(Boolean).join(", "),{checkin,checkout,adults})}
