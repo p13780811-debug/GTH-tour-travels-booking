@@ -22,8 +22,8 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
   <div className="mx-auto w-full max-w-7xl pt-3">
    <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Hotels</h1>
    {(bookingCity||bookingName)&&<p role="status" className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)] sm:mx-6">
-     {bookingCity?<>Search <strong className="text-[var(--text)]">{bookingCity}</strong> on the Nuitee supplier search form below.</>:
-       <>Use the Nuitee supplier search form below.</>}
+     {bookingCity?<>Search <strong className="text-[var(--text)]">{bookingCity}</strong> using the GTH Worldwide Stays booking search below.</>:
+       <>Use the GTH Worldwide Stays booking search below.</>}
      {bookingName&&<> Requested hotel: <strong className="text-[var(--text)]">{bookingName}</strong>. Confirm its actual name and location in supplier results.</>}
      Select the supplier&apos;s city suggestion and your stay dates; its White Label will display matching live hotel options.
      We do not invent a Place ID or show local directory records as rooms.
