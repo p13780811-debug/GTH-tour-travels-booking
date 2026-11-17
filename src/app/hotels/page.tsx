@@ -334,7 +334,7 @@ function HotelsContent() {
                     </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
                     {/* Booking city is a search hint, never a guessed supplier placeId. */}
                     {hotelMode === "booking" && initialCity && <p role="status" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)]">
-                      Booking search for <strong className="text-[var(--text)]">{initialCity}</strong>. Choose {initialCity} from the Nuitee destination suggestions below, select your stay dates and guests, then open matching supplier hotel results. The separate OSM directory is not booking inventory.
+                      Booking search for <strong className="text-[var(--text)]">{initialCity}</strong>. Choose {initialCity} from the GTH Worldwide Stays destination suggestions below, select your stay dates and guests, then open matching supplier hotel results. The separate OSM directory is not booking inventory.
                     </p>}
                     {/* SEARCH */}
                     {hotelMode === "booking" && <HotelBookingExperience key={currency} currency={currency} />}
