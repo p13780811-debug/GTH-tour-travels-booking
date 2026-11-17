@@ -13,13 +13,13 @@ const widgets = {
     src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&header=Airport%20transfers%20executed%20by%20local%20Professional%20companies&powered_by=true&color_scheme=bg&b_counter=true&b_benefit=true&b_descr=true&b_about=true&b_map=true&b_reviews=true&b_breadcrumbs=true&b_poweredby=true&b_numbers=true&b_trustpilot=true&b_assortment=true&b_reliable=true&b_extended=true&b_how=true&b_faq=true&b_why=true&b_easybook=true&campaign_id=22&promo_id=1504",
   },
   options: {
-    title: "Kiwitaxi transfer options",
-    description: "Review Kiwitaxi transfer options. All quoted prices, coverage and booking conditions are supplied by Kiwitaxi.",
+    title: "GTH Mobility · Private Transfer Options",
+    description: "Review GTH Mobility private-transfer search options. Quoted prices, coverage and booking conditions are supplied by the selected provider.",
     src: "https://tpwidg.com/content?currency=USD&trs=504342&shmarker=417668&locale=en&powered_by=true&transfer_options_limit=10&transfer_options=MCR&disable_currency_selector=true&hide_form_extras=true&hide_external_links=true&campaign_id=1&promo_id=3879",
   },
   additional: {
     title: "More travel services",
-    description: "Additional Travelpayouts widget; its provider and services have not been independently verified. Use only after checking the displayed supplier.",
+    description: "Additional GTH Mobility provider widget; its services have not been independently verified. Use only after checking the displayed supplier.",
     src: "https://tpwidg.com/content?trs=504342&shmarker=417668&locale=en&show_header=true&powered_by=true&campaign_id=627&promo_id=8951",
   },
 } as const;
@@ -163,7 +163,7 @@ export default function TransferProviderWidgets() {
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
             <p className="min-w-0 flex-1 text-xs leading-5 text-[var(--text-soft)]">
               intui.travel may block embedded booking on some browsers. If the supplier panel is blank,
-              compare Kiwitaxi instead or continue directly with Welcome Pickups.
+              compare GTH Mobility transfer options or continue through a direct supplier booking handoff.
             </p>
             <button type="button" onClick={() => select("options")}
               className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-[var(--border)] px-3 text-xs font-semibold text-[var(--text)]">
@@ -194,7 +194,7 @@ export default function TransferProviderWidgets() {
         </a>
       </div>
       <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-        Search using Travelpayouts partner widgets. Supplier results, locations, prices, availability,
+        Search using GTH Mobility provider-operated transfer widgets. Supplier results, locations, prices, availability,
         payments and confirmations are handled by the external provider, not by GTH PRO.
       </p>
     </section>
