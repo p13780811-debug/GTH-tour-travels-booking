@@ -1,3 +1,4 @@
+import {readInfraPulse} from "@/lib/intelligence/infraPulse"
 import { createClient } from "@supabase/supabase-js"
 import { parseHybridSearch } from "@/lib/real-estate/hybrid-search"
 import { RequestError, requestError } from "@/lib/security/request"
@@ -12,7 +13,8 @@ export async function GET(req: Request) {
     const { data, error } = await db.rpc("search_hybrid_properties", { filters })
       .abortSignal(AbortSignal.timeout(8000))
     if (error || !data || !Array.isArray(data.items)) throw new RequestError("Property search temporarily unavailable. Please retry.", 503)
-    const items = data.items.map((item: Record<string, unknown>) => ({...item,
+    const pulses=await readInfraPulse(data.items.map((item: {id: unknown})=>Number(item.id)))
+    const items = data.items.map((item: Record<string, unknown>) => ({...item,infraPulse:pulses[Number(item.id)],
       formatted_price: Number(item.inventory_min_price)>0 && typeof item.inventory_currency === "string"
         ? `From ${new Intl.NumberFormat("en-IN",{style:"currency",currency:item.inventory_currency,maximumFractionDigits:0}).format(Number(item.inventory_min_price))}` : "Price on request",
     }))

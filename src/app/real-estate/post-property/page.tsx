@@ -9,6 +9,7 @@ import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
 import ListingIntakeAssistant from "@/components/real-estate/ListingIntakeAssistant"
 import BulkListingUpload from "@/components/real-estate/BulkListingUpload"
+import GlobalRegistryOnboarding, { type GlobalOnboardingResult } from "@/components/real-estate/GlobalRegistryOnboarding"
 import type { IntakeFields } from "@/lib/real-estate/listing-intake"
 import styles from "@/components/real-estate/Listing.module.css"
 
@@ -27,6 +28,7 @@ export default function PostPropertyPage() {
     const [description, setDescription] = useState("")
     const [files, setFiles] = useState<File[]>([])
     const [uploading, setUploading] = useState(false)
+    const [globalRegistry, setGlobalRegistry] = useState<GlobalOnboardingResult | null>(null)
     const formRef = useRef<HTMLFormElement>(null)
     const manuallySelected = useRef(new Set<string>())
     // Only fill empty text/number fields. User-selected options are never overwritten.
@@ -53,6 +55,21 @@ export default function PostPropertyPage() {
         <div className="max-w-3xl mx-auto mt-8"><header><p className="gold-text text-xs uppercase tracking-widest">GTH PRO / Listing submission</p><h1 className="text-3xl md:text-4xl font-bold mt-3">Introduce your property</h1><p className="opacity-70 leading-7 mt-4">Provide accurate details for administrator review. Submitting this form does not publish or verify the listing.</p></header>
         <section className="gth-glass rounded-3xl p-6 mt-6"><h2 className="font-bold">Before you start</h2><p className="opacity-70 leading-7 mt-3">Use details you can substantiate. If you know the MahaRERA number, add it so this submission can be linked to the existing registry project instead of creating a duplicate project. Pricing and unit facts remain subject to administrator review.</p><button className={`gth-btn ${styles.action} mt-4`} onClick={() => setLogin(true)}>Sign in with email</button></section>
         <BulkListingUpload onNeedLogin={() => setLogin(true)} />
+        <GlobalRegistryOnboarding onNeedLogin={() => setLogin(true)} onCreated={record => {
+            setGlobalRegistry(record)
+            const form = formRef.current
+            if (!form) return
+            const names: Record<string,string> = {
+                title:record.project_name, city:record.city,
+                country:new Intl.DisplayNames(["en"],{type:"region"}).of(record.country_code)||record.country_code,
+            }
+            for (const [name,value] of Object.entries(names)) {
+                const input = form.elements.namedItem(name)
+                if (input instanceof HTMLInputElement) input.value = value
+            }
+            const legacy = form.elements.namedItem("registry_reference")
+            if (legacy instanceof HTMLInputElement) legacy.value = ""
+        }} />
         <form ref={formRef} className="gth-glass rounded-3xl p-6 md:p-8 mt-6" onChange={event => { if (event.target instanceof HTMLSelectElement) manuallySelected.current.add(event.target.name) }} onSubmit={async event => {
             event.preventDefault(); if (busy) return
             const form = event.currentTarget
@@ -78,15 +95,17 @@ export default function PostPropertyPage() {
                 payload.media_rights_confirmed = payload.media_rights_confirmed === "yes"
                 payload.media_urls = mediaUrls
                 await readApiJson(await fetch("/api/real-estate/submissions", { method:"POST", headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`}, body:JSON.stringify(payload) }))
-                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setDescription(""); setFiles([]); manuallySelected.current.clear()
+                setMessage("Submission received for review. It is not published yet. You can follow its status in Your account."); form.reset(); setGlobalRegistry(null); setDescription(""); setFiles([]); manuallySelected.current.clear()
             } catch (failure) { setError(failure instanceof Error ? failure.message : "Submission failed. Your entries have been kept.") }
             finally { setUploading(false); setBusy(false) }
         }}>
+            <input type="hidden" name="global_registry_id" value={globalRegistry?.id || ""} />
+            {globalRegistry && <p role="status" className="gth-badge mb-4">Global project #{globalRegistry.id} attached · independent registry and inventory review pending</p>}
             <ListingIntakeAssistant onApply={applyIntakeSuggestions} disabled={busy} />
             <fieldset disabled={busy} className="grid gap-5"><legend className="font-bold text-xl mb-5">Property details</legend>
                 <div>
                     <label htmlFor="listing-rera" className="block font-medium mb-2">MahaRERA registration number <span className="opacity-60">(India · optional)</span></label>
-                    <input id="listing-rera" name="registry_reference" maxLength={12} pattern="P[0-9]{11}" placeholder="P51800000000" aria-describedby="listing-rera-help" className="gth-glass rounded-xl p-3 w-full uppercase" />
+                    <input id="listing-rera" name="registry_reference" disabled={Boolean(globalRegistry)} maxLength={12} pattern="P[0-9]{11}" placeholder="P51800000000" aria-describedby="listing-rera-help" className="gth-glass rounded-xl p-3 w-full uppercase" />
                     <p id="listing-rera-help" className="opacity-70 text-sm mt-2">When this matches a GTH PRO registry project, the reviewed inventory will attach to that project instead of creating a duplicate project.</p>
                 </div>
                 {fields.map(field => <div key={field.key}><label htmlFor={`listing-${field.key}`} className="block font-medium mb-2">{field.label}</label><input id={`listing-${field.key}`} name={field.key} required minLength={field.min} maxLength={field.max} aria-describedby={`listing-${field.key}-help`} className="gth-glass rounded-xl p-3 w-full" /><p id={`listing-${field.key}-help`} className="opacity-70 text-sm mt-2">{field.hint}</p></div>)}

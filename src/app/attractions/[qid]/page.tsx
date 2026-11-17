@@ -1,3 +1,4 @@
+import EventShockwave from "@/components/intelligence/EventShockwave";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -64,6 +65,7 @@ export default async function AttractionDetail({params}:Props){
   </div>
 </header>
 <TravelSectionNav />
+   <EventShockwave target={{kind:"attraction",id:qid}}/>
   <p className="mt-6 text-sm leading-7 text-[var(--text-soft)]">{item.description||"This source record is community maintained. Verify current access and visitor conditions with the official venue."}</p>
   <p className="mt-4 flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={16}/>{item.latitude}, {item.longitude} · Wikidata coordinates</p>
   <a href={item.wikidata_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">Original Wikidata record <ArrowUpRight size={16}/></a>

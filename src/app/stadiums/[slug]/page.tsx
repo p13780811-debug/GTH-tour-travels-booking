@@ -1,3 +1,4 @@
+import EventShockwave from "@/components/intelligence/EventShockwave";
 import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -76,6 +77,7 @@ export default async function StadiumPage({ params }: Props) {
         <ShareTripPlanButton title={venue.name+" stadium visit"} venue={venue.name} city={venue.city} countryCode={venue.countryCode} path={"/stadiums/"+venue.slug}/>
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">{venue.overview}</p>
       </header>
+      <EventShockwave target={{kind:"stadium",id:venue.slug}}/>
       <MatchDayConcierge slug={venue.slug} name={venue.name} bookingUrl={safeHotelHandoff(venue)}/>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">

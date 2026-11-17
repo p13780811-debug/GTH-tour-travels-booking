@@ -2,6 +2,7 @@ import { authenticatedStorage } from "@/lib/security/auth";
 import { readJson, RequestError, requestError } from "@/lib/security/request";
 import { cleanPositiveInteger, cleanString, cleanStringArray } from "@/lib/security/validators";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { displayCountry } from "@/lib/real-estate/global-registry";
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "Penthouse", "Commercial", "Plot"] as const;
 const LISTING_TYPES = ["buy", "rent"] as const;
@@ -64,7 +65,7 @@ export async function GET(req: Request) {
     const { client, user } = await authenticatedStorage(req);
     const { data, error } = await client
       .from("listing_submissions")
-      .select("id,title,status,property_id,target_project_id,registry_reference,price_amount,currency,bedrooms,bathrooms,area_sqft,submitter_role,created_at")
+      .select("id,title,status,property_id,target_project_id,global_registry_id,registry_reference,price_amount,currency,bedrooms,bathrooms,area_sqft,submitter_role,created_at")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -124,7 +125,17 @@ export async function POST(req: Request) {
       throw new RequestError("Invalid MahaRERA registration number", 400);
     }
 
+    const rawGlobalId = body.global_registry_id;
+    const globalRegistryId = rawGlobalId === undefined || rawGlobalId === null || rawGlobalId === ""
+      ? null : typeof rawGlobalId === "string" && /^[1-9][0-9]{0,14}$/.test(rawGlobalId) &&
+        Number.isSafeInteger(Number(rawGlobalId)) ? Number(rawGlobalId) : NaN;
+    if (Number.isNaN(globalRegistryId)) throw new RequestError("Invalid global registry reference", 400);
+    if (registryReference && globalRegistryId !== null) {
+      throw new RequestError("Choose one registered project reference", 400);
+    }
+
     let targetProjectId: number | null = null;
+    let globalRegion: string | null = null;
     if (registryReference) {
       const { data: projects, error: registryError } = await client
         .from("properties")
@@ -144,13 +155,35 @@ export async function POST(req: Request) {
       base.location = String(project.location || base.location);
     }
 
+    if (globalRegistryId !== null) {
+      // Owner-scoped read plus DB RLS on submission INSERT prevent cross-owner linking.
+      const { data: stub, error: stubError } = await client
+        .from("global_registry_projects")
+        .select("id,country_code,region_state,city,project_name,submitted_by")
+        .eq("id", globalRegistryId)
+        .eq("submitted_by", user.id)
+        .abortSignal(AbortSignal.timeout(5000))
+        .maybeSingle();
+      if (stubError) throw new RequestError("Registry lookup unavailable", 503);
+      if (!stub) throw new RequestError("Select a global project you registered", 400);
+      base.title = stub.project_name;
+      base.country = displayCountry(stub.country_code);
+      base.city = stub.city;
+      globalRegion = stub.country_code === "IN" ? stub.region_state : null;
+    }
+
     const possession = body.possession_status || null;
     if (possession !== null && !["ready_to_move","under_construction","off_plan"].includes(String(possession))) throw new RequestError("Invalid possession status",400);
     const basis = body.area_basis || null;
     if (basis !== null && !["carpet","built_up","plot"].includes(String(basis))) throw new RequestError("Invalid area basis",400);
     const agentRegistration = body.agent_registration ? cleanString(body.agent_registration,{min:3,max:80,pattern:/^[A-Za-z0-9 /-]+$/}) : null;
     if (body.agent_registration && !agentRegistration) throw new RequestError("Invalid partner registration",400);
-    if (submitterRole === "agent" && base.country.toLowerCase() === "india" && !/^A[0-9]{11}$/.test(agentRegistration || "")) throw new RequestError("Provide the channel partner's MahaRERA agent registration (A followed by 11 digits)",400);
+    if (submitterRole === "agent" && base.country.toLowerCase() === "india") {
+      if (!agentRegistration) throw new RequestError("Provide your applicable state agent registration", 400);
+      if ((Boolean(registryReference) || globalRegion === "MH") && !/^A[0-9]{11}$/.test(agentRegistration)) {
+        throw new RequestError("Maharashtra agents must provide A followed by 11 digits", 400);
+      }
+    }
     const photos = cleanMediaUrls(body.media_urls, user.id);
     if (photos.length && body.media_rights_confirmed !== true) throw new RequestError("Confirm permission to publish these property photographs",400);
     if (body.is_new_launch !== undefined && typeof body.is_new_launch !== "boolean") throw new RequestError("Invalid launch selection",400);
@@ -161,6 +194,7 @@ export async function POST(req: Request) {
       listing_type: String(body.listing_type),
       submitter_role: submitterRole,
       target_project_id: targetProjectId,
+      global_registry_id: globalRegistryId,
       registry_reference: registryReference || null,
       price_amount: optionalMoney(body.price_amount),
       currency,
@@ -176,7 +210,7 @@ export async function POST(req: Request) {
     if (error) throw new RequestError("Submission service unavailable. No listing was published.", 503);
 
     return Response.json(
-      { success: true, status: "review", linked_registry: Boolean(targetProjectId) },
+      { success: true, status: "review", linked_registry: Boolean(targetProjectId || globalRegistryId), global_registry_status: globalRegistryId ? "pending_global_review" : null },
       { status: 201, headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

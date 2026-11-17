@@ -1,4 +1,5 @@
 "use client"
+import InfraPulsePanel from "@/components/intelligence/InfraPulsePanel"
 import HidePropertyButton from "./HidePropertyButton"
 import Link from "next/link"
 import {isPropertyVisualCard} from "@/app/real-estate/registry/explorer-presentation"
@@ -46,6 +47,7 @@ export default function ExplorerCard({ property: p, selected, compareFull, onCom
         </Link>
         <p className="mt-1 text-[var(--text-soft)]">Pricing proposal, not checkout. Claim or submit your project for independent review first.</p>
       </div>}
+      <InfraPulsePanel propertyId={Number(p.id)} pulse={p.infraPulse} currency={currency} compact/>
       <ViralCardGenerator kind="property" title={p.title} subtitle={[p.city,p.country].filter(Boolean).join(" · ")} price={converted||undefined} path={url}/>
       <HidePropertyButton slug={p.slug} title={p.title} />
       <PropertyLeadActions property={{ id: Number(p.id), title: p.title, slug: p.slug, rera_id: p.rera_id }} compact />

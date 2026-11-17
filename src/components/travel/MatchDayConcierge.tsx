@@ -22,8 +22,8 @@ export default function MatchDayConcierge({slug,name,bookingUrl}:{slug:string;na
     <h3 className="mt-5 font-semibold">Weather & match-day checklist</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-soft)]">{checklist.map(item=><li key={item}>{item}</li>)}</ul>
     <p className="mt-2 text-xs text-[var(--text-soft)]">No live weather API used. Check an official forecast before departure.</p>
    </div>
-   <div><h3 className="font-semibold">Top 5 nearby stays (within 5 km)</h3>
-    {loading?<p role="status" className="mt-2 text-sm">Checking available OSM hotel records…</p>:hotels.length?<ol className="mt-3 space-y-3">{hotels.map((hotel,i)=><li key={hotel.name+i} className="rounded-xl border border-[var(--border)] p-3 text-sm"><strong>{i+1}. {hotel.name}</strong><p>{hotel.distanceKm.toFixed(2)} km straight-line distance</p>{hotel.sourceUrl&&<a className="underline" href={hotel.sourceUrl} target="_blank" rel="noopener noreferrer">OSM source</a>}</li>)}</ol>:<p className="mt-3 text-sm">No verified nearby OSM accommodation records available. Search the city on the booking partner.</p>}
+   <div><h3 className="font-semibold">Up to 5 nearby directory stays (within 5 km)</h3>
+    {loading?<p role="status" className="mt-2 text-sm">Checking available OSM hotel records…</p>:hotels.length?<ol className="mt-3 space-y-3">{hotels.map((hotel,i)=><li key={hotel.name+i} className="rounded-xl border border-[var(--border)] p-3 text-sm"><strong>{i+1}. {hotel.name}</strong><p>{hotel.distanceKm.toFixed(2)} km straight-line distance</p>{hotel.sourceUrl&&<a className="underline" href={hotel.sourceUrl} target="_blank" rel="noopener noreferrer">OSM source</a>}</li>)}</ol>:<p className="mt-3 text-sm">No nearby OSM accommodation records available. Search the city on the booking partner.</p>}
     <p className="mt-2 text-xs text-[var(--text-soft)]">{data?.note||"Distances are not walking routes. Booking inventory and rates must be checked separately."}</p>
    </div>
   </div>

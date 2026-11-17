@@ -17,7 +17,7 @@ test('hybrid search rejects operator injection, invalid budgets, enums and fract
 
 test('search fails closed on supplier timeout and never returns database diagnostics',async()=>{
  let called=0;
- const route=load('src/app/api/real-estate/search/route.ts',{'@supabase/supabase-js':{createClient:()=>({rpc:()=>({abortSignal:async()=>{called++;return {error:{message:'private connection string'},data:null}}})})},'@/lib/real-estate/hybrid-search':search,'@/lib/security/request':request});
+ const route=load('src/app/api/real-estate/search/route.ts',{'@/lib/intelligence/infraPulse':{readInfraPulse:async()=>({})},'@supabase/supabase-js':{createClient:()=>({rpc:()=>({abortSignal:async()=>{called++;return {error:{message:'private connection string'},data:null}}})})},'@/lib/real-estate/hybrid-search':search,'@/lib/security/request':request});
  const prior={url:process.env.NEXT_PUBLIC_SUPABASE_URL,key:process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY};
  try{
  process.env.NEXT_PUBLIC_SUPABASE_URL='https://example.supabase.co';process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY='public-test-key';

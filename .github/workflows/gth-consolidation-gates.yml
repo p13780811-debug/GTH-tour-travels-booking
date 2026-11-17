@@ -26,6 +26,8 @@ jobs:
             src/components/Footer.tsx \
             src/app/real-estate/layout.tsx \
             ':(literal)src/app/real-estate/[slug]/' \
+            ':(exclude,literal)src/app/real-estate/[slug]/[region]/page.tsx' \
+            ':(exclude,literal)src/app/real-estate/[slug]/[region]/[locality]/page.tsx' \
             src/app/real-estate/admin/ \
             src/app/real-estate/post-property/ \
             src/app/real-estate/portfolio/ \
@@ -91,6 +93,7 @@ jobs:
             ':!src/components/real-estate/AreaConverter.tsx' \
             ':!src/components/real-estate/RegistryPhotoProjects.tsx' \
             ':!src/components/real-estate/RegistryDiscovery.tsx' \
+            ':!src/components/real-estate/GlobalRegistryOnboarding.tsx' \
             ':!src/app/api/real-estate/registry-preview/route.ts' \
             ':!src/components/real-estate/BuyerPlanningStudio.tsx' \
             ':!src/components/real-estate/ResearchWorkspace.tsx' \
@@ -107,10 +110,13 @@ jobs:
             ':!src/lib/real-estate/registry-search.ts' \
             ':!src/lib/real-estate/registry-reader.ts' \
             ':!src/lib/real-estate/investor-currency.ts' \
+            ':!src/lib/real-estate/global-registry.ts' \
+            ':!src/lib/real-estate/micro-market.ts' \
             ':!src/app/api/real-estate/search/route.ts' \
             ':!src/app/api/real-estate/enquiries/route.ts' \
             ':!src/app/api/real-estate/nri-inquiry/route.ts' \
             ':!src/app/api/real-estate/submissions/route.ts' \
+            ':!src/app/api/real-estate/global-registry/route.ts' \
             ':!src/app/api/admin/submissions/route.ts' \
             ':!src/lib/real-estate/buyer-leads.ts' \
             ':!src/lib/real-estate/emi.ts' \

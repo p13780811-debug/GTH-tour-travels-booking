@@ -1,4 +1,5 @@
 export type ExplorerProperty = {
+  infraPulse?: import("../intelligence/contracts").InfraPulse;
   id: number; slug: string; title: string; location?: string; city?: string; country?: string;
   district?: string; developer?: string; builder_name?: string; rera_id?: string;
   property_type?: string; image?: string; formatted_price?: string; beds?: number; baths?: number;

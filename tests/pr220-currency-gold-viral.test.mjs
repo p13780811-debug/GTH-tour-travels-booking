@@ -53,7 +53,7 @@ test("viral PNG image dimensions and safe source captions are first-party only",
 });
 
 test("Gold sorting keeps independently reviewed inventory and image-source gate",()=>{
-  const sql=fs.readFileSync("supabase/migrations/20261117002000_property_verified_gold_sort.sql","utf8");
+  const sql=fs.readFileSync("supabase/migrations/20261117061855_property_verified_gold_sort.sql","utf8");
   assert.match(sql,/is_featured_gold desc/);
   assert.match(sql,/is_featured_gold and p\.verified/);
   assert.match(sql,/property_published_media/);

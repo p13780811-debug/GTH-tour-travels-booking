@@ -1,3 +1,4 @@
+import EventShockwave from "@/components/intelligence/EventShockwave";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -63,6 +64,7 @@ export default async function OsmPlacePage({params}:Props){
     </div>
    </header>
    <TravelSectionNav/>
+   <EventShockwave target={{kind:"osm",id}}/>
    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
     <section aria-labelledby="place-facts" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
      <h2 id="place-facts" className="text-xl font-bold">Know the place</h2>

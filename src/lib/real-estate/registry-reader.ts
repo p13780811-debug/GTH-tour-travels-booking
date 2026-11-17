@@ -2,12 +2,12 @@ import {createClient} from "@supabase/supabase-js";
 import {unstable_cache} from "next/cache";
 import {validPropertySlug} from "./property-seo";
 import {parseRegistryFilters,registryCompareSlugs,REGISTRY_PAGE_SIZE,type RegistryFilters} from "./registry-search";
-export type RegistryRecord={slug:string;title:string;rera_id:string;developer:string|null;builder_name:string|null;city:string|null;district:string|null;completion_date:string|null;registration_date:string|null;official_source_url:string|null;ingestion_source:string|null;last_verified_at:string|null;status:string|null};
+export type RegistryRecord={id?:number;slug:string;title:string;rera_id:string;developer:string|null;builder_name:string|null;city:string|null;district:string|null;completion_date:string|null;registration_date:string|null;official_source_url:string|null;ingestion_source:string|null;last_verified_at:string|null;status:string|null};
 function registryQuery(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  if(!url||!key)throw new Error("registry_public_config_missing");
  return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}}).from("properties")
-  .select("slug,title,rera_id,developer,builder_name,city,district,completion_date,registration_date,official_source_url,status,source_type,ingestion_source,last_verified_at")
+  .select("slug,title,rera_id,developer,builder_name,city,district,completion_date,registration_date,official_source_url,status,source_type,ingestion_source,last_verified_at,id")
   .in("source_type",["registry","rera"]).ilike("ingestion_source","%maharera%").not("rera_id","is",null);
 }
 const valid=(row:RegistryRecord)=>validPropertySlug(row.slug)&&typeof row.title==="string"&&row.title.trim().length>=3&&/^P[0-9]{11}$/.test(row.rera_id||"")&&row.status!=="archived";

@@ -20,7 +20,7 @@ export function haversineKm(a:{lat:number;lng:number},b:{lat:number;lng:number})
 export function safeHotelHandoff(venue:Pick<Stadium,"city"|"countryCode"|"slug">):string {
  const custom=process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
  let base="https://gthproglobal.nuitee.link/";
- if(custom){try{const u=new URL(custom);if(u.protocol==="https:"&&!u.username&&!u.password&&!u.hash&&u.hostname.endsWith(".nuitee.link"))base=u.origin+"/";}catch{/* safe fallback */}}
+ if(custom){try{const u=new URL(custom);if(u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&!u.hash&&u.hostname.endsWith(".nuitee.link"))base=u.origin+"/";}catch{/* safe fallback */}}
  const u=new URL(base);
  u.searchParams.set("city",venue.city.slice(0,80));u.searchParams.set("country",venue.countryCode);
  const geo=venueLocations[venue.slug];
