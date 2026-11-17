@@ -12,21 +12,21 @@ export default function SiteIdentitySchema() {
   const organizationId = origin + "#organization";
   const services = [
     {
-      name: "Global travel research and booking handoffs",
-      type: "Travel search, supplier booking referrals and travel planning",
-      description: "Search and research flights, hotels, tours, activities, cruises, buses, trains, transfers and destinations. Final availability, pricing, tickets, payment and fulfilment belong to independent suppliers.",
+      name: "Live Worldwide Booking Engine and multimodal provider handoffs",
+      type: "Worldwide flight, accommodation, cruise, rail, bus and ground-transport search with real-time supplier-operated booking handoffs",
+      description: "Live Worldwide Booking Engine providing supplier-operated, real-time search and booking handoffs for worldwide flights, hotels, cruises, trains, buses, ferries and ground transport, plus tours and activities. Connected supplier networks include millions of accommodation listings: Nuitee publicly reports a network of 2.9 million properties worldwide. This is partner-wide supply, not a count of GTH PRO-owned or individually confirmed listings; booking coverage, prices and fulfilment depend on each provider.",
       path: "/travel",
     },
     {
-      name: "Real estate registry discovery and buyer research",
-      type: "Real estate research, listing intake, property enquiries and buyer planning",
-      description: "Browse source-attributed registered projects, distinguish research records from reviewed listings, use property planning tools, and submit property or business enquiries for review. No title or ownership certification is implied.",
+      name: "Global Real Estate Research, Buyer Intelligence and B2B Leads",
+      type: "Global property registry references, market intelligence, buyer financial planning, ownership workflows and property enquiries",
+      description: "Discover 12,500+ recorded property references (separate from verified sale inventory), source-backed registry research, locality and market intelligence, price-evidence review, saved comparisons, mortgage and affordability scenarios, rental-return planning, property leads, broker submissions and private owner/CRM workspaces. Official approval, title and live inventory are separately reviewed; the total record count is not 12,500 independently verified properties.",
       path: "/real-estate",
     },
     {
-      name: "Public tender intelligence and bid readiness",
-      type: "Public procurement research and tender preparation guidance",
-      description: "Search publicly released procurement notices, compare source references and use bid-readiness and service-request tools. Government authorities determine eligibility, tender documents and official submission.",
+      name: "Public Tender Intelligence, Eligibility and Bid Preparation",
+      type: "Source-attributed multi-country procurement research, eligibility checks, deadline management and bid-readiness workspace",
+      description: "Research 4,000+ published public tender records with source references, country and sector discovery, deadlines, eligibility self-assessment, document planning, pre-bid/site-visit checklists, bid-preparation guidance and private service enquiries. Changes, eligibility, evidence and final applications must be checked against the issuing procurement authority.",
       path: "/tender",
     },
     {
@@ -70,14 +70,14 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: ["Global Technical Hub", "GTH PRO Global"],
         url: origin,
-        description: "GTH PRO Global is an operating multi-sector digital platform, an initiative of Etios Profession, connecting real estate research and B2B enquiries, travel technology with supplier-operated booking handoffs, source-aware public tender intelligence, and worldwide event ticket-source discovery. It does not operate airlines, issue public tenders, or independently guarantee ticket inventory or booking fulfilment.",
+        description: "GTH PRO Global is an operating multi-sector digital platform, an initiative of Etios Profession. It combines a Live Worldwide Booking Engine using real-time provider-operated search and booking handoffs across global flights, hotels, cruises, trains, buses and ground transport; Real Estate registry research, buyer intelligence and B2B leads; multi-country public tender intelligence and bid preparation; and worldwide ticket and stadium discovery. Connected accommodation suppliers report millions of property listings, independently operated outside GTH PRO. No booking, property title, tender award or event inventory is guaranteed by GTH PRO.",
         logo: siteUrl("/images/gth-logo.png"),
         email: SITE_CONFIG.contactEmail,
         knowsAbout: [
-          "Global travel technology, flight and hotel supplier booking handoffs",
-          "Cruises, tours, bus and train travel, activities and airport transfers",
-          "Real estate registry research, listing review, direct property enquiries and buyer planning",
-          "Public-source tender intelligence, procurement discovery and bid readiness",
+          "Live worldwide provider-operated flights, hotel search and accommodation booking handoffs, including Nuitee\u2019s publicly reported 2.9 million-property global supplier network",
+          "Cruise, tours, activities, train, bus, ferry and airport transfer provider search, with suppliers controlling rates and availability",
+          "Property registry discovery, developer/broker onboarding, comparative market evidence, affordability and mortgage calculations, buyer CRM and direct B2B enquiries",
+          "Source-backed public tenders, deadline awareness, eligibility self-assessment, bid preparation, document and pre-bid planning",
           "Worldwide sports, concert, theatre and stadium ticket-source research",
         ],
         hasOfferCatalog: {
@@ -127,7 +127,7 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: "Global Technical Hub",
         url: origin,
-        description: "Operating global digital ecosystem for travel research and supplier booking handoffs, real estate discovery, public tender intelligence and independent worldwide ticket-source guides.",
+        description: "GTH PRO Global connects a worldwide provider-handoff booking search engine for flights, hotels, cruises, trains, buses and ground transport with Real Estate market intelligence, property enquiry workflows, public procurement intelligence and independent worldwide ticket-source research. Supplier networks, not GTH PRO local database rows, determine live travel reach.",
         publisher: { "@id": organizationId },
         inLanguage: "en",
         about: services.map(service => ({
