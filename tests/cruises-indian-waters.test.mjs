@@ -32,7 +32,7 @@ test('no pricing, fake images or unapproved new affiliate provider',()=>{
  assert.ok(ui.includes("www.getyourguide.com"));
  assert.match(ui,/https:\/\/gyg\.me\/ZzIrHzQ9/);
  assert.match(ui,/partner_id=DF3NBKA&utm_medium=online_publisher&cmp=gthpro_cruises_kolkata/);
- assert.match(ui,/partner tracking is not yet configured for this card/);
+ assert.match(ui,/tracked referrals are not configured for this card/);
  assert.match(ui,/campaign_id:"137"/);
  assert.match(ui,/marker:"417668"/);
  assert.match(ui,/noopener noreferrer sponsored/);
