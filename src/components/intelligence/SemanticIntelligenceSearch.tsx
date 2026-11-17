@@ -29,7 +29,7 @@ export default function SemanticIntelligenceSearch({country=""}:{country?:string
    if(!response.ok||!payload||typeof payload!=="object")throw Error("Search not available");
    const found=(payload as {results?:unknown}).results;
    if(!Array.isArray(found))throw Error("Invalid results");
-   const clean=found.filter(item=>item&&typeof item==="object"&&typeof item.href==="string") as Result[];
+   const clean=found.filter((item):item is Result=>Boolean(item&&typeof item==="object"&&typeof (item as Record<string,unknown>).href==="string"));
    setResults(clean.slice(0,6));
    if(!clean.length)setNotice("No eligible indexed source matched yet. Use the connected source desks and booking search below; this does not mean the destination or service is unavailable.");
   }catch{
