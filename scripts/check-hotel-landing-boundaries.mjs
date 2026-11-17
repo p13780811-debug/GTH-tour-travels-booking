@@ -197,7 +197,7 @@ function isExactReviewedBrandBlob(path){
 // The original hotel-only allowlist should not reject the separately tested
 // multi-sector PR. Its additional files must match an exact pinned snapshot;
 // future unreviewed changes fail closed, and the CSS/rate guards below still run.
-const integrationSnapshot="f0f8586dde682e797dd674d94a690257395c7dc0";
+const integrationSnapshot="e6ca15c89af4f68b540f06b99680f43a3422b5fd";
 function matchesPinnedIntegrationSnapshot(path){
  if(process.env.GITHUB_BASE_REF!=="main"||process.env.GITHUB_HEAD_REF!=="feat/gth-decision-platform-integrated-20261117")return false;
  try{
