@@ -33,7 +33,7 @@ export default async function MicroMarketsHub(){
         <h2 className="text-lg font-bold"><Link className="underline" href={"/real-estate/"+region.country+"/"+region.region}>{region.label}</Link></h2>
         {region.items.length?<ul className="mt-4 space-y-3">{region.items.map(item=><li key={item.path}>
           <Link href={item.path} className="underline underline-offset-2">{item.name}</Link>
-        </li>)}</ul>:<p className="mt-3 text-sm text-[var(--text-soft)]">Exact verified-source micro-locality tags are not yet available for this region.</p>}
+        </li>)}</ul>:<p className="mt-3 text-sm text-[var(--text-soft)]">No eligible localities appear yet. Historical RERA village records require official-source verification before indexing.</p>}
       </section>)}
     </div>
     <div className="mt-8 flex flex-wrap gap-3">
