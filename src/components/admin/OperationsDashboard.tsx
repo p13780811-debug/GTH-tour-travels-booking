@@ -66,6 +66,7 @@ export default function OperationsDashboard(){
       <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)]"><ShieldCheck size={17}/> Restricted administration</p>
       <h1 className="mt-4 text-3xl font-semibold md:text-4xl">GTH PRO · Operations Center</h1>
       <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">Review partner enquiries, listing queue indicators and configuration status. This dashboard does not expose keys, change supplier agreements or publish unverified inventory.</p>
+      <Link href="/admin/enquiries" className="gth-btn mt-5 mr-3 inline-flex min-h-11 items-center">Private enquiry inbox</Link>
       <Link href="/admin/tender-services" className="gth-btn mt-5 inline-flex items-center justify-center">Tender service enquiries & quote workflow</Link>
       <div className="mt-7 flex flex-wrap items-end gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
         <label className="text-xs font-semibold text-[var(--text-soft)]">Admin account email

@@ -65,6 +65,7 @@ export default async function IntelligencePage({searchParams}:Props){
           </Link>)}
         </div>
       </section>
+      <div className="gth-glass mt-6 rounded-xl p-4"><Link href="/enquire" className="gth-btn gth-btn-gold inline-flex min-h-11 items-center">Send a buyer, tender or travel requirement</Link><p className="mt-2 text-xs text-[var(--text-soft)]">Private enquiry review; no listed property or public WhatsApp number needed.</p></div>
       <section className="mt-9">
         <h2 className="text-xl font-semibold">Explore every connected market</h2>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -75,7 +76,7 @@ export default async function IntelligencePage({searchParams}:Props){
         {[
           {Icon:Building2,title:"Property registry",text:"Not proof of market availability or sale"},
           {Icon:FileSearch,title:"Public works",text:"Verified notices; not project award or investment appreciation"},
-          {Icon:Hotel,title:"Worldwide stays",text:"OSM accommodation directory; booking requires supplier confirmation"},
+          {Icon:Hotel,title:"Worldwide stays",text:"Booking through supplier-operated handoffs; mapped directory records are separate"},
           {Icon:ShieldCheck,title:"Trusted source labels",text:"Missing evidence is shown, never invented"},
         ].map(({Icon,title,text})=><article key={title} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5"><Icon size={23} className="text-[var(--gold)]"/><h3 className="mt-3 font-semibold">{title}</h3><p className="mt-2 text-sm text-[var(--text-soft)]">{text}</p></article>)}
       </section>

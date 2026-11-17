@@ -22,11 +22,13 @@ export async function POST(req:Request){
    if(error)throw new RequestError("Project lookup unavailable.",503);if(!data?.[0]||data[0].status==="archived")throw new RequestError("Project unavailable.",404);
    const pulse=(await readInfraPulse([input.propertyId!]))[input.propertyId!];if(!pulse)throw new RequestError("No current regional infrastructure matches are available for this project.",409);
    title=data[0].title;targetKey="property:"+input.propertyId;tenderIds=pulse.notices.map(n=>n.id);
-  }else{
+  }else if(input.kind==="requirement"){
+ title=input.topic!.replaceAll("_"," ");targetKey="requirement:"+input.topic;
+ }else{
    const venue=await resolveEventTarget(input.target!);if(!venue)throw new RequestError("Venue unavailable.",404);title=venue.name;targetKey=venue.key;
   }
-  const message="GTH PRO "+(input.kind==="infra"?"Infra-Backed Investor Dossier":"VIP Hospitality & Group Charter")+" enquiry. Reference: "+input.requestId+". Target: "+targetKey+" ("+String(title).slice(0,150)+"). Currency: "+input.currency+". Regional Tender IDs: "+(tenderIds.join(", ")||"not applicable")+". Services: "+input.services.join(", ")+". Please confirm source records and supplier availability.";
-  const {error}=await db.from("gth_intelligence_leads").insert({request_id:input.requestId,payload_hash:fingerprint,lead_kind:input.kind,target_key:targetKey,property_id:input.propertyId,currency:input.currency,full_name:input.fullName,email:input.email,phone_e164:input.phone,services:input.services,group_size:input.groupSize,notes:input.notes,tender_ids:tenderIds,whatsapp_message:message});
+  const message="GTH PRO "+(input.kind==="infra"?"Infra-Backed Investor Dossier":input.kind==="requirement"?"Research Requirement":"VIP Hospitality & Group Charter")+" enquiry. Reference: "+input.requestId+". Target: "+targetKey+" ("+String(title).slice(0,150)+"). Currency: "+input.currency+". Regional Tender IDs: "+(tenderIds.join(", ")||"not applicable")+". Services: "+input.services.join(", ")+". Please confirm source records and supplier availability.";
+  const {error}=await db.from("gth_intelligence_leads").insert({request_id:input.requestId,payload_hash:fingerprint,lead_kind:input.kind,target_key:targetKey,property_id:input.propertyId,currency:input.currency,full_name:input.fullName,email:input.email,phone_e164:input.phone,contact_preference:input.contactPreference,requested_city:input.city,country_code:input.country,services:input.services,group_size:input.groupSize,notes:input.notes,tender_ids:tenderIds,whatsapp_message:message});
   if(error?.code==="23505")throw new RequestError("Your request may already be saved. Retry this same form to confirm.",409);
   if(error)throw new RequestError("Enquiry could not be saved. Retry this same form.",503);
   return Response.json({received:true,reference:input.requestId,whatsapp_url:conciergeWhatsApp(process.env.GTH_BUSINESS_WHATSAPP_NUMBER,message)},{status:201,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
