@@ -35,7 +35,7 @@ export default async function FlightsPage({ searchParams }: Props) {
             </p>
             <h1 className="mt-1 sm:mt-3 text-[var(--text)]">Find your next flight</h1>
             <p className="hidden sm:block mt-3 max-w-xl text-sm leading-7 text-[var(--text-soft)]">
-              Search flights with Aviasales, then explore airport transfers, car rentals and travel essentials
+              GTH Global Booking Engine · Worldwide flights, transfers, car rentals and travel essentials
               in one connected GTH PRO journey.
             </p>
             <div className="hidden sm:flex mt-5 flex-wrap items-center gap-3 text-xs text-[var(--text-soft)]">
@@ -76,7 +76,7 @@ export default async function FlightsPage({ searchParams }: Props) {
           <section className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-sm">
             <h2 className="flex items-center gap-2"><Compass size={18} aria-hidden="true" /> About flight bookings</h2>
             <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">
-              Search and results are operated by Aviasales/Travelpayouts. The GTH PRO historical fare
+              GTH Flight Search connects to an independently operated flight search provider. The GTH PRO historical fare
               API is not displayed as live bookable inventory. Final availability, fares, baggage,
               payment and support are determined by the chosen provider.
             </p>
