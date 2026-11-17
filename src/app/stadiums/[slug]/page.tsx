@@ -1,3 +1,4 @@
+import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -71,6 +72,7 @@ export default async function StadiumPage({ params }: Props) {
         <Ticket size={30} className="text-[var(--gold)]" aria-hidden="true"/>
         <p className="mt-4 text-sm font-semibold text-[var(--gold)]">{venue.city}, {venue.country} · {venue.sports.join(" · ")}</p>
         <h1 className="mt-3 text-3xl font-bold sm:text-5xl">{venue.name}</h1>
+        <ViralCardGenerator kind="stadium" title={venue.name} subtitle={venue.city+" · "+venue.country} path={"/stadiums/"+venue.slug}/>
         <ShareTripPlanButton title={venue.name+" stadium visit"} venue={venue.name} city={venue.city} countryCode={venue.countryCode} path={"/stadiums/"+venue.slug}/>
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">{venue.overview}</p>
       </header>
