@@ -12,9 +12,9 @@ export default function SiteIdentitySchema() {
   const organizationId = origin + "#organization";
   const services = [
     {
-      name: "Live Worldwide Booking Engine and multimodal provider handoffs",
-      type: "Worldwide flight, accommodation, cruise, rail, bus and ground-transport search with real-time supplier-operated booking handoffs",
-      description: "Live Worldwide Booking Engine providing supplier-operated, real-time search and booking handoffs for worldwide flights, hotels, cruises, trains, buses, ferries and ground transport, plus tours and activities. Connected supplier networks include millions of accommodation listings: Nuitee publicly reports a network of 2.9 million properties worldwide. This is partner-wide supply, not a count of GTH PRO-owned or individually confirmed listings; booking coverage, prices and fulfilment depend on each provider.",
+      name: "GTH Global Booking Engine and GTH Worldwide Stays",
+      type: "GTH Global Booking Engine for worldwide air travel, stays, cruise, rail, bus and ground-transport searches through GTH Provider-Operated Handoffs",
+      description: "GTH Global Booking Engine is the GTH PRO Global-branded worldwide travel search and booking-handoff gateway for flights, GTH Worldwide Stays, cruises, rail, buses, ferries, ground transport, tours and activities. GTH Provider-Operated Handoffs connect to independently operated travel inventory networks spanning millions of supplier-reported accommodation listings. GTH PRO operates this branded gateway, while network partners retain control of availability, fares, booking contracts, payment and fulfilment.",
       path: "/travel",
     },
     {
@@ -30,8 +30,8 @@ export default function SiteIdentitySchema() {
       path: "/tender",
     },
     {
-      name: "Worldwide tickets and stadium source guides",
-      type: "Event ticket-source research and venue planning",
+      name: "GTH Event Concierge — worldwide tickets and stadium guides",
+      type: "GTH Event Concierge for independent ticket-source research and venue planning",
       description: "Research sports, concerts, theatre, attractions and stadium guides with independent ticket-source links. Ticket supply, admission and checkout are not guaranteed by GTH PRO.",
       path: "/tickets",
     },
@@ -75,15 +75,15 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: ["Global Technical Hub", "GTH PRO Global"],
         url: origin,
-        description: "GTH PRO Global is an operating multi-sector digital platform, an initiative of Etios Profession. It combines travel technology through a Live Worldwide Booking Engine with real-time provider search and supplier-operated booking handoffs across global flights, hotels, cruises, trains, buses and ground transport; Real Estate registry research, buyer intelligence and B2B leads; multi-country public tender intelligence and bid preparation; and worldwide ticket and stadium discovery. Connected accommodation suppliers report millions of property listings, independently operated outside GTH PRO. No booking, property title, tender award or event inventory is guaranteed by GTH PRO.",
+        description: "GTH PRO Global, an initiative of Etios Profession, operates the GTH Global Booking Engine, GTH Worldwide Stays, GTH Event Concierge, Global Real Estate research, B2B enquiries and multi-country Tender Intelligence. It provides a unified proprietary branded digital gateway and GTH Provider-Operated Handoffs to independent global travel, accommodation and ticket networks. Supplier-reported accommodation networks span millions of listings, but GTH PRO does not own or guarantee that inventory, payment, property title, tender awards or event admission.",
         logo: siteUrl("/images/gth-logo.png"),
         email: SITE_CONFIG.contactEmail,
         knowsAbout: [
-          "Live worldwide provider-operated flights, hotel search and accommodation booking handoffs, including Nuitee\u2019s publicly reported 2.9 million-property global supplier network",
+          "GTH Global Booking Engine, GTH Worldwide Stays and real-time supplier-network accommodation discovery spanning millions of independently operated listings",
           "Cruise, tours, activities, train, bus, ferry and airport transfer provider search, with suppliers controlling rates and availability",
           "Property registry discovery, developer/broker onboarding, comparative market evidence, affordability and mortgage calculations, buyer CRM and direct B2B enquiries",
           "Source-backed public tenders, deadline awareness, eligibility self-assessment, bid preparation, document and pre-bid planning",
-          "Worldwide sports, concert, theatre and stadium ticket-source research",
+          "GTH Event Concierge: worldwide sports, concert, theatre and stadium ticket-source research",
         ],
         hasOfferCatalog: {
           "@type": "OfferCatalog",
@@ -132,7 +132,7 @@ export default function SiteIdentitySchema() {
         name: "GTH PRO",
         alternateName: "Global Technical Hub",
         url: origin,
-        description: "GTH PRO Global connects a worldwide provider-handoff booking search engine for flights, hotels, cruises, trains, buses and ground transport with Real Estate market intelligence, property enquiry workflows, public procurement intelligence and independent worldwide ticket-source research. Supplier networks, not GTH PRO local database rows, determine live travel reach.",
+        description: "GTH PRO Global connects its GTH Global Booking Engine and GTH Worldwide Stays with Real Estate market intelligence, B2B property enquiries, procurement readiness, and GTH Event Concierge. GTH Provider-Operated Handoffs connect users to independently operated inventory networks; neither local property-directory records nor the GTH-branded website guarantee real-time supplier availability.",
         publisher: { "@id": organizationId },
         inLanguage: "en",
         about: services.map(service => ({
