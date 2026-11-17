@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Globe2, ShieldCheck } from "lucide-react";
 import { safeTenderSource } from "@/lib/tender/catalog";
 import TenderIntelligencePanel from "@/components/tender/TenderIntelligencePanel";
+import TenderDecisionPitch from "@/components/tender/TenderDecisionPitch";
 import {resolveTenderAudience} from "@/lib/tender/localization";
 import { TenderSaveCompare, TenderDeadlineDownload } from "@/components/tender/TenderDiscoveryActions";
 import { formatTenderBudget } from "@/lib/tender/discovery-workspace";
@@ -81,6 +82,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
       </div>
       {tender.summary&&<section className="mt-9"><h2 className="text-xl font-semibold">Notice summary</h2><p className="mt-4 whitespace-pre-line text-sm leading-8 text-[var(--text-soft)]">{tender.summary}</p></section>}
       <TenderPursuitPlanner key={tender.id} id={tender.id} deadline={tender.deadline_at}/>
+      <TenderDecisionPitch tenderId={tender.id}/>
       <TenderIntelligencePanel tenderId={tender.id} language={language} sourceUrl={url}
         notice={{
           title:tender.title,summary:tender.summary,sector:tender.sector,
