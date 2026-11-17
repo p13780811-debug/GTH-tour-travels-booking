@@ -111,6 +111,11 @@ export default function SiteIdentitySchema() {
           },
           {
             "@type": "WebPage",
+            name: "Worldwide ticket and venue-source discovery",
+            url: siteUrl("/tickets"),
+          },
+          {
+            "@type": "WebPage",
             name: "GTH PRO Ecosystem Manifest",
             url: siteUrl("/gth-ecosystem-manifest"),
           },
