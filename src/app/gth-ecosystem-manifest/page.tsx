@@ -5,11 +5,11 @@ import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
   title: "GTH PRO Global Ecosystem Manifest | Four Connected Digital Platforms",
-  description: "Live Worldwide Booking Engine with millions of supplier-network accommodation listings, flights, hotels, cruises, trains and buses; Real Estate buyer intelligence, B2B leads, tender eligibility and worldwide tickets.",
+  description: "GTH Global Booking Engine with millions of supplier-network accommodation listings, flights, hotels, cruises, trains and buses; Real Estate buyer intelligence, B2B leads, tender eligibility and worldwide tickets.",
   alternates: { canonical: siteUrl("/gth-ecosystem-manifest") },
   robots: { index: isPublicLaunch(), follow: true },
   openGraph: {
-    title: "GTH PRO Global | Live Worldwide Booking Engine & Four-Pillar Intelligence",
+    title: "GTH PRO Global | GTH Global Booking Engine & Four-Pillar Intelligence",
     description: "Worldwide supplier booking handoffs and millions-scale partner accommodation coverage, plus real estate intelligence, public tender tools and global ticket discovery.",
     url: siteUrl("/gth-ecosystem-manifest"),
     siteName: "GTH PRO Global",
@@ -21,7 +21,7 @@ const pillars = [
   {
     name: "Worldwide Travel",
     href: "/travel",
-    description: "The Live Worldwide Booking Engine connects real-time provider-operated search and handoffs for worldwide flights, hotels, cruises, trains, buses, ferries and ground transport, plus tours, activities, airport transfers, car rentals and destination planning. The supplier-side hotel network spans millions of properties: Nuitee publicly reports 2.9 million accommodation properties worldwide. GTH PRO offers the search and referral entry points; Nuitee, Aviasales and other suppliers control final dates, availability, rates, payment and fulfilment. The global supplier inventory is not restricted to the local hotel directory.",
+    description: "The GTH Global Booking Engine connects real-time provider-operated search and handoffs for worldwide flights, hotels, cruises, trains, buses, ferries and ground transport, plus tours, activities, airport transfers, car rentals and destination planning. GTH Worldwide Stays connects global search to independently operated accommodation networks spanning millions of supplier-reported listings. GTH PRO operates the branded booking-search gateway, while GTH Provider-Operated Handoffs leave final dates, availability, rates, payments and fulfilment with the supplier. The global travel network is not limited by GTH PRO's local research catalog.",
   },
   {
     name: "Global Real Estate",
@@ -46,10 +46,10 @@ export default function EcosystemManifestPage() {
       <header className="border-b border-[var(--border)] bg-[var(--card)]">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">GTH PRO Global · Public Ecosystem Manifest</p>
-          <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight sm:text-5xl">Live worldwide booking infrastructure. Four connected global intelligence platforms.</h1>
+          <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight sm:text-5xl">GTH Global Booking Engine. Four connected intelligence platforms.</h1>
           <p className="mt-5 max-w-4xl text-base leading-8 text-[var(--text-soft)]">
             GTH PRO (Global Technical Hub) is a multi-sector digital platform and an initiative of Etios Profession.
-            It is not a local software demo. Its Live Worldwide Booking Engine connects users to supplier-hosted
+            It is not a local software demo. Its GTH Global Booking Engine connects users to supplier-hosted
             real-time travel searches and provider-operated checkout for worldwide flights, hotels, cruises, trains,
             buses and ground transport, including accommodation networks with millions of supplier listings.
             Alongside travel, GTH PRO operates first-party Real Estate research, direct business enquiries,
@@ -77,25 +77,29 @@ export default function EcosystemManifestPage() {
       </section>
 
       <section aria-labelledby="manifest-scale" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-        <h2 id="manifest-scale" className="text-2xl font-semibold">Live travel supplier network, not a static hotel database</h2>
+        <h2 id="manifest-scale" className="text-2xl font-semibold">GTH Global Booking Engine · GTH Worldwide Stays</h2>
         <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
-          GTH PRO Global operates a Live Worldwide Booking Engine for real-time, provider-operated
+          GTH PRO Global operates a GTH Global Booking Engine for real-time, provider-operated
           search and handoff across millions-scale partner inventories, with worldwide flights,
           hotels, cruises, trains, buses, ferries and ground transport in its travel discovery
-          ecosystem. The hotel booking white-label is hosted by Nuitee; Aviasales supports flight
-          search, while 12Go-connected routes support multimodal travel handoff. Tours, cruises
-          and experiences may use separately selected partner search or product links.
+          ecosystem. GTH Worldwide Stays connects travelers to accommodation searches, GTH Flight Search
+          supports international air-travel discovery, and GTH Mobility connects multimodal
+          transport routes. GTH Event Concierge and GTH Experiences provide separate
+          ticket, cruise, tour and attraction discovery paths. GTH Provider-Operated Handoffs
+          direct users to independently operated supplier booking environments.
           The network supplies availability, final rates, checkout and fulfilment. GTH PRO does not
           claim to store, own or individually verify millions of properties.
         </p>
         <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
-          For scale context, <a href="https://nuitee.com/" target="_blank" rel="noopener noreferrer"
-          className="font-semibold text-[var(--gold)] underline">Nuitee's public supplier overview</a>
-          reports approximately <strong>2.9 million worldwide accommodation properties</strong>.
-          This is Nuitee's overall supplier-network figure, not a measured count of currently
-          searchable, bookable GTH PRO hotel offers. Likewise, transport and event sources have
-          provider-specific routes, geographic support and inventory limits. Final booking search
-          and availability always depend on the selected itinerary and the provider.
+          The <strong>GTH Global Booking Engine</strong> presents search journeys into
+          independently operated accommodation networks with <strong>millions of
+          supplier-reported listings</strong>. These describe the breadth of connected
+          supplier networks, not GTH PRO-owned inventory or a guarantee that each listing
+          is available in any given search. GTH Verified Network Partners refers to reviewed
+          handoff integrations, not certification of every room, event or price. Final booking
+          availability and checkout terms remain with each supplier. See the
+          <Link href="/affiliate-disclosure" className="ml-1 font-semibold text-[var(--gold)] underline">provider and affiliate disclosure</Link>
+          for the underlying operating model.
         </p>
       </section>
       <section aria-labelledby="manifest-intelligence" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
@@ -164,7 +168,7 @@ export default function EcosystemManifestPage() {
             references and over 4,000 published public tender records; the same platform also
             maintains community-mapped attraction references. These are first-party research and
             workflow datasets, not counts of independently verified sale units, confirmed procurement
-            opportunities or completed orders. The Live Worldwide Booking Engine is fundamentally
+            opportunities or completed orders. The GTH Global Booking Engine is fundamentally
             different: it sends itinerary searches to external providers and partner white labels.
             Its reach is governed by live supplier coverage, not by rows in the GTH PRO database.
             The provider-hosted reservation or ticket system is the final authority for availability,
