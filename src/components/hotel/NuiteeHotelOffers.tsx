@@ -35,7 +35,7 @@ function Card({hotel}:{hotel:DirectoryHotel}){
       <h3 className="line-clamp-2 text-base font-semibold"><Link href={detail} prefetch={false} className="hover:underline">{hotel.name}</Link></h3>
       <p className="text-xs text-[var(--text-soft)]">{hotel.source==="OpenStreetMap"?"© OpenStreetMap contributors · ODbL 1.0":"Source-attributed hotel directory"}</p>
       {hotel.image_attribution&&<p className="text-xs text-[var(--text-soft)]">Photo: {hotel.image_attribution.author} · {hotel.image_attribution.license}</p>}
-      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">Directory location only. No verified room price or availability; Nuitee search does not guarantee an exact hotel match.</p>
+      <p className="mt-auto pt-2 text-xs text-[var(--text-soft)]">Directory location only. No verified room price or availability; GTH Worldwide Stays does not guarantee an exact hotel match.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <Link prefetch={false} href={detail} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-center text-xs font-semibold">Hotel details</Link>
         <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:hotel.city}).toString()} className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-1 rounded-xl px-3 text-center text-xs font-semibold">
@@ -80,7 +80,7 @@ export function FreeHotelDirectoryCards({marketSlug,limit=6}:{marketSlug:string;
     {!visible?<p className="text-sm text-[var(--text-soft)]">Explore source-backed local hotel records below.</p>:null}
     {loading?<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm">Loading directory hotels…</p>:null}
     {error?<div role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
-      Hotel directory could not be loaded. The existing Nuitee booking search is still available.
+      Hotel directory could not be loaded. The existing GTH Worldwide Stays booking search is still available.
       <button type="button" className="gth-btn ml-3 min-h-10 px-3" onClick={()=>setRetry(n=>n+1)}>Retry</button>
     </div>:null}
     {!loading&&!error&&visible&&(hotels.length?
@@ -111,7 +111,7 @@ export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{
         </p>
         <h2 id="gth-nuitee-real-hotels" className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Find your kind of stay.</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">
-          Explore hotel photos and room options from Nuitee, our booking partner.
+          Explore hotel photos and room options through GTH Worldwide Stays.
           Choose your dates to confirm availability and the total price.
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{
         <div role="group" aria-label="Hotel city selection" className="inline-flex max-w-full flex-wrap gap-2">
           {([['mumbai','Mumbai, India'],['london','London, UK']] as const).map(([id,label])=><button key={id} type="button" aria-pressed={city===id} onClick={()=>setCity(id)} className={"inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+(city===id?"border-[var(--gold)] bg-[var(--bg-soft)] text-[var(--text)]":"border-[var(--border)] text-[var(--text-soft)]")}><MapPin size={14} aria-hidden="true"/>{label}</button>)}
         </div>
-        <span className="text-xs text-[var(--text-soft)]">Photos &amp; room details from Nuitee</span>
+        <span className="text-xs text-[var(--text-soft)]">GTH Worldwide Stays · Provider-supplied details</span>
       </div>
       <div aria-live="polite" aria-atomic="false">
         {city==="mumbai"
@@ -147,7 +147,7 @@ export default function NuiteeHotelOffers({currency="INR",preferredCountry=""}:{
     </details>
     <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
       <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0"/>
-      Booking is handled by Nuitee. Review room inclusions, taxes and cancellation terms before you pay.
+      Booking is handled by the selected accommodation provider. Review room inclusions, taxes and cancellation terms before you pay.
     </p>
   </section>;
 }
