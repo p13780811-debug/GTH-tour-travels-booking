@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { readInfraPulse } from "./infraPulse";
 import type { InfraPulse } from "./contracts";
+import { propertyMatchesMarket } from "./market-evidence";
 import { osmPlacePath } from "@/lib/travel/osm-place";
 import { findGthMarket, type GthMarket } from "./markets";
 
@@ -49,22 +50,22 @@ const cachedRead = unstable_cache(async (slug: string): Promise<MarketDecision |
   const now=new Date().toISOString();
   const queries=await Promise.allSettled([
     db.from("properties")
-      .select("id,title,slug,city,official_source_reference,official_source_url,status")
-      .eq("country",market.countryName).ilike("city",market.city).order("id",{ascending:true}).limit(8)
+      .select("id,title,slug,city,source_type,official_source_reference,official_source_url,status")
+      .eq("country",market.countryName).ilike("city",escapedCity).order("id",{ascending:true}).limit(8)
       .abortSignal(AbortSignal.timeout(4200)),
     db.from("tenders")
       .select("id,title,buyer,region,deadline_at,source_reference")
       .eq("country_code",market.countryCode).eq("is_public",true).eq("source_verified",true)
       .eq("status","published").gt("deadline_at",now)
-      .ilike("region","%"+escapedCity+"%").order("deadline_at",{ascending:true}).limit(6)
+      .ilike("region",escapedCity).order("deadline_at",{ascending:true}).limit(6)
       .abortSignal(AbortSignal.timeout(4200)),
     db.from("hotel_catalog")
       .select("name,city,category,source_url,source_license")
-      .eq("country_code",market.countryCode).ilike("city",market.city)
+      .eq("country_code",market.countryCode).ilike("city",escapedCity)
       .order("name",{ascending:true}).limit(6).abortSignal(AbortSignal.timeout(4200)),
     db.from("gth_osm_attractions")
       .select("source_id,name,city,category,source_url,source_license")
-      .eq("is_public",true).eq("country_code",market.countryCode).ilike("city",market.city)
+      .eq("is_public",true).eq("country_code",market.countryCode).ilike("city",escapedCity)
       .order("source_id",{ascending:true}).limit(6).abortSignal(AbortSignal.timeout(4200)),
   ]);
   const data=(index:number,source:string):Record<string,unknown>[]=>{
@@ -74,7 +75,7 @@ const cachedRead = unstable_cache(async (slug: string): Promise<MarketDecision |
   };
   empty.properties=data(0,"Property registry").flatMap(row=>{
     const id=Number(row.id);
-    if(!Number.isSafeInteger(id)||id<1 || typeof row.title!=="string" ||
+    if(!propertyMatchesMarket(row,market.city)||!Number.isSafeInteger(id)||id<1 || typeof row.title!=="string" ||
       typeof row.slug!=="string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug))return [];
     return [{id,title:row.title.slice(0,180),slug:row.slug,city:market.city,
       projectReference:typeof row.official_source_reference==="string"?row.official_source_reference.slice(0,90):null,
@@ -101,7 +102,7 @@ const cachedRead = unstable_cache(async (slug: string): Promise<MarketDecision |
   }).slice(0,5);
   if(empty.properties.length)empty.pulses=await readInfraPulse(empty.properties.map(p=>p.id)).catch(()=>({}));
   return empty;
-},["gth-market-decision-v1"],{revalidate:600});
+},["gth-market-decision-v2"],{revalidate:600});
 
 export async function readMarketDecision(slug:string):Promise<MarketDecision|null> {
   const snapshot=await cachedRead(slug);

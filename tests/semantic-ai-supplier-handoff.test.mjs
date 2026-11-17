@@ -5,7 +5,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("native AI uses a real 384-dimension gte-small session and bounded source-verified index",()=>{
  const edge=read("supabase/functions/gth-semantic-intelligence/index.ts");
- const sql=read("supabase/migrations/20261117120500_gth_semantic_public_index.sql");
+ const sql=read("supabase/migrations/20261117101626_gth_semantic_public_index.sql");
  assert.match(edge,/new Supabase\.ai\.Session\("gte-small"\)/);
  assert.match(edge,/raw\.length!==384/);
  assert.match(edge,/BATCH_MAX = 3/);

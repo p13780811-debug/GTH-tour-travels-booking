@@ -8,6 +8,10 @@ on:
       - "src/lib/search/**"
       - "src/app/api/tender/**"
       - "src/app/search/**"
+      - "supabase/functions/gth-semantic-intelligence/**"
+      - "supabase/migrations/*semantic*.sql"
+      - "tests/semantic/**"
+      - "tests/market-locality-evidence.test.mjs"
       - "tests/market-booking-handoffs.test.mjs"
       - "tests/semantic-ai-supplier-handoff.test.mjs"
       - "tests/connected-intent.test.mjs"
@@ -25,7 +29,7 @@ jobs:
         with:
           node-version: "22"
       - name: Verify independent booking/search and multi-sector intent
-        run: node --test tests/market-booking-handoffs.test.mjs tests/connected-intent.test.mjs tests/semantic-ai-supplier-handoff.test.mjs
+        run: node --test tests/market-locality-evidence.test.mjs tests/market-booking-handoffs.test.mjs tests/connected-intent.test.mjs tests/semantic-ai-supplier-handoff.test.mjs
   app-production-build:
     runs-on: ubuntu-latest
     timeout-minutes: 18
@@ -45,3 +49,25 @@ jobs:
         run: npx tsc --noEmit
       - name: Production Next build
         run: npm run build
+  semantic-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_PASSWORD: temporary-ci-only}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify semantic source withdrawal, expiry and anonymous isolation
+        env: {PGPASSWORD: temporary-ci-only}
+        run: |
+          set -euo pipefail
+          for sql in tests/semantic/bootstrap.sql supabase/migrations/20261117101626_gth_semantic_public_index.sql supabase/migrations/20261117104931_semantic_public_osm_hotel_path.sql supabase/migrations/20261117132330_semantic_service_role_only_access.sql supabase/migrations/20261117132526_semantic_source_revalidation.sql tests/semantic/assertions.sql; do
+            psql -h localhost -U postgres -d postgres -X -v ON_ERROR_STOP=1 -f "$sql"
+          done

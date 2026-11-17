@@ -49,14 +49,14 @@ function sourceFromRow(sector:Sector,r:Record<string,unknown>):Source|null {
   deadline=new Date(raw).toISOString();
  }else if(sector==="property"){
   // A recorded regulator link alone does NOT imply source verification.
-  if(r.verified!==true||!clean(r.official_source_reference,90))return null;
+  if(r.verified!==true||r.status==="archived"||r.source_type==="rera"||!clean(r.official_source_reference,90))return null;
  }else {
   if(osm&&r.source_license!=="ODbL-1.0")return null;
   if(sector==="attraction"&&r.is_public!==true)return null;
   if(sourceUrl!=="https://www.openstreetmap.org/"+id)return null;
  }
  const excerpt=sector==="tender"?"Published public procurement notice: "+title+". "+(city??country)+". Check issuing authority and closing date.":
-  sector==="property"?"Verified registry project "+title+". Registration "+clean(r.official_source_reference,90)+". "+(city??"India")+". Not an offer for sale.":
+  sector==="property"?"Source-attributed registry record "+title+". Registration "+clean(r.official_source_reference,90)+". "+(city??"India")+". Not an offer for sale.":
   sector==="attraction"?"Mapped attraction "+title+". "+(city??country)+". OpenStreetMap directory location; no ticket inventory.":
   "Mapped accommodation "+title+". "+(city??country)+". OpenStreetMap directory; confirm hotel with booking provider.";
  if(path.length>190||excerpt.length<8||excerpt.length>1200)return null;
@@ -106,7 +106,7 @@ async function main(req:Request):Promise<Response>{
  const offset=input.offset===undefined?0:Number(input.offset);
  if(!SECTORS.has(sector)||!Number.isSafeInteger(offset)||offset<0||offset>1000)return json({error:"Invalid indexing scope"},400);
  const select=sector==="tender"?"id,title,region,country_code,status,is_public,source_verified,source_reference,source_url,deadline_at":
-  sector==="property"?"id,title,slug,city,country,verified,official_source_reference,official_source_url":
+  sector==="property"?"id,title,slug,city,country,verified,status,source_type,official_source_reference,official_source_url":
   sector==="attraction"?"source_id,name,city,country_code,source_license,source_url,is_public":
   "source_id,name,city,country_code,source_license,source_url,source";
  const table=sector==="property"?"properties":sector==="tender"?"tenders":sector==="attraction"?"gth_osm_attractions":"hotel_catalog";
