@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { Building2, FileSearch, Globe2, Hotel, MapPin, ShieldCheck } from "lucide-react";
 import { GTH_MARKETS, gthMarketPath, marketsForCountry } from "@/lib/intelligence/markets";
 import { isPublicLaunch } from "@/lib/seo/site";
+import MarketBookingHandoffs from "@/components/intelligence/MarketBookingHandoffs";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function IntelligencePage({searchParams}:Props){
           A shared city label is not evidence of an approved project, distance or investment return.
         </p>
       </header>
+      <MarketBookingHandoffs city={suggested[0]?.city||""} countryCode={selected}/>
       <section className="mt-9 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7" aria-labelledby="region-heading">
         <h2 id="region-heading" className="flex items-center gap-2 text-lg font-semibold"><MapPin size={18}/> Your regional discovery</h2>
         <p className="mt-2 text-sm text-[var(--text-soft)]">
