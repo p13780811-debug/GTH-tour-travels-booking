@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseGthIntent, connectedIntentLinks} from '../src/lib/search/connected-intent.ts';
+import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
+// Node 22's security-test command does not use a --experimental-strip-types flag.
+const source = readFileSync(new URL('../src/lib/search/connected-intent.ts', import.meta.url), 'utf8');
+const js = stripTypeScriptTypes(source, { mode: 'strip' });
+const { parseGthIntent, connectedIntentLinks } = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
 const places=['Mumbai','Kolkata','Dubai','London'];
 test('Dubai cross-sector query preserves unknown currency and requires verification',()=>{
   const plan=parseGthIntent('Dubai mein 5 crore ka luxury apartment jiske paas naya government tender aur metro project pass hua ho',places);
