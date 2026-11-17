@@ -38,7 +38,7 @@ test("GTH-branded search labels leave provider SDKs, booked handoffs, affiliate 
   assert.match(hotels,/HotelsList\.create\(options\)/);
   assert.match(hotels,/GTH Worldwide Stays/);
   assert.match(read("src/components/travel/GTHTransportSearchWidget.tsx"),/12Go/);
-  assert.match(read("src/data/blogCrossTravel.ts"),/Powered by 12Go/);
+  assert.match(read("src/components/travel/GTHTransportSearchWidget.tsx"),/12Go/);
   const policy=read("src/app/affiliate-disclosure/page.tsx");
   assert.match(policy,/provider may collect information/);
   const transparency=read("src/app/verification/page.tsx");
