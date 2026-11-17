@@ -44,7 +44,7 @@ export default function HotelBookingLinkReview(){
  }
  return <section aria-labelledby="hotel-affiliate-review" className="mt-10 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
   <div className="flex items-center gap-2"><ShieldCheck size={18}/><h2 id="hotel-affiliate-review" className="text-xl font-semibold">Exact hotel affiliate matches</h2></div>
-  <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Review the original OSM hotel identity, matching supplier property ID, and Travelpayouts-approved affiliate URL. This queue is private. Generic city search links must never be approved as hotel booking links.</p>
+  <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Review the original OSM hotel identity, matching supplier property ID, and approved affiliate URL. This queue is private. Generic city search links must never be approved as hotel booking links.</p>
   <p role="status" className="mt-3 text-sm text-[var(--text-soft)]">{message}</p>
   {token&&items.length===0&&<p className="mt-4 text-sm">No pending exact-property matches in this review window.</p>}
   <div className="mt-5 space-y-4">
