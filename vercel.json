@@ -51,5 +51,11 @@
       "feat/tender-one-click-bid-boq-20261117": false,
       "feat/infra-pulse-event-shockwave": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/stadium-predictions",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
