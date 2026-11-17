@@ -127,7 +127,7 @@ export default async function MicroLocalityPage({params}:PageProps){
       <p className="mt-2 text-xs text-[var(--text-soft)]">These offers require separate published and verified inventory data. A RERA registration alone is never a sale offer.</p>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2">{s.offers.map(o=><li key={o.id} className="rounded-xl border border-[var(--border)] p-4">
         <Link href={"/real-estate/"+o.slug} className="font-semibold underline">{o.propertyTitle}</Link>
-        <p className="mt-2 text-sm">{new Intl.NumberFormat("en",{style:"currency",currency:o.currency,maximumFractionDigits:0}).format(o.price)}</p>
+        <p className="mt-2 text-sm">{o.currency+" "+o.price.toLocaleString("en",{maximumFractionDigits:0})}</p>
       </li>)}</ul>
     </section>}
     <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-5" aria-labelledby="local-tenders-title">
