@@ -26,6 +26,8 @@ jobs:
             src/components/Footer.tsx \
             src/app/real-estate/layout.tsx \
             ':(literal)src/app/real-estate/[slug]/' \
+            ':(exclude,literal)src/app/real-estate/[slug]/[region]/page.tsx' \
+            ':(exclude,literal)src/app/real-estate/[slug]/[region]/[locality]/page.tsx' \
             src/app/real-estate/admin/ \
             src/app/real-estate/post-property/ \
             src/app/real-estate/portfolio/ \
@@ -107,6 +109,7 @@ jobs:
             ':!src/lib/real-estate/registry-search.ts' \
             ':!src/lib/real-estate/registry-reader.ts' \
             ':!src/lib/real-estate/global-registry.ts' \
+            ':!src/lib/real-estate/micro-market.ts' \
             ':!src/app/api/real-estate/search/route.ts' \
             ':!src/app/api/real-estate/enquiries/route.ts' \
             ':!src/app/api/real-estate/submissions/route.ts' \
