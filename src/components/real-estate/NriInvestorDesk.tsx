@@ -41,7 +41,7 @@ export default function NriInvestorDesk(){
     <label className="text-sm">International mobile (+country code)<input required type="tel" pattern="\\+[1-9][0-9]{7,14}" placeholder="+919876543210" className={field} value={phone} onChange={e=>setPhone(e.target.value)}/></label>
     <label className="flex items-center gap-2 text-sm"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/> I consent to contact about this inquiry.</label>
     <button type="submit" disabled={busy} className="gth-btn gth-btn-gold sm:col-span-2">{busy?"Submitting…":"Request priority investor callback"}</button>
-   </form>:<div className="flex flex-wrap gap-3"><a className="gth-btn" href={"mailto:official@gthproglobal.com?subject="+encodeURIComponent("GTH PRO NRI investor inquiry")+"&body="+encodeURIComponent(summary)}>Email GTH PRO</a><button type="button" className="gth-btn" onClick={()=>navigator.clipboard.writeText(summary).then(()=>setStatus("WhatsApp-ready inquiry copied.")).catch(()=>setStatus("Copy unavailable."))}>Copy WhatsApp-ready message</button></div>}
+   </form>:<div className="flex flex-wrap gap-3"><a className="gth-btn" href={"mailto:official@gthproglobal.com?subject="+encodeURIComponent("GTH PRO NRI investor inquiry")+"&body="+encodeURIComponent(summary)}>Email GTH PRO</a><a className="gth-btn" href={"https://api.whatsapp.com/send?text="+encodeURIComponent(summary)} target="_blank" rel="noopener noreferrer">Open WhatsApp message</a></div>}
    {status&&<p role="status" className="text-sm">{status}</p>}
   </div>}
  </section>;
