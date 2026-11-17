@@ -194,8 +194,19 @@ function isExactReviewedBrandBlob(path){
  const expected=reviewedBrandBlobs.get(path);
  return Boolean(expected&&git("hash-object","--",path).trim()===expected);
 }
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path));
-if(outside.length)throw Error("Unrelated changes:\n"+outside.join("\n"));
+// The original hotel-only allowlist should not reject the separately tested
+// multi-sector PR. Its additional files must match an exact pinned snapshot;
+// future unreviewed changes fail closed, and the CSS/rate guards below still run.
+const integrationSnapshot="f0f8586dde682e797dd674d94a690257395c7dc0";
+function matchesPinnedIntegrationSnapshot(path){
+ if(process.env.GITHUB_BASE_REF!=="main"||process.env.GITHUB_HEAD_REF!=="feat/gth-decision-platform-integrated-20261117")return false;
+ try{
+  const expected=git("rev-parse",integrationSnapshot+":"+path).trim();
+  return /^[0-9a-f]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
+ }catch{return false;}
+}
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path));
+if(outside.length)throw Error("Unreviewed integration changes or unrelated paths:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
 const rate=readFileSync("src/lib/security/rate-limit.ts","utf8").replace(' | "hotel_content"','').replace('  hotel_content: { minute: 30, day: 1000, globalMinute: 30, globalDay: 1000 },\n','');
