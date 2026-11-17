@@ -89,7 +89,7 @@ test("manifest is a static source-grounded >500-word public document with offici
   assert.match(p,/supplier|provider/i);
   assert.match(p,/not automatically accepted/i);
   assert.match(p,/until they are merged, successfully deployed and checked/i);
-  assert.doesNotMatch(p,/"use client"|fetch\(|createClient\(|<style|style=\{|guaranteed indexing|automatic certification/i);
+  assert.doesNotMatch(p,/"use client"|fetch\(|createClient\(|<style|style=\{|indexing is guaranteed|automatic certification/i);
   assert.match(p,/SITE_CONFIG\.contactEmail/);
 });
 
