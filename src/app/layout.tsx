@@ -37,17 +37,17 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin()),
-  applicationName: "GTH PRO",
+  applicationName: "GTH PRO Global",
   icons: { apple: [{ url: "/app-icon/180", sizes: "180x180", type: "image/png" }] },
-  title: { default: "GTH PRO | Global Technical Hub", template: "%s" },
-  description: "GTH PRO unites Travel, Real Estate, Tender Intelligence and worldwide ticket-source discovery with source-aware research and booking handoffs.",
-  keywords: ["GTH PRO", "travel discovery", "property marketplace", "tender intelligence", "worldwide event tickets", "stadium ticket guides"],
+  title: { default: "GTH PRO Global | Travel, Real Estate, Tenders & Worldwide Tickets", template: "%s" },
+  description: "GTH PRO Global connects travel and supplier booking handoffs, property research and enquiries, public tender intelligence, and worldwide ticket-source discovery.",
+  keywords: ["GTH PRO Global", "Global Technical Hub", "Etios Profession", "travel booking handoffs", "flight and hotel search", "bus and train travel", "cruise discovery", "real estate registry research", "property leads", "public tenders", "procurement intelligence", "worldwide event tickets"],
   robots: publicLaunch
     ? { index: true, follow: true }
     : { index: false, follow: false, nocache: true },
   openGraph: {
-    title: "GTH PRO — One Global Ecosystem. Four Pillars.",
-    description: "Global Technical Hub for travel, real estate, tender intelligence and worldwide ticket sources.",
+    title: "GTH PRO Global — Four Pillars of Digital Discovery",
+    description: "Operating digital platform for global travel research, independent supplier booking links, real estate, tender intelligence and ticket-source guides.",
     images: [{ url: "/images/global-earth.jpg", alt: "GTH PRO — Global Technical Hub" }],
     type: "website",
     siteName: "GTH PRO",
@@ -55,8 +55,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GTH PRO — Global Technical Hub",
-    description: "Discover travel, property markets, tender intelligence and event ticket sources.",
+    title: "GTH PRO Global — Four Connected Platforms",
+    description: "Discover global flights, hotels, tours, transport and cruises alongside property records, public tenders and event ticket sources.",
     images: ["/images/global-earth.jpg"],
   },
 };
