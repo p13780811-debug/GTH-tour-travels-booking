@@ -10,15 +10,22 @@ import PropertyImage from "./PropertyImage"
 import { projectPhoto } from "@/lib/property-media/published-media"
 import SavePropertyButton from "./SavePropertyButton"
 import styles from "./Explorer.module.css"
+import ViralCardGenerator from "@/components/share/ViralCardGenerator"
+import {displayCurrency,type InvestorCurrency,INR_PER_UNIT} from "@/lib/real-estate/investor-currency"
 
-export default function ExplorerCard({ property: p, selected, compareFull, onCompare, onInfo }: {
+export default function ExplorerCard({ property: p, selected, compareFull, onCompare, onInfo, currency }: {
   property: ExplorerProperty; selected: boolean; compareFull: boolean;
-  onCompare: () => void; onInfo: (kind: "ranking" | "verification") => void;
+  onCompare: () => void; onInfo: (kind: "ranking" | "verification") => void; currency: InvestorCurrency;
 }) {
   const [mediaFailed,setMediaFailed]=useState(false)
   const url = `/real-estate/${encodeURIComponent(p.slug)}`
   const score = coverage(p).score
   const registry = p.registry_only || p.data_quality_limited
+  const inventoryCurrency = p.inventory_currency as InvestorCurrency | undefined
+  const numericPrice = Number(p.inventory_min_price)
+  const knownCurrency = inventoryCurrency && Object.prototype.hasOwnProperty.call(INR_PER_UNIT,inventoryCurrency)
+  const converted = !registry && knownCurrency && Number.isFinite(numericPrice) && numericPrice>0
+    ? displayCurrency(numericPrice,inventoryCurrency,currency) : null
   if(mediaFailed || !isPropertyVisualCard(p))return null // A broken approved source cannot degrade into a misleading property-image card.
   return <article className={styles.card}>
     <div className={styles.cardMedia}><Link href={url} aria-label={`Open ${p.title}`}><PropertyImage slug={p.slug} src={p.image} published={projectPhoto(p.publishedMedia||[])} alt={p.title} district={p.district} locality={p.location || p.city} propertyType={p.property_type} reraId={p.rera_id} className={styles.approvedImage} onMediaError={()=>setMediaFailed(true)} /></Link><span className={styles.cardStatus}>{Number(p.active_inventory_count) > 0 ? "Reviewed inventory" : registry ? "Registry record" : "Property record"}</span><SavePropertyButton slug={p.slug} title={p.title} className={styles.save} /></div>
@@ -27,9 +34,12 @@ export default function ExplorerCard({ property: p, selected, compareFull, onCom
       <p className={styles.location}><MapPin size={13} />{[known(p.location) || known(p.city) || p.district, known(p.country)].filter(Boolean).join(" · ") || "Location not recorded"}</p>
       <p className="mt-2 text-xs text-[var(--text-soft)]">{p.rera_id ? (p.official_source_url ? "Registry reference · official source linked" : "Registry reference recorded · verify at source") : "Registration evidence not recorded"}{p.last_verified_at && p.verified ? " · GTH review dated" : ""}</p>
       <dl className={styles.recordFacts}><div><dt>Registration</dt><dd>{p.rera_id || "Not recorded"}</dd></div><div><dt>Recorded entity</dt><dd>{p.developer || p.builder_name || "Not recorded"}</dd></div></dl>
-      <div className={styles.cardNumbers}><strong>{registry ? "Price on request" : p.formatted_price || "Price on request"}</strong><div><span><BedDouble size={14} />{p.beds || "—"}<small>beds</small></span><span><Maximize size={14} />{p.sqft ? p.sqft.toLocaleString("en-IN") : "—"}<small>sq ft</small></span></div></div>
+      <div className={styles.cardNumbers}><strong>{converted || (registry ? "Price on request" : p.formatted_price || "Price on request")}</strong><div><span><BedDouble size={14} />{p.beds || "—"}<small>beds</small></span><span><Maximize size={14} />{p.sqft ? p.sqft.toLocaleString("en-IN") : "—"}<small>sq ft</small></span></div></div>
       <button className={styles.rank} onClick={() => onInfo("ranking")}><Sparkles size={14} /><span>Record coverage</span><strong>{score}<small>/100</small></strong><ArrowUpRight size={13} /></button>
       <div className={styles.cardBottom}><label title="Compare up to three properties"><input type="checkbox" aria-label={`Compare ${p.title}`} checked={selected} disabled={!selected && compareFull} onChange={onCompare} /><span>{selected ? <><Check size={13} />Selected</> : "Compare"}</span></label><Link href={url}>View details<ArrowUpRight size={14} /></Link></div>
+      {converted && inventoryCurrency!==currency && <p className="text-xs text-[var(--text-soft)]">Illustrative static FX conversion from {inventoryCurrency}; not a live rate or offer.</p>}
+      {p.is_featured_gold === true && p.verified === true && <span className="gth-badge-gold text-xs">GTH Verified Gold · Independently reviewed</span>}
+      <ViralCardGenerator kind="property" title={p.title} subtitle={[p.city,p.country].filter(Boolean).join(" · ")} price={converted||undefined} path={url}/>
       <HidePropertyButton slug={p.slug} title={p.title} />
       <PropertyLeadActions property={{ id: Number(p.id), title: p.title, slug: p.slug, rera_id: p.rera_id }} compact />
     </div>
