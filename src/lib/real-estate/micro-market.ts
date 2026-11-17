@@ -88,8 +88,16 @@ function point(value:{lat:number|null;lng:number|null}):value is {lat:number;lng
     Number.isFinite(value.lat)&&Number.isFinite(value.lng)&&Math.abs(value.lat)<=90&&Math.abs(value.lng)<=180;
 }
 function projectAnchor(records:LocalProject[]):{lat:number;lng:number}|null{
+  const districts=new Set(records.map(p=>segmentSlug(p.district||"")).filter(Boolean));
+  // A village name can appear in multiple districts. Without an explicit
+  // district path or independently sourced locality anchor, no shared centroid.
+  if(districts.size!==1)return null;
   const points=records.filter((p):p is LocalProject & {lat:number;lng:number}=>point(p));
   if(points.length<2)return null;
+  const distinct=new Set(points.map(p=>p.lat.toFixed(4)+","+p.lng.toFixed(4)));
+  // The recovered 812 rows sometimes copy the same coordinate across unrelated
+  // projects. One repeated point is not independent evidence of a 5km hotel area.
+  if(distinct.size<2)return null;
   const sortedLat=points.map(p=>p.lat).sort((a,b)=>a-b),sortedLng=points.map(p=>p.lng).sort((a,b)=>a-b);
   const mid=Math.floor(points.length/2);
   const center={lat:sortedLat[mid],lng:sortedLng[mid]};
