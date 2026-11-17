@@ -5,12 +5,12 @@ import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
   title: "GTH PRO Global Ecosystem Manifest | Four Connected Digital Platforms",
-  description: "Read the audited public operating model of GTH PRO Global: travel booking handoffs, real estate discovery, procurement intelligence, worldwide tickets, technical architecture and data provenance.",
+  description: "Live Worldwide Booking Engine with millions of supplier-network accommodation listings, flights, hotels, cruises, trains and buses; Real Estate buyer intelligence, B2B leads, tender eligibility and worldwide tickets.",
   alternates: { canonical: siteUrl("/gth-ecosystem-manifest") },
   robots: { index: isPublicLaunch(), follow: true },
   openGraph: {
-    title: "GTH PRO Global | Digital Ecosystem and Architecture Manifest",
-    description: "An evidence-based guide to four operating GTH PRO platforms, supplier boundaries, source data and public technology.",
+    title: "GTH PRO Global | Live Worldwide Booking Engine & Four-Pillar Intelligence",
+    description: "Worldwide supplier booking handoffs and millions-scale partner accommodation coverage, plus real estate intelligence, public tender tools and global ticket discovery.",
     url: siteUrl("/gth-ecosystem-manifest"),
     siteName: "GTH PRO Global",
     type: "article",
@@ -21,17 +21,17 @@ const pillars = [
   {
     name: "Worldwide Travel",
     href: "/travel",
-    description: "GTH PRO provides flight search, hotel discovery, tours and activities, cruise and sightseeing research, bus and train search, transfers, car rental guidance and destination pages. Visitors use the GTH PRO interface to compare routes or browse places, then continue to the relevant supplier or affiliate booking environment. A hotel directory record does not confirm a room, and flight search observations are not issued tickets. Providers control live inventory, payment, cancellation policies and fulfilment.",
+    description: "The Live Worldwide Booking Engine connects real-time provider-operated search and handoffs for worldwide flights, hotels, cruises, trains, buses, ferries and ground transport, plus tours, activities, airport transfers, car rentals and destination planning. The supplier-side hotel network spans millions of properties: Nuitee publicly reports 2.9 million accommodation properties worldwide. GTH PRO offers the search and referral entry points; Nuitee, Aviasales and other suppliers control final dates, availability, rates, payment and fulfilment. The global supplier inventory is not restricted to the local hotel directory.",
   },
   {
     name: "Global Real Estate",
     href: "/real-estate",
-    description: "The property gateway connects market research, recorded project registry references, buyer planning tools, comparison, saving and enquiry workflows. Owners, agents and developers can submit information for review. Public registration records, reviewed marketplace listings and additional GTH verification are different statuses. Neither a project reference nor an enquiry constitutes a verified title, current available unit, licensed brokerage instruction or guaranteed transaction.",
+    description: "The Global Real Estate platform maintains 12,500+ recorded property references and connects source-backed registry discovery, regional market and locality evidence, property comparisons, shortlist and research workspaces, mortgage EMI, affordability and rental-return scenarios, price-evidence tracking, property enquiries, project-claim review, broker onboarding, listings and private customer relationship management. Buyer, owner and administrator access are separate. The count refers to records; official regulator approval, GTH verification, lawful title and available units are different checks and are never implied for every record.",
   },
   {
     name: "Public Tender Intelligence",
     href: "/tender",
-    description: "The procurement gateway displays source-attributed tender records, jurisdiction and sector filters, document references and bid-readiness guidance. Public notices have deadlines and issuing authorities that require fresh source checks. GTH PRO is an independent research and preparation interface, not a government publishing authority, electronic procurement submission system or procurement award guarantor.",
+    description: "The multi-country procurement gateway currently stores 4,000+ published public tender records. It supports jurisdiction and sector discovery, source references, deadline research, tender comparisons, eligibility self-assessment, document checklists, pre-bid attendance and site-visit preparation, application-readiness stages and private assistance enquiries. The first-party Tender Intelligence Workspace distinguishes reviewed source requirements from suggested planning tasks. Government issuers control official notices, corrigenda, applications, decisions and awards; an automated readiness score cannot certify eligibility.",
   },
   {
     name: "Worldwide Tickets and Venues",
@@ -46,13 +46,15 @@ export default function EcosystemManifestPage() {
       <header className="border-b border-[var(--border)] bg-[var(--card)]">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">GTH PRO Global · Public Ecosystem Manifest</p>
-          <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight sm:text-5xl">One operating digital ecosystem. Four connected discovery platforms.</h1>
+          <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight sm:text-5xl">Live worldwide booking infrastructure. Four connected global intelligence platforms.</h1>
           <p className="mt-5 max-w-4xl text-base leading-8 text-[var(--text-soft)]">
             GTH PRO (Global Technical Hub) is a multi-sector digital platform and an initiative of Etios Profession.
-            It is not a generic software demo or local-only project. Its published website connects first-party
-            research and business enquiries to independent travel suppliers, public property records, procurement
-            sources and event ticket information. This page describes publicly released functionality, not unreleased
-            development branches or future business commitments.
+            It is not a local software demo. Its Live Worldwide Booking Engine connects users to supplier-hosted
+            real-time travel searches and provider-operated checkout for worldwide flights, hotels, cruises, trains,
+            buses and ground transport, including accommodation networks with millions of supplier listings.
+            Alongside travel, GTH PRO operates first-party Real Estate research, direct business enquiries,
+            tender eligibility and procurement intelligence, plus worldwide ticket-source discovery.
+            This manifest distinguishes proven public capabilities from pending releases and external suppliers.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/verification" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-5 font-semibold">Verification & transparency</Link>
@@ -74,6 +76,28 @@ export default function EcosystemManifestPage() {
         </div>
       </section>
 
+      <section aria-labelledby="manifest-scale" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        <h2 id="manifest-scale" className="text-2xl font-semibold">Live travel supplier network, not a static hotel database</h2>
+        <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
+          GTH PRO Global operates a Live Worldwide Booking Engine for real-time, provider-operated
+          search and handoff across millions-scale partner inventories, with worldwide flights,
+          hotels, cruises, trains, buses, ferries and ground transport in its travel discovery
+          ecosystem. The hotel booking white-label is hosted by Nuitee; Aviasales supports flight
+          search, while 12Go-connected routes support multimodal travel handoff. Tours, cruises
+          and experiences may use separately selected partner search or product links.
+          The network supplies availability, final rates, checkout and fulfilment. GTH PRO does not
+          claim to store, own or individually verify millions of properties.
+        </p>
+        <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
+          For scale context, <a href="https://nuitee.com/" target="_blank" rel="noopener noreferrer"
+          className="font-semibold text-[var(--gold)] underline">Nuitee's public supplier overview</a>
+          reports approximately <strong>2.9 million worldwide accommodation properties</strong>.
+          This is Nuitee's overall supplier-network figure, not a measured count of currently
+          searchable, bookable GTH PRO hotel offers. Likewise, transport and event sources have
+          provider-specific routes, geographic support and inventory limits. Final booking search
+          and availability always depend on the selected itinerary and the provider.
+        </p>
+      </section>
       <section aria-labelledby="manifest-architecture" className="border-y border-[var(--border)] bg-[var(--card)]/60">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
           <h2 id="manifest-architecture" className="text-2xl font-semibold">Architecture, data and operating boundaries</h2>
@@ -99,12 +123,15 @@ export default function EcosystemManifestPage() {
             that all sectors share one verified transaction inventory.
           </p>
           <p className="mt-4 max-w-5xl text-sm leading-8 text-[var(--text-soft)]">
-            A database review on 17 November 2026 observed 12,587 property records,
-            4,104 published public tender records, 21,700 hotel directory entries and
-            174,819 OpenStreetMap attraction records. These are source-data counts,
-            not confirmed available properties, independently approved hotels, bookable attractions,
-            official permissions for every source or completed commercial orders. Geographic coverage
-            and freshness depend on each feed, regulator and publisher.
+            A read-only database audit on 17 November 2026 found over 12,500 recorded property
+            references and over 4,000 published public tender records; the same platform also
+            maintains community-mapped attraction references. These are first-party research and
+            workflow datasets, not counts of independently verified sale units, confirmed procurement
+            opportunities or completed orders. The Live Worldwide Booking Engine is fundamentally
+            different: it sends itinerary searches to external providers and partner white labels.
+            Its reach is governed by live supplier coverage, not by rows in the GTH PRO database.
+            The provider-hosted reservation or ticket system is the final authority for availability,
+            taxes, booking terms and payment.
           </p>
         </div>
       </section>
