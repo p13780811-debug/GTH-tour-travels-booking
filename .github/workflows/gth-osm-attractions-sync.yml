@@ -1,28 +1,8 @@
 name: GTH Worldwide Open Attractions — Licensed ODbL Sync
+# EMERGENCY PAUSE 2026-11-18: intentionally no schedule or push triggers.
+# Import code preserved for future audited, explicitly approved restart.
 on:
-  schedule:
-    # Once hourly at a non-peak UTC minute. Registry selects the
-    # corresponding continental low-traffic window and rotates countries.
-    - cron: "37 * * * *"
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/gth-osm-attractions-sync.yml"
-      - "scripts/attractions/import_osm_attractions.py"
-      - "scripts/attractions/geofabrik_registry.py"
-      - "supabase/functions/gth-osm-attractions-ingest/**"
   workflow_dispatch:
-    inputs:
-      region:
-        description: "Optional official Geofabrik region (validated against live index)"
-        required: false
-        type: string
-      mode:
-        description: "Preview with no write, or signed import"
-        required: true
-        type: choice
-        options: [dry-run, import]
-        default: dry-run
 permissions:
   contents: read
   id-token: write
@@ -31,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   import-real-source-places:
-    if: github.ref == 'refs/heads/main'
+    if: ${{ false }} # EMERGENCY: never execute the importer
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
