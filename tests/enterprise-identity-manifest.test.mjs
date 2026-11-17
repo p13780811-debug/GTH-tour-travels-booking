@@ -55,6 +55,12 @@ test("one factual Organization and WebSite graph accurately describes four audit
   const org=data["@graph"].find(n=>n["@type"]==="Organization");
   const site=data["@graph"].find(n=>n["@type"]==="WebSite");
   assert.ok(org&&site);
+  assert.match(org.description,/Live Worldwide Booking Engine/);
+  assert.match(org.description,/global flights, hotels, cruises, trains, buses and ground transport/i);
+  assert.match(org.description,/millions of property listings|millions of accommodation listings/i);
+  assert.doesNotMatch(JSON.stringify(data),/21,700|21k hotels/i);
+  assert.match(JSON.stringify(data),/eligibility self-assessment/i);
+  assert.match(JSON.stringify(data),/mortgage|affordability/i);
   assert.equal(site.publisher["@id"],org["@id"]);
   assert.equal(org.email,"official@gthproglobal.com");
   assert.equal(org.hasOfferCatalog.itemListElement.length,4);
@@ -81,10 +87,14 @@ test("manifest is a static source-grounded >500-word public document with offici
   const prose=p.replace(/<[^>]*>/g," ").replace(/\{[^{}]*\}/g," ").replace(/import[^\n]*\n/g," ");
   assert.ok(prose.trim().split(/\s+/).length>=500,"Manifest must contain at least 500 words");
   for(const term of ["Worldwide Travel","Global Real Estate","Public Tender Intelligence",
-    "Worldwide Tickets and Venues","Etios Profession","Supabase","12,587","4,104","21,700","174,819"]){
+    "Worldwide Tickets and Venues","Etios Profession","Supabase","12,500","4,000","2.9 million","Live Worldwide Booking Engine"]){
     assert.ok(p.includes(term),"Manifest should describe audited evidence: "+term);
   }
-  assert.match(p,/GTH_PUBLIC_LAUNCH_ENABLED|isPublicLaunch\(\)/);
+  assert.doesNotMatch(p,/21,700|21k hotels|local hotel inventory cap/i);
+  assert.match(p,/million|millions/i);
+  assert.match(p,/broker onboarding|broker/i);
+  assert.match(p,/eligibility self-assessment/i);
+    assert.match(p,/GTH_PUBLIC_LAUNCH_ENABLED|isPublicLaunch\(\)/);
   assert.match(p,/canonical: siteUrl\("\/gth-ecosystem-manifest"\)/);
   assert.match(p,/supplier|provider/i);
   assert.match(p,/not automatically accepted/i);
