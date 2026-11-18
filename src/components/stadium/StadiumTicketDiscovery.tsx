@@ -38,7 +38,9 @@ export default function StadiumTicketDiscovery({
     <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
       {hasVerified
         ? "This event has an individually verified marketplace listing. Admission details remain the seller's responsibility."
-        : "Official tickets not currently listed on GTH PRO for this exact match. This is not a claim that the event is sold out."}
+        : match
+          ? "Official tickets not currently listed on GTH PRO for this exact match. This is not a claim that the event is sold out."
+          : "Official match tickets not currently listed on GTH PRO for this venue. Check the organizer calendar for upcoming events and sales."}
     </p>
 
     <div className="mt-5 grid gap-4 md:grid-cols-2">
