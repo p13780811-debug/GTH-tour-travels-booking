@@ -55,7 +55,9 @@ permissions:
   contents: read
 concurrency:
   group: gth-app-unified-journey-${{ github.ref }}
-  cancel-in-progress: false
+  # Superseded PR revisions must not consume multiple 18-minute Chromium runs.
+  # The group remains scoped by github.ref; other branches are unaffected.
+  cancel-in-progress: true
 jobs:
   real-mobile-browser:
     runs-on: ubuntu-24.04
