@@ -128,6 +128,14 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   if (intent.placeId !== undefined && !placeId) return {status:"invalid",kind};
   if (kind === "city" && !placeId && !destination) return {status: "invalid", kind};
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);
+  // Never silently replace a supplied invalid/expired date with tomorrow.
+  // Defaults apply only when the traveller has not selected dates at all.
+  if((intent.checkIn!==undefined || intent.checkOut!==undefined) && dates.defaulted)
+    return {status:"invalid",kind};
+  // Likewise an invalid supplied room/guest value is not a booking for two.
+  if((intent.adults!==undefined && positive(intent.adults,20,0)===0) ||
+     (intent.rooms!==undefined && positive(intent.rooms,8,0)===0))
+    return {status:"invalid",kind};
   const adults = positive(intent.adults, 20, 2);
   const rooms = positive(intent.rooms, 8, 1);
   // The compact GTH form takes TOTAL adults across all rooms.
