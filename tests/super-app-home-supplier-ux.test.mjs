@@ -7,11 +7,14 @@ test("GTH PRO Home reuses full approved design and keeps private research, insta
  const page=read("src/app/app/page.tsx");
  for(const expected of [
   "GTH PRO Home","EcosystemHeroCarousel embedded","EcosystemUnifiedSearch appHome",
-  "EcosystemPillars appHome","EcosystemHub appHome","MobileSupplierShowcase",
-  "AppResearchQuickAccess","AppInstall",'MobileAppDashboard mode="tools"',
+  "EcosystemPillars appHome","MobileSupplierShowcase",
+  "AppResearchQuickAccess","AppInstall",'MobileAppDashboard mode="tools" compactHome',
   'href="/app/board"','href="/app/explore"',
  ])assert.ok(page.includes(expected),"Missing "+expected);
  assert.doesNotMatch(page,/loadMobileDiscovery\(\)|createClient\(|SERVICE_ROLE_KEY|NEXT_PUBLIC_.*SECRET/);
+ assert.doesNotMatch(page,/<EcosystemHub appHome\/>|Super App/);
+ assert.match(page,/GTH PRO · Global Technical Hub/);
+ assert.match(read("src/components/mobile/MobileAppDashboard.tsx"),/!compactHome && <div role="tablist"/);
  assert.match(read("src/app/page.tsx"),/return <FlagshipHome \/>/);
  assert.match(read("src/components/MobileNav.tsx"),/href: "\/app", appHref: "\/app", name: "Home"/);
  assert.match(read("src/components/mobile/AppInstall.tsx"),/beforeinstallprompt/);
@@ -57,6 +60,7 @@ test("Native horizontal rails preserve vertical gestures and image swipe uses do
 test("Existing route engines and app/search entry preserved; supplier category blog not misrouted",()=>{
  const search=read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx");
  const hub=read("src/app/mega-aggregator/EcosystemHub.tsx");
+ assert.match(search,/action="\/app\/search" method="get"/);
  assert.match(search,/appHome\?"\/app\/search":"\/search"/);
  assert.match(search,/!appHome\|\|option\.value!=="blog"/);
  assert.match(hub,/mobileAppHref\(service\.href\)/);
