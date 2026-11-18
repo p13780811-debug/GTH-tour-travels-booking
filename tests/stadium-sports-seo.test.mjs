@@ -61,3 +61,13 @@ test("Affiliate handoffs preserve existing route and date validation flows", () 
   assert.match(source, /seatgeek\.com/);
   assert.match(source, /url\.username \|\| url\.password \|\| url\.search \|\| url\.hash/);
 });
+
+
+test("Sports hub remains useful without third-party API approval or live ticket stock", () => {
+  assert.match(hub, /import \{ stadiums \} from "@\/lib\/travel\/stadiums"/);
+  assert.match(hub, /venue\.sports\.some\(sport => sportSegment\(sport\) === active\)/);
+  assert.match(hub, /"\/stadiums\/" \+ venue\.slug/);
+  assert.match(hub, /Stadium &amp; official-calendar guides/);
+  assert.match(hub, /Stadium information is not confirmation of an upcoming match or ticket inventory/);
+  assert.doesNotMatch(hub, /href="\/tours"|affiliate key|ODDS_API_KEY|SEATGEEK_CLIENT_ID|GEMINI_API_KEY/);
+});
