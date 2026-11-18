@@ -81,11 +81,16 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
         adults:String(data.get("adults")??""),rooms:String(data.get("rooms")??"")});
     };
     form.addEventListener("submit",onSubmit);
+    // Mirror the existing global day/night class only; never inject any CSS.
+    const syncTheme=()=>{doc.documentElement.className=`${document.documentElement.className} gth-hotel-widget-root`;};
+    const themeObserver=new MutationObserver(syncTheme);
+    syncTheme();
+    themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
     const height=()=>{frame.height=String(Math.min(1200,Math.max(110,doc.body.scrollHeight+24)));};
     const observer=new ResizeObserver(height);
     observer.observe(doc.body);
     height();
-    dispose.current=()=>{observer.disconnect();form.removeEventListener("submit",onSubmit);};
+    dispose.current=()=>{observer.disconnect();themeObserver.disconnect();form.removeEventListener("submit",onSubmit);};
     setLoading(false);setError("");
   }, [search]);
 
