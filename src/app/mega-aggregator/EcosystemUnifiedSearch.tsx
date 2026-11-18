@@ -1,6 +1,7 @@
 "use client";
 
 import {useState} from "react";
+import Link from "next/link";
 import {BriefcaseBusiness, Building2, Globe2, Plane, Search, Ticket} from "lucide-react";
 
 /** Uses the existing /search route and its validated pillar-specific routing.
@@ -16,6 +17,9 @@ const tabs = [
   {id:"tender", label:"Tenders", Icon:BriefcaseBusiness, initial:"tender"},
   {id:"ticket", label:"Tickets", Icon:Ticket, initial:"ticket"},
 ] as const;
+const platformRoutes:Record<Exclude<Pillar,"all">,string>={
+  travel:"/travel", property:"/real-estate", tender:"/tender", ticket:"/tickets",
+};
 const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>={
   all:[
     {value:"all",label:"All platforms"}, {value:"hotel",label:"Hotels"},
@@ -80,16 +84,19 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
         </div>
       </div>
 
-      <div role="group" aria-label="Select GTH PRO platform" className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        {tabs.map(({id,label,Icon})=>(
-          <button type="button" key={id} aria-pressed={pillar===id} onClick={()=>selectPillar(id)}
-            className={pillar===id
-              ?"gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold"
-              :"gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold"}>
+      <nav aria-label="Open GTH PRO platforms" className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        {tabs.map(({id,label,Icon})=>id==="all" ? (
+          <button type="button" key={id} aria-pressed={pillar==="all"} onClick={()=>selectPillar("all")}
+            className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
             <Icon size={16} aria-hidden="true"/> {label}
           </button>
+        ) : (
+          <Link key={id} href={platformRoutes[id]} prefetch={false}
+            className="gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
+            <Icon size={16} aria-hidden="true"/> {label}
+          </Link>
         ))}
-      </div>
+      </nav>
 
       <form action={appHome?"/app/search":"/search"} method="get" role="search" aria-label={appHome?"GTH PRO Home search":"Universal ecosystem search"}
         className="mt-4 grid min-w-0 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
