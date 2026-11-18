@@ -4,7 +4,7 @@
  */
 export type TicketDestination={
  id:string;name:string;region:string;sport:string;url:string;
- kind:"official-tickets"|"official-schedule"|"authorized-marketplace";
+ kind:"official-tickets"|"official-schedule"|"authorized-marketplace"|"regional-discovery";
 };
 export const ticketDestinations:readonly TicketDestination[]=[
  {id:"fifa",name:"FIFA tournament tickets",region:"Worldwide",sport:"Football",url:"https://www.fifa.com/tickets",kind:"official-tickets"},
@@ -32,6 +32,12 @@ export const ticketDestinations:readonly TicketDestination[]=[
  {id:"cricketaus",name:"Cricket Australia",region:"Australia",sport:"Cricket",url:"https://www.cricket.com.au/",kind:"official-schedule"},
  {id:"npb",name:"Japan professional baseball",region:"Japan",sport:"Baseball",url:"https://npb.jp/eng/",kind:"official-schedule"},
  {id:"ticketmaster",name:"Ticketmaster sports tickets",region:"Multiple markets",sport:"Multi-sport",url:"https://www.ticketmaster.com/sports",kind:"authorized-marketplace"},
+ {id:"mcc-lords",name:"Lord's MCC official ticket portal",region:"United Kingdom",sport:"Cricket",url:"https://tickets.lords.org/",kind:"official-tickets"},
+ {id:"bookmyshow-cricket",name:"BookMyShow cricket discovery",region:"India",sport:"Cricket",url:"https://in.bookmyshow.com/explore/cricket",kind:"regional-discovery"},
+ {id:"district-kolkata-sports",name:"District Kolkata sports discovery",region:"India",sport:"Multi-sport",url:"https://www.district.in/events/sports-events-in-kolkata-book-tickets",kind:"regional-discovery"},
+ {id:"ticketek-au-sports",name:"Ticketek Australia sport directory",region:"Australia",sport:"Multi-sport",url:"https://premier.ticketek.com.au/shows/genre.aspx?c=2053&langpref=en",kind:"regional-discovery"},
+ {id:"axs",name:"AXS event directory",region:"Multiple markets",sport:"Multi-sport",url:"https://www.axs.com/",kind:"regional-discovery"},
+ {id:"seatgeek",name:"SeatGeek event directory",region:"USA",sport:"Multi-sport",url:"https://seatgeek.com/",kind:"regional-discovery"},
 ] as const;
 export function validTicketDestination(url:string):boolean{
  try {const u=new URL(url);return u.protocol==="https:"&&!u.username&&!u.password&&!u.hash;}catch{return false;}
