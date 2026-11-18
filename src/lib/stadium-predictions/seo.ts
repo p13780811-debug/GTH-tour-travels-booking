@@ -78,6 +78,8 @@ function calendarMatches(): SportsSeoMatch[] {
   }));
 }
 const cachedDatabaseMatches = unstable_cache(async (day: string): Promise<SportsSeoMatch[]> => {
+  // Zero prediction-table queries until the migration/RLS release gate is enabled.
+  if (process.env.GTH_STADIUM_PREDICTIONS_DB_ENABLED !== "true") return [];
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return [];
