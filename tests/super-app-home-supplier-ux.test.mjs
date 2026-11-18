@@ -38,6 +38,17 @@ test("GTH PRO Home shows official Nuitee widget and honest photo-based city book
  for(const city of ["mumbai","kolkata","goa","london"])
   assert.ok(existsSync(new URL("../public/images/cities/"+city+".jpg",import.meta.url)),"Missing editorial asset "+city);
 });
+test("Never remove or gate real Nuitee supplier hotel cards from mobile Home again",()=>{
+ const home=read("src/components/mobile/MobileSupplierShowcase.tsx");
+ const sdk=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
+ assert.match(home,/import NuiteeHotelsListWidget from/);
+ assert.match(home,/<NuiteeHotelsListWidget id="gth-home-nuitee-mumbai"/);
+ assert.match(home,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
+ assert.match(home,/rows=\{1\} currency="INR"/);
+ assert.match(sdk,/HotelsList\.create\(options\)/);
+ assert.doesNotMatch(home,/HomeHotelBookingPreview|data-gth-compact-hotel-booking|useSyncExternalStore|matchMedia\(/);
+});
+
 test("Homepage tour/activities reuse genuine WeGoTrip source product, original photo and supplier URL",()=>{
  const home=read("src/components/mobile/MobileSupplierShowcase.tsx");
  const source=read("src/lib/tours/supplier-catalog.ts");
