@@ -22,30 +22,26 @@ test("mobile hotel search occupies available screen width using existing central
  assert.doesNotMatch(mobile,/#fff|#ffffff|background:\s*white|color:\s*white/);
 });
 
-test("isolated vendor search, theme sync, mobile full-window handoff remain functional",()=>{
- assert.match(search,/HOTEL_WIDGET_SCRIPT/);
- assert.match(search,/win\.LiteAPI\.SearchBar\.create/);
- assert.match(search,/onSearchClick: value => \{ if \(active\) search\(value\); \}/);
- assert.match(search,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
- assert.match(search,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
- assert.match(search,/new MutationObserver\(syncTheme\)/);
+test("first-party hotel form has no keystroke supplier API, styles or hidden rate iframe",()=>{
  assert.match(search,/srcDoc=\{searchDocument\}/);
- assert.match(supplier,/https:\/\/hotel\.gthproglobal\.com/);
+ assert.match(search,/id="gth-hotel-native-search"/);
+ assert.match(search,/resolveHotelRoute\(/);
+ assert.match(search,/window\.location\.assign\(result\.url\)/);
+ assert.match(search,/const embedResults = false/);
+ assert.match(search,/document\.querySelectorAll\('link\[rel="stylesheet"\]'\)/);
+ assert.doesNotMatch(search,/LiteAPI\.SearchBar|HOTEL_WIDGET_SCRIPT|hotelWidgetSearchParams|<style|style=\{/);
+ assert.match(supplier,/DEFAULT_HOTEL_BOOKING_ORIGIN = "https:\/\/hotel\.gthproglobal\.com"/);
 });
 
-test("supplier hotel search respects global dark tokens and loads them after vendor CSS",()=>{
+test("global CSS remains centralized while no supplier search SDK gets loaded",()=>{
  const dark=css.slice(css.indexOf("/* Supplier SearchBar can inject white field surfaces"));
  assert.ok(dark.includes("html.gth-hotel-widget-root.dark body.gth-hotel-search-widget"));
  for(const token of ["--card","--text","--text-soft","--border","--btn-bg","--btn-text"]){
    assert.ok(dark.includes("var("+token+")"),"reuse global token "+token);
  }
- assert.match(dark,/html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar \.field/);
- assert.match(dark,/html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar \.mobile-checkin/);
- assert.match(dark,/\.search-bar input::placeholder/);
- assert.match(dark,/color-scheme: dark/);
- assert.doesNotMatch(dark,/background:\s*(?:white|#fff(?:fff)?)\b/i);
- const sdkCreation=search.indexOf("await win.LiteAPI.SearchBar.create(");
- const stylesheetCopy=search.indexOf('for (const sheet of document.querySelectorAll');
- assert.ok(sdkCreation>0 && stylesheetCopy>sdkCreation,"GTH CSS must follow injected vendor styling");
- assert.match(search,/doc\.documentElement\.className =/);
+ assert.match(search,/gth-hotel-search-frame/);
+ assert.match(search,/onLoad=\{\(\) => loadSearch\(\)\}/);
+ assert.match(search,/cloneNode\(true\)/);
+ assert.doesNotMatch(search,/doc\.createElement\("style"\)|style=\{|\.style\./);
+
 });
