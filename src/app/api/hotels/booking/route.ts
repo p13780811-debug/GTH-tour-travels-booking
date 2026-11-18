@@ -27,9 +27,9 @@ export function GET(request: Request) {
     adults:params.get("adults")??undefined,rooms:params.get("rooms")??undefined,
     currency:params.get("currency")??undefined,
   });
-  if(result.status!=="ready")return new NextResponse(
-    result.status==="unmapped"?"Destination needs a reviewed Place ID. Select it on the White Label booking site.":"Invalid hotel booking destination or supplier ID.",
-    {status:result.status==="unmapped"?422:400,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"}}
+  if(result.status==="invalid")return new NextResponse(
+    "Invalid hotel booking destination or supplier ID.",
+    {status:400,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"}}
   );
   const response=NextResponse.redirect(result.url,307);
   response.headers.set("Cache-Control","no-store");
