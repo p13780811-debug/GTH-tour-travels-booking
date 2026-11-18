@@ -46,18 +46,23 @@ export async function GET(request: NextRequest) {
 
   if (!mode || !from || !to || !validDeparture(date) ||
       !people || !/^[1-8]$/.test(people)) {
-    return privateResponse(NextResponse.json(
-      { error: "Invalid journey details. Please use the GTH PRO journey form." },
-      { status: 400 },
-    ));
+    const page = mode === "bus" || mode === "train" || mode === "ferry" ? "/" + mode
+      : mode === "flight" ? "/flights" : "/travel";
+    const recovery = new URL(page, request.url);
+    recovery.searchParams.set("search", "invalid");
+    return privateResponse(NextResponse.redirect(recovery, 303));
   }
 
   const route = findBookawayRoute(mode, from, to);
   if (!route) {
-    return privateResponse(NextResponse.json(
-      { error: "No independently verified alternate route is currently configured for this journey." },
-      { status: 404 },
-    ));
+    // A stale or copied alternate link must not strand a traveller on raw JSON.
+    // Fall back to the existing validated 12Go journey resolver, never a
+    // guessed Bookaway route or a user-supplied external redirect.
+    const fallback=new URL("/go/transport/search",request.url);
+    for(const [key,value] of Object.entries({mode,from,to,date,people})){
+      fallback.searchParams.set(key,value);
+    }
+    return privateResponse(NextResponse.redirect(fallback,303));
   }
 
   // Fixed official host and audited route paths only: never accept a URL/path
