@@ -55,9 +55,14 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
   useEffect(() => { setCity(initialCity); setMessage(""); }, [initialCity]);
   const selected = useMemo(() => validateCity(city), [city]);
   const quickSearch = (event: FormEvent<HTMLFormElement>) => {
-    if (selected) return; // Native GET handoff, no new endpoint or credentials.
     event.preventDefault();
-    setMessage("Enter a valid city (2–80 letters) to explore stays.");
+    if (!selected) {
+      setMessage("Enter a valid city (2–80 letters) to explore stays.");
+      return;
+    }
+    // Date-free discovery must not send users into a failing OSM directory.
+    // The real booking provider owns hotel results, rates and final dates.
+    window.location.assign(trackedHotelCityHref(selected) || route("booking", selected));
   };
   const active = types.some(t => t.value === activeCategory) ? activeCategory : "";
   return (
@@ -79,11 +84,11 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
           </Link>
         </div>
 
-        <form action="/hotels#hotel-results" method="GET" onSubmit={quickSearch}
+        <form action="/hotels" method="GET" onSubmit={quickSearch}
           role="search" aria-label="Search hotel destinations without travel dates"
           className="gth-glass flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] p-2 shadow-sm sm:max-w-3xl">
           <Search className="ml-2 shrink-0 text-[var(--text-soft)]" size={22} aria-hidden="true" />
-          <input type="hidden" name="view" value="directory" />
+          <input type="hidden" name="view" value="booking" />
           <input name="city" type="search" value={city} onChange={event => { setCity(event.target.value); setMessage(""); }}
             aria-label="Hotel city or destination" aria-invalid={Boolean(message)} maxLength={80}
             required placeholder="Where would you like to stay?"
@@ -95,7 +100,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
         </form>
         {message && <p role="alert" className="mt-2 text-sm text-[var(--text)]">{message}</p>}
         <p className="mt-2 text-xs text-[var(--text-soft)]">
-          This searches GTH&apos;s independent hotel directory. To check room prices and availability, use Book &amp; Stay.
+          Search for bookable hotels through the connected provider. Room prices, availability and dates are confirmed by the provider; OSM directory research is separate.
         </p>
 
         <div className="mt-7 flex items-center justify-between gap-3">
@@ -138,7 +143,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
             {type.label}
           </Link>)}
         </nav>
-        {selected && <Link href={route("booking", selected)} prefetch={false}
+        {selected && <Link href={trackedHotelCityHref(selected)||route("booking", selected)} prefetch={false}
           className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[var(--gold)] underline underline-offset-4">
           <MapPin size={15} aria-hidden="true" /> Check rooms in {selected} <ChevronRight size={15} aria-hidden="true" />
         </Link>}
