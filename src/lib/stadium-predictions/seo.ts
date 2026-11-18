@@ -36,9 +36,9 @@ const dateOk = (value: unknown) =>
 const pathPart = (value: string) => value.normalize("NFKD").replace(/\p{M}/gu, "")
   .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90);
 export function sportSegment(value: string) {
-  if (/cricket/i.test(value)) return "cricket";
-  if (/football|soccer|premier league|epl/i.test(value)) return "football";
-  if (/tennis/i.test(value)) return "tennis";
+  if (/cricket|twenty20|\bt20\b|\bipl\b|big bash|test matches/i.test(value)) return "cricket";
+  if (/football|soccer|premier league|epl|uefa|la liga|bundesliga/i.test(value)) return "football";
+  if (/tennis|\batp\b|\bwta\b|wimbledon|roland.garros/i.test(value)) return "tennis";
   if (/basketball|nba/i.test(value)) return "basketball";
   if (/baseball|mlb/i.test(value)) return "baseball";
   if (/rugby/i.test(value)) return "rugby";
