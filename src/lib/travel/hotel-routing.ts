@@ -41,6 +41,7 @@ export function cleanHotelDestination(value: unknown): string | null {
   // are accepted as text but need a reviewed placeId to become a booking URL.
   if (cleaned.length < 2 || cleaned.length > 80 ||
       !/^[\p{L}\p{M}][\p{L}\p{M}\p{N}\s.'-]*$/u.test(cleaned)) return null;
+  if (cleaned.toLocaleLowerCase("en") === "me") return null;
   return cleaned;
 }
 
@@ -81,6 +82,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   const hotelId = intent.hotelId === undefined ? null : safeId(intent.hotelId);
   if (kind === "hotel" && !hotelId) return {status: "invalid", kind};
   const destination = cleanHotelDestination(intent.destination);
+  if (intent.placeId !== undefined && !safeId(intent.placeId, 255)) return {status:"invalid",kind};
   const placeId = safeId(intent.placeId, 255) ??
     (destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null);
   if (kind === "city" && !placeId) return destination
@@ -91,6 +93,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   const rooms = positive(intent.rooms, 8, 1);
   const fallbackGuests = adults * rooms <= 40 ? adults : 2;
   const occupancy = intent.occupancies ? normalizeHotelOccupancies(intent.occupancies) : null;
+  if (intent.occupancies && !occupancy) return {status:"invalid",kind};
   const occupancies: HotelOccupancy[] = occupancy ??
     Array.from({length: rooms}, () => ({adults: fallbackGuests, children: []}));
   const currency = ["INR","USD","EUR","GBP","AED","SGD","AUD","CAD","JPY"].includes(intent.currency ?? "")
