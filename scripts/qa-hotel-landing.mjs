@@ -118,7 +118,7 @@ try{
   assert.equal(u.searchParams.get("checkout"),end);
   assert.equal(u.searchParams.get("placeId"),"ChIJwe1EZjDG5zsRaYxkjY_tpF0");
   const occupancies=JSON.parse(Buffer.from(u.searchParams.get("occupancies"),"base64").toString());
-  assert.equal(occupancies.length,2);assert.equal(occupancies[1].adults,3);
+  assert.equal(occupancies.length,2);assert.equal(occupancies[0].adults,2);assert.equal(occupancies[1].adults,1);
   await page.close();
  }
  blockSdk=true;
