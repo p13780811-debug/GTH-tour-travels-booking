@@ -304,8 +304,6 @@ function HotelsContent() {
 
     return (
         <div className={`${styles.page} min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden`}>
-            <TravelSectionNav />
-            <HotelDiscoveryShowcase initialCity={initialCity} currentMode={hotelMode} activeCategory={category} />
             {/* ========================================================================= */}
             {/* HERO */}
             {/* ========================================================================= */}
@@ -404,6 +402,8 @@ function HotelsContent() {
                     </div>}
                 </div>
             </section>
+            <TravelSectionNav />
+            <HotelDiscoveryShowcase initialCity={initialCity} currentMode={hotelMode} activeCategory={category} />
             {hotelMode === "booking" ? <div>
               <HotelsDiscoveryPlacement currency={currency} showOffers={!initialCity} showNearby={!initialCity} />
               <section className={styles.guides} aria-labelledby="hotel-inspiration-title">
@@ -414,7 +414,7 @@ function HotelsContent() {
                   </div>
                   <Link href="/destinations" className={styles.textLink}>Explore destinations <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
-                <nav className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Featured city stay guides">
+                <nav className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Featured travel destinations">
                   {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug}
                     className="gth-glass flex min-h-20 min-w-0 items-center justify-between gap-2 rounded-2xl border border-[var(--border)] p-4"
                     aria-label={"Explore "+place.city+" hotel guide"}>
