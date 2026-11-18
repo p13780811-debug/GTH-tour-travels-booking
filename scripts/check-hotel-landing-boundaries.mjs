@@ -213,6 +213,7 @@ if(process.env.GITHUB_HEAD_REF==="fix/hotel-zero-api-whitelabel-router-20261119"
   "src/middleware.ts",
   "src/app/api/hotels/booking/route.ts",
   "tests/hotel-zero-api-routing.test.mjs",
+  "tests/hotel-white-label-city-fallback.test.mjs",
   "tests/pr204-handoff-integrity.test.mjs",
   "tests/mobile-universal-search-routing.test.mjs",
   "scripts/check-hotel-landing-boundaries.mjs",
