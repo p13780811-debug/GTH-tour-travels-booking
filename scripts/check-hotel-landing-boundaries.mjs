@@ -194,6 +194,34 @@ function isExactReviewedBrandBlob(path){
  const expected=reviewedBrandBlobs.get(path);
  return Boolean(expected&&git("hash-object","--",path).trim()===expected);
 }
+// Exact PR #227 mobile storefront scope. Do not broaden this allowlist to
+// arbitrary src/, CSS, server routes or supplier SDK files.
+for (const path of [
+ "src/components/hotel/HotelDiscoveryShowcase.tsx",
+ "tests/hotel-storefront-hopegoo-style.test.mjs",
+ "tests/hotel-date-free-discovery.test.mjs",
+ "vercel.json",
+]) allowed.add(path);
+
+// A Vercel configuration edit is permitted ONLY to disable previews for this
+// unverified draft branch. The rest of the project configuration must be byte-
+// equivalent at the parsed JSON level to its merge base.
+if (paths.includes("vercel.json")) {
+ const current=JSON.parse(readFileSync("vercel.json","utf8"));
+ const original=JSON.parse(git("show",diffBase+":vercel.json"));
+ if(current.git?.deploymentEnabled?.["feat/hotel-date-free-discovery-20261118"]!==false)
+   throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
+ delete current.git.deploymentEnabled["feat/hotel-date-free-discovery-20261118"];
+ if(JSON.stringify(current)!==JSON.stringify(original))
+   throw Error("Unexpected Vercel changes beyond disabled storefront preview");
+}
+const storefrontPath="src/components/hotel/HotelDiscoveryShowcase.tsx";
+if(paths.includes(storefrontPath)){
+ const storefront=readFileSync(storefrontPath,"utf8");
+ if(/SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_.*SECRET|ODDS_API_KEY|api\.the-odds-api|hopegoo\.com|booking\.com\/hotel/i.test(storefront))
+   throw Error("Storefront may not expose keys, paid supplier calls or untracked direct booking URLs");
+}
+
 // The original hotel-only allowlist should not reject the separately tested
 // multi-sector PR. Its additional files must match an exact pinned snapshot;
 // future unreviewed changes fail closed, and the CSS/rate guards below still run.
