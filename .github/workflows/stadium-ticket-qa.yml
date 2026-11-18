@@ -13,6 +13,8 @@ on:
       - "supabase/migrations/*stadium*"
       - "tests/stadium-predictions-engine.test.mjs"
       - "tests/stadium-sports-seo.test.mjs"
+      - "tests/stadium-predictions-interim.test.mjs"
+      - ".github/workflows/gth-osm-attractions-sync.yml"
       - "vercel.json"
       - "src/app/tickets/**"
       - "src/components/travel/TravelSectionNav.tsx"
@@ -34,7 +36,7 @@ jobs:
         with:
           node-version: "22"
       - name: Validate ticket sources, categories, fallbacks and URL safety
-        run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs tests/stadium-predictions-engine.test.mjs tests/stadium-sports-seo.test.mjs
+        run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs tests/stadium-predictions-engine.test.mjs tests/stadium-sports-seo.test.mjs tests/stadium-predictions-interim.test.mjs
       - name: Ensure no broken in-page official sources anchor
         run: |
           if grep -R 'href="#official-stadium-sources"' src/app/stadiums; then
