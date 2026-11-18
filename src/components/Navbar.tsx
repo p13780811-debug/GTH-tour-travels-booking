@@ -103,7 +103,7 @@ function EcosystemNavbar() {
     // =====================================================
 
     const navItems = useMemo(() => [
-        { name: "Global Gateway", href: "/mega-aggregator", icon: Globe, mega: false },
+        { name: "Ecosystem", href: "/mega-aggregator", icon: Globe, mega: false },
         { name: "Travel", href: "/travel", icon: Plane, mega: false },
         { name: "Real Estate", href: "/real-estate", icon: Building2, mega: false },
         { name: "Tenders", href: "/tender", icon: BriefcaseBusiness, mega: false },
