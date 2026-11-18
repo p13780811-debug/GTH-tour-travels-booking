@@ -72,7 +72,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
               Explore a destination without dates, then book verified stays when you&apos;re ready.
             </p>
           </div>
-          <Link href="/hotels?view=booking#hotel-booking-experience"
+          <Link prefetch={false} href="/hotels?view=booking#hotel-booking-experience"
             className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
             <BedDouble size={16} aria-hidden="true" /> Book &amp; Stay
           </Link>
@@ -99,7 +99,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
 
         <div className="mt-7 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold sm:text-xl">Explore destinations</h3>
-          <Link href="/destinations" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold underline underline-offset-4">
+          <Link prefetch={false} href="/destinations" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold underline underline-offset-4">
             More <ChevronRight size={15} aria-hidden="true" />
           </Link>
         </div>
