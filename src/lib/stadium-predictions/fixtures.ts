@@ -4,6 +4,7 @@ import { stadiums } from "@/lib/travel/stadiums";
  * Do not manufacture tennis fixtures, teams, start times or ticket inventory.
  */
 const APPROVED = [
+  { slug: "lords-cricket-ground", label: "England vs Australia men's Ashes Test", home: "England", away: "Australia", oddsKey: "cricket_test_match" },
   { slug: "melbourne-cricket-ground", label: "Australia vs England men’s T20I", home: "Australia", away: "England", oddsKey: "cricket_international_t20" },
   { slug: "melbourne-cricket-ground", label: "Australia vs New Zealand Boxing Day Test", home: "Australia", away: "New Zealand", oddsKey: "cricket_test_match" },
   { slug: "melbourne-cricket-ground", label: "Australia vs England 150th Anniversary Test", home: "Australia", away: "England", oddsKey: "cricket_test_match" },
@@ -14,7 +15,7 @@ export type ReviewedFixture = {
   city: string; countryCode: string; timeZone: string; officialUrl: string;
   oddsKey: "cricket_test_match" | "cricket_international_t20";
 };
-export function reviewedSportsFixtures(now = new Date(), horizonDays = 90): ReviewedFixture[] {
+export function reviewedSportsFixtures(now = new Date(), horizonDays = 365): ReviewedFixture[] {
   const startDay = now.toISOString().slice(0, 10);
   const endDay = new Date(now.getTime() + horizonDays * 86400000).toISOString().slice(0, 10);
   return APPROVED.flatMap(entry => {
