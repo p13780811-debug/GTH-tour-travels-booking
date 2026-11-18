@@ -212,6 +212,7 @@ if(hotelRecoveryBranch){
   "src/app/api/hotels/route.ts","src/components/travel/ConnectedTravelWorkspace.tsx",
   "src/lib/travel/connected-hotel-handoff.ts","src/lib/travel/klook-hotel-search.ts",
   "tests/hotel-booking-fallback-cities.test.mjs","tests/hotel-integrated-handoff.test.mjs",
+  "tests/hotel-filter-pagination.test.mjs",
   "tests/travel-hotels-direct-handoff.test.mjs","scripts/qa-connected-travel.mjs",
   "scripts/check-connected-travel-boundaries.mjs"
  ])allowed.add(path);
