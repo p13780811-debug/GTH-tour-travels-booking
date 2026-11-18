@@ -10,8 +10,9 @@ import {HOTEL_CURRENCY_OPTIONS} from "@/lib/travel/hotel-currency";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import {FLIGHT_DESTINATIONS,EXPERIENCE_COLLECTIONS} from "@/lib/travel/travel-editorial";
-import {TRAVEL_MODES,connected12GoFlightHref,connectedFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
+import {TRAVEL_MODES,connectedFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
 import TravelAirportField,{airportCode,airportLabel} from "./TravelAirportField";
+import {connected12GoFlightHref} from "./connected-flight-routing";
 import styles from "./ConnectedTravelWorkspace.module.css";
 
 const tabs={hotels:{label:"Hotels",Icon:BedDouble},flights:{label:"Flights",Icon:Plane},experiences:{label:"Experiences",Icon:Sparkles}};
