@@ -68,3 +68,12 @@ test("No new global theme or provider configuration, preview safe by default", (
     assert.doesNotMatch(src, /SUPABASE_SERVICE_ROLE_KEY|ODDS_API_KEY|GEMINI_API_KEY|api\.the-odds-api\.com/);
   }
 });
+
+test("Website Global Gateway platform tabs navigate instead of filtering the search below", () => {
+  assert.match(search, /<nav aria-label="Open GTH PRO platforms"/);
+  for (const [name,url] of [
+    ["travel","/travel"],["property","/real-estate"],["tender","/tender"],["ticket","/tickets"],
+  ]) assert.ok(search.includes(name + ':"' + url + '"'), "Wrong platform route " + name);
+  assert.match(search, /<Link key=\{id\} href=\{platformRoutes\[id\]\} prefetch=\{false\}/);
+  assert.doesNotMatch(search, /onClick=\{\(\)=>selectPillar\(id\)\}/);
+});
