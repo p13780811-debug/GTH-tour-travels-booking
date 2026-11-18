@@ -1,13 +1,37 @@
 import { NextResponse } from "next/server";
-import { hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
+import {hotelWhiteLabelUrl,parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 export const dynamic = "force-dynamic";
-/** Fixed-origin handoff. No supplier API key, reservation writes or open redirects. */
+
+/** Zero supplier API calls. Fixed-origin redirect; never forward arbitrary fields. */
 export function GET(request: Request) {
-  const search = parseHotelBookingSearch(new URL(request.url).searchParams);
-  if (!search) return new NextResponse("Invalid or expired stay details. Return to GTH Hotels and search again.", {
-    status: 400, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+  const params=new URL(request.url).searchParams;
+  for (const key of ["hotelId","placeId","city","destination","q","checkin","checkout","adults","rooms","occupancies","currency"]) {
+    if (params.getAll(key).length > 1) return new NextResponse("Ambiguous hotel booking parameters.",{status:400});
+  }
+  // Preserve original fully specified supplier SearchBar links and child ages.
+  const existing=parseHotelBookingSearch(params);
+  if (existing) {
+    const response=NextResponse.redirect(hotelWhiteLabelUrl(existing),307);
+    response.headers.set("Cache-Control","no-store");
+    return response;
+  }
+  const suppliedOccupancies=params.has("occupancies");
+  // Invalid encoded occupancy is not silently replaced with a smaller party.
+  if (suppliedOccupancies) return new NextResponse("Invalid or expired guest occupancy.",{status:400});
+  const result=resolveHotelRoute({
+    hotelId:params.get("hotelId")??undefined,
+    placeId:params.get("placeId")??undefined,
+    destination:params.get("city")??params.get("destination")??params.get("q")??undefined,
+    checkIn:params.get("checkin")??undefined,checkOut:params.get("checkout")??undefined,
+    adults:params.get("adults")??undefined,rooms:params.get("rooms")??undefined,
+    currency:params.get("currency")??undefined,
   });
-  const response = NextResponse.redirect(hotelWhiteLabelUrl(search), 307);
-  response.headers.set("Cache-Control", "no-store");
+  if(result.status!=="ready")return new NextResponse(
+    result.status==="unmapped"?"Destination needs a reviewed Place ID. Select it on the White Label booking site.":"Invalid hotel booking destination or supplier ID.",
+    {status:result.status==="unmapped"?422:400,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"}}
+  );
+  const response=NextResponse.redirect(result.url,307);
+  response.headers.set("Cache-Control","no-store");
   return response;
 }
