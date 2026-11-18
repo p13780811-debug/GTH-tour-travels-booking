@@ -51,7 +51,8 @@
       "feat/tender-one-click-bid-boq-20261117": false,
       "feat/infra-pulse-event-shockwave": false,
       "feat/hotel-date-free-discovery-20261118": false,
-      "feat/mobile-global-gateway-first-impression-20261118": false
+      "feat/mobile-global-gateway-first-impression-20261118": false,
+      "fix/mobile-home-supplier-hotel-cards-20261118": false
     }
   }
 }
