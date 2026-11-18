@@ -110,7 +110,8 @@ test("Booking-style responsive hotel list uses desktop filter sidebar and mobile
  assert.match(page,/aria-expanded=\{mobileFiltersOpen\}/);
  assert.match(page,/Close filters/);
  assert.match(page,/aria-label="Hotel listing results"/);
- assert.match(page,/flex min-w-0 flex-col md:flex-row/);
+ assert.match(page,/flex min-w-0 flex-row/);
+ assert.match(page,/min-h-44 w-28 shrink-0/);
  assert.match(page,/Original hotel photos are shown|Original hotel photos are shown when supported|Original hotel photos/);
  assert.match(results,/className="flex min-w-0 flex-col gap-4"/);
  assert.match(results,/md:flex-row/);
