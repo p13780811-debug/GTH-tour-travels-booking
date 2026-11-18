@@ -201,6 +201,8 @@ function HotelsContent() {
                     setHotels(data as HotelListing[]);
                     setTotal(Number.isSafeInteger(apiTotal) && apiTotal >= 0 ? apiTotal : data.length);
                     setHasMore(response.headers.get("X-GTH-Has-More") === "true");
+                    if(response.headers.get("X-GTH-Partial")==="true")
+                        setError("Some hotel directory sources are temporarily unavailable; the displayed records are incomplete.");
                 }
             } catch {
                 if (!controller.signal.aborted) setError("Hotel search is currently unavailable. Please try again later.");
