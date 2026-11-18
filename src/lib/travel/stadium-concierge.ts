@@ -10,6 +10,9 @@ export const venueLocations:Record<string,{lat:number;lng:number;transit:string}
  "yankee-stadium":{lat:40.8296,lng:-73.9262,transit:"161 St–Yankee Stadium subway; check game-day exit notices."},
  "singapore-national-stadium":{lat:1.3040,lng:103.8748,transit:"Stadium MRT station; follow event-specific entry directions."},
  "tokyo-dome":{lat:35.7056,lng:139.7519,transit:"Korakuen / Suidobashi stations; verify gate on ticket."},
+ "wimbledon-centre-court":{lat:51.4337,lng:-0.2141,transit:"Southfields or Wimbledon stations; verify Championship-day shuttle and entry routes."},
+ "arthur-ashe-stadium":{lat:40.7499,lng:-73.8477,transit:"Mets–Willets Point station; check official US Open entrance notices."},
+ "madison-square-garden":{lat:40.7505,lng:-73.9934,transit:"Penn Station directly beneath the arena; follow event-specific entrance instructions."},
  "silverstone":{lat:52.0786,lng:-1.0169,transit:"No adjacent metro; check the circuit's event shuttle and parking plans."}
 };
 export function haversineKm(a:{lat:number;lng:number},b:{lat:number;lng:number}) {
