@@ -26,6 +26,7 @@ import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacemen
 import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
+import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
 import styles from "./HotelsLanding.module.css";
 
 import {
@@ -179,6 +180,11 @@ function HotelsContent() {
 
         setPage(1);
         setHasMore(false);
+        const timeoutId=window.setTimeout(()=>{
+            controller.abort();
+            setError("The independent hotel directory did not respond. Booking search remains available.");
+            setLoading(false);
+        },12000);
 
         async function loadHotels() {
             try {
@@ -199,12 +205,13 @@ function HotelsContent() {
             } catch {
                 if (!controller.signal.aborted) setError("Hotel search is currently unavailable. Please try again later.");
             } finally {
+                window.clearTimeout(timeoutId);
                 if (!controller.signal.aborted) setLoading(false);
             }
         }
 
         void loadHotels();
-        return () => controller.abort();
+        return () => {window.clearTimeout(timeoutId);controller.abort();};
     // Query key uniquely identifies a filter combination; it resets paging on every change.
     }, [queryKey,retryCount,hotelMode]);
 
@@ -281,6 +288,18 @@ function HotelsContent() {
         document.getElementById("hotel-results")?.scrollIntoView({behavior:"smooth",block:"start"});
     };
 
+    const searchBookableHotels = () => {
+        const city=search.trim();
+        if(!city || city.length>80 || !/^[\\p{L}\\p{M}\\s.'-]+$/u.test(city)){
+            setDateError("Enter a valid city or destination first.");
+            return;
+        }
+        const checkedProvider=trackedHotelCityHref(city);
+        if(checkedProvider){window.location.assign(checkedProvider);return;}
+        const next=new URLSearchParams({view:"booking",city,currency});
+        router.push("/hotels?"+next.toString()+"#hotel-booking-experience");
+    };
+
     const exploreIndia = (city = "") => {
         setSearch(city);
         setSearchName("");
@@ -335,10 +354,7 @@ function HotelsContent() {
                         <button type="button" className={styles.modeButton} aria-pressed={hotelMode === "directory"}
                             onClick={() => chooseHotelMode("directory")}><Globe2 size={17} aria-hidden="true" /> Hotel directory</button>
                     </div>{hotelMode==="booking"&&<HotelCurrencySelector value={currency} onChange={changeCurrency}/>}</div>
-                    {/* Booking city is a search hint, never a guessed supplier placeId. */}
-                    {hotelMode === "booking" && initialCity && <p role="status" className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)]">
-                      Booking search for <strong className="text-[var(--text)]">{initialCity}</strong>. Choose {initialCity} from the GTH Worldwide Stays destination suggestions below, select your stay dates and guests, then open matching supplier hotel results. The separate OSM directory is not booking inventory.
-                    </p>}
+                    {/* Destination booking guidance is owned by the existing supplier SearchBar. */}
                     {/* SEARCH */}
                     {hotelMode === "booking" && <div id="hotel-booking-experience" className="scroll-mt-24"><HotelBookingExperience key={currency} currency={currency} /></div>}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
@@ -389,16 +405,19 @@ function HotelsContent() {
                                 </label>
                             </div>
 
-                            <button
-                                onClick={runSearch}
-                                className="gth-btn-gold rounded-2xl px-6 py-4 text-sm font-bold flex items-center justify-center gap-2"
-                            >
-                                <Search size={18} />
-                                Search
-                            </button>
+                            <div className="flex min-w-0 flex-col gap-2">
+                                <button type="button" onClick={searchBookableHotels}
+                                  className="gth-btn-gold min-h-12 rounded-2xl px-4 py-3 text-sm font-bold flex items-center justify-center gap-2">
+                                  <Search size={18} aria-hidden="true"/> Search bookable hotels
+                                </button>
+                                <button type="button" onClick={runSearch}
+                                  className="gth-btn min-h-11 rounded-2xl px-4 py-2 text-xs font-semibold">
+                                  Search OSM directory
+                                </button>
+                            </div>
                         </div>
                         {dateError&&<p role="alert" className="mt-3 text-sm text-[var(--text)]">{dateError}</p>}
-                        <p className="mt-2 text-xs text-[var(--text-soft)]">Dates and guests are planning inputs; the provider confirms real prices and availability.</p>
+                        <p className="mt-2 text-xs text-[var(--text-soft)]">Booking search opens a provider-operated hotel page; confirm dates, guests and final prices there. OSM map records are separate research, not room availability.</p>
                     </div>}
                 </div>
             </section>
@@ -643,12 +662,12 @@ function HotelsContent() {
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-xl md:text-2xl font-black">
-                                    {loading ? "Searching…" : total.toLocaleString()+" "+selectedType+" matching"}
+                                    {loading ? "Searching mapped hotel records…" : error ? "Directory unavailable" : total.toLocaleString()+" "+selectedType+" matching"}
                                     
                                 </h2>
 
                                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                                    Showing {hotels.length.toLocaleString()} of {total.toLocaleString()} · {requestedDestination || requestedCity || requestedCountry || "Worldwide"} · Page {page}
+                                    {loading ? "Checking mapped records, not room inventory" : error ? "Source request failed; room availability is unaffected" : "Showing "+hotels.length.toLocaleString()+" of "+total.toLocaleString()+" · "+(requestedDestination || requestedCity || requestedCountry || "Worldwide")+" · Page "+page}
                                 </p>
                             </div>
 
@@ -691,9 +710,14 @@ function HotelsContent() {
                               className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold">
                               Retry hotel search
                             </button>
+                            <Link className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 text-sm sm:ml-3" href={trackedHotelCityHref(requestedCity)||("/hotels?"+new URLSearchParams({view:"booking",city:requestedCity}).toString())}>Find bookable hotels instead</Link>
                           </div>}
                         {!loading && !error && hotels.length === 0 && (
-                            <p role="status" className="gth-glass rounded-2xl p-6">No matching hotel listings found. Try another destination or clear property type.</p>
+                            <div role="status" className="gth-glass rounded-2xl p-6">
+                              <p>No matching OSM directory records for this filter. Bookable hotels may still be available.</p>
+                              <Link href={trackedHotelCityHref(requestedCity)||("/hotels?"+new URLSearchParams({view:"booking",city:requestedCity}).toString())}
+                                className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 text-sm">Find bookable stays in {requestedCity||"your destination"}</Link>
+                            </div>
                         )}
                         <div className="space-y-4" aria-label="Hotel listing results">
                             {hotels.map((hotel) => (
