@@ -2,6 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { stadiums } from "@/lib/travel/stadiums";
+import { reviewedSportsFixtures } from "./fixtures";
 
 export type OddsSnapshot = {
   status?: string;
@@ -67,25 +68,14 @@ function ticketUrl(value: unknown): string | undefined {
     return url.origin + url.pathname;
   } catch { return undefined; }
 }
-// This list refers only to individually reviewed fixtures in the existing
-// GTH stadium directory. Never infer a fixture from a stadium name.
-const reviewedFixtures = [
-  { venue: "melbourne-cricket-ground", title: "Australia vs England men’s T20I", home: "Australia", away: "England" },
-  { venue: "melbourne-cricket-ground", title: "Australia vs New Zealand Boxing Day Test", home: "Australia", away: "New Zealand" },
-  { venue: "melbourne-cricket-ground", title: "Australia vs England 150th Anniversary Test", home: "Australia", away: "England" },
-] as const;
+// Source-reviewed calendar events are shared with the odds engine to avoid
+// diverging event dates, venues or match identities.
 function calendarMatches(): SportsSeoMatch[] {
-  return reviewedFixtures.flatMap(item => {
-    const venue = stadiums.find(v => v.slug === item.venue);
-    const event = venue?.events?.find(e => e.label === item.title);
-    if (!venue || !event || !dateOk(event.starts)) return [];
-    return [{
-      id: venue.slug + ":" + event.starts + ":" + pathPart(event.label),
-      source: "reviewed-calendar" as const, sport: "Cricket",
-      home: item.home, away: item.away, starts: event.starts, ends: event.ends,
-      venue: venue.name, city: venue.city, countryCode: venue.countryCode, officialUrl: event.url,
-    }];
-  });
+  return reviewedSportsFixtures().map(item => ({
+    id: item.id, source: "reviewed-calendar" as const, sport: item.sport,
+    home: item.home, away: item.away, starts: item.starts, ends: item.ends,
+    venue: item.venue, city: item.city, countryCode: item.countryCode, officialUrl: item.officialUrl,
+  }));
 }
 const cachedDatabaseMatches = unstable_cache(async (day: string): Promise<SportsSeoMatch[]> => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -101,18 +91,25 @@ const cachedDatabaseMatches = unstable_cache(async (day: string): Promise<Sports
       .abortSignal(AbortSignal.timeout(4500));
     if (error || !Array.isArray(data)) return [];
     return data.flatMap((row): SportsSeoMatch[] => {
-      const id = clean(row.match_id, 40), sport = clean(row.sport_title, 80);
+      const id = clean(row.match_id, 120), sport = clean(row.sport_title, 80);
       const home = clean(row.home_team, 110), away = clean(row.away_team, 110);
       const starts = clean(row.match_date, 50), venue = clean(row.stadium_name, 150);
-      if (!/^seatgeek:[1-9][0-9]{0,18}$/.test(id) || !dateOk(starts) ||
+      if (!/^(?:seatgeek:[1-9][0-9]{0,18}|calendar:[a-z0-9-]{2,80}:[0-9]{8}:[a-z-]{4,90})$/.test(id) || !dateOk(starts) ||
           !sport || home.length < 2 || away.length < 2 || venue.length < 2) return [];
+      const reviewed = id.startsWith("calendar:")
+        ? reviewedSportsFixtures().find(f => f.id === id && f.venue === venue &&
+            f.home === home && f.away === away && f.sport === sport)
+        : undefined;
+      if (id.startsWith("calendar:") && !reviewed) return [];
       const stadium = stadiums.find(s => s.name.toLowerCase() === venue.toLowerCase() &&
         s.sports.some(category => sportSegment(category) === sportSegment(sport)));
       const odds = row.live_odds_data && typeof row.live_odds_data === "object"
         ? row.live_odds_data as OddsSnapshot : undefined;
       return [{
-        id, source: "verified-event-feed", sport, home, away, starts, venue,
+        id, source: "verified-event-feed", sport, home, away,
+        starts: reviewed?.starts || starts, ends: reviewed?.ends, venue,
         city: stadium?.city, countryCode: stadium?.countryCode,
+        officialUrl: reviewed?.officialUrl,
         ticketUrl: ticketUrl(row.ticket_booking_link), odds,
         analysis: clean(row.ai_prediction, 1300) || undefined,
         updated: dateOk(row.last_updated_at) ? row.last_updated_at : undefined,
