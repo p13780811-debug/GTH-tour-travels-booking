@@ -38,7 +38,9 @@ test("Unverified event URLs and fuzzy team matching cannot generate ticket hando
   assert.match(engine, /safeSeatGeekUrl\(event\.url\)/);
   assert.match(engine, /seatgeek\.com/);
   assert.match(engine, /teams\.every\(team => a\.includes\(team\)\)/);
-  assert.match(engine, /matches\.length === 1/);
+  assert.match(engine, /combined\.length === 1/);
+  assert.match(engine, /verifiedCalendarMatch/);
+  assert.match(engine, /ticket_discovery_mode: exact\.ticketUrl \? "provider_verified" : "search_only"/);
   assert.match(engine, /Math\.abs\(Date\.parse\(date\)/);
   assert.match(engine, /onConflict: "match_id"/);
   assert.match(migration, /ENABLE ROW LEVEL SECURITY/);
