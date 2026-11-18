@@ -12,14 +12,14 @@ test("Source ODbL table only exposes community directory with RLS",()=>{
  assert.match(sql,/GRANT EXECUTE ON FUNCTION public.gth_upsert_osm_attractions\(jsonb\) TO service_role/);
  assert.doesNotMatch(sql,/affiliate_link|price_numeric|rating/);
 });
-test("Paused cloud sync preserves licensed extract logic and cannot trigger writes",()=>{
+test("Intentionally paused OSM cloud sync keeps licensed-source logic and OIDC protected",()=>{
  const wf=read(".github/workflows/gth-osm-attractions-sync.yml");
  assert.match(wf,/index|registry|Geofabrik/i);
  assert.match(wf,/--auto-window/);
  assert.match(wf,/workflow_dispatch:/);
  assert.match(wf,/if: \$\{\{ false \}\}/);
  assert.doesNotMatch(wf,/cron: "[^"]+"/);
- assert.doesNotMatch(wf,/^  push:|^  schedule:/m);
+ assert.doesNotMatch(wf,/^  schedule:|^  push:/m);
  assert.match(wf,/--limit 18000/);
  assert.doesNotMatch(wf,/--limit 120000/);
  assert.match(read("scripts/attractions/import_osm_attractions.py"),/BATCH_GAP_SECONDS=5\.5/);

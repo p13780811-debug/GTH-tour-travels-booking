@@ -1,9 +1,5 @@
 name: GTH Worldwide Open Attractions — Licensed ODbL Sync
 # EMERGENCY PAUSE 2026-11-18: intentionally no schedule or push triggers.
-# Reviewed max cadence for any FUTURE separately approved restart:
-# cron: "0 2,14 * * *"  (02:00 and 14:00 UTC, NEVER hourly)
-# IMPORTANT: this line is a comment, NOT an enabled schedule; the job remains
-# if: false until an explicit import/budget review authorizes restarting it.
 # Import code preserved for future audited, explicitly approved restart.
 on:
   workflow_dispatch:

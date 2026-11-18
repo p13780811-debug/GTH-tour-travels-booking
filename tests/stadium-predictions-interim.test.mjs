@@ -13,8 +13,8 @@ const feed = read("src/components/stadium/TicketPredictionFeed.tsx");
 const originalMigration = read("supabase/migrations/20261118030000_stadium_ticket_predictions_engine.sql");
 const followUpMigration = read("supabase/migrations/20261118163000_stadium_ticket_safe_discovery.sql");
 
-test("Old hourly OSM imports cannot restart through the PR; future max cadence documented", () => {
-  assert.match(workflow, /cron: "0 2,14 \* \* \*"/);
+test("Old hourly OSM imports must remain completely disabled during the database I/O incident", () => {
+  assert.doesNotMatch(workflow, /cron: "[^"]+"/);
   assert.match(workflow, /if: \$\{\{ false \}\}/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /^  schedule:|^  push:/m);

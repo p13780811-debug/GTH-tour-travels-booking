@@ -48,9 +48,9 @@ test("Unverified event URLs and fuzzy team matching cannot generate ticket hando
   assert.match(migration, /GRANT SELECT, INSERT, UPDATE, DELETE ON public\.stadium_tickets_predictions TO service_role/);
 });
 
-test("Cron is daily and never modifies existing provider booking flows", () => {
+test("Pending database migration must not activate scheduled odds refresh; provider booking flows remain unchanged", () => {
   const schedule = cron.crons?.find(x => x.path === "/api/cron/stadium-predictions");
-  assert.deepEqual(schedule, { path: "/api/cron/stadium-predictions", schedule: "0 3 * * *" });
+  assert.equal(schedule, undefined, "Do not schedule Odds API calls until production RLS/migration is verified");
   assert.match(read("src/app/stadiums/page.tsx"), /<TicketPredictionFeed\/>/);
   assert.doesNotMatch(engine, /NEXT_PUBLIC_ODDS|NEXT_PUBLIC_GEMINI|NEXT_PUBLIC_SEATGEEK/);
 });

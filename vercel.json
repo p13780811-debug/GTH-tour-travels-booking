@@ -50,13 +50,8 @@
       "feat/global-estate-journeys-20261110": false,
       "feat/tender-one-click-bid-boq-20261117": false,
       "feat/infra-pulse-event-shockwave": false,
+      "feat/hotel-date-free-discovery-20261118": false,
       "feat/stadium-predictions-db-first-20261118": false
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/stadium-predictions",
-      "schedule": "0 3 * * *"
-    }
-  ]
+  }
 }
