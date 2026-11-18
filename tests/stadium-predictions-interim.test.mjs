@@ -63,7 +63,8 @@ test("Google search fallback is separate from official inventory and cannot be d
   assert.match(ticketSearch, /url\.searchParams\.set\("q", query\)/);
   assert.match(ticketSearch, /normalize\("NFKC"\)/);
   assert.match(detail, /Search web for official tickets/);
-  assert.match(detail, /Confirm the organizer/);
+  assert.match(detail, /Check official organizer event information/);
+  assert.match(detail, /Official tickets not currently listed on GTH PRO/);
   assert.match(feed, /Search web for official tickets/);
   assert.match(feed, /Matches Currently Unavailable/);
   assert.match(feed, /unstable_cache/);
