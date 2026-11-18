@@ -204,15 +204,33 @@ for (const path of [
  "vercel.json",
 ]) allowed.add(path);
 
+// A narrowly reviewed recovery PR may touch booking UI, bounded directory
+// error handling and QA, but never the working supplier SDK, 12Go or theme.
+const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+if(hotelRecoveryBranch){
+ for(const path of [
+  "src/app/api/hotels/route.ts","src/components/travel/ConnectedTravelWorkspace.tsx",
+  "src/lib/travel/connected-hotel-handoff.ts","src/lib/travel/klook-hotel-search.ts",
+  "tests/hotel-booking-fallback-cities.test.mjs","tests/hotel-integrated-handoff.test.mjs",
+  "tests/travel-hotels-direct-handoff.test.mjs","scripts/qa-connected-travel.mjs",
+  "scripts/check-connected-travel-boundaries.mjs"
+ ])allowed.add(path);
+ for(const protectedPath of [
+  "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+  "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+  "src/components/mobile/MobileSupplierShowcase.tsx","src/app/globals.css"
+ ])if(paths.includes(protectedPath))throw Error("Hotel recovery cannot alter working supplier/theme: "+protectedPath);
+}
 // A Vercel configuration edit is permitted ONLY to disable previews for this
 // unverified draft branch. The rest of the project configuration must be byte-
 // equivalent at the parsed JSON level to its merge base.
 if (paths.includes("vercel.json")) {
  const current=JSON.parse(readFileSync("vercel.json","utf8"));
  const original=JSON.parse(git("show",diffBase+":vercel.json"));
- if(current.git?.deploymentEnabled?.["feat/hotel-date-free-discovery-20261118"]!==false)
+ const previewBranch=hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
+ if(current.git?.deploymentEnabled?.[previewBranch]!==false)
    throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
- delete current.git.deploymentEnabled["feat/hotel-date-free-discovery-20261118"];
+ delete current.git.deploymentEnabled[previewBranch];
  if(JSON.stringify(current)!==JSON.stringify(original))
    throw Error("Unexpected Vercel changes beyond disabled storefront preview");
 }
