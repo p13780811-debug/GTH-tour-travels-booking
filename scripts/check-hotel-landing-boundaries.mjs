@@ -200,6 +200,7 @@ for (const path of [
  "src/components/hotel/HotelDiscoveryShowcase.tsx",
  "tests/hotel-storefront-hopegoo-style.test.mjs",
  "tests/hotel-date-free-discovery.test.mjs",
+ "tests/osm-attractions-contract.test.mjs",
  "vercel.json",
 ]) allowed.add(path);
 
@@ -215,6 +216,12 @@ if (paths.includes("vercel.json")) {
  if(JSON.stringify(current)!==JSON.stringify(original))
    throw Error("Unexpected Vercel changes beyond disabled storefront preview");
 }
+if (paths.includes("tests/osm-attractions-contract.test.mjs")) {
+ const sync=readFileSync(".github/workflows/gth-osm-attractions-sync.yml","utf8");
+ if(!/if: \$\{\{ false \}\}/.test(sync) || /^  schedule:|^  push:/m.test(sync))
+   throw Error("Do not re-enable the paused attraction importer to satisfy legacy tests");
+}
+
 const storefrontPath="src/components/hotel/HotelDiscoveryShowcase.tsx";
 if(paths.includes(storefrontPath)){
  const storefront=readFileSync(storefrontPath,"utf8");
