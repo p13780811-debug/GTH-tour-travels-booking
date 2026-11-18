@@ -86,7 +86,7 @@ test("discovery does not generate generic provider search pages or claim live ti
  assert.equal(existsSync("src/lib/travel/stadium-live-feed.ts"),false);
 });
 test("all venues retain direct official sources; exact products are validated before linking",()=>{
- assert.equal(venues.stadiums.length,11);
+ assert.equal(venues.stadiums.length,14);
  for(const venue of venues.stadiums){
   assert.equal(new URL(venue.schedule.url).protocol,"https:");
   assert.equal(venues.findStadium(venue.slug),venue);
