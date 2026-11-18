@@ -12,12 +12,12 @@ import { ArrowRight, BedDouble, ChevronRight, MapPin, Search } from "lucide-reac
  * All controls reuse the existing /hotels booking and date-free directory.
  */
 const destinations = [
-  { city: "Mumbai", country: "IN", image: "/images/cities/mumbai.jpg", label: "Urban stays" },
-  { city: "Goa", country: "IN", image: "/images/cities/goa.jpg", label: "Coastal breaks" },
-  { city: "Dubai", country: "AE", image: "/images/cities/dubai.jpg", label: "City escapes" },
-  { city: "London", country: "GB", image: "/images/cities/london.jpg", label: "Capital stays" },
-  { city: "Singapore", country: "SG", image: "/images/cities/singapore.jpg", label: "City discoveries" },
-  { city: "Tokyo", country: "JP", image: "/images/cities/tokyo.jpg", label: "Neighbourhood guides" },
+  { city: "Mumbai", image: "/images/cities/mumbai.jpg", label: "Urban stays" },
+  { city: "Goa", image: "/images/cities/goa.jpg", label: "Coastal breaks" },
+  { city: "Dubai", image: "/images/cities/dubai.jpg", label: "City escapes" },
+  { city: "London", image: "/images/cities/london.jpg", label: "Capital stays" },
+  { city: "Singapore", image: "/images/cities/singapore.jpg", label: "City discoveries" },
+  { city: "Tokyo", image: "/images/cities/tokyo.jpg", label: "Neighbourhood guides" },
 ] as const;
 
 const types = [
@@ -107,14 +107,15 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
           className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 sm:mx-0 sm:gap-4 sm:px-0">
           {destinations.map(place => <Link key={place.city}
             href={route("booking", place.city)} prefetch={false}
-            className="group relative h-48 w-[43vw] max-w-56 min-w-36 shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] sm:h-56 sm:w-48"
+            className="group flex h-48 w-[43vw] max-w-56 min-w-36 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:h-56 sm:w-48"
             aria-label={"Search bookable stays in " + place.city}>
-            <Image src={place.image} alt={place.city + " destination scenery"} fill
-              sizes="(max-width: 640px) 43vw, 192px" className="object-cover transition-transform duration-300 group-hover:scale-105" />
-            <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 to-transparent" />
-            <span className="absolute inset-x-0 bottom-0 z-10 p-3 text-white">
+            <span className="relative block min-h-0 flex-1 overflow-hidden">
+              <Image src={place.image} alt={place.city + " destination scenery"} fill
+                sizes="(max-width: 640px) 43vw, 192px" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+            </span>
+            <span className="block border-t border-[var(--border)] bg-[var(--card)] p-3 text-[var(--text)]">
               <span className="block text-base font-bold">{place.city}</span>
-              <span className="mt-1 block text-xs">{place.label}</span>
+              <span className="mt-1 block text-xs text-[var(--text-soft)]">{place.label}</span>
             </span>
           </Link>)}
         </nav>
