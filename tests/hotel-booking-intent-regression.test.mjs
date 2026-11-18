@@ -37,17 +37,20 @@ test("global and mobile search never confuse public OSM listings with live Nuite
  assert.doesNotMatch(mobile,/directory:"1"/);
  assert.doesNotMatch(mobile,/\/hotels\/results\?/);
 });
-test("Nuitee SDK alone creates authoritative placeId and supplier results handoff",()=>{
+test("reviewed city IDs and direct hotel routes replace supplier SearchBar autocomplete",()=>{
  const builder=read("src/lib/travel/hotel-whitelabel.ts");
+ const routing=read("src/lib/travel/hotel-routing.ts");
  const ui=read("src/components/hotel/HotelBookingExperience.tsx");
  const provider=read("src/lib/travel/hotel-provider-search.ts");
- assert.match(builder,/HOTEL_BOOKING_ORIGIN = "https:\/\/hotel\.gthproglobal\.com"/);
+ assert.match(builder,/DEFAULT_HOTEL_BOOKING_ORIGIN = "https:\/\/hotel\.gthproglobal\.com"/);
  assert.match(builder,/place\.place_id/);
  assert.match(builder,/parseHotelBookingSearch\(params\)/);
- assert.match(ui,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
- assert.match(ui,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
- assert.match(ui,/LiteAPI\.SearchBar\.create/);
- assert.match(ui,/if \(!params\)/);
+ assert.match(routing,/VERIFIED_CITY_IDS/);
+ assert.match(routing,/resolveHotelDates/);
+ assert.match(routing,/hotelWhiteLabelUrl\(search\)/);
+ assert.match(ui,/resolveHotelRoute\(/);
+ assert.match(ui,/window\.location\.assign\(result\.url\)/);
+ assert.doesNotMatch(ui,/LiteAPI\.SearchBar\.create|HOTEL_WIDGET_SCRIPT|hotelWidgetSearchParams\(/);
  assert.match(provider,/void destination;/);
  for(const src of [globSafe(read("src/app/app/hotels/page.tsx")),read("src/lib/mobile/universal-search.ts")]){
   assert.doesNotMatch(src,/NUITEE_API_KEY|SUPABASE_SERVICE_ROLE_KEY|fetch\(["']https:\/\/api\.liteapi/);
