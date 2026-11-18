@@ -15,6 +15,7 @@ const avia=String.raw`document.getElementById('tpwl-search').innerHTML='<p>Exist
 const route=async r=>{
  const url=new URL(r.request().url());
  if(url.hostname==="www.aviasales.com")return r.fulfill({contentType:"text/html",body:"<title>Booking handoff fixture</title><p>No search or payment is made.</p>"});
+ if(url.hostname==="12go.asia")return r.fulfill({contentType:"text/html",body:"<title>12Go primary flight handoff fixture</title><p>No search or payment is made.</p>"});
  if(url.hostname==="components.liteapi.travel")return r.fulfill({contentType:"application/javascript",body:sdk});
  if(["tpwidg.com","tpwgts.com"].includes(url.hostname))return r.fulfill({contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},body:avia});
  if(url.hostname==="fixture-hotel-photos.invalid"||url.hostname==="app.wegotrip.com")return r.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240"><rect width="480" height="240" fill="#26354c"/><text x="25" y="125" fill="white">Fixture hotel photo</text></svg>'});
@@ -54,7 +55,15 @@ try{
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/first-view-${width}-${theme}.png`});
   await page.getByRole("tab",{name:"Flights",exact:true}).click();
   await page.getByRole("link",{name:"Search flights",exact:true}).waitFor();
-  const flight=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(flight.hostname,"www.aviasales.com");assert.equal(flight.searchParams.get("origin"),"LHR");assert.equal(flight.searchParams.get("depart_date"),"2026-12-10");
+  const flight=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+  assert.equal(flight.origin,origin);assert.equal(flight.pathname,"/go/transport/search");
+  assert.equal(flight.searchParams.get("mode"),"flight");assert.equal(flight.searchParams.get("from"),"London");
+  assert.equal(flight.searchParams.get("to"),"Mumbai");assert.equal(flight.searchParams.get("date"),"2026-12-10");
+  assert.equal(flight.searchParams.get("people"),"1");
+  const fallback=new URL(await page.getByRole("link",{name:"Advanced flight search",exact:true}).getAttribute("href"));
+  assert.equal(fallback.hostname,"www.aviasales.com");
+  assert.equal(fallback.searchParams.get("origin"),"LHR");assert.equal(fallback.searchParams.get("destination"),"BOM");
+  assert.equal(fallback.searchParams.get("return_date"),"2026-12-14");
   assert.equal(await page.getByRole("link",{name:"Continue booking",exact:true}).getAttribute("href"),"https://hotel.gthproglobal.com");
   assert.equal(await page.getByRole("combobox",{name:"From",exact:true}).count(),1);
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/flights-${width}-${theme}.png`});
@@ -96,24 +105,49 @@ try{
  await from.fill("LHR");await page.keyboard.press("ArrowDown");await page.keyboard.press("Enter");assert.equal(await from.inputValue(),"London (LHR)");
  await to.fill("BOM");await page.keyboard.press("ArrowDown");await page.keyboard.press("Enter");assert.equal(await to.inputValue(),"Mumbai (BOM)");
  await page.locator('input[name="tripStart"]').fill("2026-12-10");
- let handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(handoff.searchParams.get("origin"),"LHR");assert.equal(handoff.searchParams.has("return_date"),false);
+ let handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+ assert.equal(handoff.pathname,"/go/transport/search");
+ assert.equal(handoff.searchParams.get("from"),"London");assert.equal(handoff.searchParams.get("to"),"Mumbai");
+ assert.equal(handoff.searchParams.get("date"),"2026-12-10");assert.equal(handoff.searchParams.has("return_date"),false);
  await page.getByRole("radio",{name:"Round trip",exact:true}).check();assert.equal(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),"#travel-search");
- await page.locator('input[name="tripEnd"]').fill("2026-12-14");await page.getByRole("button",{name:"Swap departure and arrival airports"}).click();handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(handoff.searchParams.get("origin"),"BOM");assert.equal(handoff.searchParams.get("destination"),"LHR");assert.equal(handoff.searchParams.get("return_date"),"2026-12-14");
+ await page.locator('input[name="tripEnd"]').fill("2026-12-14");
+ await page.getByRole("button",{name:"Swap departure and arrival airports"}).click();
+ handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+ assert.equal(handoff.searchParams.get("from"),"Mumbai");assert.equal(handoff.searchParams.get("to"),"London");
+ const fallbackAfterSwap=new URL(await page.getByRole("link",{name:"Advanced flight search",exact:true}).getAttribute("href"));
+ assert.equal(fallbackAfterSwap.searchParams.get("origin"),"BOM");
+ assert.equal(fallbackAfterSwap.searchParams.get("destination"),"LHR");
+ assert.equal(fallbackAfterSwap.searchParams.get("return_date"),"2026-12-14");
  await page.getByRole("button",{name:"Plan a flight to Dubai",exact:true}).click();assert.equal(await to.inputValue(),"Dubai (DXB)");
  // Verify the existing provider link before navigating across origins. An external
  // browser popup can remain at url="" temporarily even after DOMContentLoaded.
  const originalLink=page.getByRole("link",{name:"Search flights",exact:true});
  const target=new URL((await originalLink.getAttribute("href"))||"",origin);
- assert.equal(target.hostname,"www.aviasales.com");
- assert.equal(target.searchParams.get("destination"),"DXB");
+ assert.equal(target.origin,origin);
+ assert.equal(target.pathname,"/go/transport/search");
+ assert.equal(target.searchParams.get("to"),"Dubai");
+ // Verify the outbound affiliate redirect BEFORE the supplier can consume
+ // or clean tracking parameters in its own visible URL.
+ const handoffResponse=await fetch(target,{redirect:"manual"});
+ assert.equal(handoffResponse.status,303);
+ const outbound=new URL(handoffResponse.headers.get("location"));
+ assert.equal(outbound.origin,"https://12go.asia");
+ assert.equal(outbound.pathname,"/en/flights/mumbai/dubai");
+ assert.equal(outbound.searchParams.get("date"),"2026-12-10");
+ assert.equal(outbound.searchParams.get("people"),"1");
+ assert.equal(outbound.searchParams.get("z"),"17380992");
+ assert.match(handoffResponse.headers.get("cache-control")||"",/no-store/);
+ const alternate=new URL(await page.getByRole("link",{name:"Advanced flight search",exact:true}).getAttribute("href"));
+ assert.equal(alternate.hostname,"www.aviasales.com");
+ assert.equal(alternate.searchParams.get("destination"),"DXB");
+ assert.equal(alternate.searchParams.get("return_date"),"2026-12-14");
  const [bookingPage]=await Promise.all([page.waitForEvent("popup"),originalLink.click()]);
- await bookingPage.waitForLoadState("domcontentloaded",{timeout:12000}).catch(()=>{});
- const popupUrl=bookingPage.url();
- if(popupUrl&&popupUrl!=="about:blank"){
-  const destination=new URL(popupUrl);
-  assert.equal(destination.hostname,"www.aviasales.com");
-  assert.equal(destination.searchParams.get("destination"),"DXB");
- }
+ await bookingPage.waitForURL(/12go\.asia\/en\/flights\//,{timeout:15000});
+ const supplier=new URL(bookingPage.url());
+ assert.equal(supplier.origin,"https://12go.asia");
+ assert.equal(supplier.pathname,"/en/flights/mumbai/dubai");
+ assert.equal(supplier.searchParams.get("date"),"2026-12-10");
+ // Supplier may strip the public affiliate parameter after attribution.
  await bookingPage.close();
  await page.goto(origin+"/travel?travelMode=experiences&"+trip,{waitUntil:"networkidle"});await page.locator("[data-experience-product]").first().waitFor();
  await page.locator('input[name="tripVisitDate"]').fill("2026-12-20");await page.getByRole("button",{name:"Find experiences",exact:true}).click();await page.waitForURL(url=>url.searchParams.get("tripVisitDate")==="2026-12-20");assert.match(page.url(),/tripEnd=2026-12-14/);
