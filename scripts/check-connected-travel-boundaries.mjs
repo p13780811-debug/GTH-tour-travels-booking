@@ -61,7 +61,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
      !hotel.includes("resolveHotelRoute")||
      !hotel.includes("hotelWhiteLabelSearchUrl")||
      !hotel.includes("trackedHotelCityHref")||
-     /\\bfetch\\s*\\(|process\\.env|SERVICE_ROLE_KEY|api\\.liteapi\\.travel/.test(hotel))
+     /\bfetch\s*\(|process\.env|SERVICE_ROLE_KEY|api\.liteapi\.travel/.test(hotel))
     throw Error("Hotel Find stays requires fixed-origin no-API direct provider handoff");
  }
  if(flightHandoffScope){
