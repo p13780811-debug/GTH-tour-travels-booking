@@ -7,6 +7,7 @@ import { ArrowUpRight, Ticket } from "lucide-react";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import MatchDayConcierge from "@/components/travel/MatchDayConcierge";
+import StadiumVerifiedMatchLinks from "@/components/stadium/StadiumVerifiedMatchLinks";
 import {safeHotelHandoff} from "@/lib/travel/stadium-concierge";
 import { findStadium, stadiums, upcomingStadiumEvents } from "@/lib/travel/stadiums";
 import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
@@ -78,6 +79,7 @@ export default async function StadiumPage({ params }: Props) {
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">{venue.overview}</p>
       </header>
       <EventShockwave target={{kind:"stadium",id:venue.slug}}/>
+      <StadiumVerifiedMatchLinks venueSlug={venue.slug}/>
       <MatchDayConcierge slug={venue.slug} name={venue.name} bookingUrl={safeHotelHandoff(venue)}/>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">
