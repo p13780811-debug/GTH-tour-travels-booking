@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, BusFront, Ship, TrainFront, PlaneTakeoff } from "lucide-react";
+import { findBookawayRoute } from "@/lib/travel/bookaway-routes";
 
 /**
  * First-party GTH PRO transport search.
@@ -23,6 +24,11 @@ const modes = [
 
 export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode }) {
   const [activeMode, setActiveMode] = useState<TransportMode>(mode);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  // Never guess supplier routes. Only offer an alternate handoff where an
+  // independently documented Bookaway route exists for this exact journey.
+  const bookawayRoute = findBookawayRoute(activeMode, from, to);
   const today = new Date().toISOString().slice(0, 10);
   const field =
     "mt-2 block h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-base text-[var(--text)] outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]";
@@ -56,13 +62,13 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
           From
           <input className={field} type="text" name="from" minLength={2} maxLength={80}
             placeholder={activeMode === "ferry" ? "e.g. Phuket" : activeMode === "train" || activeMode === "flight" ? "e.g. Bangkok" : "e.g. Mumbai"}
-            autoComplete="address-level2" required />
+            autoComplete="address-level2" value={from} onChange={(event) => setFrom(event.target.value)} required />
         </label>
         <label className="block min-w-0 text-sm font-semibold">
           To
           <input className={field} type="text" name="to" minLength={2} maxLength={80}
             placeholder={activeMode === "ferry" ? "e.g. Koh Phi Phi" : activeMode === "train" || activeMode === "flight" ? "e.g. Chiang Mai" : "e.g. Goa"}
-            autoComplete="off" required />
+            autoComplete="off" value={to} onChange={(event) => setTo(event.target.value)} required />
         </label>
         <label className="block min-w-0 text-sm font-semibold">
           Departure date
@@ -76,11 +82,17 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
             ))}
           </select>
         </label>
-        <div className="sm:col-span-2 lg:col-span-4">
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4">
           <button type="submit"
             className="gth-btn-gold inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-base font-bold sm:w-auto sm:min-w-64">
             Find tickets <ArrowRight size={18} aria-hidden="true" />
           </button>
+          {bookawayRoute && (
+            <button type="submit" formAction="/go/transport/bookaway"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 text-base font-semibold text-[var(--text)] sm:w-auto">
+              Check another booking option <ArrowRight size={18} aria-hidden="true" />
+            </button>
+          )}
         </div>
       </form>
       <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
@@ -88,6 +100,13 @@ export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode
         Exact stations or airports, schedules, date and passenger selection depend on route coverage; reconfirm on 12Go before payment.
         GTH PRO may receive a referral commission.
       </p>
+      {bookawayRoute && (
+        <p className="mt-1 text-xs leading-6 text-[var(--text-soft)]">
+          Another booking option is available for this mapped route. This is not a live
+          availability comparison: reconfirm the departure date, traveler count, exact
+          stations and final fare with that booking provider before paying.
+        </p>
+      )}
     </section>
   );
 }
