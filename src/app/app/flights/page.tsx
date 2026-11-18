@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
+import GTHTransportSearchWidget from "@/components/travel/GTHTransportSearchWidget";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import FlightServiceShortcuts from "@/components/flights/FlightServiceShortcuts";
 export const metadata:Metadata={title:"Flights | GTH PRO App"};
@@ -12,6 +13,7 @@ export default async function AppFlights({searchParams}:{searchParams:Promise<Re
   <div className="mx-auto w-full max-w-7xl pt-3">
    <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Flights</h1>
    <FlightServiceShortcuts/>
+   {!isResultsView && <div className="px-4 sm:px-6"><GTHTransportSearchWidget mode="flight" flightOnly /><p className="mb-4 text-sm text-[var(--text-soft)]">No matching first-network flight? Use the alternative flight search below.</p></div>}
    <AviasalesWhiteLabel isResultsView={isResultsView} resultsPath="/app/flights"/>
    <div className="px-4 sm:px-6"><FlightJourneyServices/></div>
   </div>
