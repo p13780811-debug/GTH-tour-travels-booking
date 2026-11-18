@@ -12,7 +12,8 @@ test("date-free hotel discovery is visible without changing the booking provider
   assert.match(booking, /Directory listings are for discovery, not proof of live rooms or prices/);
   assert.match(hotels, /directoryRequested = params.get\("view"\) === "directory"/);
   assert.match(booking, /HOTEL_BOOKING_ORIGIN/);
-  assert.match(booking, /hotelWhiteLabelUrl\(stay\)/);
+  assert.match(booking, /resolveHotelRoute\(/);
+  assert.match(booking, /hotelWhiteLabelUrl\(selectedStay\)/);
   assert.doesNotMatch(booking, /bookaway\.com|offer_id=34|aff_id=4344/i);
 });
 
