@@ -61,7 +61,7 @@ test("Unsupported or ambiguous city routing never fabricates 12Go flight availab
   assert.equal(trip.connectedTwelveGoFlightHref({...parsed.trip,...change},now),null,JSON.stringify(change));
  }
  const source=readFileSync("src/lib/travel/connected-trip.ts","utf8");
- assert.doesNotMatch(source,/fetch\\(|api\\.12go|NUITEE_.*KEY|process\\.env/);
+ assert.doesNotMatch(source,/fetch\(|api\.12go|NUITEE_.*KEY|process\.env/);
 });
 test("new connected surface uses existing providers without paid API, fabricated experience routes or homepage changes",()=>{
  const read=p=>readFileSync(p,"utf8"),client=read("src/components/travel/ConnectedTravelWorkspace.tsx"),cta=read("src/components/travel/NuiteeFlightHandoff.tsx");
