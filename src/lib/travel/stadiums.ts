@@ -2,7 +2,7 @@ export const stadiumSports = ["Cricket", "Football", "Baseball", "Motorsport", "
 export type StadiumSport = (typeof stadiumSports)[number];
 
 type Source = { label: string; url: string };
-type StadiumEvent = Source & { starts: string; ends?: string };
+type StadiumEvent = Source & { starts: string; ends?: string; sport: StadiumSport };
 export type StadiumProduct = {
   label: string;
   kind: "Event tickets" | "Venue experience";
@@ -99,15 +99,15 @@ export const stadiums: readonly Stadium[] = [
     // Never label these as live ticket availability; dates may change.
     events: [
       {
-        label: "Australia vs England men’s T20I", starts: "2026-11-21",
+        label: "Australia vs England men’s T20I", starts: "2026-11-21", sport: "Cricket",
         url: "https://www.mcg.org.au/events/2026/november/australia-v-england-mens-t20i-21-nov-2026",
       },
       {
-        label: "Australia vs New Zealand Boxing Day Test", starts: "2026-12-26", ends: "2026-12-30",
+        label: "Australia vs New Zealand Boxing Day Test", starts: "2026-12-26", ends: "2026-12-30", sport: "Cricket",
         url: "https://www.mcg.org.au/events/2026/december/boxing-day-test-day-1-australia-v-new-zealand",
       },
       {
-        label: "Australia vs England 150th Anniversary Test", starts: "2027-03-11", ends: "2027-03-15",
+        label: "Australia vs England 150th Anniversary Test", starts: "2027-03-11", ends: "2027-03-15", sport: "Cricket",
         url: "https://www.mcg.org.au/news/2026/march/international-cricket-schedule-confirmed-for-202627",
       },
     ],
@@ -137,11 +137,11 @@ export const stadiums: readonly Stadium[] = [
     seatMap: { label: "National Stadium seat viewer", url: "https://www.thekallang.com.sg/en/plan-your-visit/stadium-seat-view.html" },
     events: [
       {
-        label: "Guns N’ Roses World Tour — Singapore", starts: "2026-11-25",
+        label: "Guns N’ Roses World Tour — Singapore", starts: "2026-11-25", sport: "Concerts",
         url: "https://www.thekallang.com.sg/en/things-to-do/events/guns-n--roses-world-tour-2026.html",
       },
       {
-        label: "Jay Chou Carnival II World Tour — Singapore", starts: "2027-01-08", ends: "2027-01-10",
+        label: "Jay Chou Carnival II World Tour — Singapore", starts: "2027-01-08", ends: "2027-01-10", sport: "Concerts",
         url: "https://www.thekallang.com.sg/en/things-to-do/events/jay-chou--carnival---world-tour-2027-in-singapore.html",
       },
     ],
@@ -162,7 +162,7 @@ export const stadiums: readonly Stadium[] = [
     schedule: { label: "Silverstone event calendar", url: "https://www.silverstone.co.uk/events" },
     seatMap: { label: "Silverstone grandstand guide", url: "https://www.silverstone.co.uk/events/formula-1-british-grand-prix/tickets/grandstands" },
     events: [{
-      label: "Formula 1 British Grand Prix", starts: "2027-07-02", ends: "2027-07-04",
+      label: "Formula 1 British Grand Prix", starts: "2027-07-02", ends: "2027-07-04", sport: "Motorsport",
       url: "https://ticketing.formula1.com/great-britain/",
     }],
   },
