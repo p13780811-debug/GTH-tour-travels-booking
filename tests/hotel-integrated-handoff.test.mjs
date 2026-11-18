@@ -50,6 +50,10 @@ test("unsafe or unverified IDs, dates and parties cannot synthesize supplier inv
   assert.equal(routing.resolveHotelRoute({hotelId:"arbitrary-record"},today).status,"invalid");
   assert.equal(routing.resolveHotelRoute({destination:"Mumbai",placeId:"UNREVIEWED-PLACE"},today).status,"invalid");
   assert.equal(routing.resolveHotelRoute({destination:"Mumbai",rooms:"3",adults:"1"},today).status,"invalid");
+  assert.equal(routing.resolveHotelRoute({destination:"Mumbai",adults:"99"},today).status,"invalid");
+  assert.equal(routing.resolveHotelRoute({destination:"Mumbai",rooms:"0"},today).status,"invalid");
+  assert.equal(routing.resolveHotelRoute({destination:"Mumbai",checkIn:"2026-12-20"},today).status,"invalid");
+  assert.equal(routing.resolveHotelRoute({destination:"Mumbai",checkIn:"2026-10-01",checkOut:"2026-10-02"},today).status,"invalid");
 });
 
 test("all hotel gateways retain existing genuine supplier widget and fixed-origin redirect",()=>{
