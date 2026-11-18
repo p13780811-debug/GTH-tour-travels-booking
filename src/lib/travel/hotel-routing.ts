@@ -1,4 +1,5 @@
 import {
+  HOTEL_BOOKING_ORIGIN,
   hotelWhiteLabelUrl,
   normalizeHotelOccupancies,
   type HotelBookingSearch,
@@ -69,8 +70,20 @@ export type HotelRouteIntent = {
 };
 export type HotelRouteResolution =
   | {status: "ready"; kind: "hotel" | "city"; url: string; destination?: string; datesDefaulted: boolean}
-  | {status: "unmapped"; kind: "city"; destination: string}
+  | {status: "unmapped"; kind: "city"; destination: string; url: string}
   | {status: "invalid"; kind: "hotel" | "city"};
+
+/** A supplier-hosted destination picker for cities without an approved Place ID.
+ * The official White Label listing route accepts no arbitrary city-name param.
+ * Never add an unverified placeId or pretend this link is a city results page.
+ */
+export function hotelWhiteLabelSearchUrl(currency?: string): string {
+  const url = new URL("/hotels", HOTEL_BOOKING_ORIGIN);
+  url.searchParams.set("language", "en");
+  url.searchParams.set("currency",
+    ["INR","USD","EUR","GBP","AED","SGD","AUD","CAD","JPY"].includes(currency ?? "") ? currency! : "INR");
+  return url.toString();
+}
 
 /**
  * No fetch, SDK, autocomplete, geocoding, token or database call.
@@ -86,7 +99,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   const placeId = safeId(intent.placeId, 255) ??
     (destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null);
   if (kind === "city" && !placeId) return destination
-    ? {status: "unmapped", kind, destination}
+    ? {status: "unmapped", kind, destination, url: hotelWhiteLabelSearchUrl(intent.currency)}
     : {status: "invalid", kind};
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);
   const adults = positive(intent.adults, 20, 2);
@@ -116,10 +129,11 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
     ...(destination ? {destination} : {}), datesDefaulted: dates.defaulted};
 }
 
-/** Local fallback preserves the requested destination without a guessed supplier ID. */
-export function unverifiedHotelDestinationHref(destination: string): string {
-  const clean = cleanHotelDestination(destination);
-  return "/hotels?" + new URLSearchParams({
-    view: "booking", ...(clean ? {city: clean} : {}), manual: "1",
-  }).toString();
+/** Backward-compatible zero-API handoff. Unknown cities open the provider's
+ * own destination search interface; no on-site OSM search is forced.
+ */
+export function unverifiedHotelDestinationHref(destination: string, currency?: string): string {
+  return cleanHotelDestination(destination)
+    ? hotelWhiteLabelSearchUrl(currency)
+    : "/hotels?view=booking";
 }
