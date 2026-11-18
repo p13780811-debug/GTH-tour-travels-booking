@@ -29,7 +29,9 @@ test("Pages use verified event IDs and scoped public RLS reads, never live provi
   assert.match(source, /NEXT_PUBLIC_SUPABASE_ANON_KEY/);
   assert.match(source, /\.limit\(100\)/);
   assert.match(source, /AbortSignal\.timeout\(4500\)/);
-  assert.match(source, /\/\^seatgeek:/);
+  assert.match(source, /calendar:/);
+  assert.match(source, /reviewedSportsFixtures\(\)/);
+  assert.match(source, /id\.startsWith\("calendar:"\)/);
   assert.doesNotMatch(source + hub + detail + venue, /SUPABASE_SERVICE_ROLE_KEY|ODDS_API_KEY|GEMINI_API_KEY|api\.the-odds-api\.com|api\.seatgeek\.com|fetch\(/);
 });
 test("Only verified upcoming, source-backed match URLs enter the sitemap", () => {
