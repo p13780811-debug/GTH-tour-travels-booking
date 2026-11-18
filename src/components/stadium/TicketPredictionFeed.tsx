@@ -88,6 +88,7 @@ export default async function TicketPredictionFeed() {
               ) : <p>Odds snapshot unavailable.</p>}
               {link ? <a href={link} target="_blank" rel="noopener noreferrer sponsored">Check exact-match ticket listing</a>
                 : fallback ? <>
+                  <p>Official tickets not currently listed on GTH PRO for this exact match.</p>
                   <a href={fallback} target="_blank" rel="noopener noreferrer nofollow">Search web for official tickets</a>
                   <p>Search results are not verified ticket inventory. Confirm match date and seller.</p>
                 </> : <p>Matches Currently Unavailable — official ticket search could not be built.</p>}
