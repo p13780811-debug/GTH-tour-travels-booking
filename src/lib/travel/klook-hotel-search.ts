@@ -14,7 +14,7 @@ const HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
 export function trackedHotelCityHref(value:unknown):string|null{
   if(typeof value!=="string")return null;
   const city=value.normalize("NFKC").trim().toLocaleLowerCase("en");
-  const href=HOTEL_DESTINATIONS[city];
+  const href=Object.prototype.hasOwnProperty.call(HOTEL_DESTINATIONS,city) ? HOTEL_DESTINATIONS[city] : undefined;
   if(!href)return null;
   return trackKlookDestination(new URL(href),"gth_hotels_"+city);
 }
