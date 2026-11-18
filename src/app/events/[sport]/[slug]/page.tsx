@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import StadiumTicketDiscovery from "@/components/stadium/StadiumTicketDiscovery";
 import JsonLd from "@/components/seo/JsonLd";
 import { safeHotelHandoff } from "@/lib/travel/stadium-concierge";
 import { officialTicketSearchUrl } from "@/lib/stadium-predictions/ticket-search";
@@ -18,7 +19,7 @@ async function findMatch(params: Props["params"]) {
   if (!/^[a-z0-9-]{2,110}$/.test(sport) || !/^[a-z0-9-]{10,250}$/.test(slug)) notFound();
   const path = "/events/" + sport + "/" + slug;
   const match = (await upcomingMatchPages()).find(item => matchSeoPath(item) === path);
-  if (!match || sportSegment(match.sport) !== sport) notFound();
+  if (!match || sportSegment(match.sport) !== sport || !indexableMatch(match)) notFound();
   return match;
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -68,7 +69,6 @@ export default async function MatchDetails({ params }: Props) {
   const hotelHref = venue
     ? safeHotelHandoff(venue)
     : "/hotels?" + new URLSearchParams({ view: "booking", city: match.city || "" });
-  const toursHref = "/tours?" + new URLSearchParams({ city: match.city || "" });
   const ticketDiscoveryHref = officialTicketSearchUrl(match.home, match.away, match.venue, match.sport, match.starts);
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <MatchJsonLd match={match} />
@@ -95,23 +95,24 @@ export default async function MatchDetails({ params }: Props) {
         <p className="mt-3 text-sm text-[var(--text-soft)]">
           Fixture details are source-reviewed. Confirm exact start time, changes and admission with the organizer.
         </p>
-        {match.ticketUrl ? <a href={match.ticketUrl} target="_blank" rel="noopener noreferrer sponsored"
+        {match.officialUrl && <a href={match.officialUrl} target="_blank" rel="noopener noreferrer"
           className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
-          Check exact-match ticket listing
-        </a> : ticketDiscoveryHref ? <a href={ticketDiscoveryHref} target="_blank"
-          rel="noopener noreferrer nofollow"
-          className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
-          Search web for official tickets
-        </a> : <p className="mt-5 text-sm">Match-ticket discovery is currently unavailable.</p>}
-        {match.officialUrl ? <a href={match.officialUrl} target="_blank"
-          rel="noopener noreferrer" className="ml-3 mt-5 inline-flex min-h-12 items-center underline">
-          Check organizer fixture calendar
-        </a> : null}
-        {!match.ticketUrl && <p className="mt-3 text-sm text-[var(--text-soft)]">
-          This opens a Google search, not a ticket seller or verified booking. Confirm the organizer,
-          fixture date and seat availability independently.
+          Check official organizer event information
+        </a>}
+        {match.ticketUrl ? <a href={match.ticketUrl} target="_blank" rel="noopener noreferrer"
+          className="gth-btn mt-5 ml-3 inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
+          View verified exact-match marketplace listing
+        </a> : <p className="mt-4 text-sm text-[var(--text-soft)]">
+          Official tickets not currently listed on GTH PRO for this exact match.
+          Match tickets may be announced later by the organizer.
         </p>}
+        {!match.officialUrl && !match.ticketUrl && ticketDiscoveryHref &&
+          <a href={ticketDiscoveryHref} target="_blank" rel="noopener noreferrer nofollow"
+            className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm">
+            Search web for official tickets
+          </a>}
       </header>
+      {venue && <StadiumTicketDiscovery venue={venue} match={match} />}
 
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6" aria-labelledby="prediction-heading">
         <h2 id="prediction-heading" className="text-2xl font-bold">Match prediction & analysis</h2>
@@ -167,7 +168,7 @@ export default async function MatchDetails({ params }: Props) {
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6" aria-labelledby="trip-heading">
         <h2 id="trip-heading" className="text-2xl font-bold">Plan your trip to {match.venue}</h2>
         <p className="mt-3 leading-7 text-[var(--text-soft)]">
-          Travelling to {match.city || "the match"}? Explore hotels and attractions and plan bus or rail transport.
+          Travelling to {match.city || "the match"}? Plan hotels, airport transfers, bus or rail transport around the verified venue.
           Booking partners confirm dates, exact routes, property availability and payment terms.
         </p>
         <nav aria-label="Match-day travel services" className="mt-5 flex flex-wrap gap-3">
@@ -176,7 +177,7 @@ export default async function MatchDetails({ params }: Props) {
             className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4 font-semibold">
             Check stays in {match.city || "this city"}
           </a>
-          <Link href={toursHref} className="gth-btn inline-flex min-h-12 items-center rounded-xl px-4">Explore local tours</Link>
+          <Link href="/transfers" className="gth-btn inline-flex min-h-12 items-center rounded-xl px-4">Find airport transfers</Link>
           <Link href="/bus" className="gth-btn inline-flex min-h-12 items-center rounded-xl px-4">Find bus journeys</Link>
           <Link href="/train" className="gth-btn inline-flex min-h-12 items-center rounded-xl px-4">Find train journeys</Link>
           {venue ? <Link href={"/stadiums/" + venue.slug} className="gth-btn inline-flex min-h-12 items-center rounded-xl px-4">Venue & transit guide</Link> : null}
