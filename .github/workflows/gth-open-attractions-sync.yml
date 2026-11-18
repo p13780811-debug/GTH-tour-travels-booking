@@ -1,25 +1,7 @@
 name: GTH Open Attractions — CC0 Destination Sync
+# EMERGENCY PAUSE 2026-11-18: no schedule or push triggers; importer stays off.
 on:
-  schedule:
-    - cron: "41 3 * * *"
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/gth-open-attractions-sync.yml"
-      - "scripts/attractions/wikidata_attractions.py"
-      - "tests/test_wikidata_attractions.py"
-      - "supabase/functions/gth-open-attractions-ingest/**"
   workflow_dispatch:
-    inputs:
-      region:
-        required: true
-        type: choice
-        options: [goa, maharashtra]
-      mode:
-        required: true
-        type: choice
-        options: [dry-run, import]
-        default: dry-run
 permissions:
   contents: read
   id-token: write
@@ -28,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   import-cc0-destinations:
-    if: github.ref == 'refs/heads/main'
+    if: ${{ false }} # EMERGENCY: never execute the importer
     runs-on: ubuntu-latest
     timeout-minutes: 22
     env:
