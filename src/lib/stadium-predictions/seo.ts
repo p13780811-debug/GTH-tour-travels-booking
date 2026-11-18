@@ -53,6 +53,7 @@ export function matchSeoPath(match: SportsSeoMatch): string | null {
 }
 export function matchedVenue(match: SportsSeoMatch) {
   const sport = sportSegment(match.sport);
+  if (sport === "other-sports") return undefined;
   return stadiums.find(venue => venue.name.toLowerCase() === match.venue.toLowerCase() &&
     venue.sports.some(item => sportSegment(item) === sport));
 }
