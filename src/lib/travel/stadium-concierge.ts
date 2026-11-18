@@ -1,5 +1,6 @@
 import type {Stadium} from "./stadiums";
 export const venueLocations:Record<string,{lat:number;lng:number;transit:string}>={
+ "lords-cricket-ground":{lat:51.5294,lng:-0.1727,transit:"St John's Wood station, then follow MCC event-day gate and accessibility guidance."},
  "eden-gardens":{lat:22.5646,lng:88.3433,transit:"Esplanade / Chandni Chowk Metro; check event-day gate notices."},
  "wankhede-stadium":{lat:18.9389,lng:72.8258,transit:"Churchgate railway station; follow your ticket's gate instructions."},
  "narendra-modi-stadium":{lat:23.0917,lng:72.5975,transit:"Motera Stadium Metro; check event-specific access."},
