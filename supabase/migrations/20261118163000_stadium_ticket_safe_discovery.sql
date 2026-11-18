@@ -4,6 +4,11 @@
 ALTER TABLE IF EXISTS public.stadium_tickets_predictions
   ADD COLUMN IF NOT EXISTS ticket_discovery_mode text NOT NULL DEFAULT 'search_only';
 
+-- Existing exactly verified provider rows retain their former meaning.
+UPDATE public.stadium_tickets_predictions
+  SET ticket_discovery_mode = 'provider_verified'
+  WHERE ticket_booking_link IS NOT NULL AND ticket_discovery_mode = 'search_only';
+
 ALTER TABLE IF EXISTS public.stadium_tickets_predictions
   DROP CONSTRAINT IF EXISTS stadium_tickets_predictions_match_id_check;
 ALTER TABLE IF EXISTS public.stadium_tickets_predictions
