@@ -6,6 +6,7 @@ import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
 import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
   hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -71,7 +72,17 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
       if (value && value.length <= 20 && query.getAll(key).length === 1) cityParams.set(key, value);
     }
   }
-  const cityBookingHref = cityParams.has("city") ? "/api/hotels/booking?" + cityParams.toString() : "";
+  const cityResolution = cityParams.has("city") ? resolveHotelRoute({
+    destination:cityHint,currency:displayCurrency,
+    checkIn:cityParams.get("checkin")??undefined,
+    checkOut:cityParams.get("checkout")??undefined,
+    adults:cityParams.get("adults")??undefined,
+    rooms:cityParams.get("rooms")??undefined,
+  }) : null;
+  // Never throw an unknown city onto a generic supplier homepage without
+  // preserving the selected city. Keep the original real supplier picker for it.
+  const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
+  const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
   useEffect(() => {
     if (cityBookingHref) window.location.replace(cityBookingHref);
   }, [cityBookingHref]);
@@ -226,6 +237,11 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
       </div>
     </div>
     {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
+    {unmappedCityHref && <p className="gth-hotel-booking-note">
+      Your destination is <strong>{cityHint}</strong>. Select that location in the supplier search below,
+      or <a href={unmappedCityHref} className="underline" target="_blank" rel="noopener noreferrer">open the secure worldwide destination picker</a>.
+      We do not substitute an unverified city ID.
+    </p>}
     {showSearch && searchToggle}
     {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
       {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
