@@ -26,17 +26,14 @@ test("invalid or empty destination cannot open a provider URL",()=>{
   if(parsed.ok)assert.equal(directTourSearch(parsed.filters),null);
  }
 });
-test("Tours and Activities share the first-click handoff and retain filtered local cards",()=>{
+test("Tours and Activities search first-party matches first and offer explicit tracked fallback",()=>{
  const hero=read("src/components/tours/TourSearchHero.tsx");
  const landing=read("src/components/tours/TourLanding.tsx");
  assert.match(hero,/^"use client";/);
- assert.match(hero,/onSubmit=\{handleSearch\}/);
- assert.match(hero,/new FormData\(event\.currentTarget\)/);
- assert.match(hero,/window\.open\(providerUrl,"_blank","noopener,noreferrer"\)/);
+ assert.doesNotMatch(hero,/onSubmit=\{handleSearch\}|window\.open\(/);
  assert.match(hero,/action=\{basePath\+"#discover"\} method="GET"/);
- assert.doesNotMatch(hero,/event\.preventDefault\(/);
- assert.doesNotMatch(hero,/if\(basePath!=="\/tours"\)return/);
- assert.doesNotMatch(hero,/Search \{filters.city\} on Klook/);
+ assert.match(hero,/providerUrl && <a href=\{providerUrl\}/);
+ assert.match(hero,/target="_blank" rel="noopener noreferrer sponsored"/);
  assert.match(hero,/partnerSearchHref\(basePath==="\/tours"\?"tours":"activities"/);
  assert.match(landing,/id="discover" className="scroll-mt-24"/);
 });
