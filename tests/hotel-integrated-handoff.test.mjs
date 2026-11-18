@@ -6,14 +6,14 @@ import ts from "typescript";
 
 const read = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 function load(path, imports={}) {
-  const module={exports:{}};
+  const testModule={exports:{}};
   vm.runInNewContext(ts.transpileModule(read(path),{
     compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}
   }).outputText,{
-    module,exports:module.exports,URL,URLSearchParams,Date,atob,btoa,
+    module:testModule,exports:testModule.exports,URL,URLSearchParams,Date,atob,btoa,
     require:name=>{if(name in imports)return imports[name];throw Error("Unexpected import "+name);}
   },{timeout:3000});
-  return module.exports;
+  return testModule.exports;
 }
 const wl=load("src/lib/travel/hotel-whitelabel.ts");
 const routing=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":wl});
