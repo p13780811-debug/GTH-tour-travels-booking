@@ -14,6 +14,9 @@ on:
       - "tests/stadium-predictions-engine.test.mjs"
       - "tests/stadium-sports-seo.test.mjs"
       - "tests/stadium-predictions-interim.test.mjs"
+      - "tests/stadium-official-first.test.mjs"
+      - "src/lib/travel/stadium-ticket-destinations.ts"
+      - "src/app/stadiums/StadiumTicketDestinations.tsx"
       - ".github/workflows/gth-osm-attractions-sync.yml"
       - "vercel.json"
       - "src/app/tickets/**"
@@ -36,7 +39,7 @@ jobs:
         with:
           node-version: "22"
       - name: Validate ticket sources, categories, fallbacks and URL safety
-        run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs tests/stadium-predictions-engine.test.mjs tests/stadium-sports-seo.test.mjs tests/stadium-predictions-interim.test.mjs
+        run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs tests/stadium-predictions-engine.test.mjs tests/stadium-sports-seo.test.mjs tests/stadium-predictions-interim.test.mjs tests/stadium-official-first.test.mjs
       - name: Ensure no broken in-page official sources anchor
         run: |
           if grep -R 'href="#official-stadium-sources"' src/app/stadiums; then
