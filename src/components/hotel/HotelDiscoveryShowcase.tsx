@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BedDouble, ChevronRight, MapPin, Search } from "lucide-react";
-import {cleanHotelDestination,resolveHotelRoute,unverifiedHotelDestinationHref} from "@/lib/travel/hotel-routing";
+import {cleanHotelDestination,resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 /**
  * Editorial hotel discovery inspired by swipe-first travel storefronts.
@@ -56,7 +56,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
       return;
     }
     const result=resolveHotelRoute({destination:selected});
-    window.location.assign(result.status==="ready"?result.url:unverifiedHotelDestinationHref(selected));
+    if (result.status!=="invalid") window.location.assign(result.url);
   };
   const active = types.some(t => t.value === activeCategory) ? activeCategory : "";
   return (
