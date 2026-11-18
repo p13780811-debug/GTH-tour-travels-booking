@@ -15,7 +15,7 @@ export type PublicTender = {
 };
 export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[] };
 export type TenderResult =
- | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean }
+ | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean; snapshotStale?: boolean; snapshotCheckedAt?: string }
  | { ok: false; status: number; error: string };
 
 export function parseTenderFilters(params: URLSearchParams):
