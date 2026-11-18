@@ -98,8 +98,10 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
   // Existing city-level CTAs now open the exact reviewed city in White Label.
   // Unknown cities open the provider search picker, not unrelated inventory.
   useEffect(() => {
-    if (query.get("manual")==="1" || restoredQuery) return;
-    const incoming=query.get("city")||query.get("destination");
+    if (restoredQuery) return;
+    // Old deep links may contain "name" rather than city. Without an exact
+    // verified hotelId, supplier search is safer than guessing a property.
+    const incoming=query.get("city")||query.get("destination")||query.get("name");
     if (!incoming) return;
     const result=resolveHotelRoute({destination:incoming,
       checkIn:query.get("checkin")||undefined,checkOut:query.get("checkout")||undefined,
