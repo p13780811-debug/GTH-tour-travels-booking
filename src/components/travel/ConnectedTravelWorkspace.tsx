@@ -10,7 +10,7 @@ import {HOTEL_CURRENCY_OPTIONS} from "@/lib/travel/hotel-currency";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import {FLIGHT_DESTINATIONS,EXPERIENCE_COLLECTIONS} from "@/lib/travel/travel-editorial";
-import {TRAVEL_MODES,connectedFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
+import {TRAVEL_MODES,connected12GoFlightHref,connectedFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
 import TravelAirportField,{airportCode,airportLabel} from "./TravelAirportField";
 import styles from "./ConnectedTravelWorkspace.module.css";
 
@@ -34,8 +34,15 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
  useEffect(()=>setError(initialError||""),[initialError]);
  const countriesList=countries.map(item=>item.code);
  const parseDraft=()=>parseConnectedTrip({tripCountry:draft.country,tripCity:draft.city,tripStart:draft.start,tripEnd:draft.end,tripVisitDate:draft.visitDate,tripAdults:String(draft.adults),tripRooms:String(draft.rooms),tripChildren:children,tripCurrency:draft.currency,tripFrom:draft.origin,tripTo:draft.destination},countriesList);
- const parsed=parseDraft(),flightHref=parsed.ok?connectedFlightHref({...parsed.trip,end:oneWay?"":parsed.trip.end}):null;
- const readyFlight=flightHref&&(!oneWay?draft.end:true)?flightHref:null;
+ const parsed=parseDraft();
+ const flightTrip=parsed.ok?{...parsed.trip,end:oneWay?"":parsed.trip.end}:null;
+ // Use the existing first-party 12Go gateway first; an unmapped airport
+ // retains the current Aviasales route instead of inventing a 12Go city.
+ const primaryFlight=flightTrip?connected12GoFlightHref(flightTrip):null;
+ const alternativeFlight=flightTrip?connectedFlightHref(flightTrip):null;
+ const tripReady=Boolean(flightTrip&&(!oneWay?draft.end:true));
+ const readyFlight=tripReady?(primaryFlight||alternativeFlight):null;
+ const readyAlternative=tripReady&&primaryFlight?alternativeFlight:null;
  const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===trip.country)?.name;
  const edit=(change:Partial<ConnectedTrip>)=>setDraft(current=>({...current,...change}));
  function apply(afterHandoff=false){
@@ -71,6 +78,11 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
      {mode!=="experiences"&&<label className={styles.field}><span><CalendarDays size={15} aria-hidden="true"/>{mode==="flights"?"Return":"Check-out"}</span><input name="tripEnd" type="date" value={mode==="flights"&&oneWay?"":draft.end} disabled={mode==="flights"&&oneWay} onChange={event=>edit({end:event.target.value})}/></label>}
      {mode==="flights"?<a ref={searchLink} href={readyFlight||"#travel-search"} target={readyFlight?"_blank":undefined} rel="noopener noreferrer sponsored" className={styles.primary} onClick={event=>{const allowed=apply(true);if(!readyFlight||!allowed)event.preventDefault();}}>Search flights <Search size={18} aria-hidden="true"/></a>:<button className={styles.primary} type="submit" disabled={pending}>{pending?"Finding your next adventure…":mode==="hotels"?"Find stays":"Find experiences"}<Search size={18} aria-hidden="true"/></button>}
     </div>
+    {mode==="flights"&&readyAlternative&&<a href={readyAlternative}
+      target="_blank" rel="noopener noreferrer sponsored"
+      className={styles.textLink} onClick={()=>{apply(true);}}>
+      No flights on the first search? Check another booking option <ArrowUpRight size={16} aria-hidden="true"/>
+    </a>}
     {mode==="hotels"&&<details className={styles.options}><summary><Users size={16} aria-hidden="true"/>{draft.adults} adults per room · {draft.rooms} {draft.rooms===1?"room":"rooms"}{children?" · children":""}<span>{draft.currency} · Edit guests</span></summary><div className={styles.extraFields}>
      <label>Adults per room<input name="tripAdults" type="number" min="1" max="20" value={draft.adults} onChange={event=>edit({adults:Number(event.target.value)})}/></label>
      <label>Rooms<input name="tripRooms" type="number" min="1" max="8" value={draft.rooms} onChange={event=>edit({rooms:Number(event.target.value)})}/></label>
@@ -78,7 +90,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
      <label>Hotel currency<select name="tripCurrency" value={draft.currency} onChange={event=>edit({currency:event.target.value})}>{HOTEL_CURRENCY_OPTIONS.map(item=><option key={item.code} value={item.code}>{item.code} · {item.name}</option>)}</select></label>
     </div></details>}
     {error&&<p role="alert" className={styles.message}>{error}</p>}
-    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Compare your route, then confirm fares, passengers and cabin before booking.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Discover properties first. Check current room prices and terms before booking."}</p>
+    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Search flights with the primary booking partner. If that route has no flights, use the alternate search link. Confirm airports, passengers, dates and fares with the supplier.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Discover properties first. Check current room prices and terms before booking."}</p>
    </form>
   </div>
   <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
