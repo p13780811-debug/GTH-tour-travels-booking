@@ -247,6 +247,10 @@ async function aiExplanation(db: DB, match: VerifiedMatch, snapshot: JsonObject,
   } catch { return null; }
 }
 export async function refreshStadiumPredictions() {
+  // Remains completely disabled until audited migration, grants and budget RPC exist.
+  if (process.env.GTH_STADIUM_PREDICTIONS_DB_ENABLED !== "true") {
+    return { status: "database-activation-pending" as const, saved: 0, oddsRequests: 0 };
+  }
   const db = serverDb();
   const day = new Date().toISOString().slice(0, 10);
   const month = day.slice(0, 7);
