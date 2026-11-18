@@ -1,6 +1,5 @@
 "use client";
 
-import type {FormEvent} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,Compass,Search} from "lucide-react";
@@ -11,15 +10,11 @@ import {TOUR_CATEGORIES,parseTourFilters,EMPTY_TOUR_SEARCH,EXPERIENCE_MODES,expe
 /** Pre-rendered search progressively enhances the native GET form on the client. */
 export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{basePath:ExperiencePath;filters?:TourSearch}){
  const mode=EXPERIENCE_MODES[basePath],categories=experienceCategories(basePath);
- function handleSearch(event:FormEvent<HTMLFormElement>){
-  const parsed=parseTourFilters(Object.fromEntries(new FormData(event.currentTarget).entries()));
-  if(!parsed.ok)return;
-  const category=TOUR_CATEGORIES.find(item=>item.value===parsed.filters.category)?.label || "";
-  const providerUrl=partnerSearchHref(basePath==="/tours"?"tours":"activities",parsed.filters.city,category);
-  // User-initiated Klook tab + native GET navigation to filtered #discover cards.
-  // Do not preventDefault: local search still works when a popup is blocked.
-  if(providerUrl)window.open(providerUrl,"_blank","noopener,noreferrer");
- }
+ // Local search must be one deterministic action, not a surprise second tab.
+ // Offer the existing tracked provider search explicitly after the city filter
+ // is applied, so users can expand coverage if no exact GTH products match.
+ const selectedCategory=TOUR_CATEGORIES.find(item=>item.value===filters.category)?.label || "";
+ const providerUrl=filters.city?partnerSearchHref(basePath==="/tours"?"tours":"activities",filters.city,selectedCategory):null;
  return <>
   <section data-travel-hero="true" className="border-b border-[var(--border)] bg-[var(--bg)] text-[var(--text)]">
    <div className="mx-auto max-w-7xl px-4 pb-4 pt-3 sm:px-6 sm:py-8">
@@ -38,7 +33,7 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
     </div>
     <section aria-labelledby="experience-search-title" className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:p-4">
      <h2 id="experience-search-title" className="text-sm font-bold">{basePath==="/tours"?"Find your next tour":"Find something to do"}</h2>
-     <form key={JSON.stringify(filters)} action={basePath+"#discover"} method="GET" onSubmit={handleSearch} role="search" aria-label={mode.label+" destination search"} className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto] sm:items-end">
+     <form key={JSON.stringify(filters)} action={basePath+"#discover"} method="GET" role="search" aria-label={mode.label+" destination search"} className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto] sm:items-end">
       <label className="block min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-xs font-medium">Where are you going?
        <span className="flex items-center gap-2"><Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/><input name="city" type="search" maxLength={80} defaultValue={filters.city} placeholder="City or destination worldwide" className="min-h-9 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-offset-2"/></span>
       </label>
@@ -50,7 +45,11 @@ export default function TourSearchHero({basePath,filters=EMPTY_TOUR_SEARCH}:{bas
       <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold">{mode.action}<ArrowRight size={16} aria-hidden="true"/></button>
      </form>
      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs leading-5 text-[var(--text-soft)]">
-      <p>GTH Experiences opens a provider-operated search in a new tab through our referral link and filters the original supplier cards below. Confirm dates, guests and final prices with the provider.</p>
+      <p>Search filters source-backed tours and activities on this page. Exact dates, guests and final prices are confirmed on the supplier product page.</p>
+      {providerUrl && <a href={providerUrl} target="_blank" rel="noopener noreferrer sponsored"
+        className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
+        Broaden search with booking network <ArrowRight size={16} aria-hidden="true"/>
+      </a>}
      </div>
     </section>
    </div>

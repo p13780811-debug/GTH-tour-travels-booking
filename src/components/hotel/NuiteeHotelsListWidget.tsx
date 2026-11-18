@@ -2,10 +2,10 @@
 
 import {useEffect,useRef,useState} from "react";
 import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-whitelabel";
+import {hotelWhiteLabelSearchUrl,resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
 import styles from "./NuiteeHotelsListWidget.module.css";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
-import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 type LiteHotelsListOptions={
   selector:string;
@@ -64,15 +64,15 @@ export default function NuiteeHotelsListWidget({
 }){
   const initialized=useRef(false);
   const displayCurrency=hotelCurrency(currency);
-  const cityHandoff=resolveHotelRoute({placeId,currency:displayCurrency});
-  // Pass only date/guest context through the supplier's native exact-property links.
-  // Never append a city placeId to its individual property URLs.
-  const deepLinkParams=(()=>{
-    if(cityHandoff.status!=="ready")return `language=en&currency=${displayCurrency}`;
-    const search=new URL(cityHandoff.url).searchParams;
-    search.delete("placeId");
-    return search.toString();
-  })();
+  // Official supplier SDK owns exact hotel identity. Only pass default stay
+  // context on its deep links, never guess a property or city identifier.
+  const dates=resolveHotelDates(undefined,undefined);
+  const occupancies=[{adults:2,children:[]}];
+  const deepLinkParams=new URLSearchParams({language:"en",currency:displayCurrency,
+    checkin:dates.checkin,checkout:dates.checkout,
+    occupancies:btoa(JSON.stringify(occupancies))}).toString();
+  const safeBookingPicker=hotelWhiteLabelSearchUrl(displayCurrency,{
+    checkin:dates.checkin,checkout:dates.checkout,occupancies});
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -106,7 +106,7 @@ export default function NuiteeHotelsListWidget({
       }catch{initialized.current=false;if(live)setFailed(true);}
     }).catch(()=>{if(live)setFailed(true);});
     return ()=>{live=false;};
-  },[id,placeId,rows,displayCurrency,deepLinkParams]);
+  },[id,placeId,rows,displayCurrency]);
 
   return <div className="min-w-0" aria-label={"GTH Worldwide Stays listings near "+placeLabel}>
     <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
@@ -116,7 +116,7 @@ export default function NuiteeHotelsListWidget({
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
-    <a href={cityHandoff.status==="ready"?cityHandoff.url:HOTEL_BOOKING_ORIGIN}
+    <a href={safeBookingPicker}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
       Browse on booking site

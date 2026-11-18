@@ -24,25 +24,31 @@ test("GTH PRO Home reuses full approved design and keeps private research, insta
  assert.match(read("src/components/MobileNav.tsx"),/href: "\/app", appHref: "\/app", name: "Home"/);
  assert.match(read("src/components/mobile/AppInstall.tsx"),/beforeinstallprompt/);
 });
-test("GTH PRO Home keeps desktop supplier widget but uses a stable, compact booking card on mobile",()=>{
+test("GTH PRO Home shows official Nuitee widget and honest photo-based city booking shortcuts",()=>{
  const source=read("src/components/mobile/MobileSupplierShowcase.tsx");
- const preview=read("src/components/mobile/HomeHotelBookingPreview.tsx");
  const sdk=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
- assert.match(source,/<HomeHotelBookingPreview\/>/);
- assert.match(preview,/NuiteeHotelsListWidget/);
- assert.match(preview,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
- assert.match(preview,/useSyncExternalStore\(subscribe, getSnapshot, getServerSnapshot\)/);
- assert.match(preview,/data-gth-compact-hotel-booking="true"/);
- assert.match(preview,/href="\/app\/hotels\?view=booking&city=Mumbai&country=IN"/);
- assert.match(preview,/Destination image is editorial/);
+ assert.match(source,/NuiteeHotelsListWidget/);
+ assert.doesNotMatch(source,/HomeHotelBookingPreview|data-gth-compact-hotel-booking/);
+ assert.match(source,/id="gth-home-nuitee-mumbai"/);
+ assert.match(source,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
  assert.match(source,/view:"booking"/);
  assert.match(sdk,/sdk\.HotelsList\.create\(options\)/);
  assert.match(sdk,/HOTEL_BOOKING_ORIGIN/);
- assert.doesNotMatch(preview,/NUITEE_PRODUCTION_API_KEY|fetch\(|createClient\(|\/api\/hotels|service_role|Math\.random/);
- assert.doesNotMatch(source,/min-w-\[290px\]|overflow-x-auto touch-auto rounded-2xl border border-\[var\(--border\)\] bg-\[var\(--card\)\] p-3 sm:mx-6/);
+ assert.doesNotMatch(source,/NUITEE_PRODUCTION_API_KEY|fetch\(|createClient\(|\/api\/hotels|service_role|Math\.random/);
  for(const city of ["mumbai","kolkata","goa","london"])
   assert.ok(existsSync(new URL("../public/images/cities/"+city+".jpg",import.meta.url)),"Missing editorial asset "+city);
 });
+test("Never remove or gate real Nuitee supplier hotel cards from mobile Home again",()=>{
+ const home=read("src/components/mobile/MobileSupplierShowcase.tsx");
+ const sdk=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
+ assert.match(home,/import NuiteeHotelsListWidget from/);
+ assert.match(home,/<NuiteeHotelsListWidget id="gth-home-nuitee-mumbai"/);
+ assert.match(home,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
+ assert.match(home,/rows=\{1\} currency="INR"/);
+ assert.match(sdk,/HotelsList\.create\(options\)/);
+ assert.doesNotMatch(home,/HomeHotelBookingPreview|data-gth-compact-hotel-booking|useSyncExternalStore|matchMedia\(/);
+});
+
 test("Homepage tour/activities reuse genuine WeGoTrip source product, original photo and supplier URL",()=>{
  const home=read("src/components/mobile/MobileSupplierShowcase.tsx");
  const source=read("src/lib/tours/supplier-catalog.ts");

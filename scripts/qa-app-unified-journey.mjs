@@ -78,10 +78,11 @@ try{
    await page.waitForTimeout(450);
    const moved=await page.evaluate(()=>window.scrollY);
    assert.ok(moved>15,"Finger drag on the Mumbai/Goa hero must scroll vertically; received "+moved);
-   await page.getByRole("region",{name:"Compact hotel booking gateway"}).waitFor({state:"visible",timeout:30000});
-   assert.equal(await page.locator('[data-gth-compact-hotel-booking="true"]').count(),1,"One compact image-left booking card per mobile viewport");
-   assert.equal(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count(),0,"Vendor SDK must not mount at narrow widths");
-   assert.equal(await page.getByRole("region",{name:"Compact hotel booking gateway"}).getByRole("link",{name:/Check stays/}).getAttribute("href"),"/app/hotels?view=booking&city=Mumbai&country=IN");
+   await page.getByRole("region",{name:"GTH Worldwide Stays hotel cards"}).waitFor({state:"visible",timeout:30000});
+   assert.ok(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count()>0,
+     "Actual Nuitee hotel list must be mounted on mobile; never replace with editorial/demo card");
+   assert.equal(await page.locator('[data-gth-compact-hotel-booking="true"]').count(),0,
+     "The unwanted editorial hotel replacement must not reappear");
    assert.ok((await page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"}).count())>0);
    await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
   }

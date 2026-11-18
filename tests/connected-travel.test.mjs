@@ -5,7 +5,14 @@ import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
 const hotel=loadTenderTs("src/lib/travel/hotel-whitelabel.ts",{}, {btoa,atob});
 const currency=loadTenderTs("src/lib/travel/hotel-currency.ts");
 const fare=loadTenderTs("src/lib/flights/fare-search.ts");
-const trip=loadTenderTs("src/lib/travel/connected-trip.ts",{"./hotel-whitelabel":hotel,"./hotel-currency":currency,"../flights/fare-search":fare},{btoa});
+const airports={airportIndex:[
+ {code:"LHR",city:"London"},{code:"BOM",city:"Mumbai"},
+ {code:"DXB",city:"Dubai"},{code:"CCU",city:"Kolkata"},
+ {code:"JFK",city:"New York"},{code:"LGA",city:"New York"},
+ {code:"GOI",city:"Goa"},{code:"GOA",city:"Genoa"},
+ {code:"BKK",city:"Bangkok"}
+]};
+const trip=loadTenderTs("src/lib/travel/connected-trip.ts",{"./hotel-whitelabel":hotel,"./hotel-currency":currency,"../flights/fare-search":fare,"./nuiteeAirportIndex":airports},{btoa});
 const now=new Date("2026-11-09T00:00:00Z"),countries=["IN","GB","AE"];
 const raw={tripCountry:"IN",tripCity:"Mumbai",tripStart:"2026-12-10",tripEnd:"2026-12-14",tripAdults:"2",tripRooms:"2",tripChildren:"4, 9",tripCurrency:"USD",tripFrom:"LHR",tripTo:"BOM"};
 const parse=value=>trip.parseConnectedTrip(value,countries,now);
@@ -26,6 +33,35 @@ test("selected real hotel receives valid shared dates, rooms, child ages and cur
 });
 test("flight handoff reuses public Aviasales route/dates and never sends hotel party as flight passengers",()=>{
  const parsed=parse(raw),url=new URL(trip.connectedFlightHref(parsed.trip));assert.equal(url.hostname,"www.aviasales.com");assert.equal(url.searchParams.get("origin"),"LHR");assert.equal(url.searchParams.get("destination"),"BOM");assert.equal(url.searchParams.get("depart_date"),raw.tripStart);assert.equal(url.searchParams.get("return_date"),raw.tripEnd);assert.equal(url.searchParams.has("adults"),false);assert.equal(url.searchParams.has("currency"),false);assert.equal(trip.connectedFlightHref(trip.EMPTY_CONNECTED_TRIP),null);
+});
+test("Flights tab prefers 12Go route for mapped airports without paid API or hotel passenger leakage",()=>{
+ const parsed=parse(raw);assert.equal(parsed.ok,true);
+ const href=trip.connectedTwelveGoFlightHref(parsed.trip,now);
+ const next=new URL(href,"https://www.gthproglobal.com");
+ assert.equal(next.pathname,"/go/transport/search");
+ assert.equal(next.searchParams.get("mode"),"flight");
+ assert.equal(next.searchParams.get("from"),"London");
+ assert.equal(next.searchParams.get("to"),"Mumbai");
+ assert.equal(next.searchParams.get("date"),raw.tripStart);
+ assert.equal(next.searchParams.get("people"),"1");
+ assert.equal(next.searchParams.has("tripAdults"),false);
+ assert.equal(next.searchParams.has("return_date"),false);
+ // Existing Aviasales alternative keeps the original round-trip dates.
+ const alternative=new URL(trip.connectedFlightHref(parsed.trip));
+ assert.equal(alternative.host,"www.aviasales.com");
+ assert.equal(alternative.searchParams.get("return_date"),raw.tripEnd);
+});
+test("Unsupported or ambiguous city routing never fabricates 12Go flight availability",()=>{
+ const parsed=parse(raw);assert.equal(parsed.ok,true);
+ for(const change of [
+  {origin:"BOG"}, {destination:"AAA"}, {origin:"JFK",destination:"LGA"},
+  {origin:"BOM",destination:"BOM"},{origin:"<script>"},
+  {start:"2026-02-30"},{start:"2026-11-08"},{start:"2029-11-19"},
+ ]){
+  assert.equal(trip.connectedTwelveGoFlightHref({...parsed.trip,...change},now),null,JSON.stringify(change));
+ }
+ const source=readFileSync("src/lib/travel/connected-trip.ts","utf8");
+ assert.doesNotMatch(source,/fetch\(|api\.12go|NUITEE_.*KEY|process\.env/);
 });
 test("new connected surface uses existing providers without paid API, fabricated experience routes or homepage changes",()=>{
  const read=p=>readFileSync(p,"utf8"),client=read("src/components/travel/ConnectedTravelWorkspace.tsx"),cta=read("src/components/travel/NuiteeFlightHandoff.tsx");

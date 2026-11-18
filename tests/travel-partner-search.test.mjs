@@ -52,10 +52,8 @@ test("car and transfer searches submit directly without a review-then-search gat
   for (const page of ["cars", "transfers"]) assert.match(read(`src/app/${page}/page.tsx`), new RegExp(`<TravelPartnerSearch kind="${page}"`));
   assert.doesNotMatch(read("src/components/tours/TourSearchHandoff.tsx"), /Search .*on Klook/);
 });
-test("each valid Tours or Activities submit opens exactly one tracked search; invalid input opens none", () => {
+test("Tours and Activities expose only explicit, validated partner-search links after local filtering", () => {
   const discovery = compile("src/lib/tours/discovery.ts");
-  const opened = [];
-  let fields;
   const element = (type, props) => ({type, props});
   const {default: Hero} = compile("src/components/tours/TourSearchHero.tsx", {
     "react/jsx-runtime": {jsx: element, jsxs: element, Fragment: "fragment"},
@@ -63,28 +61,28 @@ test("each valid Tours or Activities submit opens exactly one tracked search; in
     "lucide-react": {ArrowRight: "arrow", Compass: "compass", Search: "search"},
     "@/components/travel/TravelSectionNav": {default: "nav"},
     "@/lib/tours/discovery": discovery, "@/lib/travel/partner-search": engine,
-  }, {window: {open: (...args) => opened.push(args)}, FormData: class {entries() {return Object.entries(fields);}}});
-  function findForm(node) {
-    if (Array.isArray(node)) return node.map(findForm).find(Boolean);
-    if (!node || typeof node !== "object") return null;
-    return node.type === "form" ? node : findForm(node.props?.children);
-  }
-  for (const basePath of ["/tours", "/activities"]) {
-    const form = findForm(Hero({basePath}));
-    fields = {city: "London", category: "attraction-ticket", sort: "name"};
-    const previous = opened.length;
-    form.props.onSubmit({currentTarget: {}});
-    assert.equal(opened.length, previous + 1);
-    assert.equal(form.props.action, basePath + "#discover");
-    const [href, target, options] = opened.at(-1);
-    const request = new URL(href, "https://www.gthproglobal.com");
-    assert.equal(request.searchParams.get("kind"), basePath.slice(1));
-    assert.equal(request.searchParams.get("destination"), "London");
-    assert.equal(GET(new Request(request)).status, 302);
-    assert.equal(target, "_blank"); assert.equal(options, "noopener,noreferrer");
-    for (const city of ["", "javascript:alert(1)", "https://evil.test"]) {
-      fields = {city}; form.props.onSubmit({currentTarget: {}});
-      assert.equal(opened.length, previous + 1);
-    }
+  });
+  const collect=(root)=>{
+    if(Array.isArray(root))return root.flatMap(collect);
+    if(!root||typeof root!=="object")return [];
+    return [root,...collect(root.props?.children)];
+  };
+  for(const basePath of ["/tours","/activities"]){
+    const tree=Hero({basePath,filters:{...discovery.EMPTY_TOUR_SEARCH,city:"London"}});
+    const nodes=collect(tree);
+    const form=nodes.find(node=>node.type==="form");
+    assert.equal(form.props.action,basePath+"#discover");
+    assert.equal(form.props.onSubmit,undefined,"No unexpected popup from ordinary Search button");
+    const external=nodes.filter(node=>node.type==="a"&&String(node.props.href).startsWith("/api/travel/partner-search?"));
+    assert.equal(external.length,1);
+    const link=external[0];
+    assert.equal(link.props.target,"_blank");
+    assert.equal(link.props.rel,"noopener noreferrer sponsored");
+    const request=new URL(link.props.href,"https://www.gthproglobal.com");
+    assert.equal(request.searchParams.get("kind"),basePath.slice(1));
+    assert.equal(request.searchParams.get("destination"),"London");
+    assert.equal(GET(new Request(request)).status,302);
+    const invalid=collect(Hero({basePath,filters:{...discovery.EMPTY_TOUR_SEARCH,city:"javascript:alert(1)"}}));
+    assert.equal(invalid.filter(node=>node.type==="a"&&String(node.props.href).startsWith("/api/travel/partner-search?")).length,0);
   }
 });

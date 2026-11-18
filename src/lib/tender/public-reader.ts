@@ -50,8 +50,19 @@ export async function searchCachedPublicTenders(filters:TenderFilters):Promise<T
  const key=normalized(filters);if(!key)return {ok:false,status:400,error:"Invalid tender filters"};
  if(key.scope==="local"&&!key.country)return {ok:true,items:[],total:0,page:key.page,size:12,countryRequired:true};
  try{
-  let snapshot=await readSearch(key);if(!usable(snapshot.readAt))snapshot=await freshSearch(key);
-  return {...snapshot.result,items:snapshot.result.items.filter(row=>Date.parse(row.deadline_at)>Date.now())};
+  let snapshot=await readSearch(key);
+  if(!usable(snapshot.readAt)){
+    try { snapshot=await freshSearch(key); }
+    catch(error) {
+      // On a short source outage keep the LAST confirmed public snapshot,
+      // but never extend expired deadlines or mislabel it live.
+      if(!usable(snapshot.readAt,15*60*1000))throw error;
+    }
+  }
+  return {...snapshot.result,
+    items:snapshot.result.items.filter(row=>Date.parse(row.deadline_at)>Date.now()),
+    snapshotStale:!usable(snapshot.readAt),
+    snapshotCheckedAt:new Date(snapshot.readAt).toISOString()};
  }catch(error){return failure(error);}
 }
 export async function getCachedPublicTender(id:string):ReturnType<typeof getPublicTender>{

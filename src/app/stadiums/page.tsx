@@ -26,7 +26,7 @@ export default function StadiumsPage() {
     id:venue.slug+"-"+event.starts+"-"+event.label,
     title:event.label,starts:event.starts,ends:event.ends,
     venue:venue.name,city:venue.city,country:venue.country,
-    sport:venue.sports[0],venueSlug:venue.slug,officialUrl:event.url,
+    sport:event.sport,venueSlug:venue.slug,officialUrl:event.url,
   }))).sort((a,b)=>a.starts.localeCompare(b.starts));
   return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
     <TravelSectionNav/>

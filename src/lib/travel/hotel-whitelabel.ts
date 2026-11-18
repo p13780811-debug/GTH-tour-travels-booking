@@ -1,24 +1,7 @@
 /** Public Nuitee booking configuration. No private API or reservation calls.
  * https://docs.liteapi.travel/docs/deeplinking-to-whitelabel
  */
-const DEFAULT_HOTEL_BOOKING_ORIGIN = "https://hotel.gthproglobal.com";
-/** Public URL only. Never resolve client API keys, credentials or arbitrary redirects. */
-function getHotelBookingOrigin(): string {
-  const configured = process.env.NEXT_PUBLIC_NUITEE_WHITELABEL_URL ||
-    process.env.NEXT_PUBLIC_HOTEL_BOOKING_ORIGIN ||
-    process.env.NUITEE_WHITELABEL_URL;
-  if (!configured) return DEFAULT_HOTEL_BOOKING_ORIGIN;
-  try {
-    const url = new URL(configured);
-    const hostname = url.hostname.toLowerCase();
-    if (url.protocol !== "https:" || url.username || url.password || url.port ||
-        (url.pathname !== "/" && url.pathname !== "") || url.search || url.hash ||
-        !(hostname === "hotel.gthproglobal.com" || hostname === "gthproglobal.nuitee.link"))
-      return DEFAULT_HOTEL_BOOKING_ORIGIN;
-    return url.origin;
-  } catch { return DEFAULT_HOTEL_BOOKING_ORIGIN; }
-}
-export const HOTEL_BOOKING_ORIGIN = getHotelBookingOrigin();
+export const HOTEL_BOOKING_ORIGIN = "https://hotel.gthproglobal.com";
 export const HOTEL_WIDGET_SCRIPT = "https://components.liteapi.travel/v1.0/sdk.umd.js";
 export type HotelOccupancy = { adults: number; children: number[]; rooms?: number };
 export type HotelBookingSearch = {

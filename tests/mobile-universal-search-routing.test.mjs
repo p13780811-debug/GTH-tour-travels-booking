@@ -17,8 +17,7 @@ function moduleFrom(path,required={}){
 const {destinations}=moduleFrom("src/data/destinations.ts");
 const stadiums=moduleFrom("src/lib/travel/stadiums.ts");
 const venues=moduleFrom("src/lib/travel/stadium-ticket-routing.ts",{"./stadiums":stadiums});
-const hotelRouting={cleanHotelDestination:(v)=>typeof v==="string"?v.replace(/\b(?:hotels?|stays?|resorts?|rooms?|find|in|near|best|cheap)\b/gi," ").replace(/\s+/g," ").trim():null};
-const route=moduleFrom("src/lib/mobile/universal-search.ts",{"@/data/destinations":{destinations},"@/lib/travel/stadium-ticket-routing":venues,"@/lib/travel/hotel-routing":hotelRouting});
+const route=moduleFrom("src/lib/mobile/universal-search.ts",{"@/data/destinations":{destinations},"@/lib/travel/stadium-ticket-routing":venues});
 const href=(q,c)=>route.resolveUniversalTarget(q,c).href;
 
 test("City hotel queries open Nuitee booking, not the local directory",()=>{

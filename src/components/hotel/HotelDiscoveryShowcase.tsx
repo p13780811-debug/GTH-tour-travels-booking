@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BedDouble, ChevronRight, MapPin, Search } from "lucide-react";
-import {cleanHotelDestination,resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 /**
  * Editorial hotel discovery inspired by swipe-first travel storefronts.
@@ -30,7 +29,12 @@ const types = [
   { value: "hostel", label: "Hostels" },
 ] as const;
 
-const validateCity = cleanHotelDestination;
+const validateCity = (raw: string): string | null => {
+  const city = raw.normalize("NFKC").trim().replace(/\s+/g, " ");
+  if (city.length < 2 || city.length > 80 ||
+    !/^[\p{L}\p{M}][\p{L}\p{M}\s.'-]{1,79}$/u.test(city)) return null;
+  return city;
+};
 const route = (view: "directory" | "booking", city?: string, category?: string) => {
   const params = new URLSearchParams({ view });
   if (city) params.set("city", city);
@@ -50,13 +54,9 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
   useEffect(() => { setCity(initialCity); setMessage(""); }, [initialCity]);
   const selected = useMemo(() => validateCity(city), [city]);
   const quickSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Never submit keystrokes to supplier autocomplete or API.
-    if (!selected) {
-      setMessage("Enter a valid city (2–80 letters) to explore stays.");
-      return;
-    }
-    const result=resolveHotelRoute({destination:selected});
-    if (result.status!=="invalid") window.location.assign(result.url);
+    if (selected) return; // Native GET handoff, no new endpoint or credentials.
+    event.preventDefault();
+    setMessage("Enter a valid city (2–80 letters) to explore stays.");
   };
   const active = types.some(t => t.value === activeCategory) ? activeCategory : "";
   return (
@@ -78,11 +78,11 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
           </Link>
         </div>
 
-        <form action="/hotels#hotel-booking-experience" method="GET" onSubmit={quickSearch}
+        <form action="/hotels#hotel-results" method="GET" onSubmit={quickSearch}
           role="search" aria-label="Search hotel destinations without travel dates"
           className="gth-glass flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] p-2 shadow-sm sm:max-w-3xl">
           <Search className="ml-2 shrink-0 text-[var(--text-soft)]" size={22} aria-hidden="true" />
-          <input type="hidden" name="view" value="booking" />
+          <input type="hidden" name="view" value="directory" />
           <input name="city" type="search" value={city} onChange={event => { setCity(event.target.value); setMessage(""); }}
             aria-label="Hotel city or destination" aria-invalid={Boolean(message)} maxLength={80}
             required placeholder="Where would you like to stay?"
@@ -94,7 +94,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
         </form>
         {message && <p role="alert" className="mt-2 text-sm text-[var(--text)]">{message}</p>}
         <p className="mt-2 text-xs text-[var(--text-soft)]">
-          Search goes to reviewed White Label destinations. Unmapped cities require selection on the secure booking site.
+          This searches GTH&apos;s independent hotel directory. To check room prices and availability, use Book &amp; Stay.
         </p>
 
         <div className="mt-7 flex items-center justify-between gap-3">

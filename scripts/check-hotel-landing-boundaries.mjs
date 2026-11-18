@@ -204,32 +204,6 @@ for (const path of [
  "vercel.json",
 ]) allowed.add(path);
 
-// Specific owner-requested PR #232 hotel routing engineering is permitted
-// without broadening access to styling, DB, rate-limit, secrets or partner code.
-// These paths are reviewed independently by the hotel-zero-api-routing suite.
-if(process.env.GITHUB_HEAD_REF==="fix/hotel-zero-api-whitelabel-router-20261119") {
- for(const path of [
-  "src/lib/travel/hotel-routing.ts",
-  "src/middleware.ts",
-  "src/app/api/hotels/booking/route.ts",
-  "tests/hotel-zero-api-routing.test.mjs",
-  "tests/hotel-white-label-city-fallback.test.mjs",
-  "tests/hotel-white-label-city-fallback.test.mjs",
-  "tests/pr204-handoff-integrity.test.mjs",
-  "tests/mobile-universal-search-routing.test.mjs",
-  "scripts/check-hotel-landing-boundaries.mjs",
- ])allowed.add(path);
- const whitelabel=readFileSync("src/lib/travel/hotel-routing.ts","utf8");
- if(/\bfetch\s*\(|api\.liteapi\.travel|SUPABASE_SERVICE_ROLE_KEY|NUITEE_PRODUCTION_API_KEY/.test(whitelabel))
-   throw Error("Shared hotel URL router must not call upstream APIs or reference private secrets");
- const ui=readFileSync("src/components/hotel/HotelBookingExperience.tsx","utf8");
- if(/SearchBar\.create|HOTEL_WIDGET_SCRIPT|style=\{|<style/.test(ui))
-   throw Error("Hotel search must not load supplier SearchBar or inject styles");
- const global=git("diff","--name-only",diffBase,"HEAD");
- if(/(^|\n)src\/app\/globals\.css(\n|$)|\.module\.css/m.test(global))
-   throw Error("This hotel routing PR must not change any global or component CSS");
-}
-
 // A Vercel configuration edit is permitted ONLY to disable previews for this
 // unverified draft branch. The rest of the project configuration must be byte-
 // equivalent at the parsed JSON level to its merge base.

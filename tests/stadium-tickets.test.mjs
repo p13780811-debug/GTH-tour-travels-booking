@@ -33,6 +33,7 @@ test("venue catalog has unique paths, official sources and no fabricated commerc
     assert.equal(catalog.findStadium(venue.slug), venue);
     assert.ok(venue.overview.length > 100 && venue.seating.length > 80);
     assert.ok(venue.sports.every(sport => catalog.stadiumSports.includes(sport)));
+    for (const event of venue.events ?? []) assert.ok(venue.sports.includes(event.sport), `Incorrect event category at ${venue.slug}`);
     assert.doesNotThrow(() => new Intl.DateTimeFormat("en", { timeZone: venue.timeZone }));
     for (const source of [venue.schedule, venue.tickets, venue.seatMap, venue.experience, ...(venue.events ?? [])].filter(Boolean)) {
       assert.equal(new URL(source.url).protocol, "https:");
@@ -99,6 +100,7 @@ test("event expiry uses venue local date and retains a multi-day event through i
   assert.deepEqual(Array.from(afterT20,item=>item.starts),["2026-12-26","2027-03-11"]);
   assert.equal(catalog.upcomingStadiumEvents(venue, new Date("2027-03-15T13:00:00Z")).length,0);
   const singapore=catalog.findStadium("singapore-national-stadium");
+  assert.ok(singapore.events.every(event=>event.sport==="Concerts"),"Singapore concerts must never be classified as football");
   assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2026-11-24T12:00:00Z")).length,2);
   assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2026-11-25T16:00:00Z")).length,1);
   assert.equal(catalog.upcomingStadiumEvents(singapore,new Date("2027-01-10T16:00:00Z")).length,0);

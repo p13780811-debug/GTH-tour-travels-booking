@@ -44,6 +44,24 @@ test("CDN caching requires explicit country and language, and cannot extend a no
  assert.match(h.api.tenderResponseHeaders(new URLSearchParams("country=IN&lang=en"),[new Date(Date.now()+5000).toISOString()])["Cache-Control"],/s-maxage=[0-4],/);
 });
 
+test("recent stale verified notices are served with freshness disclosure during a refresh outage",async()=>{
+ const h=fixture();
+ const first=await h.api.searchCachedPublicTenders(filters);
+ assert.equal(first.ok,true);
+ h.serveStale(true);
+ h.advance(6*60_000);
+ h.record.deadline_at=new Date(Date.now()+3600000).toISOString();
+ h.fail(true);
+ const old=await h.api.searchCachedPublicTenders(filters);
+ assert.equal(old.ok,true);
+ assert.equal(old.snapshotStale,true);
+ assert.ok(old.snapshotCheckedAt);
+ assert.equal(h.counts.search,2);
+ h.advance(20*60_000);
+ const tooOld=await h.api.searchCachedPublicTenders(filters);
+ assert.equal(tooOld.ok,false);
+});
+
 test("simultaneous cold visitors share one fill; an over-age persisted snapshot refreshes instead of failing the first visitor",async()=>{
  const h=fixture();await Promise.all(Array.from({length:50},()=>h.api.searchCachedPublicTenders(filters)));assert.equal(h.counts.search,1);assert.equal(h.counts.budget,1);
  h.serveStale(true);h.advance(6*60000);h.record.deadline_at=new Date(Date.now()+86400000).toISOString();h.record.title="Fresh notice after a quiet period";

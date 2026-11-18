@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
 const currency=loadTenderTs("src/lib/travel/hotel-currency.ts"),hotel=loadTenderTs("src/lib/travel/hotel-whitelabel.ts",{},{btoa,atob}),fare=loadTenderTs("src/lib/flights/fare-search.ts");
-const trip=loadTenderTs("src/lib/travel/connected-trip.ts",{"./hotel-whitelabel":hotel,"./hotel-currency":currency,"../flights/fare-search":fare},{btoa});
+const airports={airportIndex:[
+ {code:"LHR",city:"London"},{code:"BOM",city:"Mumbai"},
+ {code:"DXB",city:"Dubai"},{code:"CCU",city:"Kolkata"},
+ {code:"JFK",city:"New York"},{code:"LGA",city:"New York"},
+ {code:"GOI",city:"Goa"},{code:"GOA",city:"Genoa"},
+ {code:"BKK",city:"Bangkok"}
+]};
+const trip=loadTenderTs("src/lib/travel/connected-trip.ts",{"./hotel-whitelabel":hotel,"./hotel-currency":currency,"../flights/fare-search":fare,"./nuiteeAirportIndex":airports},{btoa});
 const discovery=loadTenderTs("src/lib/tours/discovery.ts");
 test("experience visit dates persist without replacing hotel checkout or flight return",()=>{
  const now=new Date("2026-11-09Z"),raw={tripCountry:"IN",tripCity:"Mumbai",tripStart:"2026-12-10",tripEnd:"2026-12-14",tripVisitDate:"2026-12-20"};

@@ -99,7 +99,7 @@ test("booking gateway exposes static Next.js segment configuration", () => {
 });
 
 
-test("all four 12Go modes switch inside the same existing search form; main Flights page stays untouched",()=>{
+test("12Go flight mode is primary on Flights while original Aviasales remains independent fallback",()=>{
   const page = source("src/app/flights/page.tsx");
   const widget = source("src/components/travel/GTHTransportSearchWidget.tsx");
   const route = source("src/app/go/transport/search/route.ts");
@@ -117,7 +117,10 @@ test("all four 12Go modes switch inside the same existing search form; main Flig
   assert.match(route, /mode === "flight" \? "flights" : mode/);
   assert.match(route, /supplier\.searchParams\.set\("z", AFFILIATE_ID\)/);
   assert.match(page, /<AviasalesWhiteLabel isResultsView=\{isResultsView\} \/>/);
-  assert.doesNotMatch(page, /12go-flight-options|GTHTransportSearchWidget|12go\.asia/);
+  assert.match(page, /<GTHTransportSearchWidget mode="flight" flightOnly \/>/);
+  assert.match(page, /Alternative flight search/);
+  assert.match(widget, /flightOnly = false/);
+  assert.doesNotMatch(page, /12go\.asia/);
   assert.match(hotels, /hotel\.gthproglobal\.com/);
   assert.doesNotMatch(transfers, /GTHTransportSearchWidget|12go\.asia/);
 });

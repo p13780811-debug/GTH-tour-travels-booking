@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Calendar, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getIata, cityToIata } from "@/lib/iata";
-import {cleanHotelDestination} from "@/lib/travel/hotel-routing";
 
 export default function SearchSection({ city }: { city?: string }) {
     const [tab, setTab] = useState("flights");
@@ -92,12 +91,7 @@ export default function SearchSection({ city }: { city?: string }) {
 
         if (!query) { setSearchError("Enter a destination to continue."); return; }
         if (tab === "hotels") {
-            const destination=cleanHotelDestination(query);
-            if (!destination) {setSearchError("Enter a valid hotel destination.");return;}
-            const params=new URLSearchParams({view:"booking",city:destination});
-            if(checkIn)params.set("checkin",checkIn);
-            if(checkOut)params.set("checkout",checkOut);
-            router.push("/hotels?"+params);
+            router.push(`/hotels?view=booking&city=${encodeURIComponent(query)}`);
         } else if (tab === "tours") {
             router.push(`/tours?city=${encodeURIComponent(query.toLowerCase().replace(/\s+/g, "-"))}`);
         }

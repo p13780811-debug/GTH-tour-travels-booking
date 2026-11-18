@@ -116,14 +116,26 @@ export function hotelWhiteLabelSearchUrl(currency?: string, stay?: {
  */
 export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): HotelRouteResolution {
   const kind = intent.hotelId !== undefined ? "hotel" : "city";
-  const hotelId = intent.hotelId === undefined ? null : safeId(intent.hotelId);
+  const hotelId = intent.hotelId === undefined ? null : /^(?:lp)[0-9a-f]{5,32}$/.test(intent.hotelId) ? intent.hotelId : null;
   if (kind === "hotel" && !hotelId) return {status: "invalid", kind};
   const destination = cleanHotelDestination(intent.destination);
   if (intent.placeId !== undefined && !safeId(intent.placeId, 255)) return {status:"invalid",kind};
-  const placeId = safeId(intent.placeId, 255) ??
-    (destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null);
+  // Only supplier-reviewed city IDs are accepted for GTH-created deep links.
+  // Unknown arbitrary IDs must use the supplier picker rather than guessed inventory.
+  const placeId = intent.placeId !== undefined
+    ? Object.values(VERIFIED_CITY_IDS).includes(intent.placeId) ? intent.placeId : null
+    : destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null;
+  if (intent.placeId !== undefined && !placeId) return {status:"invalid",kind};
   if (kind === "city" && !placeId && !destination) return {status: "invalid", kind};
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);
+  // Never silently replace a supplied invalid/expired date with tomorrow.
+  // Defaults apply only when the traveller has not selected dates at all.
+  if((intent.checkIn!==undefined || intent.checkOut!==undefined) && dates.defaulted)
+    return {status:"invalid",kind};
+  // Likewise an invalid supplied room/guest value is not a booking for two.
+  if((intent.adults!==undefined && positive(intent.adults,20,0)===0) ||
+     (intent.rooms!==undefined && positive(intent.rooms,8,0)===0))
+    return {status:"invalid",kind};
   const adults = positive(intent.adults, 20, 2);
   const rooms = positive(intent.rooms, 8, 1);
   // The compact GTH form takes TOTAL adults across all rooms.

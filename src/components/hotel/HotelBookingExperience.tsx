@@ -1,20 +1,40 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
-import { HOTEL_BOOKING_ORIGIN, hotelBookingParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
-import {resolveHotelRoute, cleanHotelDestination} from "@/lib/travel/hotel-routing";
+import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
+  hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
-// A static first-party form inside the EXISTING iframe and GTH class shell.
-// No supplier SDK or Places/autocomplete request is loaded by GTH search input.
-const searchDocument = `<!doctype html><html lang="en" class="gth-hotel-widget-root"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Search worldwide hotels</title></head><body class="gth-hotel-search-widget"><main id="gth-hotel-search"><form id="gth-hotel-native-search" class="gth-glass flex flex-wrap items-end gap-3 rounded-xl border border-[var(--border)] p-3" role="search"><label class="min-w-44 flex-1 text-sm">City or destination<input name="destination" required maxlength="80" autocomplete="off" placeholder="Mumbai, London, Goa…" class="gth-input mt-1 block w-full" /></label><button type="submit" class="gth-btn-gold min-h-11 rounded-xl px-4 font-semibold">Find rooms</button><label class="text-sm">Check-in<input name="checkIn" type="date" class="gth-input mt-1 block w-full" /></label><label class="text-sm">Check-out<input name="checkOut" type="date" class="gth-input mt-1 block w-full" /></label><label class="text-sm">Adults (total)<input name="adults" type="number" min="1" max="20" value="2" class="gth-input mt-1 block w-20" /></label><label class="text-sm">Rooms<input name="rooms" type="number" min="1" max="8" value="1" class="gth-input mt-1 block w-20" /></label></form></main></body></html>`;
+type SearchSDK = {
+  init: (options: { domain: string; deepLinkParams: string }) => void;
+  SearchBar: { create: (options: {
+    selector: string; primaryColor: string;
+    labelsOverride: { searchAction: string; placePlaceholderText: string };
+    onSearchClick: (value: unknown) => void;
+  }) => Promise<void> };
+};
+type WidgetWindow = Window & { LiteAPI?: SearchSDK };
+// Vendor styles/listeners are confined to a disposable document, not the GTH shell.
+const searchDocument = '<!doctype html><html lang="en" class="gth-hotel-widget-root"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Search worldwide hotels</title></head><body class="gth-hotel-search-widget"><main id="gth-hotel-search"></main></body></html>';
 
-export default function HotelBookingExperience({ currency = "INR" }: { searchPath?: "/hotels" | "/app/hotels";currency?:string }) {
+// A hosted cross-origin booking page cannot inherit our responsive card styles.
+// Keep it embedded only when the viewport has room for the supplier layout.
+const embeddedResultsMedia = "(min-width: 1024px)";
+function subscribeResultsViewport(onChange: () => void) {
+  const media = window.matchMedia(embeddedResultsMedia);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+function resultsViewportSnapshot() { return window.matchMedia(embeddedResultsMedia).matches; }
+function serverResultsViewportSnapshot() { return false; }
+
+export default function HotelBookingExperience({ searchPath = "/hotels", currency = "INR" }: { searchPath?: "/hotels" | "/app/hotels";currency?:string }) {
   const displayCurrency=hotelCurrency(currency);
-  // Supplier results are opened on the White Label, never fetched in a GTH iframe.
-  const embedResults = false;
+  const router = useRouter();
+  const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
   const query = useSearchParams();
   // A text-only city cannot be converted to a supplier Place ID safely.
   // Carry the intent visibly, then require the official Nuitee destination picker.
@@ -32,85 +52,174 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
   const searchFrame = useRef<HTMLIFrameElement>(null);
   const dispose = useRef<(() => void) | null>(null);
   const initializedDocument = useRef<Document | null>(null);
-
-
+  const resultSection = useRef<HTMLDivElement>(null);
+  const scrollToResults = useRef(false);
   // Public supplier URLs work independently of GTH redirect-route deployment/protection.
-  // Restore only allowlisted prior booking query strings.
+  // The same strict allowlist validates both SDK callbacks and restored query strings.
   const selectedStay = bookingQuery ? parseHotelBookingSearch(new URLSearchParams(bookingQuery)) : null;
   const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
   const invalidStay = query.get("bookingError") === "invalid-stay" ||
     (["checkin", "checkout", "occupancies"].some(key => query.has(key)) && !restored);
+  // When a first-party card/master search explicitly supplied a city, use
+  // the fixed-origin zero-API handoff instead of asking users to repeat it
+  // in an SDK autocomplete. Other visits still use the genuine supplier SDK.
+  const cityParams = new URLSearchParams();
+  if (cityHint && !restored) {
+    cityParams.set("city", cityHint);
+    cityParams.set("currency", displayCurrency);
+    for (const key of ["checkin", "checkout", "adults", "rooms"]) {
+      const value = query.get(key);
+      if (value && value.length <= 20 && query.getAll(key).length === 1) cityParams.set(key, value);
+    }
+  }
+  const cityResolution = cityParams.has("city") ? resolveHotelRoute({
+    destination:cityHint,currency:displayCurrency,
+    checkIn:cityParams.get("checkin")??undefined,
+    checkOut:cityParams.get("checkout")??undefined,
+    adults:cityParams.get("adults")??undefined,
+    rooms:cityParams.get("rooms")??undefined,
+  }) : null;
+  // Never throw an unknown city onto a generic supplier homepage without
+  // preserving the selected city. Keep the original real supplier picker for it.
+  const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
+  const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
+  useEffect(() => {
+    if (cityBookingHref) window.location.replace(cityBookingHref);
+  }, [cityBookingHref]);
   useEffect(() => {
     setBookingQuery(restoredQuery);
     if (restoredQuery) setShowSearch(false);
   }, [restoredQuery]);
   useEffect(() => () => { dispose.current?.(); }, []);
+  useEffect(() => {
+    if (!bookingQuery || showSearch || !scrollToResults.current) return;
+    scrollToResults.current = false;
+    resultSection.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [bookingQuery, showSearch]);
 
-
-  const search = useCallback((payload: {destination:string;checkIn?:string;checkOut?:string;adults?:string;rooms?:string}) => {
-    const destination=cleanHotelDestination(payload.destination);
-    if (!destination) {
-      setError("Enter a valid city or destination.");
+  const search = useCallback((payload: unknown) => {
+    const params = hotelWidgetSearchParams(payload, displayCurrency);
+    if (!params) {
+      setError("Please select a destination, valid stay dates and guest ages, then search again.");
       return;
     }
-    const result=resolveHotelRoute({...payload,destination,currency:displayCurrency});
-    if (result.status!=="invalid") {
-      // Reviewed city: exact results. Unmapped city: supplier's own destination
-      // picker. Neither route calls a Nuitee API from the GTH search bar.
-      window.location.assign(result.url);
+    const stay = parseHotelBookingSearch(params);
+    if (!stay) return;
+    if (!window.matchMedia(embeddedResultsMedia).matches) {
+      // Same-tab navigation gives the supplier the actual phone viewport and
+      // leaves Back pointing to the search, rather than a redirect loop.
+      window.location.assign(hotelWhiteLabelUrl(stay));
       return;
     }
-    setError("Please select valid guests: each room needs at least one adult.");
-  }, [displayCurrency]);
+    const value = params.toString();
+    dispose.current?.();
+    scrollToResults.current = true;
+    setError(""); setBookingQuery(value); setShowSearch(false);
+    router.replace(`${searchPath}?view=booking&${value}`, { scroll: false });
+  }, [router, searchPath, displayCurrency]);
 
-  const loadSearch = useCallback(() => {
+  const loadSearch = useCallback(async () => {
     const frame = searchFrame.current, doc = frame?.contentDocument;
-    if (!frame || !doc || initializedDocument.current === doc) return;
+    const win = frame?.contentWindow as WidgetWindow | null;
+    if (!frame || !doc || !win || initializedDocument.current === doc) return;
     dispose.current?.();
     initializedDocument.current = doc;
-    const form=doc.getElementById("gth-hotel-native-search") as HTMLFormElement | null;
-    if (!form) { setLoading(false);setError("Hotel search could not load.");return; }
-    // Existing linked GTH global stylesheet only: no style tags, inline CSS or overrides.
-    for (const sheet of document.querySelectorAll('link[rel="stylesheet"]')) {
-      doc.head.appendChild(sheet.cloneNode(true));
-    }
-    const onSubmit=(event:Event)=>{
-      event.preventDefault();
-      const data=new FormData(form);
-      search({destination:String(data.get("destination")??""),
-        checkIn:String(data.get("checkIn")??""),checkOut:String(data.get("checkOut")??""),
-        adults:String(data.get("adults")??""),rooms:String(data.get("rooms")??"")});
+    let active = true;
+    let layoutObserver: MutationObserver | undefined;
+    let themeObserver: MutationObserver | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    const deadline = window.setTimeout(() => {
+      if (active) { setLoading(false); setError("Hotel search is taking longer than expected. Retry or open our secure booking site below."); }
+    }, 20000);
+    const resize = () => {
+      // Dynamic content height is layout state. Visual styles stay in globals.css.
+      if (active) frame.height = String(Math.min(1200, Math.max(110, doc.body.scrollHeight + 24)));
     };
-    form.addEventListener("submit",onSubmit);
-    // Mirror the existing global day/night class only; never inject any CSS.
-    const syncTheme=()=>{doc.documentElement.className=`${document.documentElement.className} gth-hotel-widget-root`;};
-    const themeObserver=new MutationObserver(syncTheme);
+    dispose.current = () => {
+      active = false; window.clearTimeout(deadline);
+      layoutObserver?.disconnect(); themeObserver?.disconnect(); resizeObserver?.disconnect();
+      win.removeEventListener("resize", resize);
+    };
+    setLoading(true); setError("");
+    const syncTheme = () => {
+      doc.documentElement.className = `${document.documentElement.className} gth-hotel-widget-root`;
+    };
     syncTheme();
-    themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
-    const height=()=>{frame.height=String(Math.min(1200,Math.max(110,doc.body.scrollHeight+24)));};
-    const observer=new ResizeObserver(height);
-    observer.observe(doc.body);
-    height();
-    dispose.current=()=>{observer.disconnect();themeObserver.disconnect();form.removeEventListener("submit",onSubmit);};
-    setLoading(false);setError("");
-  }, [search]);
+    themeObserver = new MutationObserver(syncTheme);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const script = doc.createElement("script");
+        script.src = HOTEL_WIDGET_SCRIPT;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Hotel search unavailable"));
+        doc.head.appendChild(script);
+      });
+      if (!active) return;
+      if (!win.LiteAPI) throw new Error("Hotel search unavailable");
+      const color = getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
+      win.LiteAPI.init({ domain: new URL(HOTEL_BOOKING_ORIGIN).hostname, deepLinkParams: `language=en&currency=${displayCurrency}` });
+      await win.LiteAPI.SearchBar.create({
+        selector: "#gth-hotel-search", primaryColor: color,
+        labelsOverride: { searchAction: "Find rooms", placePlaceholderText: "City, airport or landmark worldwide" },
+        onSearchClick: value => { if (active) search(value); },
+      });
+      if (!active) return;
+      // The supplier may inject its light-theme CSS while creating SearchBar.
+      // Apply the existing GTH global stylesheet LAST inside this isolated frame;
+      // do not add a second theme or alter the booking/provider callbacks.
+      for (const sheet of document.querySelectorAll('link[rel="stylesheet"], style')) {
+        doc.head.appendChild(sheet.cloneNode(true));
+      }
+      const enhanced = new WeakSet<HTMLElement>();
+      const enhanceSearchControls = () => {
+        const destination = doc.querySelector<HTMLInputElement>(".search-input");
+        destination?.setAttribute("aria-label", "Worldwide hotel destination");
+        const controls: [string, string][] = [
+          [".desktop-dates .date-description", "Choose check-in and checkout dates"],
+          [".mobile-checkin .date-description", "Choose check-in date"],
+          [".mobile-checkout .date-description", "Choose checkout date"],
+          [".field.last > span", "Choose guests and rooms; guest counts apply per room"],
+        ];
+        for (const [selector, label] of controls) {
+          const control = doc.querySelector<HTMLElement>(selector);
+          if (!control) continue;
+          control.setAttribute("role", "button"); control.tabIndex = 0;
+          control.setAttribute("aria-label", label);
+          if (!enhanced.has(control)) control.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); control.click(); }
+          });
+          enhanced.add(control);
+        }
+      };
+      enhanceSearchControls();
+      const labelGuestControls = () => {
+        for (const row of doc.querySelectorAll(".guest-control")) {
+          const label = row.querySelector("label")?.textContent?.trim();
+          if (!label) continue;
+          const buttons = row.querySelectorAll("button");
+          buttons[0]?.setAttribute("aria-label", `Decrease ${label.toLowerCase()}`);
+          buttons[1]?.setAttribute("aria-label", `Increase ${label.toLowerCase()}`);
+          row.querySelector("input")?.setAttribute("aria-label", label);
+        }
+      };
+      layoutObserver = new MutationObserver(() => { enhanceSearchControls(); labelGuestControls(); resize(); });
+      layoutObserver.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+      resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(doc.body);
+      win.addEventListener("resize", resize);
+      resize(); window.clearTimeout(deadline); setLoading(false);
+    } catch {
+      if (active) {
+        window.clearTimeout(deadline); setLoading(false);
+        setError("Hotel search could not load. Retry or use our secure booking site below.");
+      }
+    }
+  }, [search, displayCurrency]);
 
-  // Existing city-level CTAs now open the exact reviewed city in White Label.
-  // Unknown cities open the provider search picker, not unrelated inventory.
-  useEffect(() => {
-    if (restoredQuery) return;
-    // Old deep links may contain "name" rather than city. Without an exact
-    // verified hotelId, supplier search is safer than guessing a property.
-    const incoming=query.get("city")||query.get("destination")||query.get("name");
-    if (!incoming) return;
-    const result=resolveHotelRoute({destination:incoming,
-      checkIn:query.get("checkin")||undefined,checkOut:query.get("checkout")||undefined,
-      adults:query.get("adults")||undefined,rooms:query.get("rooms")||undefined,
-      currency:displayCurrency});
-    if (result.status!=="invalid") window.location.replace(result.url);
-  }, [query,restoredQuery,displayCurrency]);
-
-  // Bootstrap the static local search form even if iframe content loaded before React hydration.
+  // A streamed srcDoc can finish loading before React hydrates on a direct
+  // visit. Bootstrap the already-ready document as well as listening to load.
+  // The document guard makes those two paths share one SDK initialization.
   useEffect(() => {
     if (showSearch && searchFrame.current?.contentDocument?.readyState === "complete") void loadSearch();
   }, [loadSearch, showSearch, attempt]);
@@ -127,18 +236,24 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
         <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
     </div>
+    {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
+    {unmappedCityHref && <p className="gth-hotel-booking-note">
+      Your destination is <strong>{cityHint}</strong>. Select that location in the supplier search below,
+      or <a href={unmappedCityHref} className="underline" target="_blank" rel="noopener noreferrer">open the secure worldwide destination picker</a>.
+      We do not substitute an unverified city ID.
+    </p>}
     {showSearch && searchToggle}
     {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
       {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
-      Choose dates and guests below. Reviewed cities open direct booking results;
-      other destinations require selection on the secure booking site.
+      Select the matching destination in GTH Worldwide Stays below, then choose dates and guests.
+      GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
     </p>}
-    {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
-      {loading && <p role="status">Loading local hotel form…</p>}
-      <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => loadSearch()}
+    {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
+      {loading && <p role="status">Loading worldwide hotel search…</p>}
+      <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
-        aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin allow-forms" />
-      <p id="hotel-room-occupancy-help">Dates default to tomorrow for one night when omitted. Choose individual child ages on the secure booking site.</p>
+        aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin" />
+      <p id="hotel-room-occupancy-help">Guests and child ages apply to each room. For rooms with different guests, use the secure booking site.</p>
     </div>}
     {invalidStay && <p role="alert" className="gth-hotel-booking-note">This saved booking link has incomplete or expired stay details. Please choose your destination, dates and guests again.</p>}
     {error && <div role="alert" className="gth-hotel-booking-error"><p>{error}</p>
@@ -156,7 +271,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
       </a>
     </aside>
 
-    <div className="gth-hotel-booking-results">
+    <div ref={resultSection} className="gth-hotel-booking-results">
       {handoff && <>
         <div className="gth-hotel-booking-heading"><div><h3>{embedResults ? "Your stay, rooms and booking options" : "Your hotel results"}</h3>
           <p>{embedResults ? "Explore hotel details below. Use the secure booking site for a full-window experience and payment." : "View hotels, total prices and room options on our secure booking site."}</p></div>

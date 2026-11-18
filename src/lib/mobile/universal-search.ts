@@ -1,6 +1,5 @@
 import {destinations} from "@/data/destinations";
 import {knownStadiumTicketHref} from "@/lib/travel/stadium-ticket-routing";
-import {cleanHotelDestination} from "@/lib/travel/hotel-routing";
 
 /**
  * Navigation only: reuse existing Travel, hotel directory, flight, property and
@@ -41,7 +40,7 @@ const hotelWords=/\b(?:hotels?|resorts?|stays?|rooms?|accommodations?|lodging|gu
  * instead of looking for a property literally named "Goa hotel".
  */
 function hotelTarget(query:string):string{
- const cleaned=cleanHotelDestination(query)||trimKeywords(query,hotelWords);
+ const cleaned=trimKeywords(query,hotelWords);
  const city=matchCity(cleaned);
  if(city){
   const remainder=cleaned.replace(new RegExp("(^|[^\\p{L}])"+city.name.replace(/[- ]/g,"[ -]")+"(?=$|[^\\p{L}])","iu")," ").replace(/\s+/g," ").trim();

@@ -7,7 +7,7 @@ const {chromium}=createRequire(import.meta.url)("playwright");
 const origin=process.env.GTH_HOTEL_QA_ORIGIN||"http://127.0.0.1:4211";
 assert.equal(new URL(origin).hostname,"127.0.0.1");
 const evidence="/tmp/gth-hotel-landing-qa";await mkdir(evidence,{recursive:true});
-// Only test code supplies supplier showcase cards. Production hotel search uses a local no-API form.
+// Only test code supplies this DOM. Production continues loading the original SDK.
 const sdk=String.raw`(()=>{
  window.__hotelFixture={searches:0,lists:[]};
  window.LiteAPI={init(options){window.__hotelFixture.currency=new URLSearchParams(options.deepLinkParams).get('currency');},SearchBar:{async create(options){
@@ -64,8 +64,7 @@ try{
   await page.locator('[data-gth-nuitee-supplier-hotels="true"] [data-fixture], [data-gth-nuitee-supplier-hotels="true"][data-fixture]').waitFor();
   assert.equal(apiCalls,before,"booking landing must not query Supabase hotel directory");
   assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1);
-  assert.equal(await frame.locator("form#gth-hotel-native-search").count(),1,"one first-party form; no provider autocomplete");
-  assert.equal(await page.evaluate(()=>window.__hotelFixture.searches),0,"no supplier SearchBar SDK creates search requests");
+  assert.equal(await frame.locator("html").evaluate(()=>window.__hotelFixture.searches),1,"one SDK initialization after hydration");
   assert.equal(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count(),1,"only the selected supplier list is mounted");
   const palette=await page.locator('[data-gth-nuitee-supplier-hotels="true"] a').first().evaluate(card=>({background:getComputedStyle(card).backgroundColor,title:getComputedStyle(card.querySelector('h3')).color,price:getComputedStyle(card.querySelector('strong')).color,badge:getComputedStyle(card.querySelector('[data-fixture-badge]')).backgroundColor,expectedBackground:getComputedStyle(document.documentElement).getPropertyValue('--bg-soft').trim()}));
   assert.equal(palette.title,palette.price,"SDK black prices and inherited titles share readable theme text");
@@ -93,44 +92,27 @@ try{
   await page.getByRole("button",{name:"Hotel directory",exact:true}).click();await page.getByText("Fixture directory hotel",{exact:true}).first().waitFor();
   const country=page.getByRole("combobox",{name:"Country",exact:true});assert.equal(await country.evaluate(s=>getComputedStyle(s).colorScheme),theme==="night"?"dark":"light");
   assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),0);
-  await page.getByRole("button",{name:"Book a stay",exact:true}).click();await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();assert.equal(await frame.locator("form#gth-hotel-native-search").count(),1);
+  await page.getByRole("button",{name:"Book a stay",exact:true}).click();await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();assert.equal(await frame.locator("html").evaluate(()=>window.__hotelFixture.searches),1);
   await page.getByRole("button",{name:theme==="night"?"Switch to day theme":"Switch to night theme",exact:true}).click();await page.waitForFunction(expected=>document.querySelector('iframe[title="Worldwide hotel destination, dates and guests"]').contentDocument.documentElement.classList.contains('dark')===expected,theme!=="night");
   scenarios.push({width,theme,searchBottom:Math.round(buttonBox.y+buttonBox.height),overflow:false});await page.close();
  }
  const start=new Date(Date.now()+30*86400000).toISOString().slice(0,10),end=new Date(Date.now()+34*86400000).toISOString().slice(0,10);
- // Local GTH form: keyboard input must not load supplier Places/rates APIs.
- // Browser navigation only starts when the user clicks Find rooms.
+ const payload={place:{place_id:"ChIJwe1EZjDG5zsRaYxkjY_tpF0"},checkin:start,checkout:end,occupancies:Buffer.from(JSON.stringify([{adults:2,rooms:2,children:[6]}])).toString("base64")};
  for(const width of [390,1440]){
   const page=await browser.newPage({viewport:{width,height:900}});await page.route("**/*",route);await page.goto(origin+"/hotels",{waitUntil:"networkidle"});
   await page.getByRole("combobox",{name:"Hotel display currency",exact:true}).selectOption("USD");await page.waitForURL(/currency=USD/);
-  const frame=page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]');
-  await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();
-  await frame.locator('input[name="destination"]').fill("Mumbai Hotels");
-  await frame.locator('input[name="checkIn"]').fill(start);
-  await frame.locator('input[name="checkOut"]').fill(end);
-  await frame.locator('input[name="adults"]').fill("3");
-  await frame.locator('input[name="rooms"]').fill("2");
-  assert.equal(await page.evaluate(()=>window.__hotelFixture.searches),0,"typing must not mount supplier autocomplete");
-  await frame.getByRole("button",{name:"Find rooms",exact:true}).click();
-  await page.waitForURL(/hotel\.gthproglobal\.com\/hotels/);
-  const u=new URL(page.url());assert.equal(u.pathname,"/hotels");
-  assert.equal(u.searchParams.get("currency"),"USD");assert.equal(u.searchParams.get("checkin"),start);
-  assert.equal(u.searchParams.get("checkout"),end);
-  assert.equal(u.searchParams.get("placeId"),"ChIJwe1EZjDG5zsRaYxkjY_tpF0");
-  const occupancies=JSON.parse(Buffer.from(u.searchParams.get("occupancies"),"base64").toString());
-  assert.equal(occupancies.length,2);assert.equal(occupancies[0].adults,2);assert.equal(occupancies[1].adults,1);
+  await page.waitForFunction(()=>document.querySelector('iframe[title="Worldwide hotel destination, dates and guests"]')?.contentWindow?.__hotelFixture?.currency==="USD");
+  const frame=page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]');await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();await frame.locator("html").evaluate((_,p)=>window.__hotelFixture.search(p),payload);
+  if(width<1024){await page.waitForURL(/hotel\.gthproglobal\.com\/hotels/);const u=new URL(page.url());assert.equal(u.searchParams.get("currency"),"USD");assert.equal(u.searchParams.get("checkin"),start);const occupancies=JSON.parse(Buffer.from(u.searchParams.get("occupancies"),"base64").toString());assert.equal(occupancies.length,2);assert.deepEqual(occupancies[1].children,[6]);}
+  else{await page.waitForURL(/view=booking/);await page.locator('iframe[title="GTH PRO hotel availability, amenities and room booking"]').waitFor();assert.match(await page.getByRole("link",{name:/Continue on secure booking site/}).getAttribute("href"),/^https:\/\/hotel\.gthproglobal\.com\/hotels\?/);}
   await page.close();
  }
  blockSdk=true;
- const page=await browser.newPage({viewport:{width:390,height:844}});await page.route("**/*",route);
- await page.goto(origin+"/hotels",{waitUntil:"networkidle"});
- await page.getByText(/Supplier hotel cards are unavailable/).waitFor();
- const frame=page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]');
- await frame.getByRole("button",{name:"Find rooms",exact:true}).waitFor();
+ const page=await browser.newPage({viewport:{width:390,height:844}});await page.route("**/*",route);await page.goto(origin+"/hotels",{waitUntil:"networkidle"});await page.getByRole("button",{name:"Retry hotel search",exact:true}).waitFor();await page.getByText(/Supplier hotel cards are unavailable/).waitFor();
  assert.match(await page.getByRole("link",{name:"Open secure booking site",exact:true}).getAttribute("href"),/^https:\/\/hotel\.gthproglobal\.com\//);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:evidence+"/supplier-unavailable.png",fullPage:true});
- blockSdk=false;
- const result={status:"PASS",fixtureOnly:true,scenarios,mobileHandoff:"PASS: USD, dates and two rooms retained",desktopResults:"PASS: secure White Label handoff without GTH rates iframe",fallbackAndRetry:"PASS: local search survives unavailable showcase SDK",bookingLandingDirectoryReads:0,geography:"PASS: city first, country next, manual override, country fallback and private/public cache isolation",warmReferenceAdditionalCalls:referenceAfter.requests-referenceBefore.requests,warmGeoAdditionalCalls:geoAfter.hotels-geoBefore.hotels,evidence};await writeFile(evidence+"/result.json",JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ blockSdk=false;await page.getByRole("button",{name:"Retry hotel search",exact:true}).click();await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByRole("button",{name:"Find rooms",exact:true}).waitFor();
+ const result={status:"PASS",fixtureOnly:true,scenarios,mobileHandoff:"PASS: USD, dates, two rooms and child ages retained",desktopResults:"PASS: existing embedded supplier results",fallbackAndRetry:"PASS",bookingLandingDirectoryReads:0,geography:"PASS: city first, country next, manual override, country fallback and private/public cache isolation",warmReferenceAdditionalCalls:referenceAfter.requests-referenceBefore.requests,warmGeoAdditionalCalls:geoAfter.hotels-geoBefore.hotels,evidence};await writeFile(evidence+"/result.json",JSON.stringify(result,null,2));console.log(JSON.stringify(result));
 }catch(error){
  for(const context of browser.contexts())for(const page of context.pages()){await page.screenshot({path:evidence+"/failure.png",fullPage:true}).catch(()=>{});await writeFile(evidence+"/failure.txt",(await page.locator("body").innerText().catch(()=>"Unavailable")).slice(0,16000));}
  throw error;

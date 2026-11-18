@@ -13,7 +13,6 @@ import { knownStadiumTicketHref } from "@/lib/travel/stadium-ticket-routing";
 import { blogs } from "@/data/blogs";
 import { parseGthIntent, connectedIntentLinks } from "@/lib/search/connected-intent";
 import { GTH_MARKETS, gthMarketPath } from "@/lib/intelligence/markets";
-import {cleanHotelDestination} from "@/lib/travel/hotel-routing";
 
 // Do not index infinite query-result combinations, including after public launch.
 export const dynamic = "force-dynamic";
@@ -86,7 +85,7 @@ function targetFor(category: SearchCategory, rawQuery: string): string {
     // provides a verified place selection before Nuitee shows live room results.
     const after = q.match(/\b(?:hotels?|resorts?|stays?)\s+(?:in|near|at)\s+(.+)$/i);
     const before = q.match(/^(.+?)\s+(?:hotels?|resorts?|stays?)$/i);
-    const candidate = cleanHotelDestination(after?.[1] || before?.[1] || q) ?? "";
+    const candidate = cleanPlace(after?.[1] || before?.[1] || q);
     const knownCity = destinations.some((place) => place.name.toLowerCase() === candidate.toLowerCase());
     const scope = /^[\p{L}\p{M}\s.'-]{2,80}$/u.test(candidate) ? candidate : "";
     const params = new URLSearchParams({view:"booking", ...(scope ? {[knownCity || after || before ? "city" : "name"]:scope} : {})});

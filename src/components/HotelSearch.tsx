@@ -2,7 +2,6 @@
 
 import {useState,type FormEvent} from "react";
 import {useRouter} from "next/navigation";
-import {cleanHotelDestination} from "@/lib/travel/hotel-routing";
 
 /** Legacy search surface retained for compatibility; only GTH's reviewed
  * supplier booking widget can turn a city into a real Nuitee placeId.
@@ -16,9 +15,12 @@ export default function HotelSearch(){
  const [message,setMessage]=useState("");
  function search(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
-  const name=cleanHotelDestination(city);
-  if(!name){setMessage("Enter a valid city or destination.");return;}
-  // Missing/invalid stay dates are normalized by the single booking router.
+  const name=city.trim().slice(0,80);
+  if(!/^[\p{L}\p{M} .'-]{2,80}$/u.test(name)){setMessage("Enter a valid city or destination.");return;}
+  if(Boolean(checkin)!==Boolean(checkout)||checkin&&
+    (!/^\d{4}-\d{2}-\d{2}$/.test(checkin)||!/^\d{4}-\d{2}-\d{2}$/.test(checkout)||checkout<=checkin)){
+   setMessage("Select valid check-in and check-out dates, or leave both blank.");return;
+  }
   setMessage("");
   const params=new URLSearchParams({view:"booking",city:name});
   if(checkin&&checkout){params.set("checkin",checkin);params.set("checkout",checkout);}
