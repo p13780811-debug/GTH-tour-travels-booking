@@ -17,22 +17,24 @@ test("Hotel storefront reuses GTH tokens without a second theme, copied brand or
   assert.doesNotMatch(ui, /HopeGoo|CJ Affiliate|bookaway|Nuitee\.link|Math\.random|discount|65% off|US\$|₹[0-9]/i);
   assert.doesNotMatch(ui, /style=\{|linear-gradient|radial-gradient|from-black|bg-white|text-white/);
 });
-test("Accessible top search goes through the existing date-free hotel directory", () => {
-  assert.match(ui, /action="\/hotels#hotel-results" method="GET"/);
-  assert.match(ui, /name="view" value="directory"/);
+test("Accessible top search uses zero-API White Label routing; directory browsing stays separate", () => {
+  assert.match(ui, /action="\/hotels#hotel-booking-experience" method="GET"/);
+  assert.match(ui, /name="view" value="booking"/);
   assert.match(ui, /name="city" type="search"/);
   assert.match(ui, /onSubmit=\{quickSearch\}/);
   assert.match(ui, /maxLength=\{80\}/);
   assert.match(ui, /\/hotels\?/);
   assert.match(ui, /view === "directory" \? "#hotel-results"/);
+  assert.match(ui, /resolveHotelRoute\(\{destination:selected\}\)/);
   assert.doesNotMatch(ui, /\bfetch\(/);
 });
-test("All booking handoffs preserve existing supplier search and explicit date selection", () => {
+test("All booking handoffs preserve existing supplier provider host with automatic date selection", () => {
   assert.match(ui, /route\("booking", place\.city\)/);
   assert.match(page, /<HotelBookingExperience key=\{currency\} currency=\{currency\} \/>/);
   assert.match(page, /id="hotel-booking-experience"/);
   assert.match(booking, /HOTEL_BOOKING_ORIGIN/);
-  assert.match(booking, /hotelWhiteLabelUrl\(stay\)/);
+  assert.match(booking, /resolveHotelRoute\(/);
+  assert.match(booking, /hotelWhiteLabelUrl\(selectedStay\)/);
   assert.match(page, /directoryRequested = params\.get\("view"\) === "directory"/);
   assert.match(handoff, /https:\/\//);
 });
