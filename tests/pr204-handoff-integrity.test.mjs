@@ -25,9 +25,12 @@ const cityRoutes=load("src/lib/destinations/ecosystem.ts",{
  "@/data/flight/destinations":flights,
  "@/lib/travel/stadiums":stadiums,
 });
+const whitelabel=load("src/lib/travel/hotel-whitelabel.ts");
+const hotelRouting=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":whitelabel});
 const mobile=load("src/lib/mobile/universal-search.ts",{
  "@/data/destinations":destinations,
  "@/lib/travel/stadium-ticket-routing":venueRouter,
+ "@/lib/travel/hotel-routing":hotelRouting,
 });
 
 test("the original four-pillar navigation links and PR204 ticket additions point to existing pages",()=>{
@@ -102,7 +105,7 @@ test("city hotel CTAs lead to the Nuitee widget with explicit city, never OSM as
  assert.match(landing,/Choose \{initialCity\} from the GTH Worldwide Stays destination suggestions/);
  assert.match(landing,/showOffers=\{!initialCity\} showNearby=\{!initialCity\}/);
  assert.match(read("src/components/hotel/HotelsDiscoveryPlacement.tsx"),/showOffers&&<NuiteeHotelOffers/);
- assert.match(booking,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
- assert.match(booking,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
+ assert.match(booking,/resolveHotelRoute\(/);
+ assert.match(booking,/window\.location\.assign\(result\.url\)/);
  assert.doesNotMatch(venueRouter.knownStadiumTicketHref.toString(),/api\.liteapi\.travel|fetch\(/);
 });
