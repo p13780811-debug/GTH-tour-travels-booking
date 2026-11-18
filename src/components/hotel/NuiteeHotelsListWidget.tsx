@@ -65,6 +65,14 @@ export default function NuiteeHotelsListWidget({
   const initialized=useRef(false);
   const displayCurrency=hotelCurrency(currency);
   const cityHandoff=resolveHotelRoute({placeId,currency:displayCurrency});
+  // Pass only date/guest context through the supplier's native exact-property links.
+  // Never append a city placeId to its individual property URLs.
+  const deepLinkParams=(()=>{
+    if(cityHandoff.status!=="ready")return `language=en&currency=${displayCurrency}`;
+    const search=new URL(cityHandoff.url).searchParams;
+    search.delete("placeId");
+    return search.toString();
+  })();
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -79,7 +87,7 @@ export default function NuiteeHotelsListWidget({
       if(!live||initialized.current)return;
       initialized.current=true;
       try{
-        sdk.init({domain:DOMAIN,deepLinkParams:`language=en&currency=${displayCurrency}`});
+        sdk.init({domain:DOMAIN,deepLinkParams});
         const color=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
         const options:LiteHotelsListOptions={
           selector:"#"+id,
@@ -87,7 +95,7 @@ export default function NuiteeHotelsListWidget({
           currency:displayCurrency,
           hasSearchBar:false,
           rows,
-          deepLinkParams:`language=en&currency=${displayCurrency}`,
+          deepLinkParams,
           labelsOverride:{searchAction:"View hotels",placePlaceholderText:"Choose a destination"}
         };
         if(/^#[\da-f]{6}$/i.test(color))options.primaryColor=color;
@@ -98,7 +106,7 @@ export default function NuiteeHotelsListWidget({
       }catch{initialized.current=false;if(live)setFailed(true);}
     }).catch(()=>{if(live)setFailed(true);});
     return ()=>{live=false;};
-  },[id,placeId,rows,displayCurrency]);
+  },[id,placeId,rows,displayCurrency,deepLinkParams]);
 
   return <div className="min-w-0" aria-label={"GTH Worldwide Stays listings near "+placeLabel}>
     <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
