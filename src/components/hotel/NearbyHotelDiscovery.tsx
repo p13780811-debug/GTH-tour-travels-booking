@@ -3,7 +3,8 @@ import {useEffect,useRef,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import {MapPin,ArrowUpRight,RotateCcw} from "lucide-react";
 import HotelPropertyImage from "./HotelPropertyImage";
-import {HOTEL_BOOKING_ORIGIN,hotelWhiteLabelUrl,parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
+import {parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import type {HotelProfile} from "@/lib/travel/nuitee-free-hotels";
 type Discovery={scope:{country:string;city:string;page:number};countries:{code:string;name:string}[];nearby:HotelProfile[];items:HotelProfile[];hasMore:boolean;available:boolean;partial?:boolean};
@@ -41,8 +42,12 @@ export default function NearbyHotelDiscovery({currency,onCountry,initialArea,sta
     const ambiguous=["checkin","checkout","occupancies","currency"].some(key=>fields.getAll(key).length>1);
     fields.delete("placeId");fields.set("hotelId",hotel.id);
     const restored=ambiguous?null:parseHotelBookingSearch(fields);
-    if(restored)return hotelWhiteLabelUrl({...restored,placeId:undefined,hotelId:hotel.id,currency:selectedCurrency});
-    const url=new URL("/hotels/"+encodeURIComponent(hotel.id),HOTEL_BOOKING_ORIGIN);url.search=new URLSearchParams({language:"en",currency:selectedCurrency}).toString();return url.toString();
+    const result=resolveHotelRoute({
+      hotelId:hotel.id,checkIn:restored?.checkin??fields.get("checkin")??undefined,
+      checkOut:restored?.checkout??fields.get("checkout")??undefined,
+      occupancies:restored?.occupancies,currency:selectedCurrency,
+    });
+    return result.status==="ready"?result.url:"/hotels?view=booking";
   };
   const name=data?.countries.find(item=>item.code===data.scope.country)?.name||data?.scope.country;
   const cards=(items:HotelProfile[])=> <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">{items.map(hotel=><article key={hotel.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
