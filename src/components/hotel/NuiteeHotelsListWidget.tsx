@@ -64,6 +64,7 @@ export default function NuiteeHotelsListWidget({
 }){
   const initialized=useRef(false);
   const displayCurrency=hotelCurrency(currency);
+  const cityHandoff=resolveHotelRoute({placeId,currency:displayCurrency});
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -107,8 +108,7 @@ export default function NuiteeHotelsListWidget({
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
-    <a href={resolveHotelRoute({placeId,currency:displayCurrency}).status==="ready" ?
-      (()=>{const route=resolveHotelRoute({placeId,currency:displayCurrency});return route.status==="ready"?route.url:HOTEL_BOOKING_ORIGIN;})() : HOTEL_BOOKING_ORIGIN}
+    <a href={cityHandoff.status==="ready"?cityHandoff.url:HOTEL_BOOKING_ORIGIN}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
       Browse on booking site
