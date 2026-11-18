@@ -91,11 +91,16 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);
   const adults = positive(intent.adults, 20, 2);
   const rooms = positive(intent.rooms, 8, 1);
-  const fallbackGuests = adults * rooms <= 40 ? adults : 2;
+  // The compact GTH form takes TOTAL adults across all rooms.
+  // The supplier requires one occupancy with >=1 adult for every room.
   const occupancy = intent.occupancies ? normalizeHotelOccupancies(intent.occupancies) : null;
   if (intent.occupancies && !occupancy) return {status:"invalid",kind};
+  if (!occupancy && adults < rooms) return {status:"invalid",kind};
   const occupancies: HotelOccupancy[] = occupancy ??
-    Array.from({length: rooms}, () => ({adults: fallbackGuests, children: []}));
+    Array.from({length: rooms}, (_, index) => ({
+      adults: Math.floor(adults / rooms) + (index < adults % rooms ? 1 : 0),
+      children: [],
+    }));
   const currency = ["INR","USD","EUR","GBP","AED","SGD","AUD","CAD","JPY"].includes(intent.currency ?? "")
     ? intent.currency! : "INR";
   const search: HotelBookingSearch = {
