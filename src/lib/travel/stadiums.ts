@@ -36,6 +36,18 @@ const bcciHomeSeason = {
 
 export const stadiums: readonly Stadium[] = [
   {
+    slug: "lords-cricket-ground", name: "Lord's Cricket Ground", city: "London", country: "United Kingdom",
+    countryCode: "GB", timeZone: "Europe/London", sports: ["Cricket"], aliases: "Lords MCC Marylebone England Ashes",
+    overview: "Lord's Cricket Ground in St John's Wood is operated by Marylebone Cricket Club. The official Lord's fixture and ticket pages publish England internationals, seasonal access rules and ticket ballot information. Confirm any match date, entry entitlement and approved sales channel directly with MCC.",
+    seating: "For Test cricket, check whether the selected ticket is a single-day admission or hospitality product. Seating access, ballot eligibility, mobile ticket delivery and companion entry are controlled by MCC and its authorized sales channels.",
+    schedule: { label: "MCC official Lord's fixtures and tickets", url: "https://www.lords.org/tickets" },
+    tickets: { label: "MCC official ticket portal", url: "https://tickets.lords.org/" },
+    events: [{
+      label: "England vs Australia men's Ashes Test", starts: "2027-06-30", ends: "2027-07-04",
+      url: "https://www.lords.org/tickets",
+    }],
+  },
+  {
     slug: "eden-gardens", name: "Eden Gardens", city: "Kolkata", country: "India",
     countryCode: "IN", timeZone: "Asia/Kolkata", sports: ["Cricket"], aliases: "Calcutta KKR",
     overview: "Eden Gardens is a cricket ground in central Kolkata. Use the Cricket Association of Bengal notices for local announcements and confirm the venue for city-level fixtures before booking a trip.",
