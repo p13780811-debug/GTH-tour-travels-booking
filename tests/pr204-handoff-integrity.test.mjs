@@ -99,7 +99,8 @@ test("city hotel CTAs lead to the Nuitee widget with explicit city, never OSM as
  for(const value of [landing,market,offers])assert.match(value,/view:"booking"/);
  assert.match(detail,/Public hotel directory in/);
  assert.match(detail,/Book stays in/);
- assert.match(landing,/Choose \{initialCity\} from the GTH Worldwide Stays destination suggestions/);
+ assert.match(landing,/<HotelBookingExperience key=\{currency\}/);
+ assert.match(booking,/Choose the destination in the genuine worldwide hotel search below/);
  assert.match(landing,/showOffers=\{!initialCity\} showNearby=\{!initialCity\}/);
  assert.match(read("src/components/hotel/HotelsDiscoveryPlacement.tsx"),/showOffers&&<NuiteeHotelOffers/);
  assert.match(booking,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
