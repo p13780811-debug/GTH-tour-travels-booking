@@ -26,8 +26,8 @@ const affiliates = load("src/lib/travel/stadium-affiliates.ts", {
 });
 
 test("venue catalog has unique paths, official sources and no fabricated commercial data", () => {
-  assert.equal(catalog.stadiums.length, 11);
-  assert.equal(new Set(catalog.stadiums.map(venue => venue.slug)).size, 11);
+  assert.equal(catalog.stadiums.length, 15);
+  assert.equal(new Set(catalog.stadiums.map(venue => venue.slug)).size, 15);
   for (const venue of catalog.stadiums) {
     assert.match(venue.slug, /^[a-z0-9-]+$/);
     assert.equal(catalog.findStadium(venue.slug), venue);
@@ -48,6 +48,11 @@ test("local discovery supports aliases, accent normalization, multiple terms and
   assert.equal(catalog.filterStadiums(catalog.stadiums, "india cricket", "").length, 3);
   assert.equal(catalog.filterStadiums(catalog.stadiums, "Tokyo", "Cricket").length, 0);
   assert.equal(catalog.filterStadiums(catalog.stadiums, "nonexistent", "").length, 0);
+  assert.equal(catalog.filterStadiums(catalog.stadiums, "Wimbledon", "Tennis")[0].slug, "wimbledon-centre-court");
+  assert.equal(catalog.filterStadiums(catalog.stadiums, "Madison Square Garden", "Basketball")[0].slug, "madison-square-garden");
+  assert.equal(catalog.filterStadiums(catalog.stadiums, "Wimbledon", "Basketball").length, 0);
+  assert.equal(catalog.filterStadiums(catalog.stadiums, "Madison Square Garden", "Tennis").length, 0);
+  assert.equal(catalog.filterStadiums(catalog.stadiums, "Lords", "Cricket")[0].slug, "lords-cricket-ground");
 });
 
 test("each experience uses exact reviewed product URLs and the existing owner's attribution", () => {

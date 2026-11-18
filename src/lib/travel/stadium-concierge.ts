@@ -1,5 +1,6 @@
 import type {Stadium} from "./stadiums";
 export const venueLocations:Record<string,{lat:number;lng:number;transit:string}>={
+ "lords-cricket-ground":{lat:51.5294,lng:-0.1727,transit:"St John's Wood station, then follow MCC event-day gate and accessibility guidance."},
  "eden-gardens":{lat:22.5646,lng:88.3433,transit:"Esplanade / Chandni Chowk Metro; check event-day gate notices."},
  "wankhede-stadium":{lat:18.9389,lng:72.8258,transit:"Churchgate railway station; follow your ticket's gate instructions."},
  "narendra-modi-stadium":{lat:23.0917,lng:72.5975,transit:"Motera Stadium Metro; check event-specific access."},
@@ -10,6 +11,9 @@ export const venueLocations:Record<string,{lat:number;lng:number;transit:string}
  "yankee-stadium":{lat:40.8296,lng:-73.9262,transit:"161 St–Yankee Stadium subway; check game-day exit notices."},
  "singapore-national-stadium":{lat:1.3040,lng:103.8748,transit:"Stadium MRT station; follow event-specific entry directions."},
  "tokyo-dome":{lat:35.7056,lng:139.7519,transit:"Korakuen / Suidobashi stations; verify gate on ticket."},
+ "wimbledon-centre-court":{lat:51.4337,lng:-0.2141,transit:"Southfields or Wimbledon stations; verify Championship-day shuttle and entry routes."},
+ "arthur-ashe-stadium":{lat:40.7499,lng:-73.8477,transit:"Mets–Willets Point station; check official US Open entrance notices."},
+ "madison-square-garden":{lat:40.7505,lng:-73.9934,transit:"Penn Station directly beneath the arena; follow event-specific entrance instructions."},
  "silverstone":{lat:52.0786,lng:-1.0169,transit:"No adjacent metro; check the circuit's event shuttle and parking plans."}
 };
 export function haversineKm(a:{lat:number;lng:number},b:{lat:number;lng:number}) {

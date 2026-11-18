@@ -14,7 +14,7 @@ test("outbound destinations are HTTPS and do not contain secrets or misleading a
   assert.equal(u.username,"",d.id);
   assert.equal(u.password,"",d.id);
   assert.equal(u.hash,"",d.id);
-  assert.ok(["official-tickets","official-schedule","authorized-marketplace"].includes(d.kind),d.id);
+  assert.ok(["official-tickets","official-schedule","authorized-marketplace","regional-discovery"].includes(d.kind),d.id);
   assert.ok(!/[?&](?:token|api_key|secret|partner_id)=/i.test(d.url),d.id);
  }
 });
@@ -23,4 +23,12 @@ test("organizer schedule URLs are not mislabeled as confirmed checkout",()=>{
   assert.equal(items.find(x=>x.id===id)?.kind,"official-schedule",id);
  }
  assert.equal(items.find(x=>x.id==="ticketmaster")?.kind,"authorized-marketplace");
+});
+
+test("regional ticket directories are explicitly non-event-verified sources",()=>{
+ const matches=items.filter(x=>x.kind==="regional-discovery");
+ for(const id of ["bookmyshow-cricket","district-kolkata-sports","ticketek-au-sports","axs","seatgeek"]){
+  assert.ok(matches.some(x=>x.id===id),id);
+ }
+ assert.equal(items.find(x=>x.id==="mcc-lords")?.kind,"official-tickets");
 });

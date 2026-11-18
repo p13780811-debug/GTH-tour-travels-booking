@@ -1,4 +1,4 @@
-export const stadiumSports = ["Cricket", "Football", "Baseball", "Motorsport", "Rugby", "Australian rules", "Concerts"] as const;
+export const stadiumSports = ["Cricket", "Football", "Tennis", "Basketball", "Baseball", "Motorsport", "Rugby", "Australian rules", "Concerts"] as const;
 export type StadiumSport = (typeof stadiumSports)[number];
 
 type Source = { label: string; url: string };
@@ -35,6 +35,18 @@ const bcciHomeSeason = {
 };
 
 export const stadiums: readonly Stadium[] = [
+  {
+    slug: "lords-cricket-ground", name: "Lord's Cricket Ground", city: "London", country: "United Kingdom",
+    countryCode: "GB", timeZone: "Europe/London", sports: ["Cricket"], aliases: "Lords MCC Marylebone England Ashes",
+    overview: "Lord's Cricket Ground in St John's Wood is operated by Marylebone Cricket Club. The official Lord's fixture and ticket pages publish England internationals, seasonal access rules and ticket ballot information. Confirm any match date, entry entitlement and approved sales channel directly with MCC.",
+    seating: "For Test cricket, check whether the selected ticket is a single-day admission or hospitality product. Seating access, ballot eligibility, mobile ticket delivery and companion entry are controlled by MCC and its authorized sales channels.",
+    schedule: { label: "MCC official Lord's fixtures and tickets", url: "https://www.lords.org/tickets" },
+    tickets: { label: "MCC official ticket portal", url: "https://tickets.lords.org/" },
+    events: [{
+      label: "England vs Australia men's Ashes Test", starts: "2027-06-30", ends: "2027-07-04",
+      url: "https://www.lords.org/tickets",
+    }],
+  },
   {
     slug: "eden-gardens", name: "Eden Gardens", city: "Kolkata", country: "India",
     countryCode: "IN", timeZone: "Asia/Kolkata", sports: ["Cricket"], aliases: "Calcutta KKR",
@@ -152,6 +164,30 @@ export const stadiums: readonly Stadium[] = [
     overview: "Tokyo Dome hosts baseball and concerts in Bunkyo. Its baseball guide links to game information. For concerts, follow the artist or promoter’s official event announcement.",
     seating: "Match the gate, floor and seat section on the organizer’s map. Baseball and concert layouts use different floor configurations.",
     schedule: { label: "Tokyo Dome baseball and event information", url: "https://www.tokyo-dome.co.jp/en/dome/baseball/" },
+  },
+  {
+    slug: "wimbledon-centre-court", name: "Wimbledon Centre Court", city: "London", country: "United Kingdom",
+    countryCode: "GB", timeZone: "Europe/London", sports: ["Tennis"], aliases: "Wimbledon AELTC All England Club SW19",
+    overview: "Centre Court is the principal tennis show court at the All England Lawn Tennis Club in Wimbledon, London. Wimbledon publishes its own Championships dates, daily order of play and ballot or queueing guidance; participants and court allocations are confirmed by the organizer.",
+    seating: "A Wimbledon Grounds Pass does not provide reserved admission to Centre Court. Check the exact court, session, ticket type, ballot or queue terms and any published access restrictions before travelling.",
+    schedule: { label: "Wimbledon official Championship dates", url: "https://www.wimbledon.com/en_GB/atoz/dates.html" },
+    tickets: { label: "Wimbledon official ticket information", url: "https://shop.wimbledon.com/tickets" },
+  },
+  {
+    slug: "arthur-ashe-stadium", name: "Arthur Ashe Stadium", city: "New York", country: "United States",
+    countryCode: "US", timeZone: "America/New_York", sports: ["Tennis"], aliases: "US Open USTA Billie Jean King National Tennis Center Flushing",
+    overview: "Arthur Ashe Stadium is the principal US Open tennis show court at the USTA Billie Jean King National Tennis Center in Queens. Use the US Open's official schedule and ticket information to confirm the session, court, players and tournament entry requirements.",
+    seating: "Tickets for other US Open courts or the grounds do not automatically include a reserved seat in Arthur Ashe Stadium. Check day or evening session admission, the seat section, entry policy and organizer updates before booking.",
+    schedule: { label: "US Open official tournament schedule", url: "https://www.usopen.org/en_US/about/eventschedule.html" },
+    tickets: { label: "US Open official ticket options", url: "https://www.usopen.org/en_US/tickets/individual_tickets.html" },
+  },
+  {
+    slug: "madison-square-garden", name: "Madison Square Garden", city: "New York", country: "United States",
+    countryCode: "US", timeZone: "America/New_York", sports: ["Basketball", "Concerts"], aliases: "New York Knicks NBA The Garden Midtown",
+    overview: "Madison Square Garden is a multi-purpose Manhattan arena and home venue for New York Knicks basketball. Use the Knicks schedule and venue's official event calendar to confirm the event, visiting team and exact showtime before choosing a ticket.",
+    seating: "NBA games and concerts use different ticket products and seating arrangements. Always check your selected event, arena level, row, access rules and the actual admission shown by the organizer or ticket supplier.",
+    schedule: { label: "New York Knicks official schedule", url: "https://www.nba.com/knicks/schedule" },
+    tickets: { label: "Madison Square Garden events and ticket information", url: "https://www.msg.com/madison-square-garden" },
   },
   {
     slug: "silverstone", name: "Silverstone Circuit", city: "Silverstone", country: "United Kingdom",
