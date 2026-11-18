@@ -36,7 +36,7 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
   }
 });
 test("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
-  for(const city of ["Mumbai","Unknown","evil.example","javascript:alert(1)","東京","London",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
+  for(const city of ["Mumbai","Unknown","evil.example","javascript:alert(1)","constructor","__proto__","toString","東京","London",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
   const booking=read("src/components/hotel/HotelBookingExperience.tsx");
   const page=read("src/app/hotels/page.tsx");
   assert.match(booking,/LiteAPI.SearchBar.create/);
