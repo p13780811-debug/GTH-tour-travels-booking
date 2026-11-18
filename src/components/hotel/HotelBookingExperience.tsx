@@ -254,11 +254,11 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
         </div>
         <p className="text-xs text-[var(--text-soft)]">Confirm dates, guests, exact hotel and room availability with the booking network.</p>
       </div>
-    </div>
+    </div>}
     {showSearch && searchToggle}
     {showSearch && hotelHint && <p role="status" className="gth-hotel-booking-note">
       <span className="min-w-0">Requested hotel: <strong>{hotelHint}</strong>. Select its actual matching record in worldwide search; GTH will not substitute a similarly named directory listing.</span>
-    </p>
+    </p>}
     {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
