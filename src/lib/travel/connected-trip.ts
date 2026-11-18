@@ -63,7 +63,7 @@ export function connectedTwelveGoFlightHref(trip:ConnectedTrip,now=new Date()):s
  const from=airportIndex.find(item=>item.code===trip.origin)?.city.trim();
  const to=airportIndex.find(item=>item.code===trip.destination)?.city.trim();
  const validCity=(value:string|undefined)=>!!value&&value.length<=80&&
-   /^[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N} .,()'-]{1,79}$/u.test(value);
+   /^[\p{L}\p{N}][\p{L}\p{M}\p{N} .,()'-]{1,79}$/u.test(value);
  if(!validCity(from)||!validCity(to)||from!.toLocaleLowerCase("en")===to!.toLocaleLowerCase("en"))return null;
  const departure=day(trip.start),today=day(now.toISOString().slice(0,10));
  if(!Number.isFinite(departure)||departure<today||departure>today+400*86400000)return null;
