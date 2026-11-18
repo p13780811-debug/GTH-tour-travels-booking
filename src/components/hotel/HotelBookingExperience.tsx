@@ -35,7 +35,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
 
 
   // Public supplier URLs work independently of GTH redirect-route deployment/protection.
-  // The same strict allowlist validates both SDK callbacks and restored query strings.
+  // Restore only allowlisted prior booking query strings.
   const selectedStay = bookingQuery ? parseHotelBookingSearch(new URLSearchParams(bookingQuery)) : null;
   const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
   const invalidStay = query.get("bookingError") === "invalid-stay" ||
@@ -102,9 +102,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
     if (result.status==="ready") window.location.replace(result.url);
   }, [query,restoredQuery,displayCurrency]);
 
-  // A streamed srcDoc can finish loading before React hydrates on a direct
-  // visit. Bootstrap the already-ready document as well as listening to load.
-  // The document guard makes those two paths share one SDK initialization.
+  // Bootstrap the static local search form even if iframe content loaded before React hydration.
   useEffect(() => {
     if (showSearch && searchFrame.current?.contentDocument?.readyState === "complete") void loadSearch();
   }, [loadSearch, showSearch, attempt]);
