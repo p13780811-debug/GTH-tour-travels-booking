@@ -10,7 +10,7 @@ import {HOTEL_CURRENCY_OPTIONS} from "@/lib/travel/hotel-currency";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import {FLIGHT_DESTINATIONS,EXPERIENCE_COLLECTIONS} from "@/lib/travel/travel-editorial";
-import {TRAVEL_MODES,connectedFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
+import {TRAVEL_MODES,connectedFlightHref,connectedTwelveGoFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
 import TravelAirportField,{airportCode,airportLabel} from "./TravelAirportField";
 import styles from "./ConnectedTravelWorkspace.module.css";
 
@@ -34,8 +34,14 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
  useEffect(()=>setError(initialError||""),[initialError]);
  const countriesList=countries.map(item=>item.code);
  const parseDraft=()=>parseConnectedTrip({tripCountry:draft.country,tripCity:draft.city,tripStart:draft.start,tripEnd:draft.end,tripVisitDate:draft.visitDate,tripAdults:String(draft.adults),tripRooms:String(draft.rooms),tripChildren:children,tripCurrency:draft.currency,tripFrom:draft.origin,tripTo:draft.destination},countriesList);
- const parsed=parseDraft(),flightHref=parsed.ok?connectedFlightHref({...parsed.trip,end:oneWay?"":parsed.trip.end}):null;
- const readyFlight=flightHref&&(!oneWay?draft.end:true)?flightHref:null;
+ const parsed=parseDraft();
+ const flightTrip=parsed.ok?{...parsed.trip,end:oneWay?"":parsed.trip.end}:null;
+ // Existing 12Go route is preferred; Aviasales remains the fallback when
+ // route mapping is unavailable, and an explicit alternative after handoff.
+ const twelveGoHref=flightTrip?connectedTwelveGoFlightHref(flightTrip):null;
+ const aviaHref=flightTrip?connectedFlightHref(flightTrip):null;
+ const readyFlight=(!oneWay&&!draft.end)?null:(twelveGoHref||aviaHref);
+ const alternateFlightHref=aviaHref||"/flights";
  const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===trip.country)?.name;
  const edit=(change:Partial<ConnectedTrip>)=>setDraft(current=>({...current,...change}));
  function apply(afterHandoff=false){
@@ -78,7 +84,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
      <label>Hotel currency<select name="tripCurrency" value={draft.currency} onChange={event=>edit({currency:event.target.value})}>{HOTEL_CURRENCY_OPTIONS.map(item=><option key={item.code} value={item.code}>{item.code} · {item.name}</option>)}</select></label>
     </div></details>}
     {error&&<p role="alert" className={styles.message}>{error}</p>}
-    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Compare your route, then confirm fares, passengers and cabin before booking.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Discover properties first. Check current room prices and terms before booking."}</p>
+    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Start with the connected flight search. If no service appears, use Advanced flight search below. Reconfirm airports, return flights, passengers and final fares with the provider.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Discover properties first. Check current room prices and terms before booking."}</p>
    </form>
   </div>
   <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
@@ -89,7 +95,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}><summary>Need more options? Open worldwide hotel search <ArrowUpRight size={15} aria-hidden="true"/></summary>{advanced&&<><p className={styles.searchNote}>This search has its own destination, date and guest controls. Check your trip details before searching.</p><HotelBookingExperience currency={trip.currency}/></>}</details>
    </>}
    {item==="flights"&&<>
-    <div className={styles.panelIntro}><div><p className={styles.eyebrow}>The start of something new</p><h2>Go somewhere remarkable.</h2><p>Choose a destination below to build your route. Your dates stay with your journey.</p></div><Link prefetch={false} href="/flights" className={styles.textLink}>Advanced flight search <ArrowRight size={17} aria-hidden="true"/></Link></div>
+    <div className={styles.panelIntro}><div><p className={styles.eyebrow}>The start of something new</p><h2>Go somewhere remarkable.</h2><p>Choose a destination below to build your route. Your dates stay with your journey.</p></div><Link prefetch={false} href={alternateFlightHref} target={aviaHref?"_blank":undefined} rel={aviaHref?"noopener noreferrer sponsored":undefined} className={styles.textLink}>Advanced flight search <ArrowRight size={17} aria-hidden="true"/></Link></div>
     <div className={styles.destinationGrid}>{FLIGHT_DESTINATIONS.map(destination=><button key={destination.airport} type="button" className={styles.destinationCard} aria-label={"Plan a flight to "+destination.city} onClick={()=>{edit({destination:destination.airport,city:destination.city,country:destination.countryCode});setAirportText(current=>({...current,destination:airportLabel(destination.airport)}));form.current?.scrollIntoView({block:"center",behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}}><Image src={destination.image} alt={destination.city+" destination scenery"} fill sizes="(max-width: 600px) 80vw, (max-width: 1024px) 50vw, 25vw" className={styles.cover}/><span className={styles.destinationCaption}><span>{destination.country}</span><strong>{destination.city}<ArrowUpRight size={20} aria-hidden="true"/></strong><small>{destination.note}</small></span></button>)}</div>
     <div className={styles.bookingBanner}><div><span className={styles.eyebrow}>Keep your journey connected</span><h3>Flights and stays. One booking space.</h3><p>Prefer to plan them together? Explore the options on the GTH PRO booking site.</p></div><a href={HOTEL_BOOKING_ORIGIN} target="_blank" rel="noopener noreferrer sponsored" className={styles.secondary}>Continue booking <ArrowUpRight size={17} aria-hidden="true"/></a></div>
    </>}
