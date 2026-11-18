@@ -8,10 +8,9 @@ import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import MatchDayConcierge from "@/components/travel/MatchDayConcierge";
 import StadiumVerifiedMatchLinks from "@/components/stadium/StadiumVerifiedMatchLinks";
+import StadiumTicketDiscovery from "@/components/stadium/StadiumTicketDiscovery";
 import {safeHotelHandoff} from "@/lib/travel/stadium-concierge";
 import { findStadium, stadiums, upcomingStadiumEvents } from "@/lib/travel/stadiums";
-import { stadiumAffiliateHref } from "@/lib/travel/stadium-affiliates";
-import { stadiumPartnerSearchLinks } from "@/lib/travel/stadium-partner-discovery";
 import { destinationFlightHref } from "@/lib/destinations/ecosystem";
 import { isPublicLaunch, safeStructuredData, siteUrl } from "@/lib/seo/site";
 
@@ -42,12 +41,7 @@ export default async function StadiumPage({ params }: Props) {
   const venue = findStadium((await params).slug);
   if (!venue) notFound();
   const upcoming = upcomingStadiumEvents(venue);
-  const products = (venue.products ?? []).flatMap(product => {
-    const href = stadiumAffiliateHref(product, venue.slug);
-    return href ? [{ ...product, href }] : [];
-  });
   const flightCity = venue.flightCity ?? venue.city;
-  const partnerSearch = stadiumPartnerSearchLinks(venue.name);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [{
@@ -80,6 +74,7 @@ export default async function StadiumPage({ params }: Props) {
       </header>
       <EventShockwave target={{kind:"stadium",id:venue.slug}}/>
       <StadiumVerifiedMatchLinks venueSlug={venue.slug}/>
+      <StadiumTicketDiscovery venue={venue}/>
       <MatchDayConcierge slug={venue.slug} name={venue.name} bookingUrl={safeHotelHandoff(venue)}/>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">
@@ -87,7 +82,6 @@ export default async function StadiumPage({ params }: Props) {
           <p className="my-4 text-sm leading-6 text-[var(--text-soft)]">Confirm the venue, event date and ticket release in the organizer’s calendar. Follow the organizer’s approved ticket links.</p>
           <ExternalLink href={venue.schedule.url}>{venue.schedule.label}</ExternalLink>
           {venue.tickets && <div className="mt-3"><ExternalLink href={venue.tickets.url}>{venue.tickets.label}</ExternalLink></div>}
-          {venue.experience && <div className="mt-3"><ExternalLink href={venue.experience.url}>{venue.experience.label}</ExternalLink></div>}
           {upcoming.length > 0 && <div className="mt-6">
             <h3 className="font-bold">Selected upcoming events</h3>
             <ul className="mt-3 space-y-4">{upcoming.map(event => <li key={event.url} className="rounded-xl border border-[var(--border)] p-4">
@@ -111,34 +105,6 @@ export default async function StadiumPage({ params }: Props) {
           </ul>
         </section>
       </div>
-      {products.length > 0 && <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
-        <h2 className="text-2xl font-bold">Tickets & venue experiences</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">{products.map(product => <article key={product.url} className="rounded-xl border border-[var(--border)] p-5">
-          <p className="text-xs font-bold text-[var(--gold)]">{product.kind}</p>
-          <h3 className="my-3 text-lg font-semibold">{product.label}</h3>
-          <ExternalLink href={product.href} sponsored>{product.kind === "Event tickets" ? "Check game dates & tickets" : "Explore experience"}</ExternalLink>
-          <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">The selected ticket provider confirms included access, dates, prices and availability. Affiliate link.</p>
-        </article>)}</div>
-        <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>
-      </section>}
-      {partnerSearch ? <section aria-labelledby="stadium-specific-partner-search" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
-        <h2 id="stadium-specific-partner-search" className="text-2xl font-bold">Reviewed exact venue experiences</h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-          These are individually reviewed product links for {partnerSearch.venueName} in {partnerSearch.city}, not fuzzy keyword search results.
-          Confirm the included admission and dates with the supplier.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          {partnerSearch.klook&&<ExternalLink href={partnerSearch.klook} sponsored>{partnerSearch.klookLabel||"View reviewed venue ticket"}</ExternalLink>}
-          {partnerSearch.getyourguide&&<ExternalLink href={partnerSearch.getyourguide} sponsored>{partnerSearch.getyourguideLabel||"View reviewed venue experience"}</ExternalLink>}
-        </div>
-      </section> : <section aria-labelledby="stadium-no-verified-tour" className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
-        <h2 id="stadium-no-verified-tour" className="text-xl font-bold">No verified partner stadium tour listed</h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-          We have no reviewed, exact-match partner tour product for {venue.name}. Generic supplier searches can match unrelated
-          places with similar names, so we do not present those as {venue.name} tours. Check the official calendar and
-          venue notices above for confirmed events, access rules or tour announcements.
-        </p>
-      </section>}
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6">
         <h2 className="text-2xl font-bold">Plan your trip</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">Explore stays in {venue.city}, flights to {flightCity} and airport transfers. Choose your dates and airport in each service, then check the journey to the venue.</p>
@@ -148,7 +114,7 @@ export default async function StadiumPage({ params }: Props) {
           <Link prefetch={false} href="/transfers" className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Choose airport transfer</Link>
         </nav>
       </section>
-      <footer className="mt-6 text-sm leading-6 text-[var(--text-soft)]">Venue sources reviewed 10 November 2026. Booking terms and confirmation come from the selected seller. GTH PRO may earn commission on qualifying partner bookings. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></footer>
+      <footer className="mt-6 text-sm leading-6 text-[var(--text-soft)]">Event schedules and ticket sellers are controlled by the organizers. GTH PRO does not sell match admission. Hotel and transport services maintain their own terms. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></footer>
     </div>
   </main>;
 }
