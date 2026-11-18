@@ -1,6 +1,7 @@
 import {normalizeHotelOccupancies} from "./hotel-whitelabel";
 import {HOTEL_CURRENCY_OPTIONS} from "./hotel-currency";
 import {flightPartnerUrl} from "../flights/fare-search";
+import {airportIndex} from "./nuiteeAirportIndex";
 export const TRAVEL_MODES=["hotels","flights","experiences"] as const;
 export type TravelMode=typeof TRAVEL_MODES[number];
 export type ConnectedTrip={country:string;city:string;start:string;end:string;visitDate:string;adults:number;rooms:number;children:number[];currency:string;origin:string;destination:string};
@@ -48,4 +49,28 @@ export function connectedHotelStay(trip:ConnectedTrip):string{
  * with the provider; this never calls a flight fare/ticketing API. */
 export function connectedFlightHref(trip:ConnectedTrip):string|null{
  return trip.origin&&trip.destination&&trip.start?flightPartnerUrl(undefined,trip.origin,trip.destination,trip.start,trip.end||null):null;
+}
+
+/**
+ * Preferred flight handoff via the existing validated 12Go transport route.
+ * The static, reviewed airport catalog maps airport codes to city-level route
+ * names; this is not availability or a verified exact-airport itinerary.
+ * No supplier API is called or queried while the user types.
+ */
+export function connectedTwelveGoFlightHref(trip:ConnectedTrip,now=new Date()):string|null{
+ if(!/^[A-Z]{3}$/.test(trip.origin)||!/^[A-Z]{3}$/.test(trip.destination)||
+    trip.origin===trip.destination)return null;
+ const from=airportIndex.find(item=>item.code===trip.origin)?.city.trim();
+ const to=airportIndex.find(item=>item.code===trip.destination)?.city.trim();
+ const validCity=(value:string|undefined)=>!!value&&value.length<=80&&
+   /^[\p{L}\p{N}][\p{L}\p{M}\p{N} .,()'-]{1,79}$/u.test(value);
+ if(!validCity(from)||!validCity(to)||from!.toLocaleLowerCase("en")===to!.toLocaleLowerCase("en"))return null;
+ const departure=day(trip.start),today=day(now.toISOString().slice(0,10));
+ if(!Number.isFinite(departure)||departure<today||departure>today+400*86400000)return null;
+ // The flight form has no passenger selector. Hotel room adults are NOT flight
+ // travelers. Default to one traveler for the supplier to reconfirm.
+ // Return travel must also be selected/confirmed on 12Go's own search.
+ return "/go/transport/search?"+new URLSearchParams({
+   mode:"flight",from:from!,to:to!,date:trip.start,people:"1",
+ }).toString();
 }

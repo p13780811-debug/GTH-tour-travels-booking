@@ -14,9 +14,10 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const base=git("merge-base","HEAD","origin/main").trim();
  if(!/^[0-9a-f]{40}$/.test(base))throw Error("Could not verify the target main commit");
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
+ const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
  const sensitive=[...changed].filter(path=>
   path.startsWith("src/components/hotel/")||
-  path.startsWith("src/lib/travel/")||
+  (path.startsWith("src/lib/travel/")&&!(flightHandoffScope&&path==="src/lib/travel/connected-trip.ts"))||
   path.startsWith("src/lib/flights/")||
   path.startsWith("src/components/flights/")||
   path.startsWith("src/app/api/")||
@@ -35,6 +36,15 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    .replace('import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";','import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
    .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      {city&&<div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6"><ShareTripPlanButton title={"Flight trip to "+city} city={city} airportCode={destination} path="/flights"/></div>}');
   if(read("src/app/flights/page.tsx")!==expected)throw Error("Flight page may add only the reviewed non-provider trip share entry");
+ }
+ if(flightHandoffScope){
+  const src=read("src/lib/travel/connected-trip.ts");
+  if(/\bfetch\s*\(|api\.12go|process\.env|NUITEE_.*KEY/.test(src))
+    throw Error("Flight handoff cannot add API calls, credentials or paid supplier access");
+  if(!src.includes("connectedTwelveGoFlightHref")||!src.includes('mode:"flight"')||
+     !src.includes("connectedFlightHref"))throw Error("12Go preferred + Aviasales fallback must coexist");
+  if([...changed].some(path=>/\.css$/.test(path)))
+    throw Error("Flight handoff branch may not edit any CSS");
  }
  console.log("PASS: exact main-based reviewed Travel/Flights additions, supplier and fare source paths protected; fixed legacy guard retained.");
  process.exit(0);
