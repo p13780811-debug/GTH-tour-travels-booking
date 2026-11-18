@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import { stadiums } from "@/lib/travel/stadiums";
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import { indexableMatch, matchSeoPath, sportSegment, upcomingMatchPages } from "@/lib/stadium-predictions/seo";
 
@@ -25,6 +26,9 @@ export default async function SportsTicketsPredictions({ searchParams }: Props) 
   const active = SPORTS.some(x => x.key === requested) ? requested : "all";
   const matches = (await upcomingMatchPages()).filter(indexableMatch);
   const filtered = active === "all" ? matches : matches.filter(match => sportSegment(match.sport) === active);
+  // Venue guide discovery is maintained by GTH, independent of affiliate/API approvals.
+  const guides = stadiums.filter(venue => active === "all" ||
+    venue.sports.some(sport => sportSegment(sport) === active)).slice(0, 18);
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <TravelSectionNav />
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -32,7 +36,7 @@ export default async function SportsTicketsPredictions({ searchParams }: Props) 
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">GTH PRO · Match-day travel</p>
         <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Sports tickets & match previews</h1>
         <p className="mt-4 max-w-3xl leading-7 text-[var(--text-soft)]">
-          Discover verified event references and follow their exact-match ticket sources. Plan nearby stays, tours and transport.
+          Discover source-reviewed match fixtures, stadium access guides and organizer ticket information without waiting for marketplace or affiliate approvals. Plan nearby stays and transport.
           Predictions are informational, not guaranteed outcomes. Tickets, prices and seats are confirmed by the organizer or supplier.
         </p>
       </header>
@@ -67,17 +71,37 @@ export default async function SportsTicketsPredictions({ searchParams }: Props) 
         <h2 className="text-xl font-bold">No verified {active === "all" ? "upcoming matches" : active + " matches"} published yet</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
           We only publish individually confirmed fixture, sport and venue combinations. This does not mean tickets are sold out.
-          Check our stadium directory and official event calendars for additional fixtures.
+          Browse the relevant stadium guides and official organizer calendars instead.
         </p>
         <Link href="/stadiums" className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Browse stadium guides</Link>
       </section>}
+      <section aria-labelledby="first-party-stadium-guides" className="mt-8">
+        <h2 id="first-party-stadium-guides" className="text-2xl font-bold">Stadium &amp; official-calendar guides</h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
+          These GTH PRO venue guides remain available even when live provider feeds or match ticket sales are unavailable.
+          Stadium information is not confirmation of an upcoming match or ticket inventory.
+        </p>
+        {guides.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {guides.map(venue => <article key={venue.slug} className="gth-glass rounded-2xl border border-[var(--border)] p-4">
+            <h3 className="font-semibold">{venue.name}</h3>
+            <p className="mt-2 text-sm text-[var(--text-soft)]">{venue.city}, {venue.country}</p>
+            <p className="mt-1 text-xs text-[var(--text-soft)]">{venue.sports.join(" · ")}</p>
+            <Link prefetch={false} href={"/stadiums/" + venue.slug}
+              className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">
+              Stadium guide &amp; official sources
+            </Link>
+          </article>)}
+        </div> : <p className="mt-3 text-sm text-[var(--text-soft)]">
+          No reviewed stadium guides are currently listed for this sport.
+        </p>}
+      </section>
       <p className="mt-6 text-sm leading-6 text-[var(--text-soft)]">
         Only independently reviewed matches become indexable landing pages. Cached odds and AI previews are optional:
         missing data is never replaced with invented probabilities or kickoff times. GTH PRO does not operate a betting service.
       </p>
       <nav aria-label="Related travel services" className="mt-5 flex flex-wrap gap-3">
         <Link href="/hotels" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Find stays</Link>
-        <Link href="/tours" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Explore activities</Link>
+        <Link href="/stadiums" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">All stadium guides</Link>
         <Link href="/bus" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Plan bus travel</Link>
         <Link href="/train" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">Plan rail travel</Link>
       </nav>
