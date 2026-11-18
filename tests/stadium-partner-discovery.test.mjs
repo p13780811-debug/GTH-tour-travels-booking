@@ -61,21 +61,20 @@ test("Eden Gardens Kolkata and all unreviewed stadiums never redirect to unrelat
  assert.ok(discovery.matchReviewedStadiums("Kolkata").some(v=>v.slug==="eden-gardens"));
  assert.ok(!discovery.matchReviewedStadiums("Eden Gardens stadium tour").some(v=>v.city==="Eden"));
  assert.equal(venues.findStadium("eden-gardens").tickets.url,"https://www.cricketassociationofbengal.com/notice.php");
- assert.match(detail,/No verified partner stadium tour listed/);
- assert.match(detail,/Generic supplier searches can match unrelated/);
+ assert.match(detail,/<StadiumTicketDiscovery venue=\{venue\}\/>/);
+ assert.doesNotMatch(detail,/stadiumPartnerSearchLinks\(venue\.name\)/);
  assert.match(ui,/No exact reviewed partner stadium product/);
  assert.match(ui,/\/stadiums\/eden-gardens/);
 });
 test("discovery does not generate generic provider search pages or claim live tickets",()=>{
- assert.match(page,/<StadiumPartnerDiscovery\/>/);
+ assert.doesNotMatch(page,/<StadiumPartnerDiscovery\/>/);
  assert.match(ui,/matchReviewedStadiums\(term\)/);
  assert.match(ui,/stadiumPartnerSearchLinks\(term\)/);
  assert.match(ui,/input id="gth-stadium-partner-query"/);
  assert.match(ui,/rel="noopener noreferrer sponsored"/);
  assert.match(ui,/not presented as stadium tours or match tickets/i);
- assert.match(detail,/stadiumPartnerSearchLinks\(venue\.name\)/);
- assert.match(detail,/partnerSearch\.klook&&/);
- assert.match(detail,/partnerSearch\.getyourguide&&/);
+ assert.match(detail,/<StadiumTicketDiscovery venue=\{venue\}\/>/);
+ assert.doesNotMatch(detail,/partnerSearch\.klook&&|partnerSearch\.getyourguide&&/);
  assert.doesNotMatch(read("src/lib/travel/stadium-partner-discovery.ts"),/getyourguide\.com\/s\/|klook\.com\/en-IN\/search\/result\//);
  for(const path of ["src/lib/travel/stadium-partner-discovery.ts","src/app/stadiums/StadiumPartnerDiscovery.tsx"]){
   assert.doesNotMatch(read(path),/fetch\(|NEXT_PUBLIC_|api\.ticketmaster|Bearer |Authorization:|service_role|setInterval\(/i);
@@ -86,7 +85,7 @@ test("discovery does not generate generic provider search pages or claim live ti
  assert.equal(existsSync("src/lib/travel/stadium-live-feed.ts"),false);
 });
 test("all venues retain direct official sources; exact products are validated before linking",()=>{
- assert.equal(venues.stadiums.length,14);
+ assert.equal(venues.stadiums.length,15);
  for(const venue of venues.stadiums){
   assert.equal(new URL(venue.schedule.url).protocol,"https:");
   assert.equal(venues.findStadium(venue.slug),venue);
@@ -103,7 +102,8 @@ test("all venues retain direct official sources; exact products are validated be
 });
 test("official event previews still avoid fake inventory and unauthorized data sources",()=>{
  const events=read("src/app/stadiums/StadiumUpcomingEvents.tsx");
- assert.match(page,/stadiums\.flatMap\(venue=>\(venue\.products\?\?\[\]\)/);
+ assert.doesNotMatch(page,/stadiums\.flatMap\(venue=>\(venue\.products\?\?\[\]\)/);
+ assert.doesNotMatch(page,/stadiumAffiliateHref/);
  assert.match(events,/upcomingStadiumEvents\(venue\)/);
  assert.match(events,/Official event details/);
  assert.match(events,/not a worldwide live event/i);
