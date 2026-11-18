@@ -6,7 +6,7 @@ const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8"
 const ui = read("src/components/hotel/HotelDiscoveryShowcase.tsx");
 const page = read("src/app/hotels/page.tsx");
 const booking = read("src/components/hotel/HotelBookingExperience.tsx");
-const handoff = read("src/lib/travel/hotel-booking-url.ts");
+const handoff = read("src/lib/travel/hotel-whitelabel.ts");
 
 test("Hotel storefront reuses GTH tokens without a second theme, copied brand or invented prices", () => {
   assert.match(ui, /border-\[var\(--border\)\]/);
