@@ -5,6 +5,7 @@ import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-white
 import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
 import styles from "./NuiteeHotelsListWidget.module.css";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 type LiteHotelsListOptions={
   selector:string;
@@ -106,7 +107,8 @@ export default function NuiteeHotelsListWidget({
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
-    <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency}
+    <a href={resolveHotelRoute({placeId,currency:displayCurrency}).status==="ready" ?
+      (()=>{const route=resolveHotelRoute({placeId,currency:displayCurrency});return route.status==="ready"?route.url:HOTEL_BOOKING_ORIGIN;})() : HOTEL_BOOKING_ORIGIN}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
       Browse on booking site
