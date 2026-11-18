@@ -9,6 +9,7 @@ const detail = read("src/app/events/[sport]/[slug]/page.tsx");
 const venue = read("src/components/stadium/StadiumVerifiedMatchLinks.tsx");
 const stadium = read("src/app/stadiums/[slug]/page.tsx");
 const sitemap = read("src/app/sitemap.ts");
+const refresh = read("src/lib/stadium-predictions/refresh.ts");
 
 test("Each match gets a sport-scoped canonical URL, without fuzzy sport mixing", () => {
   assert.match(source, /"\/events\/" \+ sportSegment\(match\.sport\)/);
@@ -16,6 +17,9 @@ test("Each match gets a sport-scoped canonical URL, without fuzzy sport mixing",
   assert.match(source, /venue\.sports\.some\(item => sportSegment\(item\) === sport\)/);
   assert.match(venue, /matchedVenue\(match\)\?\.slug === venueSlug/);
   assert.match(stadium, /<StadiumVerifiedMatchLinks venueSlug=\{venue\.slug\}\/>/);
+  assert.match(refresh, /sportTagsMatch\(e, sport\)/);
+  assert.match(refresh, /event\.taxonomies/);
+  assert.match(refresh, /return false;/);
   for (const sport of ["cricket", "football", "tennis", "basketball", "baseball"]) {
     assert.match(hub, new RegExp('key: "' + sport + '"'));
   }
