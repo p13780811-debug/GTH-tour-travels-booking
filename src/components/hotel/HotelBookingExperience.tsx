@@ -59,6 +59,22 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
   const invalidStay = query.get("bookingError") === "invalid-stay" ||
     (["checkin", "checkout", "occupancies"].some(key => query.has(key)) && !restored);
+  // When a first-party card/master search explicitly supplied a city, use
+  // the fixed-origin zero-API handoff instead of asking users to repeat it
+  // in an SDK autocomplete. Other visits still use the genuine supplier SDK.
+  const cityParams = new URLSearchParams();
+  if (cityHint && !restored) {
+    cityParams.set("city", cityHint);
+    cityParams.set("currency", displayCurrency);
+    for (const key of ["checkin", "checkout", "adults", "rooms"]) {
+      const value = query.get(key);
+      if (value && value.length <= 20 && query.getAll(key).length === 1) cityParams.set(key, value);
+    }
+  }
+  const cityBookingHref = cityParams.has("city") ? "/api/hotels/booking?" + cityParams.toString() : "";
+  useEffect(() => {
+    if (cityBookingHref) window.location.replace(cityBookingHref);
+  }, [cityBookingHref]);
   useEffect(() => {
     setBookingQuery(restoredQuery);
     if (restoredQuery) setShowSearch(false);
@@ -209,13 +225,14 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
         <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
     </div>
+    {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
     {showSearch && searchToggle}
     {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
       {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
       Select the matching destination in GTH Worldwide Stays below, then choose dates and guests.
       GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
     </p>}
-    {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
+    {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
