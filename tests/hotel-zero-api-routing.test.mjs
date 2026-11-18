@@ -83,12 +83,33 @@ test("expired, reversed, malformed and partial dates consistently default to one
  }
 });
 
-test("no invented place IDs, provider API calls, or dangerous redirect parameters",()=>{
- for(const city of ["Goa","Dubai","Palava"]){
-  const result=router.resolveHotelRoute({destination:city},fixed);
-  assert.equal(result.status,"unmapped");
-  assert.equal(new URL(router.unverifiedHotelDestinationHref(city),"https://gthproglobal.com").searchParams.get("city"),city);
+test("unmapped travel cities always reach the White Label destination selector, never empty /hotels results",()=>{
+ const cities=["Goa","Dubai","Delhi","Jaipur","Bengaluru","Kolkata",
+  "Chennai","Hyderabad","Kochi","Singapore","Bangkok","Phuket","Bali",
+  "Paris","New York","Tokyo","Palava"];
+ for(const city of cities){
+  const result=router.resolveHotelRoute({destination:city,adults:3,rooms:2},fixed);
+  assert.equal(result.status,"unmapped",city);
+  const url=new URL(result.url);
+  assert.equal(url.origin,booking.HOTEL_BOOKING_ORIGIN);
+  assert.equal(url.pathname,"/",city);
+  assert.equal(url.searchParams.has("placeId"),false);
+  assert.equal(url.searchParams.has("hotelId"),false);
+  assert.equal(url.searchParams.get("checkin"),plus(1));
+  assert.equal(url.searchParams.get("checkout"),plus(2));
+  assert.equal(url.searchParams.get("adults"),"3");
+  assert.equal(url.searchParams.get("rooms"),"2");
+  assert.deepEqual(JSON.parse(atob(url.searchParams.get("occupancies"))),
+   [{adults:2,children:[]},{adults:1,children:[]}]);
+  const direct=new URL(router.unverifiedHotelDestinationHref(city));
+  assert.equal(direct.origin,booking.HOTEL_BOOKING_ORIGIN);
+  assert.equal(direct.pathname,"/");
  }
+ const knownCities=router.CITY_SEARCH_FALLBACKS;
+ assert.ok(knownCities.includes("goa")&&knownCities.includes("kolkata")&&knownCities.includes("tokyo"));
+});
+
+test("no invented place IDs, provider API calls, or dangerous redirect parameters",()=>{
  for(const intent of [
   {hotelId:"//evil.example"},{hotelId:"lp1234?redirect=https://evil.example"},
   {hotelId:"<script>"},{destination:"Mumbai",placeId:"../malicious"},
