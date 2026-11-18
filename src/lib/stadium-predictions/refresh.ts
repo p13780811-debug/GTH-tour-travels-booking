@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { activeOddsKeys, sportFamily } from "./sports";
+import { reviewedSportsFixtures, type ReviewedFixture } from "./fixtures";
 
 type JsonObject = Record<string, unknown>;
 type OddsEvent = {
@@ -33,10 +35,10 @@ type VerifiedMatch = {
   away: string;
   date: string;
   venue: string;
-  ticketUrl: string;
+  ticketUrl: string | null;
   odds: OddsEvent;
 };
-const ODDS_SPORTS = ["soccer_epl", "basketball_nba"] as const;
+const MAX_ODDS_REQUESTS_PER_RUN = 2; // max 10 reserved credits per UTC day
 const MAX_ODDS_MONTH = 300; // reserve 200 of the 500 monthly Starter credits for other GTH use
 const MAX_GEMINI_DAY = 4;
 const MAX_MATCHES = 4;
@@ -122,6 +124,8 @@ function sportTagsMatch(event: SeatGeekEvent, oddsSport: string): boolean {
   // it as soccer without a specific soccer tag. Unknown sport fails closed.
   if (oddsSport === "soccer_epl") return tags.some(s => /(^|_)(soccer|epl)(_|$)/.test(s));
   if (oddsSport === "basketball_nba") return tags.some(s => /(^|_)(nba|basketball)(_|$)/.test(s));
+  if (sportFamily(oddsSport) === "cricket") return tags.some(s => /(^|_)(cricket)(_|$)/.test(s));
+  if (sportFamily(oddsSport) === "tennis") return tags.some(s => /(^|_)(tennis)(_|$)/.test(s));
   return false;
 }
 function verifiedMatch(event: SeatGeekEvent, odd: OddsEvent): VerifiedMatch | null {
@@ -143,6 +147,53 @@ function verifiedMatch(event: SeatGeekEvent, odd: OddsEvent): VerifiedMatch | nu
     matchId: "seatgeek:" + event.id, sport: odd.sport_title, home: odd.home_team,
     away: odd.away_team, date, venue, ticketUrl: url, odds: odd,
   };
+}
+function verifiedCalendarMatch(fixture: ReviewedFixture, odd: OddsEvent): VerifiedMatch | null {
+  const expected = [canonical(fixture.home), canonical(fixture.away)].sort();
+  const actual = [canonical(odd.home_team), canonical(odd.away_team)].sort();
+  if (expected.some((team, index) => !team || team !== actual[index])) return null;
+  const starts = Date.parse(odd.commence_time);
+  if (!Number.isFinite(starts) || starts <= Date.now() || starts > Date.now() + 31 * 86400000) return null;
+  // Original organizer calendar independently confirms the EVENT DAY at this
+  // venue; odds provider supplies the provisional start time (not a guarantee).
+  const localDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: fixture.timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date(starts));
+  if (localDate !== fixture.starts) return null;
+  return {
+    matchId: fixture.id, sport: fixture.sport, home: fixture.home,
+    away: fixture.away, date: odd.commence_time, venue: fixture.venue,
+    ticketUrl: null, odds: odd,
+  };
+}
+async function discoverActiveSports(oddsKey: string): Promise<string[] | null> {
+  const endpoint = new URL("https://api.the-odds-api.com/v4/sports");
+  endpoint.searchParams.set("apiKey", oddsKey);
+  try {
+    const response = await timedFetch(endpoint.toString());
+    if (!response.ok) return null;
+    return activeOddsKeys(await response.json());
+  } catch { return null; }
+}
+function applicableOddsSports(events: SeatGeekEvent[], fixtures: ReviewedFixture[], active: string[]) {
+  const requested = new Set<string>(fixtures.map(f => f.oddsKey));
+  for (const event of events) {
+    if (sportTagsMatch(event, "soccer_epl")) requested.add("soccer_epl");
+    if (sportTagsMatch(event, "basketball_nba")) requested.add("basketball_nba");
+    if (sportTagsMatch(event, "cricket_test_match"))
+      for (const key of ["cricket_test_match", "cricket_odi", "cricket_international_t20"]) requested.add(key);
+    if (sportTagsMatch(event, "tennis_atp_wimbledon")) {
+      const venue = canonical(scrub(event.venue?.name, 150));
+      // Tournament identity must be independently anchored to an exact venue.
+      if (venue === "wimbledoncentrecourt")
+        for (const key of ["tennis_atp_wimbledon", "tennis_wta_wimbledon"]) requested.add(key);
+      if (venue === "arthurashestadium")
+        for (const key of ["tennis_atp_us_open", "tennis_wta_us_open"]) requested.add(key);
+    }
+  }
+  const available = new Set(active);
+  // Reviewed cricket matches take priority while SeatGeek is pending.
+  return [...requested].filter(key => available.has(key)).slice(0, MAX_ODDS_REQUESTS_PER_RUN);
 }
 async function eventsFromSeatGeek(clientId: string) {
   if (!/^[A-Za-z0-9_-]{12,128}$/.test(clientId) || clientId === "NOT_CONFIGURED_SEATGEEK") return [] as SeatGeekEvent[];
@@ -205,17 +256,23 @@ export async function refreshStadiumPredictions() {
   }
   const seatGeekKey = process.env.SEATGEEK_CLIENT_ID ?? "";
   const oddsKey = process.env.ODDS_API_KEY;
-  // No ticket-provider identity => no attempt to spend a single Odds API credit.
-  if (!/^[A-Za-z0-9_-]{12,128}$/.test(seatGeekKey) || seatGeekKey === "NOT_CONFIGURED_SEATGEEK" || !oddsKey) {
-    return { status: "waiting-for-provider" as const };
+  if (!oddsKey) return { status: "waiting-for-odds-key" as const, saved: 0, oddsRequests: 0 };
+  // Independently reviewed organizer fixtures work without SeatGeek access.
+  // Only curated, sport/venue/day-confirmed sources can produce match rows.
+  const fixtures = reviewedSportsFixtures(new Date(), 31);
+  let events: SeatGeekEvent[] = [];
+  try { events = await eventsFromSeatGeek(seatGeekKey); }
+  catch { events = []; } // preserve editorial fixtures even if partner is down
+  if (!events.length && !fixtures.length) {
+    return { status: "matches-currently-unavailable" as const, saved: 0, oddsRequests: 0 };
   }
-  let events: SeatGeekEvent[];
-  try { events = await eventsFromSeatGeek(seatGeekKey); } catch { return { status: "ticket-source-unavailable" as const }; }
-  if (!events.length) return { status: "no-verified-events" as const };
+  const active = await discoverActiveSports(oddsKey);
+  if (active === null) return { status: "odds-catalog-unavailable" as const, saved: 0, oddsRequests: 0 };
+  const keys = applicableOddsSports(events, fixtures, active);
+  if (!keys.length) return { status: "matches-currently-unavailable" as const, saved: 0, oddsRequests: 0 };
   let saved = 0, oddsRequests = 0;
-  for (const sport of ODDS_SPORTS) {
-    // Up to 2 calls/day, fixed 1 region x 1 market: at most ~62 requests in a 31-day month.
-    if (!events.some(e => e.datetime_utc && e.performers?.length === 2 && safeSeatGeekUrl(e.url))) break;
+  for (const sport of keys) {
+    // Hard cap: two calls/day (one market + one region); monthly ledger fails closed.
     if (!await reserve(db, "odds", month, 5, MAX_ODDS_MONTH)) break;
     oddsRequests++;
     const endpoint = new URL("https://api.the-odds-api.com/v4/sports/" + sport + "/odds");
@@ -232,9 +289,15 @@ export async function refreshStadiumPredictions() {
     } catch { continue; }
     for (const odd of odds) {
       if (saved >= MAX_MATCHES) break;
-      const matches = events.filter(e => sportTagsMatch(e, sport)).map(e => verifiedMatch(e, odd)).filter((m): m is VerifiedMatch => m !== null);
-      const match = matches.length === 1 ? matches[0] : undefined;
-      if (!match) continue;
+      const provider = events.filter(e => sportTagsMatch(e, sport))
+        .map(e => verifiedMatch(e, odd)).filter((m): m is VerifiedMatch => m !== null);
+      const calendar = fixtures.filter(f => f.oddsKey === sport)
+        .map(f => verifiedCalendarMatch(f, odd)).filter((m): m is VerifiedMatch => m !== null);
+      const combined = [...provider, ...calendar];
+      // Both sources for the same event must not create ambiguous handoffs.
+      // Prioritize the verified SeatGeek identity only if names/venue/date agree.
+      const exact = combined.length === 1 ? combined[0] : undefined;
+      if (!exact) continue;
       const bookmakers = (odd.bookmakers ?? []).map(b => ({
         bookmaker: b.key,
         outcomes: b.markets?.[0]?.outcomes ?? [],
@@ -242,19 +305,21 @@ export async function refreshStadiumPredictions() {
       const snapshot: JsonObject = {
         status: bookmakers.length ? "snapshot" : "unavailable",
         source: "licensed-odds-provider",
+        region: "us",
         retrieved_at: new Date().toISOString(),
         bookmakers,
-        note: "Odds snapshot is not live betting advice, guaranteed pricing, or ticket availability.",
+        note: "Informational market snapshot, not a betting recommendation or ticket availability.",
       };
-      const prediction = await aiExplanation(db, match, snapshot, day);
+      const prediction = await aiExplanation(db, exact, snapshot, day);
       const row = {
-        match_id: match.matchId,
-        sport_title: scrub(match.sport, 80),
-        home_team: scrub(match.home, 110),
-        away_team: scrub(match.away, 110),
-        match_date: match.date,
-        stadium_name: scrub(match.venue, 150),
-        ticket_booking_link: match.ticketUrl,
+        match_id: exact.matchId,
+        sport_title: scrub(exact.sport, 80),
+        home_team: scrub(exact.home, 110),
+        away_team: scrub(exact.away, 110),
+        match_date: exact.date,
+        stadium_name: scrub(exact.venue, 150),
+        ticket_booking_link: exact.ticketUrl,
+        ticket_discovery_mode: exact.ticketUrl ? "provider_verified" : "search_only",
         live_odds_data: snapshot,
         ai_prediction: prediction,
         last_updated_at: new Date().toISOString(),
@@ -264,5 +329,7 @@ export async function refreshStadiumPredictions() {
       saved++;
     }
   }
-  return { status: "completed" as const, saved, oddsRequests };
+  return saved > 0
+    ? { status: "completed" as const, saved, oddsRequests }
+    : { status: "matches-currently-unavailable" as const, saved, oddsRequests };
 }
