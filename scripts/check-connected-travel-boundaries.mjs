@@ -15,13 +15,22 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  if(!/^[0-9a-f]{40}$/.test(base))throw Error("Could not verify the target main commit");
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
+ const hotelHandoffScope=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+ const allowedHotelFixes=new Set([
+  "src/components/hotel/HotelBookingExperience.tsx",
+  "src/components/hotel/HotelDiscoveryShowcase.tsx",
+  "src/lib/travel/klook-hotel-search.ts",
+  "src/lib/travel/connected-hotel-handoff.ts",
+  "src/app/api/hotels/route.ts"
+ ]);
  const sensitive=[...changed].filter(path=>
-  path.startsWith("src/components/hotel/")||
+  (path.startsWith("src/components/hotel/")||
   (path.startsWith("src/lib/travel/")&&!(flightHandoffScope&&path==="src/lib/travel/connected-trip.ts"))||
   path.startsWith("src/lib/flights/")||
   path.startsWith("src/components/flights/")||
   path.startsWith("src/app/api/")||
-  path==="src/app/globals.css");
+  path==="src/app/globals.css") &&
+  !(hotelHandoffScope&&allowedHotelFixes.has(path)));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
@@ -36,6 +45,24 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    .replace('import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";','import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
    .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      {city&&<div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6"><ShareTripPlanButton title={"Flight trip to "+city} city={city} airportCode={destination} path="/flights"/></div>}');
   if(read("src/app/flights/page.tsx")!==expected)throw Error("Flight page may add only the reviewed non-provider trip share entry");
+ }
+ if(hotelHandoffScope){
+  // This branch repairs explicitly reviewed hotel handoffs only. Protect the
+  // supplier SDK, production booking parser, original 12Go flights and theme.
+  for(const protectedPath of [
+   "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+   "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+   "src/components/mobile/MobileSupplierShowcase.tsx","src/app/flights/page.tsx",
+   "src/app/globals.css"
+  ])if(changed.has(protectedPath))throw Error("Hotel fix cannot modify protected working provider: "+protectedPath);
+  const travel=read("src/components/travel/ConnectedTravelWorkspace.tsx");
+  const hotel=read("src/lib/travel/connected-hotel-handoff.ts");
+  if(!travel.includes("window.location.assign(directHotelHref)")||
+     !hotel.includes("resolveHotelRoute")||
+     !hotel.includes("hotelWhiteLabelSearchUrl")||
+     !hotel.includes("trackedHotelCityHref")||
+     /\\bfetch\\s*\\(|process\\.env|SERVICE_ROLE_KEY|api\\.liteapi\\.travel/.test(hotel))
+    throw Error("Hotel Find stays requires fixed-origin no-API direct provider handoff");
  }
  if(flightHandoffScope){
   const src=read("src/lib/travel/connected-trip.ts");
