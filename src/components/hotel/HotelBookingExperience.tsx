@@ -54,14 +54,13 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
       return;
     }
     const result=resolveHotelRoute({...payload,destination,currency:displayCurrency});
-    if (result.status==="ready") {
-      // Direct browser handoff; no GTH provider Places or rate request.
+    if (result.status!=="invalid") {
+      // Reviewed city: exact results. Unmapped city: supplier's own destination
+      // picker. Neither route calls a Nuitee API from the GTH search bar.
       window.location.assign(result.url);
       return;
     }
-    setError(result.status==="unmapped"
-      ? "This destination has no reviewed booking Place ID yet. Open the secure booking site below and select the exact city there."
-      : "Please select valid guests: each room needs at least one adult.");
+    setError("Please select valid guests: each room needs at least one adult.");
   }, [displayCurrency]);
 
   const loadSearch = useCallback(() => {
@@ -97,7 +96,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
   }, [search]);
 
   // Existing city-level CTAs now open the exact reviewed city in White Label.
-  // Unknown cities remain on GTH, never routed to unrelated inventory.
+  // Unknown cities open the provider search picker, not unrelated inventory.
   useEffect(() => {
     if (query.get("manual")==="1" || restoredQuery) return;
     const incoming=query.get("city")||query.get("destination");
@@ -106,7 +105,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
       checkIn:query.get("checkin")||undefined,checkOut:query.get("checkout")||undefined,
       adults:query.get("adults")||undefined,rooms:query.get("rooms")||undefined,
       currency:displayCurrency});
-    if (result.status==="ready") window.location.replace(result.url);
+    if (result.status!=="invalid") window.location.replace(result.url);
   }, [query,restoredQuery,displayCurrency]);
 
   // Bootstrap the static local search form even if iframe content loaded before React hydration.
