@@ -29,6 +29,18 @@ try{
   const page=await context.newPage();
   await page.goto(base+"/app",{waitUntil:"domcontentloaded",timeout:60000});
   await page.getByRole("heading",{name:"GTH PRO Home"}).waitFor({timeout:25000});
+  // The former two prominent shortcuts must remain immediately accessible.
+  const homeShortcuts=page.getByRole("navigation",{name:"GTH PRO Home and Research Desk shortcuts"});
+  assert.equal(await homeShortcuts.count(),1,"Only one paired shortcut row on /app");
+  const exploreShortcut=homeShortcuts.getByRole("link",{name:"Explore All Services"});
+  const deskShortcut=homeShortcuts.getByRole("link",{name:"My Research Desk"});
+  assert.ok(await exploreShortcut.isVisible());
+  assert.ok(await deskShortcut.isVisible());
+  assert.equal(await exploreShortcut.getAttribute("href"),"/app/explore");
+  assert.equal(await deskShortcut.getAttribute("href"),"/app/board");
+  const deskBounds=await deskShortcut.boundingBox();
+  assert.ok(deskBounds && deskBounds.y < 380,"Research Desk must appear near the top of the screen");
+
   await page.getByRole("heading",{name:/Four paths, one Home/}).waitFor({timeout:25000});
   assert.ok(await page.getByRole("link",{name:/Explore Travel/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Real Estate/}).isVisible());
@@ -66,8 +78,10 @@ try{
    await page.waitForTimeout(450);
    const moved=await page.evaluate(()=>window.scrollY);
    assert.ok(moved>15,"Finger drag on the Mumbai/Goa hero must scroll vertically; received "+moved);
-   await page.getByRole("region",{name:"GTH Worldwide Stays hotel cards"}).waitFor({state:"visible",timeout:30000});
-   assert.ok(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count()>0,"Supplier SDK mount must remain available");
+   await page.getByRole("region",{name:"Compact hotel booking gateway"}).waitFor({state:"visible",timeout:30000});
+   assert.equal(await page.locator('[data-gth-compact-hotel-booking="true"]').count(),1,"One compact image-left booking card per mobile viewport");
+   assert.equal(await page.locator('[data-gth-nuitee-supplier-hotels="true"]').count(),0,"Vendor SDK must not mount at narrow widths");
+   assert.equal(await page.getByRole("region",{name:"Compact hotel booking gateway"}).getByRole("link",{name:/Check stays/}).getAttribute("href"),"/app/hotels?view=booking&city=Mumbai&country=IN");
    assert.ok((await page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"}).count())>0);
    await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
   }

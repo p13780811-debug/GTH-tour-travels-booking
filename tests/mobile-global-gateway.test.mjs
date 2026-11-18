@@ -26,6 +26,16 @@ test("Installed GTH Home displays one service grid and one global bottom bar", (
   assert.doesNotMatch(app, /<MobileNav|<BottomNav/);
 });
 
+test("App Home restores paired Research Desk and service-navigation shortcuts without a second icon bar", () => {
+  assert.match(app, /<nav aria-label="GTH PRO Home and Research Desk shortcuts"/);
+  assert.match(app, /href="\/app\/explore" prefetch=\{false\}/);
+  assert.match(app, /href="\/app\/board" prefetch=\{false\}/);
+  assert.match(app, />\s*Explore All Services\s*</);
+  assert.match(app, />\s*My Research Desk\s*</);
+  assert.equal((app.match(/<MobileNav/g)||[]).length, 0);
+  assert.doesNotMatch(app, /display:\s*none|hidden\s+.*My Research Desk/);
+});
+
 test("Travel, Real Estate, Tenders and Tickets open full dedicated platform pages", () => {
   for (const link of ['href: "/travel"', 'href: "/real-estate"', 'href: "/tender"', 'href:"/tickets"']) {
     assert.ok(pillars.includes(link), "Missing dedicated pillar route " + link);

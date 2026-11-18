@@ -1,8 +1,8 @@
 import {Suspense} from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowUpRight,Hotel,Ticket} from "lucide-react";
-import NuiteeHotelsListWidget from "@/components/hotel/NuiteeHotelsListWidget";
+import {ArrowUpRight,Ticket} from "lucide-react";
+import HomeHotelBookingPreview from "@/components/mobile/HomeHotelBookingPreview";
 import SupplierTourCard from "@/components/tours/SupplierTourCard";
 import {getSupplierCatalog} from "@/lib/tours/supplier-catalog";
 import {uniqueSupplierProducts,type SupplierProduct} from "@/lib/tours/supplier-products";
@@ -42,13 +42,7 @@ function HotelStays(){
      </div>
     </Link>)}
   </div>
-  <div role="region" className="mx-4 mt-2 overflow-x-auto touch-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"
-   aria-label="GTH Worldwide Stays hotel cards">
-   <div className="min-w-[290px]">
-    <div className="mb-2 flex items-center gap-2 text-xs font-semibold"><Hotel size={15} className="text-[var(--gold)]"/> GTH Worldwide Stays · Mumbai</div>
-    <NuiteeHotelsListWidget id="gth-home-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1} currency="INR"/>
-   </div>
-  </div>
+  <HomeHotelBookingPreview/>
  </section>;
 }
 
