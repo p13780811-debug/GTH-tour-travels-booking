@@ -14,7 +14,8 @@ const sdk=String.raw`window.LiteAPI={init(){},SearchBar:{async create(options){d
 const avia=String.raw`document.getElementById('tpwl-search').innerHTML='<p>Existing Aviasales fixture</p>';document.getElementById('tpwl-tickets').innerHTML='<p>Existing result container</p>';`;
 const route=async r=>{
  const url=new URL(r.request().url());
- if(url.hostname==="www.aviasales.com")return r.fulfill({contentType:"text/html",body:"<title>Booking handoff fixture</title><p>No search or payment is made.</p>"});
+ if(url.hostname==="www.aviasales.com")return r.fulfill({contentType:"text/html",body:"<title>Fallback flight fixture</title><p>No search or payment is made.</p>"});
+ if(url.hostname==="12go.asia")return r.fulfill({contentType:"text/html",body:"<title>Primary flight fixture</title><p>No search or payment is made.</p>"});
  if(url.hostname==="components.liteapi.travel")return r.fulfill({contentType:"application/javascript",body:sdk});
  if(["tpwidg.com","tpwgts.com"].includes(url.hostname))return r.fulfill({contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},body:avia});
  if(url.hostname==="fixture-hotel-photos.invalid"||url.hostname==="app.wegotrip.com")return r.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240"><rect width="480" height="240" fill="#26354c"/><text x="25" y="125" fill="white">Fixture hotel photo</text></svg>'});
@@ -54,7 +55,18 @@ try{
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/first-view-${width}-${theme}.png`});
   await page.getByRole("tab",{name:"Flights",exact:true}).click();
   await page.getByRole("link",{name:"Search flights",exact:true}).waitFor();
-  const flight=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(flight.hostname,"www.aviasales.com");assert.equal(flight.searchParams.get("origin"),"LHR");assert.equal(flight.searchParams.get("depart_date"),"2026-12-10");
+  const flight=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+  assert.equal(flight.pathname,"/go/transport/search");
+  assert.equal(flight.searchParams.get("mode"),"flight");
+  assert.equal(flight.searchParams.get("from"),"London");
+  assert.equal(flight.searchParams.get("to"),"Mumbai");
+  assert.equal(flight.searchParams.get("date"),"2026-12-10");
+  assert.equal(flight.searchParams.get("people"),"1","hotel guests are not flight passengers");
+  const alternate=new URL(await page.getByRole("link",{name:/No flights on the first search/}).getAttribute("href"));
+  assert.equal(alternate.hostname,"www.aviasales.com");
+  assert.equal(alternate.searchParams.get("origin"),"LHR");
+  assert.equal(alternate.searchParams.get("destination"),"BOM");
+  assert.equal(alternate.searchParams.get("depart_date"),"2026-12-10");
   assert.equal(await page.getByRole("link",{name:"Continue booking",exact:true}).getAttribute("href"),"https://hotel.gthproglobal.com");
   assert.equal(await page.getByRole("combobox",{name:"From",exact:true}).count(),1);
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/flights-${width}-${theme}.png`});
@@ -96,28 +108,51 @@ try{
  await from.fill("LHR");await page.keyboard.press("ArrowDown");await page.keyboard.press("Enter");assert.equal(await from.inputValue(),"London (LHR)");
  await to.fill("BOM");await page.keyboard.press("ArrowDown");await page.keyboard.press("Enter");assert.equal(await to.inputValue(),"Mumbai (BOM)");
  await page.locator('input[name="tripStart"]').fill("2026-12-10");
- let handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(handoff.searchParams.get("origin"),"LHR");assert.equal(handoff.searchParams.has("return_date"),false);
+ let handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+ assert.equal(handoff.pathname,"/go/transport/search");
+ assert.equal(handoff.searchParams.get("from"),"London");
+ assert.equal(handoff.searchParams.get("to"),"Mumbai");
+ assert.equal(handoff.searchParams.has("return_date"),false);
  await page.getByRole("radio",{name:"Round trip",exact:true}).check();assert.equal(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),"#travel-search");
- await page.locator('input[name="tripEnd"]').fill("2026-12-14");await page.getByRole("button",{name:"Swap departure and arrival airports"}).click();handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"));assert.equal(handoff.searchParams.get("origin"),"BOM");assert.equal(handoff.searchParams.get("destination"),"LHR");assert.equal(handoff.searchParams.get("return_date"),"2026-12-14");
+ await page.locator('input[name="tripEnd"]').fill("2026-12-14");await page.getByRole("button",{name:"Swap departure and arrival airports"}).click();
+ handoff=new URL(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),origin);
+ assert.equal(handoff.searchParams.get("from"),"Mumbai");
+ assert.equal(handoff.searchParams.get("to"),"London");
+ assert.equal(handoff.searchParams.get("date"),"2026-12-10");
+ assert.equal(handoff.searchParams.has("return_date"),false);
+ const returnFallback=new URL(await page.getByRole("link",{name:/No flights on the first search/}).getAttribute("href"));
+ assert.equal(returnFallback.searchParams.get("origin"),"BOM");
+ assert.equal(returnFallback.searchParams.get("destination"),"LHR");
+ assert.equal(returnFallback.searchParams.get("return_date"),"2026-12-14");
  await page.getByRole("button",{name:"Plan a flight to Dubai",exact:true}).click();assert.equal(await to.inputValue(),"Dubai (DXB)");
  // Verify the existing provider link before navigating across origins. An external
  // browser popup can remain at url="" temporarily even after DOMContentLoaded.
  const originalLink=page.getByRole("link",{name:"Search flights",exact:true});
  const target=new URL((await originalLink.getAttribute("href"))||"",origin);
- assert.equal(target.hostname,"www.aviasales.com");
- assert.equal(target.searchParams.get("destination"),"DXB");
+ assert.equal(target.pathname,"/go/transport/search");
+ assert.equal(target.searchParams.get("to"),"Dubai");
  const [bookingPage]=await Promise.all([page.waitForEvent("popup"),originalLink.click()]);
  await bookingPage.waitForLoadState("domcontentloaded",{timeout:12000}).catch(()=>{});
  const popupUrl=bookingPage.url();
  if(popupUrl&&popupUrl!=="about:blank"){
-  const destination=new URL(popupUrl);
-  assert.equal(destination.hostname,"www.aviasales.com");
-  assert.equal(destination.searchParams.get("destination"),"DXB");
+  const supplier=new URL(popupUrl);
+  assert.equal(supplier.hostname,"12go.asia");
+  assert.equal(supplier.pathname,"/en/flights/mumbai/dubai");
+  assert.equal(supplier.searchParams.get("z"),"17380992");
  }
  await bookingPage.close();
+ const fallbackLink=page.getByRole("link",{name:/No flights on the first search/});
+ const fallbackTarget=new URL(await fallbackLink.getAttribute("href"));
+ assert.equal(fallbackTarget.hostname,"www.aviasales.com");
+ assert.equal(fallbackTarget.searchParams.get("destination"),"DXB");
+ const [fallbackPage]=await Promise.all([page.waitForEvent("popup"),fallbackLink.click()]);
+ await fallbackPage.waitForLoadState("domcontentloaded",{timeout:12000}).catch(()=>{});
+ if(fallbackPage.url()&&fallbackPage.url()!=="about:blank")
+  assert.equal(new URL(fallbackPage.url()).hostname,"www.aviasales.com");
+ await fallbackPage.close();
  await page.goto(origin+"/travel?travelMode=experiences&"+trip,{waitUntil:"networkidle"});await page.locator("[data-experience-product]").first().waitFor();
  await page.locator('input[name="tripVisitDate"]').fill("2026-12-20");await page.getByRole("button",{name:"Find experiences",exact:true}).click();await page.waitForURL(url=>url.searchParams.get("tripVisitDate")==="2026-12-20");assert.match(page.url(),/tripEnd=2026-12-14/);
  const before=await fetch("http://127.0.0.1:4313/__fixture").then(r=>r.json());for(let i=0;i<10;i++)assert.equal((await fetch(origin+"/api/travel/experiences?city=Mumbai")).status,200);const after=await fetch("http://127.0.0.1:4313/__fixture").then(r=>r.json());assert.equal(after.requests,before.requests,"warm gallery views do not repeat public supplier calls");
  await page.close();assert.deepEqual(errors,[]);assert.deepEqual(forbidden,[]);
- const results={scenarios,appliedCityAndReload:true,invalidDraftBlocked:true,airportKeyboardAndSwap:true,oneWayAndRoundTrip:true,visitDateIndependent:true,tabServerRerenders:travelRsc,experienceReads,warmCatalogueAdditionalCalls:after.requests-before.requests,missingCountryHonest:true,hotelSdkOnDemand:true,originalFlightsRetained:true,paidApiRequests:forbidden,errors,fixtureOnly:true};await writeFile(evidence+"/results.json",JSON.stringify(results,null,2));console.log(JSON.stringify(results));
+ const results={scenarios,appliedCityAndReload:true,invalidDraftBlocked:true,airportKeyboardAndSwap:true,oneWayAndRoundTrip:true,visitDateIndependent:true,tabServerRerenders:travelRsc,experienceReads,warmCatalogueAdditionalCalls:after.requests-before.requests,missingCountryHonest:true,hotelSdkOnDemand:true,originalFlightsRetained:true,primaryFlightGateway:"12Go",fallbackFlightGateway:"Aviasales",paidApiRequests:forbidden,errors,fixtureOnly:true};await writeFile(evidence+"/results.json",JSON.stringify(results,null,2));console.log(JSON.stringify(results));
 }finally{await browser.close();}
