@@ -53,7 +53,8 @@
       "feat/hotel-date-free-discovery-20261118": false,
       "feat/mobile-global-gateway-first-impression-20261118": false,
       "fix/mobile-home-supplier-hotel-cards-20261118": false,
-      "feat/travel-flights-12go-primary-avia-fallback-20261119": false
+      "feat/travel-flights-12go-primary-avia-fallback-20261119": false,
+      "fix/verified-flow-integrations-20261119": false
     }
   }
 }

@@ -6,6 +6,7 @@ import { ExternalLink, Globe2, RotateCcw, ShieldCheck } from "lucide-react";
 import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
   hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -59,6 +60,32 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
   const invalidStay = query.get("bookingError") === "invalid-stay" ||
     (["checkin", "checkout", "occupancies"].some(key => query.has(key)) && !restored);
+  // When a first-party card/master search explicitly supplied a city, use
+  // the fixed-origin zero-API handoff instead of asking users to repeat it
+  // in an SDK autocomplete. Other visits still use the genuine supplier SDK.
+  const cityParams = new URLSearchParams();
+  if (cityHint && !restored) {
+    cityParams.set("city", cityHint);
+    cityParams.set("currency", displayCurrency);
+    for (const key of ["checkin", "checkout", "adults", "rooms"]) {
+      const value = query.get(key);
+      if (value && value.length <= 20 && query.getAll(key).length === 1) cityParams.set(key, value);
+    }
+  }
+  const cityResolution = cityParams.has("city") ? resolveHotelRoute({
+    destination:cityHint,currency:displayCurrency,
+    checkIn:cityParams.get("checkin")??undefined,
+    checkOut:cityParams.get("checkout")??undefined,
+    adults:cityParams.get("adults")??undefined,
+    rooms:cityParams.get("rooms")??undefined,
+  }) : null;
+  // Never throw an unknown city onto a generic supplier homepage without
+  // preserving the selected city. Keep the original real supplier picker for it.
+  const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
+  const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
+  useEffect(() => {
+    if (cityBookingHref) window.location.replace(cityBookingHref);
+  }, [cityBookingHref]);
   useEffect(() => {
     setBookingQuery(restoredQuery);
     if (restoredQuery) setShowSearch(false);
@@ -209,13 +236,19 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
         <p className="hidden sm:block">Search destinations worldwide. Explore supplier star ratings, photos, amenities and room options for your stay.</p>
       </div>
     </div>
+    {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
+    {unmappedCityHref && <p className="gth-hotel-booking-note">
+      Your destination is <strong>{cityHint}</strong>. Select that location in the supplier search below,
+      or <a href={unmappedCityHref} className="underline" target="_blank" rel="noopener noreferrer">open the secure worldwide destination picker</a>.
+      We do not substitute an unverified city ID.
+    </p>}
     {showSearch && searchToggle}
     {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
       {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
       Select the matching destination in GTH Worldwide Stays below, then choose dates and guests.
       GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
     </p>}
-    {showSearch && <div id="hotel-live-search" className="gth-hotel-search-panel">
+    {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
