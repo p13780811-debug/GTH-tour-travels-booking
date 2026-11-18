@@ -290,7 +290,7 @@ function HotelsContent() {
 
     const searchBookableHotels = () => {
         const city=search.trim();
-        if(!city || city.length>80 || !/^[\\p{L}\\p{M}\\s.'-]+$/u.test(city)){
+        if(!city || city.length>80 || !/^[\p{L}\p{M}\s.'-]+$/u.test(city)){
             setDateError("Enter a valid city or destination first.");
             return;
         }
