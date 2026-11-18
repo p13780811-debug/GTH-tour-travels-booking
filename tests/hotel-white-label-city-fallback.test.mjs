@@ -47,13 +47,20 @@ test("every unmapped city opens the supplier's own location picker without a gue
   assert.equal(result.destination,city);
   const url=new URL(result.url);
   assert.equal(url.hostname,supplierHost);
-  assert.equal(url.pathname,"/hotels");
+  assert.equal(url.pathname,"/",city);
   assert.equal(url.searchParams.get("language"),"en");
   assert.equal(url.searchParams.get("currency"),"USD");
-  for(const invalid of ["placeId","city","hotelId","name","checkin","checkout","occupancies","redirect","xData"]){
+  assert.equal(url.searchParams.get("checkin"),"2026-11-20");
+  assert.equal(url.searchParams.get("checkout"),"2026-11-21");
+  assert.equal(url.searchParams.get("adults"),"2");
+  assert.equal(url.searchParams.get("rooms"),"1");
+  assert.deepEqual(JSON.parse(atob(url.searchParams.get("occupancies"))),[{adults:2,children:[]}]);
+  for(const invalid of ["placeId","city","hotelId","name","redirect","xData"]){
    assert.equal(url.searchParams.has(invalid),false,invalid);
   }
-  assert.equal(routing.unverifiedHotelDestinationHref(city,"USD"),result.url);
+  const alternate=new URL(routing.unverifiedHotelDestinationHref(city,"USD"));
+  assert.equal(alternate.host,supplierHost);
+  assert.equal(alternate.pathname,"/");
  }
 });
 
