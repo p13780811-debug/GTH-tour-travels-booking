@@ -39,11 +39,11 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  }
  if(flightHandoffScope){
   const src=read("src/lib/travel/connected-trip.ts");
-  if(/\\bfetch\\s*\\(|api\\.12go|process\\.env|NUITEE_.*KEY/.test(src))
+  if(/\bfetch\s*\(|api\.12go|process\.env|NUITEE_.*KEY/.test(src))
     throw Error("Flight handoff cannot add API calls, credentials or paid supplier access");
   if(!src.includes("connectedTwelveGoFlightHref")||!src.includes('mode:"flight"')||
      !src.includes("connectedFlightHref"))throw Error("12Go preferred + Aviasales fallback must coexist");
-  if([...changed].some(path=>/\\.css$/.test(path)))
+  if([...changed].some(path=>/\.css$/.test(path)))
     throw Error("Flight handoff branch may not edit any CSS");
  }
  console.log("PASS: exact main-based reviewed Travel/Flights additions, supplier and fare source paths protected; fixed legacy guard retained.");
