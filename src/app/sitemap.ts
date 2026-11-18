@@ -9,6 +9,7 @@ import { isIndexableAttraction } from "@/lib/seo/large-sitemaps";
 import {indexableGuidePaths} from "@/lib/travel/guideMedia";
 import {HOTEL_MARKETS} from "@/lib/travel/nuitee-hotel-markets";
 import { stadiums } from "@/lib/travel/stadiums";
+import { indexableMatch, matchSeoPath, upcomingMatchPages } from "@/lib/stadium-predictions/seo";
 const base = siteOrigin();
 // Recheck published public inventory hourly as records are approved or expire.
 export const revalidate = 3600;
@@ -16,7 +17,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/tickets", "/hotels/list-your-property",
+  "/destinations", "/guides", "/blog", "/sports-tickets-predictions", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/tickets", "/hotels/list-your-property",
   "/insurance", "/intelligence", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/real-estate/markets", "/tender", "/tender/services", "/tender/coverage",
   "/partners", "/contact", "/about", "/verification", "/system", "/gth-ecosystem-manifest", "/affiliate-disclosure", "/real-estate/guides", "/knowledge/tenders",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
@@ -93,10 +94,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!publicLaunch) return [];
   // Property URLs are already partitioned across /seo-sitemaps/properties/*.xml.
   // Do not duplicate the first 1,000 properties in the root sitemap or pay for a repeated query.
-  const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
+  const [approved,guidePaths,sportsMatches]=await Promise.all([
+    publishedRecords().catch(() => [] as DynamicEntry[]),
+    indexableGuidePaths().catch(()=>[] as string[]),
+    upcomingMatchPages().catch(()=>[]),
+  ]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
     ...stadiums.map(venue => ({ url: base + "/stadiums/" + venue.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    ...sportsMatches.filter(indexableMatch).slice(0, 100).flatMap(match => {
+      const path = matchSeoPath(match);
+      return path ? [{ url: base + path, changeFrequency: "daily" as const, priority: 0.55 }] : [];
+    }),
     ...["sports","concerts","theatre","comedy","festivals","attractions","museums","theme-parks","cinema"].map(category=>({url:base+"/tickets/"+category,changeFrequency:"monthly" as const,priority:0.55})),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
