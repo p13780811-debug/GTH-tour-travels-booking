@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import JsonLd from "@/components/seo/JsonLd";
 import { safeHotelHandoff } from "@/lib/travel/stadium-concierge";
+import { officialTicketSearchUrl } from "@/lib/stadium-predictions/ticket-search";
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import {
   indexableMatch, matchMarketEstimates, matchedVenue, matchSeoPath, sportSegment,
@@ -68,7 +69,7 @@ export default async function MatchDetails({ params }: Props) {
     ? safeHotelHandoff(venue)
     : "/hotels?" + new URLSearchParams({ view: "booking", city: match.city || "" });
   const toursHref = "/tours?" + new URLSearchParams({ city: match.city || "" });
-  const detailsHref = match.ticketUrl || match.officialUrl;
+  const ticketDiscoveryHref = officialTicketSearchUrl(match.home, match.away, match.venue, match.sport, match.starts);
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <MatchJsonLd match={match} />
     <TravelSectionNav />
@@ -94,15 +95,22 @@ export default async function MatchDetails({ params }: Props) {
         <p className="mt-3 text-sm text-[var(--text-soft)]">
           Fixture details are source-reviewed. Confirm exact start time, changes and admission with the organizer.
         </p>
-        {detailsHref ? <a href={detailsHref} target="_blank"
-          rel={match.ticketUrl ? "noopener noreferrer sponsored" : "noopener noreferrer"}
+        {match.ticketUrl ? <a href={match.ticketUrl} target="_blank" rel="noopener noreferrer sponsored"
           className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
-          {match.ticketUrl ? "Check match tickets" : "Official fixture & ticket updates"}
-        </a> : <p className="mt-5 text-sm">An exact-match ticket source is not yet verified.</p>}
-        {match.ticketUrl && match.officialUrl ? <a href={match.officialUrl} target="_blank"
+          Check exact-match ticket listing
+        </a> : ticketDiscoveryHref ? <a href={ticketDiscoveryHref} target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="gth-btn-gold mt-5 inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
+          Search web for official tickets
+        </a> : <p className="mt-5 text-sm">Match-ticket discovery is currently unavailable.</p>}
+        {match.officialUrl ? <a href={match.officialUrl} target="_blank"
           rel="noopener noreferrer" className="ml-3 mt-5 inline-flex min-h-12 items-center underline">
-          Verify organizer schedule
+          Check organizer fixture calendar
         </a> : null}
+        {!match.ticketUrl && <p className="mt-3 text-sm text-[var(--text-soft)]">
+          This opens a Google search, not a ticket seller or verified booking. Confirm the organizer,
+          fixture date and seat availability independently.
+        </p>}
       </header>
 
       <section className="gth-glass mt-6 rounded-2xl border border-[var(--border)] p-6" aria-labelledby="prediction-heading">
