@@ -1,7 +1,6 @@
 import {normalizeHotelOccupancies} from "./hotel-whitelabel";
 import {HOTEL_CURRENCY_OPTIONS} from "./hotel-currency";
 import {flightPartnerUrl} from "../flights/fare-search";
-import {airportIndex} from "./nuiteeAirportIndex";
 export const TRAVEL_MODES=["hotels","flights","experiences"] as const;
 export type TravelMode=typeof TRAVEL_MODES[number];
 export type ConnectedTrip={country:string;city:string;start:string;end:string;visitDate:string;adults:number;rooms:number;children:number[];currency:string;origin:string;destination:string};
@@ -49,28 +48,4 @@ export function connectedHotelStay(trip:ConnectedTrip):string{
  * with the provider; this never calls a flight fare/ticketing API. */
 export function connectedFlightHref(trip:ConnectedTrip):string|null{
  return trip.origin&&trip.destination&&trip.start?flightPartnerUrl(undefined,trip.origin,trip.destination,trip.start,trip.end||null):null;
-}
-
-/**
- * 12Go-first handoff for the /travel Flights tab, using the already approved
- * /go/transport/search gateway (mode=flight). No supplier requests or new API keys.
- * The gateway expects location names, not IATA codes; the reviewed local airport
- * index supplies city names without asserting that a route has availability.
- *
- * Flight passenger count is intentionally ONE: hotel adults/children/rooms are
- * unrelated to airline passengers. The user confirms their actual party and,
- * for round trips, return flight separately with the supplier.
- *
- * Returns null for unknown airport codes, allowing an explicit Aviasales
- * fallback rather than sending an unrecognized three-letter code as a city.
- */
-export function connected12GoFlightHref(trip:ConnectedTrip):string|null{
- if(!trip.origin||!trip.destination||trip.origin===trip.destination||!trip.start)return null;
- const from=airportIndex.find(airport=>airport.code===trip.origin);
- const to=airportIndex.find(airport=>airport.code===trip.destination);
- if(!from||!to||from.city.toLocaleLowerCase("en")===to.city.toLocaleLowerCase("en"))return null;
- const params=new URLSearchParams({
-  mode:"flight",from:from.city,to:to.city,date:trip.start,people:"1",
- });
- return "/go/transport/search?"+params.toString();
 }
