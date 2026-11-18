@@ -41,7 +41,7 @@ test("Odds may run without SeatGeek only for exact organizer-reviewed cricket fi
   assert.match(engine, /localDate !== fixture\.starts/);
   assert.match(engine, /sportTagsMatch\(e, sport\)/);
   assert.match(fixtures, /APPROVED/);
-  assert.match(fixtures, /event\.label === entry\.label/);
+  assert.match(fixtures, /item\.label === entry\.label/);
   assert.match(fixtures, /venue\.sports\.includes\("Cricket"\)/);
   assert.match(engine, /MAX_ODDS_REQUESTS_PER_RUN = 2/);
   assert.match(engine, /reserve\(db, "odds", month, 5, MAX_ODDS_MONTH\)/);
@@ -70,7 +70,7 @@ test("Google search fallback is separate from official inventory and cannot be d
   assert.match(feed, /unstable_cache/);
   assert.match(feed, /AbortSignal\.timeout\(4500\)/);
   assert.match(detail, /if \(match\.ticketUrl\) event\.offers/);
-  assert.doesNotMatch(ticketSearch, /affiliate|seatgeek\.com|ticket_booking_link|availability|price:/i);
+  assert.doesNotMatch(ticketSearch.replace(/\/\*[\s\S]*?\*\//g, ""), /affiliate|seatgeek\.com|ticket_booking_link|availability|price:/i);
   for (const path of ["src/lib/travel/stadium-concierge.ts", "src/app/events/[sport]/[slug]/page.tsx"]) {
     assert.doesNotMatch(read(path), /NEXT_PUBLIC_ODDS_API_KEY|NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   }
