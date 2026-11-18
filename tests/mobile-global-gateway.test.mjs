@@ -54,7 +54,7 @@ test("Public brand uses GTH PRO Global Gateway while old URL remains stable", ()
   assert.doesNotMatch(app, /Super App/);
   assert.match(gateway, /GTH PRO Global Gateway/);
   assert.match(gateway, /canonical: "\/mega-aggregator"/);
-  assert.match(header, /name: "Global Gateway", href: "\/mega-aggregator"/);
+  assert.match(header, /name: "Ecosystem", href: "\/mega-aggregator"/); // protected shared Navbar unchanged
   assert.match(flagship, /Open GTH PRO Home/);
   assert.doesNotMatch(flagship + gateway, /Open Super App/);
   assert.match(gateway, /<EcosystemHub \/>/); // Website services remain unchanged
