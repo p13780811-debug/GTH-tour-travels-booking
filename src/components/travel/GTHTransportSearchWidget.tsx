@@ -46,7 +46,7 @@ export default function GTHTransportSearchWidget({ mode, flightOnly = false }: {
             {activeMode === "bus" ? "Search bus journeys" : activeMode === "train" ? "Search global train journeys" : activeMode === "flight" ? "Search flights" : "Search ferry journeys"}
           </h2>
         </div>
-        {!flightOnly && <<nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">
+        {!flightOnly && <nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">
           {modes.map(({ mode: item, label, Icon }) => (
             <button key={item} type="button" onClick={() => setActiveMode(item)}
               aria-current={activeMode === item ? "true" : undefined}
