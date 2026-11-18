@@ -40,7 +40,8 @@ test("12Go handoff remains the original validated redirect and preserves public 
   "next/server":{NextResponse:{redirect:(target,status)=>
     new Response(null,{status,headers:{"location":String(target)}})}}
  });
- const requestUrl=new URL(connected12GoFlightHref(base,now),"https://www.gthproglobal.com");
+ const upcomingDate=new Date(Date.now()+10*86_400_000).toISOString().slice(0,10);
+ const requestUrl=new URL(connected12GoFlightHref({...base,start:upcomingDate}),"https://www.gthproglobal.com");
  // The route validates against real current time; date stays in the future
  // for November 2026 CI and is checked again by the gateway.
  const response=await GET({nextUrl:requestUrl,url:requestUrl.toString()});
@@ -48,7 +49,7 @@ test("12Go handoff remains the original validated redirect and preserves public 
  const supplier=new URL(response.headers.get("location"));
  assert.equal(supplier.origin,"https://12go.asia");
  assert.equal(supplier.pathname,"/en/flights/london/mumbai");
- assert.equal(supplier.searchParams.get("date"),base.start);
+ assert.equal(supplier.searchParams.get("date"),upcomingDate);
  assert.equal(supplier.searchParams.get("people"),"1");
  assert.equal(supplier.searchParams.get("z"),"17380992");
  assert.match(response.headers.get("cache-control"),/no-store/);
