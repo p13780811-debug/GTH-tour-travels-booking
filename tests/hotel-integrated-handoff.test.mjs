@@ -57,6 +57,9 @@ test("all hotel gateways retain existing genuine supplier widget and fixed-origi
   const route=read("src/app/api/hotels/booking/route.ts");
   const supplierCards=read("src/components/mobile/MobileSupplierShowcase.tsx");
   assert.match(booking,/cityBookingHref/);
+  assert.match(booking,/cityResolution\?\.status==="ready"/);
+  assert.match(booking,/unmappedCityHref/);
+  assert.match(booking,/Select that location in the supplier search below/);
   assert.match(booking,/window.location.replace\(cityBookingHref\)/);
   assert.match(booking,/LiteAPI.SearchBar.create/);
   assert.match(booking,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
