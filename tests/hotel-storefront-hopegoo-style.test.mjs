@@ -17,9 +17,10 @@ test("Hotel storefront reuses GTH tokens without a second theme, copied brand or
   assert.doesNotMatch(ui, /HopeGoo|CJ Affiliate|bookaway|Nuitee\.link|Math\.random|discount|65% off|US\$|₹[0-9]/i);
   assert.doesNotMatch(ui, /style=\{|linear-gradient|radial-gradient|from-black|bg-white|text-white/);
 });
-test("Accessible top search goes through the existing date-free hotel directory", () => {
-  assert.match(ui, /action="\/hotels#hotel-results" method="GET"/);
-  assert.match(ui, /name="view" value="directory"/);
+test("Accessible date-free destination search goes to booking, not the failing OSM directory", () => {
+  assert.match(ui, /action="\/hotels" method="GET"/);
+  assert.match(ui, /name="view" value="booking"/);
+  assert.match(ui, /window\.location\.assign\(trackedHotelCityHref\(selected\) \|\| route\("booking", selected\)\)/);
   assert.match(ui, /name="city" type="search"/);
   assert.match(ui, /onSubmit=\{quickSearch\}/);
   assert.match(ui, /maxLength=\{80\}/);

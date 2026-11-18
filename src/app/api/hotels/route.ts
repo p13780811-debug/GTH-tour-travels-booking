@@ -225,8 +225,13 @@ export async function GET(req: Request) {
     // discard unrelated hotels solely because they share a public name.
     const results = [...listings, ...osm];
     const visibleTotal = (supplierFailed ? 0 : supplierCount) + (catalogFailed ? 0 : catalogCount);
+    const partial = supplierFailed || catalogFailed;
+    // A database read failure is not evidence of zero hotel records.
+    if(partial && results.length===0) {
+      return NextResponse.json({error:"Hotel directory source temporarily unavailable"}, {status:503,headers:safeHeaders});
+    }
     return NextResponse.json(results, { headers: {
-      ...safeHeaders, "X-GTH-Country":country, "X-GTH-Total":String(visibleTotal), "X-GTH-Page": String(page), "X-GTH-Page-Size": String(PAGE_SIZE),
+      ...safeHeaders, "X-GTH-Country":country, "X-GTH-Total":String(visibleTotal), "X-GTH-Partial":String(partial), "X-GTH-Page": String(page), "X-GTH-Page-Size": String(PAGE_SIZE),
       "X-GTH-Has-More": String(results.length > 0 && page * PAGE_SIZE < visibleTotal),
     } });
   } catch {

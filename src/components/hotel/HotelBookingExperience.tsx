@@ -7,6 +7,7 @@ import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
   hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
+import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -83,6 +84,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   // preserving the selected city. Keep the original real supplier picker for it.
   const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
   const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
+  const cityAlternativeHref=unmappedCityHref?trackedHotelCityHref(cityHint):null;
   useEffect(() => {
     if (cityBookingHref) window.location.replace(cityBookingHref);
   }, [cityBookingHref]);
@@ -237,16 +239,25 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
       </div>
     </div>
     {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
-    {unmappedCityHref && <p className="gth-hotel-booking-note">
-      Your destination is <strong>{cityHint}</strong>. Select that location in the supplier search below,
-      or <a href={unmappedCityHref} className="underline" target="_blank" rel="noopener noreferrer">open the secure worldwide destination picker</a>.
-      We do not substitute an unverified city ID.
-    </p>}
+    {unmappedCityHref && <div className="gth-hotel-booking-note">
+      <div className="min-w-0 w-full space-y-3 text-sm leading-6">
+        <p>Find stays in <strong>{cityHint}</strong>. Choose the destination in the genuine worldwide hotel search below; no unsupported city ID will be guessed.</p>
+        <div className="flex flex-wrap gap-2">
+          {cityAlternativeHref && <a href={cityAlternativeHref} rel="sponsored noopener noreferrer"
+            className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">
+            Explore {cityHint} hotels on the alternative booking network <ExternalLink size={15} aria-hidden="true"/>
+          </a>}
+          <a href={unmappedCityHref} target="_blank" rel="noopener noreferrer"
+            className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">
+            Open worldwide hotel search <ExternalLink size={15} aria-hidden="true"/>
+          </a>
+        </div>
+        <p className="text-xs text-[var(--text-soft)]">Confirm dates, guests, exact hotel and room availability with the booking network.</p>
+      </div>
+    </div>}
     {showSearch && searchToggle}
-    {showSearch && (cityHint||hotelHint) && <p role="status" className="gth-hotel-booking-note">
-      {cityHint?`Destination requested: ${cityHint}. `:""}{hotelHint?`Hotel requested: ${hotelHint}. `:""}
-      Select the matching destination in GTH Worldwide Stays below, then choose dates and guests.
-      GTH PRO will not substitute incomplete directory listings or guess a supplier Place ID.
+    {showSearch && hotelHint && <p role="status" className="gth-hotel-booking-note">
+      <span className="min-w-0">Requested hotel: <strong>{hotelHint}</strong>. Select its actual matching record in worldwide search; GTH will not substitute a similarly named directory listing.</span>
     </p>}
     {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
