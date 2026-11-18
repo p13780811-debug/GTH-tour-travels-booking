@@ -1,5 +1,5 @@
 import {normalizeHotelOccupancies} from "./hotel-whitelabel";
-import {hotelWhiteLabelSearchUrl,resolveHotelRoute} from "./hotel-routing";
+import {hotelWhiteLabelSearchUrl,resolveHotelDates,resolveHotelRoute} from "./hotel-routing";
 import {trackedHotelCityHref} from "./klook-hotel-search";
 import type {ConnectedTrip} from "./connected-trip";
 
@@ -29,12 +29,7 @@ export function connectedHotelBookingHref(trip:ConnectedTrip):string|null{
     if(route?.status==="ready")return route.url;
     const alternative=trackedHotelCityHref(city);
     if(alternative)return alternative;
-    const dates=resolveHotelRoute({
-      destination:"Mumbai",checkIn:trip.start,checkOut:trip.end,
-      occupancies:occupancy,currency:trip.currency,
-    });
-    // Only use the dates/occupancy validation; never reuse Mumbai placeId.
-    if(dates.status!=="ready")return null;
+    if(resolveHotelDates(trip.start,trip.end).defaulted)return null;
     return hotelWhiteLabelSearchUrl(trip.currency,{
       checkin:trip.start,checkout:trip.end,occupancies:occupancy,
     });
