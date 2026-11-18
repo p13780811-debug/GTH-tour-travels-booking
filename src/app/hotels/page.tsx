@@ -21,6 +21,7 @@ import Link from "next/link";
 import HotelCatalogPulse from "@/components/hotel/HotelCatalogPulse";
 import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
+import HotelDiscoveryShowcase from "@/components/hotel/HotelDiscoveryShowcase";
 import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacement";
 import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
@@ -119,7 +120,9 @@ function HotelsContent() {
     const [requestedDestination,setRequestedDestination]=useState(initialDestination);
     const [selectedCountry,setSelectedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
     const [requestedCountry,setRequestedCountry]=useState((params.get("country")||"").toUpperCase().slice(0,2));
-    const [category,setCategory]=useState("");
+    const initialCategory = ["hotel","hostel","guest_house","motel","apartment","resort"].includes(params.get("category") || "") ? params.get("category")! : "";
+    const [category,setCategory]=useState(initialCategory);
+    useEffect(()=>setCategory(initialCategory),[initialCategory]);
     const [checkin,setCheckin]=useState("");
     const [checkout,setCheckout]=useState("");
     const [guests,setGuests]=useState(2);
@@ -301,6 +304,8 @@ function HotelsContent() {
 
     return (
         <div className={`${styles.page} min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden`}>
+            <TravelSectionNav />
+            <HotelDiscoveryShowcase initialCity={initialCity} currentMode={hotelMode} activeCategory={category} />
             {/* ========================================================================= */}
             {/* HERO */}
             {/* ========================================================================= */}
@@ -337,7 +342,7 @@ function HotelsContent() {
                       Booking search for <strong className="text-[var(--text)]">{initialCity}</strong>. Choose {initialCity} from the GTH Worldwide Stays destination suggestions below, select your stay dates and guests, then open matching supplier hotel results. The separate OSM directory is not booking inventory.
                     </p>}
                     {/* SEARCH */}
-                    {hotelMode === "booking" && <HotelBookingExperience key={currency} currency={currency} />}
+                    {hotelMode === "booking" && <div id="hotel-booking-experience" className="scroll-mt-24"><HotelBookingExperience key={currency} currency={currency} /></div>}
                     {hotelMode === "directory" && <div className="mt-8 gth-glass border border-[var(--border)] rounded-3xl p-3 md:p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto] gap-3">
                             <div className="flex items-center gap-3 bg-[var(--card)] rounded-2xl px-4 py-4 min-w-0">
@@ -399,7 +404,6 @@ function HotelsContent() {
                     </div>}
                 </div>
             </section>
-      <TravelSectionNav />
             {hotelMode === "booking" ? <div>
               <HotelsDiscoveryPlacement currency={currency} showOffers={!initialCity} showNearby={!initialCity} />
               <section className={styles.guides} aria-labelledby="hotel-inspiration-title">
@@ -692,8 +696,8 @@ function HotelsContent() {
                             {hotels.map((hotel) => (
                                 <article key={hotel.id}
                                   className="group gth-glass overflow-hidden rounded-2xl border border-[var(--border)] transition-shadow hover:shadow-lg">
-                                    <div className="flex min-w-0 flex-col md:flex-row">
-                                        <div className="relative h-44 w-full shrink-0 bg-[var(--bg-soft)] md:h-auto md:w-52 xl:w-56 2xl:w-60">
+                                    <div className="flex min-w-0 flex-row">
+                                        <div className="relative min-h-44 w-28 shrink-0 bg-[var(--bg-soft)] sm:w-40 md:h-auto md:w-52 xl:w-56 2xl:w-60">
                                             <a className="block h-full w-full" href={hotel.booking_ready?"/hotels/partner/"+encodeURIComponent(String(hotel.id)):"/hotels/stay/"+encodeURIComponent(String(hotel.id))+staySuffix} rel={hotel.booking_ready?"sponsored":undefined} aria-label={hotel.booking_ready?"Open exact verified booking partner for "+hotel.name:"View hotel details for "+hotel.name}><HotelPropertyImage src={hotel.image} name={hotel.name}
                                               className="h-full min-h-44 w-full object-cover md:min-h-52"
                                               placeholderClassName="flex h-full min-h-44 w-full flex-col items-center justify-center gap-2 text-center text-[var(--text-soft)] md:min-h-52"/></a>
@@ -702,7 +706,7 @@ function HotelsContent() {
                                                 {" · "}<a href={hotel.image_attribution.license_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">{hotel.image_attribution.license}</a>
                                             </div>}
                                         </div>
-                                        <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5 xl:flex-row xl:gap-4">
+                                        <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 sm:p-5 xl:flex-row xl:gap-4">
                                             <div className="min-w-0 flex-1">
                                                 <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--card)] px-2.5 py-1 text-[11px] font-semibold capitalize">
                                                     {(hotel.category||"hotel").replaceAll("_"," ")}
