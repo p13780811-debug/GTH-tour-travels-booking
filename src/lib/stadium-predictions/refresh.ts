@@ -24,6 +24,7 @@ type SeatGeekEvent = {
   datetime_utc?: string;
   venue?: { name?: string };
   performers?: Array<{ name?: string }>;
+  taxonomies?: Array<{ name?: string }>;
 };
 type VerifiedMatch = {
   matchId: string;
@@ -112,6 +113,16 @@ function validateOdds(raw: unknown): OddsEvent[] {
       home_team: home, away_team: away, commence_time: date, bookmakers,
     }];
   });
+}
+function sportTagsMatch(event: SeatGeekEvent, oddsSport: string): boolean {
+  const tags = [event.type, ...(event.taxonomies ?? []).map(t => t.name)]
+    .filter((s): s is string => typeof s === "string")
+    .map(s => s.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g, "_"));
+  // Explicit provider taxonomy only. "football" can mean NFL, so never treat
+  // it as soccer without a specific soccer tag. Unknown sport fails closed.
+  if (oddsSport === "soccer_epl") return tags.some(s => /(^|_)(soccer|epl)(_|$)/.test(s));
+  if (oddsSport === "basketball_nba") return tags.some(s => /(^|_)(nba|basketball)(_|$)/.test(s));
+  return false;
 }
 function verifiedMatch(event: SeatGeekEvent, odd: OddsEvent): VerifiedMatch | null {
   if (!Number.isSafeInteger(event.id) || event.id <= 0 || !event.venue || !Array.isArray(event.performers)) return null;
@@ -221,7 +232,7 @@ export async function refreshStadiumPredictions() {
     } catch { continue; }
     for (const odd of odds) {
       if (saved >= MAX_MATCHES) break;
-      const matches = events.map(e => verifiedMatch(e, odd)).filter((m): m is VerifiedMatch => m !== null);
+      const matches = events.filter(e => sportTagsMatch(e, sport)).map(e => verifiedMatch(e, odd)).filter((m): m is VerifiedMatch => m !== null);
       const match = matches.length === 1 ? matches[0] : undefined;
       if (!match) continue;
       const bookmakers = (odd.bookmakers ?? []).map(b => ({
