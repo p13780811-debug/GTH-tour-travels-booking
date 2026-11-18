@@ -63,7 +63,9 @@ test("all hotel gateways retain existing genuine supplier widget and fixed-origi
   assert.match(booking,/cityBookingHref/);
   assert.match(booking,/cityResolution\?\.status==="ready"/);
   assert.match(booking,/unmappedCityHref/);
-  assert.match(booking,/Select that location in the supplier search below/);
+  assert.match(booking,/Choose the destination in the genuine worldwide hotel search below/);
+  assert.match(booking,/cityAlternativeHref/);
+  assert.match(booking,/min-w-0 w-full space-y-3/);
   assert.match(booking,/window.location.replace\(cityBookingHref\)/);
   assert.match(booking,/LiteAPI.SearchBar.create/);
   assert.match(booking,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
