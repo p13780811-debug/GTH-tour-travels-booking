@@ -414,13 +414,16 @@ function HotelsContent() {
                   </div>
                   <Link href="/destinations" className={styles.textLink}>Explore destinations <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
-                <nav className={styles.destinationGrid} aria-label="Featured travel destinations">
-                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug} className={styles.destinationCard} aria-label={"Explore "+place.city+" hotel guide"}>
-                    <Image src={place.image} alt={place.city+" destination scenery, not a hotel photo"} fill sizes="(max-width:640px) 46vw, (max-width:1024px) 30vw, 390px" className="object-cover"/>
-                    <span className={styles.destinationCaption}><span><strong>{place.city}</strong><span>Discover the area</span></span><ChevronRight size={20} aria-hidden="true" /></span>
+                <nav className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Featured city stay guides">
+                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug}
+                    className="gth-glass flex min-h-20 min-w-0 items-center justify-between gap-2 rounded-2xl border border-[var(--border)] p-4"
+                    aria-label={"Explore "+place.city+" hotel guide"}>
+                    <span className="min-w-0"><strong className="block text-base font-bold">{place.city}</strong>
+                      <span className="mt-1 block text-xs text-[var(--text-soft)]">Local stay guide</span></span>
+                    <ChevronRight size={17} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
                   </Link>)}
                 </nav>
-                <p className="mt-3 text-xs text-[var(--text-soft)]">Destination photography for inspiration. Property photos and room options appear in the booking search.</p>
+                <p className="mt-3 text-xs text-[var(--text-soft)]">Destination images above are inspiration, not hotel inventory. Room photos, live prices and dates are confirmed during booking.</p>
               </section>
               <section className={styles.planning} aria-labelledby="hotel-planning-title">
                 <div><p className={styles.sectionLabel}>A little planning. A better stay.</p><h2 id="hotel-planning-title" className={styles.sectionTitle}>Check in with confidence.</h2><p className="mt-3 max-w-lg text-sm leading-7 text-[var(--text-soft)]">Keep these three things in mind when comparing rooms. The final details are on your booking provider&apos;s page.</p>
