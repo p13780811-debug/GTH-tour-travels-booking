@@ -156,9 +156,11 @@ function verifiedCalendarMatch(fixture: ReviewedFixture, odd: OddsEvent): Verifi
   if (!Number.isFinite(starts) || starts <= Date.now() || starts > Date.now() + 31 * 86400000) return null;
   // Original organizer calendar independently confirms the EVENT DAY at this
   // venue; odds provider supplies the provisional start time (not a guarantee).
-  const localDate = new Intl.DateTimeFormat("en-CA", {
+  const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: fixture.timeZone, year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(new Date(starts));
+  }).formatToParts(new Date(starts));
+  const datePart = (type: "year" | "month" | "day") => parts.find(p => p.type === type)?.value;
+  const localDate = [datePart("year"), datePart("month"), datePart("day")].join("-");
   if (localDate !== fixture.starts) return null;
   return {
     matchId: fixture.id, sport: fixture.sport, home: fixture.home,
