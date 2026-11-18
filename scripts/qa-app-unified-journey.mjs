@@ -11,16 +11,15 @@ try{
  const linksContext=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
  const linksPage=await linksContext.newPage();
  await linksPage.goto(base+"/",{waitUntil:"domcontentloaded",timeout:60000});
- const flagshipLinks=linksPage.getByRole("region",{name:"Super App and Research Desk shortcuts"});
- assert.ok(await flagshipLinks.getByRole("link",{name:"Open Super App"}).isVisible());
+ const flagshipLinks=linksPage.getByRole("region",{name:"GTH PRO Home and Research Desk shortcuts"});
+ assert.ok(await flagshipLinks.getByRole("link",{name:"Open GTH PRO Home"}).isVisible());
  assert.ok(await flagshipLinks.getByRole("link",{name:"My Research Desk"}).isVisible());
- await flagshipLinks.getByRole("link",{name:"Open Super App"}).click();
+ await flagshipLinks.getByRole("link",{name:"Open GTH PRO Home"}).click();
  await linksPage.getByRole("heading",{name:"GTH PRO Home"}).waitFor({timeout:25000});
- const appQuick=linksPage.getByRole("navigation",{name:"Super App quick access"});
- assert.ok(await appQuick.getByRole("link",{name:"My Research Desk"}).isVisible());
+ assert.ok(await linksPage.getByRole("link",{name:"Open my Research Desk"}).isVisible());
  await linksPage.goto(base+"/mega-aggregator",{waitUntil:"domcontentloaded",timeout:60000});
- const ecosystemLinks=linksPage.getByRole("navigation",{name:"Super App access and Research Desk"});
- assert.ok(await ecosystemLinks.getByRole("link",{name:"Open Super App"}).isVisible());
+ const ecosystemLinks=linksPage.getByRole("navigation",{name:"GTH PRO Home and Research Desk"});
+ assert.ok(await ecosystemLinks.getByRole("link",{name:"Open GTH PRO Home"}).isVisible());
  await ecosystemLinks.getByRole("link",{name:"My Research Desk"}).click();
  await linksPage.getByRole("heading",{name:"Everything you saved. One place."}).waitFor({timeout:25000});
  await linksPage.screenshot({path:folder+"research-desk-entry-390.png",fullPage:true});
@@ -36,16 +35,18 @@ try{
   assert.ok(await page.getByRole("link",{name:/Explore Tenders/}).isVisible());
   assert.ok(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).isVisible());
   // The four visual pillars must honor native app handoffs when available.
-  assert.equal(await page.getByRole("link",{name:/Explore Travel/}).getAttribute("href"),"/app/destinations");
-  assert.equal(await page.getByRole("link",{name:/Explore Real Estate/}).getAttribute("href"),"/app/property");
-  assert.equal(await page.getByRole("link",{name:/Explore Tenders/}).getAttribute("href"),"/app/tenders");
+  assert.equal(await page.getByRole("link",{name:/Explore Travel/}).getAttribute("href"),"/travel");
+  assert.equal(await page.getByRole("link",{name:/Explore Real Estate/}).getAttribute("href"),"/real-estate");
+  assert.equal(await page.getByRole("link",{name:/Explore Tenders/}).getAttribute("href"),"/tender");
   assert.equal(await page.getByRole("link",{name:/Explore Worldwide Tickets/}).getAttribute("href"),"/tickets");
   assert.equal(await page.locator('form[action="/app/search"]').count(),1);
   assert.ok(await page.getByRole("link",{name:"Open my Research Desk"}).isVisible());
   assert.ok(await page.getByRole("link",{name:"Search all GTH PRO ecosystems"}).isVisible());
   assert.ok(await page.getByRole("searchbox",{name:"What would you like to find?"}).isVisible());
   assert.ok(await page.getByRole("heading",{name:"Tours & activities"}).isVisible());
-  assert.ok(await page.getByRole("navigation",{name:"Super App quick access"}).isVisible());
+  assert.equal(await page.getByRole("navigation",{name:"GTH PRO mobile app navigation"}).count(),1);
+  assert.equal(await page.getByRole("tablist",{name:"GTH PRO service categories"}).count(),0);
+  assert.equal(await page.getByRole("navigation",{name:"Popular ecosystem destinations"}).count(),0);
   const dimensions=await page.evaluate(()=>({screen:window.innerWidth,document:document.documentElement.scrollWidth}));
   assert.ok(dimensions.document<=dimensions.screen+2,`Root horizontal overflow at ${width}px: ${JSON.stringify(dimensions)}`);
   if(width===390){

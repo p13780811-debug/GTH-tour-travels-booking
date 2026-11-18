@@ -1,6 +1,7 @@
 "use client";
 
 import {useState} from "react";
+import Link from "next/link";
 import {BriefcaseBusiness, Building2, Globe2, Plane, Search, Ticket} from "lucide-react";
 
 /** Uses the existing /search route and its validated pillar-specific routing.
@@ -16,6 +17,9 @@ const tabs = [
   {id:"tender", label:"Tenders", Icon:BriefcaseBusiness, initial:"tender"},
   {id:"ticket", label:"Tickets", Icon:Ticket, initial:"ticket"},
 ] as const;
+const platformRoutes:Record<Exclude<Pillar,"all">,string>={
+  travel:"/travel", property:"/real-estate", tender:"/tender", ticket:"/tickets",
+};
 const categories:Record<Pillar, readonly {value:SearchCategory;label:string}[]>={
   all:[
     {value:"all",label:"All platforms"}, {value:"hotel",label:"Hotels"},
@@ -43,6 +47,33 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
     setCategory(tabs.find(tab=>tab.id===next)!.initial);
   }
 
+  // The installed Home has ONE lightweight site-wide search. The four
+  // platform cards below it navigate directly to their dedicated gateways;
+  // tabs here previously only switched search categories and were confusing.
+  if (appHome) return (
+    <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
+      className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-3 text-[var(--text)] sm:p-5">
+      <h2 id="ecosystem-search-title" className="text-base font-bold sm:text-xl">Find anything on GTH PRO</h2>
+      <form action="/app/search" method="get" role="search" aria-label="GTH PRO Home search"
+        className="mt-3 flex min-w-0 flex-wrap items-end gap-2">
+        <label htmlFor="ecosystem-universal-keyword" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">
+          Search all platforms
+          <input id="ecosystem-universal-keyword" aria-label="What would you like to find?"
+            type="search" name="q" minLength={2} maxLength={100} required
+            autoComplete="off" placeholder="Hotels, properties, tenders, events…"
+            className="gth-input mt-1 block min-h-12 w-full min-w-0"/>
+        </label>
+        <input type="hidden" name="category" value="all"/>
+        <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+          <Search size={16} aria-hidden="true"/> Search
+        </button>
+      </form>
+      <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
+        To open Travel, Real Estate, Tenders or Tickets directly, select the platform card below.
+      </p>
+    </section>
+  );
+
   return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
       className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-4 text-[var(--text)] shadow-xl sm:rounded-3xl sm:p-6">
@@ -53,16 +84,19 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
         </div>
       </div>
 
-      <div role="group" aria-label="Select GTH PRO platform" className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        {tabs.map(({id,label,Icon})=>(
-          <button type="button" key={id} aria-pressed={pillar===id} onClick={()=>selectPillar(id)}
-            className={pillar===id
-              ?"gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold"
-              :"gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold"}>
+      <nav aria-label="Open GTH PRO platforms" className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        {tabs.map(({id,label,Icon})=>id==="all" ? (
+          <button type="button" key={id} aria-pressed={pillar==="all"} onClick={()=>selectPillar("all")}
+            className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
             <Icon size={16} aria-hidden="true"/> {label}
           </button>
+        ) : (
+          <Link key={id} href={platformRoutes[id]} prefetch={false}
+            className="gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold">
+            <Icon size={16} aria-hidden="true"/> {label}
+          </Link>
         ))}
-      </div>
+      </nav>
 
       <form action={appHome?"/app/search":"/search"} method="get" role="search" aria-label={appHome?"GTH PRO Home search":"Universal ecosystem search"}
         className="mt-4 grid min-w-0 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">

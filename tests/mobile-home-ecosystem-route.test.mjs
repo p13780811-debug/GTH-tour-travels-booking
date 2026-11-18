@@ -24,7 +24,7 @@ test("PWA launches the ecosystem-and-dashboard unified Home without provider dup
  const approved=read("src/app/mega-aggregator/page.tsx");
  const manifest=read("src/app/manifest.ts");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
- assert.match(page,/<MobileAppDashboard mode="tools"\/>/);
+ assert.match(page,/<MobileAppDashboard mode="tools" compactHome\/>/);
  assert.match(alias,/redirect\("\/app"\)/);
  assert.match(alias,/robots:\{index:false,follow:false\}/);
  assert.match(manifest,/scope: "\/app"/);

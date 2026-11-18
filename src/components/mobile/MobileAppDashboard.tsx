@@ -13,7 +13,7 @@ import AppServiceGrid,{AppRecentServices} from "./AppServiceGrid";
 import useAppServicePreferences from "./useAppServicePreferences";
 import {recordAppService,toggleAppFavourite} from "@/lib/mobile/app-preferences";
 const tabs=[{id:"all",name:"All",Icon:LayoutGrid},{id:"travel",name:"Travel",Icon:Plane},{id:"property",name:"Property",Icon:Building2},{id:"tender",name:"Tenders",Icon:BriefcaseBusiness},{id:"tickets",name:"Tickets",Icon:Ticket}] as const;
-export default function MobileAppDashboard({data={destinations:[],hotels:[],properties:[],tenders:[]},mode="full"}:{data?:MobileDiscoveryData;mode?:"full"|"tools"}){
+export default function MobileAppDashboard({data={destinations:[],hotels:[],properties:[],tenders:[]},mode="full",compactHome=false}:{data?:MobileDiscoveryData;mode?:"full"|"tools";compactHome?:boolean}){
  const [pillar,setPillar]=useState<AppPillar>("all"),[query,setQuery]=useState(""),[expanded,setExpanded]=useState(false);
  const [editing,setEditing]=useState(false);
  const {preferences,update}=useAppServicePreferences();
@@ -77,14 +77,14 @@ export default function MobileAppDashboard({data={destinations:[],hotels:[],prop
     <Search size={20} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
     <input type="search" value={query} onChange={event=>setQuery(event.target.value.slice(0,70))} maxLength={70} aria-label="Filter quick service shortcuts" placeholder="Filter services: flights, hotels, tickets…" className="min-w-0 w-full bg-transparent py-3 text-sm outline-none"/>
    </label>
-   <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-5 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1">
+   {!compactHome && <div role="tablist" aria-label="GTH PRO service categories" className="mt-3 grid grid-cols-5 gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1">
     {tabs.map(({id:tab,name,Icon},index)=><button key={tab} id={`${id}-${tab}`} type="button" role="tab" aria-selected={pillar===tab} aria-controls={`${id}-panel`} tabIndex={pillar===tab?0:-1}
      onClick={()=>{setPillar(tab);setExpanded(false);}}
      onKeyDown={event=>{let next=index;if(event.key==="ArrowRight")next=(index+1)%tabs.length;else if(event.key==="ArrowLeft")next=(index+tabs.length-1)%tabs.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=tabs.length-1;else return;event.preventDefault();setPillar(tabs[next].id);setExpanded(false);document.getElementById(`${id}-${tabs[next].id}`)?.focus();}}
      className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] ${pillar===tab?"bg-[var(--bg-soft)] text-[var(--gold)]":"text-[var(--text-soft)]"}`}><Icon size={23} aria-hidden="true"/>{name}</button>)}
-   </div>
+   </div>}
   </div>
-  <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${pillar}`}>
+  <div id={`${id}-panel`} role={compactHome?undefined:"tabpanel"} aria-labelledby={compactHome?undefined:`${id}-${pillar}`}>
    <section aria-label="App services" className="px-4 pt-3 sm:px-6">
     <div className="flex min-h-11 items-center justify-between gap-3"><h2 className="text-sm font-semibold">{query?"Matching services":"What would you like to do?"}</h2>
      {!query&&services.length>8&&<button type="button" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)} className="min-h-11 px-1 text-xs font-semibold text-[var(--gold)]">{expanded?"Show less":"See all"}</button>}

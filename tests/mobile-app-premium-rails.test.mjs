@@ -7,7 +7,8 @@ test("Mobile home is source-backed and hero is compact, without 3 giant vertical
  const page=f("src/app/app/page.tsx")+f("src/components/mobile/MobileAppDashboard.tsx");
  assert.doesNotMatch(f("src/app/app/page.tsx"),/loadMobileDiscovery\(\)/);
  assert.match(page,/<EcosystemPillars appHome\/>/);
- assert.match(page,/<EcosystemHub appHome\/>/);
+ assert.doesNotMatch(f("src/app/app/page.tsx"),/<EcosystemHub appHome\/>/);
+ assert.match(page,/<MobileAppDashboard mode="tools" compactHome\/>/);
  assert.match(page,/<MobileSupplierShowcase\/>/);
  assert.match(page,/MobileDiscoveryRail kind="destination"/);
  assert.match(page,/MobileDiscoveryRail kind="hotel"/);

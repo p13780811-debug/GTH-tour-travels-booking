@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import {mobileAppHref} from "@/lib/mobile/routes";
 import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront, Ticket } from "lucide-react";
 
 const pillars = [
@@ -62,7 +61,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gold)]"><Globe2 size={16} aria-hidden="true" /> GTH PRO · Global Technical Hub</p>
             <h1 id="ecosystem-pillar-heading" className="gth-master-heading mt-4 text-3xl font-semibold leading-tight tracking-tight text-[var(--text)] sm:text-4xl md:text-5xl">
-              {appHome?"Your world.":"One global ecosystem."} <span className="gold-text">{appHome?"Four paths, one Home.":"Four defining pillars."}</span>
+              {appHome?"Your world.":"GTH Global Gateway."} <span className="gold-text">{appHome?"Four paths, one Home.":"Four defining pillars."}</span>
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)] md:text-base">
               From journeys and property discovery to procurement research and worldwide tickets—navigate the entire GTH PRO world from one central gateway.
@@ -75,7 +74,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
 
         <div className={appHome?"flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto touch-auto pb-4 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible xl:grid-cols-4":"grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"}>
           {pillars.map(({id,number,title,eyebrow,description,href,cta,image,Icon,detail}) => (
-            <article key={id} className={"gth-master-pillar group flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)] "+(appHome?"w-[76vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink":"")} >
+            <article key={id} className={"gth-master-pillar group relative flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)] "+(appHome?"w-[76vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink":"")} >
               {/* Keep the source photo visible instead of hiding it beneath a full-card black gradient. */}
               <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--bg-soft)] sm:h-44 md:h-48">
                 <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
@@ -90,7 +89,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
                 <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
                 <div className="mt-auto pt-5">
                   <p className="border-t border-[var(--border)] pt-3 text-xs font-medium text-[var(--text-soft)]">{detail}</p>
-                  <Link href={appHome?(id==="travel"?"/app/destinations":mobileAppHref(href)):href} className="mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
+                  <Link href={href} prefetch={appHome?false:undefined} aria-label={cta} className={"mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+(appHome?"after:absolute after:inset-0 after:content-[\'\'] after:z-10":"")}>
                     {cta} <ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
@@ -99,14 +98,14 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
           ))}
         </div>
 
-        <nav aria-label="Popular ecosystem destinations" className="mt-8 flex flex-wrap items-center gap-2">
+        {!appHome && <nav aria-label="Popular ecosystem destinations" className="mt-8 flex flex-wrap items-center gap-2">
           <span className="mr-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-soft)]">Quick access</span>
           {quickLinks.map(({title,href,Icon})=>(
-            <Link key={href} href={appHome?mobileAppHref(href):href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+            <Link key={href} href={href} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
               <Icon size={15} aria-hidden="true" /> {title}
             </Link>
           ))}
-        </nav>
+        </nav>}
       </div>
     </section>
   );

@@ -17,19 +17,20 @@ test("homepage capability links do not inherit white backing from the global nav
   assert.match(homeCss, /@media \(max-width: 680px\) \{[\s\S]*?\.proofGrid \{ grid-template-columns: minmax\(0, 1fr\)/);
 });
 
-test("three ecosystem cards show real photos in a compact theme-aware card layout", () => {
+test("four ecosystem cards show real photos in a compact theme-aware card layout", () => {
   for (const name of ["Tours & Travels", "Real Estate", "Tenders"]) {
     assert.ok(pillars.includes('title: "' + name + '"'));
   }
-  assert.match(pillars, /gth-master-pillar group flex min-w-0 flex-col/);
+  assert.match(pillars, /gth-master-pillar group relative flex min-w-0 flex-col/);
   assert.match(pillars, /className="relative h-40 shrink-0 overflow-hidden bg-\[var\(--bg-soft\)\]/);
   assert.match(pillars, /<Image src=\{image\} alt="" fill sizes=/);
   assert.match(pillars, /bg-\[var\(--card\)\]/);
   assert.match(pillars, /border-\[var\(--border\)\]/);
   assert.match(pillars, /text-\[var\(--text-soft\)\]/);
   assert.doesNotMatch(pillars, /from-black|via-black\/80|bg-slate-950|mt-16/);
-  assert.match(pillars, /href=\{appHome\?\(id==="travel"\?"\/app\/destinations":mobileAppHref\(href\)\):href\}/);
-  assert.match(pillars, /href=\{appHome\?mobileAppHref\(href\):href\}/);
+  assert.match(pillars, /href=\{href\} prefetch=\{appHome\?false:undefined\}/);
+  assert.doesNotMatch(pillars, /id==="travel"\?"\/app\/destinations"/);
+  assert.match(pillars, /!appHome && <nav aria-label="Popular ecosystem destinations"/);
 });
 
 test("Mobile website and PWA Home have explicit single destinations without changing the flagship landing route", () => {

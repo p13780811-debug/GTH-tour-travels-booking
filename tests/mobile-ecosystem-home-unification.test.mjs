@@ -17,7 +17,7 @@ test("mobile Home, app logo and PWA launch resolve to one preserved dashboard",(
  const manifest=read("src/app/manifest.ts");
  const legacy=read("src/app/app/ecosystem/page.tsx");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
- assert.match(page,/<MobileAppDashboard mode="tools"\/>/);
+ assert.match(page,/<MobileAppDashboard mode="tools" compactHome\/>/);
  assert.match(nav,/href: "\/app", appHref: "\/app", name: "Home"/);
  assert.match(logo,/href="\/app" aria-label="GTH PRO Home"/);
  assert.match(manifest,/start_url: "\/app"/);
