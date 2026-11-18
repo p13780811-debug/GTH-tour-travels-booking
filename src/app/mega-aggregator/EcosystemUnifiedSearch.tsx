@@ -43,6 +43,33 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
     setCategory(tabs.find(tab=>tab.id===next)!.initial);
   }
 
+  // The installed Home has ONE lightweight site-wide search. The four
+  // platform cards below it navigate directly to their dedicated gateways;
+  // tabs here previously only switched search categories and were confusing.
+  if (appHome) return (
+    <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
+      className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-3 text-[var(--text)] sm:p-5">
+      <h2 id="ecosystem-search-title" className="text-base font-bold sm:text-xl">Find anything on GTH PRO</h2>
+      <form action="/app/search" method="get" role="search" aria-label="GTH PRO Home search"
+        className="mt-3 flex min-w-0 flex-wrap items-end gap-2">
+        <label htmlFor="ecosystem-universal-keyword" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">
+          Search all platforms
+          <input id="ecosystem-universal-keyword" aria-label="What would you like to find?"
+            type="search" name="q" minLength={2} maxLength={100} required
+            autoComplete="off" placeholder="Hotels, properties, tenders, events…"
+            className="gth-input mt-1 block min-h-12 w-full min-w-0"/>
+        </label>
+        <input type="hidden" name="category" value="all"/>
+        <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+          <Search size={16} aria-hidden="true"/> Search
+        </button>
+      </form>
+      <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
+        To open Travel, Real Estate, Tenders or Tickets directly, select the platform card below.
+      </p>
+    </section>
+  );
+
   return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
       className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-4 text-[var(--text)] shadow-xl sm:rounded-3xl sm:p-6">
