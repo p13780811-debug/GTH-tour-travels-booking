@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import {Suspense} from "react";
+import Link from "next/link";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import MobileAppDashboard from "@/components/mobile/MobileAppDashboard";
 import AppInstall from "@/components/mobile/AppInstall";
@@ -28,6 +29,19 @@ export default function MobileAppHome(){
    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">GTH PRO · Global Technical Hub</p>
    <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">GTH PRO Home</h1>
    <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Travel, stays, experiences, property, tenders and tickets. Everything in one place.</p>
+   {/* Restore the original paired high-visibility shortcuts near the first fold.
+       They are navigation links, not another icon menu or search/category bar. */}
+   <nav aria-label="GTH PRO Home and Research Desk shortcuts"
+     className="mt-4 grid grid-cols-2 gap-2 sm:max-w-md sm:gap-3">
+    <Link href="/app/explore" prefetch={false}
+      className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
+      Explore All Services
+    </Link>
+    <Link href="/app/board" prefetch={false}
+      className="gth-btn inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl border border-[var(--border)] px-2 py-3 text-center text-xs font-bold sm:text-sm">
+      My Research Desk
+    </Link>
+   </nav>
   </div>
   <EcosystemHeroCarousel embedded/>
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
