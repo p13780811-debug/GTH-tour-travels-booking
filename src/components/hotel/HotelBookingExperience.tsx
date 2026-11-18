@@ -137,7 +137,7 @@ export default function HotelBookingExperience({ currency = "INR" }: { searchPat
       {loading && <p role="status">Loading local hotel form…</p>}
       <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
-        aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin" />
+        aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin allow-forms" />
       <p id="hotel-room-occupancy-help">Dates default to tomorrow for one night when omitted. Choose individual child ages on the secure booking site.</p>
     </div>}
     {invalidStay && <p role="alert" className="gth-hotel-booking-note">This saved booking link has incomplete or expired stay details. Please choose your destination, dates and guests again.</p>}
