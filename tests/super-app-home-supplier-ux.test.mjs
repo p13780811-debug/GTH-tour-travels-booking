@@ -9,9 +9,14 @@ test("GTH PRO Home reuses full approved design and keeps private research, insta
   "GTH PRO Home","EcosystemHeroCarousel embedded","EcosystemUnifiedSearch appHome",
   "EcosystemPillars appHome","MobileSupplierShowcase",
   "AppResearchQuickAccess","AppInstall",'MobileAppDashboard mode="tools" compactHome',
-  'href="/app/board"','href="/app/explore"',
+  // App header and Research Desk quick access own those links now.
  ])assert.ok(page.includes(expected),"Missing "+expected);
  assert.doesNotMatch(page,/loadMobileDiscovery\(\)|createClient\(|SERVICE_ROLE_KEY|NEXT_PUBLIC_.*SECRET/);
+ const header=read("src/components/mobile/MobileAppHeader.tsx");
+ const quick=read("src/components/mobile/AppResearchQuickAccess.tsx");
+ assert.match(header,/href="\/app\/board"/);
+ assert.match(header,/href="\/app\/explore"/);
+ assert.match(quick,/href="\/app\/board"/);
  assert.doesNotMatch(page,/<EcosystemHub appHome\/>|Super App/);
  assert.match(page,/GTH PRO · Global Technical Hub/);
  assert.match(read("src/components/mobile/MobileAppDashboard.tsx"),/!compactHome && <div role="tablist"/);
