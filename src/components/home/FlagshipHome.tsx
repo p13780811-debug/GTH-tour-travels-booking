@@ -128,7 +128,7 @@ export default function FlagshipHome() {
             </span>
           </Link>
           <nav className={styles.topNav} aria-label="GTH PRO platforms">
-            <Link href="/mega-aggregator" className={styles.ecosystemLink}>Ecosystem <ArrowUpRight size={15}/></Link>
+            <Link href="/mega-aggregator" className={styles.ecosystemLink}>Global Gateway <ArrowUpRight size={15}/></Link>
             <Link href="/intelligence">Decision Desk</Link>
             <Link href="/real-estate">Real Estate</Link>
             <Link href="/travel">Travel</Link>
@@ -173,11 +173,11 @@ export default function FlagshipHome() {
 
       {/* Direct, static entry points remain reachable on mobile even when the
           flagship route hides the global bottom bar. No data is fetched. */}
-      <section aria-label="Super App and Research Desk shortcuts"
+      <section aria-label="GTH PRO Home and Research Desk shortcuts"
         className="relative z-10 border-y border-[var(--flag-edge)] bg-[var(--flag-navy)] px-3 py-3 sm:py-4">
         <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 sm:gap-3">
           <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
-            Open Super App <ArrowUpRight size={16} aria-hidden="true"/>
+            Open GTH PRO Home <ArrowUpRight size={16} aria-hidden="true"/>
           </Link>
           <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--flag-edge)] px-2 py-3 text-center text-xs font-bold text-[var(--flag-gold)] sm:text-sm">
             My Research Desk <ArrowUpRight size={16} aria-hidden="true"/>
