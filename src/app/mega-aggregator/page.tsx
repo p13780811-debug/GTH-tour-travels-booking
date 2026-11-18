@@ -18,7 +18,7 @@ const supabase = createClient(
 )
 export const revalidate = 3600
 export const metadata = {
-    title: "GTH PRO | Global Travel, Real Estate, Tender & Tickets Ecosystem",
+    title: "GTH PRO Global Gateway | Travel, Real Estate, Tenders & Tickets",
     description: "GTH PRO connects international travel discovery, real estate intelligence and tender opportunity research in one four-pillar global ecosystem.",
     alternates: { canonical: "/mega-aggregator" },
     keywords: ["GTH PRO", "global travel", "flights", "hotels", "tours", "real estate", "tender intelligence", "worldwide tickets", "stadium events"],
@@ -74,10 +74,10 @@ export default async function MegaAggregator() {
             <div className="relative z-30 mx-auto -mt-10 w-full max-w-7xl px-3 pb-6 sm:-mt-12 sm:px-6 xl:-mt-24">
                 <EcosystemUnifiedSearch />
             </div>
-            <nav aria-label="Super App access and Research Desk"
+            <nav aria-label="GTH PRO Home and Research Desk"
                 className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 px-3 pb-5 sm:gap-3 sm:px-6">
                 <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
-                    Open Super App
+                    Open GTH PRO Home
                 </Link>
                 <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-2 py-3 text-center text-xs font-bold text-[var(--text)] sm:text-sm">
                     My Research Desk
