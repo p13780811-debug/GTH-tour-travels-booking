@@ -126,6 +126,17 @@ try{
  assert.equal(target.origin,origin);
  assert.equal(target.pathname,"/go/transport/search");
  assert.equal(target.searchParams.get("to"),"Dubai");
+ // Verify the outbound affiliate redirect BEFORE the supplier can consume
+ // or clean tracking parameters in its own visible URL.
+ const handoffResponse=await fetch(target,{redirect:"manual"});
+ assert.equal(handoffResponse.status,303);
+ const outbound=new URL(handoffResponse.headers.get("location"));
+ assert.equal(outbound.origin,"https://12go.asia");
+ assert.equal(outbound.pathname,"/en/flights/mumbai/dubai");
+ assert.equal(outbound.searchParams.get("date"),"2026-12-10");
+ assert.equal(outbound.searchParams.get("people"),"1");
+ assert.equal(outbound.searchParams.get("z"),"17380992");
+ assert.match(handoffResponse.headers.get("cache-control")||"",/no-store/);
  const alternate=new URL(await page.getByRole("link",{name:"Advanced flight search",exact:true}).getAttribute("href"));
  assert.equal(alternate.hostname,"www.aviasales.com");
  assert.equal(alternate.searchParams.get("destination"),"DXB");
@@ -136,7 +147,7 @@ try{
  assert.equal(supplier.origin,"https://12go.asia");
  assert.equal(supplier.pathname,"/en/flights/mumbai/dubai");
  assert.equal(supplier.searchParams.get("date"),"2026-12-10");
- assert.equal(supplier.searchParams.get("z"),"17380992");
+ // Supplier may strip the public affiliate parameter after attribution.
  await bookingPage.close();
  await page.goto(origin+"/travel?travelMode=experiences&"+trip,{waitUntil:"networkidle"});await page.locator("[data-experience-product]").first().waitFor();
  await page.locator('input[name="tripVisitDate"]').fill("2026-12-20");await page.getByRole("button",{name:"Find experiences",exact:true}).click();await page.waitForURL(url=>url.searchParams.get("tripVisitDate")==="2026-12-20");assert.match(page.url(),/tripEnd=2026-12-14/);
