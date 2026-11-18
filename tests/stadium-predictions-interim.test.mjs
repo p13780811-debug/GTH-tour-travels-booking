@@ -75,3 +75,13 @@ test("Google search fallback is separate from official inventory and cannot be d
     assert.doesNotMatch(read(path), /NEXT_PUBLIC_ODDS_API_KEY|NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   }
 });
+
+test("Unapplied prediction schema cannot generate ANY Supabase reads or paid API refreshes", () => {
+  const seo = read("src/lib/stadium-predictions/seo.ts");
+  assert.match(seo, /GTH_STADIUM_PREDICTIONS_DB_ENABLED !== "true"/);
+  assert.match(feed, /GTH_STADIUM_PREDICTIONS_DB_ENABLED !== "true"/);
+  assert.match(engine, /GTH_STADIUM_PREDICTIONS_DB_ENABLED !== "true"/);
+  assert.match(engine, /"database-activation-pending"/);
+  const vercel = JSON.parse(read("vercel.json"));
+  assert.equal(vercel.crons?.some(x => x.path === "/api/cron/stadium-predictions") ?? false, false);
+});
