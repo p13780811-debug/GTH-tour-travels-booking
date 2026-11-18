@@ -53,3 +53,15 @@ test("server-side source validation remains strict and partial rejection counted
   assert.match(edge,/jwtVerify/);
   assert.match(edge,/rejected,source:"OpenStreetMap"/);
 });
+
+test("authentic supplier card IDs receive future stay defaults only when dates were omitted",()=>{
+ const nearby=read("src/components/hotel/NearbyHotelDiscovery.tsx");
+ const widget=read("src/components/hotel/NuiteeHotelsListWidget.tsx");
+ assert.match(nearby,/resolveHotelDates\(undefined,undefined\)/);
+ assert.match(nearby,/hotelWhiteLabelUrl\(\{hotelId:hotel\.id,checkin:dates\.checkin/);
+ assert.match(nearby,/bookingError=invalid-stay/);
+ assert.match(widget,/deepLinkParams=new URLSearchParams/);
+ assert.match(widget,/safeBookingPicker=hotelWhiteLabelSearchUrl/);
+ assert.match(widget,/HotelsList\.create\(options\)/);
+ assert.doesNotMatch(nearby+widget,/style=\{|<style|NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+});

@@ -3,7 +3,8 @@ import {useEffect,useRef,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import {MapPin,ArrowUpRight,RotateCcw} from "lucide-react";
 import HotelPropertyImage from "./HotelPropertyImage";
-import {HOTEL_BOOKING_ORIGIN,hotelWhiteLabelUrl,parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
+import {hotelWhiteLabelUrl,parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
+import {resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import type {HotelProfile} from "@/lib/travel/nuitee-free-hotels";
 type Discovery={scope:{country:string;city:string;page:number};countries:{code:string;name:string}[];nearby:HotelProfile[];items:HotelProfile[];hasMore:boolean;available:boolean;partial?:boolean};
@@ -42,7 +43,13 @@ export default function NearbyHotelDiscovery({currency,onCountry,initialArea,sta
     fields.delete("placeId");fields.set("hotelId",hotel.id);
     const restored=ambiguous?null:parseHotelBookingSearch(fields);
     if(restored)return hotelWhiteLabelUrl({...restored,placeId:undefined,hotelId:hotel.id,currency:selectedCurrency});
-    const url=new URL("/hotels/"+encodeURIComponent(hotel.id),HOTEL_BOOKING_ORIGIN);url.search=new URLSearchParams({language:"en",currency:selectedCurrency}).toString();return url.toString();
+    // A supplier hotel card keeps its ID with tomorrow/one-night defaults.
+    // Do not silently overwrite malformed stay details a guest selected.
+    if(ambiguous||["checkin","checkout","occupancies","adults","rooms"].some(key=>fields.has(key)))
+      return "/hotels?view=booking&bookingError=invalid-stay";
+    const dates=resolveHotelDates(undefined,undefined);
+    return hotelWhiteLabelUrl({hotelId:hotel.id,checkin:dates.checkin,
+      checkout:dates.checkout,occupancies:[{adults:2,children:[]}],currency:selectedCurrency});
   };
   const name=data?.countries.find(item=>item.code===data.scope.country)?.name||data?.scope.country;
   const cards=(items:HotelProfile[])=> <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">{items.map(hotel=><article key={hotel.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
