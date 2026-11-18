@@ -45,10 +45,10 @@ test("verified city gets exact provider Place ID, default dates and encoded room
  assert.equal(url.searchParams.get("placeId"),"ChIJwe1EZjDG5zsRaYxkjY_tpF0");
  assert.equal(url.searchParams.get("checkin"),plus(1));
  assert.equal(url.searchParams.get("checkout"),plus(2));
- assert.equal(url.searchParams.get("adults"),"6");
+ assert.equal(url.searchParams.get("adults"),"3");
  assert.equal(url.searchParams.get("rooms"),"2");
  assert.deepEqual(JSON.parse(atob(url.searchParams.get("occupancies"))),
-  [{adults:3,children:[]},{adults:3,children:[]}]);
+  [{adults:2,children:[]},{adults:1,children:[]}]);
  assert.equal(result.datesDefaulted,true);
 });
 
@@ -93,6 +93,7 @@ test("no invented place IDs, provider API calls, or dangerous redirect parameter
   {hotelId:"//evil.example"},{hotelId:"lp1234?redirect=https://evil.example"},
   {hotelId:"<script>"},{destination:"Mumbai",placeId:"../malicious"},
   {hotelId:"lp1234567",occupancies:[{adults:0,children:[]}]},
+  {hotelId:"lp1234567",adults:2,rooms:3},
  ])assert.equal(router.resolveHotelRoute(intent,fixed).status,"invalid");
  const source=read("src/lib/travel/hotel-routing.ts");
  assert.doesNotMatch(source,/\bfetch\s*\(|\baxios\b|api\.liteapi|NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
