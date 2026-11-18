@@ -25,7 +25,7 @@ import HotelDiscoveryShowcase from "@/components/hotel/HotelDiscoveryShowcase";
 import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacement";
 import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
-import {hotelSearchParams} from "@/lib/travel/hotel-search-params";
+import {hotelSearchParams,validatedHotelStay} from "@/lib/travel/hotel-search-params";
 import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
 import styles from "./HotelsLanding.module.css";
 
@@ -294,9 +294,21 @@ function HotelsContent() {
             setDateError("Enter a valid city or destination first.");
             return;
         }
+        if(Boolean(checkin)!==Boolean(checkout)){
+            setDateError("Choose both check-in and check-out dates, or leave both blank.");
+            return;
+        }
+        const stay=checkin?validatedHotelStay(checkin,checkout,String(guests)):null;
+        if(checkin&&!stay){setDateError("Choose valid future hotel stay dates (1–90 nights).");return;}
+        if(!Number.isInteger(guests)||guests<1||guests>20){
+            setDateError("Choose 1–20 adult guests.");
+            return;
+        }
         const checkedProvider=trackedHotelCityHref(city);
         if(checkedProvider){window.location.assign(checkedProvider);return;}
         const next=new URLSearchParams({view:"booking",city,currency});
+        if(stay){next.set("checkin",stay.checkin);next.set("checkout",stay.checkout);}
+        next.set("adults",String(guests));
         router.push("/hotels?"+next.toString()+"#hotel-booking-experience");
     };
 
