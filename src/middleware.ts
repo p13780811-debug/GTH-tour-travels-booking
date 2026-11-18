@@ -1,10 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { hotelSupplierPathRedirect } from "@/lib/travel/hotel-whitelabel";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 export function middleware(_request: NextRequest) {
   // Recover supplier hotel IDs before the local city-guide router treats them as slugs.
-  const hotelDestination = hotelSupplierPathRedirect(_request.nextUrl.pathname, _request.nextUrl.searchParams);
+  const params=_request.nextUrl.searchParams;
+  const supplierHotel=_request.nextUrl.pathname.match(/^\/hotels\/(?:stay\/)?(lp[0-9a-f]{5,32})\/?$/);
+  // Date-free supplier ID links must not lose their exact hotel identity.
+  // Leave complete legacy encoded occupancy links to the original validator.
+  const canDefault=supplierHotel && !params.has("occupancies") &&
+    ["checkin","checkout","adults","rooms","currency"].every(key=>params.getAll(key).length<=1);
+  const supplierResult=canDefault?resolveHotelRoute({
+    hotelId:supplierHotel[1],checkIn:params.get("checkin")??undefined,
+    checkOut:params.get("checkout")??undefined,
+    adults:params.get("adults")??undefined,rooms:params.get("rooms")??undefined,
+    currency:params.get("currency")??undefined,
+  }):null;
+  const hotelDestination = supplierResult?.status==="ready" ? supplierResult.url :
+    hotelSupplierPathRedirect(_request.nextUrl.pathname, params);
   if (hotelDestination) {
     const response = NextResponse.redirect(new URL(hotelDestination, _request.url), 307);
     response.headers.set("Cache-Control", "no-store");
