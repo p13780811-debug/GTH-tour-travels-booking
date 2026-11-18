@@ -42,7 +42,7 @@ test("Odds may run without SeatGeek only for exact organizer-reviewed cricket fi
   assert.match(engine, /sportTagsMatch\(e, sport\)/);
   assert.match(fixtures, /APPROVED/);
   assert.match(fixtures, /item\.label === entry\.label/);
-  assert.match(fixtures, /venue\.sports\.includes\("Cricket"\)/);
+  assert.match(fixtures, /s\.sports\.includes\("Cricket"\)/);
   assert.match(engine, /MAX_ODDS_REQUESTS_PER_RUN = 2/);
   assert.match(engine, /reserve\(db, "odds", month, 5, MAX_ODDS_MONTH\)/);
   assert.match(engine, /MAX_ODDS_MONTH = 300/);
