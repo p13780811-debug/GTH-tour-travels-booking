@@ -15,6 +15,19 @@ const VERIFIED_CITY_IDS: Readonly<Record<string, string>> = {
   "mumbai": "ChIJwe1EZjDG5zsRaYxkjY_tpF0",
   "london": "ChIJdd4hrwug2EcRmSrV3Vo6llI",
 };
+/** Known travel destinations awaiting exact Place ID verification.
+ * Unknown locations also work via provider search; none of these entries
+ * claim a verified ID or guaranteed available inventory.
+ */
+export const CITY_SEARCH_FALLBACKS = [
+  "goa", "delhi", "new delhi", "jaipur", "bengaluru", "bangalore",
+  "kolkata", "chennai", "hyderabad", "kochi", "cochin", "pune",
+  "ahmedabad", "varanasi", "udaipur", "dubai", "abu dhabi",
+  "singapore", "bangkok", "phuket", "bali", "denpasar",
+  "paris", "new york", "tokyo", "kuala lumpur", "hong kong",
+  "sydney", "melbourne", "rome", "barcelona", "amsterdam",
+] as const;
+
 const genericWords = /\b(?:hotels?|stays?|resorts?|accommodations?|lodgings?|rooms?|find|search|book|booking|best|cheap|top|in|near|at|around|for)\b/giu;
 const days = 86_400_000;
 const dateText = (value: Date) =>
@@ -70,18 +83,29 @@ export type HotelRouteIntent = {
 };
 export type HotelRouteResolution =
   | {status: "ready"; kind: "hotel" | "city"; url: string; destination?: string; datesDefaulted: boolean}
-  | {status: "unmapped"; kind: "city"; destination: string; url: string}
+  | {status: "unmapped"; kind: "city"; destination: string; url: string; datesDefaulted: boolean}
   | {status: "invalid"; kind: "hotel" | "city"};
 
 /** A supplier-hosted destination picker for cities without an approved Place ID.
  * The official White Label listing route accepts no arbitrary city-name param.
  * Never add an unverified placeId or pretend this link is a city results page.
  */
-export function hotelWhiteLabelSearchUrl(currency?: string): string {
-  const url = new URL("/hotels", HOTEL_BOOKING_ORIGIN);
+export function hotelWhiteLabelSearchUrl(currency?: string, stay?: {
+  checkin: string; checkout: string; occupancies: HotelOccupancy[];
+}): string {
+  // /hotels is the supplier results route and requires a verified placeId.
+  // The root is the supplier-operated destination search (not empty results).
+  const url = new URL("/", HOTEL_BOOKING_ORIGIN);
   url.searchParams.set("language", "en");
   url.searchParams.set("currency",
     ["INR","USD","EUR","GBP","AED","SGD","AUD","CAD","JPY"].includes(currency ?? "") ? currency! : "INR");
+  if(stay) {
+    url.searchParams.set("checkin",stay.checkin);
+    url.searchParams.set("checkout",stay.checkout);
+    url.searchParams.set("occupancies",btoa(JSON.stringify(stay.occupancies)));
+    url.searchParams.set("adults",String(stay.occupancies.reduce((n,room)=>n+room.adults,0)));
+    url.searchParams.set("rooms",String(stay.occupancies.length));
+  }
   return url.toString();
 }
 
@@ -98,9 +122,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   if (intent.placeId !== undefined && !safeId(intent.placeId, 255)) return {status:"invalid",kind};
   const placeId = safeId(intent.placeId, 255) ??
     (destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null);
-  if (kind === "city" && !placeId) return destination
-    ? {status: "unmapped", kind, destination, url: hotelWhiteLabelSearchUrl(intent.currency)}
-    : {status: "invalid", kind};
+  if (kind === "city" && !placeId && !destination) return {status: "invalid", kind};
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);
   const adults = positive(intent.adults, 20, 2);
   const rooms = positive(intent.rooms, 8, 1);
@@ -116,6 +138,11 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
     }));
   const currency = ["INR","USD","EUR","GBP","AED","SGD","AUD","CAD","JPY"].includes(intent.currency ?? "")
     ? intent.currency! : "INR";
+  if(kind==="city" && !placeId) {
+    return {status:"unmapped",kind,destination:destination!,
+      url:hotelWhiteLabelSearchUrl(currency,{checkin:dates.checkin,checkout:dates.checkout,occupancies}),
+      datesDefaulted:dates.defaulted};
+  }
   const search: HotelBookingSearch = {
     ...(hotelId ? {hotelId} : {placeId: placeId!}),
     checkin: dates.checkin, checkout: dates.checkout, occupancies, currency,
@@ -133,7 +160,6 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
  * own destination search interface; no on-site OSM search is forced.
  */
 export function unverifiedHotelDestinationHref(destination: string, currency?: string): string {
-  return cleanHotelDestination(destination)
-    ? hotelWhiteLabelSearchUrl(currency)
-    : "/hotels?view=booking";
+  const result=resolveHotelRoute({destination,currency});
+  return result.status==="invalid" ? hotelWhiteLabelSearchUrl(currency) : result.url;
 }
