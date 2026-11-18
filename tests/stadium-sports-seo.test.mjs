@@ -55,7 +55,8 @@ test("Affiliate handoffs preserve existing route and date validation flows", () 
   assert.match(detail, /safeHotelHandoff\(venue\)/);
   assert.match(detail, /href="\/bus"/);
   assert.match(detail, /href="\/train"/);
-  assert.match(detail, /href=\{toursHref\}/);
+  assert.doesNotMatch(detail, /href=\{toursHref\}/);
+  assert.match(detail, /href="\/transfers"/);
   assert.doesNotMatch(detail, /\/go\/transport\/search\?/);
   assert.match(source, /seatgeek\.com/);
   assert.match(source, /url\.username \|\| url\.password \|\| url\.search \|\| url\.hash/);
