@@ -27,7 +27,7 @@ test("Booking intent stays with Nuitee and only an explicitly chosen directory u
  assert.match(hotel,/name="view" value="booking"/);
  assert.match(mobile,/query\.directory==="1"\|\|query\.view==="directory"/);
  assert.match(provider,/hotelWhiteLabelUrl/);
- assert.match(provider,/Choose the destination in the genuine worldwide hotel search below/);
+ assert.match(provider,/needsExplicitDestination/); assert.match(provider,/setExplicitDestinationPicker\(true\)/);
  assert.doesNotMatch(provider,/NEXT_PUBLIC_NUITEE.*API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
 });
 
