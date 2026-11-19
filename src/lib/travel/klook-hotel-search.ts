@@ -1,39 +1,70 @@
 import {trackKlookDestination} from "./partner-search";
 import {resolveHotelRoute,cleanHotelDestination} from "./hotel-routing";
 
-/** Destination-specific hotel pages observed on the real Klook website.
- * A Klook general search query is NOT proof of a matched city/hotel listing.
- * Add a destination only after verifying its exact Hotels-category URL.
+/**
+ * Verified Klook HOTEL-category destination identifiers, not attraction pages
+ * or guessed search IDs. Every recorded path is an existing Klook hotel list.
+ * Maintain this one catalog for all hotel CTAs (guides, quick-search and cards).
+ *
+ * The resolver itself is dynamic for any user supplied destination. Add newly
+ * verified supplier IDs here, never fork city-specific routing into components.
  */
 const VERIFIED_HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
-  goa:"https://www.klook.com/destination/c178-goa/3-hotel/",
-  dubai:"https://www.klook.com/en-IN/destination/c78-dubai/3-hotel/",
+  "goa":"c178-goa",
+  "dubai":"c78-dubai",
+  "tokyo":"c28-tokyo",
+  "singapore":"c6-singapore",
+  "paris":"c107-paris",
+  "london":"c106-london",
+  "bangkok":"c4-bangkok",
+  "rome":"c92-rome",
+  "new york":"c93-new-york",
+  "mumbai":"c132-mumbai",
+  "kolkata":"c271-kolkata",
+  "chennai":"c274-chennai",
+  "hyderabad":"c252-hyderabad",
+  "ahmedabad":"c303-ahmedabad",
+  "jaipur":"c149-jaipur",
+  "new delhi":"c145-delhi",
+  "bali":"c8-bali",
 };
-
+const DESTINATION_ALIASES:Readonly<Record<string,string>>={
+  "delhi":"new delhi",
+};
+function cityKey(value:unknown):string|null{
+  // Normalize human names/slugs to one canonical key, with NO arbitrary URLs.
+  if(typeof value!=="string")return null;
+  const city=cleanHotelDestination(value.replace(/-/g," "));
+  if(!city)return null;
+  const key=city.toLocaleLowerCase("en");
+  return Object.prototype.hasOwnProperty.call(DESTINATION_ALIASES,key)
+    ?DESTINATION_ALIASES[key]:key;
+}
 export function trackedHotelCityHref(value:unknown):string|null{
-  const destination=cleanHotelDestination(value);
-  if(!destination)return null;
-  const key=destination.toLocaleLowerCase("en");
-  const href=Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,key)
-    ?VERIFIED_HOTEL_DESTINATIONS[key]:undefined;
-  if(!href)return null;
-  return trackKlookDestination(new URL(href),"gth_hotels_"+key.replace(/ /g,"_"));
+  const key=cityKey(value);
+  if(!key||!Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,key))return null;
+  const canonical=VERIFIED_HOTEL_DESTINATIONS[key];
+  const url=new URL("https://www.klook.com/destination/"+canonical+"/3-hotel/");
+  const subId="gth_hotels_"+key.replace(/[^a-z0-9]+/g,"_");
+  return trackKlookDestination(url,subId);
 }
 
-/** Single zero-API city handoff used by vetted destination cards.
- * 1. Actual reviewed Nuitee Place ID -> supplier results.
- * 2. Reviewed Klook Hotels-category destination -> tracked Hotels page.
- * 3. Unknown city -> genuine Nuitee SearchBar with validated city hint.
- * No guessed provider placeId, propertyId, category URL or fake availability.
+/**
+ * Canonical destination routing for every GTH hotel card/search CTA:
+ * 1) Supplier-reviewed Nuitee Place ID -> exact supplier city results;
+ * 2) Independently reviewed Klook Hotels-category URL -> city hotel listing;
+ * 3) All other cities -> original Nuitee SearchBar, with typed city intent.
+ *
+ * A paid places-lookup API is intentionally NOT used. The search fallback is
+ * not misrepresented as an exact listing, and never invents a supplier ID.
  */
 export function destinationHotelHref(value:unknown):string|null{
-  const city=cleanHotelDestination(value);
-  if(!city)return null;
-  const route=resolveHotelRoute({destination:city});
+  const key=cityKey(value);
+  if(!key)return null;
+  const route=resolveHotelRoute({destination:key});
   if(route.status==="ready")return route.url;
-  // Unknown destinations must use genuine supplier selection; never guess Place IDs.
-  const reviewedAlternative=trackedHotelCityHref(city);
-  if(reviewedAlternative)return reviewedAlternative;
-  const params=new URLSearchParams({view:"booking",city});
+  const exact=trackedHotelCityHref(key);
+  if(exact)return exact;
+  const params=new URLSearchParams({view:"booking",city:cleanHotelDestination(value.replace(/-/g," "))||key});
   return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }
