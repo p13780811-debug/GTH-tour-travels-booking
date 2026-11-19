@@ -65,6 +65,7 @@ export function destinationHotelHref(value:unknown):string|null{
   if(route.status==="ready")return route.url;
   const exact=trackedHotelCityHref(key);
   if(exact)return exact;
-  const params=new URLSearchParams({view:"booking",city:cleanHotelDestination(value.replace(/-/g," "))||key});
+  const original=typeof value==="string"?value.replace(/-/g," "):key;
+  const params=new URLSearchParams({view:"booking",city:cleanHotelDestination(original)||key});
   return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }
