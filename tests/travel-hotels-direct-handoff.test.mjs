@@ -48,8 +48,8 @@ test("Goa and Dubai Travel handoff opens hotel-only affiliate category, not seco
  }
 });
 
-test("Unknown city goes straight to genuine Nuitee destination picker preserving valid dates, never fake inventory",()=>{
- const target=new URL(booking.connectedHotelBookingHref({...base,city:"Kolkata"}));
+test("Unmapped city goes to genuine Nuitee destination picker preserving valid dates, never fake inventory",()=>{
+ const target=new URL(booking.connectedHotelBookingHref({...base,city:"Sydney"}));
  assert.equal(target.origin,"https://hotel.gthproglobal.com");
  assert.equal(target.pathname,"/");
  assert.equal(target.searchParams.get("checkin"),base.start);
@@ -58,7 +58,11 @@ test("Unknown city goes straight to genuine Nuitee destination picker preserving
 });
 
 test("Missing dates allow genuine provider discovery; invalid, partial and stale dates never redirect",()=>{
- assert.equal(new URL(booking.connectedHotelBookingHref({...base,start:"",end:""})).origin,"https://hotel.gthproglobal.com");
+ const noDate=new URL(booking.connectedHotelBookingHref({...base,start:"",end:""}));
+ assert.equal(noDate.origin,"https://tp.media");
+ assert.equal(noDate.searchParams.get("marker"),"417668");
+ assert.equal(new URL(noDate.searchParams.get("u")).pathname,"/destination/c132-mumbai/3-hotel/");
+ assert.equal(new URL(noDate.searchParams.get("u")).searchParams.has("checkin"),false);
  assert.equal(booking.connectedHotelBookingHref({...base,start:"",end:base.end}),null);
  assert.equal(booking.connectedHotelBookingHref({...base,start:dayOffset(-2),end:dayOffset(2)}),null);
  assert.equal(booking.connectedHotelBookingHref({...base,adults:0}),null);
