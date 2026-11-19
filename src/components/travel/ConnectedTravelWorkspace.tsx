@@ -44,7 +44,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
  const readyFlight=(!oneWay&&!draft.end)?null:(twelveGoHref||aviaHref);
  const alternateFlightHref=aviaHref||"/flights";
  const activeTrip=parsed.ok?parsed.trip:trip;
- const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===activeTrip.country)?.name;
+ const stayQuery=connectedHotelStay(activeTrip),countryName=countries.find(item=>item.code===activeTrip.country)?.name;
  const directHotelHref=parsed.ok?connectedHotelBookingHref(parsed.trip):null;
  const edit=(change:Partial<ConnectedTrip>)=>setDraft(current=>({...current,...change}));
  function apply(afterHandoff=false){
@@ -119,15 +119,15 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
       </Link>
     </div>
     <div className={styles.hotelContent} data-travel-hotel-booking="supplier-search">
-      {trip.city&&<p className={styles.message}>Your planned destination is {trip.city}. Select the matching location in the worldwide hotel search below. No unverified destination ID will be guessed.</p>}
+      {activeTrip.city&&<p className={styles.message}>Your planned destination is {activeTrip.city}. Select the matching location in the worldwide hotel search below. No unverified destination ID will be guessed.</p>}
       {/* Keep the supplier widget mounted across tab switches to preserve SDK state. */}
-      <HotelBookingExperience currency={trip.currency}/>
+      <HotelBookingExperience currency={activeTrip.currency}/>
     </div>
     <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}>
       <summary>Optional: explore local hotel suggestions <ArrowUpRight size={15} aria-hidden="true"/></summary>
       {advanced&&<div className={styles.hotelContent}>
-        <NearbyHotelDiscovery key={trip.country+":"+trip.city} currency={trip.currency}
-          onCountry={setDetectedCountry} initialArea={trip.country?{country:trip.country,city:trip.city}:undefined}
+        <NearbyHotelDiscovery key={activeTrip.country+":"+activeTrip.city} currency={activeTrip.currency}
+          onCountry={setDetectedCountry} initialArea={activeTrip.country?{country:activeTrip.country,city:activeTrip.city}:undefined}
           stayQuery={stayQuery} showAreaForm={false}/>
       </div>}
     </details>
