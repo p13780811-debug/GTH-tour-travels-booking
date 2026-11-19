@@ -94,6 +94,21 @@ try{
  assert.equal(supplierHotel.searchParams.get("currency"),"USD");
  assert.deepEqual(JSON.parse(atob(supplierHotel.searchParams.get("occupancies"))).map(x=>x.adults),[2,2]);
  assert.ok(!supplierHotel.searchParams.has("city"),"Never invent a supplier placeId from a typed city");
+ // Desktop must open exactly the same hosted supplier results (not embed another GTH results page).
+ const wide=await browser.newPage({viewport:{width:1440,height:900}});
+ wide.on("pageerror",error=>errors.push(error.message));
+ await wide.context().route("**/*",route);
+ await wide.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
+ const wideSupplier=wide.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]');
+ await wideSupplier.getByText("Isolated hotel search fixture").waitFor();
+ await wideSupplier.getByRole("button",{name:"Find rooms fixture",exact:true}).click();
+ await wide.waitForURL(url=>url.hostname==="hotel.gthproglobal.com"&&url.pathname==="/hotels");
+ const desktopHotel=new URL(wide.url());
+ assert.equal(desktopHotel.searchParams.get("placeId"),supplierHotel.searchParams.get("placeId"));
+ assert.equal(desktopHotel.searchParams.get("checkin"),supplierHotel.searchParams.get("checkin"));
+ assert.equal(desktopHotel.searchParams.get("checkout"),supplierHotel.searchParams.get("checkout"));
+ assert.equal(desktopHotel.searchParams.get("occupancies"),supplierHotel.searchParams.get("occupancies"));
+ await wide.close();
  await page.goto(origin+"/travel?"+trip.replace("tripCountry=IN&tripCity=Mumbai","tripCountry=GB&tripCity=London"),{waitUntil:"networkidle"});
  await page.getByRole("heading",{name:"Around London",exact:true}).waitFor();assert.match(page.url(),/tripCity=London/);
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
