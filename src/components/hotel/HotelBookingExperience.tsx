@@ -32,7 +32,7 @@ function subscribeResultsViewport(onChange: () => void) {
 function resultsViewportSnapshot() { return window.matchMedia(embeddedResultsMedia).matches; }
 function serverResultsViewportSnapshot() { return false; }
 
-export default function HotelBookingExperience({ searchPath = "/hotels", currency = "INR" }: { searchPath?: "/hotels" | "/app/hotels";currency?:string }) {
+export default function HotelBookingExperience({ searchPath = "/hotels", currency = "INR", directHandoff = false }: { searchPath?: "/hotels" | "/app/hotels";currency?:string;directHandoff?:boolean }) {
   const displayCurrency=hotelCurrency(currency);
   const router = useRouter();
   const embedResults = useSyncExternalStore(subscribeResultsViewport, resultsViewportSnapshot, serverResultsViewportSnapshot);
@@ -107,7 +107,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
     }
     const stay = parseHotelBookingSearch(params);
     if (!stay) return;
-    if (!window.matchMedia(embeddedResultsMedia).matches) {
+    if (directHandoff || !window.matchMedia(embeddedResultsMedia).matches) {
       // Same-tab navigation gives the supplier the actual phone viewport and
       // leaves Back pointing to the search, rather than a redirect loop.
       window.location.assign(hotelWhiteLabelUrl(stay));
@@ -118,7 +118,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
     scrollToResults.current = true;
     setError(""); setBookingQuery(value); setShowSearch(false);
     router.replace(`${searchPath}?view=booking&${value}`, { scroll: false });
-  }, [router, searchPath, displayCurrency]);
+  }, [router, searchPath, displayCurrency, directHandoff]);
 
   const loadSearch = useCallback(async () => {
     const frame = searchFrame.current, doc = frame?.contentDocument;
