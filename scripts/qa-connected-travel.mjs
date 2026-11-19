@@ -37,6 +37,13 @@ try{
   const page=await browser.newPage({viewport:{width,height:width<768?844:1000}});page.on("pageerror",error=>errors.push(error.message));
   await page.context().route("**/*",route);await page.addInitScript(t=>localStorage.setItem("theme-mode",t),theme);
   await page.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
+ await page.getByRole("navigation",{name:"Choose your travel service"}).waitFor();
+ for(const path of ["/travel?travelMode=hotels#travel-search","/travel?travelMode=flights#travel-search","/travel?travelMode=experiences#travel-search","/bus#journey-search","/train#journey-search","/ferry#journey-search"]){
+  assert.equal(await page.locator('#travel-gateway-quick-links a[href="'+path+'"]').count(),1,"service-specific gateway route "+path);
+ }
+ assert.equal(await page.locator('#travel-gateway-quick-links a[href="/travel?travelMode=hotels&tripCountry=IN&tripCity=Mumbai#travel-search"]').count(),1);
+ assert.equal(await page.locator('#travel-gateway-quick-links a[href="/travel?travelMode=hotels&tripCountry=IN&tripCity=Kolkata#travel-search"]').count(),1);
+
   await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
   let discoveryBefore=hotelDiscovery;const rscBefore=travelRsc;
   await page.getByText("Optional: explore local hotel suggestions",{exact:true}).click();
@@ -107,8 +114,8 @@ try{
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
  await page.waitForURL(url=>url.searchParams.get("travelMode")==="experiences");
  await page.reload({waitUntil:"networkidle"});assert.equal(await page.getByRole("tab",{name:"Experiences",exact:true}).getAttribute("aria-selected"),"true");
- await page.locator('input[name="tripCity"]').fill("Tokyo");await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.equal(await page.locator('input[name="tripCity"]').inputValue(),"Tokyo");assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
- await page.locator('input[name="tripCity"]').fill("<script>");await page.getByRole("button",{name:"Find experiences"}).click();await page.locator('#travel-search [role="alert"]').waitFor();assert.match(page.url(),/tripCity=London/);
+ await page.locator('input[name="tripCity"]').fill("Tokyo");await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.equal(await page.locator('input[name="tripCity"]').inputValue(),"Tokyo");assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=Tokyo/);await page.waitForURL(url=>url.searchParams.get("tripCity")==="Tokyo"&&!url.searchParams.has("tripCountry"));
+ await page.locator('input[name="tripCity"]').fill("<script>");await page.getByRole("button",{name:"Find experiences"}).click();await page.locator('#travel-search [role="alert"]').waitFor();assert.match(page.url(),/tripCity=Tokyo/);
  await page.goto(origin+"/travel?tripCity=Dubai",{waitUntil:"networkidle"});
  await page.getByText(/Your planned destination is Dubai/).waitFor();
  await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
