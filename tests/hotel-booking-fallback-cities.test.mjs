@@ -38,7 +38,7 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
   }
 });
 test("Worldwide routing preserves exact booking kind, never invents a Klook hotel result",()=>{
- const known=["Goa","Dubai"];
+ const known=["Goa","Dubai","Tokyo","Singapore","Paris","Bangkok","Rome","New York","Kolkata","Chennai","Hyderabad","Ahmedabad","Jaipur","New Delhi","Bali"];
  for(const city of known){
    const url=hotels.destinationHotelHref(city);
    assert.ok(url);
@@ -54,7 +54,7 @@ test("Worldwide routing preserves exact booking kind, never invents a Klook hote
    assert.equal(new URL(target).pathname,"/hotels");
  }
  // No fake Klook category, supplier placeId or hotel match for unverified cities.
- for(const city of ["Singapore","Tokyo","Kolkata","Paris","Abu Dhabi","Sydney"]){
+ for(const city of ["Abu Dhabi","Sydney","Digha"]){
    assert.equal(hotels.trackedHotelCityHref(city),null);
    const href=hotels.destinationHotelHref(city);
    assert.match(href,/^\/hotels\?view=booking&city=/);
@@ -70,4 +70,39 @@ test("No invented city, arbitrary affiliate destination or fake exact hotel matc
   assert.match(page,/Search bookable hotels/);
   assert.match(page,/Search OSM directory/);
   assert.match(page,/The independent hotel directory did not respond/);
+});
+
+test("Every reviewed city routes to its own exact hotel list with preserved affiliate attribution",()=>{
+ const expected={
+  Tokyo:"c28-tokyo",Singapore:"c6-singapore",Paris:"c107-paris",
+  Bangkok:"c4-bangkok",Rome:"c92-rome","New York":"c93-new-york",
+  Kolkata:"c271-kolkata",Chennai:"c274-chennai",Hyderabad:"c252-hyderabad",
+  Ahmedabad:"c303-ahmedabad",Jaipur:"c149-jaipur",
+  "New Delhi":"c145-delhi",Bali:"c8-bali",Goa:"c178-goa",Dubai:"c78-dubai",
+ };
+ for(const [city,code] of Object.entries(expected)){
+  const link=hotels.destinationHotelHref(city);
+  const url=new URL(link);
+  assert.equal(url.origin,"https://tp.media");
+  assert.equal(url.searchParams.get("marker"),"417668");
+  assert.equal(url.searchParams.get("campaign_id"),"137");
+  assert.equal(url.searchParams.get("trs"),"504342");
+  const supplier=new URL(url.searchParams.get("u"));
+  assert.equal(supplier.host,"www.klook.com");
+  assert.ok(supplier.pathname.endsWith("/destination/"+code+"/3-hotel/"),
+   city+" must lead to its actual hotel category, not tours/search");
+  assert.equal(supplier.searchParams.size,0);
+ }
+ assert.equal(hotels.destinationHotelHref("delhi"),hotels.destinationHotelHref("new-delhi"));
+ assert.equal(hotels.destinationHotelHref("new-york"),hotels.destinationHotelHref("new york"));
+});
+test("Hotel destination cards across the site use one resolver; Travel widget is not wrapped in a compact form",()=>{
+ const page=read("src/app/hotels/page.tsx");
+ const storefront=read("src/components/hotel/HotelDiscoveryShowcase.tsx");
+ const travel=read("src/components/travel/ConnectedTravelWorkspace.tsx");
+ assert.match(page,/href=\\{destinationHotelHref\\(place\\.city\\)/);
+ assert.doesNotMatch(page,/href=\\{"\\/hotels\\?"+new URLSearchParams/);
+ assert.match(storefront,/destinationHotelHref\\(place\\.city\\)/);
+ assert.match(travel,/<div data-gth-travel-hotel-supplier="direct"><HotelBookingExperience currency=\\{draft.currency\\} directHandoff \\/><\\/div>/);
+ assert.doesNotMatch(travel,/className=\\{styles\\.plan\\} data-gth-travel-hotel-supplier="direct"/);
 });
