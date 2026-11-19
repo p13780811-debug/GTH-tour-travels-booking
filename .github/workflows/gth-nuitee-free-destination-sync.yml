@@ -15,13 +15,13 @@ concurrency:
 jobs:
   countries-cities:
     # Explicit opt-in protects free-tier quotas and prevents surprise imports.
-    if: ${{ vars.GTH_NUITEE_DESTINATIONS_ENABLED == 'true' }
+    if: ${{ vars.GTH_NUITEE_DESTINATIONS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      NUITEE_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }
+      NUITEE_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       GTH_INGESTION_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
