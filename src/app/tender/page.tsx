@@ -212,22 +212,9 @@ export default async function TenderPage({searchParams}: Props) {
         </span>
         <span>{t("sourceLanguage")}</span>
       </div>
-      {result?.ok && result.snapshotStale && <p role="status" className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm text-[var(--text-soft)]">
-        Showing recently cached, source-backed notices while the catalogue refresh is unavailable. Confirm deadlines and updates on the official issuing authority website.
-      </p>}
       {error ? <div role="status" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
         <h3 className="font-semibold">{t("notConfigured")}</h3>
         <p className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{error}. {t("recheck")}</p>
-        <p className="mt-4 text-sm text-[var(--text-soft)]">You can continue searching original procurement notices directly while this catalogue recovers:</p>
-        <nav aria-label="Official tender source alternatives" className="mt-3 flex flex-wrap gap-3 text-sm">
-          {[
-            {href:"https://eprocure.gov.in/eprocure/app",label:"India government tenders"},
-            {href:"https://ted.europa.eu/en/",label:"European Union notices"},
-            {href:"https://sam.gov/opportunities",label:"United States opportunities"},
-            {href:"https://www.ungm.org/Public/Notice",label:"United Nations procurement"},
-          ].map(source=><a key={source.href} href={source.href} target="_blank" rel="noopener noreferrer nofollow"
-            className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4">{source.label} ↗</a>)}
-        </nav>
       </div> : notices.length ? (
         <>
           <div className="mt-7 grid gap-4 md:grid-cols-2">

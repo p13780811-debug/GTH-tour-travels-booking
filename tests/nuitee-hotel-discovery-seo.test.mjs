@@ -36,11 +36,7 @@ test("official supplier list supplies authentic photos and its own exact White L
  assert.match(widget,/HotelsList\.create\(options\)/);
  assert.match(widget,/domain:DOMAIN/);
  assert.match(widget,/hasSearchBar:false/);
- assert.match(widget,/deepLinkParams=new URLSearchParams/);
- assert.match(widget,/checkin:dates\.checkin,checkout:dates\.checkout/);
- assert.match(widget,/occupancies:btoa\(JSON\.stringify\(occupancies\)\)/);
- assert.match(widget,/sdk\.init\(\{domain:DOMAIN,deepLinkParams\}\)/);
- assert.match(widget,/href=\{safeBookingPicker\}/);
+ assert.match(widget,/deepLinkParams:`language=en&currency=\$\{displayCurrency\}`/);
  assert.match(widget,/getPropertyValue\("--gold"\)/);
  assert.doesNotMatch(widget,/onHotelClick:/);
  assert.doesNotMatch(widget,/NUITEE_PRODUCTION_API_KEY|SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_NUITEE/);

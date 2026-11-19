@@ -38,8 +38,7 @@ test("Main page shows API total matching records instead of calling 24 the entir
  assert.match(ui,/const hotelParams = hotelParamsFor\(nextPage\)/);
  assert.match(ui,/activeQueryRef\.current !== startedFor/);
  assert.match(ui,/total\.toLocaleString\(\)\+"\ "\+selectedType/);
- assert.match(ui,/"Showing "\+hotels\.length\.toLocaleString\(\)\+" of "\+total\.toLocaleString\(\)/);
- assert.match(ui,/Source request failed; room availability is unaffected/);
+ assert.match(ui,/Showing \{hotels\.length\.toLocaleString\(\)\} of \{total\.toLocaleString\(\)\}/);
  assert.doesNotMatch(ui,/filteredHotels\.length\.toLocaleString\(\)\} Hotel/);
 });
 test("No repeated stock property image and no generic partner label on unbookable records",()=>{

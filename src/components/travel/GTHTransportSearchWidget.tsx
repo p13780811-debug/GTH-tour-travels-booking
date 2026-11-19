@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, BusFront, Ship, TrainFront, PlaneTakeoff } from "lucide-react";
 import { findBookawayRoute } from "@/lib/travel/bookaway-routes";
 
@@ -22,17 +22,14 @@ const modes = [
   { mode: "flight" as const, label: "Flight", Icon: PlaneTakeoff },
 ];
 
-export default function GTHTransportSearchWidget({ mode, flightOnly = false }: { mode: TransportMode; flightOnly?: boolean }) {
+export default function GTHTransportSearchWidget({ mode }: { mode: TransportMode }) {
   const [activeMode, setActiveMode] = useState<TransportMode>(mode);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [invalidJourney, setInvalidJourney] = useState(false);
-  useEffect(() => { setInvalidJourney(new URLSearchParams(window.location.search).get("search") === "invalid"); }, []);
   // Never guess supplier routes. Only offer an alternate handoff where an
   // independently documented Bookaway route exists for this exact journey.
   const bookawayRoute = findBookawayRoute(activeMode, from, to);
-  const localNow = new Date();
-  const today = [localNow.getFullYear(),String(localNow.getMonth()+1).padStart(2,"0"),String(localNow.getDate()).padStart(2,"0")].join("-");
+  const today = new Date().toISOString().slice(0, 10);
   const field =
     "mt-2 block h-12 w-full min-w-0 max-w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-base text-[var(--text)] outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]";
   return (
@@ -46,7 +43,7 @@ export default function GTHTransportSearchWidget({ mode, flightOnly = false }: {
             {activeMode === "bus" ? "Search bus journeys" : activeMode === "train" ? "Search global train journeys" : activeMode === "flight" ? "Search flights" : "Search ferry journeys"}
           </h2>
         </div>
-        {!flightOnly && <nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">
+        <nav aria-label="Choose 12Go transport type" className="grid w-full min-w-0 grid-cols-4 gap-1 sm:w-auto sm:gap-2">
           {modes.map(({ mode: item, label, Icon }) => (
             <button key={item} type="button" onClick={() => setActiveMode(item)}
               aria-current={activeMode === item ? "true" : undefined}
@@ -57,9 +54,8 @@ export default function GTHTransportSearchWidget({ mode, flightOnly = false }: {
               <Icon size={17} aria-hidden="true" />{label}
             </button>
           ))}
-        </nav>}
+        </nav>
       </div>
-      {invalidJourney && <p role="alert" className="mt-3 text-sm text-[var(--text)]">Check your journey details, choose a valid future date, and try again.</p>}
       <form method="GET" action="/go/transport/search" className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" autoComplete="on">
         <input type="hidden" name="mode" value={activeMode} />
         <label className="block min-w-0 text-sm font-semibold">
