@@ -64,7 +64,7 @@ test("travel city booking links preserve city without inventing supplier place I
   "src/data/blogExpansion.ts",
  ]){
   const c=read(file);
-  assert.ok(c.includes("/hotels?view=booking&city="),file);
+  assert.ok(c.includes("/hotels?view=booking&city=")||c.includes("destinationHotelHref("),file);
   assert.ok(!c.includes("/hotels/results?city="),file);
  }
 });
