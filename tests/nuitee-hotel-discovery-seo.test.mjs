@@ -47,7 +47,7 @@ test("official supplier list supplies authentic photos and its own exact White L
 });
 
 test("directory booking CTAs preserve city and enter the existing supplier widget, not OSM inventory",()=>{
- assert.match(provider,/https:\/\/hotel\.gthproglobal\.com\/hotels\?language=en&currency=INR/);
+ assert.match(provider,/trackedWorldwideHotelHref\(destination\)/);
  assert.doesNotMatch(provider,/\/hotels\?view=booking/);
  assert.match(offers,/new URLSearchParams\(\{view:"booking",city:hotel\.city\}\)/);
  assert.match(offers,/new URLSearchParams\(\{view:"booking",city:market\.supplierCity,country:market\.countryCode\}\)/);
