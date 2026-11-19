@@ -219,8 +219,8 @@ jobs:
         run: python3 scripts/tenders/registry_probe.py
       - name: Read-only licensed India World Bank opportunity probe
         run: python3 scripts/tenders/india_worldbank_probe.py
-      - name: Live official source smoke (no database writes; warn on temporary upstream outage)
-        run: python3 scripts/tenders/global_ingestion.py --source all --limit 100 --allow-transient-source-outages
+      - name: Live official source smoke (no database writes)
+        run: python3 scripts/tenders/global_ingestion.py --source all --limit 100
       - name: Setup Deno for secure tender gateway validation
         uses: denoland/setup-deno@v2
         with:

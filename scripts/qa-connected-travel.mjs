@@ -16,7 +16,6 @@ const route=async r=>{
  const url=new URL(r.request().url());
  if(url.hostname==="www.aviasales.com")return r.fulfill({contentType:"text/html",body:"<title>Booking handoff fixture</title><p>No search or payment is made.</p>"});
  if(url.hostname==="12go.asia")return r.fulfill({contentType:"text/html",body:"<title>12Go primary flight handoff fixture</title><p>No search or payment is made.</p>"});
- if(url.hostname==="hotel.gthproglobal.com")return r.fulfill({contentType:"text/html",body:"<title>Hotel booking handoff fixture</title><p>Supplier-hosted search fixture. No live reservations.</p>"});
  if(url.hostname==="components.liteapi.travel")return r.fulfill({contentType:"application/javascript",body:sdk});
  if(["tpwidg.com","tpwgts.com"].includes(url.hostname))return r.fulfill({contentType:"application/javascript",headers:{"access-control-allow-origin":"*"},body:avia});
  if(url.hostname==="fixture-hotel-photos.invalid"||url.hostname==="app.wegotrip.com")return r.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240"><rect width="480" height="240" fill="#26354c"/><text x="25" y="125" fill="white">Fixture hotel photo</text></svg>'});
@@ -87,23 +86,9 @@ try{
  }
  const page=await browser.newPage({viewport:{width:390,height:844}});page.on("pageerror",error=>errors.push(error.message));await page.context().route("**/*",route);
  await page.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
- const dateEditReads=hotelDiscovery;
- await page.locator('input[name="tripEnd"]').fill("2026-12-15");
- await page.getByRole("button",{name:"Find stays",exact:true}).click();
- await page.waitForURL(url=>url.hostname==="hotel.gthproglobal.com"&&url.pathname==="/hotels");
- let handoffHotel=new URL(page.url());
- assert.equal(handoffHotel.searchParams.get("placeId"),"ChIJwe1EZjDG5zsRaYxkjY_tpF0");
- assert.equal(handoffHotel.searchParams.get("checkout"),"2026-12-15");
- assert.equal(handoffHotel.searchParams.get("currency"),"USD");
- assert.equal(hotelDiscovery,dateEditReads,"hotel handoff must not repeat local directory metadata reads");
- await page.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
+ const dateEditReads=hotelDiscovery;await page.locator('input[name="tripEnd"]').fill("2026-12-15");await page.getByRole("button",{name:"Find stays",exact:true}).click();await page.waitForURL(url=>url.searchParams.get("tripEnd")==="2026-12-15");assert.equal(hotelDiscovery,dateEditReads,"editing hotel dates must not repeat property metadata reads");
  await page.locator('input[name="tripCity"]').fill("London");await page.locator('select[name="tripCountry"]').selectOption("GB");
- await page.getByRole("button",{name:"Find stays",exact:true}).click();
- await page.waitForURL(url=>url.hostname==="hotel.gthproglobal.com"&&url.pathname==="/hotels");
- handoffHotel=new URL(page.url());
- assert.equal(handoffHotel.searchParams.get("placeId"),"ChIJdd4hrwug2EcRmSrV3Vo6llI");
- assert.equal(handoffHotel.searchParams.get("checkin"),"2026-12-10");
- await page.goto(origin+"/travel?"+trip.replace("tripCountry=IN&tripCity=Mumbai","tripCountry=GB&tripCity=London"),{waitUntil:"networkidle"});
+ await page.getByRole("button",{name:"Find stays"}).click();
  await page.getByRole("heading",{name:"Around London",exact:true}).waitFor();assert.match(page.url(),/tripCity=London/);
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
  await page.waitForURL(url=>url.searchParams.get("travelMode")==="experiences");

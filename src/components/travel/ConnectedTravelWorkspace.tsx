@@ -8,7 +8,6 @@ import NearbyHotelDiscovery from "@/components/hotel/NearbyHotelDiscovery";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
 import {HOTEL_CURRENCY_OPTIONS} from "@/lib/travel/hotel-currency";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
-import {connectedHotelBookingHref} from "@/lib/travel/connected-hotel-handoff";
 import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import {FLIGHT_DESTINATIONS,EXPERIENCE_COLLECTIONS} from "@/lib/travel/travel-editorial";
 import {TRAVEL_MODES,connectedFlightHref,connectedTwelveGoFlightHref,connectedHotelStay,connectedTripHref,connectedTripParams,parseConnectedTrip,type ConnectedTrip,type TravelMode} from "@/lib/travel/connected-trip";
@@ -44,7 +43,6 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
  const readyFlight=(!oneWay&&!draft.end)?null:(twelveGoHref||aviaHref);
  const alternateFlightHref=aviaHref||"/flights";
  const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===trip.country)?.name;
- const directHotelHref=parsed.ok?connectedHotelBookingHref(parsed.trip):null;
  const edit=(change:Partial<ConnectedTrip>)=>setDraft(current=>({...current,...change}));
  function apply(afterHandoff=false){
   const value=parseDraft();if(!value.ok){setError(value.error);return false;}
@@ -64,11 +62,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
   <div className={styles.searchCard}>
    <div className={styles.searchTop}><h2 id="connected-travel-title">Where will you go next?</h2><span><Globe2 size={15} aria-hidden="true"/>Your journey, connected</span></div>
    <div role="tablist" aria-label="Plan your journey" className={styles.tabs}>{TRAVEL_MODES.map((item,index)=>{const {label,Icon}=tabs[item];return <button key={item} type="button" role="tab" id={"travel-tab-"+item} aria-selected={mode===item} aria-controls={"travel-panel-"+item} tabIndex={mode===item?0:-1} ref={node=>{buttons.current[index]=node;}} onKeyDown={event=>keys(event,index)} onClick={()=>changeMode(item)}><Icon size={20} aria-hidden="true"/>{label}</button>;})}</div>
-   <form ref={form} className={styles.plan} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else if(mode==="hotels"){
-     if(!apply())return;
-     if(!directHotelHref){setError("Choose valid hotel dates and guests to search available stays.");return;}
-     window.location.assign(directHotelHref);
-   }else apply();}}>
+   <form ref={form} className={styles.plan} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else apply();}}>
     {mode==="flights"&&<fieldset className={styles.tripTypes}><legend className={styles.srOnly}>Flight journey type</legend><label><input type="radio" name="flightType" checked={oneWay} onChange={()=>{setOneWay(true);edit({end:""});}}/>One way</label><label><input type="radio" name="flightType" checked={!oneWay} onChange={()=>setOneWay(false)}/>Round trip</label><span>Passengers and cabin options are selected with your booking.</span></fieldset>}
     <div className={mode==="flights"?styles.flightFields:mode==="experiences"?styles.experienceFields:styles.fields}>
      {mode==="flights"?<>
@@ -90,7 +84,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
      <label>Hotel currency<select name="tripCurrency" value={draft.currency} onChange={event=>edit({currency:event.target.value})}>{HOTEL_CURRENCY_OPTIONS.map(item=><option key={item.code} value={item.code}>{item.code} · {item.name}</option>)}</select></label>
     </div></details>}
     {error&&<p role="alert" className={styles.message}>{error}</p>}
-    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Start with the connected flight search. If no service appears, use Advanced flight search below. Reconfirm airports, return flights, passengers and final fares with the provider.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Find stays opens the booking network directly. Exact rooms, dates and prices are confirmed by the provider."}</p>
+    <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Start with the connected flight search. If no service appears, use Advanced flight search below. Reconfirm airports, return flights, passengers and final fares with the provider.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Discover properties first. Check current room prices and terms before booking."}</p>
    </form>
   </div>
   <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>

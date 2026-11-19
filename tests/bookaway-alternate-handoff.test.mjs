@@ -101,12 +101,8 @@ test("Bookaway does not guess unsupported routes, reverse direction, or flight i
     { from: "https://evil.example", to: "Chiang Mai" },
   ]) {
     const result = await GET(request(journey(changes)));
-    assert.equal(result.status, 303);
-    const next=new URL(result.headers.get("location"));
-    assert.equal(next.origin,"https://www.gthproglobal.com");
-    assert.equal(next.pathname,"/go/transport/search");
-    assert.equal(next.searchParams.get("mode"),journey(changes).mode);
-    // No unverified Bookaway route or foreign redirect is ever synthesized.
+    assert.equal(result.status, 404);
+    assert.equal(result.headers.get("location"), null);
   }
 });
 
@@ -117,10 +113,7 @@ test("Bookaway handoff rejects duplicate fields, invalid dates and tampered pass
     url.nextUrl = new URL(url.url + extra);
     url.url = url.nextUrl.toString();
     const result = await GET(url);
-    assert.equal(result.status, 303);
-    const next=new URL(result.headers.get("location"));
-    assert.equal(next.origin,"https://www.gthproglobal.com");
-    assert.equal(next.searchParams.get("search"),"invalid");
-    assert.ok(["/travel","/bus"].includes(next.pathname));
+    assert.equal(result.status, 400);
+    assert.equal(result.headers.get("location"), null);
   }
 });

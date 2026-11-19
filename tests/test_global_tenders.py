@@ -1,10 +1,7 @@
 """Offline fixtures for additional official GTH PRO tender connectors. No network, no DB."""
 import os
 import sys
-import json
-import io
 import unittest
-from contextlib import redirect_stdout, redirect_stderr
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -113,49 +110,6 @@ class GlobalTenderTests(unittest.TestCase):
             self.assertEqual(g.main(["--source", "uk", "--limit", "10"]), 0)
         upload.assert_not_called()
         publish.assert_not_called()
-
-    def test_readonly_smoke_tolerates_only_partial_temporary_source_outages(self):
-        def collect(source, *args, **kwargs):
-            if source == "uk":
-                raise ValueError("Official API temporarily unreachable")
-            return ([{"source_reference": source}], [])
-        out, err = io.StringIO(), io.StringIO()
-        with patch.object(g, "collect", side_effect=collect), \
-             patch.object(g.time, "sleep"), \
-             patch.object(g, "submit") as upload, \
-             patch.object(g, "submit_official") as publish, \
-             redirect_stdout(out), redirect_stderr(err):
-            status = g.main(["--source", "all", "--limit", "1",
-                             "--allow-transient-source-outages"])
-        self.assertEqual(status, 0)
-        report = json.loads(out.getvalue())
-        self.assertEqual(report["source_health"]["failed"], 1)
-        self.assertEqual(report["source_health"]["transient_failures"], 1)
-        self.assertGreaterEqual(report["source_health"]["healthy"], 3)
-        self.assertIn("::warning::", err.getvalue())
-        upload.assert_not_called()
-        publish.assert_not_called()
-
-    def test_schema_errors_and_total_outages_still_fail_smoke(self):
-        cases = [
-            lambda source, *args, **kwargs: (_ for _ in ()).throw(ValueError("UK OCDS schema changed")) if source == "uk" else ([{"source_reference": source}], []),
-            lambda source, *args, **kwargs: (_ for _ in ()).throw(ValueError("Official API temporarily unreachable"))
-        ]
-        for collect in cases:
-            with self.subTest(case=str(collect)):
-                with patch.object(g, "collect", side_effect=collect), \
-                     patch.object(g.time, "sleep"), patch("sys.stdout"), patch("sys.stderr"):
-                    status = g.main(["--source", "all", "--allow-transient-source-outages"])
-                self.assertEqual(status, 1)
-
-    def test_outage_tolerance_is_for_readonly_multi_source_probe_only(self):
-        for args in [
-            ["--source", "uk", "--allow-transient-source-outages"],
-            ["--source", "all", "--allow-transient-source-outages", "--commit", "--expected-project-ref", "abcdefghijklmnop"],
-        ]:
-            with self.subTest(args=args), patch("sys.stderr"):
-                with self.assertRaises(SystemExit):
-                    g.main(args)
 
     def test_publication_requires_explicit_approval(self):
         with patch.dict(os.environ, {"GTH_TENDER_OFFICIAL_PUBLICATION_ENABLED": "false"}):

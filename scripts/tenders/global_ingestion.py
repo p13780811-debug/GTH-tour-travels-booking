@@ -296,8 +296,6 @@ def main(argv=None):
     p.add_argument("--publish-official", action="store_true",
                    help="Explicitly approve publishing notices sourced from official APIs")
     p.add_argument("--expected-project-ref", default="")
-    p.add_argument("--allow-transient-source-outages", action="store_true",
-                   help="Dry-run multi-source smoke only: tolerate temporary feed outages when at least three sources succeed; never permits writes or schema errors")
     args = p.parse_args(argv)
     if not 1 <= args.limit <= 100:
         p.error("--limit must be 1..100 per source")
@@ -310,12 +308,10 @@ def main(argv=None):
         p.error("--commit requires --expected-project-ref")
     if args.publish_official and not args.commit:
         p.error("--publish-official requires --commit")
-    if args.allow_transient_source_outages and (args.commit or args.source != "all"):
-        p.error("--allow-transient-source-outages is only for the read-only all-sources smoke test")
     names = SOURCES if args.source == "all" else (args.source,)
     stats = {"mode": "official_published" if args.publish_official else ("private_review" if args.commit else "dry_run"),
              "page_budget": args.pages, "rotation": rotation, "sources": {}, "accepted": 0, "rejected": 0, "submitted_for_publication": 0}
-    failures, transient_failures, healthy_sources = 0, 0, 0
+    failures = 0
     for source in names:
         try:
             records, rejected = collect(source, args.limit, pages=args.pages, window=rotation) if args.pages > 1 else collect(source, args.limit)
@@ -333,23 +329,12 @@ def main(argv=None):
                                          "sample_rejections": rejected[:5]}
             stats["accepted"] += len(records)
             stats["rejected"] += len(rejected)
-            healthy_sources += 1
         except (ValueError, OSError) as exc:
             failures += 1
-            # Optional smoke-test tolerance is only for reachability failures.
-            # Unexpected source schemas and data-contract failures still fail.
-            transient = isinstance(exc, OSError) or str(exc) == "Official API temporarily unreachable"
-            if transient:
-                transient_failures += 1
-            stats["sources"][source] = {"error": str(exc), "transient": transient}
+            stats["sources"][source] = {"error": str(exc)}
         if len(names) > 1:
             time.sleep(0.5)
-    stats["source_health"] = {"healthy": healthy_sources, "failed": failures,
-                              "transient_failures": transient_failures}
     print(json.dumps(stats, sort_keys=True))
-    if failures and args.allow_transient_source_outages and failures == transient_failures and healthy_sources >= 3 and stats["accepted"] > 0:
-        print("::warning::Optional read-only official source probe partially unavailable; see reported source_health and failed sources. No notices were published.", file=sys.stderr)
-        return 0
     return 1 if failures else 0
 
 if __name__ == "__main__":

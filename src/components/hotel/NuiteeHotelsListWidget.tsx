@@ -2,7 +2,6 @@
 
 import {useEffect,useRef,useState} from "react";
 import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-whitelabel";
-import {hotelWhiteLabelSearchUrl,resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
 import styles from "./NuiteeHotelsListWidget.module.css";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
@@ -64,15 +63,6 @@ export default function NuiteeHotelsListWidget({
 }){
   const initialized=useRef(false);
   const displayCurrency=hotelCurrency(currency);
-  // Official supplier SDK owns exact hotel identity. Only pass default stay
-  // context on its deep links, never guess a property or city identifier.
-  const dates=resolveHotelDates(undefined,undefined);
-  const occupancies=[{adults:2,children:[]}];
-  const deepLinkParams=new URLSearchParams({language:"en",currency:displayCurrency,
-    checkin:dates.checkin,checkout:dates.checkout,
-    occupancies:btoa(JSON.stringify(occupancies))}).toString();
-  const safeBookingPicker=hotelWhiteLabelSearchUrl(displayCurrency,{
-    checkin:dates.checkin,checkout:dates.checkout,occupancies});
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -87,7 +77,7 @@ export default function NuiteeHotelsListWidget({
       if(!live||initialized.current)return;
       initialized.current=true;
       try{
-        sdk.init({domain:DOMAIN,deepLinkParams});
+        sdk.init({domain:DOMAIN,deepLinkParams:`language=en&currency=${displayCurrency}`});
         const color=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
         const options:LiteHotelsListOptions={
           selector:"#"+id,
@@ -95,7 +85,7 @@ export default function NuiteeHotelsListWidget({
           currency:displayCurrency,
           hasSearchBar:false,
           rows,
-          deepLinkParams,
+          deepLinkParams:`language=en&currency=${displayCurrency}`,
           labelsOverride:{searchAction:"View hotels",placePlaceholderText:"Choose a destination"}
         };
         if(/^#[\da-f]{6}$/i.test(color))options.primaryColor=color;
@@ -116,7 +106,7 @@ export default function NuiteeHotelsListWidget({
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
-    <a href={safeBookingPicker}
+    <a href={HOTEL_BOOKING_ORIGIN+"/hotels?language=en&currency="+displayCurrency}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
       Browse on booking site

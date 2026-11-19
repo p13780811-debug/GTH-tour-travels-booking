@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle2, Compass, PlaneTakeoff } from "lucide-react";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
-import GTHTransportSearchWidget from "@/components/travel/GTHTransportSearchWidget";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
 import PopularDestinations from "@/components/flights/PopularDestinations";
 import NuiteeFlightHandoff from "@/components/travel/NuiteeFlightHandoff";
@@ -44,7 +43,7 @@ export default async function FlightsPage({ searchParams }: Props) {
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[var(--gold)]" /> Provider-operated checkout</span>
             </div>
           </div>
-          <Link href="#journey-search" className="gth-btn-gold mt-6 hidden sm:inline-flex items-center gap-2">Search flights <ArrowUpRight size={14}/></Link>
+          <Link href="#flight-search" className="gth-btn-gold mt-6 hidden sm:inline-flex items-center gap-2">Search flights <ArrowUpRight size={14}/></Link>
 
         </div>
       </section>
@@ -68,16 +67,7 @@ export default async function FlightsPage({ searchParams }: Props) {
           <ShareFeedbackActions title={destination?("Flight research "+origin+" to "+destination):"Flight search"} path={"/flights"+(destination?"?"+new URLSearchParams({origin,destination}).toString():"")}/>
           {destination&&<LocalWatchButton kind="flight" id={origin+"-"+destination} title={"Flight route "+origin+" to "+destination} path={"/flights?"+new URLSearchParams({origin,destination}).toString()}/>}
         </div>
-        {!isResultsView && <section aria-label="Primary flight route search" className="px-4 sm:px-6">
-          <GTHTransportSearchWidget mode="flight" flightOnly />
-          <p className="mb-5 text-sm leading-6 text-[var(--text-soft)]">
-            If the first booking network has no matching flight, compare the alternative flight search below.
-            The supplier confirms schedules, date support, tickets and final prices.
-          </p>
-        </section>}
-        <section aria-label="Alternative flight search" id="flight-alternatives">
         <AviasalesWhiteLabel isResultsView={isResultsView} />
-        </section>
         <div className="px-4 sm:px-6">
           <NuiteeFlightHandoff />
           <FlightJourneyServices />
