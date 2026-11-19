@@ -58,8 +58,7 @@ test("guide discovery shows actual imported source counts and sorts by source co
  assert.match(rail,/Country directory: /);
  assert.match(rail,/Import in progress/);
  assert.match(rail,/href="\/ai-trip"/);
- assert.match(rail,/trackedWorldwideHotelHref\(item\.city\|\|item\.name\)/);
-  assert.match(rail,/rel="sponsored noopener noreferrer"/);
+ assert.match(rail,/\/hotels\?view=booking&city=/);
 });
 test("guide funnel routes hotel booking through supplier mode, alongside trip and insurance tools",()=>{
  const detail=read("src/components/travel/GuideDetail.tsx");
@@ -83,8 +82,7 @@ test("final editorial guide booking step uses only existing approved partner des
  assert.match(handoff,/findFlightPartner\(slug\)/);
  assert.match(handoff,/u\.hostname===host/);
  assert.match(handoff,/rel="noopener noreferrer sponsored"/);
- assert.match(handoff,/trackedWorldwideHotelHref\(city\|\|"worldwide"\)/);
-  assert.match(handoff,/href=\{hotelHref\} target="_blank" rel="sponsored noopener noreferrer"/);
+ assert.match(handoff,/\/hotels\?view=booking&city=/);
  assert.match(handoff,/href="\/affiliate-disclosure"/);
  assert.doesNotMatch(handoff,/src="https:\/\/tpwidg|https:\/\/klook\.tpo\.lv\//);
 });

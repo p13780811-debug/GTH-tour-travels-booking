@@ -45,19 +45,3 @@ test("No invented city, arbitrary affiliate destination or fake exact hotel matc
   assert.match(page,/Search OSM directory/);
   assert.match(page,/The independent hotel directory did not respond/);
 });
-
-test("Worldwide hotel alternatives use the verified GTH campaign for every destination, not two hardcoded cities",()=>{
- for(const city of ["Goa","Dubai","London","Paris","Kolkata","Tokyo","São Paulo","東京","__proto__","constructor", "https://evil.test/booking"]){
-   const referral=new URL(hotels.trackedWorldwideHotelHref(city));
-   assert.equal(referral.origin,"https://tp.media");
-   assert.equal(referral.searchParams.get("campaign_id"),"137");
-   assert.equal(referral.searchParams.get("marker"),"417668");
-   assert.equal(referral.searchParams.get("trs"),"504342");
-   assert.equal(referral.searchParams.get("p"),"4110");
-   assert.match(referral.searchParams.get("sub_id"),/^gth_hotel_[a-z0-9_]{1,70}$/);
-   const provider=new URL(referral.searchParams.get("u"));
-   assert.equal(provider.href,"https://www.klook.com/hotels/");
-   assert.equal(provider.searchParams.has("placeId"),false);
- }
- assert.equal(hotels.trackedWorldwideHotelHref("A".repeat(10000)).length<270,true);
-});
