@@ -17,7 +17,15 @@ function load(path,imports={}){
 }
 const flights=load("src/data/flight/destinations.ts");
 const venues=load("src/lib/travel/stadiums.ts");
-const links=load("src/lib/destinations/ecosystem.ts",{"@/data/flight/destinations":flights,"@/lib/travel/stadiums":venues});
+const whiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
+const hotelRouting=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":whiteLabel});
+const partner=load("src/lib/travel/partner-search.ts");
+const hotelDestinations=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner,"./hotel-routing":hotelRouting});
+const links=load("src/lib/destinations/ecosystem.ts",{
+ "@/data/flight/destinations":flights,
+ "@/lib/travel/stadiums":venues,
+ "@/lib/travel/klook-hotel-search":hotelDestinations
+});
 
 test("destination links are real, local search pages and are not dead anchors",()=>{
  for(const name of ["Goa","Mumbai","New York","Paris","Kuala Lumpur"]){
@@ -25,11 +33,18 @@ test("destination links are real, local search pages and are not dead anchors",(
   const services=links.destinationServices(place);
   const byKey=key=>services.find(x=>x.key===key);
   const hotel=new URL(byKey("hotels").href,"https://www.gthproglobal.com");
-  assert.equal(hotel.pathname,"/hotels");
-  assert.equal(hotel.searchParams.get("view"),"booking");
-  assert.equal(hotel.searchParams.get("city"),name);
-  assert.equal(hotel.searchParams.get("country"),"IN");
-  assert.equal(hotel.searchParams.has("destination"),false);
+  if(name==="Mumbai"){
+    assert.equal(hotel.origin,"https://hotel.gthproglobal.com");
+    assert.equal(hotel.pathname,"/hotels");
+    assert.ok(hotel.searchParams.has("placeId"),"Keep reviewed Nuitee city results");
+  }else{
+    assert.equal(hotel.origin,"https://tp.media");
+    assert.equal(hotel.searchParams.get("marker"),"417668");
+    const supplier=new URL(hotel.searchParams.get("u"));
+    assert.equal(supplier.hostname,"www.klook.com");
+    assert.match(supplier.pathname,/\/3-hotel\/$/);
+    assert.ok(supplier.pathname.includes(name.toLowerCase().replaceAll(" ","-")),name);
+  }
   const tours=new URL(byKey("tours").href,"https://www.gthproglobal.com");
   assert.equal(tours.pathname,"/tours");
   assert.equal(tours.searchParams.get("city"),name);
