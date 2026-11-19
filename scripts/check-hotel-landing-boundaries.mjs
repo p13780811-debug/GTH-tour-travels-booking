@@ -208,6 +208,38 @@ for (const path of [
 // error handling and QA, but never the working supplier SDK, 12Go or theme.
 const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
 const directHotelBranch=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
+
+const verifiedCityBranch=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-destination-cta-20261120";
+if(verifiedCityBranch){
+ for(const path of [
+  "src/lib/travel/klook-hotel-search.ts",
+  "src/app/hotels/page.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "tests/hotel-booking-fallback-cities.test.mjs",
+  "scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs"
+ ])allowed.add(path);
+ const reviewed=new Set([
+  "src/lib/travel/klook-hotel-search.ts",
+  "src/app/hotels/page.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "tests/hotel-booking-fallback-cities.test.mjs",
+  "scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs"
+ ]);
+ const outside=[...new Set(paths)].filter(path=>!reviewed.has(path));
+ if(outside.length)throw Error("Unreviewed hotel routing PR files: "+outside.join(", "));
+ for(const protectedPath of [
+  "src/components/hotel/HotelBookingExperience.tsx",
+  "src/lib/travel/hotel-whitelabel.ts",
+  "src/lib/travel/hotel-routing.ts",
+  "src/lib/travel/partner-search.ts",
+  "src/app/globals.css",
+  "src/app/flights/page.tsx",
+  "src/lib/security/rate-limit.ts"
+ ])if(paths.includes(protectedPath))throw Error("Supplier, flight, theme, security and paid-API boundaries must remain unchanged: "+protectedPath);
+}
+
 if(directHotelBranch){
  for(const path of [
   "src/components/travel/ConnectedTravelWorkspace.tsx",
