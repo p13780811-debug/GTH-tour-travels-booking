@@ -207,6 +207,7 @@ for (const path of [
 // A narrowly reviewed recovery PR may touch booking UI, bounded directory
 // error handling and QA, but never the working supplier SDK, 12Go or theme.
 const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+const worldwideHotelBranch=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-fallback-and-affiliate-20261119";
 if(hotelRecoveryBranch){
  for(const path of [
   "src/app/api/hotels/route.ts","src/components/travel/ConnectedTravelWorkspace.tsx",
@@ -222,13 +223,34 @@ if(hotelRecoveryBranch){
   "src/components/mobile/MobileSupplierShowcase.tsx","src/app/globals.css"
  ])if(paths.includes(protectedPath))throw Error("Hotel recovery cannot alter working supplier/theme: "+protectedPath);
 }
+if(worldwideHotelBranch){
+ const reviewedHotelHandoffs=[
+  "scripts/qa-connected-travel.mjs","scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs",
+  "src/components/destination/DestinationExplorerResults.tsx",
+  "src/components/seo/EcosystemGuideResources.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "src/components/travel/GuideDiscoveryRails.tsx",
+  "src/components/travel/GuidePartnerHandoffs.tsx",
+  "src/components/travel/MappedCityDiscovery.tsx",
+  "src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts",
+  "tests/hotel-nearby-search.test.mjs","tests/hotel-travelpayouts-drive-fallback.test.mjs",
+  "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs"
+ ];
+ for(const p of reviewedHotelHandoffs)allowed.add(p);
+ for(const p of [
+   "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+   "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+   "src/components/mobile/MobileSupplierShowcase.tsx","src/app/globals.css"
+ ])if(paths.includes(p))throw Error("Worldwide hotel fallback must not modify existing supplier contract: "+p);
+}
 // A Vercel configuration edit is permitted ONLY to disable previews for this
 // unverified draft branch. The rest of the project configuration must be byte-
 // equivalent at the parsed JSON level to its merge base.
 if (paths.includes("vercel.json")) {
  const current=JSON.parse(readFileSync("vercel.json","utf8"));
  const original=JSON.parse(git("show",diffBase+":vercel.json"));
- const previewBranch=hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
+ const previewBranch=worldwideHotelBranch?"fix/worldwide-hotel-fallback-and-affiliate-20261119":hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
  if(current.git?.deploymentEnabled?.[previewBranch]!==false)
    throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
  delete current.git.deploymentEnabled[previewBranch];
