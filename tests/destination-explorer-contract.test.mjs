@@ -4,13 +4,15 @@ import {readFileSync} from "node:fs";
 const read=(path)=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const page=read("src/app/destinations/page.tsx");
 const client=read("src/components/destination/DestinationExplorerResults.tsx");
+const directory=read("src/lib/destinations/catalog.ts");
 
 test("destination explorer retains search, geography, sort, pagination and source-backed catalog",()=>{
  for(const field of ["search","region","country","sort"])assert.ok(page.includes('name="'+field+'"'));
  for(const p of ['params.set("search", search)','params.set("country", country)','params.set("region", region)','params.set("sort", sort)','params.set("view", "list")'])assert.ok(page.includes(p),p);
  assert.match(page,/const perPage = 18/);
- assert.match(page,/filtered\.slice/);
- assert.match(page,/\.eq\("is_active", true\)/);
+ assert.match(page,/const visible = filtered/);
+ assert.match(directory,/query\.range\(/);
+ assert.match(directory,/\.eq\("is_active", true\)/);
  assert.match(page,/<DestinationExplorerResults items=\{visible\} initialView=\{view\} page=\{page\}\/>/);
 });
 
