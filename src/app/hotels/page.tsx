@@ -448,11 +448,11 @@ function HotelsContent() {
                   <Link href="/destinations" className={styles.textLink}>Explore destinations <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
                 <nav className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Featured travel destinations">
-                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug}
+                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={destinationHotelHref(place.city)||("/hotels?view=booking&city="+encodeURIComponent(place.city))}
                     className="gth-glass flex min-h-20 min-w-0 items-center justify-between gap-2 rounded-2xl border border-[var(--border)] p-4"
-                    aria-label={"Explore "+place.city+" hotel guide"}>
+                    aria-label={"Explore hotel listings in "+place.city}>
                     <span className="min-w-0"><strong className="block text-base font-bold">{place.city}</strong>
-                      <span className="mt-1 block text-xs text-[var(--text-soft)]">Local stay guide</span></span>
+                      <span className="mt-1 block text-xs text-[var(--text-soft)]">Hotel listing options</span></span>
                     <ChevronRight size={17} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
                   </Link>)}
                 </nav>
