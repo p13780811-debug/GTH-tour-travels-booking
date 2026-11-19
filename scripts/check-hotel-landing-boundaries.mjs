@@ -217,7 +217,8 @@ if(verifiedCityBranch){
   "src/components/travel/ConnectedTravelWorkspace.tsx",
   "tests/hotel-booking-fallback-cities.test.mjs",
   "scripts/check-connected-travel-boundaries.mjs",
-  "scripts/check-hotel-landing-boundaries.mjs"
+  "scripts/check-hotel-landing-boundaries.mjs",
+  "vercel.json"
  ])allowed.add(path);
  const reviewed=new Set([
   "src/lib/travel/klook-hotel-search.ts",
@@ -225,7 +226,8 @@ if(verifiedCityBranch){
   "src/components/travel/ConnectedTravelWorkspace.tsx",
   "tests/hotel-booking-fallback-cities.test.mjs",
   "scripts/check-connected-travel-boundaries.mjs",
-  "scripts/check-hotel-landing-boundaries.mjs"
+  "scripts/check-hotel-landing-boundaries.mjs",
+  "vercel.json"
  ]);
  const outside=[...new Set(paths)].filter(path=>!reviewed.has(path));
  if(outside.length)throw Error("Unreviewed hotel routing PR files: "+outside.join(", "));
@@ -284,7 +286,7 @@ if(hotelRecoveryBranch){
 if (paths.includes("vercel.json")) {
  const current=JSON.parse(readFileSync("vercel.json","utf8"));
  const original=JSON.parse(git("show",diffBase+":vercel.json"));
- const previewBranch=hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
+ const previewBranch=verifiedCityBranch?"fix/worldwide-hotel-destination-cta-20261120":hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
  if(current.git?.deploymentEnabled?.[previewBranch]!==false)
    throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
  delete current.git.deploymentEnabled[previewBranch];
