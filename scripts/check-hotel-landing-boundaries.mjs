@@ -238,6 +238,7 @@ if(worldwideHotelBranch){
   "src/components/destination/DestinationExplorerResults.tsx",
   "src/components/seo/EcosystemGuideResources.tsx",
   "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "src/components/travel/GTHTransportSearchWidget.tsx",
   "src/components/travel/GuideDiscoveryRails.tsx",
   "src/components/travel/GuidePartnerHandoffs.tsx",
   "src/components/travel/MappedCityDiscovery.tsx",
