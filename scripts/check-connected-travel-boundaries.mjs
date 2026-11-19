@@ -43,6 +43,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "src/components/hotel/HotelBookingExperience.tsx",
    "src/components/seo/EcosystemGuideResources.tsx",
    "src/components/travel/ConnectedTravelWorkspace.tsx",
+   "src/components/travel/GTHTransportSearchWidget.tsx",
    "src/components/travel/GuideDiscoveryRails.tsx",
    "src/components/travel/GuidePartnerHandoffs.tsx",
    "src/components/travel/MappedCityDiscovery.tsx",
