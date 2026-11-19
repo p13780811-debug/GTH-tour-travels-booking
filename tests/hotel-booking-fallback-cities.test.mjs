@@ -10,13 +10,15 @@ function load(path,imports={}){
   vm.runInNewContext(ts.transpileModule(read(path),{
     compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}
   }).outputText,{
-    module:mod,exports:mod.exports,URL,URLSearchParams,
+    module:mod,exports:mod.exports,URL,URLSearchParams,btoa,atob,
     require:name=>{if(name in imports)return imports[name];throw Error("Unexpected dependency "+name);}
   },{timeout:2000});
   return mod.exports;
 }
 const affiliate=load("src/lib/travel/partner-search.ts");
-const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate,"./hotel-routing":{cleanHotelDestination:value=>typeof value==="string"&&/^[a-z][a-z ]{1,79}$/i.test(value)?value:null,resolveHotelRoute:()=>({status:"unmapped"})}});
+const hotelWhiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
+const routing=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":hotelWhiteLabel});
+const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate,"./hotel-routing":routing});
 
 test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing campaign",()=>{
   for(const [city,path] of [
@@ -35,18 +37,29 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
     assert.equal(target.searchParams.size,0);
   }
 });
-test("Featured hotel cities use tracked Klook city-specific search without invented IDs",()=>{
-  for(const city of ["Mumbai","London","Singapore","Tokyo"]){
-    const link=hotels.trackedHotelCityHref(city);
-    assert.ok(link);
-    const referral=new URL(link);
-    assert.equal(referral.hostname,"tp.media");
-    assert.equal(referral.searchParams.get("marker"),"417668");
-    const target=new URL(referral.searchParams.get("u"));
-    assert.equal(target.hostname,"www.klook.com");
-    assert.equal(target.pathname,"/en-IN/search/result/");
-    assert.equal(target.searchParams.get("query"),city.toLowerCase()+" hotels");
-  }
+test("Worldwide routing preserves exact booking kind, never invents a Klook hotel result",()=>{
+ const known=["Goa","Dubai"];
+ for(const city of known){
+   const url=hotels.destinationHotelHref(city);
+   assert.ok(url);
+   const affiliateUrl=new URL(url);
+   assert.equal(affiliateUrl.origin,"https://tp.media");
+   assert.match(new URL(affiliateUrl.searchParams.get("u")).pathname,/\/3-hotel\/$/);
+ }
+ // Reviewed supplier Place IDs are the only direct Nuitee city results.
+ for(const city of ["Mumbai","London"]){
+   const target=hotels.destinationHotelHref(city);
+   assert.ok(target);
+   assert.equal(new URL(target).origin,"https://hotel.gthproglobal.com");
+   assert.equal(new URL(target).pathname,"/hotels");
+ }
+ // No fake Klook category, supplier placeId or hotel match for unverified cities.
+ for(const city of ["Singapore","Tokyo","Kolkata","Paris","Abu Dhabi","Sydney"]){
+   assert.equal(hotels.trackedHotelCityHref(city),null);
+   const href=hotels.destinationHotelHref(city);
+   assert.match(href,/^\/hotels\?view=booking&city=/);
+   assert.equal(new URL(href,"https://gthproglobal.com").searchParams.get("city"),city);
+ }
 });
 test("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
   for(const city of ["evil.example","javascript:alert(1)","東京",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
