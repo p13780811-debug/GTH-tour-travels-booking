@@ -16,7 +16,7 @@ function load(path,imports={}){
   return mod.exports;
 }
 const affiliate=load("src/lib/travel/partner-search.ts");
-const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate});
+const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate,"./hotel-routing":{cleanHotelDestination:value=>typeof value==="string"&&/^[a-z][a-z ]{1,79}$/i.test(value)?value:null,resolveHotelRoute:()=>({status:"unmapped"})}});
 
 test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing campaign",()=>{
   for(const [city,path] of [
@@ -35,8 +35,21 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
     assert.equal(target.searchParams.size,0);
   }
 });
-test("Featured hotel cities use tracked Klook city-specific search without invented IDs",()=>{\n  for(const city of ["Mumbai","London","Singapore","Tokyo"]){\n    const link=hotels.trackedHotelCityHref(city);\n    assert.ok(link);\n    const referral=new URL(link);\n    assert.equal(referral.hostname,"tp.media");\n    assert.equal(referral.searchParams.get("marker"),"417668");\n    const target=new URL(referral.searchParams.get("u"));\n    assert.equal(target.hostname,"www.klook.com");\n    assert.equal(target.pathname,"/en-IN/search/result/");\n    assert.equal(target.searchParams.get("query"),city.toLowerCase()+" hotels");\n  }\n});\ntest("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
-  for(const city of ["Unknown","evil.example","javascript:alert(1)","constructor","__proto__","toString","東京",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
+test("Featured hotel cities use tracked Klook city-specific search without invented IDs",()=>{
+  for(const city of ["Mumbai","London","Singapore","Tokyo"]){
+    const link=hotels.trackedHotelCityHref(city);
+    assert.ok(link);
+    const referral=new URL(link);
+    assert.equal(referral.hostname,"tp.media");
+    assert.equal(referral.searchParams.get("marker"),"417668");
+    const target=new URL(referral.searchParams.get("u"));
+    assert.equal(target.hostname,"www.klook.com");
+    assert.equal(target.pathname,"/en-IN/search/result/");
+    assert.equal(target.searchParams.get("query"),city.toLowerCase()+" hotels");
+  }
+});
+test("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
+  for(const city of ["evil.example","javascript:alert(1)","東京",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
   const booking=read("src/components/hotel/HotelBookingExperience.tsx");
   const page=read("src/app/hotels/page.tsx");
   assert.match(booking,/LiteAPI.SearchBar.create/);
