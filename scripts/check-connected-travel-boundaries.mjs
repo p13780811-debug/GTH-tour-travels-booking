@@ -49,6 +49,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "tests/hotel-nearby-search.test.mjs","tests/hotel-travelpayouts-drive-fallback.test.mjs",
    "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
    "tests/travel-guide-contract.test.mjs",
+   "tests/hotel-booking-intent-regression.test.mjs",
    "vercel.json"
   ]);
   const outside=[...changed].filter(p=>!approved.has(p));
