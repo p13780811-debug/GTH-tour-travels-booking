@@ -35,8 +35,8 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
     assert.equal(target.searchParams.size,0);
   }
 });
-test("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
-  for(const city of ["Mumbai","Unknown","evil.example","javascript:alert(1)","constructor","__proto__","toString","東京","London",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
+test("Featured hotel cities use tracked Klook city-specific search without invented IDs",()=>{\n  for(const city of ["Mumbai","London","Singapore","Tokyo"]){\n    const link=hotels.trackedHotelCityHref(city);\n    assert.ok(link);\n    const referral=new URL(link);\n    assert.equal(referral.hostname,"tp.media");\n    assert.equal(referral.searchParams.get("marker"),"417668");\n    const target=new URL(referral.searchParams.get("u"));\n    assert.equal(target.hostname,"www.klook.com");\n    assert.equal(target.pathname,"/en-IN/search/result/");\n    assert.equal(target.searchParams.get("query"),city.toLowerCase()+" hotels");\n  }\n});\ntest("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
+  for(const city of ["Unknown","evil.example","javascript:alert(1)","constructor","__proto__","toString","東京",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
   const booking=read("src/components/hotel/HotelBookingExperience.tsx");
   const page=read("src/app/hotels/page.tsx");
   assert.match(booking,/LiteAPI.SearchBar.create/);
