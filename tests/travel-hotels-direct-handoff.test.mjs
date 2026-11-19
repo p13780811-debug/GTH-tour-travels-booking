@@ -18,7 +18,7 @@ function load(path,imports={}){
 const whiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
 const routing=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":whiteLabel});
 const partner=load("src/lib/travel/partner-search.ts");
-const klook=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search.ts":partner});
+const klook=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
 const booking=load("src/lib/travel/connected-hotel-handoff.ts",{
  "./hotel-whitelabel":whiteLabel,"./hotel-routing":routing,"./klook-hotel-search":klook,
 });
