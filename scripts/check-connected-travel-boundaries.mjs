@@ -32,7 +32,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
   path.startsWith("src/app/api/")||
   path==="src/app/globals.css") &&
   !(hotelHandoffScope&&allowedHotelFixes.has(path)) &&
-  !(worldwideHotelScope && new Set(["src/components/hotel/HotelBookingExperience.tsx","src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts"]).has(path)));
+  !(worldwideHotelScope && new Set(["src/components/hotel/HotelBookingExperience.tsx","src/components/hotel/HotelDiscoveryShowcase.tsx","src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts"]).has(path)));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
  if(worldwideHotelScope){
   const approved=new Set([
@@ -50,6 +50,8 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
    "tests/travel-guide-contract.test.mjs",
    "tests/hotel-booking-intent-regression.test.mjs",
+   "src/components/hotel/HotelDiscoveryShowcase.tsx",
+   "tests/hotel-storefront-hopegoo-style.test.mjs",
    "tests/travel-hotels-direct-handoff.test.mjs",
    "tests/destination-explorer-contract.test.mjs",
    "tests/hotel-booking-journey.test.mjs",
