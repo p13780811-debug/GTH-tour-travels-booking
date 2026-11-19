@@ -12,10 +12,16 @@ const COUNTRY_DELAY_MS = 750;
 
 type Country = { code: string; name: string };
 type Destination = {
+  name: string;
+  country: string;
   country_code: string;
-  country_name: string;
-  city_name: string;
   slug: string;
+  description: string;
+  category: "directory";
+  is_active: true;
+  source_name: string;
+  source_url: string;
+  media_rights_verified: false;
 };
 
 const sleep = (ms: number) =>
@@ -101,20 +107,31 @@ async function main(): Promise<void> {
   const all = args.includes("--all-countries");
   const countryArg = args.find(x => x.startsWith("--country="));
   const country = countryArg?.split("=")[1]?.toUpperCase();
+  const rotateArg = args.find(x => x.startsWith("--daily-rotation="));
+  const rotation = rotateArg
+    ? Number(rotateArg.split("=")[1])
+    : null;
+  const selectors = Number(all) + Number(Boolean(country)) +
+    Number(rotation !== null);
 
   if (
-    all === Boolean(country) ||
+    selectors !== 1 ||
     (country && !/^[A-Z]{2}$/.test(country)) ||
+    (rotation !== null && (!Number.isInteger(rotation) || rotation < 1 || rotation > 20)) ||
     args.some(x =>
       x !== "--write" &&
       x !== "--all-countries" &&
-      !/^--country=[A-Za-z]{2}$/.test(x)
+      !/^--country=[A-Za-z]{2}$/.test(x) &&
+      !/^--daily-rotation=([1-9]|1\d|20)$/.test(x)
     )
   ) {
     throw new Error(
-      "Choose --country=IN or --all-countries, " +
-      "optionally with --write"
+      "Choose --country=IN, --all-countries, or --daily-rotation=8; optionally --write"
     );
+  }
+
+  if (write && process.env.GTH_INGESTION_ENABLED !== "true") {
+    throw new Error("Explicit GTH_INGESTION_ENABLED=true required for writes");
   }
 
   const apiKey =
@@ -159,9 +176,17 @@ async function main(): Promise<void> {
     ) ? [{ code: item.code, name }] : [];
   });
 
-  const selected = validCountries
-    .filter(c => all || c.code === country)
-    .sort((a, b) => a.code.localeCompare(b.code));
+  const sorted = validCountries.sort((a, b) => a.code.localeCompare(b.code));
+  const selected = all
+    ? sorted
+    : country
+      ? sorted.filter(c => c.code === country)
+      : sorted.length
+        ? Array.from({ length: Math.min(rotation!, sorted.length) },
+            (_, i) => sorted[
+              (Math.floor(Date.now() / 86_400_000) * rotation! + i) % sorted.length
+            ])
+        : [];
 
   if (!selected.length) {
     throw new Error("No matching official country");
@@ -189,7 +214,9 @@ async function main(): Promise<void> {
       const city = clean((item as Record<string, unknown>).city);
       if (!city) continue;
 
-      let slug = slugify(city);
+      const suffix = countryRow.code === "IN" ? "" : "-" + countryRow.code.toLowerCase();
+      const baseSlug = slugify(city);
+      let slug = baseSlug.slice(0, 140 - suffix.length).replace(/-$/g, "") + suffix;
       const prior = seen.get(slug);
       if (prior === city) continue;
       if (prior && prior !== city) {
@@ -200,9 +227,15 @@ async function main(): Promise<void> {
       seen.set(slug, city);
       rows.push({
         country_code: countryRow.code,
-        country_name: countryRow.name,
-        city_name: city,
+        country: countryRow.name,
+        name: city,
         slug,
+        description: "Destination reference sourced from the official country/city directory. Check booking availability with the provider.",
+        category: "directory",
+        is_active: true,
+        source_name: "Nuitee Cities",
+        source_url: "https://docs.liteapi.travel/",
+        media_rights_verified: false,
       });
     }
 
@@ -211,9 +244,9 @@ async function main(): Promise<void> {
 
       if (db) {
         const { error } = await db
-          .from("nuitee_destinations")
+          .from("destinations")
           .upsert(batch, {
-            onConflict: "country_code,slug",
+            onConflict: "slug",
             ignoreDuplicates: true,
           });
 
