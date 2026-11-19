@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {hotelProviderSearchUrl} from "../src/lib/travel/hotel-provider-search.ts";
+import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
+const partner=loadTenderTs("src/lib/travel/partner-search.ts");
+const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
+const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":tracked});
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Existing project-specific Travelpayouts Drive is present only once in global head",()=>{
@@ -10,9 +13,13 @@ test("Existing project-specific Travelpayouts Drive is present only once in glob
  assert.match(shell,/querySelector\('script\[src\^=/);
 });
 
-test("unmapped hotel search redirects to the existing Nuitee booking screen without guessing a supplier ID",()=>{
- const url=hotelProviderSearchUrl("Example Hotel, Paris",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3});
- assert.equal(url,"https://hotel.gthproglobal.com/hotels?language=en&currency=INR");
+test("unverified OSM hotel goes to tracked worldwide Klook Hotels, no fictitious direct property result",()=>{
+ const url=new URL(hotelProviderSearchUrl("Example Hotel, Paris",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3}));
+ assert.equal(url.origin,"https://tp.media");
+ assert.equal(url.searchParams.get("campaign_id"),"137");
+ assert.equal(url.searchParams.get("marker"),"417668");
+ assert.equal(url.searchParams.get("trs"),"504342");
+ assert.equal(new URL(url.searchParams.get("u")).href,"https://www.klook.com/hotels/");
 });
 
 test("GTH hotel details separate verified direct booking from Nuitee search",()=>{
