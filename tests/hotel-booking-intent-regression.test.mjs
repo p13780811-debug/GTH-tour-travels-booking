@@ -48,8 +48,7 @@ test("Nuitee SDK alone creates authoritative placeId and supplier results handof
  assert.match(ui,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
  assert.match(ui,/LiteAPI\.SearchBar\.create/);
  assert.match(ui,/if \(!params\)/);
- assert.match(provider,/trackedWorldwideHotelHref\(destination\)/);
- assert.doesNotMatch(provider,/placeId|hotelId|api\.liteapi\.travel/);
+ assert.match(provider,/void destination;/);
  for(const src of [globSafe(read("src/app/app/hotels/page.tsx")),read("src/lib/mobile/universal-search.ts")]){
   assert.doesNotMatch(src,/NUITEE_API_KEY|SUPABASE_SERVICE_ROLE_KEY|fetch\(["']https:\/\/api\.liteapi/);
  }
@@ -65,8 +64,7 @@ test("travel city booking links preserve city without inventing supplier place I
   "src/data/blogExpansion.ts",
  ]){
   const c=read(file);
-  assert.ok(c.includes("/hotels?view=booking&city=")||c.includes("trackedWorldwideHotelHref("),file);
-  if(c.includes("trackedWorldwideHotelHref("))assert.match(c,/sponsored noopener noreferrer/);
+  assert.ok(c.includes("/hotels?view=booking&city="),file);
   assert.ok(!c.includes("/hotels/results?city="),file);
  }
 });

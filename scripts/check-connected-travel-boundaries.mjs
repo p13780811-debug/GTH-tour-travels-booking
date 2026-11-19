@@ -16,7 +16,6 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
  const hotelHandoffScope=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
- const worldwideHotelScope=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-fallback-and-affiliate-20261119";
  const allowedHotelFixes=new Set([
   "src/components/hotel/HotelBookingExperience.tsx",
   "src/components/hotel/HotelDiscoveryShowcase.tsx",
@@ -31,74 +30,15 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
   path.startsWith("src/components/flights/")||
   path.startsWith("src/app/api/")||
   path==="src/app/globals.css") &&
-  !(hotelHandoffScope&&allowedHotelFixes.has(path)) &&
-  !(worldwideHotelScope && new Set(["src/components/hotel/HotelBookingExperience.tsx","src/components/hotel/HotelDiscoveryShowcase.tsx","src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts"]).has(path)));
+  !(hotelHandoffScope&&allowedHotelFixes.has(path)));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
- if(worldwideHotelScope){
-  const approved=new Set([
-   "scripts/qa-connected-travel.mjs","scripts/check-connected-travel-boundaries.mjs",
-   "scripts/check-hotel-landing-boundaries.mjs","src/app/hotels/page.tsx",
-   "src/app/travel/page.tsx",
-   "src/components/destination/DestinationExplorerResults.tsx",
-   "src/components/hotel/HotelBookingExperience.tsx",
-   "src/components/seo/EcosystemGuideResources.tsx",
-   "src/components/travel/ConnectedTravelWorkspace.tsx",
-   "src/components/travel/GTHTransportSearchWidget.tsx",
-   "src/components/travel/GuideDiscoveryRails.tsx",
-   "src/components/travel/GuidePartnerHandoffs.tsx",
-   "src/components/travel/MappedCityDiscovery.tsx",
-   "src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts",
-   "tests/hotel-nearby-search.test.mjs","tests/hotel-travelpayouts-drive-fallback.test.mjs",
-   "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
-   "tests/travel-guide-contract.test.mjs",
-   "tests/hotel-booking-intent-regression.test.mjs",
-   "src/components/hotel/HotelDiscoveryShowcase.tsx",
-   "tests/hotel-storefront-hopegoo-style.test.mjs",
-   "tests/travel-hotels-direct-handoff.test.mjs",
-   "tests/destination-explorer-contract.test.mjs",
-   "tests/hotel-booking-journey.test.mjs",
-   "tests/nuitee-hotel-discovery-seo.test.mjs",
-   "tests/travel-city-editorial-scale.test.mjs",
-   "tests/travel-conversion-gates.test.mjs",
-   "vercel.json"
-  ]);
-  const outside=[...changed].filter(p=>!approved.has(p));
-  if(outside.length)throw Error("Worldwide hotel fix contains unreviewed files: "+outside.join(", "));
-  for(const protectedPath of [
-   "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
-   "src/lib/travel/connected-trip.ts","src/lib/travel/partner-search.ts",
-   "src/components/mobile/MobileSupplierShowcase.tsx","src/app/globals.css"
-  ])if(changed.has(protectedPath))throw Error("Do not modify working Nuitee, Flights, booking parser, or global CSS: "+protectedPath);
-  if(!readFileSync("src/components/travel/ConnectedTravelWorkspace.tsx","utf8").includes('data-travel-hotel-booking="supplier-search"'))
-    throw Error("Hotels tab must contain genuine worldwide booking search");
- }
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
  if(changed.has("src/app/travel/page.tsx")){
-  if(worldwideHotelScope){
-   // Only a self-contained, server-rendered navigation block may be added;
-   // all existing supplier components and surrounding page content stay exact.
-   const actual=read("src/app/travel/page.tsx"),originalPage=original("src/app/travel/page.tsx");
-   const start=actual.indexOf('    <nav id="travel-gateway-quick-links"');
-   const end=start<0?-1:actual.indexOf('    </nav>\n',start);
-   if(start<0||end<0||actual.indexOf('    <nav id="travel-gateway-quick-links"',start+1)!==-1||
-      actual.slice(0,start)+actual.slice(end+'    </nav>\n'.length)!==originalPage)
-     throw Error("Travel gateway must preserve the existing page and add only approved navigation");
-   const gateway=actual.slice(start,end);
-   for(const required of [
-    "/travel?travelMode=hotels#travel-search","/travel?travelMode=flights#travel-search",
-    "/travel?travelMode=experiences#travel-search","/bus#journey-search",
-    "/train#journey-search","/ferry#journey-search",
-    "tripCountry=IN&tripCity=Mumbai","tripCountry=IN&tripCity=Kolkata"
-   ])if(!gateway.includes(required))throw Error("Travel gateway missing entry: "+required);
-   if(/<iframe|<script|NEXT_PUBLIC_|process\.env|onClick=|fetch\(/.test(gateway))
-     throw Error("The added gateway must be static first-party navigation only");
-  }else{
-   const expected=original("src/app/travel/page.tsx")
-    .replace('import TravelSectionNav from "@/components/travel/TravelSectionNav";','import TravelSectionNav from "@/components/travel/TravelSectionNav";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
-    .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>');
-   if(read("src/app/travel/page.tsx")!==expected)throw Error("Travel page may add only the reviewed self-contained trip share entry");
-  }
+  const expected=original("src/app/travel/page.tsx")
+   .replace('import TravelSectionNav from "@/components/travel/TravelSectionNav";','import TravelSectionNav from "@/components/travel/TravelSectionNav";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
+   .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>');
+  if(read("src/app/travel/page.tsx")!==expected)throw Error("Travel page may add only the reviewed self-contained trip share entry");
  }
  if(changed.has("src/app/flights/page.tsx")){
   const expected=original("src/app/flights/page.tsx")

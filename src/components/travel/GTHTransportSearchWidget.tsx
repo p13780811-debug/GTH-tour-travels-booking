@@ -24,10 +24,6 @@ const modes = [
 
 export default function GTHTransportSearchWidget({ mode, flightOnly = false }: { mode: TransportMode; flightOnly?: boolean }) {
   const [activeMode, setActiveMode] = useState<TransportMode>(mode);
-  // Next.js can reuse this client component while switching service routes.
-  // Keep the selected transport type aligned with the entry route while still
-  // allowing users to change it explicitly inside the form.
-  useEffect(() => { setActiveMode(mode); }, [mode]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [invalidJourney, setInvalidJourney] = useState(false);

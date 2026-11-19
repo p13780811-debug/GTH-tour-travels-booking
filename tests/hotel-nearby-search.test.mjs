@@ -2,10 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "../src/lib/travel/hotel-geo-bounds.ts";
-import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
-const partner=loadTenderTs("src/lib/travel/partner-search.ts");
-const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
-const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":tracked});
+import {hotelProviderSearchUrl} from "../src/lib/travel/hotel-provider-search.ts";
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("city samples unlock unlabelled nearby source records without writing city",()=>{
   const mumbai=[{latitude:19.06,longitude:72.84},{latitude:19.08,longitude:72.86},{latitude:19.10,longitude:72.85}];
@@ -31,14 +28,10 @@ test("unknown or dispersed cities never gain guessed coordinates",()=>{
   assert.equal(hotelBounds("Paris",[{latitude:48.85,longitude:2.35},{latitude:33.66,longitude:-95.55},{latitude:48.86,longitude:2.36}]),null);
   assert.equal(hotelLocationFilter("%Paris%",null).includes("latitude"),false);
 });
-test("unmapped directory hotel uses tracked global Klook Hotels page, not fake inventory",()=>{
- for(const name of ["New Delhi","Example Hotel, New Delhi",""]){
-   const url=new URL(hotelProviderSearchUrl(name,{checkin:"2050-05-05",checkout:"2050-05-08",adults:3}));
-   assert.equal(url.origin,"https://tp.media");
-   assert.equal(url.searchParams.get("marker"),"417668");
-   assert.equal(url.searchParams.get("trs"),"504342");
-   assert.equal(new URL(url.searchParams.get("u")).href,"https://www.klook.com/hotels/");
- }
+test("unmapped hotel uses existing GTH Nuitee booking search, never a guessed link",()=>{
+ assert.equal(hotelProviderSearchUrl("New Delhi"),"https://hotel.gthproglobal.com/hotels?language=en&currency=INR");
+ assert.equal(hotelProviderSearchUrl("Example Hotel, New Delhi",{checkin:"2050-05-05",checkout:"2050-05-08",adults:3}),"https://hotel.gthproglobal.com/hotels?language=en&currency=INR");
+ assert.equal(hotelProviderSearchUrl(""),"https://hotel.gthproglobal.com/hotels?language=en&currency=INR");
 });
 test("API stays anon-read-only and hotels use a detail-first booking flow",()=>{
   const api=read("src/app/api/hotels/route.ts");

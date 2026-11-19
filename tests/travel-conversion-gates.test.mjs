@@ -1,10 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
-const partner=loadTenderTs("src/lib/travel/partner-search.ts");
-const hotels=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
-const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":hotels});
+import {hotelProviderSearchUrl} from "../src/lib/travel/hotel-provider-search.ts";
 import {hotelLocationFilter} from "../src/lib/travel/hotel-geo-bounds.ts";
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("Tours list and detail use the real license-approved table schema",()=>{
@@ -26,16 +23,11 @@ test("Hotel city discovery does not match arbitrary hotel names or addresses",()
   assert.doesNotMatch(where,/name\.ilike|address\.ilike|latitude/);
   assert.match(read("src/app/api/hotels/route.ts"),/Region: /);
 });
-test("Unknown hotel identity can use a safe tracked worldwide hotel category, never an exact property match",()=>{
- const link=new URL(hotelProviderSearchUrl("Hilton Mumbai",{checkin:"2099-01-12",checkout:"2099-01-15",adults:3}));
- const invalid=new URL(hotelProviderSearchUrl("Paris",{checkin:"2020-01-01",checkout:"2020-01-02",adults:500}));
- for(const u of [link,invalid]){
-  assert.equal(u.hostname,"tp.media");
-  assert.equal(u.searchParams.get("marker"),"417668");
-  assert.equal(u.searchParams.get("trs"),"504342");
-  assert.equal(new URL(u.searchParams.get("u")).href,"https://www.klook.com/hotels/");
- }
- assert.notEqual(link.searchParams.get("sub_id"),invalid.searchParams.get("sub_id"));
+test("Unknown hotel identity cannot create a fabricated supplier search or affiliate deep link",()=>{
+ const link=hotelProviderSearchUrl("Hilton Mumbai",{checkin:"2099-01-12",checkout:"2099-01-15",adults:3});
+ assert.equal(link,"https://hotel.gthproglobal.com/hotels?language=en&currency=INR");
+ const invalid=hotelProviderSearchUrl("Paris",{checkin:"2020-01-01",checkout:"2020-01-02",adults:500});
+ assert.equal(invalid,link);
 });
 test("Hotels planning controls and fallback routes work without changing global styling",()=>{
   const page=read("src/app/hotels/page.tsx");

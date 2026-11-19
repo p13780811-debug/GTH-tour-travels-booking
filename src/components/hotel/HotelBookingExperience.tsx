@@ -7,7 +7,7 @@ import { HOTEL_BOOKING_ORIGIN, HOTEL_WIDGET_SCRIPT, hotelBookingParams,
   hotelWidgetSearchParams, hotelWhiteLabelUrl, parseHotelBookingSearch } from "@/lib/travel/hotel-whitelabel";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
-import {trackedHotelCityHref,trackedWorldwideHotelHref} from "@/lib/travel/klook-hotel-search";
+import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
 
 type SearchSDK = {
   init: (options: { domain: string; deepLinkParams: string }) => void;
@@ -84,7 +84,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   // preserving the selected city. Keep the original real supplier picker for it.
   const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
   const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
-  const cityAlternativeHref=unmappedCityHref?(trackedHotelCityHref(cityHint)||trackedWorldwideHotelHref(cityHint)):null;
+  const cityAlternativeHref=unmappedCityHref?trackedHotelCityHref(cityHint):null;
   useEffect(() => {
     if (cityBookingHref) window.location.replace(cityBookingHref);
   }, [cityBookingHref]);

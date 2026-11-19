@@ -3,7 +3,6 @@ import {ArrowUpRight,BookOpen,ShieldCheck} from "lucide-react";
 import {ecosystemGuides} from "@/data/blogEcosystem";
 import {findFlightPartner} from "@/lib/flights/partners";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
-import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {buildCruiseProviderSearch} from "@/lib/travel/cruise-provider-search";
 import {buildPartnerSearch} from "@/lib/travel/partner-search";
 
@@ -30,8 +29,7 @@ export default function EcosystemGuideResources({slug}:{slug:string}){
  if(!guide)return null;
  const partners=(guide.partnerSlugs||[]).map(slug=>findFlightPartner(slug)).filter(p=>p!==null);
  const related=ecosystemGuides.filter(item=>item.slug!==guide.slug&&item.pillar===guide.pillar).slice(0,4);
- const whiteLabel=guide.nuitee?HOTEL_BOOKING_ORIGIN:null;
- const hotelAlternative=guide.nuitee?hotelProviderSearchUrl("worldwide"):null;
+ const whiteLabel=guide.nuitee?hotelProviderSearchUrl("hotels"):null;
  const getYourGuide=guide.gygCruiseDestination?buildCruiseProviderSearch(guide.gygCruiseDestination,"gyg","sightseeing"):null;
  const klook=guide.klookSearchDestination?buildPartnerSearch({kind:"activities",destination:guide.klookSearchDestination}):null;
  const pillarHome=guide.pillar==="Real Estate"?"/real-estate":guide.pillar==="Tenders"?"/tender":"/travel";
@@ -85,10 +83,6 @@ export default function EcosystemGuideResources({slug}:{slug:string}){
      })}
      {whiteLabel&&<a href={whiteLabel} target="_blank" rel="noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">
       <span>GTH Worldwide Stays <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Generic hotel booking search; dates and room quotes only on supplier</span></span>
-      <ArrowUpRight size={16} aria-hidden="true" className="shrink-0"/>
-     </a>}
-     {hotelAlternative&&<a href={hotelAlternative} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">
-      <span>GTH Worldwide Hotels · Alternative network <span className="mt-1 block text-xs font-normal text-[var(--text-soft)]">Worldwide hotel-category search; choose a destination on the booking network</span></span>
       <ArrowUpRight size={16} aria-hidden="true" className="shrink-0"/>
      </a>}
      {getYourGuide&&<a href={getYourGuide} target="_blank" rel="sponsored noopener noreferrer" className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm font-semibold hover:underline">

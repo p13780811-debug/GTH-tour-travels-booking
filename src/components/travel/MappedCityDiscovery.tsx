@@ -2,7 +2,6 @@ import Link from "next/link";
 import {ArrowRight,Compass,Hotel,MapPin} from "lucide-react";
 import TourCarousel from "@/components/tours/TourCarousel";
 import {mappedCityLink,mappedCityLabel,type MappedCity} from "@/lib/travel/mappedCities";
-import {trackedWorldwideHotelHref} from "@/lib/travel/klook-hotel-search";
 
 export default function MappedCityDiscovery({cities,title="More source-mapped cities"}:{
  cities:readonly MappedCity[];title?:string
@@ -45,7 +44,7 @@ export default function MappedCityDiscovery({cities,title="More source-mapped ci
      </Link>
      <div className="flex items-center justify-between gap-2">
       <Link href={"/tours?city="+encodeURIComponent(item.city)} className="underline">Search tours</Link>
-      <a href={trackedWorldwideHotelHref(item.city)} target="_blank" rel="sponsored noopener noreferrer" className="inline-flex items-center gap-1 underline" aria-label="Browse worldwide hotel booking options"><Hotel size={13}/> Hotels</a>
+      <Link href={"/hotels?view=booking&city="+encodeURIComponent(item.city)} className="inline-flex items-center gap-1 underline"><Hotel size={13}/> Hotels</Link>
      </div>
     </div>
    </article>)}

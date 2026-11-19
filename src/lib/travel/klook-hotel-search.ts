@@ -18,19 +18,3 @@ export function trackedHotelCityHref(value:unknown):string|null{
   if(!href)return null;
   return trackKlookDestination(new URL(href),"gth_hotels_"+city);
 }
-
-/**
- * Worldwide Klook accommodation gateway for any city without a verified
- * property-level supplier booking ID. This is the provider's genuine global
- * hotel search, not a fabricated city-specific results or hotel listing URL.
- *
- * A city/source label may be used ONLY for a sanitized tracking sub ID.
- * It is NOT appended to the booking URL as an unverified destination ID.
- */
-export function trackedWorldwideHotelHref(source:unknown):string{
-  const value=typeof source==="string"?source.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim():"";
-  const label=value.replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,54).replace(/_+$/g,"")||"worldwide";
-  const globalHotelLanding=new URL("https://www.klook.com/hotels/");
-  return trackKlookDestination(globalHotelLanding,"gth_hotel_"+label)
-    || "https://hotel.gthproglobal.com/";
-}
