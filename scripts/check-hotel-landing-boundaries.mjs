@@ -216,6 +216,8 @@ if(verifiedCityBranch){
   "src/app/hotels/page.tsx",
   "src/components/travel/ConnectedTravelWorkspace.tsx",
   "tests/hotel-booking-fallback-cities.test.mjs",
+   "tests/travel-hotels-direct-handoff.test.mjs",
+   "tests/hotel-marketplace.test.mjs",
   "scripts/check-connected-travel-boundaries.mjs",
   "scripts/check-hotel-landing-boundaries.mjs",
   "vercel.json"
