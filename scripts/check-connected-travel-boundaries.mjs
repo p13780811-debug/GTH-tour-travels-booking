@@ -38,6 +38,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
   const approved=new Set([
    "scripts/qa-connected-travel.mjs","scripts/check-connected-travel-boundaries.mjs",
    "scripts/check-hotel-landing-boundaries.mjs","src/app/hotels/page.tsx",
+   "src/app/travel/page.tsx",
    "src/components/destination/DestinationExplorerResults.tsx",
    "src/components/hotel/HotelBookingExperience.tsx",
    "src/components/seo/EcosystemGuideResources.tsx",
@@ -73,10 +74,30 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
  if(changed.has("src/app/travel/page.tsx")){
-  const expected=original("src/app/travel/page.tsx")
-   .replace('import TravelSectionNav from "@/components/travel/TravelSectionNav";','import TravelSectionNav from "@/components/travel/TravelSectionNav";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
-   .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>');
-  if(read("src/app/travel/page.tsx")!==expected)throw Error("Travel page may add only the reviewed self-contained trip share entry");
+  if(worldwideHotelScope){
+   // Only a self-contained, server-rendered navigation block may be added;
+   // all existing supplier components and surrounding page content stay exact.
+   const actual=read("src/app/travel/page.tsx"),originalPage=original("src/app/travel/page.tsx");
+   const start=actual.indexOf('    <nav id="travel-gateway-quick-links"');
+   const end=start<0?-1:actual.indexOf('    </nav>\n',start);
+   if(start<0||end<0||actual.indexOf('    <nav id="travel-gateway-quick-links"',start+1)!==-1||
+      actual.slice(0,start)+actual.slice(end+'    </nav>\n'.length)!==originalPage)
+     throw Error("Travel gateway must preserve the existing page and add only approved navigation");
+   const gateway=actual.slice(start,end);
+   for(const required of [
+    "/travel?travelMode=hotels#travel-search","/travel?travelMode=flights#travel-search",
+    "/travel?travelMode=experiences#travel-search","/bus#journey-search",
+    "/train#journey-search","/ferry#journey-search",
+    "tripCountry=IN&tripCity=Mumbai","tripCountry=IN&tripCity=Kolkata"
+   ])if(!gateway.includes(required))throw Error("Travel gateway missing entry: "+required);
+   if(/<iframe|<script|NEXT_PUBLIC_|process\.env|onClick=|fetch\(/.test(gateway))
+     throw Error("The added gateway must be static first-party navigation only");
+  }else{
+   const expected=original("src/app/travel/page.tsx")
+    .replace('import TravelSectionNav from "@/components/travel/TravelSectionNav";','import TravelSectionNav from "@/components/travel/TravelSectionNav";\nimport ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";')
+    .replace('      <TravelSectionNav />','      <TravelSectionNav />\n      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>');
+   if(read("src/app/travel/page.tsx")!==expected)throw Error("Travel page may add only the reviewed self-contained trip share entry");
+  }
  }
  if(changed.has("src/app/flights/page.tsx")){
   const expected=original("src/app/flights/page.tsx")
