@@ -107,7 +107,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     </div>
     <div className={styles.hotelContent} data-travel-hotel-booking="supplier-search">
       {trip.city&&<p className={styles.message}>Your planned destination is {trip.city}. Select the matching location in the worldwide hotel search below. No unverified destination ID will be guessed.</p>}
-      <HotelBookingExperience currency={trip.currency}/>
+      {mode==="hotels"&&<HotelBookingExperience currency={trip.currency}/>}
     </div>
     <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}>
       <summary>Optional: explore local hotel suggestions <ArrowUpRight size={15} aria-hidden="true"/></summary>
