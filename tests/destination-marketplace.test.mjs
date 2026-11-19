@@ -7,7 +7,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("destination index preserves curated places when provider is offline", () => {
   const page = read("src/app/destinations/page.tsx");
   const data = read("src/data/destinations.ts");
-  assert.match(page, /curatedDestinations\.map/);
+  assert.match(read("src/lib/destinations/catalog.ts"), /return curated\.map/);
   assert.doesNotMatch(page, /select\("\*"\)/);
   assert.match(data, /slug: "new-york"/);
   assert.match(data, /slug: "mumbai"/);
@@ -45,9 +45,9 @@ test("destination marketplace has real GET search, bounded pagination and bundle
   assert.match(list, /action="\/destinations" method="get"/);
   assert.match(list, /name="search"/);
   assert.match(list, /const perPage = 18/);
-  assert.match(list, /filtered\.slice\(/);
+  assert.match(read("src/lib/destinations/catalog.ts"), /query\.range\(/);
   assert.match(list, /pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
-  assert.match(list, /destinationImageForSlug\(item\.slug\)/);
+  assert.match(read("src/lib/destinations/catalog.ts"), /destinationImageForSlug\(item\.slug\)/);
   assert.match(data, /availableCityImages/);
   assert.match(data, /\/images\/default-city\.jpg/);
 });
@@ -63,9 +63,10 @@ test("legacy Digha route reuses source-aware guide, never mock room prices", () 
 test("worldwide directory uses source-backed active rows, geographic filters and URL-stable pagination",()=>{
  const listing=read("src/app/destinations/page.tsx");
  const geography=read("src/lib/destinations/geography.ts");
- assert.match(listing,/\.eq\("is_active", true\)/);
- assert.match(listing,/\.range\(offset, offset \+ 199\)/);
- assert.match(listing,/destinationGeography\(item\.slug, item\.country\)/);
+ const catalog=read("src/lib/destinations/catalog.ts");
+ assert.match(catalog,/\.eq\("is_active", true\)/);
+ assert.match(catalog,/query\.range\(/);
+ assert.match(catalog,/destinationGeography\(item\.slug, item\.country\)/);
  assert.match(listing,/name="region"/);
  assert.match(listing,/name="country"/);
  assert.match(listing,/name="sort"/);
