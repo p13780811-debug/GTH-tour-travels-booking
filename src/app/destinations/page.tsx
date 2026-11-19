@@ -7,7 +7,7 @@ import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationExplorerResults from "@/components/destination/DestinationExplorerResults";
 import { destinationGeography } from "@/lib/destinations/geography";
 import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
-import {destinationCountries,destinationDirectoryPage,editorialFeaturedDestinations,type DirectoryDestination} from "@/lib/destinations/catalog";
+import {destinationCountries,destinationDirectoryPage,editorialFeaturedDestinations} from "@/lib/destinations/catalog";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 
 export const revalidate = 60;
@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Global Destinations | GTH PRO", images: ["/images/global-city.jpg"] },
 };
 
-type Destination = DirectoryDestination;
 type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[]; view?: string | string[] }> };
 const perPage = 18;
 
