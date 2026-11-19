@@ -47,6 +47,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const restoredQuery = restored ? hotelBookingParams(restored).toString() : "";
   const [bookingQuery, setBookingQuery] = useState(restoredQuery);
   const [showSearch, setShowSearch] = useState(!restoredQuery);
+  const [explicitDestinationPicker, setExplicitDestinationPicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -85,6 +86,10 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
   const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
   const cityAlternativeHref=unmappedCityHref?trackedHotelCityHref(cityHint):null;
+  // The vendor SDK does not support a documented city-name preselection.
+  // Never display its independent/stale choice as if Tokyo, Paris, etc. was selected.
+  const needsExplicitDestination=Boolean(unmappedCityHref&&!restored);
+  useEffect(()=>{setExplicitDestinationPicker(false);},[cityHint]);
   useEffect(() => {
     if (cityBookingHref) window.location.replace(cityBookingHref);
   }, [cityBookingHref]);
@@ -241,27 +246,27 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
     {cityBookingHref && <p role="status" className="gth-hotel-booking-note">Opening verified booking results or the supplier destination search for {cityHint}…</p>}
     {unmappedCityHref && <div className="gth-hotel-booking-note">
       <div className="min-w-0 w-full space-y-3 text-sm leading-6">
-        <p>Find stays in <strong>{cityHint}</strong>. Choose the destination in the genuine worldwide hotel search below; no unsupported city ID will be guessed.</p>
+        <p><strong>{cityHint}</strong> is your requested destination, but no supplier location is selected yet. Never use a different airport or city shown by a saved supplier search.</p>
         <div className="flex flex-wrap gap-2">
           {cityAlternativeHref && <a href={cityAlternativeHref} rel="sponsored noopener noreferrer"
             className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">
-            Explore {cityHint} hotels on the alternative booking network <ExternalLink size={15} aria-hidden="true"/>
+            View {cityHint} hotel listings <ExternalLink size={15} aria-hidden="true"/>
           </a>}
-          <a href={unmappedCityHref} target="_blank" rel="noopener noreferrer"
+          <button type="button" onClick={()=>setExplicitDestinationPicker(true)}
             className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm">
-            Open worldwide hotel search <ExternalLink size={15} aria-hidden="true"/>
-          </a>
+            Choose location in worldwide hotel search
+          </button>
         </div>
-        <p className="text-xs text-[var(--text-soft)]">Confirm dates, guests, exact hotel and room availability with the booking network.</p>
+        <p className="text-xs text-[var(--text-soft)]">Select the matching location inside the provider form before searching. Rates and availability are confirmed by the provider.</p>
       </div>
     </div>}
     {showSearch && searchToggle}
     {showSearch && hotelHint && <p role="status" className="gth-hotel-booking-note">
       <span className="min-w-0">Requested hotel: <strong>{hotelHint}</strong>. Select its actual matching record in worldwide search; GTH will not substitute a similarly named directory listing.</span>
     </p>}
-    {showSearch && !cityBookingHref && <div id="hotel-live-search" className="gth-hotel-search-panel">
+    {showSearch && !cityBookingHref && (!needsExplicitDestination||explicitDestinationPicker) && <div id="hotel-live-search" className="gth-hotel-search-panel">
       {loading && <p role="status">Loading worldwide hotel search…</p>}
-      <iframe key={attempt} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
+      <iframe key={`${cityHint}:${attempt}`} ref={searchFrame} srcDoc={searchDocument} onLoad={() => void loadSearch()}
         title="Worldwide hotel destination, dates and guests" className="gth-hotel-search-frame" height="110"
         aria-describedby="hotel-room-occupancy-help" sandbox="allow-scripts allow-same-origin" />
       <p id="hotel-room-occupancy-help">Guests and child ages apply to each room. For rooms with different guests, use the secure booking site.</p>
