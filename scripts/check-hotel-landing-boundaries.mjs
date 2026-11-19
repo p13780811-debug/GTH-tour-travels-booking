@@ -236,7 +236,8 @@ if(worldwideHotelBranch){
   "src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts",
   "tests/hotel-nearby-search.test.mjs","tests/hotel-travelpayouts-drive-fallback.test.mjs",
   "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
-   "tests/travel-guide-contract.test.mjs"
+   "tests/travel-guide-contract.test.mjs",
+   "tests/hotel-booking-intent-regression.test.mjs"
  ];
  for(const p of reviewedHotelHandoffs)allowed.add(p);
  for(const p of [
