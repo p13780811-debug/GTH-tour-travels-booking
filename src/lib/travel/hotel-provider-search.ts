@@ -1,4 +1,4 @@
-import {trackedWorldwideHotelHref} from "./klook-hotel-search";
+import {trackedWorldwideHotelHref} from "./klook-hotel-search.ts";
 
 /**
  * An unverified OSM/registry hotel name is NOT a live bookable hotel ID.
