@@ -126,6 +126,12 @@ try{
  await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
  assert.equal(await page.getByRole("button",{name:"Find stays",exact:true}).count(),0,"The old duplicate hotel form is not shown");
  await page.goto(origin+"/flights",{waitUntil:"networkidle"});await page.getByText("Existing Aviasales fixture",{exact:true}).waitFor();assert.equal(await page.locator("#tpwl-search").count(),1);assert.equal(await page.getByRole("link",{name:"Continue booking",exact:true}).getAttribute("href"),"https://hotel.gthproglobal.com");
+ for(const [service,active] of [["bus","Bus"],["train","Train"],["ferry","Ferry"]] ){
+  await page.goto(origin+"/"+service,{waitUntil:"domcontentloaded"});
+  const chosen=page.getByRole("button",{name:active,exact:true});
+  await chosen.waitFor();
+  assert.equal(await chosen.getAttribute("aria-pressed"),"true","first-party mode must match selected "+service+" entry");
+ }
  await page.goto(origin+"/travel?travelMode=flights",{waitUntil:"networkidle"});
  await page.getByRole("link",{name:"Search flights",exact:true}).click();await page.locator('#travel-search [role="alert"]').waitFor();assert.equal(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),"#travel-search");
  const from=page.getByRole("combobox",{name:"From",exact:true}),to=page.getByRole("combobox",{name:"To",exact:true});
