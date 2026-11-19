@@ -7,8 +7,8 @@ import {resolveHotelRoute,cleanHotelDestination} from "./hotel-routing";
  * Add destinations here only after independently verifying the supplier
  * category page is for the expected city. No paid API or runtime scraping.
  */
-export const VERIFIED_HOTEL_DESTINATIONS: Readonly<Record<string,{id:number;slug:string;locale?:"en-IN"}>>={
-  goa:{id:178,slug:"goa"},
+export const VERIFIED_HOTEL_DESTINATIONS: Readonly<Record<string,{id:number;slug:string;locale?:"en-IN"|"none"}>>={
+  goa:{id:178,slug:"goa",locale:"none"},
   dubai:{id:78,slug:"dubai",locale:"en-IN"},
   singapore:{id:6,slug:"singapore"},
   tokyo:{id:28,slug:"tokyo"},
@@ -31,8 +31,8 @@ export function trackedHotelCityHref(value:unknown):string|null{
   const canonical=Object.prototype.hasOwnProperty.call(cityAlias,requested)?cityAlias[requested]:requested;
   if(!Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,canonical))return null;
   const item=VERIFIED_HOTEL_DESTINATIONS[canonical];
-  const locale=item.locale??"en-US";
-  const dest=new URL(`https://www.klook.com/${locale}/destination/c${item.id}-${item.slug}/3-hotel/`);
+  const locale=item.locale==="none"?"":"/"+(item.locale??"en-US");
+  const dest=new URL(`https://www.klook.com${locale}/destination/c${item.id}-${item.slug}/3-hotel/`);
   return trackKlookDestination(dest,`gth_hotels_${canonical.replace(/ /g,"_")}`);
 }
 
