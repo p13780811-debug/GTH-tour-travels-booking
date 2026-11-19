@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BedDouble, ChevronRight, MapPin, Search } from "lucide-react";
 import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 /**
  * Editorial hotel discovery inspired by swipe-first travel storefronts.
@@ -20,6 +21,13 @@ const destinations = [
   { city: "Singapore", image: "/images/cities/singapore.jpg", label: "City discoveries" },
   { city: "Tokyo", image: "/images/cities/tokyo.jpg", label: "Neighbourhood guides" },
 ] as const;
+
+/** Prefer verified Nuitee place IDs; Klook is only the city-specific fallback. */
+const destinationHotelHref=(city:string):string=>{
+  const routeResult=resolveHotelRoute({destination:city});
+  if(routeResult.status==="ready")return routeResult.url;
+  return trackedHotelCityHref(city)||route("booking",city);
+};
 
 const types = [
   { value: "", label: "All stays" },
@@ -62,7 +70,7 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
     }
     // Date-free discovery must not send users into a failing OSM directory.
     // The real booking provider owns hotel results, rates and final dates.
-    window.location.assign(trackedHotelCityHref(selected) || route("booking", selected));
+    window.location.assign(destinationHotelHref(selected));
   };
   const active = types.some(t => t.value === activeCategory) ? activeCategory : "";
   return (
@@ -112,8 +120,8 @@ export default function HotelDiscoveryShowcase({ initialCity = "", currentMode, 
         <nav aria-label="Featured hotel destination booking searches"
           className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 sm:mx-0 sm:gap-4 sm:px-0">
           {destinations.map(place => <Link key={place.city}
-            href={trackedHotelCityHref(place.city)||route("booking", place.city)} prefetch={false}
-            rel={trackedHotelCityHref(place.city)?"sponsored noopener noreferrer":undefined}
+            href={destinationHotelHref(place.city)} prefetch={false}
+            rel={trackedHotelCityHref(place.city)&&resolveHotelRoute({destination:place.city}).status!=="ready"?"sponsored noopener noreferrer":undefined}
             className="group flex h-48 w-[43vw] max-w-56 min-w-36 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:h-56 sm:w-48"
             aria-label={"Search bookable stays in " + place.city}>
             <span className="relative block min-h-0 flex-1 overflow-hidden">
