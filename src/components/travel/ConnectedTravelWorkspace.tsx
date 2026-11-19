@@ -120,7 +120,8 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     </div>
     <div className={styles.hotelContent} data-travel-hotel-booking="supplier-search">
       {trip.city&&<p className={styles.message}>Your planned destination is {trip.city}. Select the matching location in the worldwide hotel search below. No unverified destination ID will be guessed.</p>}
-      {/* Keep the genuine supplier widget mounted after first opening so tab changes\n          do not discard SDK state, repeat network initialization or reset dates. */}\n      <HotelBookingExperience currency={trip.currency}/>
+      {/* Keep the supplier widget mounted across tab switches to preserve SDK state. */}
+      <HotelBookingExperience currency={trip.currency}/>
     </div>
     <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}>
       <summary>Optional: explore local hotel suggestions <ArrowUpRight size={15} aria-hidden="true"/></summary>
