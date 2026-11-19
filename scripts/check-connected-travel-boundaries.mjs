@@ -86,6 +86,11 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "tests/destination-worldwide-ecosystem.test.mjs","tests/hotel-destination-master.test.mjs",
    "tests/destination-explorer-contract.test.mjs","tests/travel-guide-contract.test.mjs",
    "tests/hotel-booking-intent-regression.test.mjs",
+   "tests/destination-travel-intent.test.mjs",
+   "tests/consolidated-pr204-206-207-release.test.mjs",
+   "tests/hotel-integrated-handoff.test.mjs",
+   "tests/pr204-handoff-integrity.test.mjs",
+   "tests/hotel-marketplace.test.mjs",
    "tests/hotels-worldwide-destination-sync.test.mjs",
    "scripts/check-connected-travel-boundaries.mjs","scripts/check-hotel-landing-boundaries.mjs",
    "vercel.json"
