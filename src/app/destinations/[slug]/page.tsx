@@ -23,7 +23,7 @@ type Props = { params: Promise<{ slug: string }> };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
 async function getDestination(slug: string): Promise<DestinationDetail | null> {
-  if (!/^[a-z]+(?:-[a-z]+)*$/.test(slug) || slug.length > 80) return null;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 140) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
   const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
 
@@ -43,8 +43,8 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
     const approved=isIndexableDestination(data as unknown as Record<string,unknown>);
     // Never overwrite a curated, source-reviewed editorial page with unapproved imported copy.
     if (!approved && editorial) return editorial;
-    const name = typeof data.name === "string" && data.name.trim().length <= 120
-      ? data.name.trim()
+    const name = typeof data.name === "string" && data.name.trim().length > 0
+      ? data.name.trim().slice(0, 120)
       : editorial?.name;
     if (!name) return editorial;
     return {
