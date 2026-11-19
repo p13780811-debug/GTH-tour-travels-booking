@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {ArrowUpRight,CarFront,Compass,Hotel,Plane,ShieldCheck,Ticket,Wifi} from "lucide-react";
 import {findFlightPartner} from "@/lib/flights/partners";
+import {destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 
 /**
  * Booking-step handoffs for editorial travel guides. These are publisher
@@ -29,7 +30,7 @@ function partnerTarget(slug:string,host:string):string|null{
 }
 
 export default function GuidePartnerHandoffs({city}:{city:string|null}){
- const hotelHref=city?"/hotels?view=booking&city="+encodeURIComponent(city):"/hotels";
+ const hotelHref=city?(destinationHotelHref(city)||"/hotels"):"/hotels";
  const offers=featured.flatMap(item=>{
   const href=partnerTarget(item.slug,item.host);
   return href?[{...item,href}]:[];
@@ -43,7 +44,7 @@ export default function GuidePartnerHandoffs({city}:{city:string|null}){
    travellers and product with the supplier. No availability or price is guaranteed by GTH PRO.
   </p>
   <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-   <Link href={hotelHref} className="flex min-h-[154px] flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
+   <Link href={hotelHref} rel={hotelHref.startsWith("https://tp.media/")?"sponsored noopener noreferrer":undefined} className="flex min-h-[154px] flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 hover:border-[var(--gold)]">
     <span className="flex items-center gap-2 text-base font-bold"><Hotel size={19} aria-hidden="true"/> Search hotels</span>
     <span className="mt-2 flex-1 text-xs leading-6 text-[var(--text-soft)]">Open the GTH Worldwide Stays booking search. Select a real supplier destination, stay dates and guests to view live hotel options.</span>
     <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold">Find a stay <ArrowUpRight size={16} aria-hidden="true"/></span>

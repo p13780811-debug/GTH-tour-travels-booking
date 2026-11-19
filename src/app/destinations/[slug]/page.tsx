@@ -18,6 +18,7 @@ import {isIndexableDestination} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
 import { destinationGeography } from "@/lib/destinations/geography";
+import {destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 
 type Props = { params: Promise<{ slug: string }> };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
@@ -98,7 +99,7 @@ export default async function DestinationPage({ params }: Props) {
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
-  const hotelsHref=links.find(item=>item.key==="hotels")!.href;
+  const hotelsHref=destinationHotelHref(destination.name)||links.find(item=>item.key==="hotels")!.href;
   const toursHref=links.find(item=>item.key==="tours")!.href;
   const flightsHref=links.find(item=>item.key==="flights")!.href;
   const availableTours = (await getTours({ city: slug })).slice(0, 6);

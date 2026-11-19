@@ -64,7 +64,12 @@ test("travel city booking links preserve city without inventing supplier place I
   "src/data/blogExpansion.ts",
  ]){
   const c=read(file);
-  assert.ok(c.includes("/hotels?view=booking&city="),file);
+  if(c.includes("destinationHotelHref(")){
+   assert.ok(c.includes("klook-hotel-search"),file);
+   assert.ok(c.includes("sponsored noopener noreferrer"),file);
+  }else{
+   assert.ok(c.includes("/hotels?view=booking&city="),file);
+  }
   assert.ok(!c.includes("/hotels/results?city="),file);
  }
 });

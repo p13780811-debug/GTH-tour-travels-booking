@@ -17,6 +17,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
  const hotelHandoffScope=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
  const hotelDirectScope=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
+ const hotelWorldScope=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-destination-cta-20261120";
  const allowedHotelFixes=new Set([
   "src/components/hotel/HotelBookingExperience.tsx",
   "src/components/hotel/HotelDiscoveryShowcase.tsx",
@@ -36,7 +37,8 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
     "src/components/hotel/HotelBookingExperience.tsx",
     "src/components/hotel/HotelDiscoveryShowcase.tsx",
     "src/lib/travel/klook-hotel-search.ts"
-  ]).has(path)));
+  ]).has(path)) &&
+  !(hotelWorldScope&&path==="src/lib/travel/klook-hotel-search.ts"));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
  if(hotelDirectScope){
   const approved=new Set([
@@ -71,6 +73,49 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
      !linkRouter.includes('VERIFIED_HOTEL_DESTINATIONS')||
      /https:\/\/www\.klook\.com\/en-IN\/search\/result/.test(linkRouter))
     throw Error("PR240 must reuse vetted Nuitee SDK, exact Klook Hotels categories and reject unreviewed city results URLs");
+ }
+ if(hotelWorldScope){
+  const approved=new Set([
+   "src/lib/travel/klook-hotel-search.ts",
+   "src/app/hotels/page.tsx",
+   "src/components/travel/ConnectedTravelWorkspace.tsx",
+   "tests/hotel-booking-fallback-cities.test.mjs",
+  "src/components/travel/GuidePartnerHandoffs.tsx",
+  "src/components/travel/GuideDiscoveryRails.tsx",
+  "src/components/travel/MappedCityDiscovery.tsx",
+  "src/components/destination/DestinationExplorerResults.tsx",
+  "src/app/hotels/explore/[slug]/page.tsx",
+  "src/app/destinations/[slug]/page.tsx",
+  "tests/travel-guide-contract.test.mjs",
+  "tests/travel-city-editorial-scale.test.mjs",
+  "tests/destination-explorer-contract.test.mjs",
+   "tests/travel-hotels-direct-handoff.test.mjs",
+   "tests/hotel-marketplace.test.mjs",
+  "tests/hotel-booking-intent-regression.test.mjs",
+  "scripts/qa-hotel-landing.mjs",
+   "scripts/check-connected-travel-boundaries.mjs",
+   "scripts/check-hotel-landing-boundaries.mjs",
+   "vercel.json"
+  ]);
+  const unexpected=[...changed].filter(path=>!approved.has(path));
+  if(unexpected.length)throw Error("Hotel destination PR contains unreviewed changes: "+unexpected.join(","));
+  for(const protectedPath of [
+   "src/components/hotel/HotelBookingExperience.tsx",
+   "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+   "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+   "src/app/globals.css","src/app/flights/page.tsx",
+   "src/components/mobile/MobileSupplierShowcase.tsx",
+   "src/app/api/hotels/booking/route.ts"
+  ])if(changed.has(protectedPath))throw Error("Original Nuitee SDK, flight logic, CSS, APIs and security must remain untouched: "+protectedPath);
+  const resolver=readFileSync("src/lib/travel/klook-hotel-search.ts","utf8");
+  const landing=readFileSync("src/app/hotels/page.tsx","utf8");
+  const travel=readFileSync("src/components/travel/ConnectedTravelWorkspace.tsx","utf8");
+  if(!resolver.includes("VERIFIED_HOTEL_DESTINATIONS")||
+     !resolver.includes("/3-hotel/")||
+     resolver.includes("klook.com/en-IN/search/result/")||
+     !landing.includes("href={destinationHotelHref(place.city)")||
+     !travel.includes('<HotelBookingExperience currency={draft.currency} directHandoff />'))
+    throw Error("Hotel cards must use verified category route and unchanged Nuitee supplier SDK.");
  }
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
@@ -147,5 +192,9 @@ if(flightPage!==original("src/app/flights/page.tsx"))throw Error("Only the verif
 const oldVercel=JSON.parse(original("vercel.json")),newVercel=JSON.parse(read("vercel.json"));
 if(newVercel.git.deploymentEnabled["feat/travel-connected-journey-20261109"]!==false)throw Error("Work branch preview must be disabled");
 delete newVercel.git.deploymentEnabled["feat/travel-connected-journey-20261109"];
+if(process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-destination-cta-20261120"){
+ if(newVercel.git.deploymentEnabled["fix/worldwide-hotel-destination-cta-20261120"]!==false)throw Error("Hotel preview must stay disabled");
+ delete newVercel.git.deploymentEnabled["fix/worldwide-hotel-destination-cta-20261120"];
+}
 if(JSON.stringify(oldVercel)!==JSON.stringify(newVercel))throw Error("Other release settings must stay unchanged");
 console.log("PASS: connected Travel UI and owner-requested neutral action copy only. Supplier behavior, fixed URLs, paid API boundaries, ecosystem layouts, app, shared CSS, database/security and SEO are preserved.");

@@ -26,7 +26,7 @@ import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacemen
 import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {hotelSearchParams,validatedHotelStay} from "@/lib/travel/hotel-search-params";
-import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
+import {trackedHotelCityHref,destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 import styles from "./HotelsLanding.module.css";
 
 import {
@@ -448,11 +448,11 @@ function HotelsContent() {
                   <Link href="/destinations" className={styles.textLink}>Explore destinations <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
                 <nav className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Featured travel destinations">
-                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={"/hotels/explore/"+place.slug}
+                  {featuredDestinations.map(place=><Link prefetch={false} key={place.slug} href={destinationHotelHref(place.city)||"/hotels?view=booking"} rel={destinationHotelHref(place.city)?.startsWith("https://tp.media/")?"sponsored noopener noreferrer":undefined}
                     className="gth-glass flex min-h-20 min-w-0 items-center justify-between gap-2 rounded-2xl border border-[var(--border)] p-4"
-                    aria-label={"Explore "+place.city+" hotel guide"}>
+                    aria-label={"Browse hotels in "+place.city}>
                     <span className="min-w-0"><strong className="block text-base font-bold">{place.city}</strong>
-                      <span className="mt-1 block text-xs text-[var(--text-soft)]">Local stay guide</span></span>
+                      <span className="mt-1 block text-xs text-[var(--text-soft)]">Hotel listings</span></span>
                     <ChevronRight size={17} className="shrink-0 text-[var(--gold)]" aria-hidden="true"/>
                   </Link>)}
                 </nav>
@@ -495,7 +495,7 @@ function HotelsContent() {
               <p className="mt-2 text-xs text-[var(--text-soft)]">Country coverage includes OSM regional extracts. A source record is not verified room inventory. For a city search, results may include entries lacking an independently confirmed country tag.</p>
               <nav aria-label="Explore hotel destination guides" className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4">
                 {featuredDestinations.map(place=>
-                  <Link key={place.slug} href={"/hotels?"+new URLSearchParams({view:"booking",city:place.city}).toString()}
+                  <Link key={place.slug} href={destinationHotelHref(place.city)||"/hotels?view=booking"} rel={destinationHotelHref(place.city)?.startsWith("https://tp.media/")?"sponsored noopener noreferrer":undefined}
                     className="group flex w-44 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-48">
                     <span className="relative block h-24 w-full overflow-hidden">
                       <Image src={place.image} alt={place.city+" destination scenery"} fill sizes="(max-width: 640px) 176px, 192px"

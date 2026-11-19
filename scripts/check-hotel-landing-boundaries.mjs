@@ -208,6 +208,66 @@ for (const path of [
 // error handling and QA, but never the working supplier SDK, 12Go or theme.
 const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
 const directHotelBranch=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
+
+const verifiedCityBranch=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-destination-cta-20261120";
+if(verifiedCityBranch){
+ for(const path of [
+  "src/lib/travel/klook-hotel-search.ts",
+  "src/app/hotels/page.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "tests/hotel-booking-fallback-cities.test.mjs",
+  "src/components/travel/GuidePartnerHandoffs.tsx",
+  "src/components/travel/GuideDiscoveryRails.tsx",
+  "src/components/travel/MappedCityDiscovery.tsx",
+  "src/components/destination/DestinationExplorerResults.tsx",
+  "src/app/hotels/explore/[slug]/page.tsx",
+  "src/app/destinations/[slug]/page.tsx",
+  "tests/travel-guide-contract.test.mjs",
+  "tests/travel-city-editorial-scale.test.mjs",
+  "tests/destination-explorer-contract.test.mjs",
+   "tests/travel-hotels-direct-handoff.test.mjs",
+   "tests/hotel-marketplace.test.mjs",
+  "tests/hotel-booking-intent-regression.test.mjs",
+  "scripts/qa-hotel-landing.mjs",
+  "scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs",
+  "vercel.json"
+ ])allowed.add(path);
+ const reviewed=new Set([
+  "src/lib/travel/klook-hotel-search.ts",
+  "src/app/hotels/page.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "tests/hotel-booking-fallback-cities.test.mjs",
+  "src/components/travel/GuidePartnerHandoffs.tsx",
+  "src/components/travel/GuideDiscoveryRails.tsx",
+  "src/components/travel/MappedCityDiscovery.tsx",
+  "src/components/destination/DestinationExplorerResults.tsx",
+  "src/app/hotels/explore/[slug]/page.tsx",
+  "src/app/destinations/[slug]/page.tsx",
+  "tests/travel-guide-contract.test.mjs",
+  "tests/travel-city-editorial-scale.test.mjs",
+  "tests/destination-explorer-contract.test.mjs",
+  "tests/travel-hotels-direct-handoff.test.mjs",
+  "tests/hotel-marketplace.test.mjs",
+  "tests/hotel-booking-intent-regression.test.mjs",
+  "scripts/qa-hotel-landing.mjs",
+  "scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs",
+  "vercel.json"
+ ]);
+ const outside=[...new Set(paths)].filter(path=>!reviewed.has(path));
+ if(outside.length)throw Error("Unreviewed hotel routing PR files: "+outside.join(", "));
+ for(const protectedPath of [
+  "src/components/hotel/HotelBookingExperience.tsx",
+  "src/lib/travel/hotel-whitelabel.ts",
+  "src/lib/travel/hotel-routing.ts",
+  "src/lib/travel/partner-search.ts",
+  "src/app/globals.css",
+  "src/app/flights/page.tsx",
+  "src/lib/security/rate-limit.ts"
+ ])if(paths.includes(protectedPath))throw Error("Supplier, flight, theme, security and paid-API boundaries must remain unchanged: "+protectedPath);
+}
+
 if(directHotelBranch){
  for(const path of [
   "src/components/travel/ConnectedTravelWorkspace.tsx",
@@ -252,7 +312,7 @@ if(hotelRecoveryBranch){
 if (paths.includes("vercel.json")) {
  const current=JSON.parse(readFileSync("vercel.json","utf8"));
  const original=JSON.parse(git("show",diffBase+":vercel.json"));
- const previewBranch=hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
+ const previewBranch=verifiedCityBranch?"fix/worldwide-hotel-destination-cta-20261120":hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
  if(current.git?.deploymentEnabled?.[previewBranch]!==false)
    throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
  delete current.git.deploymentEnabled[previewBranch];
