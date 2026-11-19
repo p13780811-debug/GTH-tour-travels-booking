@@ -50,6 +50,12 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
    "tests/travel-guide-contract.test.mjs",
    "tests/hotel-booking-intent-regression.test.mjs",
+   "tests/travel-hotels-direct-handoff.test.mjs",
+   "tests/destination-explorer-contract.test.mjs",
+   "tests/hotel-booking-journey.test.mjs",
+   "tests/nuitee-hotel-discovery-seo.test.mjs",
+   "tests/travel-city-editorial-scale.test.mjs",
+   "tests/travel-conversion-gates.test.mjs",
    "vercel.json"
   ]);
   const outside=[...changed].filter(p=>!approved.has(p));
