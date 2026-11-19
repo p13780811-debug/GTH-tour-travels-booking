@@ -16,6 +16,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
  const hotelHandoffScope=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+ const worldwideHotelScope=process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-fallback-and-affiliate-20261119";
  const allowedHotelFixes=new Set([
   "src/components/hotel/HotelBookingExperience.tsx",
   "src/components/hotel/HotelDiscoveryShowcase.tsx",
@@ -30,8 +31,35 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
   path.startsWith("src/components/flights/")||
   path.startsWith("src/app/api/")||
   path==="src/app/globals.css") &&
-  !(hotelHandoffScope&&allowedHotelFixes.has(path)));
+  !(hotelHandoffScope&&allowedHotelFixes.has(path)) &&
+  !(worldwideHotelScope && new Set(["src/components/hotel/HotelBookingExperience.tsx","src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts"]).has(path)));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
+ if(worldwideHotelScope){
+  const approved=new Set([
+   "scripts/qa-connected-travel.mjs","scripts/check-connected-travel-boundaries.mjs",
+   "scripts/check-hotel-landing-boundaries.mjs","src/app/hotels/page.tsx",
+   "src/components/destination/DestinationExplorerResults.tsx",
+   "src/components/hotel/HotelBookingExperience.tsx",
+   "src/components/seo/EcosystemGuideResources.tsx",
+   "src/components/travel/ConnectedTravelWorkspace.tsx",
+   "src/components/travel/GuideDiscoveryRails.tsx",
+   "src/components/travel/GuidePartnerHandoffs.tsx",
+   "src/components/travel/MappedCityDiscovery.tsx",
+   "src/lib/travel/hotel-provider-search.ts","src/lib/travel/klook-hotel-search.ts",
+   "tests/hotel-nearby-search.test.mjs","tests/hotel-travelpayouts-drive-fallback.test.mjs",
+   "tests/hotel-booking-fallback-cities.test.mjs","tests/travel-hotel-widget-entry.test.mjs",
+   "vercel.json"
+  ]);
+  const outside=[...changed].filter(p=>!approved.has(p));
+  if(outside.length)throw Error("Worldwide hotel fix contains unreviewed files: "+outside.join(", "));
+  for(const protectedPath of [
+   "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+   "src/lib/travel/connected-trip.ts","src/lib/travel/partner-search.ts",
+   "src/components/mobile/MobileSupplierShowcase.tsx","src/app/globals.css"
+  ])if(changed.has(protectedPath))throw Error("Do not modify working Nuitee, Flights, booking parser, or global CSS: "+protectedPath);
+  if(!readFileSync("src/components/travel/ConnectedTravelWorkspace.tsx","utf8").includes('data-travel-hotel-booking="supplier-search"'))
+    throw Error("Hotels tab must contain genuine worldwide booking search");
+ }
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
  if(changed.has("src/app/travel/page.tsx")){
