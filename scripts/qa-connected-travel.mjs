@@ -38,9 +38,10 @@ try{
   await page.context().route("**/*",route);await page.addInitScript(t=>localStorage.setItem("theme-mode",t),theme);
   await page.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
   await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
-  const discoveryBefore=hotelDiscovery,rscBefore=travelRsc;
+  let discoveryBefore=hotelDiscovery;const rscBefore=travelRsc;
   await page.getByText("Optional: explore local hotel suggestions",{exact:true}).click();
   await page.getByRole("heading",{name:"Around Mumbai",exact:true}).waitFor();
+  discoveryBefore=hotelDiscovery;
   assert.equal(await page.locator("#travel-search [role=tab]").count(),3);
   assert.equal(await page.locator("#travel-search [role=tab]").evaluateAll(tabs=>tabs.every(tab=>document.getElementById(tab.getAttribute('aria-controls')))),true,"all tabs control an existing panel");
   assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1,"genuine supplier search must be immediately visible in Hotels tab");
@@ -102,7 +103,7 @@ try{
  assert.equal(handoffHotel.searchParams.get("currency"),"USD");
  assert.equal(hotelDiscovery,dateEditReads,"one-click hotel SearchBar handoff must not query local directory");
  await page.goto(origin+"/travel?"+trip.replace("tripCountry=IN&tripCity=Mumbai","tripCountry=GB&tripCity=London"),{waitUntil:"networkidle"});
- await page.getByRole("heading",{name:"Around London",exact:true}).waitFor();assert.match(page.url(),/tripCity=London/);
+ await page.getByText(/Your planned destination is London/).waitFor();assert.match(page.url(),/tripCity=London/);
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
  await page.waitForURL(url=>url.searchParams.get("travelMode")==="experiences");
  await page.reload({waitUntil:"networkidle"});assert.equal(await page.getByRole("tab",{name:"Experiences",exact:true}).getAttribute("aria-selected"),"true");
