@@ -3,6 +3,7 @@ import Image from "next/image";
 import {BookOpen,Compass,ArrowRight,MapPin} from "lucide-react";
 import TourCarousel from "@/components/tours/TourCarousel";
 import {discoveryRows,guideBySlug} from "@/lib/travel/guideCatalog";
+import {trackedWorldwideHotelHref} from "@/lib/travel/klook-hotel-search";
 import type {CountryCount} from "@/lib/travel/osmAttractions";
 import type {ApprovedGuideMedia} from "@/lib/travel/guideMedia";
 
@@ -41,7 +42,7 @@ export default function GuideDiscoveryRails({media,countries=[]}:{media:Map<stri
        <div className="mt-auto flex flex-wrap gap-x-3 gap-y-2 pt-4 text-xs">
         <Link href={"/guides/"+item.slug} className="inline-flex items-center gap-1 font-semibold underline"><BookOpen size={13}/> Explore guide</Link>
         <Link href={"/attractions?country="+item.countryCode} className="underline">Browse mapped places</Link>
-        <Link href={item.city?"/hotels?view=booking&city="+encodeURIComponent(item.city):"/hotels"} className="underline">Find hotels</Link>
+        <a href={trackedWorldwideHotelHref(item.city||item.name)} target="_blank" rel="sponsored noopener noreferrer" className="underline" aria-label="Browse worldwide hotel booking options">Find hotels</a>
         <Link href="/ai-trip" className="underline">Plan trip</Link>
        </div>
        {picture&&<p className="mt-3 text-[10px] leading-4 text-[var(--text-soft)]">
