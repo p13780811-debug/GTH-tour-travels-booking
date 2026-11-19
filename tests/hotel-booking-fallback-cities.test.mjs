@@ -96,13 +96,13 @@ test("Every reviewed city routes to its own exact hotel list with preserved affi
  assert.equal(hotels.destinationHotelHref("delhi"),hotels.destinationHotelHref("new-delhi"));
  assert.equal(hotels.destinationHotelHref("new-york"),hotels.destinationHotelHref("new york"));
 });
-test("Hotel destination cards across the site use one resolver; Travel widget is not wrapped in a compact form",()=>{
+test("Hotel destination cards use one resolver; Travel widget is not inside a compact form",()=>{
  const page=read("src/app/hotels/page.tsx");
  const storefront=read("src/components/hotel/HotelDiscoveryShowcase.tsx");
  const travel=read("src/components/travel/ConnectedTravelWorkspace.tsx");
- assert.match(page,/href=\\{destinationHotelHref\\(place\\.city\\)/);
- assert.doesNotMatch(page,/href=\\{"\\/hotels\\?"+new URLSearchParams/);
- assert.match(storefront,/destinationHotelHref\\(place\\.city\\)/);
- assert.match(travel,/<div data-gth-travel-hotel-supplier="direct"><HotelBookingExperience currency=\\{draft.currency\\} directHandoff \\/><\\/div>/);
- assert.doesNotMatch(travel,/className=\\{styles\\.plan\\} data-gth-travel-hotel-supplier="direct"/);
+ assert.ok(page.includes("href={destinationHotelHref(place.city)"));
+ assert.ok(!page.includes('href={"/hotels?"+new URLSearchParams({view:"booking",city:place.city})'));
+ assert.ok(storefront.includes("destinationHotelHref(place.city)"));
+ assert.ok(travel.includes('<div data-gth-travel-hotel-supplier="direct"><HotelBookingExperience currency={draft.currency} directHandoff /></div>'));
+ assert.ok(!travel.includes('className={styles.plan} data-gth-travel-hotel-supplier="direct"'));
 });
