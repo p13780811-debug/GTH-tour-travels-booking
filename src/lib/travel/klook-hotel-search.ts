@@ -44,7 +44,8 @@ export function trackedHotelCityHref(value:unknown):string|null{
   const key=cityKey(value);
   if(!key||!Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,key))return null;
   const canonical=VERIFIED_HOTEL_DESTINATIONS[key];
-  const url=new URL("https://www.klook.com/destination/"+canonical+"/3-hotel/");
+  const path=(key==="dubai"?"/en-IN/":"/") + "destination/"+canonical+"/3-hotel/";
+  const url=new URL(path,"https://www.klook.com");
   const subId="gth_hotels_"+key.replace(/[^a-z0-9]+/g,"_");
   return trackKlookDestination(url,subId);
 }
