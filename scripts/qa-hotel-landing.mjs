@@ -87,7 +87,27 @@ try{
    await page.getByRole("combobox",{name:"Hotel discovery country",exact:true}).selectOption("GB");await page.getByRole("textbox",{name:"Hotel discovery city",exact:true}).fill("London");await page.getByRole("button",{name:"Explore area",exact:true}).click();await page.getByRole("heading",{name:"Around London",exact:true}).waitFor();await page.getByRole("heading",{name:"More stays in United Kingdom",exact:true}).waitFor();
    assert.equal(await page.getByRole("heading",{name:"Around Mumbai",exact:true}).count(),0);await page.getByRole("button",{name:"Explore more in United Kingdom",exact:true}).click();
   }
-  for(const link of await page.getByRole("navigation",{name:"Featured travel destinations"}).locator("a").all())assert.match(await link.getAttribute("href"),/^\/hotels\/explore\/[a-z-]+$/);
+  for(const link of await page.getByRole("navigation",{name:"Featured travel destinations"}).locator("a").all()){
+    const raw=await link.getAttribute("href");
+    assert.ok(raw,"Featured destination link must have a real target");
+    const target=new URL(raw,"https://gthproglobal.com");
+    if(target.hostname==="tp.media"){
+      assert.equal(target.searchParams.get("marker"),"417668");
+      assert.equal(target.searchParams.get("campaign_id"),"137");
+      assert.equal(target.searchParams.get("trs"),"504342");
+      const supplier=new URL(target.searchParams.get("u"));
+      assert.equal(supplier.hostname,"www.klook.com");
+      assert.match(supplier.pathname,/\\/destination\\/c[0-9]+-[a-z-]+\\/3-hotel\\/$/);
+    }else if(target.hostname==="hotel.gthproglobal.com"){
+      assert.equal(target.pathname,"/hotels");
+      assert.ok(target.searchParams.get("placeId"),"Nuitee direct results need reviewed Place ID");
+    }else{
+      assert.equal(target.hostname,"gthproglobal.com");
+      assert.equal(target.pathname,"/hotels");
+      assert.equal(target.searchParams.get("view"),"booking");
+      assert.ok(target.searchParams.get("city"),"Unknown city must retain its real name in the supplier picker");
+    }
+   }
   await page.getByText("The complete price",{exact:true}).click();await page.getByText(/Compare the total for your dates/).waitFor();
   await page.getByRole("button",{name:"Hotel directory",exact:true}).click();await page.getByText("Fixture directory hotel",{exact:true}).first().waitFor();
   const country=page.getByRole("combobox",{name:"Country",exact:true});assert.equal(await country.evaluate(s=>getComputedStyle(s).colorScheme),theme==="night"?"dark":"light");
