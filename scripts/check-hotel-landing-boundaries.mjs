@@ -228,6 +228,7 @@ if(verifiedCityBranch){
    "tests/travel-hotels-direct-handoff.test.mjs",
    "tests/hotel-marketplace.test.mjs",
   "tests/hotel-booking-intent-regression.test.mjs",
+  "scripts/qa-hotel-landing.mjs",
   "scripts/check-connected-travel-boundaries.mjs",
   "scripts/check-hotel-landing-boundaries.mjs",
   "vercel.json"
@@ -249,6 +250,7 @@ if(verifiedCityBranch){
   "tests/travel-hotels-direct-handoff.test.mjs",
   "tests/hotel-marketplace.test.mjs",
   "tests/hotel-booking-intent-regression.test.mjs",
+  "scripts/qa-hotel-landing.mjs",
   "scripts/check-connected-travel-boundaries.mjs",
   "scripts/check-hotel-landing-boundaries.mjs",
   "vercel.json"
