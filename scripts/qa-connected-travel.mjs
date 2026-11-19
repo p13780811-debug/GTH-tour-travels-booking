@@ -10,7 +10,7 @@ assert.equal(new URL(origin).hostname,"127.0.0.1");await mkdir(evidence,{recursi
 const browser=await chromium.launch({headless:true,executablePath:process.env.GTH_CHROMIUM_PATH||undefined,args:["--no-sandbox"]});
 const scenarios=[],errors=[],forbidden=[];let travelRsc=0,hotelDiscovery=0,experienceReads=0;
 const trip="tripCountry=IN&tripCity=Mumbai&tripStart=2026-12-10&tripEnd=2026-12-14&tripRooms=2&tripAdults=2&tripChildren=4,9&tripCurrency=USD&tripFrom=LHR&tripTo=BOM";
-const sdk=String.raw`window.LiteAPI={init(){},SearchBar:{async create(options){document.querySelector(options.selector).innerHTML='<p>Isolated hotel search fixture</p>';}}};`;
+const sdk=String.raw`window.LiteAPI={init(){},SearchBar:{async create(options){document.querySelector(options.selector).innerHTML='<p>Isolated hotel search fixture</p><button type="button" id="gth-qa-hotel-submit">Find rooms fixture</button>';document.getElementById('gth-qa-hotel-submit').addEventListener('click',()=>options.onSearchClick({place:{place_id:'ChIJwe1EZjDG5zsRaYxkjY_tpF0'},checkin:'2026-12-10',checkout:'2026-12-14',occupancies:btoa(JSON.stringify([{adults:2,children:[4,9]},{adults:2,children:[]}]))}));}}};`;
 const avia=String.raw`document.getElementById('tpwl-search').innerHTML='<p>Existing Aviasales fixture</p>';document.getElementById('tpwl-tickets').innerHTML='<p>Existing result container</p>';`;
 const route=async r=>{
  const url=new URL(r.request().url());
@@ -41,12 +41,12 @@ try{
   const discoveryBefore=hotelDiscovery,rscBefore=travelRsc;
   assert.equal(await page.locator("#travel-search [role=tab]").count(),3);
   assert.equal(await page.locator("#travel-search [role=tab]").evaluateAll(tabs=>tabs.every(tab=>document.getElementById(tab.getAttribute('aria-controls')))),true,"all tabs control an existing panel");
-  assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates, guests and rooms"]').count(),1,"Hotels tab mounts the genuine supplier search frame");
-  await page.frameLocator('iframe[title="Worldwide hotel destination, dates, guests and rooms"]').getByText("Isolated hotel search fixture").waitFor();
+  assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1,"Hotels tab mounts the genuine supplier search frame");
+  await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
   assert.equal(await page.locator('script[data-gth-white-label]').count(),0,"hub must not duplicate the existing flight widget");
   const roomHref=await page.getByRole("link",{name:/See rooms & availability/}).first().getAttribute("href"),hotel=new URL(roomHref);
   assert.equal(hotel.hostname,"hotel.gthproglobal.com");assert.match(hotel.pathname,/lpfixtureIN/);assert.equal(hotel.searchParams.get("checkin"),"2026-12-10");assert.equal(hotel.searchParams.get("currency"),"USD");assert.equal(JSON.parse(atob(hotel.searchParams.get("occupancies"))).length,2);
-  assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates, guests and rooms"]').count(),1);
+  assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"no horizontal overflow "+width+theme);
   await page.locator("#travel-search").screenshot({path:evidence+`/hotels-${width}-${theme}.png`});
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/first-view-${width}-${theme}.png`});
@@ -83,8 +83,17 @@ try{
  }
  const page=await browser.newPage({viewport:{width:390,height:844}});page.on("pageerror",error=>errors.push(error.message));await page.context().route("**/*",route);
  await page.goto(origin+"/travel?"+trip,{waitUntil:"networkidle"});
- await page.frameLocator('iframe[title="Worldwide hotel destination, dates, guests and rooms"]').getByText("Isolated hotel search fixture").waitFor();
- assert.equal(await page.getByRole("button",{name:"Find stays",exact:true}).count(),0,"legacy hotel form is not rendered");
+ await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
+ assert.equal(await page.getByRole("button",{name:"Find stays",exact:true}).count(),0,"old duplicate hotel form is not rendered");
+ await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByRole("button",{name:"Find rooms fixture",exact:true}).click();
+ await page.waitForURL(url=>url.hostname==="hotel.gthproglobal.com"&&url.pathname==="/hotels");
+ const supplierHotel=new URL(page.url());
+ assert.equal(supplierHotel.searchParams.get("placeId"),"ChIJwe1EZjDG5zsRaYxkjY_tpF0");
+ assert.equal(supplierHotel.searchParams.get("checkin"),"2026-12-10");
+ assert.equal(supplierHotel.searchParams.get("checkout"),"2026-12-14");
+ assert.equal(supplierHotel.searchParams.get("currency"),"USD");
+ assert.deepEqual(JSON.parse(atob(supplierHotel.searchParams.get("occupancies"))).map(x=>x.adults),[2,2]);
+ assert.ok(!supplierHotel.searchParams.has("city"),"Never invent a supplier placeId from a typed city");
  await page.goto(origin+"/travel?"+trip.replace("tripCountry=IN&tripCity=Mumbai","tripCountry=GB&tripCity=London"),{waitUntil:"networkidle"});
  await page.getByRole("heading",{name:"Around London",exact:true}).waitFor();assert.match(page.url(),/tripCity=London/);
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
@@ -93,7 +102,7 @@ try{
  await page.getByRole("tab",{name:"Flights",exact:true}).click();await page.getByRole("tab",{name:"Experiences",exact:true}).click();assert.match(await page.getByRole("link",{name:"All experiences",exact:true}).getAttribute("href"),/city=London/);
  await page.locator('input[name="tripVisitDate"]').fill("2026-12-20");await page.getByRole("button",{name:"Find experiences"}).click();await page.waitForURL(url=>url.searchParams.get("tripVisitDate")==="2026-12-20");
  await page.goto(origin+"/travel?tripCity=Dubai",{waitUntil:"networkidle"});
- await page.frameLocator('iframe[title="Worldwide hotel destination, dates, guests and rooms"]').getByText("Isolated hotel search fixture").waitFor();
+ await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
  await page.goto(origin+"/flights",{waitUntil:"networkidle"});await page.getByText("Existing Aviasales fixture",{exact:true}).waitFor();assert.equal(await page.locator("#tpwl-search").count(),1);assert.equal(await page.getByRole("link",{name:"Continue booking",exact:true}).getAttribute("href"),"https://hotel.gthproglobal.com");
  await page.goto(origin+"/travel?travelMode=flights",{waitUntil:"networkidle"});
  await page.getByRole("link",{name:"Search flights",exact:true}).click();await page.locator('#travel-search [role="alert"]').waitFor();assert.equal(await page.getByRole("link",{name:"Search flights",exact:true}).getAttribute("href"),"#travel-search");
