@@ -189,18 +189,14 @@ async function main(): Promise<void> {
       const city = clean((item as Record<string, unknown>).city);
       if (!city) continue;
 
-      const slug = slugify(city);
+      let slug = slugify(city);
       const prior = seen.get(slug);
-
-      if (prior) {
-        if (prior !== city) {
-          console.warn(
-            `Skipped ambiguous city slug in ${countryRow.code}: ${slug}`
-          );
-        }
-        continue;
+      if (prior === city) continue;
+      if (prior && prior !== city) {
+        const suffix = createHash("sha256").update(city).digest("hex").slice(0, 12);
+        slug = `${slug.slice(0, 127).replace(/-$/g, "")}-${suffix}`;
+        if (seen.has(slug)) throw new Error("Unresolvable destination slug collision");
       }
-
       seen.set(slug, city);
       rows.push({
         country_code: countryRow.code,
