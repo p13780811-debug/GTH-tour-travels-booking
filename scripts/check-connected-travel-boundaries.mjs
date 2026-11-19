@@ -81,7 +81,8 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    "src/components/travel/ConnectedTravelWorkspace.tsx",
    "tests/hotel-booking-fallback-cities.test.mjs",
    "scripts/check-connected-travel-boundaries.mjs",
-   "scripts/check-hotel-landing-boundaries.mjs"
+   "scripts/check-hotel-landing-boundaries.mjs",
+   "vercel.json"
   ]);
   const unexpected=[...changed].filter(path=>!approved.has(path));
   if(unexpected.length)throw Error("Hotel destination PR contains unreviewed changes: "+unexpected.join(","));
@@ -178,5 +179,9 @@ if(flightPage!==original("src/app/flights/page.tsx"))throw Error("Only the verif
 const oldVercel=JSON.parse(original("vercel.json")),newVercel=JSON.parse(read("vercel.json"));
 if(newVercel.git.deploymentEnabled["feat/travel-connected-journey-20261109"]!==false)throw Error("Work branch preview must be disabled");
 delete newVercel.git.deploymentEnabled["feat/travel-connected-journey-20261109"];
+if(process.env.GITHUB_HEAD_REF==="fix/worldwide-hotel-destination-cta-20261120"){
+ if(newVercel.git.deploymentEnabled["fix/worldwide-hotel-destination-cta-20261120"]!==false)throw Error("Hotel preview must stay disabled");
+ delete newVercel.git.deploymentEnabled["fix/worldwide-hotel-destination-cta-20261120"];
+}
 if(JSON.stringify(oldVercel)!==JSON.stringify(newVercel))throw Error("Other release settings must stay unchanged");
 console.log("PASS: connected Travel UI and owner-requested neutral action copy only. Supplier behavior, fixed URLs, paid API boundaries, ecosystem layouts, app, shared CSS, database/security and SEO are preserved.");
