@@ -16,7 +16,7 @@ function load(path,imports={}){
   return mod.exports;
 }
 const affiliate=load("src/lib/travel/partner-search.ts");
-const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search.ts":affiliate});
+const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate});
 
 test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing campaign",()=>{
   for(const [city,path] of [
