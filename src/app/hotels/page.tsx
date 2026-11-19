@@ -26,7 +26,7 @@ import HotelsDiscoveryPlacement from "@/components/hotel/HotelsDiscoveryPlacemen
 import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
 import {hotelSearchParams,validatedHotelStay} from "@/lib/travel/hotel-search-params";
-import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
+import {trackedHotelCityHref,trackedWorldwideHotelHref} from "@/lib/travel/klook-hotel-search";
 import styles from "./HotelsLanding.module.css";
 
 import {
@@ -724,12 +724,12 @@ function HotelsContent() {
                               className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold">
                               Retry hotel search
                             </button>
-                            <Link className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 text-sm sm:ml-3" href={trackedHotelCityHref(requestedCity)||("/hotels?"+new URLSearchParams({view:"booking",city:requestedCity}).toString())}>Find bookable hotels instead</Link>
+                            <Link className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 text-sm sm:ml-3" href={trackedHotelCityHref(requestedCity)||trackedWorldwideHotelHref(requestedCity)}>Find bookable hotels instead</Link>
                           </div>}
                         {!loading && !error && hotels.length === 0 && (
                             <div role="status" className="gth-glass rounded-2xl p-6">
                               <p>No matching OSM directory records for this filter. Bookable hotels may still be available.</p>
-                              <Link href={trackedHotelCityHref(requestedCity)||("/hotels?"+new URLSearchParams({view:"booking",city:requestedCity}).toString())}
+                              <Link href={trackedHotelCityHref(requestedCity)||trackedWorldwideHotelHref(requestedCity)}
                                 className="gth-btn-gold mt-3 inline-flex min-h-11 items-center rounded-xl px-4 text-sm">Find bookable stays in {requestedCity||"your destination"}</Link>
                             </div>
                         )}
