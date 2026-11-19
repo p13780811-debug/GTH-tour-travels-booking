@@ -64,6 +64,9 @@ try{
    const s=getComputedStyle(el),a=lum(s.color),b=lum(s.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
   });assert.ok(contrast>=4.5,"form text meets 4.5:1 contrast");
   await page.getByRole("tab",{name:"Hotels",exact:true}).click();
+  const persistedHotelFrame=page.locator('iframe[title="Worldwide hotel destination, dates and guests"]');
+  await persistedHotelFrame.waitFor();
+  await persistedHotelFrame.evaluate(frame=>{frame.dataset.gthQaPersisted="yes";});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"no horizontal overflow "+width+theme);
   await page.locator("#travel-search").screenshot({path:evidence+`/hotels-${width}-${theme}.png`});
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:evidence+`/first-view-${width}-${theme}.png`});
@@ -90,6 +93,8 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"experience carousel stays inside viewport");
   await page.locator("#travel-search").screenshot({path:evidence+`/experiences-${width}-${theme}.png`});
   await page.getByRole("tab",{name:"Experiences",exact:true}).focus();await page.keyboard.press("Home");
+  await page.getByRole("tab",{name:"Hotels",exact:true}).waitFor();
+  assert.equal(await persistedHotelFrame.evaluate(frame=>frame.dataset.gthQaPersisted),"yes","switching tabs must not remount live hotel SearchBar");
   await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
   assert.equal(hotelDiscovery,discoveryBefore,"tab switching must not repeat hotel API reads");assert.equal(travelRsc,rscBefore,"tab switching must not request a server rerender");
   assert.equal(await page.locator('input[name="tripCity"]').inputValue(),"Mumbai");
