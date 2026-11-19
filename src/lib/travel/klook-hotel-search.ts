@@ -30,8 +30,8 @@ export function destinationHotelHref(value:unknown):string|null{
   const city=cleanHotelDestination(value);
   if(!city)return null;
   const route=resolveHotelRoute({destination:city});
-  if(route.status==="ready"&&!route.datesDefaulted)return route.url;
-  // Date-free editorial entries must not quietly book for tomorrow.
+  if(route.status==="ready")return route.url;
+  // Unknown destinations must use genuine supplier selection; never guess Place IDs.
   const reviewedAlternative=trackedHotelCityHref(city);
   if(reviewedAlternative)return reviewedAlternative;
   const params=new URLSearchParams({view:"booking",city});
