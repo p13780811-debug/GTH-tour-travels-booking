@@ -1,4 +1,4 @@
-import {trackKlookDestination} from "./partner-search";
+import {trackKlookDestination} from "./partner-search.ts";
 
 /**
  * Reviewed, supplier-hosted destination HOTEL category pages only.
