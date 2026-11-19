@@ -8,7 +8,8 @@ test("Hotels tab exposes the genuine worldwide supplier search without another G
   const hotel=workspace.slice(workspace.indexOf('{item==="hotels"&&<>'),workspace.indexOf('{item==="flights"&&<>'));
   assert.match(workspace,/className=\{mode==="hotels"\?"hidden":styles\.plan\} hidden=\{mode==="hotels"\}/);
   assert.match(hotel,/data-travel-hotel-booking="supplier-search"/);
-  assert.match(hotel,/mode==="hotels"&&<HotelBookingExperience currency=\{trip\.currency\}\/>/);
+  assert.match(hotel,/<HotelBookingExperience currency=\{trip\.currency\}\/>/);
+  assert.doesNotMatch(hotel,/mode==="hotels"&&<HotelBookingExperience/,"Avoid remounting supplier SDK on tab switches");
   assert.match(hotel,/Optional: explore local hotel suggestions/);
   assert.ok(hotel.indexOf("<HotelBookingExperience") < hotel.indexOf("<NearbyHotelDiscovery"));
   assert.doesNotMatch(hotel,/Find stays|klook\.com|12go\.asia/);
