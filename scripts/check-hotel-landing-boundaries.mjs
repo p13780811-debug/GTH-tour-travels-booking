@@ -59,6 +59,8 @@ const reviewedPublicHandoffs=new Set([
  "src/components/sections/HotelScroll.tsx",
  "tests/home-card-layout-regression.test.mjs",
  "tests/hotel-booking-intent-regression.test.mjs",
+   "src/components/hotel/HotelDiscoveryShowcase.tsx",
+   "tests/hotel-storefront-hopegoo-style.test.mjs",
    "tests/travel-hotels-direct-handoff.test.mjs",
    "tests/destination-explorer-contract.test.mjs",
    "tests/hotel-booking-journey.test.mjs",
