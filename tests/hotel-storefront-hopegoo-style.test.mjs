@@ -20,9 +20,9 @@ test("Hotel storefront reuses GTH tokens without a second theme, copied brand or
 test("Accessible date-free destination search goes to booking, not the failing OSM directory", () => {
   assert.match(ui, /action="\/hotels" method="GET"/);
   assert.match(ui, /name="view" value="booking"/);
-  assert.match(ui, /window\\.location\\.assign\\(bookingLink\\(selected\\)\\)/);
-  assert.match(ui, /trackedWorldwideHotelHref\\(city\\)/);
-  assert.match(ui, /resolveHotelRoute\\(\\{destination:city\\}\\)/);
+  assert.match(ui, /window\.location\.assign\(bookingLink\(selected\)\)/);
+  assert.match(ui, /trackedWorldwideHotelHref\(city\)/);
+  assert.match(ui, /resolveHotelRoute\(\{destination:city\}\)/);
   assert.match(ui, /name="city" type="search"/);
   assert.match(ui, /onSubmit=\{quickSearch\}/);
   assert.match(ui, /maxLength=\{80\}/);
