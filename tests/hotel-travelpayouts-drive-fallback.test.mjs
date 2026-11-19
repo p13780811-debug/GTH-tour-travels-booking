@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
 const partner=loadTenderTs("src/lib/travel/partner-search.ts");
-const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
-const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":tracked});
+const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search.ts":partner});
+const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search.ts":tracked});
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Existing project-specific Travelpayouts Drive is present only once in global head",()=>{
