@@ -64,7 +64,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
   <div className={styles.searchCard}>
    <div className={styles.searchTop}><h2 id="connected-travel-title">Where will you go next?</h2><span><Globe2 size={15} aria-hidden="true"/>Your journey, connected</span></div>
    <div role="tablist" aria-label="Plan your journey" className={styles.tabs}>{TRAVEL_MODES.map((item,index)=>{const {label,Icon}=tabs[item];return <button key={item} type="button" role="tab" id={"travel-tab-"+item} aria-selected={mode===item} aria-controls={"travel-panel-"+item} tabIndex={mode===item?0:-1} ref={node=>{buttons.current[index]=node;}} onKeyDown={event=>keys(event,index)} onClick={()=>changeMode(item)}><Icon size={20} aria-hidden="true"/>{label}</button>;})}</div>
-   <form ref={form} className={styles.plan} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else if(mode==="hotels"){
+   <form ref={form} className={mode==="hotels"?"hidden":styles.plan} hidden={mode==="hotels"} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else if(mode==="hotels"){
      if(!apply())return;
      if(!directHotelHref){setError("Choose valid hotel dates and guests to search available stays.");return;}
      window.location.assign(directHotelHref);
@@ -96,9 +96,27 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
   <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
   {TRAVEL_MODES.map(item=><div key={item} role="tabpanel" id={"travel-panel-"+item} aria-labelledby={"travel-tab-"+item} tabIndex={0} hidden={mode!==item} className={styles.panel}>{opened.includes(item)&&<>
    {item==="hotels"&&<>
-    <div className={styles.panelIntro}><div><p className={styles.eyebrow}>Stay somewhere you love</p><h2>A better stay starts here.</h2><p>{stayQuery?"Choose a property to continue with your dates, rooms and currency.":"Find a city retreat, a weekend escape or somewhere that feels like home."}</p>{trip.start&&!stayQuery&&<p>Choose check-in and check-out 1–90 nights apart to carry dates with your hotel.</p>}</div><Link prefetch={false} href="/hotels?view=booking" className={styles.textLink}>Explore all stays <ArrowRight size={17} aria-hidden="true"/></Link></div>
-    {trip.city&&!trip.country?<p className={styles.message}>Choose a country above to find hotels in {trip.city}.</p>:<div className={styles.hotelContent}><NearbyHotelDiscovery key={trip.country+":"+trip.city} currency={trip.currency} onCountry={setDetectedCountry} initialArea={trip.country?{country:trip.country,city:trip.city}:undefined} stayQuery={stayQuery} showAreaForm={false}/></div>}
-    <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}><summary>Need more options? Open worldwide hotel search <ArrowUpRight size={15} aria-hidden="true"/></summary>{advanced&&<><p className={styles.searchNote}>This search has its own destination, date and guest controls. Check your trip details before searching.</p><HotelBookingExperience currency={trip.currency}/></>}</details>
+    <div className={styles.panelIntro}>
+      <div><p className={styles.eyebrow}>Stay somewhere you love</p>
+        <h2>Book hotels worldwide</h2>
+        <p>Search your destination, dates and guests right here. Verified accommodation results and prices open through the existing worldwide hotel booking service.</p>
+      </div>
+      <Link prefetch={false} href="/hotels?view=booking" className={styles.textLink}>
+        Open full hotel booking page <ArrowRight size={17} aria-hidden="true"/>
+      </Link>
+    </div>
+    <div className={styles.hotelContent} data-travel-hotel-booking="supplier-search">
+      {trip.city&&<p className={styles.message}>Your planned destination is {trip.city}. Select the matching location in the worldwide hotel search below. No unverified destination ID will be guessed.</p>}
+      <HotelBookingExperience currency={trip.currency}/>
+    </div>
+    <details className={styles.advanced} open={advanced} onToggle={event=>setAdvanced(event.currentTarget.open)}>
+      <summary>Optional: explore local hotel suggestions <ArrowUpRight size={15} aria-hidden="true"/></summary>
+      {advanced&&<div className={styles.hotelContent}>
+        <NearbyHotelDiscovery key={trip.country+":"+trip.city} currency={trip.currency}
+          onCountry={setDetectedCountry} initialArea={trip.country?{country:trip.country,city:trip.city}:undefined}
+          stayQuery={stayQuery} showAreaForm={false}/>
+      </div>}
+    </details>
    </>}
    {item==="flights"&&<>
     <div className={styles.panelIntro}><div><p className={styles.eyebrow}>The start of something new</p><h2>Go somewhere remarkable.</h2><p>Choose a destination below to build your route. Your dates stay with your journey.</p></div><Link prefetch={false} href={alternateFlightHref} target={aviaHref?"_blank":undefined} rel={aviaHref?"noopener noreferrer sponsored":undefined} className={styles.textLink}>Advanced flight search <ArrowRight size={17} aria-hidden="true"/></Link></div>
