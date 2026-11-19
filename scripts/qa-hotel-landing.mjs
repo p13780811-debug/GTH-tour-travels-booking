@@ -97,7 +97,7 @@ try{
       assert.equal(target.searchParams.get("trs"),"504342");
       const supplier=new URL(target.searchParams.get("u"));
       assert.equal(supplier.hostname,"www.klook.com");
-      assert.match(supplier.pathname,/\\/destination\\/c[0-9]+-[a-z-]+\\/3-hotel\\/$/);
+      assert.match(supplier.pathname,/\/destination\/c[0-9]+-[a-z-]+\/3-hotel\/$/);
     }else if(target.hostname==="hotel.gthproglobal.com"){
       assert.equal(target.pathname,"/hotels");
       assert.ok(target.searchParams.get("placeId"),"Nuitee direct results need reviewed Place ID");
