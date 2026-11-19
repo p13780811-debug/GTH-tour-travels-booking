@@ -29,7 +29,8 @@ const links=load("src/lib/destinations/ecosystem.ts",{
 
 test("destination links are real, local search pages and are not dead anchors",()=>{
  for(const name of ["Goa","Mumbai","New York","Paris","Kuala Lumpur"]){
-  const place={slug:name.toLowerCase().replaceAll(" ","-"),name,country:"India"};
+  const countryByCity={"Goa":"India","Mumbai":"India","New York":"United States","Paris":"France","Kuala Lumpur":"Malaysia"};
+  const place={slug:name.toLowerCase().replaceAll(" ","-"),name,country:countryByCity[name]};
   const services=links.destinationServices(place);
   const byKey=key=>services.find(x=>x.key===key);
   const hotel=new URL(byKey("hotels").href,"https://www.gthproglobal.com");
