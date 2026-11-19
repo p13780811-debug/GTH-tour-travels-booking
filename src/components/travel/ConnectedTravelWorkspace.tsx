@@ -1,13 +1,14 @@
 "use client";
 
-import {useEffect,useRef,useState,useTransition,type KeyboardEvent,type ReactNode} from "react";
+import {useCallback,useEffect,useRef,useState,useTransition,type KeyboardEvent,type ReactNode} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {ArrowRight,ArrowUpRight,ArrowLeftRight,BedDouble,CalendarDays,Globe2,MapPin,Plane,Search,ShieldCheck,Sparkles,Ticket,Users} from "lucide-react";
 import NearbyHotelDiscovery from "@/components/hotel/NearbyHotelDiscovery";
 import HotelBookingExperience from "@/components/hotel/HotelBookingExperience";
-import {HOTEL_CURRENCY_OPTIONS} from "@/lib/travel/hotel-currency";
-import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
+import HotelCurrencySelector from "@/components/hotel/HotelCurrencySelector";
+import {HOTEL_CURRENCY_OPTIONS,hotelCurrency} from "@/lib/travel/hotel-currency";
+import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT,hotelWidgetSearchParams,parseHotelBookingSearch,hotelWhiteLabelUrl} from "@/lib/travel/hotel-whitelabel";
 import {connectedHotelBookingHref} from "@/lib/travel/connected-hotel-handoff";
 import {EMPTY_TOUR_SEARCH,tourDiscoveryHref} from "@/lib/tours/discovery";
 import {FLIGHT_DESTINATIONS,EXPERIENCE_COLLECTIONS} from "@/lib/travel/travel-editorial";
@@ -17,6 +18,164 @@ import styles from "./ConnectedTravelWorkspace.module.css";
 
 const tabs={hotels:{label:"Hotels",Icon:BedDouble},flights:{label:"Flights",Icon:Plane},experiences:{label:"Experiences",Icon:Sparkles}};
 type Props={trip:ConnectedTrip;initialMode:TravelMode;countries:{code:string;name:string}[];experiences:ReactNode;activitiesHref:string;initialError?:string};
+
+type SupplierSearchSDK = {
+ init: (options:{domain:string;deepLinkParams:string})=>void;
+ SearchBar:{create:(options:{
+  selector:string;primaryColor:string;
+  labelsOverride:{searchAction:string;placePlaceholderText:string};
+  onSearchClick:(payload:unknown)=>void;
+ })=>Promise<void>};
+};
+type SupplierWindow = Window & {LiteAPI?:SupplierSearchSDK};
+const supplierSearchDocument='<!doctype html><html lang="en" class="gth-hotel-widget-root"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Search worldwide hotels</title></head><body class="gth-hotel-search-widget"><main id="gth-hotel-search"></main></body></html>';
+
+/**
+ * The /hotels booking component keeps its existing desktop embedded-results flow.
+ * /travel needs the very same genuine Nuitee SearchBar but a DIRECT White Label
+ * handoff at every viewport size. Reuse its official SDK, CSS and allowlisted
+ * search parsing/URL helpers; never derive provider Place IDs from free text.
+ */
+function TravelHotelDirectSearch({currency}:{currency:string}){
+ const [selectedCurrency,setSelectedCurrency]=useState(()=>hotelCurrency(currency));
+ const [loading,setLoading]=useState(true),[error,setError]=useState(""),[attempt,setAttempt]=useState(0);
+ const frame=useRef<HTMLIFrameElement>(null);
+ const initializedDocument=useRef<Document|null>(null);
+ const dispose=useRef<(()=>void)|null>(null);
+ useEffect(()=>setSelectedCurrency(hotelCurrency(currency)),[currency]);
+ useEffect(()=>()=>{dispose.current?.();},[]);
+
+ const search=useCallback((payload:unknown)=>{
+  const params=hotelWidgetSearchParams(payload,selectedCurrency);
+  const stay=params?parseHotelBookingSearch(params):null;
+  if(!stay){
+   setError("Select a destination from the suggestions, valid dates and guests before searching.");
+   return;
+  }
+  window.location.assign(hotelWhiteLabelUrl(stay));
+ },[selectedCurrency]);
+
+ const loadSearch=useCallback(async()=>{
+  const currentFrame=frame.current,doc=currentFrame?.contentDocument;
+  const win=currentFrame?.contentWindow as SupplierWindow|null;
+  if(!currentFrame||!doc||!win||initializedDocument.current===doc)return;
+  dispose.current?.();
+  initializedDocument.current=doc;
+  let active=true;
+  let layoutObserver:MutationObserver|undefined;
+  let themeObserver:MutationObserver|undefined;
+  let resizeObserver:ResizeObserver|undefined;
+  const deadline=window.setTimeout(()=>{
+   if(active){setLoading(false);setError("Hotel search is taking longer than expected. Please retry.");}
+  },20000);
+  const resize=()=>{
+   if(active)currentFrame.height=String(Math.min(1200,Math.max(110,doc.body.scrollHeight+24)));
+  };
+  dispose.current=()=>{
+   active=false;window.clearTimeout(deadline);
+   layoutObserver?.disconnect();themeObserver?.disconnect();resizeObserver?.disconnect();
+   win.removeEventListener("resize",resize);
+  };
+  setLoading(true);setError("");
+  const syncTheme=()=>{
+   doc.documentElement.className=`${document.documentElement.className} gth-hotel-widget-root`;
+  };
+  syncTheme();
+  themeObserver=new MutationObserver(syncTheme);
+  themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
+  try{
+   await new Promise<void>((resolve,reject)=>{
+    const script=doc.createElement("script");
+    script.src=HOTEL_WIDGET_SCRIPT;
+    script.onload=()=>resolve();
+    script.onerror=()=>reject(new Error("Supplier search script unavailable"));
+    doc.head.appendChild(script);
+   });
+   if(!active)return;
+   if(!win.LiteAPI)throw new Error("Supplier search unavailable");
+   const color=getComputedStyle(document.documentElement).getPropertyValue("--gold").trim();
+   win.LiteAPI.init({domain:new URL(HOTEL_BOOKING_ORIGIN).hostname,deepLinkParams:`language=en&currency=${selectedCurrency}`});
+   await win.LiteAPI.SearchBar.create({
+    selector:"#gth-hotel-search",primaryColor:color,
+    labelsOverride:{searchAction:"Find rooms",placePlaceholderText:"City, airport or landmark worldwide"},
+    onSearchClick:value=>{if(active)search(value);}
+   });
+   if(!active)return;
+   // Match the established /hotels widget: vendor CSS stays isolated while
+   // the existing global GTH stylesheet controls layout and day/night colors.
+   for(const sheet of document.querySelectorAll('link[rel="stylesheet"], style')){
+    doc.head.appendChild(sheet.cloneNode(true));
+   }
+   const enhanced=new WeakSet<HTMLElement>();
+   const enhanceControls=()=>{
+    doc.querySelector<HTMLInputElement>(".search-input")?.setAttribute("aria-label","Worldwide hotel destination");
+    const controls:[string,string][]=[
+     [".desktop-dates .date-description","Choose check-in and checkout dates"],
+     [".mobile-checkin .date-description","Choose check-in date"],
+     [".mobile-checkout .date-description","Choose checkout date"],
+     [".field.last > span","Choose guests and rooms; guest counts apply per room"],
+    ];
+    for(const [selector,label] of controls){
+     const control=doc.querySelector<HTMLElement>(selector);
+     if(!control)continue;
+     control.setAttribute("role","button");control.tabIndex=0;
+     control.setAttribute("aria-label",label);
+     if(!enhanced.has(control))control.addEventListener("keydown",event=>{
+      if(event.key==="Enter"||event.key===" "){event.preventDefault();control.click();}
+     });
+     enhanced.add(control);
+    }
+    for(const row of doc.querySelectorAll(".guest-control")){
+     const label=row.querySelector("label")?.textContent?.trim();
+     if(!label)continue;
+     const buttons=row.querySelectorAll("button");
+     buttons[0]?.setAttribute("aria-label",`Decrease ${label.toLowerCase()}`);
+     buttons[1]?.setAttribute("aria-label",`Increase ${label.toLowerCase()}`);
+     row.querySelector("input")?.setAttribute("aria-label",label);
+    }
+   };
+   enhanceControls();
+   layoutObserver=new MutationObserver(()=>{enhanceControls();resize();});
+   layoutObserver.observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+   resizeObserver=new ResizeObserver(resize);resizeObserver.observe(doc.body);
+   win.addEventListener("resize",resize);
+   resize();window.clearTimeout(deadline);setLoading(false);
+  }catch{
+   if(active){window.clearTimeout(deadline);setLoading(false);setError("Hotel search could not load. Retry or open the secure hotel booking site.");}
+  }
+ },[search,selectedCurrency]);
+ useEffect(()=>{
+  if(frame.current?.contentDocument?.readyState==="complete")void loadSearch();
+ },[loadSearch,attempt]);
+
+ return <div className={styles.plan}>
+  <div className="gth-hotel-booking">
+   <div className="gth-hotel-booking-heading"><div>
+    <h2>Find your next stay</h2>
+    <p className="hidden sm:block">Select a genuine Nuitee destination, check-in, check-out and guests to open live room results directly.</p>
+   </div></div>
+   <div className="mb-3 flex flex-wrap items-center gap-3">
+    <HotelCurrencySelector value={selectedCurrency} onChange={setSelectedCurrency}/>
+   </div>
+   <div className="gth-hotel-search-panel">
+    {loading&&<p role="status">Loading worldwide hotel search…</p>}
+    <iframe key={selectedCurrency+":"+attempt} ref={frame} srcDoc={supplierSearchDocument}
+     onLoad={()=>void loadSearch()} title="Worldwide hotel destination, dates, guests and rooms"
+     className="gth-hotel-search-frame" height="110" sandbox="allow-scripts allow-same-origin"/>
+    <p>Guest and room selections, and currency, are set before finding rooms. All booking results open on the secure hotel booking site.</p>
+   </div>
+   {error&&<div role="alert" className="gth-hotel-booking-error">
+    <p>{error}</p>
+    <button type="button" className="gth-btn gth-hotel-booking-action" onClick={()=>{
+     dispose.current?.();initializedDocument.current=null;setLoading(true);setError("");setAttempt(value=>value+1);
+    }}>Retry hotel search</button>
+   </div>}
+   <a className="gth-btn gth-hotel-booking-action mt-3" href={HOTEL_BOOKING_ORIGIN}
+    target="_blank" rel="noopener noreferrer">Open secure booking site <ArrowUpRight size={16} aria-hidden="true"/></a>
+  </div>
+ </div>;
+}
+
 
 export default function ConnectedTravelWorkspace({trip,initialMode,countries,experiences,activitiesHref,initialError}:Props){
  const [mode,setMode]=useState(initialMode),[draft,setDraft]=useState(trip),[error,setError]=useState(initialError||"");
@@ -64,7 +223,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
   <div className={styles.searchCard}>
    <div className={styles.searchTop}><h2 id="connected-travel-title">Where will you go next?</h2><span><Globe2 size={15} aria-hidden="true"/>Your journey, connected</span></div>
    <div role="tablist" aria-label="Plan your journey" className={styles.tabs}>{TRAVEL_MODES.map((item,index)=>{const {label,Icon}=tabs[item];return <button key={item} type="button" role="tab" id={"travel-tab-"+item} aria-selected={mode===item} aria-controls={"travel-panel-"+item} tabIndex={mode===item?0:-1} ref={node=>{buttons.current[index]=node;}} onKeyDown={event=>keys(event,index)} onClick={()=>changeMode(item)}><Icon size={20} aria-hidden="true"/>{label}</button>;})}</div>
-   <form ref={form} className={styles.plan} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else if(mode==="hotels"){
+   {mode==="hotels"?<TravelHotelDirectSearch currency={draft.currency}/>:<form ref={form} className={styles.plan} aria-label={tabs[mode].label+" search"} onSubmit={event=>{event.preventDefault();if(mode==="flights"){if(readyFlight)searchLink.current?.click();else apply();}else if(mode==="hotels"){
      if(!apply())return;
      if(!directHotelHref){setError("Choose valid hotel dates and guests to search available stays.");return;}
      window.location.assign(directHotelHref);
@@ -91,7 +250,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     </div></details>}
     {error&&<p role="alert" className={styles.message}>{error}</p>}
     <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Start with the connected flight search. If no service appears, use Advanced flight search below. Reconfirm airports, return flights, passengers and final fares with the provider.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Find stays opens the booking network directly. Exact rooms, dates and prices are confirmed by the provider."}</p>
-   </form>
+   </form>}
   </div>
   <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
   {TRAVEL_MODES.map(item=><div key={item} role="tabpanel" id={"travel-panel-"+item} aria-labelledby={"travel-tab-"+item} tabIndex={0} hidden={mode!==item} className={styles.panel}>{opened.includes(item)&&<>
