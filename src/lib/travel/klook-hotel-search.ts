@@ -10,7 +10,7 @@ const HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
   goa:"https://www.klook.com/destination/c178-goa/3-hotel/",
   dubai:"https://www.klook.com/en-IN/destination/c78-dubai/3-hotel/",
 };
-const SEARCHABLE_CITIES=new Set(["mumbai","london","singapore","tokyo"]);
+const SEARCHABLE_CITIES=new Set(["mumbai","london","singapore","tokyo","kolkata","calcutta"]);
 
 export function trackedHotelCityHref(value:unknown):string|null{
   if(typeof value!=="string")return null;
