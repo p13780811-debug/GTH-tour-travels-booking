@@ -1,33 +1,39 @@
 import {trackKlookDestination} from "./partner-search";
-import {resolveHotelRoute, cleanHotelDestination} from "./hotel-routing";
+import {resolveHotelRoute,cleanHotelDestination} from "./hotel-routing";
 
-/**
- * Use verified Klook HOTEL category URLs where available. For other editorial
- * cities, use Klook's destination-specific hotel search results rather than
- * inventing supplier destination IDs or falling back to another search form.
- * Existing Travelpayouts affiliate identifiers remain unchanged.
+/** Destination-specific hotel pages observed on the real Klook website.
+ * A Klook general search query is NOT proof of a matched city/hotel listing.
+ * Add a destination only after verifying its exact Hotels-category URL.
  */
-const HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
+const VERIFIED_HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
   goa:"https://www.klook.com/destination/c178-goa/3-hotel/",
   dubai:"https://www.klook.com/en-IN/destination/c78-dubai/3-hotel/",
 };
 
-
 export function trackedHotelCityHref(value:unknown):string|null{
-  if(typeof value!=="string")return null;
-  const city=value.normalize("NFKC").trim().toLocaleLowerCase("en");
-  if(!/^[a-z][a-z ]{1,79}$/.test(city))return null;
-  const verified=Object.prototype.hasOwnProperty.call(HOTEL_DESTINATIONS,city)
-    ? HOTEL_DESTINATIONS[city] : undefined;
-  if(!verified&&!cleanHotelDestination(city))return null;
-  const destination=new URL(verified??"https://www.klook.com/en-IN/search/result/");
-  if(!verified)destination.searchParams.set("query",city+" hotels");
-  return trackKlookDestination(destination,"gth_hotels_"+city.replace(/ /g,"_"));
+  const destination=cleanHotelDestination(value);
+  if(!destination)return null;
+  const key=destination.toLocaleLowerCase("en");
+  const href=Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,key)
+    ?VERIFIED_HOTEL_DESTINATIONS[key]:undefined;
+  if(!href)return null;
+  return trackKlookDestination(new URL(href),"gth_hotels_"+key.replace(/ /g,"_"));
 }
 
-/** Shared, zero-API hotel handoff for every destination entry point. */
-export function destinationHotelHref(city:string):string|null{
-  const result=resolveHotelRoute({destination:city});
-  if(result.status==="ready")return result.url;
-  return trackedHotelCityHref(city);
+/** Single zero-API city handoff used by vetted destination cards.
+ * 1. Actual reviewed Nuitee Place ID -> supplier results.
+ * 2. Reviewed Klook Hotels-category destination -> tracked Hotels page.
+ * 3. Unknown city -> genuine Nuitee SearchBar with validated city hint.
+ * No guessed provider placeId, propertyId, category URL or fake availability.
+ */
+export function destinationHotelHref(value:unknown):string|null{
+  const city=cleanHotelDestination(value);
+  if(!city)return null;
+  const route=resolveHotelRoute({destination:city});
+  if(route.status==="ready"&&!route.datesDefaulted)return route.url;
+  // Date-free editorial entries must not quietly book for tomorrow.
+  const reviewedAlternative=trackedHotelCityHref(city);
+  if(reviewedAlternative)return reviewedAlternative;
+  const params=new URLSearchParams({view:"booking",city});
+  return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }
