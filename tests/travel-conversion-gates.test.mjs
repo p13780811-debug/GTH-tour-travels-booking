@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {hotelProviderSearchUrl} from "../src/lib/travel/hotel-provider-search.ts";
+import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
+const partner=loadTenderTs("src/lib/travel/partner-search.ts");
+const hotels=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
+const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":hotels});
 import {hotelLocationFilter} from "../src/lib/travel/hotel-geo-bounds.ts";
 const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("Tours list and detail use the real license-approved table schema",()=>{
