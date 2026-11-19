@@ -16,8 +16,6 @@ export const VERIFIED_HOTEL_DESTINATIONS: Readonly<Record<string,{id:number;slug
   bali:{id:8,slug:"bali"},
   paris:{id:107,slug:"paris"},
   "new york":{id:93,slug:"new-york"},
-  london:{id:106,slug:"london"},
-  mumbai:{id:132,slug:"mumbai"},
   seoul:{id:13,slug:"seoul"},
   "kuala lumpur":{id:49,slug:"kuala-lumpur"},
   "hong kong":{id:2,slug:"hong-kong"},
@@ -42,7 +40,7 @@ export function trackedHotelCityHref(value:unknown):string|null{
  * city on the GTH booking page for explicit supplier selection.
  * Do not auto-select an unrelated airport/place from the supplier's defaults.
  */
-export function destinationHotelHref(value:unknown):string|null{
+export function destinationHotelHref(value:unknown,country?:string|null):string|null{
   const city=cleanHotelDestination(value);
   if(!city)return null;
   const route=resolveHotelRoute({destination:city});
@@ -50,5 +48,6 @@ export function destinationHotelHref(value:unknown):string|null{
   const klook=trackedHotelCityHref(city);
   if(klook)return klook;
   const params=new URLSearchParams({view:"booking",city});
+  if(typeof country==="string"&&/^[A-Z]{2}$/.test(country))params.set("country",country);
   return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }
