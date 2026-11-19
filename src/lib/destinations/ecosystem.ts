@@ -40,7 +40,7 @@ export function destinationServices(place:{slug:string;name:string;country:strin
  const tender=new URLSearchParams({scope:"world"});
  if(country)tender.set("country",country);
  return [
-  {key:"hotels",label:"Hotels & stays",description:"Open the destination’s verified hotel booking listing, or choose its location in worldwide search",href:destinationHotelHref(place.name) ?? "/hotels?"+new URLSearchParams({view:"booking",city:place.name,...(country?{country}:{})}).toString(),scope:"destination",pillar:"Travel"},
+  {key:"hotels",label:"Hotels & stays",description:"Open the destination’s verified hotel booking listing, or choose its location in worldwide search",href:destinationHotelHref(place.name,country) ?? "/hotels?"+new URLSearchParams({view:"booking",city:place.name,...(country?{country}:{})}).toString(),scope:"destination",pillar:"Travel"},
   {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name),scope:"destination",pillar:"Travel"},
   {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
