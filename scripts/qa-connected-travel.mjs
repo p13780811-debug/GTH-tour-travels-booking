@@ -83,7 +83,7 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"experience carousel stays inside viewport");
   await page.locator("#travel-search").screenshot({path:evidence+`/experiences-${width}-${theme}.png`});
   await page.getByRole("tab",{name:"Experiences",exact:true}).focus();await page.keyboard.press("Home");
-  await page.getByRole("heading",{name:"Around Mumbai",exact:true}).waitFor();
+  await page.frameLocator('iframe[title="Worldwide hotel destination, dates and guests"]').getByText("Isolated hotel search fixture").waitFor();
   assert.equal(hotelDiscovery,discoveryBefore,"tab switching must not repeat hotel API reads");assert.equal(travelRsc,rscBefore,"tab switching must not request a server rerender");
   assert.equal(await page.locator('input[name="tripCity"]').inputValue(),"Mumbai");
   assert.equal(await page.locator('iframe[title="Worldwide hotel destination, dates and guests"]').count(),1,"Hotel supplier widget persists after tab changes");
