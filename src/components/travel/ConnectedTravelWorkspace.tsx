@@ -43,23 +43,36 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
  const aviaHref=flightTrip?connectedFlightHref(flightTrip):null;
  const readyFlight=(!oneWay&&!draft.end)?null:(twelveGoHref||aviaHref);
  const alternateFlightHref=aviaHref||"/flights";
- const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===trip.country)?.name;
+ const activeTrip=parsed.ok?parsed.trip:trip;
+ const stayQuery=connectedHotelStay(trip),countryName=countries.find(item=>item.code===activeTrip.country)?.name;
  const directHotelHref=parsed.ok?connectedHotelBookingHref(parsed.trip):null;
  const edit=(change:Partial<ConnectedTrip>)=>setDraft(current=>({...current,...change}));
  function apply(afterHandoff=false){
   const value=parseDraft();if(!value.ok){setError(value.error);return false;}
   if(mode==="flights"&&(!draft.origin||!draft.destination||!draft.start||!oneWay&&!draft.end)){setError("Choose departure and arrival airports, a departure date, and a return date for a round trip.");return false;}
   setError("");const save=()=>window.history.replaceState(null,"",connectedTripHref(value.trip,mode));
-  if(afterHandoff)window.setTimeout(save,0);else startTransition(save);return true;
+  // Commit search intent before opening an external provider. A delayed timer
+  // can be discarded when mobile WebView navigates away.
+  if(afterHandoff)save();else startTransition(save);return true;
  }
- function changeMode(next:TravelMode){setMode(next);setOpened(current=>current.includes(next)?current:[...current,next]);setError("");if(next!=="hotels")setAdvanced(false);window.history.replaceState(null,"",connectedTripHref(trip,next));}
+ function changeMode(next:TravelMode){
+  setMode(next);setOpened(current=>current.includes(next)?current:[...current,next]);
+  if(next!=="hotels")setAdvanced(false);
+  const current=parseDraft();
+  // Use the current edits, not the stale server-provided trip. Switching a tab
+  // must never silently restore an earlier city, date or airport.
+  if(current.ok){
+   setError("");
+   window.history.replaceState(null,"",connectedTripHref(current.trip,next));
+  }else setError(current.error);
+ }
  function keys(event:KeyboardEvent<HTMLButtonElement>,index:number){
   let next=index;
   if(event.key==="ArrowRight")next=(index+1)%3;else if(event.key==="ArrowLeft")next=(index+2)%3;
   else if(event.key==="Home")next=0;else if(event.key==="End")next=2;else return;
   event.preventDefault();buttons.current[next]?.focus();changeMode(TRAVEL_MODES[next]);
  }
- const experienceSearch={...EMPTY_TOUR_SEARCH,city:trip.city,currency:trip.currency};
+ const experienceSearch={...EMPTY_TOUR_SEARCH,city:activeTrip.city,currency:activeTrip.currency};
  return <section id="travel-search" className={styles.workspace} aria-labelledby="connected-travel-title">
   <div className={styles.searchCard}>
    <div className={styles.searchTop}><h2 id="connected-travel-title">Where will you go next?</h2><span><Globe2 size={15} aria-hidden="true"/>Your journey, connected</span></div>
@@ -77,7 +90,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
       <TravelAirportField label="To" value={airportText.destination} code={draft.destination} onType={text=>{setAirportText(current=>({...current,destination:text}));edit({destination:airportCode(text)});}} onSelect={code=>{setAirportText(current=>({...current,destination:airportLabel(code)}));edit({destination:code});}}/>
      </>:<>
       <label className={styles.field}><span><Globe2 size={15} aria-hidden="true"/>Destination country</span><select name="tripCountry" value={draft.country} onChange={event=>edit({country:event.target.value})}><option value="">Explore near me</option>{countries.map(item=><option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
-      <label className={styles.field}><span><MapPin size={15} aria-hidden="true"/>{mode==="experiences"?"Explore a city":"City (optional)"}</span><input name="tripCity" value={draft.city} onChange={event=>edit({city:event.target.value})} maxLength={80} placeholder="Where would you like to go?" autoComplete="off"/></label>
+      <label className={styles.field}><span><MapPin size={15} aria-hidden="true"/>{mode==="experiences"?"Explore a city":"City (optional)"}</span><input name="tripCity" value={draft.city} onChange={event=>edit({city:event.target.value,country:event.target.value===draft.city?draft.country:""})} maxLength={80} placeholder="Where would you like to go?" autoComplete="off"/></label>
      </>}
      <label className={styles.field}><span><CalendarDays size={15} aria-hidden="true"/>{mode==="flights"?"Departure":mode==="experiences"?"Visit date (optional)":"Check-in"}</span><input name={mode==="experiences"?"tripVisitDate":"tripStart"} type="date" value={mode==="experiences"?draft.visitDate:draft.start} onChange={event=>edit(mode==="experiences"?{visitDate:event.target.value}:{start:event.target.value})}/></label>
      {mode!=="experiences"&&<label className={styles.field}><span><CalendarDays size={15} aria-hidden="true"/>{mode==="flights"?"Return":"Check-out"}</span><input name="tripEnd" type="date" value={mode==="flights"&&oneWay?"":draft.end} disabled={mode==="flights"&&oneWay} onChange={event=>edit({end:event.target.value})}/></label>}
@@ -93,7 +106,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     <p className={styles.searchNote}><ShieldCheck size={14} aria-hidden="true"/>{mode==="flights"?"Start with the connected flight search. If no service appears, use Advanced flight search below. Reconfirm airports, return flights, passengers and final fares with the provider.":mode==="experiences"?"Your visit date stays in your trip plan. Choose ticket dates and availability when booking.":"Find stays opens the booking network directly. Exact rooms, dates and prices are confirmed by the provider."}</p>
    </form>
   </div>
-  <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[trip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{trip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{trip.start}{trip.end?" → "+trip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
+  <div className={styles.summary} aria-live="polite"><span><MapPin size={15} aria-hidden="true"/>{[activeTrip.city,countryName].filter(Boolean).join(", ")||"Your area first. The world next."}</span>{activeTrip.start&&<span><CalendarDays size={15} aria-hidden="true"/>{activeTrip.start}{activeTrip.end?" → "+activeTrip.end:""}</span>}<Link prefetch={false} href="/affiliate-disclosure">Booking &amp; affiliate information <ArrowUpRight size={12} aria-hidden="true"/></Link></div>
   {TRAVEL_MODES.map(item=><div key={item} role="tabpanel" id={"travel-panel-"+item} aria-labelledby={"travel-tab-"+item} tabIndex={0} hidden={mode!==item} className={styles.panel}>{opened.includes(item)&&<>
    {item==="hotels"&&<>
     <div className={styles.panelIntro}>
@@ -124,7 +137,7 @@ export default function ConnectedTravelWorkspace({trip,initialMode,countries,exp
     <div className={styles.bookingBanner}><div><span className={styles.eyebrow}>Keep your journey connected</span><h3>Flights and stays. One booking space.</h3><p>Prefer to plan them together? Explore the options on the GTH PRO booking site.</p></div><a href={HOTEL_BOOKING_ORIGIN} target="_blank" rel="noopener noreferrer sponsored" className={styles.secondary}>Continue booking <ArrowUpRight size={17} aria-hidden="true"/></a></div>
    </>}
    {item==="experiences"&&<>
-    <div className={styles.panelIntro}><div><p className={styles.eyebrow}>Go beyond the itinerary</p><h2>Moments worth travelling for.</h2><p>{trip.city?"Find your next experience in "+trip.city+", from iconic sights to new discoveries.":"A new perspective. A memorable day out. A little more adventure."}</p></div><Link prefetch={false} href={activitiesHref} className={styles.textLink}>All experiences <ArrowRight size={17} aria-hidden="true"/></Link></div>
+    <div className={styles.panelIntro}><div><p className={styles.eyebrow}>Go beyond the itinerary</p><h2>Moments worth travelling for.</h2><p>{activeTrip.city?"Find your next experience in "+activeTrip.city+", from iconic sights to new discoveries.":"A new perspective. A memorable day out. A little more adventure."}</p></div><Link prefetch={false} href={tourDiscoveryHref("/activities",experienceSearch)} className={styles.textLink}>All experiences <ArrowRight size={17} aria-hidden="true"/></Link></div>
     <nav className={styles.categoryLinks} aria-label="Experience categories">{[{value:"attraction-ticket",label:"Attractions & tickets"},{value:"city-pass",label:"City passes"},{value:"outdoor",label:"Outdoor adventures"}].map(category=><Link prefetch={false} key={category.value} href={tourDiscoveryHref("/activities",experienceSearch,"rail",{category:category.value})}><Ticket size={15} aria-hidden="true"/>{category.label}<ArrowUpRight size={14} aria-hidden="true"/></Link>)}<Link prefetch={false} href={tourDiscoveryHref("/tours",experienceSearch,"rail",{category:"audio-tour"})}>City walks &amp; audio tours<ArrowUpRight size={14} aria-hidden="true"/></Link></nav>
     {experiences}
     <div className={styles.collectionHeading}><div><p className={styles.eyebrow}>Explore by destination</p><h3>Your next great day out.</h3></div><p>Destination collections to inspire your plans.</p></div>
