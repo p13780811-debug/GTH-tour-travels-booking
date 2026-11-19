@@ -1,0 +1,46 @@
+name: GTH Worldwide Destinations — Free Daily Sync
+
+on:
+  schedule:
+    - cron: "45 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gth-free-destinations-daily
+  cancel-in-progress: false
+
+jobs:
+  countries-cities:
+    # Explicit opt-in protects free-tier quotas and prevents surprise imports.
+    if: ${{ vars.GTH_NUITEE_DESTINATIONS_ENABLED == 'true' }
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NUITEE_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }
+      GTH_INGESTION_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install pinned project dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify destination importer contract
+        run: node --test tests/gth-worldwide-destination-importer.test.mjs
+      - name: Require existing protected secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NUITEE_API_KEY" || { echo "Missing Nuitee Actions secret"; exit 1; }
+          test -n "$SUPABASE_URL" || { echo "Missing Supabase URL Actions secret"; exit 1; }
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo "Missing protected Supabase writer secret"; exit 1; }
+      - name: Sync a rotating 8-country daily window (free static API only)
+        run: node --experimental-strip-types scripts/pull-nuitee-destinations.ts --daily-rotation=8 --write
