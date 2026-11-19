@@ -4,8 +4,8 @@ import {readFileSync} from "node:fs";
 import {cityLabels,hotelBounds,hotelLocationFilter,isInHotelBounds} from "../src/lib/travel/hotel-geo-bounds.ts";
 import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
 const partner=loadTenderTs("src/lib/travel/partner-search.ts");
-const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
-const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search":tracked});
+const tracked=loadTenderTs("src/lib/travel/klook-hotel-search.ts",{"./partner-search.ts":partner});
+const {hotelProviderSearchUrl}=loadTenderTs("src/lib/travel/hotel-provider-search.ts",{"./klook-hotel-search.ts":tracked});
 const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("city samples unlock unlabelled nearby source records without writing city",()=>{
   const mumbai=[{latitude:19.06,longitude:72.84},{latitude:19.08,longitude:72.86},{latitude:19.10,longitude:72.85}];
