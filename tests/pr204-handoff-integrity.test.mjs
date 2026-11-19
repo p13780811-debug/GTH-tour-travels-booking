@@ -96,7 +96,8 @@ test("city hotel CTAs lead to the Nuitee widget with explicit city, never OSM as
  const market=read("src/app/hotels/explore/[slug]/page.tsx");
  const offers=read("src/components/hotel/NuiteeHotelOffers.tsx");
  const booking=read("src/components/hotel/HotelBookingExperience.tsx");
- for(const value of [landing,market,offers])assert.match(value,/view:"booking"/);
+ for(const value of [landing,offers])assert.match(value,/view:"booking"/);
+  assert.match(market,/destinationHotelHref\(market\.supplierCity\)/);
  assert.match(detail,/Public hotel directory in/);
  assert.match(detail,/Book stays in/);
  assert.match(landing,/<HotelBookingExperience key=\{currency\}/);

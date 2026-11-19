@@ -52,7 +52,7 @@ test("directory booking CTAs preserve city and enter the existing supplier widge
  assert.match(offers,/new URLSearchParams\(\{view:"booking",city:hotel\.city\}\)/);
  assert.match(offers,/new URLSearchParams\(\{view:"booking",city:market\.supplierCity,country:market\.countryCode\}\)/);
  assert.match(offers,/new URLSearchParams\(\{view:"booking",city:m\.supplierCity,country:m\.countryCode\}\)/);
- assert.match(guide,/new URLSearchParams\(\{view:"booking",city:market\.supplierCity,country:market\.countryCode\}\)/);
+ assert.match(guide,/destinationHotelHref\(market\.supplierCity\)/);
  assert.doesNotMatch(guide,/placeId:\s*"[^"]+"/);
 });
 test("18 bounded city guides and SEO sitemap stay unchanged",()=>{

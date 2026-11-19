@@ -16,6 +16,7 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";
  const hotelHandoffScope=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+ const hotelDirectScope=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
  const allowedHotelFixes=new Set([
   "src/components/hotel/HotelBookingExperience.tsx",
   "src/components/hotel/HotelDiscoveryShowcase.tsx",
@@ -30,8 +31,47 @@ if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
   path.startsWith("src/components/flights/")||
   path.startsWith("src/app/api/")||
   path==="src/app/globals.css") &&
-  !(hotelHandoffScope&&allowedHotelFixes.has(path)));
+  !(hotelHandoffScope&&allowedHotelFixes.has(path)) &&
+  !(hotelDirectScope&&new Set([
+    "src/components/hotel/HotelBookingExperience.tsx",
+    "src/components/hotel/HotelDiscoveryShowcase.tsx",
+    "src/lib/travel/klook-hotel-search.ts"
+  ]).has(path)));
  if(sensitive.length)throw Error("Connected Travel PR must not modify supplier SDKs, API routes, shared theme or fare logic: "+sensitive.join(", "));
+ if(hotelDirectScope){
+  const approved=new Set([
+    "src/components/travel/ConnectedTravelWorkspace.tsx",
+    "src/components/hotel/HotelBookingExperience.tsx",
+    "src/components/hotel/HotelDiscoveryShowcase.tsx",
+    "src/app/hotels/explore/[slug]/page.tsx",
+    "src/lib/travel/klook-hotel-search.ts",
+    "tests/hotel-booking-fallback-cities.test.mjs",
+    "tests/hotel-storefront-hopegoo-style.test.mjs",
+    "tests/nuitee-hotel-discovery-seo.test.mjs",
+    "tests/pr204-handoff-integrity.test.mjs",
+    "tests/travel-hotels-direct-handoff.test.mjs",
+    "scripts/qa-connected-travel.mjs",
+    "scripts/check-connected-travel-boundaries.mjs",
+    "scripts/check-hotel-landing-boundaries.mjs"
+  ]);
+  const unexpected=[...changed].filter(path=>!approved.has(path));
+  if(unexpected.length)throw Error("PR240 contains unreviewed extra files: "+unexpected.join(","));
+  for(const protectedPath of [
+    "src/lib/travel/hotel-whitelabel.ts","src/lib/travel/hotel-routing.ts",
+    "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+    "src/app/globals.css","src/app/flights/page.tsx",
+    "src/components/flights/FlightHero.tsx",
+    "src/components/mobile/MobileSupplierShowcase.tsx"
+  ])if(changed.has(protectedPath))throw Error("PR240 must preserve working provider and theme: "+protectedPath);
+  const hotelUI=readFileSync("src/components/travel/ConnectedTravelWorkspace.tsx","utf8");
+  const bookingUI=readFileSync("src/components/hotel/HotelBookingExperience.tsx","utf8");
+  const linkRouter=readFileSync("src/lib/travel/klook-hotel-search.ts","utf8");
+  if(!hotelUI.includes('<HotelBookingExperience currency={draft.currency} directHandoff />')||
+     !bookingUI.includes('if (directHandoff || !window.matchMedia(embeddedResultsMedia).matches)')||
+     !linkRouter.includes('VERIFIED_HOTEL_DESTINATIONS')||
+     /https:\/\/www\.klook\.com\/en-IN\/search\/result/.test(linkRouter))
+    throw Error("PR240 must reuse vetted Nuitee SDK, exact Klook Hotels categories and reject unreviewed city results URLs");
+ }
  const read=path=>readFileSync(path,"utf8");
  const original=path=>git("show",base+":"+path);
  if(changed.has("src/app/travel/page.tsx")){

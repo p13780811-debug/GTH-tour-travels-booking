@@ -8,6 +8,7 @@ import {FreeHotelDirectoryCards} from "@/components/hotel/NuiteeHotelOffers";
 import JsonLd from "@/components/seo/JsonLd";
 import {HOTEL_MARKETS,getHotelMarket,type HotelMarket} from "@/lib/travel/nuitee-hotel-markets";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
+import {destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 
 // Generate each page on first request; cache output for a day to avoid per-visit Vercel work.
 export const revalidate=86400;
@@ -41,7 +42,7 @@ export default async function HotelMarketPage({params}:Props){
        <p className="mt-4 max-w-2xl text-sm leading-7 sm:text-base">
          Choose an area before choosing a hotel. Read original local travel guidance, view public source-backed hotel directory records, and confirm exact dates and rooms with the booking provider.
        </p>
-       <Link href={"/hotels?"+new URLSearchParams({view:"booking",city:market.supplierCity,country:market.countryCode}).toString()} className="gth-btn-gold mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
+       <Link href={destinationHotelHref(market.supplierCity) ?? "/hotels"} className="gth-btn-gold mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold">
          <BedDouble size={17} aria-hidden="true"/> Check hotel rooms <ArrowRight size={16} aria-hidden="true"/>
        </Link>
        <a href="https://hotel.gthproglobal.com/hotels?language=en&currency=INR" target="_blank" rel="noopener noreferrer sponsored" className="mt-4 block w-fit text-xs underline underline-offset-2">

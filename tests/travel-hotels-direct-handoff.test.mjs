@@ -18,7 +18,7 @@ function load(path,imports={}){
 const whiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
 const routing=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":whiteLabel});
 const partner=load("src/lib/travel/partner-search.ts");
-const klook=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner});
+const klook=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":partner,"./hotel-routing":routing});
 const booking=load("src/lib/travel/connected-hotel-handoff.ts",{
  "./hotel-whitelabel":whiteLabel,"./hotel-routing":routing,"./klook-hotel-search":klook,
 });
@@ -65,11 +65,18 @@ test("Missing dates allow genuine provider discovery; invalid, partial and stale
  assert.equal(booking.connectedHotelBookingHref({...base,city:"https://evil.test"}),null);
 });
 
-test("Travel hotel form opens supplier directly, while flights 12Go route remains intact",()=>{
+test("Travel hotel tab reuses Nuitee SDK direct results; flights 12Go/Aviasales untouched",()=>{
  const src=read("src/components/travel/ConnectedTravelWorkspace.tsx");
- assert.match(src,/connectedHotelBookingHref\(parsed\.trip\)/);
- assert.match(src,/window\.location\.assign\(directHotelHref\)/);
- assert.match(src,/mode==="flights"/);
+ const sdk=read("src/components/hotel/HotelBookingExperience.tsx");
+ assert.match(src,/<HotelBookingExperience currency=\{draft.currency\} directHandoff \/>/);
+ assert.match(src,/data-gth-travel-hotel-supplier="direct"/);
+ assert.match(sdk,/LiteAPI\.SearchBar\.create/);
+ assert.match(sdk,/hotelWidgetSearchParams\(payload, displayCurrency\)/);
+ assert.match(sdk,/if \(directHandoff \|\| !window\.matchMedia\(embeddedResultsMedia\)\.matches\)/);
+ assert.match(sdk,/window\.location\.assign\(hotelWhiteLabelUrl\(stay\)\)/);
  assert.match(src,/connectedTwelveGoFlightHref/);
- assert.doesNotMatch(src,/process\.env|api\.liteapi\.travel|SUPABASE_SERVICE_ROLE_KEY/);
+ assert.match(src,/connectedFlightHref/);
+ assert.match(src,/{item==="flights"&&<>/);
+ assert.match(src,/{item==="experiences"&&<>/);
+ assert.doesNotMatch(src,/LiteAPI\.SearchBar\.create|HOTEL_WIDGET_SCRIPT|SUPABASE_SERVICE_ROLE_KEY|api\.liteapi\.travel/);
 });

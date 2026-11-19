@@ -207,6 +207,30 @@ for (const path of [
 // A narrowly reviewed recovery PR may touch booking UI, bounded directory
 // error handling and QA, but never the working supplier SDK, 12Go or theme.
 const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
+const directHotelBranch=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
+if(directHotelBranch){
+ for(const path of [
+  "src/components/travel/ConnectedTravelWorkspace.tsx",
+  "src/components/hotel/HotelDiscoveryShowcase.tsx",
+  "src/app/hotels/explore/[slug]/page.tsx",
+  "src/lib/travel/klook-hotel-search.ts",
+  "tests/hotel-booking-fallback-cities.test.mjs",
+    "tests/hotel-storefront-hopegoo-style.test.mjs",
+    "tests/nuitee-hotel-discovery-seo.test.mjs",
+    "tests/pr204-handoff-integrity.test.mjs",
+  "tests/travel-hotels-direct-handoff.test.mjs",
+  "scripts/qa-connected-travel.mjs",
+  "scripts/check-connected-travel-boundaries.mjs",
+  "scripts/check-hotel-landing-boundaries.mjs"
+ ])allowed.add(path);
+ for(const path of [
+  "src/app/globals.css","src/lib/travel/hotel-whitelabel.ts",
+  "src/lib/travel/hotel-routing.ts","src/lib/travel/partner-search.ts",
+  "src/lib/travel/connected-trip.ts","src/components/mobile/MobileSupplierShowcase.tsx",
+  "src/app/flights/page.tsx"
+ ])if(paths.includes(path))throw Error("PR240 must not modify working supplier/security/theme: "+path);
+}
+
 if(hotelRecoveryBranch){
  for(const path of [
   "src/app/api/hotels/route.ts","src/components/travel/ConnectedTravelWorkspace.tsx",
