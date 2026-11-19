@@ -54,6 +54,30 @@ export default function TravelHomePage() {
         <div className={styles.smallPhoto}><Image src="/images/mega/flights.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Flight journey inspiration"/></div>
       </div>
     </section>
+    <nav id="travel-gateway-quick-links" aria-label="Choose your travel service" className="mx-auto w-full max-w-7xl px-4 pt-5 sm:px-6">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-bold text-[var(--text)] sm:text-xl">Choose your journey</h2>
+        <p className="text-xs text-[var(--text-soft)]">Your selected service opens the matching search, not an all-services default.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {[
+          {label:"Hotel stays",description:"Worldwide search",href:"/travel?travelMode=hotels#travel-search",Icon:Hotel},
+          {label:"Flights",description:"Flight-first search",href:"/travel?travelMode=flights#travel-search",Icon:Plane},
+          {label:"Activities",description:"City experiences",href:"/travel?travelMode=experiences#travel-search",Icon:Sparkles},
+          {label:"Bus",description:"Bus-first search",href:"/bus#journey-search",Icon:BusFront},
+          {label:"Train",description:"Train-first search",href:"/train#journey-search",Icon:TrainFront},
+          {label:"Ferry",description:"Ferry-first search",href:"/ferry#journey-search",Icon:Ship},
+        ].map(({label,description,href,Icon})=>
+          <Link prefetch={false} href={href} key={href} className="gth-glass flex min-h-24 min-w-0 flex-col justify-between gap-2 rounded-2xl border border-[var(--border)] p-3 text-[var(--text)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:p-4">
+            <span className="flex items-center justify-between gap-2"><Icon size={20} aria-hidden="true" className="text-[var(--gold)]"/><ArrowUpRight size={15} aria-hidden="true"/></span>
+            <span className="min-w-0"><strong className="block text-sm font-bold">{label}</strong><span className="block text-xs text-[var(--text-soft)]">{description}</span></span>
+          </Link>)}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2 text-sm">
+        <Link prefetch={false} href="/travel?travelMode=hotels&tripCountry=IN&tripCity=Mumbai#travel-search" className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4">Plan Mumbai stays <ArrowRight size={15} aria-hidden="true"/></Link>
+        <Link prefetch={false} href="/travel?travelMode=hotels&tripCountry=IN&tripCity=Kolkata#travel-search" className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-4">Plan Kolkata stays <ArrowRight size={15} aria-hidden="true"/></Link>
+      </div>
+    </nav>
       <Suspense fallback={<section className={workspaceStyles.workspace} aria-label="Travel search"><div className={workspaceStyles.searchCard}><div className={workspaceStyles.searchTop}><h2>Where will you go next?</h2></div><nav aria-label="Open a travel search" className={workspaceStyles.categoryLinks}><Link prefetch={false} href="/hotels?view=booking">Search hotels</Link><Link prefetch={false} href="/flights">Search flights</Link><Link prefetch={false} href="/activities">Find experiences</Link></nav><p role="status" className={workspaceStyles.loading}>Preparing your connected search. You can also open a travel search above.</p></div></section>}><ConnectedTravelEntry countries={HOTEL_COUNTRIES}/></Suspense>
       <TravelSectionNav />
       <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>
