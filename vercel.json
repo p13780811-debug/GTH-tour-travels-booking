@@ -55,7 +55,8 @@
       "fix/mobile-home-supplier-hotel-cards-20261118": false,
       "feat/travel-flights-12go-primary-avia-fallback-20261119": false,
       "fix/verified-flow-integrations-20261119": false,
-      "fix/hotel-goa-dubai-booking-and-directory-20261119": false
+      "fix/hotel-goa-dubai-booking-and-directory-20261119": false,
+      "fix/hotels-worldwide-destination-sync-20261120": false
     }
   }
 }
