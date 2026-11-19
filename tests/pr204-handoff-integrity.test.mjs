@@ -21,9 +21,14 @@ const stadiums=load("src/lib/travel/stadiums.ts");
 const venueRouter=load("src/lib/travel/stadium-ticket-routing.ts",{"./stadiums":stadiums});
 const flights=load("src/data/flight/destinations.ts");
 const destinations=load("src/data/destinations.ts");
+const hotelWhiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
+const hotelRouting=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":hotelWhiteLabel});
+const hotelPartner=load("src/lib/travel/partner-search.ts");
+const hotelDestination=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":hotelPartner,"./hotel-routing":hotelRouting});
 const cityRoutes=load("src/lib/destinations/ecosystem.ts",{
  "@/data/flight/destinations":flights,
  "@/lib/travel/stadiums":stadiums,
+ "@/lib/travel/klook-hotel-search":hotelDestination,
 });
 const mobile=load("src/lib/mobile/universal-search.ts",{
  "@/data/destinations":destinations,
