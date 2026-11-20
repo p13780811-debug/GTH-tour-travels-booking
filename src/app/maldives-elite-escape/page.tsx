@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import {Cinzel} from "next/font/google";
+import typography from "@/components/maldives/MaldivesTypography.module.css";
 import {Suspense} from "react";
 import Link from "next/link";
 import {ArrowUpRight,ShieldCheck,Sun,Compass} from "lucide-react";
@@ -14,7 +14,6 @@ import MaldivesConnectivity from "@/components/maldives/MaldivesConnectivity";
 
 export const dynamic="force-dynamic";
 
-const cinzel=Cinzel({subsets:["latin"],weight:["400","600"],display:"swap"});
 const canonical="https://www.gthproglobal.com/maldives-elite-escape";
 const image="https://images.unsplash.com/photo-1632904000334-144b19f78500?auto=format&fit=crop&w=2200&q=80";
 const description="Discover Maldives overwater resorts, island escapes, flights to Malé (MLE), speedboat and seaplane transfers and genuine supplier-backed tours with GTH PRO.";
@@ -81,7 +80,7 @@ export default async function MaldivesEliteEscape({searchParams}:Props){
   return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(110px+env(safe-area-inset-bottom))] text-[var(--text)] md:pb-16" data-maldives-elite-escape="true">
     <JsonLd data={schema}/>
     <JsonLd data={breadcrumbs}/>
-    <MaldivesHero stay={stay} headingClass={cinzel.className}/>
+    <MaldivesHero stay={stay} headingClass={typography.heading}/>
     <MaldivesStays placeId={placeId}/>
     <MaldivesConnectivity departDate={stay.checkin} today={stay.today}/>
     <Suspense fallback={<div role="status" className="mx-auto max-w-7xl px-4 py-8 text-sm text-[var(--text-soft)] sm:px-6">Checking original Maldives supplier experiences…</div>}>
