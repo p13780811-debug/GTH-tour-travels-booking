@@ -23,7 +23,15 @@ import { unifiedCityRouterEnabled } from "@/lib/router/affiliateRouter";
 import { resolveCityContext, type CityContext } from "@/lib/router/cityContext";
 import { SUPPORTED_UI_LOCALES, type UiLocale } from "@/lib/router/edgeGeoAutoDetect";
 
-type Props = { params: Promise<{ slug: string }>; searchParams?: Promise<{lang?: string | string[]}> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{
+    lang?: string | string[];
+    checkin?: string | string[]; checkout?: string | string[];
+    adults?: string | string[]; children?: string | string[];
+    currency?: string | string[];
+  }>;
+};
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
 async function getDestination(slug: string): Promise<DestinationDetail | null> {
@@ -113,7 +121,12 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       // A provider outage retains the existing stable editorial destination.
     }
   }
-  const selected = (await searchParams)?.lang;
+  const selectedParams = await searchParams;
+  const selected = selectedParams?.lang;
+  const stayParams:Record<string,unknown>={};
+  for (const field of ["checkin","checkout","adults","children","currency"] as const) {
+    if (selectedParams?.[field] !== undefined) stayParams[field]=selectedParams[field];
+  }
   const locale: UiLocale = typeof selected === "string" &&
     SUPPORTED_UI_LOCALES.some(code => code === selected)
       ? selected as UiLocale : "en";
@@ -185,7 +198,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       </section>
       <TravelSectionNav />
 
-      {city ? <CitySpineHub city={city} tours={hubTours} locale={locale}/> :
+      {city ? <CitySpineHub city={city} tours={hubTours} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
       <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
