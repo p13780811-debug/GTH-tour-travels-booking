@@ -64,7 +64,8 @@ const city = Object.freeze({
   name: "Mumbai", slug: "mumbai-in", country: "India", country_code: "IN",
   verifiedNuiteePlaceId: null,
 });
-const click = "https://www.jdoqocy.com/click-101921736-17311341";
+// Synthetic offline test fixture only; never a real publisher click URL.
+const click = "https://www.jdoqocy.com/click-123456789-987654321";
 
 function withEnv(values, fn) {
   const before = Object.fromEntries(
@@ -130,13 +131,13 @@ test("exact outbound host, https, URL and CJ click-path guards", () => {
   for (const raw of [
     click.replace("https:", "http:"),
     click.replace("www.jdoqocy.com", "www.jdoqocy.com.evil.test"),
-    "https://user:secret@www.jdoqocy.com/click-101921736-17311341",
-    "https://www.jdoqocy.com:444/click-101921736-17311341",
+    "https://user:secret@www.jdoqocy.com/click-123456789-987654321",
+    "https://www.jdoqocy.com:444/click-123456789-987654321",
     click + "?redirect=https%3A%2F%2Fevil.test",
     "https://www.jdoqocy.com/click-not-an-approved-id",
-    "//www.jdoqocy.com/click-101921736-17311341",
+    "//www.jdoqocy.com/click-123456789-987654321",
     "javascript:alert(1)",
-    "https://www.jdoqocy.com\\@evil.test/click-101921736-17311341",
+    "https://www.jdoqocy.com\\@evil.test/click-123456789-987654321",
   ]) {
     assert.equal(registry.isSafeProviderOutboundUrl("hopegoo", raw), false, raw);
   }
@@ -260,7 +261,7 @@ test("HopeGoo regional routing uses only configured allowlisted URL", () => {
 test("missing or malicious HopeGoo configuration never creates a guessed URL", () => {
   withEnv({
     ENABLE_UNIFIED_CITY_ROUTER: "true",
-    GTH_HOPEGOO_AFFILIATE_URL: "https://www.jdoqocy.com.evil.example/click-101921736-17311341",
+    GTH_HOPEGOO_AFFILIATE_URL: "https://www.jdoqocy.com.evil.example/click-123456789-987654321",
   }, () => {
     const result = router.resolveAffiliateRoute({
       city: { ...city, country_code: "SG" }, service: "hotels",
