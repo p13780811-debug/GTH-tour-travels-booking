@@ -35,7 +35,7 @@ export type AffiliateResolution = Readonly<{
 }>;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const CITY_NAME = /^[\p{L}\p{M}\p{N} .,'’()&-]{1,160}$/u;
+const CITY_NAME = /^[\p{L}\p{M}\p{N} .,'’‘()&/–—`-]{1,160}$/u;
 const CITY_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SERVICE_IDS = new Set<ProviderService>([
   "hotels", "flights", "bus", "train", "ferry", "transfers",
