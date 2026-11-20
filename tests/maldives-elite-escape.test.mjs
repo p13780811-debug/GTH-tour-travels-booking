@@ -109,7 +109,7 @@ test("all 3 canonical paths exist, aliases preserve query, no root homepage fall
 
 test("mobile and desktop layout retains 3 unique licensed images and 44px actions",()=>{
   const hero=readFileSync(resolve(root,"src/components/maldives/MaldivesHero.tsx"),"utf8");
-  const imageIds=[...hero.matchAll(/photo-\d{13}-[a-f0-9]{12}/g)].map(m=>m[0]);
+  const imageIds=[...hero.matchAll(/photo-\d{10,13}-[a-f0-9]{12}/g)].map(m=>m[0]);
   assert.equal(imageIds.length,3);
   assert.equal(new Set(imageIds).size,3);
   for(const fragment of ["gth-glass-strong","grid-cols-2","lg:grid-cols","-mt-14","touch-auto","min-h-11","min-w-11","overscroll-x-contain","prefers-reduced-motion"]){
