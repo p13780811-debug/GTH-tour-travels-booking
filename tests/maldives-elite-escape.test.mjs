@@ -149,6 +149,8 @@ test("actual supplier cards reused; unavailable hotels/tours never fabricated",(
 test("protected pages and global CSS are not imported for mutation",()=>{
   const page=readFileSync(resolve(root,"src/app/maldives-elite-escape/page.tsx"),"utf8");
   assert.match(page,/pb-\[calc\(110px\+env\(safe-area-inset-bottom\)\)\]/);
-  assert.match(page,/Cinzel\(/);
+  assert.match(page,/MaldivesTypography\.module\.css/);
+  const font=readFileSync(resolve(root,"src/components/maldives/MaldivesTypography.module.css"),"utf8");
+  assert.match(font,/font-family: "Cinzel", var\(--font-heading\)/);
   assert.doesNotMatch(page,/globals\.css|FlagshipHome|RealEstate|TenderBidGenerator/);
 });
