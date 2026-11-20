@@ -2,7 +2,7 @@ import "server-only";
 
 import { findFlightPartner } from "../flights/partners";
 import {
-  partnerSearchHref, parsePartnerSearch, buildPartnerSearch,
+  partnerSearchHref, parsePartnerSearch,
 } from "../travel/partner-search";
 import {
   buildCruiseProviderSearch, GETYOURGUIDE_PARTNER_ID,
