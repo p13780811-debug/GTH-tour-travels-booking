@@ -182,7 +182,8 @@ export function isSafeProviderOutboundUrl(
 export function isSafeInternalEntry(raw: unknown): raw is string {
   if (typeof raw !== "string" || raw.length > 600 ||
       !raw.startsWith("/") || raw.startsWith("//") ||
-      /[\u0000-\u001f\\#]/u.test(raw) || /%2f|%5c|%00/iu.test(raw)) return false;
+      /[\u0000-\u001f\\#]/u.test(raw) || /%5c|%00/iu.test(raw) ||
+      /%2f/iu.test(raw.split("?", 1)[0])) return false;
   try {
     const url = new URL(raw, "https://gthproglobal.com");
     return url.origin === "https://gthproglobal.com" &&
