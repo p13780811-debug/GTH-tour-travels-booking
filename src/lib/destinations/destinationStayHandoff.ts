@@ -21,8 +21,8 @@ export function resolveDestinationStayHandoff(
   now = new Date(),
 ): DestinationStayHandoff {
   if (!city || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(city.slug) ||
-      typeof city.name !== "string" || !city.name.trim() ||
-      !/^[\\p{L}\\p{M}\\p{N} .,'’‘()&\\/–—`-]{1,160}$/u.test(city.name)) {
+      typeof city.name !== "string" || !city.name.trim() || city.name.length > 160 ||
+      city.name.includes("<") || city.name.includes(">")) {
     return { status: "invalid" };
   }
   const parsed = parseTravelQuery(query, now);
