@@ -18,6 +18,11 @@ jobs:
     timeout-minutes: 18
     env:
       NEXT_TELEMETRY_DISABLED: "1"
+      # Public and nonfunctional fixture values. No production credentials or DB access.
+      NEXT_PUBLIC_SUPABASE_URL: https://tender-qa.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: fixture-public-key
+      SUPABASE_SERVICE_ROLE_KEY: fixture-private-writer
+      NUITEE_PRODUCTION_API_KEY: fixture-private-test-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
