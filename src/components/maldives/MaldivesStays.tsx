@@ -4,7 +4,7 @@ import {VERIFIED_MALDIVES_HOTELS} from "@/lib/maldives/verified-hotels";
 import {hotelWhiteLabelUrl} from "@/lib/travel/hotel-whitelabel";
 
 /** True Maldives property cards, sourced from the supplier's free static
- * catalog. Every card is a native submitter of the already visible stay form.
+ * catalog. Every card is a standalone hotel-detail link.
  * The whole image/card/title/CTA is a direct verified hotel-level link to
  * the same supplier White Label, independent of any removed search form.
  */
