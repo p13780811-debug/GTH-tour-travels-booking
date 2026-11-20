@@ -42,7 +42,7 @@ export type HotelCurrency = (typeof HOTEL_CURRENCIES)[number];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PLACE_ID = /^[A-Za-z0-9_-]{5,255}$/;
-const TEXT = /^[\p{L}\p{M}\p{N} .,'’()&-]+$/u;
+const TEXT = /^[\p{L}\p{M}\p{N} .,'’‘()&/–—`-]+$/u;
 const QUERY_FIELDS = new Set(["checkin", "checkout", "adults", "children", "currency"]);
 const DAY = 86_400_000;
 
