@@ -33,8 +33,8 @@ function load(file) {
     d.category === ts.DiagnosticCategory.Error);
   assert.equal(errors.length, 0, filename + ": transpilation errors");
 
-  const module = { exports: {} };
-  cache.set(filename, module);
+  const sandboxModule = { exports: {} };
+  cache.set(filename, sandboxModule);
   const requireFrom = (requested) => {
     if (requested === "server-only") return {};
     const next = requested.startsWith("@/")
@@ -48,11 +48,11 @@ function load(file) {
     return load(next.replace(root + "/", "") + ".ts");
   };
   const sandbox = {
-    module, exports: module.exports, require: requireFrom,
+    module: sandboxModule, exports: sandboxModule.exports, require: requireFrom,
     URL, URLSearchParams, Date, AbortSignal, btoa, atob, process,
   };
   vm.runInNewContext(result.outputText, sandbox, { filename, timeout: 2500 });
-  return module.exports;
+  return sandboxModule.exports;
 }
 
 const cityModule = load("lib/router/cityContext.ts");
