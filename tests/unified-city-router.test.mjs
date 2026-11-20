@@ -59,10 +59,28 @@ const cityModule = load("lib/router/cityContext.ts");
 const registry = load("lib/router/providerRegistry.ts");
 const router = load("lib/router/affiliateRouter.ts");
 const now = new Date("2026-11-20T00:00:00Z");
-const city = Object.freeze({
+const sourceCity = Object.freeze({
   id: "0c517223-315b-4800-8669-98df4e9ac6d1",
   name: "Mumbai", slug: "mumbai-in", country: "India", country_code: "IN",
   verifiedNuiteePlaceId: null,
+});
+async function resolvedCity(overrides = {}) {
+  const row = { ...sourceCity, ...overrides };
+  const response = await cityModule.resolveCityContext(dbWith({
+    id: row.id, name: row.name, slug: row.slug,
+    country: row.country, country_code: row.country_code,
+    nuitee_place_id: row.verifiedNuiteePlaceId,
+  }), { id: row.id });
+  assert.equal(response.status, "found");
+  return response.city;
+}
+const city = await resolvedCity();
+const regionalCityContexts = Object.fromEntries(await Promise.all(
+  Array.from(registry.HOPEGOO_COUNTRIES).map(async code =>
+    [code, await resolvedCity({ country_code: code })]),
+));
+const verifiedCity = await resolvedCity({
+  verifiedNuiteePlaceId: "ChIJwe1EZjDG5zsRaYxkjY_tpF0",
 });
 // Synthetic offline test fixture only; never a real publisher click URL.
 const click = "https://www.jdoqocy.com/click-123456789-987654321";
@@ -244,7 +262,7 @@ test("HopeGoo regional routing uses only configured allowlisted URL", () => {
   }, () => {
     for (const country_code of ["SG", "TH", "MY", "VN", "JP", "KR", "CN", "HK", "MO", "TW"]) {
       const routed = router.resolveAffiliateRoute({
-        city: { ...city, country_code },
+        city: regionalCityContexts[country_code],
         service: "hotels",
       }, now);
       assert.equal(routed.provider, "hopegoo");
@@ -264,11 +282,28 @@ test("missing or malicious HopeGoo configuration never creates a guessed URL", (
     GTH_HOPEGOO_AFFILIATE_URL: "https://www.jdoqocy.com.evil.example/click-123456789-987654321",
   }, () => {
     const result = router.resolveAffiliateRoute({
-      city: { ...city, country_code: "SG" }, service: "hotels",
+      city: regionalCityContexts.SG, service: "hotels",
     }, now);
     assert.equal(result.provider, "nuitee");
     assert.equal(result.capability, "supplier_search");
     assert.ok(result.href.startsWith("https://hotel.gthproglobal.com/"));
+  });
+});
+
+
+test("forged city context cannot inject an unverified supplier Place ID", () => {
+  withEnv({ ENABLE_UNIFIED_CITY_ROUTER: "true" }, () => {
+    const fake = {
+      ...city, verifiedNuiteePlaceId: "ChIJfakeSupplierPlace",
+    };
+    assert.equal(cityModule.isResolvedCityContext(fake), false);
+    const routed = router.resolveAffiliateRoute({
+      city: fake, service: "hotels", travelParams: {
+        checkin: "2026-11-24", checkout: "2026-11-25",
+      },
+    }, now);
+    assert.equal(routed.capability, "unavailable");
+    assert.equal(routed.reason, "invalid_context");
   });
 });
 
@@ -281,7 +316,7 @@ test("verified Nuitee Place ID plus dates is required for verified deep link", (
     assert.equal(new URL(noId.href).searchParams.has("placeId"), false);
 
     const verified = router.resolveAffiliateRoute({
-      city: { ...city, verifiedNuiteePlaceId: "ChIJwe1EZjDG5zsRaYxkjY_tpF0" },
+      city: verifiedCity,
       service: "hotels", travelParams: params,
     }, now);
     assert.equal(verified.capability, "verified_deep_link");
@@ -290,7 +325,7 @@ test("verified Nuitee Place ID plus dates is required for verified deep link", (
       "ChIJwe1EZjDG5zsRaYxkjY_tpF0");
 
     const missingDates = router.resolveAffiliateRoute({
-      city: { ...city, verifiedNuiteePlaceId: "ChIJwe1EZjDG5zsRaYxkjY_tpF0" },
+      city: verifiedCity,
       service: "hotels",
     }, now);
     assert.equal(missingDates.capability, "supplier_search");
