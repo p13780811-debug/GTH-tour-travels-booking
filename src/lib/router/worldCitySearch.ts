@@ -20,7 +20,9 @@ export async function searchWorldwideCities(
       typeof raw !== "string" || raw.length > 85 ||
       /[\u0000-\u001f\u007f<>]/u.test(raw)) return [];
   const search = raw.normalize("NFKC").trim().replace(/\s+/gu, " ");
-  if (!CITY_QUERY.test(search)) return [];
+  // A legitimate slash in a city name is allowed; traversal-like inputs are not.
+  if (!CITY_QUERY.test(search) || search.includes("..") || search.startsWith("/") ||
+      search.includes("://")) return [];
   // PostgREST LIKE wildcard/meta characters from the user are never treated
   // as operators. The only '%' is the intentional bounded prefix match.
   const escaped = search.replace(/[%_\\]/g, "\\$&");
