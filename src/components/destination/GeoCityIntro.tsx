@@ -24,7 +24,7 @@ export default async function GeoCityIntro({language}: {language?: string}) {
   // auto-redirect to some unrelated city. This is preference, not IP proof.
   if (geo.city) {
     return <div aria-label="Detected city showcase" className="scroll-mt-20">
-      <CitySpineHub city={geo.city} locale={locale} detected/>
+      <CitySpineHub city={geo.city} locale={locale} currency={geo.currency} detected/>
       <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6">
         <Link href={"/destinations/"+encodeURIComponent(geo.city.slug)}
           className="gth-btn inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm">
