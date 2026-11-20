@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowRight,BookOpen,Globe2,MapPinned,Ship,CarFront} from "lucide-react";
+import {ArrowRight,BookOpen,Globe2,CarFront} from "lucide-react";
 import {guideCatalog} from "@/lib/travel/guideCatalog";
 
 const countries=[
