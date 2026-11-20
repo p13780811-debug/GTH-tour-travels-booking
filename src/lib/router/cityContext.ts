@@ -46,6 +46,13 @@ const TEXT = /^[\p{L}\p{M}\p{N} .,'’‘()&\/–—`-]+$/u;
 const QUERY_FIELDS = new Set(["checkin", "checkout", "adults", "children", "currency"]);
 const DAY = 86_400_000;
 
+/** Only contexts returned by this server-side DB reader are eligible for routing. */
+const RESOLVED_CITY_CONTEXTS = new WeakSet<object>();
+
+export function isResolvedCityContext(value: unknown): value is CityContext {
+  return typeof value === "object" && value !== null && RESOLVED_CITY_CONTEXTS.has(value);
+}
+
 function safeText(raw: unknown, max: number): string | null {
   if (typeof raw !== "string" || /[\u0000-\u001f\u007f<>]/u.test(raw)) return null;
   const text = raw.normalize("NFKC").replace(/\s+/gu, " ").trim();
@@ -184,17 +191,16 @@ export async function resolveCityContext(
     const verifiedNuiteePlaceId =
       typeof data.nuitee_place_id === "string" && PLACE_ID.test(data.nuitee_place_id)
         ? data.nuitee_place_id : null;
-    return {
-      status: "found",
-      city: {
-        id: cityId,
-        name: cityName,
-        slug: citySlug,
-        country,
-        country_code: countryCode,
-        verifiedNuiteePlaceId,
-      },
-    };
+    const city: CityContext = Object.freeze({
+      id: cityId,
+      name: cityName,
+      slug: citySlug,
+      country,
+      country_code: countryCode,
+      verifiedNuiteePlaceId,
+    });
+    RESOLVED_CITY_CONTEXTS.add(city);
+    return { status: "found", city };
   } catch {
     return { status: "unavailable" };
   }
