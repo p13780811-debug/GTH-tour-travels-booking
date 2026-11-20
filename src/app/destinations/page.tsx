@@ -10,6 +10,8 @@ import { destinations as curatedDestinations, destinationImageForSlug } from "@/
 import { destinationGeography } from "@/lib/destinations/geography";
 import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
+import GeoCityIntro from "@/components/destination/GeoCityIntro";
+import { searchWorldwideCities } from "@/lib/router/worldCitySearch";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 type Destination = { slug: string; title: string; image: string; description: string; location: string; country: string | null; region: string | null };
-type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[]; view?: string | string[] }> };
+type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[]; view?: string | string[]; lang?: string | string[] }> };
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
 
@@ -127,6 +129,23 @@ export default async function DestinationsPage({ searchParams }: Props) {
     mappedPromise,
     withDiscoveryDeadline(loadDestinations()).catch(()=>fallbackDestinations),
   ]);
+  // User-driven bounded query extends the existing catalogue without
+  // scanning or rendering all 38,671 city rows on every request.
+  if (process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" && search.length >= 2) {
+    const matches = await searchWorldwideCities(supabase, search);
+    const present = new Set(allDestinations.map(city => city.slug));
+    for (const match of matches) {
+      if (present.has(match.slug)) continue;
+      present.add(match.slug);
+      allDestinations.push({
+        slug:match.slug, title:match.name,
+        image:destinationImageForSlug(match.slug),
+        location:"Worldwide city reference · supplier availability unverified",
+        description:"Explore local services, reviewed venues and country-level opportunities.",
+        ...destinationGeography(match.slug,match.country),
+      });
+    }
+  }
   const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
   const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
   const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";
@@ -152,6 +171,9 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
   return (
    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    {process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" &&
+      <GeoCityIntro language={typeof params.lang === "string" ? params.lang : undefined}/>}
+
     <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
      <div className="absolute inset-0 -z-20 bg-[var(--bg-soft)]"/>
      <div className="absolute inset-y-0 right-0 -z-10 hidden w-[52%] lg:block">
