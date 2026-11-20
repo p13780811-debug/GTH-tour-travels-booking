@@ -1,7 +1,0 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap");
-
-/* Maldives-only display font. Preserve the global type stack as a fallback.
-   Theme colors, spacing, day/night and other site-wide rules stay centralized. */
-.heading {
-  font-family: "Cinzel", var(--font-heading), Georgia, serif;
-}
