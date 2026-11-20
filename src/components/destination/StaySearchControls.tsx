@@ -15,7 +15,7 @@ type Props = {
 export default function StaySearchControls({city,locale,currency,value,invalid}:Props) {
   const dates = resolveHotelDates(value?.checkin, value?.checkout);
   const control="mt-1 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]";
-  return <form action={"/destinations/"+encodeURIComponent(city.slug)+"/stays"} method="get"
+  return <form id="gth-destination-stay-form" action={"/destinations/"+encodeURIComponent(city.slug)+"/stays"} method="get"
     aria-label="Set hotel search preferences"
     className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
     <input type="hidden" name="lang" value={locale}/>
