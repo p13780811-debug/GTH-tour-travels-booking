@@ -2,6 +2,10 @@ import "server-only";
 
 import { resolveHotelAdapter } from "./hotelAdapter";
 import { resolveFlightAdapter, type FlightRouteIntent } from "./flightAdapter";
+import {
+  compareFlightHandoffs, resolveTwelveGoFlightAdapter,
+  type FlightComparisonOption,
+} from "./flightCompetition";
 import { resolveGroundAdapter, type GroundRouteIntent } from "./groundAdapter";
 import { resolveExperienceAdapter } from "./experienceAdapter";
 import { adapterResult, type AdapterCapability, type AdapterReason, type AdapterResult } from "./adapterTypes";
@@ -160,8 +164,9 @@ export function resolveAffiliateRoute(
     case "flights":
       adapter = provider === "aviasales"
         ? resolveFlightAdapter(city, input.flightRoute, now)
-        : adapterResult("internal_discovery", "provider_selection_required",
-            provider, "/go/transport");
+        : provider === "12go"
+          ? resolveTwelveGoFlightAdapter(city, input.flightRoute, travel, now)
+          : adapterResult("unavailable", "unsupported_service", provider, null);
       break;
     case "bus": case "train": case "ferry": case "transfers":
       adapter = resolveGroundAdapter(city, input.service, provider, input.groundRoute, now);
@@ -190,4 +195,32 @@ export function resolveAffiliateRoute(
     adapter.capability, adapter.reason, provider, href, cityId,
     adapter.searchIntentForwarded,
   );
+}
+
+
+/**
+ * Step 3 flight-competition capability array. Never a fare or stock claim.
+ * Reuses the exact protected city identity, input guards and supplier adapters.
+ * The disabled default returns no options and performs no supplier request.
+ */
+export function resolveFlightCompetition(
+  input: Pick<AffiliateRequest, "city" | "flightRoute" | "travelParams">,
+  now = new Date(),
+): readonly FlightComparisonOption[] {
+  if (!unifiedCityRouterEnabled() ||
+      !input || !isResolvedCityContext(input.city) || !safeCity(input.city)) return [];
+  const parsed = parseTravelQuery(input.travelParams ?? {}, now);
+  if (!parsed.ok) return [];
+  const results = compareFlightHandoffs(input.city, input.flightRoute, parsed.value, now);
+  return results.map(option => {
+    const href = option.href;
+    if (!href || (href.startsWith("/")
+      ? isSafeInternalEntry(href)
+      : isSafeProviderOutboundUrl(option.provider, href))) return option;
+    return {
+      ...option, capability: "unavailable" as const,
+      reason: "unsafe_target" as const, href: null,
+      searchIntentForwarded: false,
+    };
+  });
 }
