@@ -1,10 +1,11 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   ArrowRight, Building2, Compass, FileText, Globe2, Hotel,
   MapPin, Plane, ShieldCheck, Ticket, TrainFront,
 } from "lucide-react";
 import type { PublicTour } from "@/lib/tours";
-import { type CityContext, HOTEL_CURRENCIES } from "@/lib/router/cityContext";
+import { type CityContext } from "@/lib/router/cityContext";
 import { resolveAffiliateRoute, resolveFlightCompetition } from "@/lib/router/affiliateRouter";
 import { buildCitySpineLinks } from "@/lib/router/citySpine";
 import {
@@ -40,7 +41,7 @@ function BookingAction({href,label}: {href:string|null;label:string}) {
 
 function HubCard({name,description,scope,href,label,icon}: {
   name:string;description:string;scope:string;href:string|null;label:string;
-  icon:React.ReactNode;
+  icon:ReactNode;
 }) {
   return <article className="gth-glass flex min-w-0 flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--text)] shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -115,7 +116,7 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
   const transport=resolveAffiliateRoute({city,service:"train",provider:"12go"});
   const transfers=resolveAffiliateRoute({city,service:"transfers",provider:"kiwitaxi"});
 
-  return <section id="city-spine-hub" aria-labelledby="city-spine-heading" lang={locale}
+  return <section id="city-spine-hub" aria-labelledby="city-spine-heading"
     className="scroll-mt-24 border-y border-[var(--border)] bg-[var(--bg-soft)] py-10 text-[var(--text)] sm:py-14">
     <div className="mx-auto max-w-7xl space-y-9 px-4 sm:px-6">
       <header className="gth-glass-strong rounded-3xl border border-[var(--border)] p-5 sm:p-8">
@@ -123,7 +124,7 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
           <Globe2 size={16}/>{detected?"Location-aware destination hub":"GTH PRO · Worldwide City Spine"}
         </p>
         <h2 id="city-spine-heading" className="mt-3 text-2xl font-bold tracking-tight sm:text-4xl"
-          style={{fontFamily:"var(--font-heading)"}}>
+          className="font-[family-name:var(--font-heading)]">
           {city.name} <span className="text-[var(--gold)]">· Four ways to discover</span>
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
@@ -250,7 +251,6 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
         are confirmed independently. Third-party links may be affiliate links.
         <Link href="/affiliate-disclosure" className="underline">Disclosure</Link>
       </p>
-      <p className="sr-only">Supported hotel currencies: {HOTEL_CURRENCIES.join(", ")}</p>
     </div>
   </section>;
 }
