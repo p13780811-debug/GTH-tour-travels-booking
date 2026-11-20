@@ -94,7 +94,8 @@ try {
       page.waitForEvent("popup",{timeout:10000}),
       first.click(),
     ]);
-    await popup.waitForLoadState("domcontentloaded");
+    await popup.waitForURL(url=>url.hostname==="hotel.gthproglobal.com" &&
+      url.pathname==="/hotels/lp39ce1",{waitUntil:"domcontentloaded",timeout:15000});
     assert.equal(new URL(popup.url()).pathname,"/hotels/lp39ce1");
     await popup.close();
     report.push({viewport:width+"x"+height,status:"PASS",overflow:layout.scrollWidth,
