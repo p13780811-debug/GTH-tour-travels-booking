@@ -31,6 +31,10 @@ const COUNTRY_CURRENCIES: Readonly<Record<string, HotelCurrency>> = {
   IT: "EUR", NL: "EUR", BE: "EUR", PT: "EUR", IE: "EUR",
   AT: "EUR", FI: "EUR", GR: "EUR",
 };
+export function preferredCurrencyForCountry(countryCode: string | null): HotelCurrency {
+  return (countryCode && COUNTRY_CURRENCIES[countryCode]) || "USD";
+}
+
 const COUNTRY_LOCALES: Readonly<Record<string, UiLocale>> = {
   IN: "hi", CN: "zh", HK: "zh", MO: "zh", TW: "zh",
   JP: "ja", KR: "ko", TH: "th", MY: "ms", VN: "vi",
@@ -73,7 +77,7 @@ export function readVercelGeoPreference(headers: Headers): GeoPreference {
     countryCode,
     headerCity: countryCode ? city : null,
     city: null,
-    currency: (countryCode && COUNTRY_CURRENCIES[countryCode]) || "USD",
+    currency: preferredCurrencyForCountry(countryCode),
     locale: localePreference(headers.get("accept-language"), countryCode),
   };
 }
