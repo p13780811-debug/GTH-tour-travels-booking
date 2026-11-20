@@ -6,16 +6,16 @@ import {ArrowRight,Compass,Hotel,Plane,Ship,ShieldCheck} from "lucide-react";
 
 export const MALDIVES_HERO_PHOTOS = [
   {
-    url:"https://images.unsplash.com/photo-1688949078626-a358f500e063?auto=format&fit=crop&w=2200&q=80",
+    url:"https://images.unsplash.com/photo-1632904000334-144b19f78500?auto=format&fit=crop&w=2200&q=80",
     label:"Overwater sanctuary",
     alt:"Aerial view of genuine Maldives overwater villas in a turquoise lagoon",
-    credit:"Hamdhulla Shakeeb / Unsplash",
+    credit:"Nabit Photos / Unsplash",
   },
   {
-    url:"https://images.unsplash.com/photo-1696580436068-f19c26850e8b?auto=format&fit=crop&w=2200&q=80",
-    label:"Dhigurah lagoon",
-    alt:"Maldives Dhigurah white-sand coast, palms and clear turquoise lagoon from above",
-    credit:"Hoodh Ahmed / Unsplash",
+    url:"https://images.unsplash.com/photo-1540206458-a985485e4a8e?auto=format&fit=crop&w=2200&q=80",
+    label:"Turquoise atoll",
+    alt:"Maldives island, overwater villas and turquoise atoll photographed from above",
+    credit:"Shifaaz shamoon / Unsplash",
   },
   {
     url:"https://images.unsplash.com/photo-1637576308588-6647bf80944d?auto=format&fit=crop&w=2200&q=80",
