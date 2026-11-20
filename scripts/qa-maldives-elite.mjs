@@ -84,7 +84,7 @@ try{
       "Undersized inputs at "+width+": "+JSON.stringify(layout.targets));
     assert.ok(errors.length===0,"Client errors at "+width+": "+errors.join("; ").slice(0,300));
     await page.getByRole("button",{name:/Find stays/i}).waitFor();
-    assert.equal(await page.locator('input[name="destination"]').inputValue(),"Maldives");
+    assert.equal(await page.locator('#maldives-elite-stay-search input[name="destination"]').inputValue(),"Maldives");
     assert.match(await page.locator('input[name="checkin"]').inputValue(),/^\d{4}-\d{2}-\d{2}$/);
     assert.equal(await page.locator("[data-maldives-hotel-id]").count(),12);
     // Native button submits live edited form, not a generic /hotels URL.
