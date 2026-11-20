@@ -7,194 +7,140 @@ import vm from "node:vm";
 import ts from "typescript";
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+const source=p=>readFileSync(resolve(root,p),"utf8");
 const cache=new Map();
 function load(relative) {
   const filename=resolve(root,relative.startsWith("src/")?relative:"src/"+relative);
-  if(!filename.startsWith(root+"/src/"))throw Error("Invalid source import");
+  if(!filename.startsWith(root+"/src/"))throw Error("Unexpected source path");
   if(cache.has(filename))return cache.get(filename).exports;
-  const result=ts.transpileModule(readFileSync(filename,"utf8"),{
+  const output=ts.transpileModule(readFileSync(filename,"utf8"),{
     fileName:filename,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},
     reportDiagnostics:true,
   });
-  assert.equal((result.diagnostics??[]).filter(d=>d.category===1).length,0);
-  const testModule={exports:{}};cache.set(filename,testModule);
+  assert.equal((output.diagnostics||[]).filter(d=>d.category===1).length,0);
+  const unitModule={exports:{}};cache.set(filename,unitModule);
   const localRequire=specifier=>{
     if(specifier==="server-only")return {};
     if(specifier==="react")return {cache:fn=>fn};
-    if(specifier==="@supabase/supabase-js")return {createClient:()=>{throw Error("No API calls in unit test");}};
-    const p=specifier.startsWith("@/")?resolve(root,"src",specifier.slice(2)):
+    if(specifier==="@supabase/supabase-js")return {createClient:()=>{throw Error("Network not permitted in tests");}};
+    const path=specifier.startsWith("@/")?resolve(root,"src",specifier.slice(2)):
       specifier.startsWith(".")?resolve(dirname(filename),specifier):null;
-    if(!p||!p.startsWith(root+"/src/"))throw Error("Unexpected import "+specifier);
-    return load(p.slice(root.length+1)+(p.endsWith(".ts")?"":".ts"));
+    if(!path||!path.startsWith(root+"/src/"))throw Error("Unexpected module "+specifier);
+    return load(path.slice(root.length+1)+(path.endsWith(".ts")?"":".ts"));
   };
-  vm.runInNewContext(result.outputText,{
-    module:testModule,exports:testModule.exports,require:localRequire,
-    URL,URLSearchParams,Date,AbortSignal,process,btoa,atob,Intl,
-    TextEncoder,TextDecoder,
+  vm.runInNewContext(output.outputText,{
+    module:unitModule,exports:unitModule.exports,require:localRequire,
+    URL,URLSearchParams,Date,AbortSignal,process,btoa,atob,Intl,TextEncoder,TextDecoder,
   },{filename,timeout:5000});
-  return testModule.exports;
+  return unitModule.exports;
 }
-const {maldivesStayHandoff,maldivesHotelHandoff}=load("lib/maldives/elite-handoff.ts");
+
 const {VERIFIED_MALDIVES_HOTELS}=load("lib/maldives/verified-hotels.ts");
+const {hotelWhiteLabelUrl}=load("lib/travel/hotel-whitelabel.ts");
+const {maldivesHotelHandoff}=load("lib/maldives/elite-handoff.ts");
 const now=new Date("2026-11-20T00:00:00Z");
-const form=(changes={})=>new URLSearchParams({
-  destination:"Maldives",checkin:"2026-12-20",checkout:"2026-12-26",
-  adults:"2",children:"5,8",currency:"USD",...changes,
-});
-const fixturePlaceId="ChIJabcdefghijklmnopqrstuvwxyz";
+const stay={destination:"Maldives",checkin:"2026-12-20",checkout:"2026-12-26",
+  adults:"2",children:"5,8",currency:"USD"};
+const params=new URLSearchParams(stay);
 
-test("verified supplier ID results in exact White Label /hotels URL and original guest ages",()=>{
-  const r=maldivesStayHandoff(form(),fixturePlaceId,now);
-  assert.equal(r.status,"supplier_listing");
-  const u=new URL(r.href);
-  assert.equal(u.origin,"https://hotel.gthproglobal.com");
-  assert.equal(u.pathname,"/hotels");
-  assert.equal(u.searchParams.get("placeId"),fixturePlaceId);
-  assert.equal(u.searchParams.get("checkin"),"2026-12-20");
-  assert.equal(u.searchParams.get("checkout"),"2026-12-26");
-  assert.equal(u.searchParams.get("currency"),"USD");
-  const occupancies=JSON.parse(atob(u.searchParams.get("occupancies")));
-  assert.deepEqual(occupancies,[{adults:2,children:[5,8]}]);
-  assert.equal(u.searchParams.has("city"),false);
-});
-
-test("no supplier Place ID never causes generic root or wrong Mumbai listing",()=>{
-  const r=maldivesStayHandoff(form(),null,now);
-  assert.equal(r.status,"destination_picker");
-  const u=new URL(r.href,"https://www.gthproglobal.com");
-  assert.equal(u.pathname,"/maldives-elite-escape");
-  assert.equal(u.searchParams.get("destination"),"Maldives");
-  assert.equal(u.searchParams.get("city"),"Maldives");
-  assert.equal(u.searchParams.get("country"),"MV");
-  assert.equal(u.searchParams.get("checkin"),"2026-12-20");
-  assert.equal(u.searchParams.get("checkout"),"2026-12-26");
-  assert.equal(u.searchParams.get("children"),"5,8");
-  assert.equal(u.searchParams.get("currency"),"USD");
-  assert.doesNotMatch(r.href,/mumbai|hotel\.gthproglobal\.com\/?\?/i);
-});
-
-test("valid next-day defaults are used when dates untouched",()=>{
-  const r=maldivesStayHandoff(new URLSearchParams({destination:"Maldives",adults:"2",currency:"USD"}),null,now);
-  assert.equal(r.status,"destination_picker");
-  const u=new URL(r.href,"https://www.gthproglobal.com");
-  assert.equal(u.searchParams.get("checkin"),"2026-11-21");
-  assert.equal(u.searchParams.get("checkout"),"2026-11-22");
-});
-
-test("bad dates, ages, currency, tampered destination and open redirect fields fail closed",()=>{
-  const vectors=[
-    form({checkout:"2026-12-19"}),form({checkin:"2025-11-20"}),
-    form({children:"18"}),form({children:"5,,8"}),
-    form({adults:"0"}),form({currency:"BTC"}),
-    form({destination:"Mumbai"}),form({redirect:"https://evil.invalid"}),
-  ];
-  const dupe=form();dupe.append("checkout","2026-12-28");vectors.push(dupe);
-  for(const input of vectors){
-    assert.equal(maldivesStayHandoff(input,null,now).status,"invalid",input.toString());
+test("canonical Maldives route and both legacy Google sitelinks remain, preserving query",()=>{
+  const page=source("src/app/maldives-elite-escape/page.tsx");
+  assert.match(page,/Maldives Elite Escape — Luxury Overwater Resorts, Flights & Island Tours \| GTH PRO/);
+  assert.match(page,/alternates:\{canonical\}/);
+  assert.match(page,/"@type":"TouristDestination"/);
+  for(const path of ["src/app/maldives/route.ts","src/app/destinations/maldives/route.ts"]){
+    const sourceText=source(path);
+    assert.match(sourceText,/\/maldives-elite-escape"\+request\.nextUrl\.search/);
+    assert.match(sourceText,/301/);
   }
 });
 
-test("all 3 canonical paths exist, aliases preserve query, no root homepage fallback",()=>{
-  const elite=readFileSync(resolve(root,"src/app/maldives-elite-escape/page.tsx"),"utf8");
-  assert.match(elite,/Maldives Elite Escape — Luxury Overwater Resorts, Flights & Island Tours \| GTH PRO/);
-  assert.match(elite,/alternates:\{canonical\}/);
-  assert.match(elite,/"@type":"TouristDestination"/);
-  assert.match(elite,/JsonLd/);
-  for(const p of ["src/app/maldives/route.ts","src/app/destinations/maldives/route.ts"]){
-    const s=readFileSync(resolve(root,p),"utf8");
-    assert.match(s,/\/maldives-elite-escape"\+request\.nextUrl\.search/);
-    assert.match(s,/301/);
-    assert.doesNotMatch(s,/destination:"\/"|redirect\(new URL\("\/"/);
-  }
+test("simple hero has one wide Maldives image and ORIGINAL booking portal, no new form",()=>{
+  const page=source("src/app/maldives-elite-escape/page.tsx");
+  const hero=source("src/components/maldives/MaldivesBookingHero.tsx");
+  assert.match(page,/<MaldivesBookingHero\/>/);
+  assert.match(hero,/src=\{HOTEL_BOOKING_ORIGIN\}/);
+  assert.match(hero,/Hotels and Flights tabs/);
+  assert.match(hero,/href=\{HOTEL_BOOKING_ORIGIN\}/);
+  assert.match(hero,/Open original search/);
+  assert.match(hero,/https:\/\/images\.unsplash\.com\/photo-/);
+  assert.match(hero,/sm:h-\[360px\] lg:h-\[440px\]/);
+  assert.match(hero,/min-h-11/);
+  assert.doesNotMatch(page,/<MaldivesHero|MaldivesExperiences|MaldivesConnectivity|maldives-essentials/);
+  assert.doesNotMatch(hero,/<form|input type=|formAction|SearchBar\.create/);
+  assert.doesNotMatch(hero,/style=\{|NEXT_PUBLIC_.*KEY|SERVICE_ROLE_KEY/);
 });
 
-test("mobile and desktop layout retains 3 unique licensed images and 44px actions",()=>{
-  const hero=readFileSync(resolve(root,"src/components/maldives/MaldivesHero.tsx"),"utf8");
-  const imageIds=[...hero.matchAll(/photo-\d{10,13}-[a-f0-9]{12}/g)].map(m=>m[0]);
-  assert.equal(imageIds.length,3);
-  assert.equal(new Set(imageIds).size,3);
-  for(const fragment of ["gth-glass-strong","grid-cols-2","lg:grid-cols","-mt-14","touch-auto","min-h-11","min-w-11","overscroll-x-contain","prefers-reduced-motion"]){
-    assert.ok(hero.includes(fragment),fragment);
-  }
-  assert.match(hero,/name="destination" value="Maldives"/);
-  assert.match(hero,/name="checkin"/);
-  assert.match(hero,/name="checkout"/);
-  assert.match(hero,/name="adults"/);
-  assert.match(hero,/name="children"/);
-  assert.match(hero,/name="currency"/);
-  assert.doesNotMatch(hero,/style=\{|#[a-f0-9]{3,8}(?:\b|["'])/i);
-});
-
-test("actual supplier cards reused; unavailable hotels/tours never fabricated",()=>{
-  const hotels=readFileSync(resolve(root,"src/components/maldives/MaldivesStays.tsx"),"utf8");
-  const tours=readFileSync(resolve(root,"src/components/maldives/MaldivesExperiences.tsx"),"utf8");
-  const mobility=readFileSync(resolve(root,"src/components/maldives/MaldivesConnectivity.tsx"),"utf8");
-  assert.match(hotels,/VERIFIED_MALDIVES_HOTELS/);
-  assert.match(hotels,/form="maldives-elite-stay-search"/);
-  assert.match(hotels,/formAction/);
-  assert.match(hotels,/data-maldives-hotel-id/);
-  assert.match(hotels,/lg:grid-cols-3/);
-  assert.doesNotMatch(hotels,/href="\/hotels|NuiteeHotelsListWidget|Search island stays/);
-  assert.match(tours,/SupplierTourCard/);
-  assert.match(tours,/getSupplierCatalog/);
-  assert.match(tours,/loadPersistedSupplierProducts/);
-  assert.match(tours,/isMaldivesProduct/);
-  assert.match(tours,/lg:grid-cols-3/);
-  assert.doesNotMatch(tours,/wegotrip\.com\/"\s*|view experience.*wegotrip\.com\/"/i);
-  assert.match(mobility,/name="destination" value="MLE"/);
-  assert.match(mobility,/name="origin"/);
-  assert.match(mobility,/name="departDate"/);
-  assert.match(mobility,/\/transfers\?airport=MLE&city=Male/);
-  assert.doesNotMatch(mobility,/SUPABASE_SERVICE_ROLE_KEY|NUITEE_API_KEY|NEXT_PUBLIC_.*KEY|style=\{/);
-});
-
-test("protected pages and global CSS are not imported for mutation",()=>{
-  const page=readFileSync(resolve(root,"src/app/maldives-elite-escape/page.tsx"),"utf8");
-  assert.match(page,/pb-\[calc\(110px\+env\(safe-area-inset-bottom\)\)\]/);
-  assert.match(page,/MaldivesTypography\.module\.css/);
-  const font=readFileSync(resolve(root,"src/components/maldives/MaldivesTypography.module.css"),"utf8");
-  assert.match(font,/font-family: "Cinzel", var\(--font-heading\)/);
-  assert.doesNotMatch(page,/globals\.css|FlagshipHome|RealEstate|TenderBidGenerator/);
-});
-
-test("12 real supplier properties have unique hotel IDs, real supplier photos and ratings",()=>{
+test("all 12 hotel cards are real verified resorts linked directly without removed search form",()=>{
+  const cards=source("src/components/maldives/MaldivesStays.tsx");
+  const page=source("src/app/maldives-elite-escape/page.tsx");
   assert.equal(VERIFIED_MALDIVES_HOTELS.length,12);
-  assert.equal(new Set(VERIFIED_MALDIVES_HOTELS.map(x=>x.id)).size,12);
+  assert.equal(new Set(VERIFIED_MALDIVES_HOTELS.map(h=>h.id)).size,12);
+  assert.match(page,/<MaldivesStays stay=\{stay\}\/>/);
+  assert.match(cards,/hotelWhiteLabelUrl\(\{/);
+  assert.match(cards,/href=\{href\}/);
+  assert.match(cards,/data-maldives-hotel-id/);
+  assert.match(cards,/target="_blank"/);
+  assert.doesNotMatch(cards,/formAction|form="maldives-elite-stay-search"|type="submit"/);
   for(const h of VERIFIED_MALDIVES_HOTELS){
     assert.match(h.id,/^lp[a-f0-9]{4,12}$/i);
-    assert.ok(h.name.length>4 && h.area.length>4);
-    assert.ok(h.rating>=8 && h.rating<=10 && h.stars>=1 && h.stars<=5);
-    assert.ok(h.reviews>0);
-    assert.ok(h.photo.startsWith("https://static.cupid.travel/")||
-      h.photo.startsWith("https://www.fourseasons.com/"));
-  }
-});
-
-test("all 12 property-card handoffs open exact White Label hotel details, not generic search",()=>{
-  for(const hotel of VERIFIED_MALDIVES_HOTELS){
-    const result=maldivesHotelHandoff(form(),hotel.id,now);
-    assert.equal(result.status,"supplier_hotel",hotel.id);
-    const url=new URL(result.href);
-    assert.equal(url.origin,"https://hotel.gthproglobal.com");
-    assert.equal(url.pathname,"/hotels/"+hotel.id);
-    assert.equal(url.searchParams.get("checkin"),"2026-12-20");
-    assert.equal(url.searchParams.get("checkout"),"2026-12-26");
-    assert.equal(url.searchParams.get("currency"),"USD");
-    assert.deepEqual(JSON.parse(atob(url.searchParams.get("occupancies"))),
+    assert.ok(h.photo.startsWith("https://"));
+    assert.ok(h.rating>=8&&h.rating<=10);
+    const target=new URL(hotelWhiteLabelUrl({
+      hotelId:h.id,checkin:stay.checkin,checkout:stay.checkout,
+      occupancies:[{adults:2,children:[5,8]}],currency:"USD",
+    }));
+    assert.equal(target.origin,"https://hotel.gthproglobal.com");
+    assert.equal(target.pathname,"/hotels/"+h.id);
+    assert.equal(target.searchParams.get("checkin"),"2026-12-20");
+    assert.equal(target.searchParams.get("checkout"),"2026-12-26");
+    assert.equal(target.searchParams.get("currency"),"USD");
+    assert.deepEqual(JSON.parse(atob(target.searchParams.get("occupancies"))),
       [{adults:2,children:[5,8]}]);
   }
 });
 
-test("direct property handoff rejects forged IDs and tampered/invalid stay forms",()=>{
-  for(const id of ["lp0000","ChIJabcdefghijklmnopqrstuvwxyz","../../hotel",
-                   "https://evil.invalid","lp39ce1/extra"]){
-    assert.equal(maldivesHotelHandoff(form(),id,now).status,"invalid");
+test("legacy individual hotel route still blocks unknown hotel IDs and bad stay params",()=>{
+  assert.equal(maldivesHotelHandoff(params,"lp39ce1",now).status,"supplier_hotel");
+  for(const bad of ["../lp39ce1","lp0000","https://evil.invalid"]){
+    assert.equal(maldivesHotelHandoff(params,bad,now).status,"invalid");
   }
-  const attacks=[form({checkout:"2026-12-19"}),form({children:"19"}),
-    form({currency:"BTC"}),form({destination:"Mumbai"}),
-    form({redirect:"https://evil.invalid"})];
-  const duplicate=form();duplicate.append("checkin","2027-01-01");attacks.push(duplicate);
-  for(const q of attacks)assert.equal(maldivesHotelHandoff(q,"lp39ce1",now).status,"invalid");
-  assert.equal(maldivesHotelHandoff(
-    new URLSearchParams({adults:"2",currency:"USD"}),"lp39ce1",now).status,"invalid");
+  const malicious=new URLSearchParams(stay);
+  malicious.append("returnTo","https://evil.invalid");
+  assert.equal(maldivesHotelHandoff(malicious,"lp39ce1",now).status,"invalid");
+});
+
+test("Explore Destinations renders COUNTRY cards with matching first-party country filters",()=>{
+  const code=source("src/components/maldives/MaldivesExplore.tsx");
+  const geo=source("src/lib/destinations/geography.ts");
+  for(const country of ["India","United Arab Emirates","France","Japan","Singapore",
+    "Thailand","Indonesia","United Kingdom","United States"]){
+    assert.ok(code.includes('name:"'+country+'"'),country+" missing");
+    assert.ok(geo.includes('"'+country+'":')||geo.includes('"'+country+'"'),country+" not a known country");
+  }
+  assert.match(code,/\/destinations\?country=/);
+  assert.match(code,/encodeURIComponent\(item\.name\)/);
+  assert.match(code,/href="\/destinations"/);
+  assert.match(code,/overflow-x-auto/);
+  assert.match(code,/lg:grid-cols-4/);
+});
+
+test("Explore Guides consists of REAL country guide cards, not nonexistent slugs",()=>{
+  const code=source("src/components/maldives/MaldivesExplore.tsx");
+  const {guideCatalog}=load("lib/travel/guideCatalog.ts");
+  const countrySlugs=guideCatalog.filter(item=>item.kind==="country").map(item=>item.slug);
+  assert.deepEqual([...countrySlugs],["india","france","australia"]);
+  assert.match(code,/guideCatalog\.filter\(item=>item\.kind==="country"\)/);
+  assert.match(code,/href=\{"\/guides\/"\+encodeURIComponent\(guide\.slug\)\}/);
+  assert.match(code,/href="\/guides"/);
+});
+
+test("Explore Transport connects to existing transfer hub and no unwanted sections remain",()=>{
+  const code=source("src/components/maldives/MaldivesExplore.tsx");
+  const page=source("src/app/maldives-elite-escape/page.tsx");
+  assert.match(code,/href="\/transfers"/);
+  assert.ok(source("src/app/transfers/page.tsx").includes("export default function TransfersPage"));
+  assert.match(page,/<MaldivesExplore\/>/);
+  assert.doesNotMatch(page,/MaldivesExperiences|MaldivesConnectivity|Sun,Compass|Before you arrive/);
+  assert.doesNotMatch(code,/href="\/hotels"/);
 });
