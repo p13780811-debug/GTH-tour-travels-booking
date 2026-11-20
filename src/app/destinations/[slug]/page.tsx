@@ -18,12 +18,19 @@ import {isIndexableDestination} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
 import { destinationGeography } from "@/lib/destinations/geography";
+import CitySpineHub from "@/components/destination/CitySpineHub";
+import { unifiedCityRouterEnabled } from "@/lib/router/affiliateRouter";
+import { resolveCityContext, type CityContext } from "@/lib/router/cityContext";
+import { SUPPORTED_UI_LOCALES, type UiLocale } from "@/lib/router/edgeGeoAutoDetect";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams?: Promise<{lang?: string | string[]}> };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
 async function getDestination(slug: string): Promise<DestinationDetail | null> {
-  if (!/^[a-z]+(?:-[a-z]+)*$/.test(slug) || slug.length > 80) return null;
+  // Leave legacy routing unchanged when the unified feature is disabled.
+  const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
+  const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
+  if (!legacySlug && !(unifiedCityRouterEnabled() && worldSlug)) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
   const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
 
@@ -84,10 +91,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function DestinationPage({ params }: Props) {
+export default async function DestinationPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const destination = await getDestination(slug);
   if (!destination) notFound();
+
+  // Separate read-only identity proof. No city is inferred from SEO text,
+  // country labels, stadium flightCity or an OSM hotel ID.
+  const enabled = unifiedCityRouterEnabled();
+  let city: CityContext | null = null;
+  if (enabled && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    try {
+      const db = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {auth:{persistSession:false,autoRefreshToken:false}},
+      );
+      const matched = await resolveCityContext(db, { slug });
+      if (matched.status === "found") city = matched.city;
+    } catch {
+      // A provider outage retains the existing stable editorial destination.
+    }
+  }
+  const selected = (await searchParams)?.lang;
+  const locale: UiLocale = typeof selected === "string" &&
+    SUPPORTED_UI_LOCALES.some(code => code === selected)
+      ? selected as UiLocale : "en";
 
   const breadcrumbData = {
     "@context": "https://schema.org",
@@ -98,10 +127,10 @@ export default async function DestinationPage({ params }: Props) {
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
-  const hotelsHref=links.find(item=>item.key==="hotels")!.href;
-  const toursHref=links.find(item=>item.key==="tours")!.href;
-  const flightsHref=links.find(item=>item.key==="flights")!.href;
-  const availableTours = (await getTours({ city: slug })).slice(0, 6);
+  const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
+  const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
+  const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
+  const availableTours = (await getTours({ city: city?.name ?? slug })).slice(0, 6);
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
     .slice(0, 6);
@@ -151,7 +180,8 @@ export default async function DestinationPage({ params }: Props) {
       </section>
       <TravelSectionNav />
 
-      <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>
+      {city ? <CitySpineHub city={city} tours={availableTours} locale={locale}/> :
+        <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
       <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
       {["mumbai","pune","ajanta-ellora","shirdi"].includes(slug)&&<OpenAttractionsRail region="maharashtra"/>}
