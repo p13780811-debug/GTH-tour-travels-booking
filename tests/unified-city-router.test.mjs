@@ -349,3 +349,25 @@ test("Step 1 remains isolated from protected UI, widgets, CSS and all database w
   assert.match(readFileSync(join(root, ".env.example"), "utf8"),
     /^ENABLE_UNIFIED_CITY_ROUTER=false$/m);
 });
+
+test("Unicode worldwide city punctuation is accepted without route inference", async () => {
+  const special = [
+    { name: "Neufchâtel-Est–Lebourgneuf", slug: "neufchatel-est-lebourgneuf-ca" },
+    { name: "Sudoeste/Octagonal", slug: "sudoeste-octagonal-br" },
+    { name: "Hawr al ‘Anz", slug: "hawr-al-anz-ae" },
+  ];
+  for (const item of special) {
+    const country_code = item.slug.split("-").at(-1).toUpperCase();
+    const stored = {
+      id: city.id, country: "Sample Country", country_code,
+      name: item.name, slug: item.slug, nuitee_place_id: null,
+    };
+    const fetched = await cityModule.resolveCityContext(dbWith(stored), { slug: item.slug });
+    assert.equal(fetched.status, "found", item.name);
+    withEnv({ ENABLE_UNIFIED_CITY_ROUTER: "true" }, () => {
+      const next = router.resolveAffiliateRoute({ city: fetched.city, service: "flights" }, now);
+      assert.equal(next.capability, "internal_discovery");
+      assert.equal(new URL(next.href, "https://gthproglobal.com").searchParams.get("destinationCity"), item.name);
+    });
+  }
+});
