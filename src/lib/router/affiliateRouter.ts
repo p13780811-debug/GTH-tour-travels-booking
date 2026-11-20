@@ -1,9 +1,10 @@
 import "server-only";
 
-import { hotelWhiteLabelUrl, normalizeHotelOccupancies } from "../travel/hotel-whitelabel";
-import { hotelWhiteLabelSearchUrl } from "../travel/hotel-routing";
-import { partnerSearchHref } from "../travel/partner-search";
-import { buildCruiseProviderSearch } from "../travel/cruise-provider-search";
+import { resolveHotelAdapter } from "./hotelAdapter";
+import { resolveFlightAdapter, type FlightRouteIntent } from "./flightAdapter";
+import { resolveGroundAdapter, type GroundRouteIntent } from "./groundAdapter";
+import { resolveExperienceAdapter } from "./experienceAdapter";
+import { adapterResult, type AdapterCapability, type AdapterReason, type AdapterResult } from "./adapterTypes";
 import { isResolvedCityContext, parseTravelQuery, type CityContext } from "./cityContext";
 import {
   PROVIDER_REGISTRY, configuredProviderUrl, isHopeGooCountry,
@@ -11,12 +12,8 @@ import {
   type ProviderId, type ProviderService,
 } from "./providerRegistry";
 
-export type AffiliateCapability =
-  | "verified_deep_link" | "supplier_search" | "internal_discovery" | "unavailable";
-export type AffiliateReason =
-  | "disabled" | "invalid_context" | "invalid_query" | "unsupported_service"
-  | "missing_verified_identifier" | "provider_selection_required"
-  | "verified_supplier_identity" | "validated_partner_search" | "unsafe_target";
+export type AffiliateCapability = AdapterCapability;
+export type AffiliateReason = AdapterReason;
 
 export type AffiliateRequest = Readonly<{
   city: CityContext;
@@ -25,6 +22,8 @@ export type AffiliateRequest = Readonly<{
   provider?: ProviderId;
   /** Untrusted user parameters are parsed and validated again at this boundary. */
   travelParams?: URLSearchParams | Readonly<Record<string, unknown>>;
+  flightRoute?: FlightRouteIntent;
+  groundRoute?: GroundRouteIntent;
 }>;
 export type AffiliateResolution = Readonly<{
   capability: AffiliateCapability;
@@ -32,6 +31,7 @@ export type AffiliateResolution = Readonly<{
   provider: ProviderId | null;
   href: string | null;
   cityId: string | null;
+  searchIntentForwarded: boolean;
 }>;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,8 +52,9 @@ function result(
   provider: ProviderId | null,
   href: string | null,
   cityId: string | null,
+  searchIntentForwarded = false,
 ): AffiliateResolution {
-  return { capability, reason, provider, href, cityId };
+  return { capability, reason, provider, href, cityId, searchIntentForwarded };
 }
 
 function safeCity(city: unknown): city is CityContext {
@@ -150,70 +151,43 @@ export function resolveAffiliateRoute(
   if (!isSafeInternalEntry(fallback)) {
     return result("unavailable", "unsafe_target", provider, null, cityId);
   }
-  const internal = () => result(
-    "internal_discovery", "provider_selection_required", provider, fallback, cityId,
+
+  let adapter: AdapterResult;
+  switch (input.service) {
+    case "hotels":
+      adapter = resolveHotelAdapter(city, travel, provider);
+      break;
+    case "flights":
+      adapter = provider === "aviasales"
+        ? resolveFlightAdapter(city, input.flightRoute, now)
+        : adapterResult("internal_discovery", "provider_selection_required",
+            provider, "/go/transport");
+      break;
+    case "bus": case "train": case "ferry": case "transfers":
+      adapter = resolveGroundAdapter(city, input.service, provider, input.groundRoute, now);
+      break;
+    case "tours": case "activities": case "cruises":
+      adapter = resolveExperienceAdapter(city, input.service, provider);
+      break;
+    case "cars":
+      adapter = provider === "qeeq" || provider === "localrent"
+        ? adapterResult("internal_discovery", "provider_selection_required", provider, "/cars")
+        : adapterResult("unavailable", "unsupported_service", provider, null);
+      break;
+    case "tickets":
+      // Stadium/events ticket intelligence is restricted to Step 3.
+      adapter = adapterResult("internal_discovery", "provider_selection_required", provider, fallback);
+      break;
+  }
+  let href = adapter.href;
+  if (href && !(href.startsWith("/")
+    ? isSafeInternalEntry(href)
+    : isSafeProviderOutboundUrl(provider, href))) {
+    return result("unavailable", "unsafe_target", provider, null, cityId);
+  }
+  if (!href && adapter.capability === "internal_discovery") href = fallback;
+  return result(
+    adapter.capability, adapter.reason, provider, href, cityId,
+    adapter.searchIntentForwarded,
   );
-  const external = (href: string | null, reason: AffiliateReason) =>
-    href && isSafeProviderOutboundUrl(provider, href)
-      ? result("supplier_search", reason, provider, href, cityId)
-      : internal();
-
-  if (input.service === "hotels") {
-    if (provider === "hopegoo") {
-      // Generic affiliate landing, not an invented city-specific booking URL.
-      return isHopeGooCountry(city.country_code)
-        ? external(configuredProviderUrl("hopegoo"), "provider_selection_required")
-        : internal();
-    }
-    if (provider === "nuitee") {
-      const placeId = city.verifiedNuiteePlaceId;
-      // No check-in/check-out means no claimed direct bookable result.
-      if (placeId && travel.checkin && travel.checkout) {
-        const occupancies = normalizeHotelOccupancies([{
-          adults: travel.adults, children: [...travel.children],
-        }]);
-        if (occupancies) {
-          const href = hotelWhiteLabelUrl({
-            placeId,
-            checkin: travel.checkin,
-            checkout: travel.checkout,
-            occupancies,
-            currency: travel.currency,
-          });
-          if (isSafeProviderOutboundUrl("nuitee", href)) {
-            return result(
-              "verified_deep_link", "verified_supplier_identity",
-              "nuitee", href, cityId,
-            );
-          }
-        }
-      }
-      const picker = hotelWhiteLabelSearchUrl(
-        travel.currency,
-        travel.checkin && travel.checkout
-          ? { checkin: travel.checkin, checkout: travel.checkout,
-              occupancies: [{ adults: travel.adults, children: [...travel.children] }] }
-          : undefined,
-      );
-      return isSafeProviderOutboundUrl("nuitee", picker)
-        ? result("supplier_search", "missing_verified_identifier", "nuitee", picker, cityId)
-        : internal();
-    }
-    // No unreviewed provider-specific hotel routes are invented.
-    return internal();
-  }
-
-  if (provider === "klook" &&
-      (input.service === "tours" || input.service === "activities")) {
-    const href = partnerSearchHref(input.service, city.name);
-    return href && isSafeInternalEntry(href)
-      ? result("supplier_search", "validated_partner_search", "klook", href, cityId)
-      : internal();
-  }
-  if (provider === "getyourguide" && input.service === "cruises") {
-    return external(buildCruiseProviderSearch(city.name, "gyg"), "validated_partner_search");
-  }
-  // Flights retain the Aviasales WL; 12Go retains its existing trip form;
-  // reviewed ticket products and remaining partner widgets are NOT modified.
-  return internal();
 }
