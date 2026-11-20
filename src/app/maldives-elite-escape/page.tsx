@@ -6,7 +6,6 @@ import {ArrowUpRight,ShieldCheck,Sun,Compass} from "lucide-react";
 import JsonLd from "@/components/seo/JsonLd";
 import {parseTravelQuery} from "@/lib/router/cityContext";
 import {resolveHotelDates} from "@/lib/travel/hotel-routing";
-import {verifiedMaldivesPlaceId} from "@/lib/maldives/elite-handoff";
 import MaldivesHero, {type MaldivesStaySelection} from "@/components/maldives/MaldivesHero";
 import MaldivesStays from "@/components/maldives/MaldivesStays";
 import MaldivesExperiences from "@/components/maldives/MaldivesExperiences";
@@ -75,13 +74,13 @@ const breadcrumbs={
 };
 
 export default async function MaldivesEliteEscape({searchParams}:Props){
-  const [query,placeId]=await Promise.all([searchParams??Promise.resolve({}),verifiedMaldivesPlaceId()]);
+  const query=await (searchParams??Promise.resolve({}));
   const stay=stayFromQuery(query,new Date());
   return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(110px+env(safe-area-inset-bottom))] text-[var(--text)] md:pb-16" data-maldives-elite-escape="true">
     <JsonLd data={schema}/>
     <JsonLd data={breadcrumbs}/>
     <MaldivesHero stay={stay} headingClass={typography.heading}/>
-    <MaldivesStays placeId={placeId}/>
+    <MaldivesStays/>
     <MaldivesConnectivity departDate={stay.checkin} today={stay.today}/>
     <Suspense fallback={<div role="status" className="mx-auto max-w-7xl px-4 py-8 text-sm text-[var(--text-soft)] sm:px-6">Checking original Maldives supplier experiences…</div>}>
       <MaldivesExperiences/>
