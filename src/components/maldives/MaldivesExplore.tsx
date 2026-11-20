@@ -88,20 +88,23 @@ export default function MaldivesExplore(){
     <section aria-labelledby="maldives-explore-transport">
       <h2 id="maldives-explore-transport" className="text-2xl font-bold sm:text-3xl">Explore Transport</h2>
       <Link href="/transfers"
-        className="gth-glass mt-4 flex min-h-[132px] flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--text)] transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:p-7">
-        <span className="flex items-center gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] text-[var(--gold)]">
-            <CarFront size={26} aria-hidden="true"/>
-          </span>
-          <span className="min-w-0">
-            <span className="block text-lg font-bold">Airport &amp; Local Transfers</span>
-            <span className="mt-1 block text-sm leading-6 text-[var(--text-soft)]">
-              Explore the existing GTH PRO transport and transfer booking hub.
-            </span>
-          </span>
+        className="gth-glass group mt-4 flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:flex-row">
+        <span className="relative block aspect-[16/9] w-full overflow-hidden bg-[var(--bg-soft)] sm:aspect-auto sm:min-h-[185px] sm:w-[37%] sm:shrink-0">
+          <Image src="/images/mega/transfers.jpg" alt="Ground transport and airport transfers"
+            fill loading="lazy" sizes="(max-width:640px) 100vw, 400px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"/>
         </span>
-        <span className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
-          Explore Transport <ArrowRight size={16} aria-hidden="true"/>
+        <span className="flex min-w-0 flex-1 flex-col justify-center gap-3 p-5 sm:p-7">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--gold)]">
+            <CarFront size={17} aria-hidden="true"/> GTH Mobility
+          </span>
+          <span className="block text-xl font-bold">Airport &amp; Local Transfers</span>
+          <span className="block text-sm leading-6 text-[var(--text-soft)]">
+            Compare transfers and airport pickups through the existing GTH PRO transport page.
+          </span>
+          <span className="gth-btn-gold inline-flex min-h-11 w-fit items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">
+            Explore Transport <ArrowRight size={16} aria-hidden="true"/>
+          </span>
         </span>
       </Link>
     </section>
