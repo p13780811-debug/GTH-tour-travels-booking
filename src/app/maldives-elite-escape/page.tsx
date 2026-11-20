@@ -1,15 +1,10 @@
 import type {Metadata} from "next";
-import typography from "@/components/maldives/MaldivesTypography.module.css";
-import {Suspense} from "react";
-import Link from "next/link";
-import {ArrowUpRight,ShieldCheck,Sun,Compass} from "lucide-react";
 import JsonLd from "@/components/seo/JsonLd";
 import {parseTravelQuery} from "@/lib/router/cityContext";
 import {resolveHotelDates} from "@/lib/travel/hotel-routing";
-import MaldivesHero, {type MaldivesStaySelection} from "@/components/maldives/MaldivesHero";
-import MaldivesStays from "@/components/maldives/MaldivesStays";
-import MaldivesExperiences from "@/components/maldives/MaldivesExperiences";
-import MaldivesConnectivity from "@/components/maldives/MaldivesConnectivity";
+import MaldivesBookingHero from "@/components/maldives/MaldivesBookingHero";
+import MaldivesStays, {type MaldivesStaySelection} from "@/components/maldives/MaldivesStays";
+import MaldivesExplore from "@/components/maldives/MaldivesExplore";
 
 export const dynamic="force-dynamic";
 
@@ -79,40 +74,8 @@ export default async function MaldivesEliteEscape({searchParams}:Props){
   return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(110px+env(safe-area-inset-bottom))] text-[var(--text)] md:pb-16" data-maldives-elite-escape="true">
     <JsonLd data={schema}/>
     <JsonLd data={breadcrumbs}/>
-    <MaldivesHero stay={stay} headingClass={typography.heading}/>
-    <MaldivesStays/>
-    <MaldivesConnectivity departDate={stay.checkin} today={stay.today}/>
-    <Suspense fallback={<div role="status" className="mx-auto max-w-7xl px-4 py-8 text-sm text-[var(--text-soft)] sm:px-6">Checking original Maldives supplier experiences…</div>}>
-      <MaldivesExperiences/>
-    </Suspense>
-    <section aria-labelledby="maldives-essentials" className="mx-auto w-full max-w-7xl px-4 pb-14 pt-6 sm:px-6">
-      <div className="gth-glass-strong rounded-3xl border border-[var(--border)] p-5 sm:p-8">
-        <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-[var(--gold)]"><Sun size={16} aria-hidden="true"/> Before you arrive</p>
-        <h2 id="maldives-essentials" className="mt-2 text-2xl font-bold">Your island arrival checklist</h2>
-        <div className="mt-5 grid gap-4 text-sm leading-6 text-[var(--text-soft)] md:grid-cols-3">
-          <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
-            <strong className="mb-1 block text-[var(--text)]">01 · Confirm the island</strong>
-            Atolls span many kilometres. Confirm the resort's island, boat pier, transfer provider and transfer cost before checkout.
-          </p>
-          <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
-            <strong className="mb-1 block text-[var(--text)]">02 · Plan MLE arrivals</strong>
-            Check airport arrival time, any overnight stop, seaplane daylight limits and transfer baggage allowances.
-          </p>
-          <p className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
-            <strong className="mb-1 block text-[var(--text)]">03 · Compare the final total</strong>
-            Verify taxes, meals, resort fees, transfers, weather-sensitive excursions and cancellation conditions with the supplier.
-          </p>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-5">
-          <p className="flex max-w-2xl items-start gap-2 text-xs leading-6 text-[var(--text-soft)]"><ShieldCheck size={17} className="mt-1 shrink-0"/> GTH PRO provides travel discovery and provider-operated handoffs, not guaranteed availability, airline tickets or resort-managed transfers.</p>
-          <Link href="/affiliate-disclosure" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--gold)]">
-            Booking disclosures <ArrowUpRight size={15} aria-hidden="true"/>
-          </Link>
-        </div>
-        <Link href="/tours?city=Mal%C3%A9#discover" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
-          <Compass size={16} className="text-[var(--gold)]" aria-hidden="true"/> Explore actual supplier tours <ArrowUpRight size={16} aria-hidden="true"/>
-        </Link>
-      </div>
-    </section>
+    <MaldivesBookingHero/>
+    <MaldivesStays stay={stay}/>
+    <MaldivesExplore/>
   </main>;
 }
