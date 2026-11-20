@@ -130,7 +130,12 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
   const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
-  const availableTours = (await getTours({ city: city?.name ?? slug })).slice(0, 6);
+  const availableTours = (await getTours({ city: slug })).slice(0, 6);
+  // Preserve the original editorial/tour lookup exactly. Qualified
+  // worldwide slugs can optionally fetch a second, read-only city-name list.
+  const hubTours = city && city.name.toLowerCase().replace(/\s+/g, "-") !== slug
+    ? (await getTours({ city: city.name })).slice(0, 6)
+    : availableTours;
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
     .slice(0, 6);
@@ -180,7 +185,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       </section>
       <TravelSectionNav />
 
-      {city ? <CitySpineHub city={city} tours={availableTours} locale={locale}/> :
+      {city ? <CitySpineHub city={city} tours={hubTours} locale={locale}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
       <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
