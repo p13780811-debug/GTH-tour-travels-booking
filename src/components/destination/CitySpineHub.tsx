@@ -123,8 +123,7 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--gold)]">
           <Globe2 size={16}/>{detected?"Location-aware destination hub":"GTH PRO · Worldwide City Spine"}
         </p>
-        <h2 id="city-spine-heading" className="mt-3 text-2xl font-bold tracking-tight sm:text-4xl"
-          className="font-[family-name:var(--font-heading)]">
+        <h2 id="city-spine-heading" className="mt-3 font-[family-name:var(--font-heading)] text-2xl font-bold tracking-tight sm:text-4xl">
           {city.name} <span className="text-[var(--gold)]">· Four ways to discover</span>
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
