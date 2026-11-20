@@ -195,6 +195,10 @@ export function isSafeInternalEntry(raw: unknown): raw is string {
 export function configuredProviderUrl(id: ProviderId): string | null {
   const variable = PROVIDER_REGISTRY[id].envUrl;
   if (!variable) return null;
-  const raw = process.env[variable];
+  const serverValue = process.env[variable];
+  // Legacy public affiliate link is a compatibility alias, never a secret.
+  // Invalid explicit server overrides fail closed instead of redirecting.
+  const raw = serverValue || (id === "hopegoo"
+    ? process.env.NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL : undefined);
   return isSafeProviderOutboundUrl(id, raw) ? raw : null;
 }
