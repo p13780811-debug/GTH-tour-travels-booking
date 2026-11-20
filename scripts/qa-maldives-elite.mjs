@@ -32,7 +32,7 @@ try {
     const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
     const errors=[];
     page.on("pageerror",error=>errors.push(error.message));
-    await page.route("**/*",async route=>{
+    await page.context().route("**/*",async route=>{
       const url=new URL(route.request().url());
       if(url.origin===origin)return route.continue();
       if(url.hostname==="hotel.gthproglobal.com") return route.fulfill({
