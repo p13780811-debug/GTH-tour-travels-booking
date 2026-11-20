@@ -1,0 +1,54 @@
+name: Maldives Elite Escape mobile and desktop browser QA
+on:
+  push:
+    branches: [feat/maldives-elite-escape-20261120]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  page-browser-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Regression and lint
+        run: |
+          node --test tests/maldives-elite-escape.test.mjs
+          npx tsc --noEmit
+          npm run lint
+      - name: Build original Next application
+        run: npm run build
+      - name: Install browser for viewport checks
+        run: |
+          npm install --no-save --package-lock=false --legacy-peer-deps --no-audit --no-fund playwright@1.56.0
+          if command -v google-chrome > /dev/null; then
+            echo "GTH_CHROMIUM_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium > /dev/null; then
+            echo "GTH_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Start isolated preview and verify mobile and desktop
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 4286 > /tmp/gth-maldives-next.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS --max-time 2 http://127.0.0.1:4286/maldives-elite-escape > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/qa-maldives-elite.mjs
+      - name: Upload fixture-only screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maldives-elite-responsive-fixture-only
+          path: |
+            /tmp/gth-maldives-elite-qa/
+            /tmp/gth-maldives-next.log
+          retention-days: 7
