@@ -13,16 +13,16 @@ const islandGuides=[
   {
     name:"South Malé Atoll",
     detail:"Explore island stays and check whether the resort arranges a scheduled speedboat or private transfer.",
-    image:"https://images.pexels.com/photos/28843953/pexels-photo-28843953.jpeg?auto=compress&cs=tinysrgb&w=900",
+    image:"https://images.pexels.com/photos/28843953/pexels-photo-28843967.jpeg?auto=compress&cs=tinysrgb&w=900",
     alt:"Genuine Maldives overwater villa photographed from above",
     credit:"Asad Photo Maldives / Pexels",
   },
   {
     name:"Baa & Ari Atolls",
     detail:"Explore longer island journeys; seaplane and domestic-air transfers depend on the exact resort and time.",
-    image:"https://images.pexels.com/photos/36661719/pexels-photo-36661719.jpeg?auto=compress&cs=tinysrgb&w=900",
+    image:"https://images.pexels.com/photos/36661719/pexels-photo-28843928.jpeg?auto=compress&cs=tinysrgb&w=900",
     alt:"Maldives overwater bungalows and clear calm ocean at dusk",
-    credit:"Pexels / Maldives editorial photography",
+    credit:"Asad Photo Maldives / Pexels",
   },
 ] as const;
 
