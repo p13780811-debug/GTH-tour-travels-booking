@@ -16,7 +16,7 @@ function load(relative){
     fileName:path,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},reportDiagnostics:true,
   });
   assert.equal((code.diagnostics??[]).filter(d=>d.category===1).length,0);
-  const module={exports:{}};cached.set(path,module);
+  const testModule={exports:{}};cached.set(path,testModule);
   const localRequire=(specifier)=>{
     if(specifier==="server-only")return {};
     const name=specifier.startsWith("@/")?resolve(root,"src",specifier.slice(2)):
@@ -25,10 +25,10 @@ function load(relative){
     return load(name.slice(root.length+1)+(name.endsWith(".ts")?"":".ts"));
   };
   vm.runInNewContext(code.outputText,{
-    module,exports:module.exports,require:localRequire,URL,URLSearchParams,Date,process,
+    module:testModule,exports:testModule.exports,require:localRequire,URL,URLSearchParams,Date,process,
     btoa,atob,AbortSignal,Headers,Intl,decodeURIComponent,encodeURIComponent,
   },{filename:path,timeout:5000});
-  return module.exports;
+  return testModule.exports;
 }
 const {resolveDestinationStayHandoff}=load("lib/destinations/destinationStayHandoff.ts");
 const now=new Date("2026-11-20T00:00:00Z");
