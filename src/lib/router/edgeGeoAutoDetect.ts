@@ -41,9 +41,11 @@ const GEO_CITY = /^[\p{L}\p{M}\p{N} .,'’‘()&\/–—-]{2,100}$/u;
 function headerCity(raw: string | null): string | null {
   if (!raw || raw.length > 300) return null;
   try {
-    const decoded = decodeURIComponent(raw).normalize("NFKC").replace(/\s+/gu, " ").trim();
-    return GEO_CITY.test(decoded) && !/[\u0000-\u001f\u007f<>]/u.test(decoded)
-      ? decoded : null;
+    const decoded = decodeURIComponent(raw);
+    // Reject encoded CR/LF and controls BEFORE whitespace normalization.
+    if (/[\u0000-\u001f\u007f<>]/u.test(decoded)) return null;
+    const normalized = decoded.normalize("NFKC").replace(/\s+/gu, " ").trim();
+    return GEO_CITY.test(normalized) ? normalized : null;
   } catch {
     return null;
   }
