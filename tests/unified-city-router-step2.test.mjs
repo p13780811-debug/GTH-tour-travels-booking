@@ -41,7 +41,6 @@ function load(path) {
 
 const cities = load("lib/router/cityContext.ts");
 const geo = load("lib/router/edgeGeoAutoDetect.ts");
-const registry = load("lib/router/providerRegistry.ts");
 const router = load("lib/router/affiliateRouter.ts");
 const date = new Date("2026-11-20T00:00:00Z");
 
