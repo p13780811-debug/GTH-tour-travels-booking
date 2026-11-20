@@ -1,4 +1,5 @@
 import "server-only";
+import { HOTEL_BOOKING_ORIGIN } from "../travel/hotel-whitelabel";
 
 /**
  * Metadata only: existing supplier widgets, builders and handoff endpoints
@@ -32,7 +33,7 @@ type ProviderDefinition = Readonly<{
 
 export const PROVIDER_REGISTRY: Readonly<Record<ProviderId, ProviderDefinition>> = {
   nuitee: {
-    id: "nuitee", services: ["hotels"], existingEntry: "/hotels?view=booking",
+    id: "nuitee", services: ["hotels", "flights"], existingEntry: "/hotels?view=booking",
     implementation: "existing_widget", allowedHosts: ["hotel.gthproglobal.com"],
   },
   hopegoo: {
@@ -201,4 +202,22 @@ export function configuredProviderUrl(id: ProviderId): string | null {
   const raw = serverValue || (id === "hopegoo"
     ? process.env.NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL : undefined);
   return isSafeProviderOutboundUrl(id, raw) ? raw : null;
+}
+
+
+/**
+ * Supplier-operated shared GTH portal: owner-confirmed Flights and Stays tabs.
+ * This is NOT a city-specific flight result, placeId or flight booking deep
+ * link. The only allowed target is the canonical, public portal homepage.
+ * If a configured value is unsafe, fail closed; an empty value uses the
+ * already approved HOTEL_BOOKING_ORIGIN constant from the existing helper.
+ */
+export function configuredNuiteeFlightStayPortal(): string | null {
+  const configured = process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+  const raw = configured === undefined || configured === ""
+    ? HOTEL_BOOKING_ORIGIN : configured;
+  if (!isSafeProviderOutboundUrl("nuitee", raw)) return null;
+  const target = new URL(raw);
+  if (target.pathname !== "/" || target.search || target.hash) return null;
+  return target.origin + "/";
 }

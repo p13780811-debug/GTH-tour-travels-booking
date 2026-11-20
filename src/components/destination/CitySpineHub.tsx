@@ -214,11 +214,13 @@ export default function CitySpineHub({
         <div className="grid gap-4 md:grid-cols-3">
           {flights.map(item=><HubCard key={item.provider}
             icon={<Plane size={22}/>} name={item.label}
-            scope={item.capability==="unavailable"?"Not a verified flight supplier":
-              item.capability==="supplier_search"?"Supplier search":"Booking form"}
+            scope={item.provider==="nuitee"
+              ? item.capability==="supplier_search"?"Shared flights & stays portal":"Portal unavailable"
+              : item.capability==="unavailable"?"Not a verified flight supplier"
+              : item.capability==="supplier_search"?"Supplier search":"Booking form"}
             description={item.detail}
-            href={item.provider==="nuitee"?nuitee.href:item.href}
-            label={item.provider==="nuitee"?"Check hotels, not flights":"Compare flight search"}/>)}
+            href={item.href}
+            label={item.provider==="nuitee"?"Open flights & stays":"Compare flight search"}/>)}
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <HubCard icon={<TrainFront size={22}/>} name="Trains, buses & ferries"

@@ -3,11 +3,11 @@ import "server-only";
 import { cleanDate, cleanIata } from "../security/validators";
 import { airportIndex } from "../travel/nuiteeAirportIndex";
 import type { CityContext, TravelQuery } from "./cityContext";
-import { isSafeInternalEntry } from "./providerRegistry";
+import { configuredNuiteeFlightStayPortal, isSafeInternalEntry } from "./providerRegistry";
 import { adapterResult, type AdapterResult } from "./adapterTypes";
 import { resolveFlightAdapter, type FlightRouteIntent } from "./flightAdapter";
 
-/** Fixed, reviewed flight suppliers. Nuitee has NO reviewed flight endpoint. */
+/** Reviewed provider handoffs. Nuitee has a shared flight+stay portal, NOT a route-specific deep link. */
 export type FlightComparisonOption = Readonly<AdapterResult & {
   label: string;
   detail: string;
@@ -63,9 +63,20 @@ export function resolveTwelveGoFlightAdapter(
 }
 
 /**
- * UI compares handoff CAPABILITIES, not flight fares or live stock.
- * A Nuitee "Flight" item explicitly remains unavailable; Nuitee hotels
- * have a separate, existing booking handoff elsewhere in the hub.
+ * Verified public shared-portal entry only. The owner-confirmed Nuitee WL
+ * includes a Flights tab; user selects route, dates and flights there.
+ * Never fabricate /flights, placeId, search parameters or live fares.
+ */
+export function resolveNuiteeFlightStayAdapter(): AdapterResult {
+  const href = configuredNuiteeFlightStayPortal();
+  return href
+    ? adapterResult("supplier_search", "provider_selection_required", "nuitee", href, false)
+    : adapterResult("unavailable", "unsafe_target", "nuitee", null, false);
+}
+
+/**
+ * UI compares handoff CAPABILITIES, not prices, inventory, or bookable routes.
+ * All three options remain separately provider-operated.
  */
 export function compareFlightHandoffs(
   city: CityContext, route?: FlightRouteIntent,
@@ -73,6 +84,7 @@ export function compareFlightHandoffs(
 ): readonly FlightComparisonOption[] {
   const aviasales = resolveFlightAdapter(city, route, now);
   const twelveGo = resolveTwelveGoFlightAdapter(city, route, travel, now);
+  const nuitee = resolveNuiteeFlightStayAdapter();
   return [
     {
       ...aviasales, label: "Aviasales · Worldwide Flights",
@@ -83,9 +95,8 @@ export function compareFlightHandoffs(
       detail: "Provider-operated flight and onward-transport search. Only validated routes are forwarded.",
     },
     {
-      ...adapterResult("unavailable", "missing_approved_partner", "nuitee", null),
-      label: "Nuitee · Stay Companion",
-      detail: "Nuitee hotel booking is available separately. No verified Nuitee flight-booking endpoint is configured.",
+      ...nuitee, label: "Nuitee · Flights & Stays",
+      detail: "Shared GTH PRO white-label portal with Flights and Stays tabs. Select Flights and enter route/dates on the provider site; no prefilled flight deep link, fare or availability is claimed.",
     },
   ];
 }

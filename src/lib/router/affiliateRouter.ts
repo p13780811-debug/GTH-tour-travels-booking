@@ -3,7 +3,7 @@ import "server-only";
 import { resolveHotelAdapter } from "./hotelAdapter";
 import { resolveFlightAdapter, type FlightRouteIntent } from "./flightAdapter";
 import {
-  compareFlightHandoffs, resolveTwelveGoFlightAdapter,
+  compareFlightHandoffs, resolveNuiteeFlightStayAdapter, resolveTwelveGoFlightAdapter,
   type FlightComparisonOption,
 } from "./flightCompetition";
 import { resolveGroundAdapter, type GroundRouteIntent } from "./groundAdapter";
@@ -166,7 +166,9 @@ export function resolveAffiliateRoute(
         ? resolveFlightAdapter(city, input.flightRoute, now)
         : provider === "12go"
           ? resolveTwelveGoFlightAdapter(city, input.flightRoute, travel, now)
-          : adapterResult("unavailable", "unsupported_service", provider, null);
+          : provider === "nuitee"
+            ? resolveNuiteeFlightStayAdapter()
+            : adapterResult("unavailable", "unsupported_service", provider, null);
       break;
     case "bus": case "train": case "ferry": case "transfers":
       adapter = resolveGroundAdapter(city, input.service, provider, input.groundRoute, now);

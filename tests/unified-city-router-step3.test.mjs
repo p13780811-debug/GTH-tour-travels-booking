@@ -115,8 +115,10 @@ test("Nine-city full four-pillar route matrix rejects invented city claims",asyn
       assert.equal(flights[0].provider,"aviasales");
       assert.equal(flights[1].provider,"12go");
       assert.equal(flights[2].provider,"nuitee");
-      assert.equal(flights[2].capability,"unavailable");
-      assert.equal(flights[2].href,null);
+      assert.equal(flights[2].capability,"supplier_search");
+      assert.equal(new URL(flights[2].href).origin,"https://hotel.gthproglobal.com");
+      assert.equal(new URL(flights[2].href).search,"");
+      assert.equal(flights[2].searchIntentForwarded,false);
       assert.equal(flights[0].capability,"internal_discovery");
       assert.equal(flights[1].capability,"internal_discovery");
       const ticket=router.resolveAffiliateRoute({city,service:"tickets"});
@@ -180,7 +182,7 @@ test("12Go verified flight handoff reuses existing supplier search route",async(
     assert.equal(url.searchParams.get("people"),"2");
     assert.equal(url.searchParams.get("date"),"2026-12-12");
     assert.equal(provider.searchIntentForwarded,true);
-    assert.equal(search.find(item=>item.provider==="nuitee").href,null);
+    assert.equal(new URL(search.find(item=>item.provider==="nuitee").href).pathname,"/");
   });
 });
 
@@ -336,4 +338,83 @@ test("Geo currency and hotel intent controls preserve provider-safe input",async
   assert.match(control,/name="currency"/);
   assert.match(page,/travelParams=\{stayParams\}/);
   assert.doesNotMatch(control,/window\.location|localStorage|NEXT_PUBLIC_.*KEY|style=\{/);
+});
+
+
+test("Nuitee Flights + Stays companion is the existing public WL root, not a fake flight result",async()=>{
+  const before=process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+  try {
+    await withFlag("true",()=>{
+      for(const configured of [undefined,"","https://hotel.gthproglobal.com","https://hotel.gthproglobal.com/"]){
+        if(configured===undefined)delete process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+        else process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL=configured;
+        for(const [name] of NINE){
+          const city=cities.get(name);
+          const companion=router.resolveFlightCompetition({city},now)[2];
+          assert.equal(companion.provider,"nuitee",name);
+          assert.equal(companion.capability,"supplier_search",name);
+          assert.equal(companion.reason,"provider_selection_required");
+          assert.equal(companion.href,"https://hotel.gthproglobal.com/");
+          assert.equal(companion.searchIntentForwarded,false);
+          assert.equal(new URL(companion.href).search,"");
+          const selected=router.resolveAffiliateRoute({
+            city,service:"flights",provider:"nuitee",
+          },now);
+          assert.equal(selected.capability,"supplier_search");
+          assert.equal(selected.href,companion.href);
+        }
+      }
+      const registry=load("lib/router/providerRegistry.ts");
+      assert.equal(registry.providerSupports("nuitee","flights"),true);
+      assert.equal(registry.PROVIDER_REGISTRY.nuitee.existingEntry,"/hotels?view=booking");
+    });
+  } finally {
+    if(before===undefined)delete process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+    else process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL=before;
+  }
+});
+
+test("Nuitee companion refuses lookalike hosts, arbitrary URLs, redirects and invented flight paths",async()=>{
+  const before=process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+  try {
+    await withFlag("true",()=>{
+      for(const unsafe of [
+        "https://hotel.gthproglobal.com.evil.test/",
+        "https://evil.test/",
+        "http://hotel.gthproglobal.com/",
+        "https://hotel.gthproglobal.com:444/",
+        "https://hotel.gthproglobal.com/flights",
+        "https://hotel.gthproglobal.com/hotels?placeId=ChIJfabricated",
+        "https://hotel.gthproglobal.com/?redirect=https%3A%2F%2Fevil.test",
+        "https://hotel.gthproglobal.com/#flights",
+        "https://user:pass@hotel.gthproglobal.com/",
+        "//hotel.gthproglobal.com/",
+        "javascript:alert(1)",
+      ]){
+        process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL=unsafe;
+        const city=cities.get("London");
+        const companion=router.resolveFlightCompetition({city},now)[2];
+        assert.equal(companion.capability,"unavailable",unsafe);
+        assert.equal(companion.href,null,unsafe);
+        const byId=router.resolveAffiliateRoute({city,service:"flights",provider:"nuitee"},now);
+        assert.equal(byId.capability,"unavailable",unsafe);
+        assert.equal(byId.href,null,unsafe);
+      }
+    });
+  } finally {
+    if(before===undefined)delete process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
+    else process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL=before;
+  }
+});
+
+test("Nuitee flight handoff reuses approved existing portal without touching supplier widget",()=>{
+  const existing=readFileSync(resolve(root,"src/components/travel/NuiteeFlightHandoff.tsx"),"utf8");
+  const hub=readFileSync(resolve(root,"src/components/destination/CitySpineHub.tsx"),"utf8");
+  const env=readFileSync(resolve(root,".env.example"),"utf8");
+  assert.match(existing,/HOTEL_BOOKING_ORIGIN/);
+  assert.match(hub,/href=\{item\.href\}/);
+  assert.match(hub,/Open flights & stays/);
+  assert.match(env,/^NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL=https:\/\/hotel\.gthproglobal\.com$/m);
+  assert.match(env,/^ENABLE_UNIFIED_CITY_ROUTER=false$/m);
+  assert.doesNotMatch(hub,/href=\{item\.provider==="nuitee"\?nuitee\.href/);
 });
