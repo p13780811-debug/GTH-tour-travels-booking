@@ -1,13 +1,20 @@
 import Image from "next/image";
 import {ArrowUpRight,Hotel,MapPin,ShieldCheck,Star} from "lucide-react";
 import {VERIFIED_MALDIVES_HOTELS} from "@/lib/maldives/verified-hotels";
+import {hotelWhiteLabelUrl} from "@/lib/travel/hotel-whitelabel";
 
 /** True Maldives property cards, sourced from the supplier's free static
  * catalog. Every card is a native submitter of the already visible stay form.
- * The entire image/card/title/CTA submits selected dates, guests and currency
- * to a server-only allowlisted property-level redirect (no secondary search).
+ * The whole image/card/title/CTA is a direct verified hotel-level link to
+ * the same supplier White Label, independent of any removed search form.
  */
-export default function MaldivesStays(){
+export type MaldivesStaySelection = {
+  checkin:string;checkout:string;adults:number;children:string;currency:string;today:string;
+};
+
+/** Supplier deep links are independent of the removed custom search form. */
+export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
+  const ages=stay.children ? stay.children.split(",").map(Number):[];
   return <section id="maldives-stays" aria-labelledby="maldives-stays-title"
     className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-12 sm:px-6 lg:py-16">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -20,7 +27,7 @@ export default function MaldivesStays(){
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
           Choose your island resort below — each card opens that exact hotel's
-          white-label booking page, with the dates and guests selected above.
+          white-label booking page, with valid upcoming dates and guest defaults.
           Explore properties around Malé, North & South Malé, Baa and Ari Atolls.
         </p>
       </div>
@@ -31,9 +38,12 @@ export default function MaldivesStays(){
     </div>
     <div role="region" id="maldives-hotels-grid" aria-label="Verified Maldives resort booking cards — swipe to explore"
       tabIndex={0} className="mt-6 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-5 scroll-mt-24 sm:gap-4 lg:grid lg:grid-cols-3 lg:overflow-visible xl:grid-cols-4">
-      {VERIFIED_MALDIVES_HOTELS.map(hotel=>
-        <button key={hotel.id} type="submit" form="maldives-elite-stay-search"
-          formAction={"/maldives-elite-escape/stays/"+hotel.id}
+      {VERIFIED_MALDIVES_HOTELS.map(hotel=>{
+        const href=hotelWhiteLabelUrl({
+          hotelId:hotel.id,checkin:stay.checkin,checkout:stay.checkout,
+          occupancies:[{adults:stay.adults,children:ages}],currency:stay.currency,
+        });
+        return <a key={hotel.id} href={href} target="_blank" rel="noopener noreferrer sponsored"
           data-maldives-hotel-id={hotel.id}
           aria-label={"View "+hotel.name+" hotel details with selected travel dates"}
           className="group flex w-[78vw] max-w-[310px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-left shadow-[var(--shadow)] transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-[305px] lg:w-full lg:max-w-none">
@@ -68,8 +78,8 @@ export default function MaldivesStays(){
               View this hotel <ArrowUpRight size={16} aria-hidden="true"/>
             </span>
           </span>
-        </button>
-      )}
+        </a>;
+      })}
     </div>
     <div className="mt-3 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs leading-6 text-[var(--text-soft)]">
       <ShieldCheck size={19} className="mt-1 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
