@@ -4,7 +4,7 @@ import { hotelWhiteLabelUrl, normalizeHotelOccupancies } from "../travel/hotel-w
 import { hotelWhiteLabelSearchUrl } from "../travel/hotel-routing";
 import { partnerSearchHref } from "../travel/partner-search";
 import { buildCruiseProviderSearch } from "../travel/cruise-provider-search";
-import { parseTravelQuery, type CityContext } from "./cityContext";
+import { isResolvedCityContext, parseTravelQuery, type CityContext } from "./cityContext";
 import {
   PROVIDER_REGISTRY, configuredProviderUrl, isHopeGooCountry,
   isSafeInternalEntry, isSafeProviderOutboundUrl, providerSupports,
@@ -124,7 +124,7 @@ export function resolveAffiliateRoute(
   if (!unifiedCityRouterEnabled()) {
     return result("unavailable", "disabled", null, null, null);
   }
-  if (!input || !safeCity(input.city) || typeof input.service !== "string" ||
+  if (!input || !isResolvedCityContext(input.city) || !safeCity(input.city) || typeof input.service !== "string" ||
       !SERVICE_IDS.has(input.service)) {
     return result("unavailable", "invalid_context", null, null, null);
   }
