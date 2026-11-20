@@ -57,7 +57,7 @@ try {
       "Country destination carousel missing");
     assert.equal(await page.locator('a[href^="/guides/"]').count(),3,
       "Existing country guide cards missing");
-    assert.equal(await page.locator('a[href="/transfers"]').count(),1,
+    assert.equal(await page.locator('section[aria-labelledby="maldives-explore-transport"] a[href="/transfers"]').count(),1,
       "Explore Transport must link to the real transfer hub");
     const first=page.locator('[data-maldives-hotel-id="lp39ce1"]');
     const href=new URL(await first.getAttribute("href"));
