@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { parseTravelQuery } from "@/lib/router/cityContext";
 import { resolveHotelDates } from "@/lib/travel/hotel-routing";
 import { hotelWhiteLabelUrl, normalizeHotelOccupancies } from "@/lib/travel/hotel-whitelabel";
+import {verifiedMaldivesHotel} from "@/lib/maldives/verified-hotels";
 
 const FIELDS = new Set(["checkin","checkout","adults","children","currency","destination"]);
 const PLACE_ID = /^ChIJ[A-Za-z0-9_-]{12,80}$/;
@@ -34,7 +35,7 @@ export const verifiedMaldivesPlaceId = cache(async (): Promise<string | null> =>
 
 export type MaldivesStayResult =
   | {status:"invalid"}
-  | {status:"supplier_listing" | "destination_picker";href:string};
+  | {status:"supplier_listing" | "supplier_hotel" | "destination_picker";href:string};
 
 /** Exact supplier route only for verified IDs. Never drop the requested island. */
 export function maldivesStayHandoff(
@@ -64,10 +65,40 @@ export function maldivesStayHandoff(
   // context on the existing first-party booking search instead of opening
   // generic supplier-root nearby results.
   const fallback = new URLSearchParams({
-    view:"booking",city:"Maldives",country:"MV",
+    destination:"Maldives",city:"Maldives",country:"MV",
     checkin:dates.checkin,checkout:dates.checkout,
     adults:String(stay.adults),children:stay.children.join(","),
     currency:stay.currency,
   });
-  return {status:"destination_picker",href:"/hotels?"+fallback.toString()};
+  return {status:"destination_picker",href:"/maldives-elite-escape?"+fallback.toString()+"#maldives-stays"};
+}
+
+/** A whole Maldives resort card submits the SAME original stay form.
+ * Reject any unknown property ID, arbitrary URL, invalid dates or injected
+ * fields before emitting the supplier's documented /hotels/{hotelId} link.
+ */
+export function maldivesHotelHandoff(
+  input:URLSearchParams,hotelId:unknown,now=new Date(),
+):MaldivesStayResult {
+  const hotel=verifiedMaldivesHotel(hotelId);
+  if(!hotel) return {status:"invalid"};
+  for(const key of input.keys()){
+    if(!FIELDS.has(key)||input.getAll(key).length!==1)return {status:"invalid"};
+  }
+  if(input.get("destination")!=="Maldives")return {status:"invalid"};
+  const clean=new URLSearchParams(input);
+  clean.delete("destination");
+  const parsed=parseTravelQuery(clean,now);
+  if(!parsed.ok)return {status:"invalid"};
+  const value=parsed.value;
+  const dates=resolveHotelDates(value.checkin,value.checkout,now);
+  if((value.checkin||value.checkout)&&dates.defaulted)return {status:"invalid"};
+  const occupancies=normalizeHotelOccupancies([{
+    adults:value.adults,children:[...value.children],
+  }]);
+  if(!occupancies)return {status:"invalid"};
+  return {status:"supplier_hotel",href:hotelWhiteLabelUrl({
+    hotelId:hotel.id,checkin:dates.checkin,checkout:dates.checkout,
+    occupancies,currency:value.currency,
+  })};
 }
