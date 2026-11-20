@@ -3,13 +3,14 @@ import JsonLd from "@/components/seo/JsonLd";
 import {parseTravelQuery} from "@/lib/router/cityContext";
 import {resolveHotelDates} from "@/lib/travel/hotel-routing";
 import MaldivesBookingHero from "@/components/maldives/MaldivesBookingHero";
+import {MALDIVES_PEXELS_FALLBACK,maldivesPexelsHero} from "@/lib/maldives/pexels-hero";
 import MaldivesStays, {type MaldivesStaySelection} from "@/components/maldives/MaldivesStays";
 import MaldivesExplore from "@/components/maldives/MaldivesExplore";
 
 export const dynamic="force-dynamic";
 
 const canonical="https://www.gthproglobal.com/maldives-elite-escape";
-const image="https://images.unsplash.com/photo-1632904000334-144b19f78500?auto=format&fit=crop&w=2200&q=80";
+const image=MALDIVES_PEXELS_FALLBACK;
 const description="Discover Maldives overwater resorts, island escapes, flights to Malé (MLE), speedboat and seaplane transfers and genuine supplier-backed tours with GTH PRO.";
 
 export const metadata:Metadata={
@@ -71,10 +72,11 @@ const breadcrumbs={
 export default async function MaldivesEliteEscape({searchParams}:Props){
   const query=await (searchParams??Promise.resolve({}));
   const stay=stayFromQuery(query,new Date());
+  const photo=await maldivesPexelsHero();
   return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(110px+env(safe-area-inset-bottom))] text-[var(--text)] md:pb-16" data-maldives-elite-escape="true">
     <JsonLd data={schema}/>
     <JsonLd data={breadcrumbs}/>
-    <MaldivesBookingHero/>
+    <MaldivesBookingHero photo={photo}/>
     <MaldivesStays stay={stay}/>
     <MaldivesExplore/>
   </main>;
