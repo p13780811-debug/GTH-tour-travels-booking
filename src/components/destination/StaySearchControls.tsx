@@ -1,6 +1,7 @@
 import type { CityContext, TravelQuery, HotelCurrency } from "@/lib/router/cityContext";
 import { HOTEL_CURRENCIES } from "@/lib/router/cityContext";
 import type { UiLocale } from "@/lib/router/edgeGeoAutoDetect";
+import { resolveHotelDates } from "@/lib/travel/hotel-routing";
 
 type Props = {
   city: CityContext;
@@ -12,19 +13,20 @@ type Props = {
 
 /** First-party search intent only; third-party booking widgets stay untouched. */
 export default function StaySearchControls({city,locale,currency,value,invalid}:Props) {
+  const dates = resolveHotelDates(value?.checkin, value?.checkout);
   const control="mt-1 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]";
-  return <form action={"/destinations/"+encodeURIComponent(city.slug)} method="get"
+  return <form id="gth-destination-stay-form" action={"/destinations/"+encodeURIComponent(city.slug)+"/stays"} method="get"
     aria-label="Set hotel search preferences"
     className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
     <input type="hidden" name="lang" value={locale}/>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <label className="text-xs font-medium text-[var(--text-soft)]">
         Check in
-        <input type="date" name="checkin" defaultValue={value?.checkin??""} className={control}/>
+        <input type="date" name="checkin" defaultValue={dates.checkin} className={control}/>
       </label>
       <label className="text-xs font-medium text-[var(--text-soft)]">
         Check out
-        <input type="date" name="checkout" defaultValue={value?.checkout??""} className={control}/>
+        <input type="date" name="checkout" defaultValue={dates.checkout} className={control}/>
       </label>
       <label className="text-xs font-medium text-[var(--text-soft)]">
         Adults
@@ -48,10 +50,10 @@ export default function StaySearchControls({city,locale,currency,value,invalid}:
     </p>}
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
       <p className="text-xs text-[var(--text-soft)]">
-        Date selection is optional. Supplier rooms, prices and final availability are confirmed after handoff.
+        Dates default to the next valid stay. Direct city listings require a supplier-verified destination; otherwise select the exact city in the existing hotel search.
       </p>
       <button type="submit" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">
-        Apply stay preferences
+        Find stays in {city.name}
       </button>
     </div>
   </form>;

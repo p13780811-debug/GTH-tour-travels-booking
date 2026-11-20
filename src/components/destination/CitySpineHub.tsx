@@ -25,7 +25,11 @@ type Props = {
   travelParams?: Readonly<Record<string, unknown>>;
 };
 
-function BookingAction({href,label}: {href:string|null;label:string}) {
+function BookingAction({href,label,formId}: {href:string|null;label:string;formId?:string}) {
+  if (formId) return <button type="submit" form={formId}
+    className="gth-btn-gold mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-center text-sm font-semibold">
+    {label}<ArrowRight size={15} aria-hidden="true"/>
+  </button>;
   if (!href) return (
     <span className="mt-auto inline-flex min-h-11 items-center text-xs text-[var(--text-soft)]">
       Confirm availability with a provider
@@ -42,9 +46,9 @@ function BookingAction({href,label}: {href:string|null;label:string}) {
       </Link>;
 }
 
-function HubCard({name,description,scope,href,label,icon}: {
+function HubCard({name,description,scope,href,label,icon,formId}: {
   name:string;description:string;scope:string;href:string|null;label:string;
-  icon:ReactNode;
+  icon:ReactNode;formId?:string;
 }) {
   return <article className="gth-glass flex min-w-0 flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--text)] shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -53,7 +57,7 @@ function HubCard({name,description,scope,href,label,icon}: {
     </div>
     <h3 className="text-lg font-semibold">{name}</h3>
     <p className="flex-1 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
-    <BookingAction href={href} label={label}/>
+    <BookingAction href={href} label={label} formId={formId}/>
   </article>;
 }
 
@@ -110,8 +114,6 @@ export default function CitySpineHub({
   const verifiedStay=parseTravelQuery(intent);
   // The supplier still owns real availability. Invalid travel inputs fail
   // closed rather than silently defaulting to invented dates or occupancy.
-  const preferredHotel=resolveAffiliateRoute({city,service:"hotels",travelParams:intent});
-  const nuitee=resolveAffiliateRoute({city,service:"hotels",provider:"nuitee",travelParams:intent});
   const hopegoo=isHopeGooCountry(city.country_code)
     ? resolveAffiliateRoute({city,service:"hotels",provider:"hopegoo",travelParams:intent}) : null;
   const flights=resolveFlightCompetition({city});
@@ -164,20 +166,17 @@ export default function CitySpineHub({
           value={verifiedStay.ok?verifiedStay.value:null} invalid={!verifiedStay.ok}/>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <HubCard icon={<Hotel size={23}/>}
-            name={preferredHotel.provider==="hopegoo"?"HopeGoo · Asia stays":"GTH Worldwide Stays"}
-            scope={preferredHotel.capability==="verified_deep_link"?"Verified destination ID":"Supplier-operated search"}
-            description={preferredHotel.provider==="hopegoo"
-              ?"Public affiliate landing for eligible Asian markets. Confirm your city, dates, guests and currency on the partner site."
-              :"Hosted Nuitee search. Choose the exact supplier destination; dates and inventory must be confirmed there."}
-            href={preferredHotel.href} label="Explore stays"/>
+            name="GTH Worldwide Stays"
+            scope={city.verifiedNuiteePlaceId?"Verified supplier destination":"Exact destination selection"}
+            description={city.verifiedNuiteePlaceId
+              ?"Submitting the selected dates and guests opens this destination's supplier hotel listings."
+              :"The supplier requires a verified destination ID for direct listings. Continue to the real destination picker without showing unrelated nearby hotels."}
+            href={null} formId="gth-destination-stay-form" label="Explore stays"/>
           {hopegoo&&<HubCard icon={<Globe2 size={23}/>}
-            name={preferredHotel.provider==="hopegoo"?"Alternative GTH worldwide stays":"HopeGoo · Regional stays"}
-            scope={preferredHotel.provider==="hopegoo"?"Nuitee search":"Regional provider"}
-            description={preferredHotel.provider==="hopegoo"
-              ?"Alternative provider-hosted Nuitee search with no unverified Place ID."
-              :"Approved regional affiliate landing only when configured. Verify city and rooms with the provider."}
-            href={(preferredHotel.provider==="hopegoo"?nuitee:hopegoo).href}
-            label="Compare stay providers"/>}
+            name="Regional stay alternative"
+            scope="Supplier-operated discovery"
+            description="Use the reviewed regional booking link. Confirm the exact city, dates and room selection with the supplier."
+            href={hopegoo.href} label="Compare stay providers"/>}
         </div>
       </section>
 
