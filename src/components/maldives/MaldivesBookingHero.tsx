@@ -1,5 +1,5 @@
 import Image from "next/image";
-import {ArrowUpRight,Hotel,Plane,ShieldCheck} from "lucide-react";
+import {ArrowUpRight,Hotel,ShieldCheck} from "lucide-react";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 
 /**
@@ -45,8 +45,7 @@ export default function MaldivesBookingHero(){
       </div>
       <p className="mt-3 flex items-start gap-2 text-xs leading-5 text-[var(--text-soft)]">
         <ShieldCheck size={16} aria-hidden="true" className="mt-0.5 shrink-0"/>
-        Agar original booking portal embedded view allow nahi karta, upar
-        Open original search se wahi supplier site direct kholein. Uske Hotels aur Flights tabs unchanged hain.
+        If the booking provider blocks embedded viewing, use Open original search above to access its Hotels and Flights tabs directly.
       </p>
     </div>
   </section>;
