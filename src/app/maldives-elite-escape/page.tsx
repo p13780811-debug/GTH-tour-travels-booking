@@ -7,7 +7,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import {parseTravelQuery} from "@/lib/router/cityContext";
 import {resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {verifiedMaldivesPlaceId} from "@/lib/maldives/elite-handoff";
-import MaldivesHero,type {MaldivesStaySelection} from "@/components/maldives/MaldivesHero";
+import MaldivesHero, {type MaldivesStaySelection} from "@/components/maldives/MaldivesHero";
 import MaldivesStays from "@/components/maldives/MaldivesStays";
 import MaldivesExperiences from "@/components/maldives/MaldivesExperiences";
 import MaldivesConnectivity from "@/components/maldives/MaldivesConnectivity";
