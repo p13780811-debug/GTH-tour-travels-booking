@@ -16,7 +16,7 @@ export const dynamic="force-dynamic";
 
 const cinzel=Cinzel({subsets:["latin"],weight:["400","600"],display:"swap"});
 const canonical="https://www.gthproglobal.com/maldives-elite-escape";
-const image="https://images.unsplash.com/photo-1688949078626-a358f500e063?auto=format&fit=crop&w=2200&q=80";
+const image="https://images.unsplash.com/photo-1632904000334-144b19f78500?auto=format&fit=crop&w=2200&q=80";
 const description="Discover Maldives overwater resorts, island escapes, flights to Malé (MLE), speedboat and seaplane transfers and genuine supplier-backed tours with GTH PRO.";
 
 export const metadata:Metadata={
