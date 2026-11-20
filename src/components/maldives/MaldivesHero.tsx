@@ -130,7 +130,7 @@ export default function MaldivesHero({stay,headingClass}:{
         </button>
       </div>
       <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">
-        The island is locked to Maldives. Direct supplier listings require a verified place match; final rooms, taxes and prices appear only with the booking provider.
+        Maldives is fixed. Choose dates and guests, then tap any real resort card below to open that exact hotel’s booking page. The supplier confirms available rooms, taxes and prices.
       </p>
     </form>
 
