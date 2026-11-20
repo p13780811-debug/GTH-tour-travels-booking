@@ -293,3 +293,47 @@ test("No database imports, mutations or third-party fabricated product URLs",()=
     assert.doesNotMatch(text,/https:\/\/(?:www\.)?(?:klook|hopegoo|nuitee)\.com\/(?:product|hotel)\//i);
   }
 });
+
+test("Geo currency and hotel intent controls preserve provider-safe input",async()=>{
+  const geo=load("lib/router/edgeGeoAutoDetect.ts");
+  assert.equal(geo.preferredCurrencyForCountry("IN"),"INR");
+  assert.equal(geo.preferredCurrencyForCountry("SG"),"SGD");
+  assert.equal(geo.preferredCurrencyForCountry("GB"),"GBP");
+  assert.equal(geo.preferredCurrencyForCountry("FR"),"EUR");
+  assert.equal(geo.preferredCurrencyForCountry("BR"),"USD");
+  await withFlag("true",()=>{
+    const result=router.resolveAffiliateRoute({
+      city:cities.get("Mumbai"),
+      service:"hotels",
+      travelParams:{
+        checkin:"2026-12-02",checkout:"2026-12-04",
+        adults:"2",children:"3,6",currency:geo.preferredCurrencyForCountry("IN"),
+      },
+    },now);
+    assert.equal(result.capability,"supplier_search");
+    const url=new URL(result.href);
+    assert.equal(url.searchParams.get("currency"),"INR");
+    assert.equal(url.searchParams.get("checkin"),"2026-12-02");
+    assert.equal(url.searchParams.get("checkout"),"2026-12-04");
+    const guests=JSON.parse(atob(url.searchParams.get("occupancies")));
+    assert.equal(guests[0].children.join(","),"3,6");
+    const missing=router.resolveAffiliateRoute({
+      city:cities.get("Mumbai"),service:"hotels",travelParams:{
+        checkin:"2026-12-02",checkout:"invalid",currency:"INR",
+      },
+    },now);
+    assert.equal(missing.capability,"unavailable");
+  });
+  const hub=readFileSync(resolve(root,"src/components/destination/CitySpineHub.tsx"),"utf8");
+  const control=readFileSync(resolve(root,"src/components/destination/StaySearchControls.tsx"),"utf8");
+  const page=readFileSync(resolve(root,"src/app/destinations/[slug]/page.tsx"),"utf8");
+  assert.match(hub,/StaySearchControls/);
+  assert.match(hub,/preferredCurrencyForCountry/);
+  assert.match(control,/name="checkin"/);
+  assert.match(control,/name="checkout"/);
+  assert.match(control,/name="adults"/);
+  assert.match(control,/name="children"/);
+  assert.match(control,/name="currency"/);
+  assert.match(page,/travelParams=\{stayParams\}/);
+  assert.doesNotMatch(control,/window\.location|localStorage|NEXT_PUBLIC_.*KEY|style=\{/);
+});
