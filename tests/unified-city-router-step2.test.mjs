@@ -73,7 +73,9 @@ function dbReader(record, error = null) {
 
 async function trustedCity(name, code, slug, country, placeId = null) {
   const record = {
-    id: byId, name, slug, country, country_code: code,
+    id: "ad787189-e244-4e99-b57b-" + String(
+      FIXTURES.findIndex(item => item[0] === name) + 1
+    ).padStart(12, "0"), name, slug, country, country_code: code,
     nuitee_place_id: placeId, is_active: true,
   };
   const found = await cities.resolveCityContext(dbReader(record), { slug });
@@ -239,8 +241,7 @@ test("Aviasales WL remains the only flight widget; route inputs never invent IAT
       city: all.get("Mumbai"), service: "flights",
       flightRoute: { ...route, destinationIata: "B0M" },
     }, date);
-    assert.equal(invalid.capability, "internal_discovery" === invalid.capability
-      ? "internal_discovery" : "unavailable");
+    assert.equal(invalid.capability, "unavailable");
     const past = router.resolveAffiliateRoute({
       city: all.get("Mumbai"), service: "flights",
       flightRoute: { ...route, departDate: "2026-01-01" },
