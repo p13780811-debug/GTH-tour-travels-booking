@@ -58,17 +58,36 @@ test("canonical Maldives route and both legacy Google sitelinks remain, preservi
 test("simple hero has one wide Maldives image and ORIGINAL booking portal, no new form",()=>{
   const page=source("src/app/maldives-elite-escape/page.tsx");
   const hero=source("src/components/maldives/MaldivesBookingHero.tsx");
-  assert.match(page,/<MaldivesBookingHero\/>/);
+  assert.match(page,/<MaldivesBookingHero photo=\{photo\}\/>/);
   assert.match(hero,/src=\{HOTEL_BOOKING_ORIGIN\}/);
   assert.match(hero,/Hotels and Flights tabs/);
   assert.match(hero,/href=\{HOTEL_BOOKING_ORIGIN\}/);
-  assert.match(hero,/Open original search/);
-  assert.match(hero,/https:\/\/images\.unsplash\.com\/photo-/);
-  assert.match(hero,/sm:h-\[360px\] lg:h-\[440px\]/);
+  assert.match(hero,/Open Hotels &amp; Flights booking/);
+  assert.match(hero,/src=\{photo\}/);
+  assert.match(hero,/sm:h-\[350px\] lg:h-\[440px\]/);
   assert.match(hero,/min-h-11/);
   assert.doesNotMatch(page,/<MaldivesHero|MaldivesExperiences|MaldivesConnectivity|maldives-essentials/);
   assert.doesNotMatch(hero,/<form|input type=|formAction|SearchBar\.create/);
   assert.doesNotMatch(hero,/style=\{|NEXT_PUBLIC_.*KEY|SERVICE_ROLE_KEY/);
+});
+
+test("Pexels API uses existing server-only key, Maldives fallback and no duplicate header tabs",()=>{
+  const page=source("src/app/maldives-elite-escape/page.tsx");
+  const hero=source("src/components/maldives/MaldivesBookingHero.tsx");
+  const images=source("src/lib/maldives/pexels-hero.ts");
+  assert.match(page,/maldivesPexelsHero\(\)/);
+  assert.match(page,/const image=MALDIVES_PEXELS_FALLBACK/);
+  assert.match(images,/import "server-only"/);
+  assert.match(images,/process\.env\.PEXELS_API_KEY/);
+  assert.match(images,/https:\/\/api\.pexels\.com\/v1\/search/);
+  assert.match(images,/approvedPexelsIllustrations/);
+  assert.match(images,/next:\{revalidate:/);
+  assert.match(images,/images\.pexels\.com\/photos\/28843928/);
+  assert.doesNotMatch(images,/NEXT_PUBLIC_PEXELS|NEXT_PUBLIC_.*API_KEY/);
+  assert.doesNotMatch(page+hero,/images\.unsplash\.com|Unsplash|UnsplashHero/);
+  assert.doesNotMatch(hero,/searchTop|className=\{styles\.tabs\}|Original GTH PRO booking portal, including/);
+  assert.match(hero,/src=\{HOTEL_BOOKING_ORIGIN\}/);
+  assert.match(hero,/Open Hotels &amp; Flights booking/);
 });
 
 test("all 12 hotel cards are real verified resorts linked directly without removed search form",()=>{
