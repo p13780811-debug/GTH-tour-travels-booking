@@ -5,14 +5,15 @@ import {
   MapPin, Plane, ShieldCheck, Ticket, TrainFront,
 } from "lucide-react";
 import type { PublicTour } from "@/lib/tours";
-import { type CityContext } from "@/lib/router/cityContext";
+import { parseTravelQuery, type CityContext, type HotelCurrency } from "@/lib/router/cityContext";
+import StaySearchControls from "./StaySearchControls";
 import { resolveAffiliateRoute, resolveFlightCompetition } from "@/lib/router/affiliateRouter";
 import { buildCitySpineLinks } from "@/lib/router/citySpine";
 import {
   isHopeGooCountry, type ProviderId,
 } from "@/lib/router/providerRegistry";
 import {
-  SUPPORTED_UI_LOCALES, type UiLocale,
+  SUPPORTED_UI_LOCALES, preferredCurrencyForCountry, type UiLocale,
 } from "@/lib/router/edgeGeoAutoDetect";
 
 type Props = {
@@ -20,6 +21,8 @@ type Props = {
   tours?: readonly PublicTour[];
   locale?: UiLocale;
   detected?: boolean;
+  currency?: HotelCurrency;
+  travelParams?: Readonly<Record<string, unknown>>;
 };
 
 function BookingAction({href,label}: {href:string|null;label:string}) {
@@ -88,16 +91,29 @@ function exactTourRows(city:CityContext,tours:readonly PublicTour[]) {
   ).slice(0,3);
 }
 
-export default function CitySpineHub({city,tours=[],locale="en",detected=false}:Props) {
+const DISCOVER_LABEL:Record<UiLocale,string>={
+  en:"Discover", hi:"खोजें", zh:"探索", ja:"探す", ko:"탐색",
+  th:"สำรวจ", ms:"Terokai", vi:"Khám phá", fr:"Découvrez", es:"Descubre",
+};
+
+export default function CitySpineHub({
+  city,tours=[],locale="en",detected=false,currency,travelParams,
+}:Props) {
   const links=buildCitySpineLinks(city);
   if (!links || process.env.ENABLE_UNIFIED_CITY_ROUTER !== "true") return null;
 
-  // The existing booking engine owns actual dates, room and currency selection.
-  // No invented check-in date, price, room image or supplier product is shown.
-  const preferredHotel=resolveAffiliateRoute({city,service:"hotels"});
-  const nuitee=resolveAffiliateRoute({city,service:"hotels",provider:"nuitee"});
+  const selectedCurrency=currency??preferredCurrencyForCountry(city.country_code);
+  const intent:Readonly<Record<string,unknown>>={
+    ...(travelParams??{}),
+    currency:travelParams?.currency??selectedCurrency,
+  };
+  const verifiedStay=parseTravelQuery(intent);
+  // The supplier still owns real availability. Invalid travel inputs fail
+  // closed rather than silently defaulting to invented dates or occupancy.
+  const preferredHotel=resolveAffiliateRoute({city,service:"hotels",travelParams:intent});
+  const nuitee=resolveAffiliateRoute({city,service:"hotels",provider:"nuitee",travelParams:intent});
   const hopegoo=isHopeGooCountry(city.country_code)
-    ? resolveAffiliateRoute({city,service:"hotels",provider:"hopegoo"}) : null;
+    ? resolveAffiliateRoute({city,service:"hotels",provider:"hopegoo",travelParams:intent}) : null;
   const flights=resolveFlightCompetition({city});
   const providers:readonly {id:ProviderId;label:string;summary:string}[]=[
     {id:"wegotrip",label:"Audio walks & self-guided experiences",
@@ -124,7 +140,7 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
           <Globe2 size={16}/>{detected?"Location-aware destination hub":"GTH PRO · Worldwide City Spine"}
         </p>
         <h2 id="city-spine-heading" className="mt-3 font-[family-name:var(--font-heading)] text-2xl font-bold tracking-tight sm:text-4xl">
-          {city.name} <span className="text-[var(--gold)]">· Four ways to discover</span>
+          <span lang={locale}>{DISCOVER_LABEL[locale]}</span> {city.name} <span className="text-[var(--gold)]">· Four pillars</span>
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
           {city.country ? city.country+" · " : ""}
@@ -144,7 +160,9 @@ export default function CitySpineHub({city,tours=[],locale="en",detected=false}:
             <h3 id="city-stays-heading" className="mt-2 text-xl font-bold sm:text-2xl">Stay in {city.name}</h3></div>
           <span className="text-xs text-[var(--text-soft)]">No fabricated rooms or prices</span>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <StaySearchControls city={city} locale={locale} currency={selectedCurrency}
+          value={verifiedStay.ok?verifiedStay.value:null} invalid={!verifiedStay.ok}/>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           <HubCard icon={<Hotel size={23}/>}
             name={preferredHotel.provider==="hopegoo"?"HopeGoo · Asia stays":"GTH Worldwide Stays"}
             scope={preferredHotel.capability==="verified_deep_link"?"Verified destination ID":"Supplier-operated search"}
