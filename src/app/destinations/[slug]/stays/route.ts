@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { resolveCityContext } from "@/lib/router/cityContext";
 import { SUPPORTED_UI_LOCALES } from "@/lib/router/edgeGeoAutoDetect";
 import { resolveDestinationStayHandoff } from "@/lib/destinations/destinationStayHandoff";
+import { destinationGeography } from "@/lib/destinations/geography";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     return new NextResponse("Destination could not be verified.", { status: 503 });
   }
 
-  const handoff = resolveDestinationStayHandoff(result.city, stay);
+  // Editorial slugs can have nullable country in the database. Reuse the
+  // exact geography already shown by the destination page, without guessing.
+  const geography = destinationGeography(slug, result.city.country);
+  const handoff = resolveDestinationStayHandoff({
+    ...result.city, country: geography.country,
+  }, stay);
   if (handoff.status === "invalid") {
     return new NextResponse("Check your dates, adults, child ages and currency.", { status: 400 });
   }
