@@ -45,8 +45,14 @@ try {
     assert.equal(response?.status(),200);
     await page.getByRole("heading",{name:"Maldives Elite Escape"}).waitFor();
     const frame=page.locator('iframe[title="GTH PRO original booking portal — Hotels and Flights tabs"]');
+    const heroPhoto=page.locator('img[alt^="Maldives lagoon with aerial overwater villas"]');
+    assert.equal(await heroPhoto.count(),1,"Missing Maldives Pexels hero image");
+    assert.match(await heroPhoto.getAttribute("src")||"",/pexels/i,
+      "Hero must render Pexels rather than Unsplash");
+    assert.equal(await page.getByText("Original GTH PRO booking portal, including its own hotel and flight tabs.").count(),0);
+
     assert.equal(await frame.count(),1,"Original Hotels + Flights portal missing");
-    const direct=page.getByRole("link",{name:/Open original search/i});
+    const direct=page.getByRole("link",{name:/Open Hotels & Flights booking/i});
     assert.equal(new URL(await direct.getAttribute("href")).origin,
       "https://hotel.gthproglobal.com");
     assert.equal(await page.locator('form#maldives-elite-stay-search').count(),0,
