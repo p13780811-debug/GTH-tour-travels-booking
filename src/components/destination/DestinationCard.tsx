@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import {useState} from "react";
+import DestinationOpeningOverlay,{isNormalDestinationNavigation} from "./DestinationOpeningOverlay";
 import {ArrowRight,Globe2,MapPin} from "lucide-react";
 
 export type DestinationCardInfo={
@@ -8,7 +12,9 @@ export type DestinationCardInfo={
 };
 /** Exactly the same card geometry in every rail and every viewport. */
 export default function DestinationCard({destination}: {destination:DestinationCardInfo}){
- return <Link href={"/destinations/"+destination.slug}
+ const [opening,setOpening]=useState(false);
+ return <><Link href={"/destinations/"+destination.slug}
+   onClick={event=>{if(isNormalDestinationNavigation(event))setOpening(true);}}
    className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
    <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
     <Image src={destination.image} alt={destination.title+" destination"}
@@ -24,5 +30,7 @@ export default function DestinationCard({destination}: {destination:DestinationC
       <Globe2 size={14} aria-hidden="true"/> Explore ecosystem <ArrowRight size={14} aria-hidden="true"/>
     </p>
    </div>
- </Link>;
+ </Link>
+ {opening&&<DestinationOpeningOverlay city={destination.title}/>}
+ </>;
 }

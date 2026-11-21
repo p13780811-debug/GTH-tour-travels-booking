@@ -178,7 +178,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
               Booking, current prices, local conditions and room availability require independent supplier confirmation.
             </p>
             <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-3">
-              <Link href="#destination-ecosystem" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
+              <Link href={city?"#city-spine-hub":"#destination-ecosystem"} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
               <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Book stays</Link>
               <Link href={toursHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
               <Link href={flightsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
