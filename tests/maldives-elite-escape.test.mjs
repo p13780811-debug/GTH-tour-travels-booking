@@ -178,3 +178,20 @@ test("country links preserve exact territory instead of dropping filters outside
   assert.match(code,/match\.country !== requestedCountry/);
   assert.match(code,/Explore \$\{country\} destinations/);
 });
+
+test("worldwide destination links carry an exact country identity to prevent duplicate-slug misrouting",()=>{
+  const {destinationDetailHref}=load("lib/destinations/detail-link.ts");
+  assert.equal(destinationDetailHref({slug:"springfield",country:"United States"}),
+    "/destinations/springfield?country=United%20States");
+  assert.equal(destinationDetailHref({slug:"springfield",country:"Canada"}),
+    "/destinations/springfield?country=Canada");
+  assert.equal(destinationDetailHref({slug:"paris",country:null}),"/destinations/paris");
+  assert.equal(destinationDetailHref({slug:"../admin",country:"France"}),"/destinations#discover");
+  const detail=source("src/app/destinations/[slug]/page.tsx");
+  assert.match(detail,/lookup\.eq\("country", countryFilter\)/);
+  assert.match(detail,/getDestination\(slug,countryFilter\)/);
+  for(const path of ["src/components/destination/DestinationCard.tsx",
+    "src/components/destination/DestinationExplorerResults.tsx"]){
+    assert.match(source(path),/destinationDetailHref/);
+  }
+});

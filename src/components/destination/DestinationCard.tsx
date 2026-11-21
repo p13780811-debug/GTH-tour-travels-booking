@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,Globe2,MapPin} from "lucide-react";
+import {destinationDetailHref} from "@/lib/destinations/detail-link";
 
 export type DestinationCardInfo={
  slug:string;title:string;image:string;description:string;
@@ -8,7 +9,7 @@ export type DestinationCardInfo={
 };
 /** Exactly the same card geometry in every rail and every viewport. */
 export default function DestinationCard({destination}: {destination:DestinationCardInfo}){
- return <Link href={"/destinations/"+destination.slug}
+ return <Link href={destinationDetailHref(destination)}
    className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
    <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
     <Image src={destination.image} alt={destination.title+" destination"}
