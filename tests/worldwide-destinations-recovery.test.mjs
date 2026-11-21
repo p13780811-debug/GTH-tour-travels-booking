@@ -24,6 +24,6 @@ test("directory reads one bounded database page with exact country identity",()=
  assert.match(source,/directory\.available/);
 });
 test("country-to-city detail routes preserve existing unified routing",()=>{
- assert.match(read("src/app/destinations/[slug]/page.tsx"),/resolveCityContext\(db, \{ slug \}\)/);
+ assert.match(read("src/app/destinations/[slug]/page.tsx"),/resolveCityContext\(db,\s*\{\s*slug\s*\}\)/);
  assert.match(source,/DestinationExplorerResults items=\{visible\}/);
 });
