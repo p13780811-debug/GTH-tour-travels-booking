@@ -9,7 +9,10 @@ test("all 244 saved country codes have selectable country filters",()=>{
  for(const pair of [["IN","India"],["MV","Maldives"],["JP","Japan"],["FR","France"],["GB","United Kingdom"]])
    assert.ok(catalog.includes('code:"'+pair[0]+'",name:"'+pair[1]+'"'),pair.join(":"));
  assert.match(source,/findDestinationCountry\(params\.country\)/);
- assert.match(source,/WORLD_DESTINATION_COUNTRIES\.map/);
+ assert.match(source,/WORLD_DESTINATION_COUNTRIES\\.map/);
+ assert.match(catalog,/dbName:"Korea, Republic of"/);
+ assert.match(catalog,/dbName:"Bolivia, Plurinational State of"/);
+ assert.match(catalog,/item\\.dbName\\.toLocaleLowerCase/);
 });
 test("directory reads one bounded database page with exact country identity",()=>{
  for(const expression of [/count:"exact"/,/\.eq\("country_code",countryCode\)/,
