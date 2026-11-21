@@ -59,7 +59,7 @@ try {
       "Old nonworking custom form must not exist");
     assert.equal(await page.locator("[data-maldives-hotel-id]").count(),12,
       "Must retain exactly 12 real hotel cards");
-    assert.equal(await page.locator('a[href^="/destinations?country="]').count(),9,
+    assert.equal(await page.locator('a[href^="/destinations?country="]').count(),35,
       "Country destination carousel missing");
     assert.equal(await page.locator('a[href^="/guides/"]').count(),3,
       "Existing country guide cards missing");
@@ -98,6 +98,16 @@ try {
       url.pathname==="/hotels/lp39ce1",{waitUntil:"domcontentloaded",timeout:15000});
     assert.equal(new URL(popup.url()).pathname,"/hotels/lp39ce1");
     await popup.close();
+    // Test the actual country click destination on the isolated Next app,
+    // not merely that the href string looks plausible.
+    const japanHref=await page.locator('a[href^="/destinations?country=Japan"]').getAttribute("href");
+    assert.ok(japanHref,"Japan country card missing");
+    const countryResponse=await page.goto(origin+japanHref,{waitUntil:"domcontentloaded",timeout:60000});
+    assert.equal(countryResponse?.status(),200,"Japan country page broken");
+    await page.getByRole("heading",{name:"Explore Japan destinations"}).waitFor({timeout:20000});
+    const countrySelect=page.locator('select[name="country"]').first();
+    assert.equal(await countrySelect.inputValue(),"Japan",
+      "Country selection was dropped on destination arrival");
     report.push({viewport:width+"x"+height,status:"PASS",overflow:layout.scrollWidth,
       directHotelPopup:"/hotels/lp39ce1",supplierPortal:"stubbed"});
     await page.close();

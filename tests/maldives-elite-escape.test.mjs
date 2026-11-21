@@ -133,7 +133,10 @@ test("Explore Destinations renders COUNTRY cards with matching first-party count
   const code=source("src/components/maldives/MaldivesExplore.tsx");
   const geo=source("src/lib/destinations/geography.ts");
   for(const country of ["India","United Arab Emirates","France","Japan","Singapore",
-    "Thailand","Indonesia","United Kingdom","United States"]){
+    "Thailand","Indonesia","United Kingdom","United States","Maldives","Sri Lanka","China",
+    "Hungary","South Africa","Denmark","Ireland","Switzerland","Vietnam","Finland",
+    "South Korea","Taiwan","Netherlands","Spain","Greece","Poland","Canada","Nepal",
+    "Malaysia","Philippines","Norway","Portugal","Czechia","Austria","Sweden","Italy"]){
     assert.ok(code.includes('name:"'+country+'"'),country+" missing");
     assert.ok(geo.includes('"'+country+'":')||geo.includes('"'+country+'"'),country+" not a known country");
   }
@@ -142,6 +145,7 @@ test("Explore Destinations renders COUNTRY cards with matching first-party count
   assert.match(code,/href="\/destinations"/);
   assert.match(code,/overflow-x-auto/);
   assert.match(code,/lg:grid-cols-4/);
+  assert.equal((code.match(/photo:"\/images\/cities\//g)||[]).length,35);
 });
 
 test("Explore Guides consists of REAL country guide cards, not nonexistent slugs",()=>{
@@ -162,4 +166,15 @@ test("Explore Transport connects to existing transfer hub and no unwanted sectio
   assert.match(page,/<MaldivesExplore\/>/);
   assert.doesNotMatch(page,/MaldivesExperiences|MaldivesConnectivity|Sun,Compass|Before you arrive/);
   assert.doesNotMatch(code,/href="\/hotels"/);
+});
+
+
+test("country links preserve exact territory instead of dropping filters outside the first global batch",()=>{
+  const code=source("src/app/destinations/page.tsx");
+  assert.match(code,/loadDestinations\(countryFilter = ""\)/);
+  assert.match(code,/request\.eq\("country", countryFilter\)/);
+  assert.match(code,/loadDestinations\(requestedCountry\)/);
+  assert.match(code,/const country = requestedCountry/);
+  assert.match(code,/match\.country !== requestedCountry/);
+  assert.match(code,/Explore \$\{country\} destinations/);
 });

@@ -26,8 +26,7 @@ export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
           Real resorts. Direct hotel booking.
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          Choose your island resort below — each card opens that exact hotel's
-          white-label booking page, with valid upcoming dates and guest defaults.
+          Choose your island resort below — each card opens that hotel’s booking page with upcoming dates and guest defaults.
           Explore properties around Malé, North & South Malé, Baa and Ari Atolls.
         </p>
       </div>
@@ -48,7 +47,7 @@ export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
           aria-label={"View "+hotel.name+" hotel details with selected travel dates"}
           className="group flex w-[78vw] max-w-[310px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-left shadow-[var(--shadow)] transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] sm:w-[305px] lg:w-full lg:max-w-none">
           <span className="relative block aspect-[4/3] w-full overflow-hidden bg-[var(--bg-soft)]">
-            <Image src={hotel.photo} alt={"Supplier photograph of "+hotel.name} fill unoptimized
+            <Image src={hotel.photo} alt={"Photograph of "+hotel.name} fill unoptimized
               sizes="(max-width:640px) 78vw, (max-width:1280px) 32vw, 24vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"/>
             <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--card)]/95 px-2.5 py-1.5 text-xs font-bold text-[var(--text)]">
@@ -69,10 +68,10 @@ export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
                 {hotel.rating.toFixed(1)}
               </span>
               <span className="font-semibold">Superb</span>
-              <span>· {hotel.reviews.toLocaleString("en")} supplier reviews</span>
+              <span>· {hotel.reviews.toLocaleString("en")} recorded guest reviews</span>
             </span>
             <span className="mt-3 block text-xs leading-5 text-[var(--text-soft)]">
-              Exact room rates, taxes and transfer charges are shown on the supplier booking page.
+              Confirm room rates, taxes and transfers during final booking.
             </span>
             <span className="gth-btn-gold mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold">
               View this hotel <ArrowUpRight size={16} aria-hidden="true"/>
@@ -83,10 +82,7 @@ export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
     </div>
     <div className="mt-3 flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs leading-6 text-[var(--text-soft)]">
       <ShieldCheck size={19} className="mt-1 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
-      <p>These are real Maldives properties and supplier-listed photos, IDs, star classifications
-        and review scores — not illustrative hotel inventory. Prices and room availability depend on
-        your exact dates and occupancy; confirm the tax-inclusive total, cancellation rules and
-        boat or seaplane transfer costs on the selected hotel's booking page.</p>
+      <p>These are identified Maldives properties with previously recorded catalog photos and ratings, not confirmed live room inventory. Prices and room availability depend on your dates and guests. Confirm the tax-inclusive total, cancellation terms, and any speedboat or seaplane transfer costs before paying with the booking operator.</p>
     </div>
   </section>;
 }

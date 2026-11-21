@@ -13,6 +13,32 @@ const countries=[
   {name:"Indonesia",photo:"/images/cities/bali.jpg",photoCity:"Bali"},
   {name:"United Kingdom",photo:"/images/cities/london.jpg",photoCity:"London"},
   {name:"United States",photo:"/images/cities/new-york.jpg",photoCity:"New York"},
+  {name:"Maldives",photo:"/images/cities/maldives.jpg",photoCity:"Maldives"},
+  {name:"Sri Lanka",photo:"/images/cities/colombo.jpg",photoCity:"Colombo"},
+  {name:"China",photo:"/images/cities/beijing.jpg",photoCity:"Beijing"},
+  {name:"Hungary",photo:"/images/cities/budapest.jpg",photoCity:"Budapest"},
+  {name:"South Africa",photo:"/images/cities/cape-town.jpg",photoCity:"Cape Town"},
+  {name:"Denmark",photo:"/images/cities/copenhagen.jpg",photoCity:"Copenhagen"},
+  {name:"Ireland",photo:"/images/cities/dublin.jpg",photoCity:"Dublin"},
+  {name:"Switzerland",photo:"/images/cities/geneva.jpg",photoCity:"Geneva"},
+  {name:"Vietnam",photo:"/images/cities/hanoi.jpg",photoCity:"Hanoi"},
+  {name:"Finland",photo:"/images/cities/helsinki.jpg",photoCity:"Helsinki"},
+  {name:"South Korea",photo:"/images/cities/seoul.jpg",photoCity:"Seoul"},
+  {name:"Taiwan",photo:"/images/cities/taipei.jpg",photoCity:"Taipei"},
+  {name:"Netherlands",photo:"/images/cities/amsterdam.jpg",photoCity:"Amsterdam"},
+  {name:"Spain",photo:"/images/cities/barcelona.jpg",photoCity:"Barcelona"},
+  {name:"Greece",photo:"/images/cities/athens.jpg",photoCity:"Athens"},
+  {name:"Poland",photo:"/images/cities/krakow.jpg",photoCity:"Krakow"},
+  {name:"Canada",photo:"/images/cities/toronto.jpg",photoCity:"Toronto"},
+  {name:"Nepal",photo:"/images/cities/kathmandu.jpg",photoCity:"Kathmandu"},
+  {name:"Malaysia",photo:"/images/cities/kuala-lumpur.jpg",photoCity:"Kuala Lumpur"},
+  {name:"Philippines",photo:"/images/cities/manila.jpg",photoCity:"Manila"},
+  {name:"Norway",photo:"/images/cities/oslo.jpg",photoCity:"Oslo"},
+  {name:"Portugal",photo:"/images/cities/lisbon.jpg",photoCity:"Lisbon"},
+  {name:"Czechia",photo:"/images/cities/prague.jpg",photoCity:"Prague"},
+  {name:"Austria",photo:"/images/cities/vienna.jpg",photoCity:"Vienna"},
+  {name:"Sweden",photo:"/images/cities/stockholm.jpg",photoCity:"Stockholm"},
+  {name:"Italy",photo:"/images/cities/rome.jpg",photoCity:"Rome"},
 ] as const;
 const countryGuidePhotos:Readonly<Record<string,{src:string,city:string}>>={
   india:{src:"/images/cities/mumbai.jpg",city:"Mumbai"},
@@ -25,11 +51,11 @@ export default function MaldivesExplore(){
     <section aria-labelledby="maldives-explore-destinations">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">Worldwide destinations</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">Featured countries · worldwide</p>
           <h2 id="maldives-explore-destinations" className="mt-2 text-2xl font-bold sm:text-3xl">Explore Destinations</h2>
         </div>
         <Link href="/destinations" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--gold)]">
-          All countries &amp; cities <ArrowRight size={16} aria-hidden="true"/>
+          Browse all countries &amp; cities <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </div>
       <div role="region" aria-label="Explore countries by destination cards — swipe horizontally" tabIndex={0}

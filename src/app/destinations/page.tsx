@@ -39,7 +39,7 @@ function pageLink(search: string, page: number, country = "", region = "", sort 
   return "/destinations" + (query ? "?" + query : "") + "#discover";
 }
 
-async function loadDestinations(): Promise<Destination[]> {
+async function loadDestinations(countryFilter = ""): Promise<Destination[]> {
   const base: Destination[] = curatedDestinations.map((item) => ({
     slug: item.slug,
     title: item.name,
@@ -53,9 +53,12 @@ async function loadDestinations(): Promise<Destination[]> {
     // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
     // Never surface inactive records or assume every DB location has licensed media.
     for (let offset = 0; offset < 1200; offset += 200) {
-      const { data, error } = await supabase.from("destinations")
+      // Country links must search their own territory, not the first global 1,200 cities.
+      // Keep the original bounded read, existing active-only policy and RLS intact.
+      const request = supabase.from("destinations")
         .select("name,slug,description,country")
-        .eq("is_active", true)
+        .eq("is_active", true);
+      const { data, error } = await (countryFilter ? request.eq("country", countryFilter) : request)
         .order("name", { ascending: true })
         .range(offset, offset + 199).abortSignal(AbortSignal.timeout(4_500));
       if (error || !data) break;
@@ -119,6 +122,10 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
   const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
+  // Strict country context is preserved even when the first global catalog batch lacks it.
+  const requestedCountry = typeof params.country === "string" && params.country.length <= 80 &&
+    /^[\p{L}][\p{L} .'-]{1,79}$/u.test(params.country.trim())
+    ? params.country.trim() : "";
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
   const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
@@ -127,7 +134,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
   }));
   const [mapped,allDestinations]=await Promise.all([
     mappedPromise,
-    withDiscoveryDeadline(loadDestinations()).catch(()=>fallbackDestinations),
+    withDiscoveryDeadline(loadDestinations(requestedCountry)).catch(()=>fallbackDestinations),
   ]);
   // User-driven bounded query extends the existing catalogue without
   // scanning or rendering all 38,671 city rows on every request.
@@ -135,6 +142,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
     const matches = await searchWorldwideCities(supabase, search);
     const present = new Set(allDestinations.map(city => city.slug));
     for (const match of matches) {
+      if (requestedCountry && match.country !== requestedCountry) continue;
       if (present.has(match.slug)) continue;
       present.add(match.slug);
       allDestinations.push({
@@ -146,9 +154,9 @@ export default async function DestinationsPage({ searchParams }: Props) {
       });
     }
   }
-  const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
+  const countries = [...new Set([...allDestinations.flatMap(item => item.country ? [item.country] : []), ...(requestedCountry ? [requestedCountry] : [])])].sort((a,b) => a.localeCompare(b));
   const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
-  const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";
+  const country = requestedCountry;
   const region = typeof params.region === "string" && regions.includes(params.region) ? params.region : "";
   const sort = params.sort === "country" ? "country" : "name";
   const view = params.view === "list" ? "list" : "grid";
@@ -212,7 +220,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Your research, in focus</p>
-       <h2 className="mt-1 text-2xl font-bold tracking-tight">Explore destinations</h2>
+       <h2 className="mt-1 text-2xl font-bold tracking-tight">{country ? `Explore ${country} destinations` : "Explore destinations"}</h2>
       </div>
       <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--text-soft)]">{filtered.length} matches · Page {page} of {pages}</span>
      </div>

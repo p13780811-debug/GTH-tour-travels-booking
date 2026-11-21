@@ -20,15 +20,21 @@ export default function MaldivesBookingHero({photo}:{photo:string}){
         </h1>
       </div>
     </div>
-    <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <p className="max-w-xl text-sm text-[var(--text-soft)]">
+        Plan your stay or flight in the GTH booking portal. If the embedded portal is restricted,
+        the direct booking link works without an extra GTH search form.
+      </p>
+      <a href={HOTEL_BOOKING_ORIGIN} target="_blank" rel="noopener noreferrer sponsored"
+        className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+        Open Hotels &amp; Flights booking <ArrowUpRight size={16} aria-hidden="true"/>
+      </a>
+    </div>
+    <div className="mt-3 min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
       <iframe src={HOTEL_BOOKING_ORIGIN}
         title="GTH PRO original booking portal — Hotels and Flights tabs"
         loading="lazy" referrerPolicy="strict-origin-when-cross-origin"
         className="block h-[485px] w-full min-w-0 border-0 sm:h-[590px] lg:h-[630px]"/>
     </div>
-    <a href={HOTEL_BOOKING_ORIGIN} target="_blank" rel="noopener noreferrer sponsored"
-      className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
-      Open Hotels &amp; Flights booking <ArrowUpRight size={16} aria-hidden="true"/>
-    </a>
   </section>;
 }
