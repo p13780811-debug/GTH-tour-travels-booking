@@ -124,7 +124,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
   const search=(typeof params.search==="string"?params.search:"").normalize("NFKC").trim().slice(0,70);
   const rawPage=typeof params.page==="string"?params.page:"1";
-  const requestedPage=/^[1-9]\\d{0,3}$/.test(rawPage)?Number(rawPage):1;
+  const requestedPage=/^[1-9]\d{0,3}$/.test(rawPage)?Number(rawPage):1;
   const hasCountry=typeof params.country==="string"&&params.country.trim().length>0;
   const selectedByFilter=hasCountry?findDestinationCountry(params.country):null;
   const typedCountry=search?findDestinationCountry(search):null;
