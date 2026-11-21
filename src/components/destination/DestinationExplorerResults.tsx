@@ -21,7 +21,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
  const [notes,setNotes]=useState<Record<string,string>>({});
  const [notice,setNotice]=useState("");
  const [openingCity,setOpeningCity]=useState<string|null>(null);
- const opening=(event:React.MouseEvent<HTMLAnchorElement>,city:string)=>{if(isNormalDestinationNavigation(event))setOpeningCity(city);};
+ const opening=(event:React.MouseEvent<HTMLAnchorElement>,city:string)=>{if(isNormalDestinationNavigation(event)){window.scrollTo(0,0);setOpeningCity(city);}};
  const dialog=useRef<HTMLDialogElement>(null);
 
  useEffect(()=>{
@@ -99,7 +99,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
      const isCompared=selected.includes(item.slug);
      const isGuide=item.location==="Editorial destination guide";
      return <article key={item.slug} className={"group min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-shadow hover:shadow-md "+(view==="list"?"flex flex-col sm:flex-row":"flex flex-col")}>
-      <Link href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} aria-label={"Explore "+item.title+" destination guide"}
+      <Link scroll={true} href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} aria-label={"Explore "+item.title+" destination guide"}
         className={"relative block shrink-0 overflow-hidden bg-[var(--bg-soft)] "+(view==="list"?"aspect-[16/10] w-full sm:aspect-auto sm:w-[220px]":"aspect-[16/10] w-full")}>
        <Image src={item.image} alt={item.title+" destination illustration"} fill sizes={view==="list"?"(max-width: 640px) 100vw, 220px":"(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"}
         className="object-cover transition-transform duration-300 group-hover:scale-[1.035]"/>
@@ -109,7 +109,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
        <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
          <p className="inline-flex max-w-full items-center gap-1 text-[11px] text-[var(--text-soft)]"><MapPin size={13} className="shrink-0"/><span className="truncate">{item.region||"Worldwide"}{item.country?" · "+item.country:""}</span></p>
-         <h4 className="mt-1 text-base font-bold tracking-tight sm:text-lg"><Link href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="hover:underline">{item.title}</Link></h4>
+         <h4 className="mt-1 text-base font-bold tracking-tight sm:text-lg"><Link scroll={true} href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="hover:underline">{item.title}</Link></h4>
         </div>
         <button type="button" aria-pressed={isSaved} aria-label={(isSaved?"Remove ":"Save ")+item.title+" "+(isSaved?"from":"to")+" shortlist"} onClick={()=>updateSaved(item.slug)}
          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg)]" title={isSaved?"Remove from shortlist":"Save destination"}>
@@ -126,7 +126,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
          className={"inline-flex min-h-10 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold "+(isCompared?"border-[var(--gold)] bg-[var(--bg)]":"border-[var(--border)]")}>
          {isCompared?<Check size={15}/>:<GitCompareArrows size={15}/>} {isCompared?"Comparing":"Compare"}
         </button>
-        <Link href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="gth-btn-gold inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-xs font-semibold">
+        <Link scroll={true} href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="gth-btn-gold inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-xs font-semibold">
          Explore guide <ArrowRight size={15}/>
         </Link>
        </div>
@@ -167,7 +167,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
       <textarea rows={3} maxLength={1500} value={notes[item.slug]||""} onChange={event=>changeNote(item.slug,event.target.value)}
        placeholder="Questions to check before booking" className="mt-2 w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-xs"/>
      </label>
-     <Link href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="mt-4 inline-flex min-h-10 items-center gap-1 text-xs font-semibold underline"><BookOpen size={14}/> Open guide</Link>
+     <Link scroll={true} href={"/destinations/"+encodeURIComponent(item.slug)} onClick={event=>opening(event,item.title)} className="mt-4 inline-flex min-h-10 items-center gap-1 text-xs font-semibold underline"><BookOpen size={14}/> Open guide</Link>
     </div>)}
    </div>
    <p className="px-4 pb-5 text-xs leading-5 text-[var(--text-soft)] sm:px-6">Private notes stay on this device. Editorial geography and images do not prove accommodation availability, ticket inventory, provider partnership or AI verification.</p>

@@ -8,9 +8,10 @@ const loader=read("src/app/destinations/[slug]/loading.tsx");
 const pending=read("src/components/destination/DestinationOpeningOverlay.tsx");
 const detail=read("src/app/destinations/[slug]/page.tsx");
 test("all destination card routes show immediate contextual loading instead of old footer",()=>{
- assert.match(card,/onClick=\{event=>\{if\(isNormalDestinationNavigation\(event\)\)setOpening\(true\);\}\}/);
+ assert.match(card,/window\.scrollTo\(0,0\)/);
  assert.match(card,/<DestinationOpeningOverlay city=\{destination\.title\}/);
  assert.match(explorer,/onClick=\{event=>opening\(event,item\.title\)\}/);
+ assert.match(explorer,/window\.scrollTo\(0,0\)/);
  assert.match(explorer,/<DestinationOpeningOverlay city=\{openingCity\}/);
  assert.match(pending,/fixed inset-0 z-\[200\]/);
  assert.match(pending,/Opening \{city\}/);

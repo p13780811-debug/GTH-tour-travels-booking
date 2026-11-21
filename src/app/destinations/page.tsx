@@ -93,7 +93,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
  regions:string[];countries:string[];
 }){
  const control="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]";
- return <form role="search" method="get" action="/destinations" aria-label="Refine destination directory" className="grid gap-4">
+ return <form role="search" method="get" action="/destinations#discover" aria-label="Refine destination directory" className="grid gap-4">
   <input type="hidden" name="view" value={view}/>
   <label className="block text-xs font-semibold text-[var(--text)]">City, country or interest
    <input type="search" name="search" defaultValue={search} maxLength={70} placeholder="Search destinations" className={control}/>
@@ -140,7 +140,11 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const incompatible=Boolean(selectedCountry&&region&&!regionCodes.includes(selectedCountry.code));
   const sort:"name"|"country"=params.sort==="country"?"country":"name";
   const view=params.view==="list"?"list":"grid";
-  const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
+  // Searches are not blocked by the unrelated OSM contributors rail.
+  const showMappedCities=!search&&!hasCountry&&!region&&requestedPage===1;
+  const mappedPromise=showMappedCities
+    ?withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null)
+    :Promise.resolve(null);
   const directory=(hasCountry&&!selectedByFilter)||incompatible
     ?{items:[] as Destination[],total:0,available:true}
     :await withDiscoveryDeadline(loadDestinations(
@@ -166,7 +170,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
   return (
    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    {process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" &&
+    {process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" && !search && !hasCountry && !region &&
       <GeoCityIntro language={typeof params.lang === "string" ? params.lang : undefined}/>}
 
     <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
@@ -181,7 +185,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </p>
       <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <form role="search" action="/destinations" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
+      <form role="search" action="/destinations#discover" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}
        {sort!=="name"&&<input type="hidden" name="sort" value={sort}/>}

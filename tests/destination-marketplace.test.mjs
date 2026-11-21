@@ -42,7 +42,7 @@ test("destination detail offers connected planning articles", () => {
 test("destination marketplace has real GET search, bounded pagination and bundled city imagery", () => {
   const list = read("src/app/destinations/page.tsx");
   const data = read("src/data/destinations.ts");
-  assert.match(list, /action="\/destinations" method="get"/);
+  assert.match(list, /action="\/destinations#discover" method="get"/);
   assert.match(list, /name="search"/);
   assert.match(list, /const perPage = 18/);
   assert.match(list, /\.range\(offset,offset\+perPage-1\)/);
