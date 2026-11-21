@@ -11,15 +11,15 @@ export const dynamic="force-dynamic";
 
 const canonical="https://www.gthproglobal.com/maldives-elite-escape";
 const image=MALDIVES_PEXELS_FALLBACK;
-const description="Discover Maldives overwater resorts, island escapes, flights to Malé (MLE), speedboat and seaplane transfers and genuine supplier-backed tours with GTH PRO.";
+const description="Discover Maldives island stays, overwater resorts and hotel details through GTH PRO. Explore worldwide destinations, country guides and onward transfer options.";
 
 export const metadata:Metadata={
-  title:"Maldives Elite Escape — Luxury Overwater Resorts, Flights & Island Tours | GTH PRO",
+  title:"Maldives Elite Escape — Overwater Resorts, Island Stays & Booking | GTH PRO",
   description,
   alternates:{canonical},
   openGraph:{
     type:"website",url:canonical,
-    title:"Maldives Elite Escape — Luxury Overwater Resorts, Flights & Island Tours | GTH PRO",
+    title:"Maldives Elite Escape — Overwater Resorts, Island Stays & Booking | GTH PRO",
     description,siteName:"GTH PRO",
     images:[{url:image,width:2200,height:1467,alt:"Aerial photograph of overwater resort villas in the Maldives"}],
   },

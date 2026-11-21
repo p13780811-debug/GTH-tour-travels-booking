@@ -45,7 +45,7 @@ const params=new URLSearchParams(stay);
 
 test("canonical Maldives route and both legacy Google sitelinks remain, preserving query",()=>{
   const page=source("src/app/maldives-elite-escape/page.tsx");
-  assert.match(page,/Maldives Elite Escape — Luxury Overwater Resorts, Flights & Island Tours \| GTH PRO/);
+  assert.match(page,/Maldives Elite Escape — Overwater Resorts, Island Stays & Booking \| GTH PRO/);
   assert.match(page,/alternates:\{canonical\}/);
   assert.match(page,/"@type":"TouristDestination"/);
   for(const path of ["src/app/maldives/route.ts","src/app/destinations/maldives/route.ts"]){
