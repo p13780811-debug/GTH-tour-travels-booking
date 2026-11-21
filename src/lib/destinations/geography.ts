@@ -57,3 +57,7 @@ export function destinationGeography(slug: string, recordedCountry?: string | nu
   const country = known ?? confirmed;
   return { country, region: country ? regions.get(country) ?? null : null };
 }
+
+/** Original editorial-only region groups; not a full global continent taxonomy. */
+export const DESTINATION_EDITORIAL_REGIONS=Object.keys(regionGroups);
+export function editorialCountriesForRegion(region:string):readonly string[]{return regionGroups[region]??[];}

@@ -11,7 +11,8 @@ import { destinationGeography } from "@/lib/destinations/geography";
 import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 import GeoCityIntro from "@/components/destination/GeoCityIntro";
-import { searchWorldwideCities } from "@/lib/router/worldCitySearch";
+import {WORLD_DESTINATION_COUNTRIES,findDestinationCountry} from "@/lib/destinations/world-country-catalog";
+import {DESTINATION_EDITORIAL_REGIONS,editorialCountriesForRegion} from "@/lib/destinations/geography";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -39,47 +40,51 @@ function pageLink(search: string, page: number, country = "", region = "", sort 
   return "/destinations" + (query ? "?" + query : "") + "#discover";
 }
 
-async function loadDestinations(): Promise<Destination[]> {
-  const base: Destination[] = curatedDestinations.map((item) => ({
-    slug: item.slug,
-    title: item.name,
-    image: item.image_url,
-    description: item.description,
-    location: "Editorial destination guide",
-    ...destinationGeography(item.slug),
-  }));
-  const all = new Map(base.map((item) => [item.slug, item]));
-  try {
-    // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
-    // Never surface inactive records or assume every DB location has licensed media.
-    for (let offset = 0; offset < 1200; offset += 200) {
-      const { data, error } = await supabase.from("destinations")
-        .select("name,slug,description,country")
-        .eq("is_active", true)
-        .order("name", { ascending: true })
-        .range(offset, offset + 199).abortSignal(AbortSignal.timeout(4_500));
-      if (error || !data) break;
-      for (const item of data) {
-      if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) || item.slug.length > 80
-        || typeof item.name !== "string" || !item.name.trim()) continue;
-      const previous = all.get(item.slug);
-      all.set(item.slug, {
-        slug: item.slug,
-        title: item.name.trim().slice(0, 120),
-        image: previous?.image || destinationImageForSlug(item.slug),
-        location: previous ? "Editorial destination guide" : "Destination directory",
-        ...destinationGeography(item.slug, item.country),
-        description: typeof item.description === "string" && item.description.trim()
-          ? item.description.trim().slice(0, 280)
-          : previous?.description || "Explore local highlights and verify current travel details with official providers.",
-      });
-      }
-      if (data.length < 200) break;
-    }
-  } catch {
-    // Curated editorial guides remain available during data-provider outages.
+type DirectoryResult={items:Destination[];total:number;available:boolean};
+const WORLD_SLUG=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** One bounded, active-only request per page, preserving existing RLS. */
+async function loadDestinations(page:number,countryCode:string,search:string,regionCodes:readonly string[],sort:"name"|"country"):Promise<DirectoryResult>{
+  const offset=(page-1)*perPage;
+  let query=supabase.from("destinations")
+    .select("name,slug,description,country,country_code",{count:"exact"})
+    .eq("is_active",true);
+  if(countryCode)query=query.eq("country_code",countryCode);
+  else if(regionCodes.length)query=query.in("country_code",[...regionCodes]);
+  if(search){
+    const escaped=search.replace(/[\\%_]/g,"\\$&");
+    query=query.ilike("name",escaped+"%");
   }
-  return [...all.values()].sort((a, b) => a.title.localeCompare(b.title));
+  const {data,error,count}=await query
+    .order(sort==="country"?"country_code":"name",{ascending:true})
+    .order("name",{ascending:true}).order("slug",{ascending:true})
+    .range(offset,offset+perPage-1).abortSignal(AbortSignal.timeout(4_500));
+  if(error||!Array.isArray(data)||typeof count!=="number")throw Error("Worldwide destination directory temporarily unavailable");
+  return {items:data.filter(row=>
+    typeof row.name==="string"&&Boolean(row.name.trim())&&typeof row.slug==="string"&&
+    row.slug.length<=140&&WORLD_SLUG.test(row.slug)
+  ).map(row=>({
+    slug:row.slug,title:row.name.trim().slice(0,120),
+    image:destinationImageForSlug(row.slug),
+    description:typeof row.description==="string"&&row.description.trim()
+      ?row.description.trim().slice(0,280)
+      :"Explore this location and confirm current travel conditions before booking.",
+    location:"Destination directory",...destinationGeography(row.slug,row.country),
+  })),total:count,available:true};
+}
+/** Original editorial guidance is an honest fallback, not fabricated global inventory. */
+function fallbackDestinations(page:number,countryCode:string,search:string,regionCodes:readonly string[],sort:"name"|"country"):DirectoryResult{
+  const all=curatedDestinations.map(item=>({
+    slug:item.slug,title:item.name,image:item.image_url,description:item.description,
+    location:"Editorial destination guide",...destinationGeography(item.slug),
+  })).filter(item=>{
+    const code=item.country?findDestinationCountry(item.country)?.code:"";
+    return (!countryCode||countryCode===code)&&
+      (!regionCodes.length||Boolean(code&&regionCodes.includes(code)))&&
+      (!search||item.title.toLocaleLowerCase("en").startsWith(search.toLocaleLowerCase("en")));
+  }).sort((a,b)=>sort==="country"?
+    (a.country??"").localeCompare(b.country??"")||a.title.localeCompare(b.title):a.title.localeCompare(b.title));
+  return {items:all.slice((page-1)*perPage,page*perPage),total:all.length,available:false};
 }
 
 
@@ -93,7 +98,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
   <label className="block text-xs font-semibold text-[var(--text)]">City, country or interest
    <input type="search" name="search" defaultValue={search} maxLength={70} placeholder="Search destinations" className={control}/>
   </label>
-  <label className="block text-xs font-semibold text-[var(--text)]">Region
+  <label className="block text-xs font-semibold text-[var(--text)]">Featured editorial region
    <select name="region" defaultValue={region} className={control}>
     <option value="">All regions</option>{regions.map(value=><option value={value} key={value}>{value}</option>)}
    </select>
@@ -117,53 +122,43 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
+  const search=(typeof params.search==="string"?params.search:"").normalize("NFKC").trim().slice(0,70);
+  const rawPage=typeof params.page==="string"?params.page:"1";
+  const requestedPage=/^[1-9]\\d{0,3}$/.test(rawPage)?Number(rawPage):1;
+  const hasCountry=typeof params.country==="string"&&params.country.trim().length>0;
+  const selectedByFilter=hasCountry?findDestinationCountry(params.country):null;
+  const typedCountry=search?findDestinationCountry(search):null;
+  const selectedCountry=selectedByFilter??(!hasCountry?typedCountry:null);
+  const country=selectedCountry?.name??"";
+  // An exact typed country searches the country, not a city prefix.
+  // Pagination retains the same meaning after it adds the country query.
+  const citySearch=selectedCountry&&typedCountry?.code===selectedCountry.code?"":search;
+  const region=typeof params.region==="string"&&DESTINATION_EDITORIAL_REGIONS.includes(params.region)
+    ?params.region:"";
+  const regionCodes=region?editorialCountriesForRegion(region)
+    .map(name=>findDestinationCountry(name)?.code).filter((code):code is string=>Boolean(code)):[];
+  const incompatible=Boolean(selectedCountry&&region&&!regionCodes.includes(selectedCountry.code));
+  const sort:"name"|"country"=params.sort==="country"?"country":"name";
+  const view=params.view==="list"?"list":"grid";
   const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
-  const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
-  const rawPage = typeof params.page === "string" ? params.page : "1";
-  const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
-  const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
-    slug:item.slug,title:item.name,image:item.image_url,description:item.description,
-    location:"Editorial destination guide",...destinationGeography(item.slug),
-  }));
-  const [mapped,allDestinations]=await Promise.all([
-    mappedPromise,
-    withDiscoveryDeadline(loadDestinations()).catch(()=>fallbackDestinations),
-  ]);
-  // User-driven bounded query extends the existing catalogue without
-  // scanning or rendering all 38,671 city rows on every request.
-  if (process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" && search.length >= 2) {
-    const matches = await searchWorldwideCities(supabase, search);
-    const present = new Set(allDestinations.map(city => city.slug));
-    for (const match of matches) {
-      if (present.has(match.slug)) continue;
-      present.add(match.slug);
-      allDestinations.push({
-        slug:match.slug, title:match.name,
-        image:destinationImageForSlug(match.slug),
-        location:"Worldwide city reference · supplier availability unverified",
-        description:"Explore local services, reviewed venues and country-level opportunities.",
-        ...destinationGeography(match.slug,match.country),
-      });
-    }
-  }
-  const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
-  const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
-  const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";
-  const region = typeof params.region === "string" && regions.includes(params.region) ? params.region : "";
-  const sort = params.sort === "country" ? "country" : "name";
-  const view = params.view === "list" ? "list" : "grid";
-  const selected = search.toLowerCase();
-  const filtered = allDestinations.filter(item => 
-    (!selected || [item.title, item.slug, item.description, item.country || "", item.region || ""].some(value => value.toLowerCase().includes(selected))) &&
-    (!country || item.country === country) &&
-    (!region || item.region === region)
-  ).sort((a, b) => sort === "country"
-    ? (a.country || "zzz").localeCompare(b.country || "zzz") || a.title.localeCompare(b.title)
-    : a.title.localeCompare(b.title));
-  const pages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const page = Math.min(requestedPage, pages);
-  const visible = filtered.slice((page - 1) * perPage, page * perPage);
-  const featuredDestinations = featured.map((slug) => allDestinations.find((item) => item.slug === slug)).filter((item): item is Destination => Boolean(item));
+  const directory=(hasCountry&&!selectedByFilter)||incompatible
+    ?{items:[] as Destination[],total:0,available:true}
+    :await withDiscoveryDeadline(loadDestinations(
+      requestedPage,selectedCountry?.code??"",citySearch,regionCodes,sort
+    )).catch(()=>fallbackDestinations(requestedPage,selectedCountry?.code??"",citySearch,regionCodes,sort));
+  const mapped=await mappedPromise;
+  const countries=WORLD_DESTINATION_COUNTRIES.map(item=>item.name);
+  const regions=DESTINATION_EDITORIAL_REGIONS;
+  const totalMatches=directory.total;
+  const pages=Math.max(1,Math.ceil(totalMatches/perPage));
+  const page=Math.min(requestedPage,pages);
+  const visible=directory.items;
+  const featuredDestinations=featured.map(slug=>curatedDestinations.find(item=>item.slug===slug))
+    .filter((item):item is (typeof curatedDestinations)[number]=>Boolean(item))
+    .map(item=>({
+      slug:item.slug,title:item.name,image:item.image_url,description:item.description,
+      location:"Editorial destination guide",...destinationGeography(item.slug),
+    }));
   const railNames = [...new Set(visible.map(item=>item.region||"Other regions"))].sort((a,b)=>a.localeCompare(b));
   const rails = railNames.map(name=>({name,items:visible.filter(item=>(item.region||"Other regions")===name)}));
   const countryParam = country || "";
@@ -199,7 +194,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
        <button type="submit" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">Search <ArrowRight size={16}/></button>
       </form>
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--text-soft)]">
-       <span className="inline-flex items-center gap-1"><MapPinned size={14}/>{allDestinations.length} catalog destinations</span>
+       <span className="inline-flex items-center gap-1"><MapPinned size={14}/>{totalMatches.toLocaleString('en')} matching destinations</span>
        <span className="inline-flex items-center gap-1"><Globe2 size={14}/>{countries.length} countries represented</span>
        <span className="inline-flex items-center gap-1"><ShieldCheck size={14}/> Source-aware travel research</span>
       </div>
@@ -207,6 +202,9 @@ export default async function DestinationsPage({ searchParams }: Props) {
      </div>
     </section>
       <TravelSectionNav />
+      {!directory.available&&<p role="status" className="mx-auto max-w-7xl px-4 py-3 text-sm text-[var(--text-soft)] sm:px-6">
+        Worldwide directory is temporarily unavailable. Showing original editorial guides only.
+      </p>}
 
     <section id="discover" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 lg:py-10">
      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -214,7 +212,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Your research, in focus</p>
        <h2 className="mt-1 text-2xl font-bold tracking-tight">Explore destinations</h2>
       </div>
-      <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--text-soft)]">{filtered.length} matches · Page {page} of {pages}</span>
+      <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--text-soft)]">{totalMatches.toLocaleString('en')} matches · Page {page} of {pages}</span>
      </div>
      <nav aria-label="Explore destination regions" className="mb-5 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-2">
       {[{label:"All regions",value:""},...regions.map(value=>({label:value,value}))].map(item=>
