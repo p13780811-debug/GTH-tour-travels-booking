@@ -55,17 +55,17 @@ test("canonical Maldives route and both legacy Google sitelinks remain, preservi
   }
 });
 
-test("simple hero has one wide Maldives image and ORIGINAL booking portal, no new form",()=>{
+test("Maldives hero has one wide photo, a full-page white-label link and NO embedded scroll box",()=>{
   const page=source("src/app/maldives-elite-escape/page.tsx");
   const hero=source("src/components/maldives/MaldivesBookingHero.tsx");
   assert.match(page,/<MaldivesBookingHero photo=\{photo\}\/>/);
-  assert.match(hero,/src=\{HOTEL_BOOKING_ORIGIN\}/);
-  assert.match(hero,/Hotels and Flights tabs/);
+  assert.doesNotMatch(hero,/<iframe\b|<object\b|<embed\b/i);
   assert.match(hero,/href=\{HOTEL_BOOKING_ORIGIN\}/);
-  assert.match(hero,/Open Hotels &amp; Flights booking/);
+  assert.match(hero,/target="_blank"/);
+  assert.match(hero,/Open Hotels &amp; Flights/);
   assert.match(hero,/src=\{photo\}/);
   assert.match(hero,/sm:h-\[350px\] lg:h-\[440px\]/);
-  assert.match(hero,/min-h-11/);
+  assert.match(hero,/min-h-12/);
   assert.doesNotMatch(page,/<MaldivesHero|MaldivesExperiences|MaldivesConnectivity|maldives-essentials/);
   assert.doesNotMatch(hero,/<form|input type=|formAction|SearchBar\.create/);
   assert.doesNotMatch(hero,/style=\{|NEXT_PUBLIC_.*KEY|SERVICE_ROLE_KEY/);
@@ -86,8 +86,9 @@ test("Pexels API uses existing server-only key, Maldives fallback and no duplica
   assert.doesNotMatch(images,/NEXT_PUBLIC_PEXELS|NEXT_PUBLIC_.*API_KEY/);
   assert.doesNotMatch(page+hero,/images\.unsplash\.com|Unsplash|UnsplashHero/);
   assert.doesNotMatch(hero,/searchTop|className=\{styles\.tabs\}|Original GTH PRO booking portal, including/);
-  assert.match(hero,/src=\{HOTEL_BOOKING_ORIGIN\}/);
-  assert.match(hero,/Open Hotels &amp; Flights booking/);
+  assert.doesNotMatch(hero,/<iframe\b/i);
+  assert.match(hero,/href=\{HOTEL_BOOKING_ORIGIN\}/);
+  assert.match(hero,/Open Hotels &amp; Flights/);
 });
 
 test("all 12 hotel cards are real verified resorts linked directly without removed search form",()=>{

@@ -2,9 +2,9 @@ import Image from "next/image";
 import {ArrowUpRight} from "lucide-react";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 
-/** Reuse the original provider-owned Hotels + Flights search portal.
- * Do not add duplicate GTH tabs or invent another search form.
- * Cross-origin embedding requires supplier frame permission.
+/** Use the existing GTH booking site as a full-page handoff.
+ * Never embed it in a nested mobile scroll container.
+ * Do not recreate or alter its supplier-operated booking widgets.
  */
 export default function MaldivesBookingHero({photo}:{photo:string}){
   return <section aria-labelledby="maldives-elite-title"
@@ -21,20 +21,13 @@ export default function MaldivesBookingHero({photo}:{photo:string}){
       </div>
     </div>
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-      <p className="max-w-xl text-sm text-[var(--text-soft)]">
-        Plan your stay or flight in the GTH booking portal. If the embedded portal is restricted,
-        the direct booking link works without an extra GTH search form.
+      <p className="max-w-xl text-sm leading-6 text-[var(--text-soft)]">
+        Hotels &amp; Flights — book on the full GTH PRO booking portal, without a second search form.
       </p>
       <a href={HOTEL_BOOKING_ORIGIN} target="_blank" rel="noopener noreferrer sponsored"
-        className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
-        Open Hotels &amp; Flights booking <ArrowUpRight size={16} aria-hidden="true"/>
+        className="gth-btn-gold inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold sm:w-auto">
+        Open Hotels &amp; Flights <ArrowUpRight size={16} aria-hidden="true"/>
       </a>
-    </div>
-    <div className="mt-3 min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-      <iframe src={HOTEL_BOOKING_ORIGIN}
-        title="GTH PRO original booking portal — Hotels and Flights tabs"
-        loading="lazy" referrerPolicy="strict-origin-when-cross-origin"
-        className="block h-[485px] w-full min-w-0 border-0 sm:h-[590px] lg:h-[630px]"/>
     </div>
   </section>;
 }

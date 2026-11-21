@@ -44,17 +44,18 @@ try {
     const response=await page.goto(origin+"/maldives-elite-escape",{waitUntil:"domcontentloaded",timeout:45000});
     assert.equal(response?.status(),200);
     await page.getByRole("heading",{name:"Maldives Elite Escape"}).waitFor();
-    const frame=page.locator('iframe[title="GTH PRO original booking portal — Hotels and Flights tabs"]');
     const heroPhoto=page.locator('img[alt^="Maldives lagoon with aerial overwater villas"]');
     assert.equal(await heroPhoto.count(),1,"Missing Maldives Pexels hero image");
     assert.match(await heroPhoto.getAttribute("src")||"",/pexels/i,
       "Hero must render Pexels rather than Unsplash");
     assert.equal(await page.getByText("Original GTH PRO booking portal, including its own hotel and flight tabs.").count(),0);
 
-    assert.equal(await frame.count(),1,"Original Hotels + Flights portal missing");
-    const direct=page.getByRole("link",{name:/Open Hotels & Flights booking/i});
+    assert.equal(await page.locator("iframe").count(),0,
+      "Embedded booking portal creates nested mobile scrolling and exposes its footer");
+    const direct=page.getByRole("link",{name:/Open Hotels & Flights/i});
     assert.equal(new URL(await direct.getAttribute("href")).origin,
       "https://hotel.gthproglobal.com");
+    assert.equal(await direct.getAttribute("target"),"_blank");
     assert.equal(await page.locator('form#maldives-elite-stay-search').count(),0,
       "Old nonworking custom form must not exist");
     assert.equal(await page.locator("[data-maldives-hotel-id]").count(),12,
@@ -74,22 +75,31 @@ try {
     assert.equal(await first.getAttribute("target"),"_blank");
     const {layout}=await page.evaluate(()=>{
       const hero=document.querySelector('section[aria-labelledby="maldives-elite-title"]');
-      const iframe=document.querySelector('iframe[title^="GTH PRO original booking portal"]');
+      const booking=document.querySelector('a[href="https://hotel.gthproglobal.com/"]');
       const rect=e=>{const r=e.getBoundingClientRect();return{
         left:r.left,right:r.right,width:r.width,top:r.top,bottom:r.bottom,
       }};
       return {layout:{
         width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
-        hero:hero?rect(hero):null,iframe:iframe?rect(iframe):null,
+        hero:hero?rect(hero):null,booking:booking?rect(booking):null,
       }};
     });
     assert.ok(layout.scrollWidth<=width+1,
       "Unexpected horizontal overflow at "+width+": "+layout.scrollWidth);
     assert.ok(layout.hero?.left>=-1 && layout.hero?.right<=width+1);
-    assert.ok(layout.iframe?.left>=-1 && layout.iframe?.right<=width+1);
+    assert.ok(layout.booking?.left>=-1 && layout.booking?.right<=width+1);
     assert.equal(errors.length,0,errors.join("; ").slice(0,400));
     await page.screenshot({path:root+"/maldives-"+width+"x"+height+".png",
       fullPage:true,animations:"disabled"});
+    const [bookingPopup]=await Promise.all([
+      page.waitForEvent("popup",{timeout:10000}),
+      direct.click(),
+    ]);
+    await bookingPopup.waitForURL(url=>url.hostname==="hotel.gthproglobal.com",
+      {waitUntil:"domcontentloaded",timeout:15000});
+    assert.equal(new URL(bookingPopup.url()).pathname,"/",
+      "Full booking page, not embedded footer");
+    await bookingPopup.close();
     const [popup]=await Promise.all([
       page.waitForEvent("popup",{timeout:10000}),
       first.click(),
@@ -109,7 +119,7 @@ try {
     assert.equal(await countrySelect.inputValue(),"Japan",
       "Country selection was dropped on destination arrival");
     report.push({viewport:width+"x"+height,status:"PASS",overflow:layout.scrollWidth,
-      directHotelPopup:"/hotels/lp39ce1",supplierPortal:"stubbed"});
+      directHotelPopup:"/hotels/lp39ce1",fullPortalPopup:"/",supplierPortal:"stubbed"});
     await page.close();
   }
   await writeFile(root+"/results.json",JSON.stringify({report,externalSupplierVerified:false},null,2));
