@@ -16,11 +16,11 @@ export default function DestinationCard({destination}: {destination:DestinationC
  return <><Link scroll={true} href={"/destinations/"+destination.slug}
    onClick={event=>{if(isNormalDestinationNavigation(event)){window.scrollTo(0,0);setOpening(true);}}}
    className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
-   <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
+   <div className="relative h-28 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
     <Image src={destination.image} alt={destination.title+" destination"}
       fill loading="lazy" sizes="240px" className="object-cover transition-transform duration-500 group-hover:scale-105"/>
    </div>
-   <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
+   <div className="flex min-h-0 flex-1 flex-col gap-1.5 p-3">
     <h3 className="line-clamp-1 text-base font-semibold">{destination.title}</h3>
     <p className="line-clamp-1 flex items-center gap-1 text-xs text-[var(--text-soft)]">
       <MapPin size={14} aria-hidden="true"/>{destination.country||"Country information unavailable"}

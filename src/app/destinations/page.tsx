@@ -157,6 +157,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const pages=Math.max(1,Math.ceil(totalMatches/perPage));
   const page=Math.min(requestedPage,pages);
   const visible=directory.items;
+  const showBrowse=!search&&!hasCountry&&!region&&page===1;
   const featuredDestinations=featured.map(slug=>curatedDestinations.find(item=>item.slug===slug))
     .filter((item):item is (typeof curatedDestinations)[number]=>Boolean(item))
     .map(item=>({
@@ -260,14 +261,14 @@ export default async function DestinationsPage({ searchParams }: Props) {
      <p className="mt-5 text-xs leading-5 text-[var(--text-soft)]">Shortlisted places and personal notes stay on this device. These locations are editorial references; data and images provide travel inspiration, not booking or regulatory verification.</p>
     </section>
 
-    {featuredDestinations.length>0&&<section aria-labelledby="featured-destinations-heading" className="mx-auto max-w-7xl min-w-0 border-t border-[var(--border)] px-4 pb-4 pt-8 sm:px-6">
+    {showBrowse&&featuredDestinations.length>0&&<section aria-labelledby="featured-destinations-heading" className="mx-auto max-w-7xl min-w-0 border-t border-[var(--border)] px-4 pb-4 pt-8 sm:px-6">
      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="featured-destinations-heading" className="text-lg font-bold">Featured destination guides</h2><span className="text-xs text-[var(--text-soft)]">Scroll horizontally <ArrowRight size={14} className="inline"/></span></div>
      <div role="region" aria-label="Featured destinations horizontal rail" tabIndex={0} className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
       {featuredDestinations.map(destination=><DestinationCard key={destination.slug} destination={destination}/>)}
      </div>
     </section>}
 
-    {rails.length>0&&<section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-label="Browse destinations by region">
+    {showBrowse&&rails.length>0&&<section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-label="Browse destinations by region">
      <h2 className="mb-4 text-xl font-bold">Browse by region</h2>
      {rails.map(rail=><section key={rail.name} aria-label={rail.name+" destinations"} className="mb-7">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h3 className="text-base font-semibold">{rail.name}</h3><span className="text-xs text-[var(--text-soft)]">{rail.items.length} on this page · Scroll horizontally</span></div>
@@ -276,7 +277,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </div>
      </section>)}
     </section>}
-    <MappedCityDiscovery cities={mapped?.items??[]} title="Cities recently mapped by contributors"/>
+    {showBrowse&&<MappedCityDiscovery cities={mapped?.items??[]} title="Cities recently mapped by contributors"/>}
 
     <section className="border-t border-[var(--border)] bg-[var(--card)]">
      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-4 py-8 sm:px-6">

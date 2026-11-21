@@ -12,6 +12,9 @@ test("three GET search forms navigate visibly to destination results, not the pr
  assert.match(geo,/action="\/destinations#discover" role="search"/);
  assert.match(directory,/<section id="discover"/);
  assert.match(directory,/showMappedCities=!search&&!hasCountry&&!region&&requestedPage===1/);
+ assert.match(directory,/showBrowse=!search&&!hasCountry&&!region&&page===1/);
+ assert.match(directory,/showBrowse&&rails\.length>0/);
+ assert.match(directory,/showBrowse&&<MappedCityDiscovery/);
 });
 test("Goa guide scroll restoration is local to destination detail route",()=>{
  assert.match(detail,/<DestinationPageScroll\/>/);
