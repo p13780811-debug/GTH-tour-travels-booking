@@ -1,5 +1,7 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
+import {cache} from "react";
+import DestinationPageScroll from "@/components/destination/DestinationPageScroll";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -34,7 +36,7 @@ type Props = {
 };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
-async function getDestination(slug: string): Promise<DestinationDetail | null> {
+const getDestination=cache(async function getDestination(slug: string): Promise<DestinationDetail | null> {
   // Leave legacy routing unchanged when the unified feature is disabled.
   const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
@@ -75,7 +77,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
   } catch {
     return editorial;
   }
-}
+});
 
 export function generateStaticParams() {
   return destinations.map(({ slug }) => ({ slug }));
@@ -101,26 +103,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DestinationPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const destination = await getDestination(slug);
-  if (!destination) notFound();
+  // Preserve verified identity and provider handoffs; overlap independent
+  // read-only requests rather than waiting for each network deadline in turn.
+  const destinationTask=getDestination(slug);
+  const enabled=unifiedCityRouterEnabled();
+  const cityTask:Promise<CityContext|null>=(async()=>{
+    if(!enabled||!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)return null;
+    try{
+      const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {auth:{persistSession:false,autoRefreshToken:false}});
+      const matched=await resolveCityContext(db,{ slug });
+      return matched.status==="found"?matched.city:null;
+    }catch{return null;}
+  })();
+  const tourTask=getTours({ city: slug });
+  const [destination,city,availableTourRows]=await Promise.all([destinationTask,cityTask,tourTask]);
+  if(!destination)notFound();
 
-  // Separate read-only identity proof. No city is inferred from SEO text,
-  // country labels, stadium flightCity or an OSM hotel ID.
-  const enabled = unifiedCityRouterEnabled();
-  let city: CityContext | null = null;
-  if (enabled && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    try {
-      const db = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        {auth:{persistSession:false,autoRefreshToken:false}},
-      );
-      const matched = await resolveCityContext(db, { slug });
-      if (matched.status === "found") city = matched.city;
-    } catch {
-      // A provider outage retains the existing stable editorial destination.
-    }
-  }
   const selectedParams = await searchParams;
   const selected = selectedParams?.lang;
   const stayParams:Record<string,unknown>={};
@@ -143,7 +142,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
   const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
-  const availableTours = (await getTours({ city: slug })).slice(0, 6);
+  const availableTours = availableTourRows.slice(0, 6);
   // Preserve the original editorial/tour lookup exactly. Qualified
   // worldwide slugs can optionally fetch a second, read-only city-name list.
   const hubTours = city && city.name.toLowerCase().replace(/\s+/g, "-") !== slug
@@ -156,6 +155,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <DestinationPageScroll/>
       <JsonLd data={breadcrumbData}/>
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
         <Image src={destination.image_url} alt={destination.name} fill priority sizes="100vw"
@@ -178,7 +178,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
               Booking, current prices, local conditions and room availability require independent supplier confirmation.
             </p>
             <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-3">
-              <Link href="#destination-ecosystem" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
+              <Link href={city?"#city-spine-hub":"#destination-ecosystem"} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
               <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Book stays</Link>
               <Link href={toursHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
               <Link href={flightsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
