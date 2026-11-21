@@ -27,6 +27,7 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{
     lang?: string | string[];
+    country?: string | string[];
     checkin?: string | string[]; checkout?: string | string[];
     adults?: string | string[]; children?: string | string[];
     currency?: string | string[];
@@ -34,13 +35,18 @@ type Props = {
 };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
 
-async function getDestination(slug: string): Promise<DestinationDetail | null> {
+function validatedCountry(value:unknown):string {
+  return typeof value === "string" && value.length <= 80 &&
+    /^[\p{L}][\p{L} .'-]{1,79}$/u.test(value.trim()) ? value.trim() : "";
+}
+
+async function getDestination(slug: string, countryFilter = ""): Promise<DestinationDetail | null> {
   // Leave legacy routing unchanged when the unified feature is disabled.
   const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
   if (!legacySlug && !(unifiedCityRouterEnabled() && worldSlug)) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
-  const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
+  const editorial: DestinationDetail | null = editorialBase && (!countryFilter || destinationGeography(slug).country === countryFilter) ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -48,10 +54,12 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
 
   try {
     const client = createClient(url, key);
-    const { data, error } = await client.from("destinations")
+    const lookup = client.from("destinations")
       .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
       .eq("slug", slug)
-      .eq("is_active", true)
+      .eq("is_active", true);
+    // A city slug may exist in multiple countries. Never choose an arbitrary match.
+    const { data, error } = await (countryFilter ? lookup.eq("country", countryFilter) : lookup)
       .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
 
     if (error || !data) return editorial;
@@ -81,16 +89,17 @@ export function generateStaticParams() {
   return destinations.map(({ slug }) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const place = await getDestination(slug);
+  const countryFilter = validatedCountry((await searchParams)?.country);
+  const place = await getDestination(slug,countryFilter);
   if (!place) return { title: "Destination not found | GTH PRO", robots: { index: false } };
   const index=isPublicLaunch()&&place.seoApproved;
   return {
     title: `Explore ${place.name} | GTH PRO Destinations`,
     description: place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`,
     robots:{index,follow:index},
-    alternates: { canonical: `/destinations/${slug}` },
+    alternates: { canonical: `/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}` },
     openGraph: {
       title: `Explore ${place.name} | GTH PRO Travel`,
       images: [{ url: place.image_url, alt: place.name }],
@@ -101,7 +110,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DestinationPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const destination = await getDestination(slug);
+  const selectedParams = await searchParams;
+  const countryFilter = validatedCountry(selectedParams?.country);
+  const destination = await getDestination(slug,countryFilter);
   if (!destination) notFound();
 
   // Separate read-only identity proof. No city is inferred from SEO text,
@@ -116,12 +127,11 @@ export default async function DestinationPage({ params, searchParams }: Props) {
         {auth:{persistSession:false,autoRefreshToken:false}},
       );
       const matched = await resolveCityContext(db, { slug });
-      if (matched.status === "found") city = matched.city;
+      if (matched.status === "found" && (!countryFilter || matched.city.country === countryFilter)) city = matched.city;
     } catch {
       // A provider outage retains the existing stable editorial destination.
     }
   }
-  const selectedParams = await searchParams;
   const selected = selectedParams?.lang;
   const stayParams:Record<string,unknown>={};
   for (const field of ["checkin","checkout","adults","children","currency"] as const) {
@@ -136,7 +146,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Destinations", item: siteUrl("/destinations") },
-      { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}`) },
+      { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}`) },
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
