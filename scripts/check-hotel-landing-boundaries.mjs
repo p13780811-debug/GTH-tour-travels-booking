@@ -208,6 +208,35 @@ for (const path of [
 // error handling and QA, but never the working supplier SDK, 12Go or theme.
 const hotelRecoveryBranch=process.env.GITHUB_HEAD_REF==="fix/hotel-goa-dubai-booking-and-directory-20261119";
 const directHotelBranch=process.env.GITHUB_HEAD_REF==="fix/travel-hotels-nuitee-direct-20261119";
+const worldwideHotelBranch=process.env.GITHUB_HEAD_REF==="fix/hotels-worldwide-destination-sync-20261120";
+if(worldwideHotelBranch){
+ const reviewed=new Set([
+  "src/lib/travel/klook-hotel-search.ts","src/components/hotel/HotelBookingExperience.tsx",
+  "src/app/hotels/page.tsx","src/components/travel/ConnectedTravelWorkspace.tsx",
+  "src/components/travel/ConnectedTravelWorkspace.module.css",
+  "src/lib/destinations/ecosystem.ts","src/components/destination/DestinationExplorerResults.tsx",
+  "src/components/travel/MappedCityDiscovery.tsx","src/components/travel/GuideDiscoveryRails.tsx",
+  "src/components/travel/GuidePartnerHandoffs.tsx",
+  "tests/hotel-booking-fallback-cities.test.mjs","tests/destination-worldwide-ecosystem.test.mjs",
+  "tests/hotel-destination-master.test.mjs","tests/destination-explorer-contract.test.mjs",
+  "tests/travel-guide-contract.test.mjs","tests/hotel-booking-intent-regression.test.mjs",
+  "tests/destination-travel-intent.test.mjs",
+   "tests/consolidated-pr204-206-207-release.test.mjs",
+   "tests/hotel-integrated-handoff.test.mjs",
+   "tests/pr204-handoff-integrity.test.mjs",
+   "tests/hotel-marketplace.test.mjs",
+   "tests/hotels-worldwide-destination-sync.test.mjs",
+  "scripts/check-connected-travel-boundaries.mjs","scripts/check-hotel-landing-boundaries.mjs",
+  "vercel.json"
+ ]);
+ for(const path of reviewed)allowed.add(path);
+ for(const path of [
+  "src/app/globals.css","src/lib/travel/hotel-routing.ts","src/lib/travel/hotel-whitelabel.ts",
+  "src/lib/travel/partner-search.ts","src/lib/travel/connected-trip.ts",
+  "src/app/flights/page.tsx","src/components/mobile/MobileSupplierShowcase.tsx"
+ ])if(paths.includes(path))throw Error("Unreviewed modification of working supplier or global CSS: "+path);
+}
+
 if(directHotelBranch){
  for(const path of [
   "src/components/travel/ConnectedTravelWorkspace.tsx",
@@ -252,7 +281,7 @@ if(hotelRecoveryBranch){
 if (paths.includes("vercel.json")) {
  const current=JSON.parse(readFileSync("vercel.json","utf8"));
  const original=JSON.parse(git("show",diffBase+":vercel.json"));
- const previewBranch=hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
+ const previewBranch=worldwideHotelBranch?"fix/hotels-worldwide-destination-sync-20261120":hotelRecoveryBranch?"fix/hotel-goa-dubai-booking-and-directory-20261119":"feat/hotel-date-free-discovery-20261118";
  if(current.git?.deploymentEnabled?.[previewBranch]!==false)
    throw Error("Hotel storefront draft branch must not auto-deploy on Vercel");
  delete current.git.deploymentEnabled[previewBranch];

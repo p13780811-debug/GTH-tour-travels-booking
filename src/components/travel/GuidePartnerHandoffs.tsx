@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {ArrowUpRight,CarFront,Compass,Hotel,Plane,ShieldCheck,Ticket,Wifi} from "lucide-react";
 import {findFlightPartner} from "@/lib/flights/partners";
+import {destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 
 /**
  * Booking-step handoffs for editorial travel guides. These are publisher
@@ -29,7 +30,7 @@ function partnerTarget(slug:string,host:string):string|null{
 }
 
 export default function GuidePartnerHandoffs({city}:{city:string|null}){
- const hotelHref=city?"/hotels?view=booking&city="+encodeURIComponent(city):"/hotels";
+ const hotelHref=city?(destinationHotelHref(city)||"/hotels"):"/hotels";
  const offers=featured.flatMap(item=>{
   const href=partnerTarget(item.slug,item.host);
   return href?[{...item,href}]:[];
