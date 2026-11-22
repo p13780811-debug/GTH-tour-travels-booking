@@ -45,7 +45,7 @@ export default async function GeoCityIntro({language}: {language?: string}) {
           ? "Your region was detected, but an exact city match could not be verified. Select a city manually."
           : "Choose a city to explore travel, stadiums, property research and country-level tenders."}
       </p>
-      <form method="get" action="/destinations" role="search"
+      <form method="get" action="/destinations/search" role="search"
         className="mt-4 flex flex-wrap items-end gap-3">
         <label className="min-w-[180px] flex-1 text-xs text-[var(--text-soft)]">
           City or country
