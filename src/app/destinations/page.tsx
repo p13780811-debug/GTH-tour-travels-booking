@@ -27,6 +27,10 @@ type Props = { searchParams: Promise<{ search?: string | string[]; page?: string
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
 
+/** Identify duplicate worldwide slugs by territory, not the slug alone. */
+const cityKey = (item:Pick<Destination,"slug"|"country">):string =>
+  item.slug+"::"+(item.country||"").normalize("NFKC").toLocaleLowerCase();
+
 function pageLink(search: string, page: number, country = "", region = "", sort = "name", view = "grid") {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
@@ -48,9 +52,6 @@ async function loadDestinations(countryFilter = ""): Promise<Destination[]> {
     location: "Editorial destination guide",
     ...destinationGeography(item.slug),
   }));
-  // Country + slug is the directory identity; one slug can exist worldwide.
-  const cityKey = (item:Pick<Destination,"slug"|"country">) =>
-    item.slug+"::"+(item.country||"").normalize("NFKC").toLocaleLowerCase();
   const all = new Map(base.map((item) => [cityKey(item), item]));
   try {
     // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
