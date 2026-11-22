@@ -15,7 +15,8 @@ test("flagship remains the approved cinematic home and brand has full crawler-re
  assert.match(flagship,/className=\{styles\.pillars\}/);
  assert.match(flagship,/className=\{styles\.cityFooter\}/);
  assert.match(flagship,/<h1 className=\{styles\.brand\} id="flagship-heading" aria-label="GTH PRO">/);
- assert.match(flagship,/<span className=\{styles\.brandGold\}>PR<\/span><BrandGlobe \/><span className="sr-only">O<\/span>/);
+ assert.ok(flagship.includes('brandGold}>PRO</span><BrandGlobe />'));
+ assert.doesNotMatch(flagship,/<span className="sr-only">O<\/span>/);
  assert.match(flagship,/import HomeCapabilityProof from "\.\/HomeCapabilityProof"/);
  assert.match(flagship,/<HomeCapabilityProof \/>/);
  assert.ok(flagship.indexOf("<HomeCapabilityProof />")>flagship.indexOf('className={styles.pillars}'));
