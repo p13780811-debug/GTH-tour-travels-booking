@@ -13,8 +13,8 @@ test("Sitemap index is launch-gated and discovers every approved pillar in pagin
  assert.match(index,/<sitemapindex/);
  assert.match(shards,/<urlset/);
  assert.match(index,/seoShardCounts/);
- assert.match(index,/attractions\\/sitemap\\.xml/);
- assert.match(helper,/Promise\\.allSettled\\(SEO_KINDS\\.map/);
+ assert.ok(index.includes('/attractions/sitemap.xml'));
+ assert.ok(helper.includes("Promise.allSettled(SEO_KINDS.map"));
  assert.match(shards,/knownSeoKind/);
  assert.match(shards,/if\(!urls\.length\)/);
  assert.match(shards,/SEO sitemap|Sitemap unavailable/);
