@@ -44,11 +44,14 @@ test("one Google-compliant identity graph exists in root HEAD and no duplicate a
  const organization=graph["@graph"].find(v=>v["@type"]==="Organization");
  const website=graph["@graph"].find(v=>v["@type"]==="WebSite");
  assert.ok(organization && website);
- assert.equal(organization.name,"GTH PRO");
+ assert.equal(organization.name,"GTH PRO Global");
+ assert.deepEqual(Array.from(organization.alternateName),["GTH PRO","Global Technical Hub"]);
  assert.equal(organization.url,"https://www.gthproglobal.com/");
  assert.equal(website.url,organization.url);
  assert.equal(website.publisher["@id"],organization["@id"]);
  assert.equal(website.name,organization.name);
+ assert.deepEqual(Array.from(website.alternateName),["GTH PRO","Global Technical Hub"]);
+ assert.match(read("src/app/page.tsx"),/title: "GTH PRO Global \\|/);
  assert.equal(organization.email,"official@gthproglobal.com");
  for(const value of ["real estate","travel technology","tender"])
   assert.match(organization.description.toLowerCase(),new RegExp(value));
