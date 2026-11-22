@@ -9,6 +9,7 @@ import RelatedCarousel from "@/components/RelatedCarousel";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteUrl,isPublicLaunch } from "@/lib/seo/site";
 import {isIndexableTour} from "@/lib/seo/large-sitemaps";
+import {tourDiscoverySchema} from "@/lib/seo/vertical-structured-data";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -111,6 +112,7 @@ export default async function TourDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData} />
+      {isPublicLaunch()&&isIndexableTour(tour)&&<JsonLd data={tourDiscoverySchema(tour,siteUrl(`/tours/${encodeURIComponent(slug)}`))}/>}
       <section data-travel-hero="true" className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <img src={imageUrl(tour.image_url)} alt="" className="h-full w-full object-cover opacity-40" />
