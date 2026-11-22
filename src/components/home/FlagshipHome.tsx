@@ -83,7 +83,7 @@ const capabilities = [
 
 function BrandGlobe() {
   return (
-    <svg className={styles.brandGlobe} viewBox="0 0 180 180" role="img" aria-label="Golden globe with aircraft">
+    <svg className={styles.brandGlobe} viewBox="0 0 180 180" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="flagship-logo-gold" x1="0" y1="0" x2=".8" y2="1">
           <stop offset="0" stopColor="#fff4ad" /><stop offset=".45" stopColor="#ffe074" /><stop offset="1" stopColor="#e89c0d" />
@@ -139,7 +139,7 @@ export default function FlagshipHome() {
         <div className={styles.heroCenter}>
           <h1 className={styles.brand} id="flagship-heading" aria-label="GTH PRO">
             <span className={styles.brandSilver}>GTH</span>
-            <span className={styles.brandPro}><span className={styles.brandGold}>PR</span><BrandGlobe /><span className="sr-only">O</span></span>
+            <span className={styles.brandPro}><span className={styles.brandGold}>PRO</span><BrandGlobe /></span>
           </h1>
           <p className={styles.ecosystemTitle}>Global Intelligence Ecosystem</p>
           <form action="/search" method="get" role="search" aria-label="GTH PRO Master Search" className={styles.masterSearch}>
