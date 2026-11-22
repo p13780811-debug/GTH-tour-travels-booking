@@ -1,5 +1,6 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, SlidersHorizontal, MapPinned, BadgeCheck } from "lucide-react";
@@ -116,7 +117,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
   </label>
   <label className="block text-xs font-semibold text-[var(--text)]">Sort results
    <select name="sort" defaultValue={sort} className={control}>
-    <option value="name">Destination name A–Z</option><option value="country">Country A–Z</option>
+    <option value="name">Featured destinations, then A–Z</option><option value="country">Country A–Z</option>
    </select>
   </label>
   <div className="flex flex-wrap items-center gap-2">
@@ -132,6 +133,13 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   // Strict country context is preserved even when the first global catalog batch lacks it.
   const requestedCountry = validatedCountry(params.country);
+  // Text searches have their own page. Do not hide the result under the full
+  // directory, where an unchanged hero makes navigation look broken on mobile.
+  if (search) {
+    const query = new URLSearchParams({search});
+    if (requestedCountry) query.set("country", requestedCountry);
+    redirect("/destinations/search?" + query.toString());
+  }
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
   const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
@@ -168,13 +176,21 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const sort = params.sort === "country" ? "country" : "name";
   const view = params.view === "list" ? "list" : "grid";
   const selected = search.toLowerCase();
+  // Curated, recognizable destinations lead the unfiltered directory.
+  // The full published catalogue remains searchable without deleting records.
+  const curatedRank = new Map(curatedDestinations.map((item, index) => [
+    cityKey({slug:item.slug,country:destinationGeography(item.slug).country}),index,
+  ]));
   const filtered = allDestinations.filter(item => 
     (!selected || [item.title, item.slug, item.description, item.country || "", item.region || ""].some(value => value.toLowerCase().includes(selected))) &&
     (!country || item.country === country) &&
     (!region || item.region === region)
   ).sort((a, b) => sort === "country"
     ? (a.country || "zzz").localeCompare(b.country || "zzz") || a.title.localeCompare(b.title)
-    : a.title.localeCompare(b.title));
+    : (!search && !country && !region
+        ? (curatedRank.get(cityKey(a)) ?? Number.MAX_SAFE_INTEGER) -
+          (curatedRank.get(cityKey(b)) ?? Number.MAX_SAFE_INTEGER) : 0) ||
+      a.title.localeCompare(b.title));
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const page = Math.min(requestedPage, pages);
   const visible = filtered.slice((page - 1) * perPage, page * perPage);
@@ -202,7 +218,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </p>
       <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <form role="search" action="/destinations" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
+      <form role="search" action="/destinations/search" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}
        {sort!=="name"&&<input type="hidden" name="sort" value={sort}/>}
