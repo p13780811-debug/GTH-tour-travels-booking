@@ -68,6 +68,8 @@ test("destination hero and directory link to scoped pages without inventing book
  assert.match(detail,/href=\{hotelsHref\}/);
  assert.match(detail,/href=\{toursHref\}/);
  assert.match(detail,/href=\{flightsHref\}/);
+ assert.match(detail,/href=\{mappedAttractions\.href\}/);
+ assert.match(detail,/city&&mappedAttractions/);
  assert.match(cards,/destinationFlightHref\(item\.title\)/);
  assert.match(cards,/encodeURIComponent\(item\.title\)/);
  assert.match(flight,/destinationCity/);
