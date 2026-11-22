@@ -81,7 +81,7 @@ def run(*, client, generator=generate_city_batch, writer=save_seo_draft,
     for _ in range(max_reads):
         if write and stats["ai_calls"] >= max_calls:
             break
-        rows = read_destination_page(client, cursor=last_safe_cursor, limit=page_size)
+        rows = read_destination_page(client, cursor=last_safe_cursor, limit=page_size, pending_only=True)
         stats["db_reads"] += 1
         if not rows:
             break
