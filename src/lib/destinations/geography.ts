@@ -54,6 +54,7 @@ export function destinationGeography(slug: string, recordedCountry?: string | nu
   const known = slugs.get(slug);
   const confirmed = typeof recordedCountry === "string" && /^[\p{L}][\p{L} .'-]{1,79}$/u.test(recordedCountry.trim())
     ? recordedCountry.trim() : null;
-  const country = known ?? confirmed;
+  // Authoritative DB country always wins; editorial mappings are a fallback only.
+  const country = confirmed ?? known;
   return { country, region: country ? regions.get(country) ?? null : null };
 }
