@@ -75,7 +75,10 @@ try {
     assert.equal(await first.getAttribute("target"),"_blank");
     const {layout}=await page.evaluate(()=>{
       const hero=document.querySelector('section[aria-labelledby="maldives-elite-title"]');
-      const booking=document.querySelector('a[href="https://hotel.gthproglobal.com/"]');
+      const booking=[...document.querySelectorAll("a[href]")].find(link=>{
+        try { return new URL(link.getAttribute("href")||"").origin==="https://hotel.gthproglobal.com" &&
+          link.textContent?.includes("Open Hotels"); } catch { return false; }
+      });
       const rect=e=>{const r=e.getBoundingClientRect();return{
         left:r.left,right:r.right,width:r.width,top:r.top,bottom:r.bottom,
       }};
