@@ -30,7 +30,7 @@ export default async function DestinationSupplierPicks({city,country,countryCode
     validIdentity?getSupplierCatalog({city,currency:"USD"},"/activities",country!):Promise.resolve({items:[]}),
     validIdentity?getSupplierAttractions(city,country!):Promise.resolve([]),
     validIdentity&&code?getFreeHotelProfiles(code,city,1):Promise.resolve({items:[]}),
-  ]);
+  ] as const);
   const tours=tourResult.status==="fulfilled"?tourResult.value.items.slice(0,3):[];
   const activities=activityResult.status==="fulfilled"?activityResult.value.items.slice(0,3):[];
   const attractions=attractionResult.status==="fulfilled"?attractionResult.value:[];
