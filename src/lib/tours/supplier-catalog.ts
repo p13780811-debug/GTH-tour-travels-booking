@@ -105,7 +105,7 @@ export async function getSupplierAttractions(cityName:string,countryName:string)
    const row=object(value),id=row.id;
    const name=typeof row.name==="string"?row.name.trim().slice(0,160):"";
    if(!supplierId(id)||seen.has(id)||!name||/[^\p{L}\p{M}\p{N} .,()&'’:-]/u.test(name))continue;
-   if(typeof row.itemsCount==="number"&&row.itemsCount<=0)continue;
+   if(typeof row.itemsCount!=="number"||!Number.isSafeInteger(row.itemsCount)||row.itemsCount<=0)continue;
    const statedCity=object(row.city);
    if(statedCity.id!==undefined&&statedCity.id!==city.id)continue;
    seen.add(id);
