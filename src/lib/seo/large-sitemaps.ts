@@ -84,12 +84,19 @@ export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:
  // Counting every approved record can exceed a normal row-read deadline.
  // Keep counts bounded separately; paginated row reads retain their 5-second limit.
  const signal=AbortSignal.timeout(12_000);
- const output=await Promise.all(SEO_KINDS.map(async kind=>{
+ const outcomes=await Promise.allSettled(SEO_KINDS.map(async kind=>{
   const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"}).abortSignal(signal);
   if(error)throw new Error("SEO count unavailable: "+kind);
   const total=Math.max(0,count||0);
   return {kind,count:total,pages:Math.min(SEO_MAX_PAGES,Math.ceil(total/SEO_PAGE_SIZE))};
  }));
+ // One unavailable source must not prevent crawlers discovering the other
+ // approved, public, RLS-scoped sitemap shards.
+ const output:{kind:SeoKind;count:number;pages:number}[]=[];
+ outcomes.forEach((result,index)=>{
+  if(result.status==="fulfilled")output.push(result.value);
+  else console.warn("SEO sitemap count unavailable for source:",SEO_KINDS[index]);
+ });
  return output;
 }
 /**
