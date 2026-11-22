@@ -59,9 +59,11 @@ try {
   // Never fetch all 30,000 detail URLs in one daily monitor (cost/traffic-safe).
   const indexXml = await get("/sitemap-index.xml");
   if (!/<sitemapindex\b/.test(indexXml)) errors.push("sitemap-index.xml: invalid XML root");
-  const shardUrls = [...indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)]
-    .map(m => decode(m[1]))
-    .filter(v => v !== origin + "/sitemap.xml");
+  const sitemapIndexUrls = [...indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => decode(m[1]));
+  const osmEntry = origin + "/attractions/sitemap.xml";
+  if (robots.includes("Sitemap: " + osmEntry) && !sitemapIndexUrls.includes(osmEntry))
+    errors.push("sitemap-index.xml: missing existing OSM child index");
+  const shardUrls = sitemapIndexUrls.filter(v => v !== origin + "/sitemap.xml" && v !== osmEntry);
   if (shardUrls.length !== new Set(shardUrls).size) errors.push("sitemap-index.xml: duplicate sitemaps");
   const groups = new Map();
   for (const u of shardUrls) {
