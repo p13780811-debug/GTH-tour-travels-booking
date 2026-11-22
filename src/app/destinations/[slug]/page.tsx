@@ -42,9 +42,10 @@ function validatedCountry(value:unknown):string {
 
 async function getDestination(slug: string, countryFilter = ""): Promise<DestinationDetail | null> {
   // Leave legacy routing unchanged when the unified feature is disabled.
-  const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
-  if (!legacySlug && !(unifiedCityRouterEnabled() && worldSlug)) return null;
+  // Public city identity pages are independent of the opt-in unified booking router.
+  // Supplier-side city-spine behavior remains feature-gated below.
+  if (!worldSlug) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
   const editorial: DestinationDetail | null = editorialBase && (!countryFilter || destinationGeography(slug).country === countryFilter) ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
 
