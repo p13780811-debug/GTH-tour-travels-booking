@@ -315,7 +315,13 @@ const pinnedSeoDiscoveryBlobs=new Map([
  ["src/app/destinations/[slug]/page.tsx","f9558ac3169b3c050a66819ce05c8022e7044289"],
  ["src/lib/destinations/ecosystem.ts","745f5f479516d47f3117dcb95e34fbcac32343c3"],
  ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"],
- ["tests/destination-ssr-metadata-cache.test.mjs","9b18fa41e772e5c56ae2016adae117b0337c8b77"]
+ ["tests/destination-ssr-metadata-cache.test.mjs","9b18fa41e772e5c56ae2016adae117b0337c8b77"],
+ ["backend/ai_engine.py","bd17b003a6a476ed412e04d91d158b6cb9247732"],
+ ["backend/engine.py","90e956bdb1eebdf67f6d8485c95f0ae439312630"],
+ ["backend/supabase_db.py","2a222f237270e18e09deee45c74e6c0d3890cac1"],
+ ["tests/test_city_seo_engine.py","661ac680d38f091f1ac04051b92a61dc96aac618"],
+ ["requirements.txt","28e2763271798d1a6c501e30c68ddfcc7ab21a22"],
+ [".github/workflows/gth-city-seo-engine-qa.yml","ad20334e62f9a333916d8f3f078c3964d89ac4b5"]
 ]);
 const seoScope=process.env.GITHUB_BASE_REF==="main"&&
   process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
