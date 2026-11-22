@@ -283,7 +283,48 @@ function matchesPinnedIntegrationSnapshot(path){
   return /^[0-9a-f]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
  }catch{return false;}
 }
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path));
+// PR #248 combines reviewed SEO/brand metadata with a gated hotel detail
+// schema. Its hotel file legitimately triggers this workflow, so do not skip
+// hotel booking/layout tests. ONLY the exact reviewed blob versions from the
+// immutable prior PR head may pass. Any new or modified SEO file fails closed.
+// The historical CSS, rate-limit, provider and supplier-test checks below
+// remain unchanged and still execute for every PR.
+const pinnedSeoHead="51f998404b95f58854b4f273ddf3601243294258";
+const pinnedSeoPaths=new Set([
+ "src/app/hotels/stay/[id]/page.tsx",
+ "src/app/page.tsx",
+ "src/app/sitemap-index.xml/route.ts",
+ "src/app/tender/[id]/page.tsx",
+ "src/app/tours/[slug]/page.tsx",
+ "src/components/home/FlagshipHome.module.css",
+ "src/components/home/FlagshipHome.tsx",
+ "src/components/seo/SiteIdentitySchema.tsx",
+ "src/lib/seo/large-sitemaps.ts",
+ "src/lib/seo/vertical-structured-data.ts",
+ "tests/flagship-home.test.mjs",
+ "tests/home-public-capabilities.test.mjs",
+ "tests/large-scale-seo-sitemaps.test.mjs",
+ "tests/official-site-identity-search.test.mjs",
+ "tests/seo-master-index-resilience.test.mjs",
+ "tests/seo-vertical-structured-data.test.mjs"
+]);
+const seoScope=process.env.GITHUB_BASE_REF==="main"&&
+  process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
+function matchesPinnedSeoBlob(path){
+ if(!seoScope||!pinnedSeoPaths.has(path))return false;
+ try{
+  const expected=git("rev-parse",pinnedSeoHead+":"+path).trim();
+  return /^[a-f0-9]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
+ }catch{return false;}
+}
+if(seoScope){
+ // Also cover paths allowed by older review sets: require exact snapshot
+ // for the whole PR diff, except this scoped guard implementation itself.
+ const drift=[...new Set(paths)].filter(path=>
+  path!=="scripts/check-hotel-landing-boundaries.mjs"&&!matchesPinnedSeoBlob(path));
+ if(drift.length)throw Error("PR #248 contains an unreviewed or changed blob:\n"+drift.join("\n"));
+}
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path)&&!matchesPinnedSeoBlob(path));
 if(outside.length)throw Error("Unreviewed integration changes or unrelated paths:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
