@@ -27,7 +27,9 @@ test("all destination, category, tour and guide cards have the same fixed geomet
  assert.match(detail,/<DestinationCard/);
  for(const text of [index,detail,rail]) assert.match(text,/snap-x snap-mandatory gap-4 overflow-x-auto/);
  assert.doesNotMatch(index,/md:grid md:grid-cols-2/);
- assert.match(card,/href=\{"\/destinations\/"\+destination\.slug\}/);
+ assert.match(card,/href=\{destinationDetailHref\(destination\)\}/);
+ assert.match(card,/import \{destinationDetailHref\} from/);
+ assert.match(read("src/lib/destinations/detail-link.ts"),/encodeURIComponent\(country\.trim\(\)\)/);
 });
 
 test("every city carries every actual GTH PRO pillar and working category links",()=>{
