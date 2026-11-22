@@ -10,6 +10,17 @@ const mega = source("src/app/mega-aggregator/page.tsx");
 const navbar = source("src/components/Navbar.tsx");
 const shell = source("src/components/LayoutWrapper.tsx");
 
+test("hero visibly spells GTH PRO with a decorative globe, without hiding the O", () => {
+  const heading = flagship.match(/<h1[^>]*id="flagship-heading"[^>]*>([\\s\\S]*?)<\\/h1>/)?.[1] ?? "";
+  assert.match(heading, /brandSilver\\}>GTH<\\/span>/);
+  assert.match(heading, /brandGold\\}>PRO<\\/span>/);
+  assert.doesNotMatch(heading, /className="sr-only">O<\\/span>/);
+  assert.match(heading, /<BrandGlobe \\/>/);
+  assert.match(flagship, /<svg className=\\{styles\\.brandGlobe\\}[^>]*aria-hidden="true"/);
+  assert.match(css, /\\.brandPro \\{ position: relative;/);
+  assert.match(css, /\\.brandGlobe \\{ position: absolute;/);
+});
+
 test("root is the cinematic flagship, not the previous demo or mega aggregator", () => {
   assert.match(home, /return <FlagshipHome \/>/);
   assert.doesNotMatch(home, /GTHHomeV13|MegaAggregator/);
