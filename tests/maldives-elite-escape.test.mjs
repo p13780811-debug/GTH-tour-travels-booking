@@ -188,7 +188,11 @@ test("worldwide destination links carry an exact country identity to prevent dup
     "/destinations/springfield?country=Canada");
   assert.equal(destinationDetailHref({slug:"paris",country:null}),"/destinations/paris");
   assert.equal(destinationDetailHref({slug:"../admin",country:"France"}),"/destinations#discover");
+  const directory=source("src/app/destinations/page.tsx");
   const detail=source("src/app/destinations/[slug]/page.tsx");
+  // DB slugs with numeric place IDs must not silently disappear from global lists.
+  assert.match(directory,/\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\*/);
+  assert.match(detail,/if \(!worldSlug\) return null/);
   assert.match(detail,/lookup\.eq\("country", countryFilter\)/);
   assert.match(detail,/getDestination\(slug,countryFilter\)/);
   for(const path of ["src/components/destination/DestinationCard.tsx",
