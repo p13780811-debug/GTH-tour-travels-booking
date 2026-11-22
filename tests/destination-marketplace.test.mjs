@@ -22,12 +22,18 @@ test("destination detail keeps complete multi-word slug", () => {
   assert.match(page, /generateStaticParams/);
 });
 
-test("destination page integrates real hotel and tour inventory without fake prices", () => {
+test("destination detail renders only exact-city supplier cards, no demo or DB inventory", () => {
   const page = read("src/app/destinations/[slug]/page.tsx");
-  assert.match(page, /<HotelResults city=\{destination\.name\}/);
-  assert.match(page, /getTours\(\{ city: slug \}\)/);
-  assert.match(page, /String\(tour\.id\)/);
-  assert.doesNotMatch(page, /₹4,999|AI selected|guaranteed availability|<ActivitySection/);
+  const panels=read("src/components/destination/DestinationSupplierPicks.tsx");
+  assert.match(page, /<DestinationSupplierPicks city=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
+  assert.match(panels, /getSupplierCatalog\(/);
+  assert.match(panels, /getSupplierAttractions\(/);
+  assert.match(panels, /getFreeHotelProfiles\(/);
+  assert.match(panels, /stadiums\.filter\(/);
+  assert.match(panels, /\.slice\(0,3\)/);
+  assert.match(panels, /cityName\(p\.city\)===cityName\(city\)/);
+  assert.doesNotMatch(page, /<HotelResults|getTours\(|<OSMAttractionsRail|<OpenAttractionsRail/);
+  assert.doesNotMatch(panels, /\.from\(["'](?:hotels|tours|destinations|activities)["']\)|Math\.random|guaranteed availability/);
 });
 
 test("destination detail offers connected planning articles", () => {
@@ -90,7 +96,7 @@ test("destination briefing shows accurate country context and valid existing hot
  assert.ok(detail.includes("href={hotelsHref}"));
  assert.ok(detail.includes("href={toursHref}"));
  assert.ok(detail.includes("href={flightsHref}"));
- assert.match(detail,/getTours\(\{ city: slug \}\)/);
- assert.match(detail,/<HotelResults city=\{destination\.name\}/);
+ assert.match(detail,/<DestinationSupplierPicks city=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
+ assert.doesNotMatch(detail,/<HotelResults|getTours\(/);
  assert.doesNotMatch(detail,/reserve now|confirmed booking|guaranteed cheapest/i);
 });
