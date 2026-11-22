@@ -317,9 +317,10 @@ const pinnedSeoDiscoveryBlobs=new Map([
  ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"],
  ["tests/destination-ssr-metadata-cache.test.mjs","9b18fa41e772e5c56ae2016adae117b0337c8b77"],
  ["backend/ai_engine.py","bd17b003a6a476ed412e04d91d158b6cb9247732"],
- ["backend/engine.py","90e956bdb1eebdf67f6d8485c95f0ae439312630"],
- ["backend/supabase_db.py","2a222f237270e18e09deee45c74e6c0d3890cac1"],
- ["tests/test_city_seo_engine.py","661ac680d38f091f1ac04051b92a61dc96aac618"],
+ ["backend/engine.py","97c92c9de1273df030dc3332171dcbdfe69be4b0"],
+ ["backend/supabase_db.py","5ef0b3ea2768212943787eb32c3d6515d1f6a668"],
+ ["tests/test_city_seo_engine.py","5f278a9eef8ba894f75dc287868210e8650bf4c1"],
+ [".github/workflows/gth-city-seo-batch.yml","cd13374a07b15070e03fa236873a426a14ac8dbe"],
  ["requirements.txt","28e2763271798d1a6c501e30c68ddfcc7ab21a22"],
  [".github/workflows/gth-city-seo-engine-qa.yml","ad20334e62f9a333916d8f3f078c3964d89ac4b5"]
 ]);
