@@ -33,7 +33,7 @@ type Props = {
     currency?: string | string[];
   }>;
 };
-type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
+type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean; cityId?:string|null };
 
 function validatedCountry(value:unknown):string {
   return typeof value === "string" && value.length <= 80 &&
@@ -55,7 +55,7 @@ async function getDestination(slug: string, countryFilter = ""): Promise<Destina
   try {
     const client = createClient(url, key);
     const lookup = client.from("destinations")
-      .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
+      .select("id,slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
       .eq("slug", slug)
       .eq("is_active", true);
     // A city slug may exist in multiple countries. Never choose an arbitrary match.
@@ -74,6 +74,7 @@ async function getDestination(slug: string, countryFilter = ""): Promise<Destina
       slug,
       name,
       seoApproved:approved,
+      cityId:typeof data.id==="string"&&/^[a-f0-9-]{36}$/i.test(data.id)?data.id:null,
       ...destinationGeography(slug, data.country),
       image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
@@ -126,8 +127,14 @@ export default async function DestinationPage({ params, searchParams }: Props) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         {auth:{persistSession:false,autoRefreshToken:false}},
       );
-      const matched = await resolveCityContext(db, { slug });
-      if (matched.status === "found" && (!countryFilter || matched.city.country === countryFilter)) city = matched.city;
+      // Reuse the exact UUID from the country-filtered public destination lookup.
+      // Looking up slug alone could bind the wrong country to a supplier hub.
+      if (!countryFilter || destination.cityId) {
+        const matched = await resolveCityContext(
+          db, countryFilter ? {id:destination.cityId} : {slug},
+        );
+        if (matched.status === "found" && (!countryFilter || matched.city.country === countryFilter)) city = matched.city;
+      }
     } catch {
       // A provider outage retains the existing stable editorial destination.
     }
