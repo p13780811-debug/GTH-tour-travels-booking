@@ -196,6 +196,10 @@ test("worldwide destination links carry an exact country identity to prevent dup
   assert.equal(destinationDetailHref({slug:"paris",country:null}),"/destinations/paris");
   assert.equal(destinationDetailHref({slug:"../admin",country:"France"}),"/destinations#discover");
   const directory=source("src/app/destinations/page.tsx");
+  const scroll=source("src/components/destination/DestinationDiscoveryScroll.tsx");
+  assert.match(directory,/<DestinationDiscoveryScroll country=\{country\}\/>/);
+  assert.match(scroll,/scrollIntoView\(/);
+  assert.match(scroll,/window.location.hash!=="#discover"/);
   const detail=source("src/app/destinations/[slug]/page.tsx");
   // DB slugs with numeric place IDs must not silently disappear from global lists.
   assert.match(directory,/\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\*/);
