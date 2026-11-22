@@ -11,13 +11,17 @@ def _ingestion_client():
     return create_client(url, key)
 
 
-def read_destination_page(client, *, cursor="", limit=100):
+def read_destination_page(client, *, cursor="", limit=100, pending_only=False):
     """One bounded keyset query; never count/scan all destinations in one request."""
     if not 1 <= limit <= 200:
         raise ValueError("DB read page size out of range")
     q = (client.table("destinations")
          .select("id,name,slug,country,country_code,is_active,description,seo_title,seo_description")
          .eq("is_active", True).order("id").limit(limit))
+    if pending_only:
+        # Server-side filter prevents each scheduled run from rescanning completed cities.
+        # Never modify approval/indexability flags; this selects missing draft fields only.
+        q = q.or_("seo_title.is.null,seo_title.eq.,seo_description.is.null,seo_description.eq.,description.is.null,description.eq.")
     if cursor:
         q = q.gt("id", cursor)
     data = q.execute().data
