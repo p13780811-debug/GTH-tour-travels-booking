@@ -129,7 +129,7 @@ try {
       if(!target)return false;
       const box=target.getBoundingClientRect();
       return box.top<innerHeight&&box.bottom>0;
-    },{timeout:12000});
+    },null,{timeout:12000});
     const countrySelect=page.locator('select[name="country"]').first();
     assert.equal(await countrySelect.inputValue(),"Japan",
       "Country selection was dropped on destination arrival");
