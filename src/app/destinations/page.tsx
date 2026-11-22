@@ -48,7 +48,10 @@ async function loadDestinations(countryFilter = ""): Promise<Destination[]> {
     location: "Editorial destination guide",
     ...destinationGeography(item.slug),
   }));
-  const all = new Map(base.map((item) => [item.slug, item]));
+  // Country + slug is the directory identity; one slug can exist worldwide.
+  const cityKey = (item:Pick<Destination,"slug"|"country">) =>
+    item.slug+"::"+(item.country||"").normalize("NFKC").toLocaleLowerCase();
+  const all = new Map(base.map((item) => [cityKey(item), item]));
   try {
     // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
     // Never surface inactive records or assume every DB location has licensed media.
@@ -65,13 +68,15 @@ async function loadDestinations(countryFilter = ""): Promise<Destination[]> {
       for (const item of data) {
       if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) || item.slug.length > 80
         || typeof item.name !== "string" || !item.name.trim()) continue;
-      const previous = all.get(item.slug);
-      all.set(item.slug, {
+      const geography=destinationGeography(item.slug,item.country);
+      const key=cityKey({slug:item.slug,country:geography.country});
+      const previous=all.get(key);
+      all.set(key, {
         slug: item.slug,
         title: item.name.trim().slice(0, 120),
         image: previous?.image || destinationImageForSlug(item.slug),
         location: previous ? "Editorial destination guide" : "Destination directory",
-        ...destinationGeography(item.slug, item.country),
+        ...geography,
         description: typeof item.description === "string" && item.description.trim()
           ? item.description.trim().slice(0, 280)
           : previous?.description || "Explore local highlights and verify current travel details with official providers.",
@@ -140,11 +145,12 @@ export default async function DestinationsPage({ searchParams }: Props) {
   // scanning or rendering all 38,671 city rows on every request.
   if (process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" && search.length >= 2) {
     const matches = await searchWorldwideCities(supabase, search);
-    const present = new Set(allDestinations.map(city => city.slug));
+    const present = new Set(allDestinations.map(city => cityKey(city)));
     for (const match of matches) {
       if (requestedCountry && match.country !== requestedCountry) continue;
-      if (present.has(match.slug)) continue;
-      present.add(match.slug);
+      const key=cityKey({slug:match.slug,country:match.country});
+      if (present.has(key)) continue;
+      present.add(key);
       allDestinations.push({
         slug:match.slug, title:match.name,
         image:destinationImageForSlug(match.slug),
