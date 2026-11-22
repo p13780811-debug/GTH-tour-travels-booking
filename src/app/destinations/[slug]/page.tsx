@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane, ShieldCheck, Sparkles } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationEcosystem from "@/components/destination/DestinationEcosystem";
@@ -32,9 +33,15 @@ type Props = {
     currency?: string | string[];
   }>;
 };
-type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
+type DestinationDetail = DestinationOverview & {
+ description: string; country: string | null; region: string | null; seoApproved:boolean;
+ seoTitle?:string|null; seoDescription?:string|null;
+};
 
-async function getDestination(slug: string): Promise<DestinationDetail | null> {
+// All visitors, including crawlers, receive the same server-rendered metadata.
+// Cache public RLS-scoped city reads across requests: no Gemini call on crawler hits,
+// no client-side secret, no one-DB-read-per-googlebot-request behavior.
+const getDestination=unstable_cache(async (slug: string): Promise<DestinationDetail | null> => {
   // Leave legacy routing unchanged when the unified feature is disabled.
   const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
@@ -49,7 +56,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
   try {
     const client = createClient(url, key);
     const { data, error } = await client.from("destinations")
-      .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
+      .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url,seo_title,seo_description")
       .eq("slug", slug)
       .eq("is_active", true)
       .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
@@ -66,6 +73,16 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
       slug,
       name,
       seoApproved:approved,
+      // Never treat an unreviewed AI draft as approved site copy. City identity
+      // and content lengths must match before the sourced fields reach <head>.
+      seoTitle:approved && typeof data.seo_title==="string" &&
+        data.seo_title.trim().length>=24 && data.seo_title.trim().length<=85 &&
+        data.seo_title.toLocaleLowerCase().includes(name.toLocaleLowerCase()) &&
+        !/[<>]/.test(data.seo_title) ? data.seo_title.trim() : null,
+      seoDescription:approved && typeof data.seo_description==="string" &&
+        data.seo_description.trim().length>=90 && data.seo_description.trim().length<=165 &&
+        data.seo_description.toLocaleLowerCase().includes(name.toLocaleLowerCase()) &&
+        !/[<>]/.test(data.seo_description) ? data.seo_description.trim() : null,
       ...destinationGeography(slug, data.country),
       image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
@@ -75,7 +92,7 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
   } catch {
     return editorial;
   }
-}
+},["gth-destination-public-metadata-v1"],{revalidate:3600});
 
 export function generateStaticParams() {
   return destinations.map(({ slug }) => ({ slug }));
@@ -87,8 +104,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!place) return { title: "Destination not found | GTH PRO", robots: { index: false } };
   const index=isPublicLaunch()&&place.seoApproved;
   return {
-    title: `Explore ${place.name} | GTH PRO Destinations`,
-    description: place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`,
+    title:place.seoTitle||`Explore ${place.name}${place.country?`, ${place.country}`:""} | GTH PRO Destinations`,
+    description:place.seoDescription||(place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`),
     robots:{index,follow:index},
     alternates: { canonical: `/destinations/${slug}` },
     openGraph: {

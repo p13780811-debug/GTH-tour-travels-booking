@@ -312,9 +312,10 @@ const pinnedSeoPaths=new Set([
 // consolidated into PR #248. Its exact reviewed Git blobs are accepted only
 // on the PR #248 branch. Other versions, paths or branches fail closed.
 const pinnedSeoDiscoveryBlobs=new Map([
- ["src/app/destinations/[slug]/page.tsx","e20a38f23a14fa18ffa021c97cb2aad3be058855"],
+ ["src/app/destinations/[slug]/page.tsx","f9558ac3169b3c050a66819ce05c8022e7044289"],
  ["src/lib/destinations/ecosystem.ts","745f5f479516d47f3117dcb95e34fbcac32343c3"],
- ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"]
+ ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"],
+ ["tests/destination-ssr-metadata-cache.test.mjs","9b18fa41e772e5c56ae2016adae117b0337c8b77"]
 ]);
 const seoScope=process.env.GITHUB_BASE_REF==="main"&&
   process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
