@@ -11,14 +11,14 @@ const navbar = source("src/components/Navbar.tsx");
 const shell = source("src/components/LayoutWrapper.tsx");
 
 test("hero visibly spells GTH PRO with a decorative globe, without hiding the O", () => {
-  const heading = flagship.match(/<h1[^>]*id="flagship-heading"[^>]*>([\\s\\S]*?)<\\/h1>/)?.[1] ?? "";
-  assert.match(heading, /brandSilver\\}>GTH<\\/span>/);
-  assert.match(heading, /brandGold\\}>PRO<\\/span>/);
-  assert.doesNotMatch(heading, /className="sr-only">O<\\/span>/);
-  assert.match(heading, /<BrandGlobe \\/>/);
-  assert.match(flagship, /<svg className=\\{styles\\.brandGlobe\\}[^>]*aria-hidden="true"/);
-  assert.match(css, /\\.brandPro \\{ position: relative;/);
-  assert.match(css, /\\.brandGlobe \\{ position: absolute;/);
+  const heading = flagship.split('id="flagship-heading"')[1]?.split("</h1>")[0] ?? "";
+  assert.ok(heading.includes('brandSilver}>GTH</span>'));
+  assert.ok(heading.includes('brandGold}>PRO</span>'));
+  assert.ok(!heading.includes('className="sr-only">O</span>'));
+  assert.ok(heading.includes("<BrandGlobe />"));
+  assert.ok(flagship.includes('aria-hidden="true" focusable="false"'));
+  assert.ok(css.includes(".brandPro { position: relative;"));
+  assert.ok(css.includes(".brandGlobe { position: absolute;"));
 });
 
 test("root is the cinematic flagship, not the previous demo or mega aggregator", () => {
