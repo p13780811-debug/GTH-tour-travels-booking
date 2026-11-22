@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, SlidersHorizontal, MapPinned, BadgeCheck } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationExplorerResults from "@/components/destination/DestinationExplorerResults";
+import DestinationDiscoveryScroll from "@/components/destination/DestinationDiscoveryScroll";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
@@ -185,6 +186,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
   return (
    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <DestinationDiscoveryScroll country={country}/>
     {process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" &&
       <GeoCityIntro language={typeof params.lang === "string" ? params.lang : undefined}/>}
 
