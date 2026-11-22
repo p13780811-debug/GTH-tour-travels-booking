@@ -140,6 +140,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
+  const mappedAttractions=links.find(item=>item.key==="attractions");
   const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
   const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
@@ -200,6 +201,12 @@ export default async function DestinationPage({ params, searchParams }: Props) {
 
       {city ? <CitySpineHub city={city} tours={hubTours} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
+      {city&&mappedAttractions&&<nav aria-label="Mapped attractions discovery" className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-sm sm:px-6">
+        <p className="text-[var(--text-soft)]">Browse real OpenStreetMap records for {mappedAttractions.scope==="destination"?city.name:destination.country||"worldwide locations"}. Community map city tags may be incomplete.</p>
+        <Link prefetch={false} href={mappedAttractions.href} className="inline-flex min-h-11 items-center gap-2 font-semibold underline">
+          Explore mapped attractions <ArrowRight size={16} aria-hidden="true"/>
+        </Link>
+      </nav>}
       {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
       <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
       {["mumbai","pune","ajanta-ellora","shirdi"].includes(slug)&&<OpenAttractionsRail region="maharashtra"/>}

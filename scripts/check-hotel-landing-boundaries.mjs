@@ -308,11 +308,22 @@ const pinnedSeoPaths=new Set([
  "tests/seo-master-index-resilience.test.mjs",
  "tests/seo-vertical-structured-data.test.mjs"
 ]);
+// PR #249's independently verified attraction-discovery change set was
+// consolidated into PR #248. Its exact reviewed Git blobs are accepted only
+// on the PR #248 branch. Other versions, paths or branches fail closed.
+const pinnedSeoDiscoveryBlobs=new Map([
+ ["src/app/destinations/[slug]/page.tsx","e20a38f23a14fa18ffa021c97cb2aad3be058855"],
+ ["src/lib/destinations/ecosystem.ts","745f5f479516d47f3117dcb95e34fbcac32343c3"],
+ ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"]
+]);
 const seoScope=process.env.GITHUB_BASE_REF==="main"&&
   process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
 function matchesPinnedSeoBlob(path){
- if(!seoScope||!pinnedSeoPaths.has(path))return false;
+ if(!seoScope)return false;
  try{
+  const discoveryBlob=pinnedSeoDiscoveryBlobs.get(path);
+  if(discoveryBlob)return git("hash-object","--",path).trim()===discoveryBlob;
+  if(!pinnedSeoPaths.has(path))return false;
   const expected=git("rev-parse",pinnedSeoHead+":"+path).trim();
   return /^[a-f0-9]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
  }catch{return false;}
