@@ -6,10 +6,8 @@ export async function GET(){
  if(!isPublicLaunch())return new Response("Not available",{status:404,headers:{"Cache-Control":"no-store"}});
  try{
   const origin=siteOrigin(),counts=await seoShardCounts();
-  // Reuse the existing country-sharded OSM index rather than repeating its URLs.
-  // Its route is independently gated by the existing OSM launch flag.
-  const osmIndex=process.env.GTH_OSM_PLACE_PAGES_ENABLED==="false"?[]:[origin+"/attractions/sitemap.xml"];
-  const urls=[origin+"/sitemap.xml",...counts.flatMap(({kind,pages})=>Array.from({length:pages},(_,n)=>origin+"/seo-sitemaps/"+kind+"/"+n+".xml")),...osmIndex];
+  // OSM has its own index in robots.txt; nested sitemap indexes are not supported.
+  const urls=[origin+"/sitemap.xml",...counts.flatMap(({kind,pages})=>Array.from({length:pages},(_,n)=>origin+"/seo-sitemaps/"+kind+"/"+n+".xml"))];
   const xml='<?xml version="1.0" encoding="UTF-8"?>\n'+
    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+
    urls.map(url=>"<sitemap><loc>"+ESC(url)+"</loc></sitemap>").join("")+"</sitemapindex>";
