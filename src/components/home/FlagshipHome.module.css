@@ -135,12 +135,12 @@
   background-image: linear-gradient(#fff 2%,#f0f4f9 29%,#8e939c 63%,#f4f4ee 81%,#9eabb8 100%);
   -webkit-text-stroke: .5px #f0f4f5;
 }
-.brandPro { display: inline-flex; align-items: center; }
+.brandPro { position: relative; display: inline-flex; align-items: center; }
 .brandGold {
   background-image: linear-gradient(#fff8bb,#ffe68e 30%,#edc159 63%,#bc750b 100%);
   -webkit-text-stroke: .5px #ffe49a;
 }
-.brandGlobe { display: block; flex: none; width: .99em; height: .99em; margin: -.08em -.06em -.09em -.025em; filter: drop-shadow(0 4px 5px #000); }
+.brandGlobe { position: absolute; display: block; width: .42em; height: .42em; top: -.2em; right: -.24em; margin: 0; pointer-events: none; filter: drop-shadow(0 4px 5px #000); }
 .ecosystemTitle {
   margin: clamp(9px,1.4vw,17px) 0 0;
   font-size: clamp(13px,1.45vw,22px);
