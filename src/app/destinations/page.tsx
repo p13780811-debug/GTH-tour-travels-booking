@@ -8,6 +8,7 @@ import DestinationExplorerResults from "@/components/destination/DestinationExpl
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
+import {validatedCountry} from "@/lib/destinations/country";
 import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 import GeoCityIntro from "@/components/destination/GeoCityIntro";
@@ -129,9 +130,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   // Strict country context is preserved even when the first global catalog batch lacks it.
-  const requestedCountry = typeof params.country === "string" && params.country.length <= 80 &&
-    /^[\p{L}][\p{L} .'-]{1,79}$/u.test(params.country.trim())
-    ? params.country.trim() : "";
+  const requestedCountry = validatedCountry(params.country);
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
   const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
