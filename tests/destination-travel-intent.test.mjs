@@ -74,3 +74,24 @@ test("destination hero and directory link to scoped pages without inventing book
  assert.match(flight,/supplier search form/);
  assert.doesNotMatch(cards,/href="\/flights"/);
 });
+
+test("source-mapped attraction links retain verified city, region or country scope",()=>{
+ const cases=[
+  [{slug:"mumbai",name:"Mumbai",country:"India"},"IN","Mumbai",null,"destination"],
+  [{slug:"goa",name:"Goa",country:"India"},"IN",null,"goa","destination"],
+  [{slug:"bali",name:"Bali",country:"Indonesia"},"ID",null,null,"country"],
+  [{slug:"maldives",name:"Maldives",country:"Maldives"},"MV",null,null,"country"],
+  [{slug:"new-york",name:"New York",country:"United States"},"US","New York",null,"destination"],
+  [{slug:"unmapped",name:"Unmapped",country:null},null,null,null,"global"],
+ ];
+ for(const [place,country,city,region,scope] of cases){
+  const service=links.destinationServices(place).find(x=>x.key==="attractions");
+  assert.ok(service);
+  const href=new URL(service.href,"https://www.gthproglobal.com");
+  assert.equal(href.pathname,"/attractions");
+  assert.equal(href.searchParams.get("country"),country);
+  assert.equal(href.searchParams.get("city"),city);
+  assert.equal(href.searchParams.get("region"),region);
+  assert.equal(service.scope,scope);
+ }
+});
