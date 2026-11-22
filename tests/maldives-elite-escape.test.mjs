@@ -180,6 +180,13 @@ test("country links preserve exact territory instead of dropping filters outside
   assert.match(code,/Explore \$\{country\} destinations/);
 });
 
+test("database country identity takes priority over curated slug geography",()=>{
+  const {destinationGeography}=load("lib/destinations/geography.ts");
+  assert.equal(destinationGeography("paris","United States").country,"United States");
+  assert.equal(destinationGeography("paris","France").country,"France");
+  assert.equal(destinationGeography("paris").country,"France");
+});
+
 test("worldwide destination links carry an exact country identity to prevent duplicate-slug misrouting",()=>{
   const {destinationDetailHref}=load("lib/destinations/detail-link.ts");
   assert.equal(destinationDetailHref({slug:"springfield",country:"United States"}),
