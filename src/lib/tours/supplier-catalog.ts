@@ -1,7 +1,7 @@
 import "server-only";
 import {unstable_cache} from "next/cache";
 import {parseTourFilters,type ExperiencePath,type TourFilters} from "./discovery";
-import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,uniqueSupplierProducts,type SupplierCity,type SupplierProduct} from "./supplier-products";
+import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,supplierId,supplierImage,uniqueSupplierProducts,type SupplierCity,type SupplierProduct} from "./supplier-products";
 const MAX_BYTES=1_500_000;
 async function fetchSupplier(path:string,params:Record<string,string>):Promise<Record<string,unknown>>{
  const url=new URL(WEGOTRIP_API+path);for(const [key,value] of Object.entries(params))url.searchParams.set(key,value);
