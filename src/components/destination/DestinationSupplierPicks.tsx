@@ -1,6 +1,6 @@
 import "server-only";
 import Link from "next/link";
-import {ArrowRight, Building2, Compass, Hotel, MapPin, Ticket} from "lucide-react";
+import {ArrowRight, Building2, Compass, Hotel, MapPin} from "lucide-react";
 import {getSupplierCatalog,getSupplierAttractions} from "@/lib/tours/supplier-catalog";
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
