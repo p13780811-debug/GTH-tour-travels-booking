@@ -30,7 +30,10 @@ test("City cards use same-size global theme rail and individual Commons credits"
  assert.match(ui,/snap-x snap-mandatory/);
  assert.match(ui,/commons_page/);assert.match(ui,/image_license_url/);
  assert.match(ui,/var\(--card\)/);
- assert.match(dest,/OpenAttractionsRail/);
+ const supplier=read("src/components/destination/DestinationSupplierPicks.tsx");
+ assert.match(dest,/<DestinationSupplierPicks city=\{destination\.name\}/);
+ assert.match(supplier,/getSupplierAttractions\(/);
+ assert.doesNotMatch(dest,/<OpenAttractionsRail/);
 });
 test("Signed importer does not expose service keys or auto-publish community records",()=>{
  const script=read("scripts/attractions/wikidata_attractions.py");
