@@ -115,9 +115,21 @@ try {
     // not merely that the href string looks plausible.
     const japanHref=await page.locator('a[href^="/destinations?country=Japan"]').getAttribute("href");
     assert.ok(japanHref,"Japan country card missing");
-    const countryResponse=await page.goto(origin+japanHref,{waitUntil:"domcontentloaded",timeout:60000});
-    assert.equal(countryResponse?.status(),200,"Japan country page broken");
-    await page.getByRole("heading",{name:"Explore Japan destinations"}).waitFor({timeout:20000});
+    // Follow the actual client-side country card; a direct page.goto can hide
+    // broken link transitions and leave new results below the visible viewport.
+    await Promise.all([
+      page.waitForURL(url=>url.pathname==="/destinations" &&
+        url.searchParams.get("country")==="Japan",{timeout:60000}),
+      page.locator('a[href^="/destinations?country=Japan"]').click(),
+    ]);
+    const countryHeading=page.getByRole("heading",{name:"Explore Japan destinations"});
+    await countryHeading.waitFor({timeout:20000});
+    await page.waitForFunction(()=>{
+      const target=document.querySelector("#discover");
+      if(!target)return false;
+      const box=target.getBoundingClientRect();
+      return box.top<innerHeight&&box.bottom>0;
+    },{timeout:12000});
     const countrySelect=page.locator('select[name="country"]').first();
     assert.equal(await countrySelect.inputValue(),"Japan",
       "Country selection was dropped on destination arrival");
