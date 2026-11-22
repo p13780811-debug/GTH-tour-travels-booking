@@ -36,6 +36,16 @@ export function destinationServices(place:{slug:string;name:string;country:strin
  if(place.country)realEstate.set("country",place.country);
  const localVenues=stadiums.filter(venue=>venue.city.toLocaleLowerCase("en")===place.name.toLocaleLowerCase("en")&&(!place.country||venue.country===place.country));
  const localVenue=localVenues.length===1?localVenues[0]:null;
+ // Use only directory-supported filters; do not treat regions or countries as cities.
+ const attractionFilters=new URLSearchParams();
+ if(country)attractionFilters.set("country",country);
+ const broadPlace=["bali","maldives"].includes(place.slug.toLocaleLowerCase("en"));
+ const goaRegion=place.slug.toLocaleLowerCase("en")==="goa"&&country==="IN";
+ const validCity=Boolean(country)&&!broadPlace&&!goaRegion&&/^[\p{L}\p{N} .'-]{1,70}$/u.test(place.name);
+ if(goaRegion)attractionFilters.set("region","goa");
+ else if(validCity)attractionFilters.set("city",place.name);
+ const attractionScope:DestinationService["scope"]=goaRegion||validCity?"destination":country?"country":"global";
+ const attractionHref="/attractions"+(attractionFilters.size?"?"+attractionFilters.toString():"");
  const tender=new URLSearchParams({scope:"world"});
  if(country)tender.set("country",country);
  return [
@@ -43,6 +53,7 @@ export function destinationServices(place:{slug:string;name:string;country:strin
   {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name),scope:"destination",pillar:"Travel"},
   {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
+  {key:"attractions",label:"Mapped attractions",description:"Browse real community-mapped place records; coverage varies by location",href:attractionHref,scope:attractionScope,pillar:"Travel"},
   {key:"transfers",label:"Airport transfers",description:"Check pickup providers",href:"/transfers",scope:"global",pillar:"Travel"},
   {key:"cars",label:"Car rentals",description:"Browse rental providers",href:"/cars",scope:"global",pillar:"Travel"},
   {key:"bus",label:"Buses",description:"Explore bus options",href:"/bus",scope:"global",pillar:"Travel"},
