@@ -7,6 +7,7 @@ import HotelPropertyImage from "@/components/hotel/HotelPropertyImage";
 import HotelStayVisual from "@/components/hotel/HotelStayVisual";
 import {isPublicLaunch,siteUrl} from "@/lib/seo/site";
 import {hotelMetadata,isIndexableHotel} from "@/lib/seo/public-listings";
+import {hotelIdentitySchema} from "@/lib/seo/vertical-structured-data";
 import {isDescriptiveHotelName} from "@/lib/travel/hotel-name-quality";
 import {hotelSourceImageUrl} from "@/lib/travel/hotel-source-image";
 import {hotelProviderSearchUrl} from "@/lib/travel/hotel-provider-search";
@@ -144,7 +145,7 @@ export default async function HotelStay({params,searchParams}:PageProps){
   ],
  };
  return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-  {isPublicLaunch()&&isIndexableHotel(hotel)&&<JsonLd data={breadcrumbData}/>}
+  {isPublicLaunch()&&isIndexableHotel(hotel)&&<><JsonLd data={breadcrumbData}/><JsonLd data={hotelIdentitySchema(hotel,canonical)}/></>}
   <article className="mx-auto max-w-5xl px-4 py-12 sm:px-6 md:py-16">
    <Link href="/hotels" className="inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-soft)]">
     <ArrowLeft size={17}/> Hotels & stays</Link>
