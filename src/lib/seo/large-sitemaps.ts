@@ -84,19 +84,12 @@ export async function seoShardCounts():Promise<{kind:SeoKind;count:number;pages:
  // Counting every approved record can exceed a normal row-read deadline.
  // Keep counts bounded separately; paginated row reads retain their 5-second limit.
  const signal=AbortSignal.timeout(12_000);
- const outcomes=await Promise.allSettled(SEO_KINDS.map(async kind=>{
+ const output=await Promise.all(SEO_KINDS.map(async kind=>{
   const {count,error}=await client.from(CONFIG[kind].view).select(CONFIG[kind].key,{head:true,count:"exact"}).abortSignal(signal);
   if(error)throw new Error("SEO count unavailable: "+kind);
   const total=Math.max(0,count||0);
   return {kind,count:total,pages:Math.min(SEO_MAX_PAGES,Math.ceil(total/SEO_PAGE_SIZE))};
  }));
- // One unavailable source must not prevent crawlers discovering the other
- // approved, public, RLS-scoped sitemap shards.
- const output:{kind:SeoKind;count:number;pages:number}[]=[];
- outcomes.forEach((result,index)=>{
-  if(result.status==="fulfilled")output.push(result.value);
-  else console.warn("SEO sitemap count unavailable for source:",SEO_KINDS[index]);
- });
  return output;
 }
 /**
@@ -115,6 +108,25 @@ export async function seoShardPages(kind:SeoKind):Promise<number>{
  if(error)throw new Error("SEO count unavailable: "+kind);
  return Math.min(SEO_MAX_PAGES,Math.ceil(Math.max(0,count||0)/SEO_PAGE_SIZE));
 }
+/**
+ * Master-index-only best-effort discovery: an outage of one approved public
+ * source must not hide healthy shards from Googlebot. The original
+ * seoShardCounts() and seoShardPages() contracts remain strict for callers.
+ * Counts still use exactly one bounded public read per source.
+ */
+export async function seoShardCountsSafe():Promise<{kind:SeoKind;pages:number}[]>{
+ if(!isPublicLaunch())return [];
+ const outcomes=await Promise.allSettled(SEO_KINDS.map(async kind=>({
+  kind,pages:await seoShardPages(kind),
+ })));
+ const available:{kind:SeoKind;pages:number}[]=[];
+ outcomes.forEach((entry,index)=>{
+  if(entry.status==="fulfilled")available.push(entry.value);
+  else console.warn("SEO master sitemap source temporarily unavailable:",SEO_KINDS[index]);
+ });
+ return available;
+}
+
 export async function seoShard(kind:SeoKind,page:number):Promise<MetadataRoute.Sitemap>{
  if(!isPublicLaunch()||!Number.isInteger(page)||page<0||page>=SEO_MAX_PAGES)return [];
  const cfg=CONFIG[kind],start=page*SEO_PAGE_SIZE;
