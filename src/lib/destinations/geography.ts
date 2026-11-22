@@ -55,6 +55,6 @@ export function destinationGeography(slug: string, recordedCountry?: string | nu
   const known = slugs.get(slug);
   const confirmed = validatedCountry(recordedCountry)||null;
   // Authoritative DB country always wins; editorial mappings are a fallback only.
-  const country = confirmed ?? known;
+  const country = confirmed ?? known ?? null;
   return { country, region: country ? regions.get(country) ?? null : null };
 }
