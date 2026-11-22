@@ -29,7 +29,7 @@ test("all destination, category, tour and guide cards have the same fixed geomet
  assert.doesNotMatch(index,/md:grid md:grid-cols-2/);
  assert.match(card,/href=\{destinationDetailHref\(destination\)\}/);
  assert.match(card,/import \{destinationDetailHref\} from/);
- assert.match(read("src/lib/destinations/detail-link.ts"),/encodeURIComponent\(country\.trim\(\)\)/);
+ assert.match(read("src/lib/destinations/detail-link.ts"),/encodeURIComponent\(exactCountry\)/);
 });
 
 test("every city carries every actual GTH PRO pillar and working category links",()=>{
