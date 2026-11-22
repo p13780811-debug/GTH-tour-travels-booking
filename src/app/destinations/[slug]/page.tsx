@@ -18,6 +18,7 @@ import {isIndexableDestination} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
 import HotelResults from "@/app/hotels/results/HotelResults";
 import { destinationGeography } from "@/lib/destinations/geography";
+import {validatedCountry} from "@/lib/destinations/country";
 import CitySpineHub from "@/components/destination/CitySpineHub";
 import { unifiedCityRouterEnabled } from "@/lib/router/affiliateRouter";
 import { resolveCityContext, type CityContext } from "@/lib/router/cityContext";
@@ -34,11 +35,6 @@ type Props = {
   }>;
 };
 type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean; cityId?:string|null };
-
-function validatedCountry(value:unknown):string {
-  return typeof value === "string" && value.length <= 80 &&
-    /^[\p{L}][\p{L} .'-]{1,79}$/u.test(value.trim()) ? value.trim() : "";
-}
 
 async function getDestination(slug: string, countryFilter = ""): Promise<DestinationDetail | null> {
   // Leave legacy routing unchanged when the unified feature is disabled.
