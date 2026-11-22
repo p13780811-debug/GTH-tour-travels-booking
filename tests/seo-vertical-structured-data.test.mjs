@@ -6,12 +6,12 @@ import ts from "typescript";
 
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const path="src/lib/seo/vertical-structured-data.ts";
-const module={exports:{}};
+const compiledModule={exports:{}};
 const javascript=ts.transpileModule(read(path),{
  compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},
 }).outputText;
-vm.runInNewContext(javascript,{module,exports:module.exports},{timeout:2000});
-const {hotelIdentitySchema,tenderNoticeSchema,tourDiscoverySchema}=module.exports;
+vm.runInNewContext(javascript,{module:compiledModule,exports:compiledModule.exports},{timeout:2000});
+const {hotelIdentitySchema,tenderNoticeSchema,tourDiscoverySchema}=compiledModule.exports;
 
 test("Hotel schema uses only reviewed directory identity, not invented reviews or live room offers",()=>{
  const schema=JSON.parse(JSON.stringify(hotelIdentitySchema({
