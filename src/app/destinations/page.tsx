@@ -70,7 +70,7 @@ async function loadDestinations(countryFilter = ""): Promise<Destination[]> {
       for (const item of data) {
       if (typeof item.slug !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) || item.slug.length > 140
         || typeof item.name !== "string" || !item.name.trim()) continue;
-      const geography=destinationGeography(item.slug,item.country);
+      const geography=destinationGeography(item.slug, item.country);
       const key=cityKey({slug:item.slug,country:geography.country});
       const previous=all.get(key);
       all.set(key, {
