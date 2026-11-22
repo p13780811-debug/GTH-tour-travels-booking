@@ -41,9 +41,14 @@ class FakeTable:
         self.rows = rows
         self.cursor = ""
         self.count = 50
+        self.pending_only = False
     def select(self, *_args, **_kwargs): return self
     def eq(self, *_args, **_kwargs): return self
     def order(self, *_args, **_kwargs): return self
+    def or_(self, predicate):
+        assert "seo_title.is.null" in predicate and "seo_description.is.null" in predicate
+        self.pending_only = True
+        return self
     def limit(self, value):
         self.count = value
         return self
@@ -51,7 +56,10 @@ class FakeTable:
         self.cursor = cursor
         return self
     def execute(self):
-        return type("Reply", (), {"data": [r for r in self.rows if r["id"] > self.cursor][:self.count]})()
+        eligible = [r for r in self.rows if r["id"] > self.cursor and
+                    (not self.pending_only or any(r.get(k) in (None, "") for k in
+                    ("seo_title", "seo_description", "description")))]
+        return type("Reply", (), {"data": eligible[:self.count]})()
 
 
 class FakeDB:
@@ -113,6 +121,27 @@ class CitySeoEngineTests(unittest.TestCase):
         self.assertEqual(followup["written"], 5)
         self.assertEqual(followup["next_cursor"], city(7)["id"])
         self.assertEqual(len(set(writes)), 7)
+    def test_scheduled_batches_start_afresh_without_rescanning_completed_rows(self):
+        rows = [city(i) for i in range(1, 7)]
+        db = FakeDB(rows)
+        def writer(_client, row, draft):
+            row.update(draft)
+            return True
+        first = run(client=db, generator=content, writer=writer,
+                    batch_size=2, max_calls=1, max_reads=1, page_size=4,
+                    min_interval=0, write=True)
+        self.assertEqual(first["written"], 2)
+        self.assertEqual(first["db_reads"], 1)
+        # A separate scheduled run can start with no cursor: the server-side
+        # pending filter excludes previously completed records.
+        second = run(client=db, generator=content, writer=writer,
+                     batch_size=2, max_calls=1, max_reads=1, page_size=4,
+                     min_interval=0, write=True)
+        self.assertEqual(second["written"], 2)
+        self.assertEqual(second["next_cursor"], city(4)["id"])
+        self.assertTrue(all(rows[i]["seo_title"] for i in range(4)))
+        self.assertEqual(rows[4]["seo_title"], None)
+
     def test_rejected_gemini_batch_writes_nothing(self):
         rows = [city(1), city(2)]
         db = FakeDB(rows)
