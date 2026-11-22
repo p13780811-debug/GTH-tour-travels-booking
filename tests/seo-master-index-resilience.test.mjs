@@ -7,12 +7,12 @@ import ts from "typescript";
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const origin="https://www.gthproglobal.com";
 function compile(path,deps,env={}){
- const module={exports:{}};
+ const compiledModule={exports:{}};
  const js=ts.transpileModule(read(path),{compilerOptions:{
   module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,
  }}).outputText;
  vm.runInNewContext(js,{
-  module,exports:module.exports,Response,URL,
+  module:compiledModule,exports:compiledModule.exports,Response,URL,
   process:{env:{GTH_OSM_PLACE_PAGES_ENABLED:"true",...env}},
   AbortSignal:{timeout:()=>({})},
   console:{warn:()=>{}},
@@ -21,7 +21,7 @@ function compile(path,deps,env={}){
    throw new Error("Unexpected dependency: "+key);
   },
  },{timeout:2000});
- return module.exports;
+ return compiledModule.exports;
 }
 const site={isPublicLaunch:()=>true,siteOrigin:()=>origin};
 
