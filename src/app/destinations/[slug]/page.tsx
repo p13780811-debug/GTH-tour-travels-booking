@@ -153,8 +153,8 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
-  const hotelsHref="#destination-hotels";
-  const toursHref="#destination-tours";
+  const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
+  const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
