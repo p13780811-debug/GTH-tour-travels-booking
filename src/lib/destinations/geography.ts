@@ -58,3 +58,11 @@ export function destinationGeography(slug: string, recordedCountry?: string | nu
   const country = confirmed ?? known ?? null;
   return { country, region: country ? regions.get(country) ?? null : null };
 }
+
+export function destinationRegions(): string[] {
+  return Object.keys(regionGroups).sort();
+}
+
+export function destinationCountriesForRegion(region: string): string[] {
+  return Object.hasOwn(regionGroups, region) ? regionGroups[region] : [];
+}

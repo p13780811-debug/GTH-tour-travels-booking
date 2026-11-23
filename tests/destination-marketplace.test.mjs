@@ -48,10 +48,10 @@ test("destination detail offers connected planning articles", () => {
 test("destination marketplace has real GET search, bounded pagination and bundled city imagery", () => {
   const list = read("src/app/destinations/page.tsx");
   const data = read("src/data/destinations.ts");
-  assert.match(list, /action="\/destinations" method="get"/);
+  assert.match(list, /action="\/destinations\/search" method="get"/);
   assert.match(list, /name="search"/);
   assert.match(list, /const perPage = 18/);
-  assert.match(list, /filtered\.slice\(/);
+  assert.match(list, /\.range\(first, first \+ perPage - 1\)/);
   assert.match(list, /pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
   assert.match(list, /destinationImageForSlug\(item\.slug\)/);
   assert.match(data, /availableCityImages/);
@@ -70,7 +70,9 @@ test("worldwide directory uses source-backed active rows, geographic filters and
  const listing=read("src/app/destinations/page.tsx");
  const geography=read("src/lib/destinations/geography.ts");
  assert.match(listing,/\.eq\("is_active", true\)/);
- assert.match(listing,/\.range\(offset, offset \+ 199\)/);
+ assert.match(listing,/\.range\(first, first \+ perPage - 1\)/);
+ assert.match(listing,/count: "exact"/);
+ assert.doesNotMatch(listing,/offset < 1200/);
  assert.match(listing,/destinationGeography\(item\.slug, item\.country\)/);
  assert.match(listing,/name="region"/);
  assert.match(listing,/name="country"/);
@@ -112,6 +114,6 @@ test("destination search opens a separate results page and an exact city detail"
   assert.match(search, /\.eq\("is_active", true\)/);
   assert.match(search, /\.limit\(MAX_RESULTS\)/);
   assert.match(search, /country && geography\.country !== country/);
-  assert.match(directory, /const curatedRank = new Map\(curatedDestinations\.map/);
+  assert.match(search, /exactLookupSucceeded && exact.length === 1/);
   assert.doesNotMatch(search, /Math\.random|guaranteed availability/);
 });

@@ -33,22 +33,30 @@ function curatedMatches(search: string, country: string): DestinationCardInfo[] 
     .filter(place => !country || place.country === country);
 }
 
-async function findMatches(search: string, country: string): Promise<DestinationCardInfo[]> {
+async function findMatches(search: string, country: string): Promise<{ places: DestinationCardInfo[]; exactLookupSucceeded: boolean }> {
   const found = new Map<string, DestinationCardInfo>();
   for (const place of curatedMatches(search, country)) found.set(identity(place), place);
+  let exactLookupSucceeded = false;
   // This is only destination identity data. Supplier products are loaded on the city page.
   try {
     // Escape user LIKE operators so the query is a bounded literal substring search.
     const escaped = search.replace(/[\\%_]/g, "\\$&");
-    let lookup = supabase.from("destinations")
-      .select("slug,name,description,country")
-      .eq("is_active", true)
-      .ilike("name", "%" + escaped + "%")
-      .order("name", { ascending: true })
-      .limit(MAX_RESULTS);
-    if (country) lookup = lookup.eq("country", country);
-    const { data, error } = await lookup.abortSignal(AbortSignal.timeout(4500));
-    if (!error && Array.isArray(data)) for (const place of data) {
+    const scopedLookup = () => {
+      const query = supabase.from("destinations")
+        .select("slug,name,description,country")
+        .eq("is_active", true);
+      return country ? query.eq("country", country) : query;
+    };
+    // Rank exact matches before limiting partial matches, including duplicate
+    // names across different countries or regions.
+    const [exact, partial] = await Promise.all([
+      scopedLookup().ilike("name", escaped).order("slug").limit(MAX_RESULTS)
+        .abortSignal(AbortSignal.timeout(4500)),
+      scopedLookup().ilike("name", "%" + escaped + "%").order("name").order("slug").limit(MAX_RESULTS)
+        .abortSignal(AbortSignal.timeout(4500)),
+    ]);
+    exactLookupSucceeded = !exact.error;
+    for (const place of [...(exact.data ?? []), ...(partial.data ?? [])]) {
       if (typeof place.slug !== "string" || place.slug.length > 140 || !SLUG.test(place.slug) ||
           typeof place.name !== "string" || !place.name.trim()) continue;
       const geography = destinationGeography(place.slug, typeof place.country === "string" ? place.country : null);
@@ -68,7 +76,7 @@ async function findMatches(search: string, country: string): Promise<Destination
     // Keep editorial destinations searchable if the database is temporarily unavailable.
   }
   const exact = search.toLocaleLowerCase("en");
-  return [...found.values()].sort((a, b) => {
+  const places = [...found.values()].sort((a, b) => {
     const score = (place: DestinationCardInfo) => {
       const name = place.title.toLocaleLowerCase("en");
       return name === exact ? 0 : name.startsWith(exact) ? 1 : 2;
@@ -76,6 +84,7 @@ async function findMatches(search: string, country: string): Promise<Destination
     return score(a) - score(b) || a.title.localeCompare(b.title) ||
       (a.country ?? "").localeCompare(b.country ?? "");
   }).slice(0, MAX_RESULTS);
+  return { places, exactLookupSucceeded };
 }
 
 export default async function DestinationSearchPage({ searchParams }: Props) {
@@ -87,17 +96,13 @@ export default async function DestinationSearchPage({ searchParams }: Props) {
 
   const valid = search.length <= 70 && NAME_QUERY.test(search) &&
     !search.includes("..") && !search.includes("://");
-  // An established editorial city can open immediately without a supplier or
-  // database round trip. Respect any explicit country filter.
-  const curatedExact = valid ? curatedMatches(search, country).filter(place =>
-    place.title.normalize("NFKC").toLocaleLowerCase("en") === search.toLocaleLowerCase("en")) : [];
-  if (curatedExact.length === 1) redirect(destinationDetailHref(curatedExact[0]));
-  const places = valid ? await findMatches(search, country) : [];
+  const { places, exactLookupSucceeded } = valid ? await findMatches(search, country)
+    : { places: [], exactLookupSucceeded: false };
   const exact = places.filter(place => place.title.normalize("NFKC").toLocaleLowerCase("en") ===
     search.toLocaleLowerCase("en"));
   // A single unambiguous exact match opens a NEW destination page immediately.
   // Never silently choose one of two different countries with the same city name.
-  if (exact.length === 1) redirect(destinationDetailHref(exact[0]));
+  if (exactLookupSucceeded && exact.length === 1) redirect(destinationDetailHref(exact[0]));
 
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--bg-soft)]">
@@ -107,7 +112,7 @@ export default async function DestinationSearchPage({ searchParams }: Props) {
         </Link>
         <h1 className="mt-4 text-3xl font-bold">Destination search results</h1>
         <p className="mt-2 text-sm text-[var(--text-soft)]">
-          {valid ? `Search results for “${search}”` : "Enter a city or country name to search."}
+          {valid ? `Search results for “${search}”` : "Enter a city name to search."}
         </p>
         <form role="search" method="get" action="/destinations/search" className="mt-5 flex max-w-xl flex-col gap-2 sm:flex-row">
           {country && <input type="hidden" name="country" value={country}/>}

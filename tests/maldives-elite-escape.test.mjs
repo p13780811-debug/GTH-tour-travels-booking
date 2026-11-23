@@ -172,11 +172,11 @@ test("Explore Transport connects to existing transfer hub and no unwanted sectio
 
 test("country links preserve exact territory instead of dropping filters outside the first global batch",()=>{
   const code=source("src/app/destinations/page.tsx");
-  assert.match(code,/loadDestinations\(countryFilter = ""\)/);
-  assert.match(code,/request\.eq\("country", countryFilter\)/);
-  assert.match(code,/loadDestinations\(requestedCountry\)/);
+  assert.match(code,/query\.eq\("country", country\)/);
+  assert.match(code,/loadDirectoryPage\(requestedPage, country, region, sort\)/);
+  assert.match(code,/scopeCountries\.includes\(item\.country\)/);
+  assert.match(code,/country\.is\.null,slug\.in/);
   assert.match(code,/const country = requestedCountry/);
-  assert.match(code,/match\.country !== requestedCountry/);
   assert.match(code,/Explore \$\{country\} destinations/);
 });
 

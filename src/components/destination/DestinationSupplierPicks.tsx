@@ -4,6 +4,7 @@ import {ArrowRight, Building2, Compass, Hotel, MapPin} from "lucide-react";
 import {getSupplierCatalog,getSupplierAttractions} from "@/lib/tours/supplier-catalog";
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
+import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import {stadiums} from "@/lib/travel/stadiums";
 
@@ -31,26 +32,26 @@ export default async function DestinationSupplierPicks({city,country,countryCode
     validIdentity?getSupplierAttractions(city,country!):Promise.resolve([]),
     validIdentity&&code?getFreeHotelProfiles(code,city,1):Promise.resolve({items:[]}),
   ] as const);
-  const tours=tourResult.status==="fulfilled"?tourResult.value.items.slice(0,3):[];
-  const activities=activityResult.status==="fulfilled"?activityResult.value.items.slice(0,3):[];
+  const tours=tourResult.status==="fulfilled"?tourResult.value.items:[];
+  const activities=activityResult.status==="fulfilled"?activityResult.value.items:[];
   const attractions=attractionResult.status==="fulfilled"?attractionResult.value:[];
-  const hotels=hotelResult.status==="fulfilled"?hotelResult.value.items.slice(0,3):[];
+  const hotels=hotelResult.status==="fulfilled"?hotelResult.value.items:[];
   // Recheck identity even when an upstream response is already scoped.
   const matching=(value:{city:{name:string;country:string}})=>
     !!country&&cityName(value.city.name)===cityName(city)&&countryName(value.city.country)===countryName(country);
-  const toursCards:Pick[]=tours.filter(matching).map(p=>({
+  const toursCards:Pick[]=tours.filter(matching).slice(0,3).map(p=>({
     id:"tour-"+p.id,title:p.title,detail:"Supplier-listed audio tour; dates and prices checked on booking",
     href:p.href,image:p.image,external:true,
   }));
-  const activitiesCards:Pick[]=activities.filter(matching).map(p=>({
+  const activitiesCards:Pick[]=activities.filter(matching).slice(0,3).map(p=>({
     id:"activity-"+p.id,title:p.title,detail:p.admissionOnly?"Supplier-listed attraction admission":"Supplier-listed ticket and audio experience",
     href:p.href,image:p.image,external:true,
   }));
-  const attractionCards:Pick[]=attractions.filter(matching).map(p=>({
+  const attractionCards:Pick[]=attractions.filter(matching).slice(0,3).map(p=>({
     id:"attraction-"+p.id,title:p.name,detail:"Supplier attraction reference; browse the matching city collection",
     href:p.href,image:p.image,external:true,
   }));
-  const hotelCards:Pick[]=hotels.filter(p=>cityName(p.city)===cityName(city)&&p.country===code&&safeHotelId(p.id)).map(p=>{
+  const hotelCards:Pick[]=hotels.filter(p=>cityName(p.city)===cityName(city)&&p.country===code&&safeHotelId(p.id)).slice(0,3).map(p=>{
     const url=new URL("/hotels/"+encodeURIComponent(p.id),HOTEL_BOOKING_ORIGIN);
     url.searchParams.set("language","en");url.searchParams.set("currency","INR");
     return {id:"hotel-"+p.id,title:p.name,detail:"Supplier hotel profile · room availability and prices require dates",
@@ -61,15 +62,21 @@ export default async function DestinationSupplierPicks({city,country,countryCode
       detail:v.sports.join(" · ")+" · official event information",
       href:"/stadiums/"+v.slug,image:null,external:false})):[];
   const query=new URLSearchParams({city}).toString();
+  const hotelQuery = new URLSearchParams({ view: "booking", city, ...(code ? { country: code } : {}) });
+  const hasReviewedHotelDestination = (code === "IN" && cityName(city) === "goa")
+    || (code === "AE" && cityName(city) === "dubai");
+  const reviewedHotelHref = hasReviewedHotelDestination ? trackedHotelCityHref(city) : null;
   const sections:Section[]=[
-    {id:"destination-tours",title:"3 popular tours in "+city,hint:"Supplier-popular tours in this exact city · not invented ratings",
+    {id:"destination-tours",title:"Popular tours in "+city,hint:"Supplier-popular tours in this exact city · not invented ratings",
       empty:"No matching supplier tours returned for this city.",href:"/tours?"+query+"#discover",cta:"Explore city tours",items:toursCards},
-    {id:"destination-activities",title:"3 activities in "+city,hint:"Supplier ticket and activity products, checked against city and country",
+    {id:"destination-activities",title:"Activities in "+city,hint:"Supplier ticket and activity products, checked against city and country",
       empty:"No matching supplier activities returned for this city.",href:"/activities?"+query+"#discover",cta:"Explore city activities",items:activitiesCards},
-    {id:"destination-attractions",title:"3 attractions in "+city,hint:"Attractions from the supplier city collection, not a separate local DB",
+    {id:"destination-attractions",title:"Attractions in "+city,hint:"Attractions from the supplier city collection, not a separate local DB",
       empty:"No matching supplier attractions returned for this city.",href:"/activities?"+query+"#discover",cta:"Find city attractions",items:attractionCards},
-    {id:"destination-hotels",title:"3 stays in "+city,hint:"Supplier hotel profiles only; no fabricated dates or live room rates",
-      empty:"No exact city-matched supplier hotel profiles available.",href:HOTEL_BOOKING_ORIGIN,cta:"Search stays with dates",items:hotelCards},
+    {id:"destination-hotels",title:"Stays in "+city,hint:"Supplier hotel profiles only; no fabricated dates or live room rates",
+      empty:"No exact city-matched supplier hotel profiles available.",
+      href:(!hotelCards.length && reviewedHotelHref) || "/hotels?" + hotelQuery.toString() + "#hotel-booking-experience",
+      cta:"Search stays with dates",items:hotelCards},
     {id:"destination-stadiums",title:"Stadiums in "+city,hint:"Up to 3 host-city venue guides with official schedule references; not live seats",
       empty:"No verified stadium guide mapped to this exact city.",href:"/stadiums",cta:"Browse stadium guide directory",items:venueCards},
   ];
