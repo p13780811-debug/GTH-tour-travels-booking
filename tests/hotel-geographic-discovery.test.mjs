@@ -28,6 +28,13 @@ test("hotel content is bounded, country/city verified and has no cached rates, k
  assert.doesNotMatch(JSON.stringify(parsed),/private|apiKey|price|GB/);
  assert.equal(api.parseNuiteeHotels({data:[profile("lp12345","IN","Pune")]},"IN","Mumbai").items.length,0);
 });
+test("lowercase supplier ISO codes match the requested country while foreign and other-city hotels stay out",async()=>{
+ const {api}=service({fetcher:async()=>Response.json({data:[
+  profile("lp12345","in"),profile("lp54321","gb"),profile("lp98765","in","Pune"),
+ ]})});
+ const {items}=await api.getFreeHotelProfiles("IN","Mumbai",1);
+ assert.deepEqual(Array.from(items,({id,city,country})=>({id,city,country})),[{id:"lp12345",city:"Mumbai",country:"IN"}]);
+});
 test("nearest profiles are ranked within the requested city sample, not by another visitor's location",()=>{
  const list=[{id:"far",latitude:20,longitude:72.8},{id:"near",latitude:19.01,longitude:72.8}];
  assert.equal(geography.nearestHotelProfiles(list,{lat:19.01,lon:72.8})[0].id,"near");
