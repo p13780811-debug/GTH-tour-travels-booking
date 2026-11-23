@@ -43,7 +43,11 @@ export default function DestinationTravelSearch({city, country, countryCode}: {
       </h2>
       <div role="group" aria-label="Travel search type" className="mt-4 flex flex-wrap gap-2">
         {panels.map(([key, label]) => <button key={key} id={"destination-"+key+"-tab"} type="button" aria-pressed={active === key}
-          onClick={() => { setActive(key); if (key === "transport") setTransportOpened(true); }}
+          onClick={() => {
+            setActive(key);
+            if (key === "transport") setTransportOpened(true);
+            window.history.replaceState(window.history.state, "", "#destination-" + key + "-tab");
+          }}
           className={active === key
             ? "gth-btn-gold min-h-11 rounded-xl px-4 text-sm font-semibold"
             : "min-h-11 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold"}>

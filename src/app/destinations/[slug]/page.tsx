@@ -224,6 +224,9 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       <DestinationTravelSearch key={slug + ":" + destination.country} city={destination.name} country={destination.country}
         countryCode={destination.countryCode ?? countryCodeForDestinationName(destination.country)}/>
       <TravelSectionNav />
+      <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
+        <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
+      </Suspense>
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
@@ -233,9 +236,6 @@ export default async function DestinationPage({ params, searchParams }: Props) {
           Explore mapped attractions <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </nav>}
-      <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
-        <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
-      </Suspense>
 
       <section id="destination-discovery" className="mx-auto grid max-w-7xl scroll-mt-20 gap-6 px-4 py-12 sm:px-6 md:py-14 lg:grid-cols-[1fr_300px]">
         <article>
