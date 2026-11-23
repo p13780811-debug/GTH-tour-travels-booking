@@ -14,7 +14,9 @@ export function parseNuiteeHotels(input:unknown,country:string,city=""):{items:H
   for(const value of data.slice(0,24)){
     if(!value||typeof value!=="object")continue;
     const row=value as Record<string,unknown>;
-    if(typeof row.id!=="string"||!/^[A-Za-z0-9_-]{1,100}$/.test(row.id)||seen.has(row.id)||row.country!==country)continue;
+    // Supplier records can use lowercase ISO codes even for an uppercase query.
+    if(typeof row.country!=="string"||!/^[A-Za-z]{2}$/.test(row.country)||row.country.toUpperCase()!==country)continue;
+    if(typeof row.id!=="string"||!/^[A-Za-z0-9_-]{1,100}$/.test(row.id)||seen.has(row.id))continue;
     const name=text(row.name,160);if(name.length<3)continue;
     validCountryProfiles++;
     if(city&&!cityNames.includes(text(row.city,100).normalize("NFKC").trim().toLocaleLowerCase("en")))continue;
