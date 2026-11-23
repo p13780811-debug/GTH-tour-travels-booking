@@ -15,6 +15,7 @@ test("mobile website Home icon and PWA Home icon both open GTH PRO Home",()=>{
  assert.match(nav,/const target = isApp \? appHref : href/);
  assert.match(nav,/prefetch=\{name==="Home"\?false:undefined\}/);
  assert.match(nav,/pathname\.startsWith\(appHref \+ "\/"\)/);
+ assert.match(nav,/name === "Home" && !isApp \? "App Home" : name/);
  assert.match(nav,/env\(safe-area-inset-bottom/);
 });
 
@@ -25,6 +26,7 @@ test("PWA launches the ecosystem-and-dashboard unified Home without provider dup
  const manifest=read("src/app/manifest.ts");
  assert.match(page,/<EcosystemHeroCarousel embedded\/>/);
  assert.match(page,/<MobileAppDashboard mode="tools" compactHome\/>/);
+ assert.match(page,/<a href="\/"[^>]*>\s*Website homepage/);
  assert.match(alias,/redirect\("\/app"\)/);
  assert.match(alias,/robots:\{index:false,follow:false\}/);
  assert.match(manifest,/scope: "\/app"/);

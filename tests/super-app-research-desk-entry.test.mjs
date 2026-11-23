@@ -5,10 +5,10 @@ const source=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("website mobile flagship exposes real Super App and Research Desk links without replacing /",()=>{
  const flagship=source("src/components/home/FlagshipHome.tsx");
- assert.match(flagship,/aria-label="GTH PRO Home and Research Desk shortcuts"/);
- assert.match(flagship,/href="\/app"[^>]*>\s*Open GTH PRO Home/);
+ assert.match(flagship,/aria-label="GTH PRO app and Research Desk shortcuts"/);
+ assert.match(flagship,/href="\/app"[^>]*>\s*Open GTH PRO App Home/);
  assert.match(flagship,/href="\/app\/board"[^>]*>\s*My Research Desk/);
- assert.ok(flagship.indexOf('aria-label="GTH PRO Home and Research Desk shortcuts"')<flagship.indexOf('id="pillars"'));
+ assert.ok(flagship.indexOf('aria-label="GTH PRO app and Research Desk shortcuts"')<flagship.indexOf('id="pillars"'));
  assert.doesNotMatch(flagship,/onClick=|fetch\(|createClient|SUPABASE_SERVICE_ROLE_KEY/);
  assert.match(source("src/app/page.tsx"),/return <FlagshipHome \/>/);
  assert.match(source("src/components/MobileNav.tsx"),/href: "\/app", appHref: "\/app", name: "Home"/);

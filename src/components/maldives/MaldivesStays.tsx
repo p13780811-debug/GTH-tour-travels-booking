@@ -16,7 +16,7 @@ export type MaldivesStaySelection = {
 export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
   const ages=stay.children ? stay.children.split(",").map(Number):[];
   return <section id="maldives-stays" aria-labelledby="maldives-stays-title"
-    className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-12 sm:px-6 lg:py-16">
+    className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 lg:py-12">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-[var(--gold)]">
@@ -26,14 +26,10 @@ export default function MaldivesStays({stay}:{stay:MaldivesStaySelection}){
           Real resorts. Direct hotel booking.
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">
-          Choose your island resort below — each card opens that hotel’s booking page with upcoming dates and guest defaults.
-          Explore properties around Malé, North & South Malé, Baa and Ari Atolls.
+          Compare resorts across Malé, Baa and Ari Atolls. Open any card to check dates and room availability for that resort.
         </p>
       </div>
-      <a href="#maldives-hotels-grid"
-        className="gth-btn-gold inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold">
-        Browse Maldives resorts <ArrowUpRight size={16} aria-hidden="true"/>
-      </a>
+      <p className="text-xs text-[var(--text-soft)] lg:hidden">Swipe to see all {VERIFIED_MALDIVES_HOTELS.length} resorts.</p>
     </div>
     <div role="region" id="maldives-hotels-grid" aria-label="Verified Maldives resort booking cards — swipe to explore"
       tabIndex={0} className="mt-6 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-5 scroll-mt-24 sm:gap-4 lg:grid lg:grid-cols-3 lg:overflow-visible xl:grid-cols-4">

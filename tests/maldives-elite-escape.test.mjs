@@ -63,7 +63,8 @@ test("Maldives hero has one wide photo, a full-page white-label link and NO embe
   assert.match(hero,/href=\{HOTEL_BOOKING_ORIGIN\}/);
   assert.match(hero,/target="_blank"/);
   assert.match(hero,/Open Hotels &amp; Flights/);
-  assert.match(hero,/src=\{photo\}/);
+  assert.match(hero,/src=\{photo === failedPhoto \? "\/images\/cities\/maldives\.jpg" : photo\}/);
+  assert.match(hero,/onError=\{\(\) => setFailedPhoto\(photo\)\}/);
   assert.match(hero,/sm:h-\[350px\] lg:h-\[440px\]/);
   assert.match(hero,/min-h-12/);
   assert.doesNotMatch(page,/<MaldivesHero|MaldivesExperiences|MaldivesConnectivity|maldives-essentials/);

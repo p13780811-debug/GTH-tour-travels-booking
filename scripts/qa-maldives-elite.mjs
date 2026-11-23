@@ -44,7 +44,7 @@ try {
     const response=await page.goto(origin+"/maldives-elite-escape",{waitUntil:"domcontentloaded",timeout:45000});
     assert.equal(response?.status(),200);
     await page.getByRole("heading",{name:"Maldives Elite Escape"}).waitFor();
-    const heroPhoto=page.locator('img[alt^="Maldives lagoon with aerial overwater villas"]');
+    const heroPhoto=page.locator('img[alt="Maldives lagoon and island resorts"]');
     assert.equal(await heroPhoto.count(),1,"Missing Maldives Pexels hero image");
     assert.match(await heroPhoto.getAttribute("src")||"",/pexels/i,
       "Hero must render Pexels rather than Unsplash");
