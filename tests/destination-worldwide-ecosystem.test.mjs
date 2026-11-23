@@ -64,7 +64,7 @@ test("every ecosystem link points to an existing app route; country-filtered ten
 test("live hotel and tour data, SEO and source honesty preserved",()=>{
  assert.match(index,/curatedDestinations\.map/);
  assert.match(index,/destinationImageForSlug\(item\.slug\)/);
- assert.match(index,/\.eq\("is_active", true\)/);
+ assert.match(index,/\.is\("is_active", true\)/);
  assert.match(index,/pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
  assert.match(detail,/<DestinationSupplierPicks city=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
  assert.match(supplier,/getSupplierCatalog\(/);

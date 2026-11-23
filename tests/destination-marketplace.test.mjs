@@ -70,9 +70,11 @@ test("legacy Digha route reuses source-aware guide, never mock room prices", () 
 test("worldwide directory uses source-backed active rows, geographic filters and URL-stable pagination",()=>{
  const listing=read("src/app/destinations/page.tsx");
  const geography=read("src/lib/destinations/geography.ts");
- assert.match(listing,/\.eq\("is_active", true\)/);
+ assert.match(listing,/\.is\("is_active", true\)/);
  assert.match(listing,/\.range\(first, first \+ perPage - 1\)/);
- assert.match(listing,/count: "exact"/);
+ assert.match(listing,/count: "exact", head: true/);
+ assert.match(listing,/const countDirectory = unstable_cache/);
+ assert.match(listing,/const readDirectoryPage = unstable_cache/);
  assert.doesNotMatch(listing,/offset < 1200/);
  assert.match(listing,/destinationGeography\(item\.slug, item\.country\)/);
  assert.match(listing,/name="region"/);
@@ -112,8 +114,9 @@ test("destination search opens a separate results page and an exact city detail"
   assert.match(directory, /action="\/destinations\/search" method="get"/);
   assert.match(geo, /action="\/destinations\/search"/);
   assert.match(search, /redirect\(destinationDetailHref\(exact\[0\]\)\)/);
-  assert.match(search, /\.eq\("is_active", true\)/);
+  assert.match(search, /\.is\("is_active", true\)/);
   assert.match(search, /\.limit\(MAX_RESULTS\)/);
+  assert.match(search, /const searchDirectory = unstable_cache/);
   assert.match(search, /country && geography\.country !== country/);
   assert.match(search, /exactLookupSucceeded && exact.length === 1/);
   assert.doesNotMatch(search, /Math\.random|guaranteed availability/);

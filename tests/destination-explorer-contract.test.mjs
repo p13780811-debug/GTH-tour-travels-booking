@@ -10,7 +10,7 @@ test("destination explorer retains search, geography, sort, pagination and sourc
  for(const p of ['params.set("search", search)','params.set("country", country)','params.set("region", region)','params.set("sort", sort)','params.set("view", "list")'])assert.ok(page.includes(p),p);
  assert.match(page,/const perPage = 18/);
  assert.match(page,/filtered\.slice/);
- assert.match(page,/\.eq\("is_active", true\)/);
+ assert.match(page,/\.is\("is_active", true\)/);
  assert.match(page,/<DestinationExplorerResults items=\{visible\} initialView=\{view\} page=\{page\}\/>/);
 });
 

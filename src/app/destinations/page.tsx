@@ -1,6 +1,7 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, SlidersHorizontal, MapPinned, BadgeCheck } from "lucide-react";
@@ -56,6 +57,54 @@ const curatedDirectory: Destination[] = curatedDestinations.map(item => ({
 }));
 const curatedByCity = new Map(curatedDirectory.map(item => [cityKey(item), item]));
 
+function directoryQuery(country: string, region: string, countOnly = false) {
+  const regionCountries = destinationCountriesForRegion(region);
+  const scopeCountries = country ? [country] : regionCountries;
+  // Some original editorial rows predate the database country field.
+  const legacySlugs = curatedDirectory.filter(item => item.country && scopeCountries.includes(item.country))
+    .map(item => item.slug);
+  const table = supabase.from("destinations");
+  const query = (countOnly
+    ? table.select("slug", { count: "exact", head: true })
+    : table.select("name,slug,description,country"))
+    .is("is_active", true);
+  if (legacySlugs.length) {
+    // Values are validated country labels and checked-in editorial slugs.
+    const labels = scopeCountries.map(label => '"' + label + '"').join(",");
+    return query.or(`country.in.(${labels}),and(country.is.null,slug.in.(${legacySlugs.join(",")}))`);
+  }
+  if (country) return query.eq("country", country);
+  if (regionCountries.length) return query.in("country", regionCountries);
+  return query;
+}
+
+const directoryCache = { revalidate: 600, tags: ["public-destination-catalog"] };
+
+// Share each exact count across all page numbers and sort orders in the same scope.
+const countDirectory = unstable_cache(async (country: string, region: string) => {
+  const { count, error } = await withDiscoveryDeadline(
+    directoryQuery(country, region, true).limit(1).abortSignal(AbortSignal.timeout(4_500)), 4_500,
+  );
+  if (error || count === null) throw new Error("Destination count unavailable");
+  return count;
+}, ["destination-directory-count-v1"], directoryCache);
+
+const readDirectoryPage = unstable_cache(async (
+  page: number, country: string, region: string, sort: "name" | "country",
+) => {
+  const first = (page - 1) * perPage;
+  const query = directoryQuery(country, region);
+  if (sort === "country") query.order("country", { ascending: true, nullsFirst: false });
+  const result = await withDiscoveryDeadline(
+    query.order("name").order("slug").order("id")
+      .range(first, first + perPage - 1)
+      .abortSignal(AbortSignal.timeout(4_500)),
+    4_500,
+  );
+  if (result.error || !result.data) throw new Error("Destination page unavailable");
+  return result.data;
+}, ["destination-directory-page-v1"], directoryCache);
+
 async function loadDirectoryPage(
   requestedPage: number,
   country: string,
@@ -63,48 +112,19 @@ async function loadDirectoryPage(
   sort: "name" | "country",
 ) {
   const regionCountries = destinationCountriesForRegion(region);
-  const requireRegion = regionCountries.length > 0;
-  if (country && requireRegion && !regionCountries.includes(country)) {
+  if (country && regionCountries.length && !regionCountries.includes(country)) {
     return { items: [], total: 0, page: 1, fallback: false };
   }
-  const scopeCountries = country ? [country] : regionCountries;
-  // Some original editorial rows predate the database country field.
-  const legacySlugs = curatedDirectory.filter(item => item.country && scopeCountries.includes(item.country))
-    .map(item => item.slug);
-
-  async function readPage(page: number, signal: AbortSignal) {
-    const first = (page - 1) * perPage;
-    let query = supabase.from("destinations")
-      .select("name,slug,description,country", { count: "exact" })
-      .eq("is_active", true);
-    if (legacySlugs.length) {
-      // Values are validated country labels and checked-in editorial slugs.
-      const labels = scopeCountries.map(label => '"' + label + '"').join(",");
-      query = query.or(`country.in.(${labels}),and(country.is.null,slug.in.(${legacySlugs.join(",")}))`);
-    } else if (country) query = query.eq("country", country);
-    else if (requireRegion) query = query.in("country", regionCountries);
-    if (sort === "country") query = query.order("country", { ascending: true, nullsFirst: false });
-    return query.order("name").order("slug").order("id")
-      .range(first, first + perPage - 1)
-      .abortSignal(signal);
-  }
-
+  // A matching country already narrows the query to the requested region.
+  const regionScope = country ? "" : region;
   try {
-    const deadline = AbortSignal.timeout(4_500);
-    let readPageNumber = requestedPage;
-    let result = await withDiscoveryDeadline(readPage(readPageNumber, deadline));
-    // PostgREST can reject an offset past the end without a usable count.
-    if (result.status === 416 && readPageNumber > 1) {
-      readPageNumber = 1;
-      result = await withDiscoveryDeadline(readPage(readPageNumber, deadline));
-    }
-    const total = result.count;
-    if (result.error || total === null) throw new Error("Directory unavailable");
-    const page = Math.min(requestedPage, Math.max(1, Math.ceil(total / perPage)));
-    if (total === 0) return { items: [], total, page, fallback: false };
-    if (page !== readPageNumber) result = await withDiscoveryDeadline(readPage(page, deadline));
-    if (result.error || !result.data) throw new Error("Directory unavailable");
-    const items: Destination[] = result.data.flatMap(item => {
+    const { total, page, rows } = await withDiscoveryDeadline((async () => {
+      const total = await countDirectory(country, regionScope);
+      const page = Math.min(requestedPage, Math.max(1, Math.ceil(total / perPage)));
+      const rows = total ? await readDirectoryPage(page, country, regionScope, sort) : [];
+      return { total, page, rows };
+    })());
+    const items: Destination[] = rows.flatMap(item => {
       if (typeof item.slug !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)
           || item.slug.length > 140 || typeof item.name !== "string" || !item.name.trim()) return [];
       const geography = destinationGeography(item.slug, item.country);
@@ -166,7 +186,6 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
 
 export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
   // Strict country context is preserved even when the first global catalog batch lacks it.
   const requestedCountry = validatedCountry(params.country);
@@ -184,6 +203,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const region = typeof params.region === "string" && regions.includes(params.region) ? params.region : "";
   const sort = params.sort === "country" ? "country" : "name";
   const view = params.view === "list" ? "list" : "grid";
+  const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const [mapped, directory] = await Promise.all([mappedPromise, loadDirectoryPage(requestedPage, country, region, sort)]);
   const { items: visible, total, page, fallback } = directory;
   const pages = Math.max(1, Math.ceil(total / perPage));
