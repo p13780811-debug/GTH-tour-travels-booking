@@ -5,6 +5,7 @@ import {getSupplierCatalog,getSupplierAttractions} from "@/lib/tours/supplier-ca
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
+import {trackKlookDestination} from "@/lib/travel/partner-search";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import {stadiums} from "@/lib/travel/stadiums";
 
@@ -17,6 +18,29 @@ const countryName=(value:string)=>value.normalize("NFKC").trim().toLocaleLowerCa
 const internal=(href:string)=>href.startsWith("/")&&!href.startsWith("//");
 const safeHotelId=(id:string)=>/^[A-Za-z0-9_-]{1,100}$/.test(id);
 
+// Public product pages with itineraries explicitly located in Goa, India.
+// Display the product and direct handoff only. Prices, photos and availability
+// are owned by the supplier and checked on its booking page.
+const goaExperiences = {
+  tours: [
+    ["17261", "North Goa Tour by Luxury Coach", "17261-north-luxury-coach-tour-goa"],
+    ["17259", "South Goa Tour by Luxury Coach", "17259-south-luxury-coach-tour-goa"],
+  ],
+  activities: [
+    ["117288", "Mandovi Sunset Boat Party", "117288-mandovi-sunset-boat-party"],
+    ["185490", "Vihaan Evening Dinner Cruise", "185490-vihaan-evening-dinner-cruise-experience"],
+  ],
+} as const;
+
+function goaProductLinks(kind: keyof typeof goaExperiences): Pick[] {
+  return goaExperiences[kind].flatMap(([id, title, product]) => {
+    const href = trackKlookDestination(new URL("https://www.klook.com/en-IN/activity/" + product + "/"),
+      "gth_goa_" + id);
+    return href ? [{ id: "goa-" + id, title, detail: "Goa, India · Check dates on the booking page",
+      href, image: null, external: true }] : [];
+  });
+}
+
 /**
  * Cards are supplier-returned products only, never public.destinations,
  * public.hotels, OSM or demo rows. A destination record supplies identity only.
@@ -25,6 +49,7 @@ const safeHotelId=(id:string)=>/^[A-Za-z0-9_-]{1,100}$/.test(id);
  */
 export default async function DestinationSupplierPicks({city,country,countryCode}:Props) {
   const code=countryCode&&/^[A-Z]{2}$/.test(countryCode)?countryCode:countryCodeForDestinationName(country);
+  const isGoa = code === "IN" && cityName(city) === "goa";
   const validIdentity=city.length>=2&&city.length<=80&&!!country&&country.length<=100;
   const [tourResult,activityResult,attractionResult,hotelResult]=await Promise.allSettled([
     validIdentity?getSupplierCatalog({city,currency:"USD"},"/tours",country!):Promise.resolve({items:[]}),
@@ -63,16 +88,19 @@ export default async function DestinationSupplierPicks({city,country,countryCode
       href:"/stadiums/"+v.slug,image:null,external:false})):[];
   const query=new URLSearchParams({city}).toString();
   const hotelQuery = new URLSearchParams({ view: "booking", city, ...(code ? { country: code } : {}) });
-  const hasReviewedHotelDestination = (code === "IN" && cityName(city) === "goa")
-    || (code === "AE" && cityName(city) === "dubai");
+  const hasReviewedHotelDestination = isGoa || (code === "AE" && cityName(city) === "dubai");
   const reviewedHotelHref = hasReviewedHotelDestination ? trackedHotelCityHref(city) : null;
+  const goaTours = isGoa ? trackKlookDestination(new URL("https://www.klook.com/en-IN/destination/c178-goa/1001-tours/"), "gth_goa_tours") : null;
+  const goaActivities = isGoa ? trackKlookDestination(new URL("https://www.klook.com/en-IN/destination/c178-goa/1-things-to-do/"), "gth_goa_activities") : null;
   const sections:Section[]=[
-    {id:"destination-tours",title:"Popular tours in "+city,hint:"Supplier-popular tours in this exact city · not invented ratings",
-      empty:"No matching supplier tours returned for this city.",href:"/tours?"+query+"#discover",cta:"Explore city tours",items:toursCards},
+    {id:"destination-tours",title:"Popular tours in "+city,hint:"Supplier-listed tours for this destination",
+      empty:"No matching supplier tours returned for this city.",href:goaTours || "/tours?"+query+"#discover",
+      cta:"Explore city tours",items: toursCards.length || !isGoa ? toursCards : goaProductLinks("tours")},
     {id:"destination-activities",title:"Activities in "+city,hint:"Supplier ticket and activity products, checked against city and country",
-      empty:"No matching supplier activities returned for this city.",href:"/activities?"+query+"#discover",cta:"Explore city activities",items:activitiesCards},
+      empty:"No matching supplier activities returned for this city.",href:goaActivities || "/activities?"+query+"#discover",
+      cta:"Explore city activities",items: activitiesCards.length || !isGoa ? activitiesCards : goaProductLinks("activities")},
     {id:"destination-attractions",title:"Attractions in "+city,hint:"Attractions from the supplier city collection, not a separate local DB",
-      empty:"No matching supplier attractions returned for this city.",href:"/activities?"+query+"#discover",cta:"Find city attractions",items:attractionCards},
+      empty:"No matching supplier attractions returned for this city.",href:goaActivities || "/activities?"+query+"#discover",cta:"Find city attractions",items:attractionCards},
     {id:"destination-hotels",title:"Stays in "+city,hint:"Supplier hotel profiles only; no fabricated dates or live room rates",
       empty:"No exact city-matched supplier hotel profiles available.",
       href:(!hotelCards.length && reviewedHotelHref) || "/hotels?" + hotelQuery.toString() + "#hotel-booking-experience",
