@@ -21,6 +21,6 @@ test("featured cards, horizontal region rails and URL-stable directory paginatio
  assert.match(page,/rail\.items\.map\(\(destination\)=><DestinationCard/);
  assert.match(page,/snap-x snap-mandatory gap-4 overflow-x-auto/);
  assert.match(page,/pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
- assert.match(page,/action="\/destinations" method="get"/);
+ assert.match(page,/action="\/destinations\/search" method="get"/);
  assert.match(page,/DestinationExplorerResults items=\{visible\}/);
 });

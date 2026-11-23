@@ -1,7 +1,7 @@
 import "server-only";
 import {unstable_cache} from "next/cache";
 import {parseTourFilters,type ExperiencePath,type TourFilters} from "./discovery";
-import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,uniqueSupplierProducts,type SupplierCity,type SupplierProduct} from "./supplier-products";
+import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,supplierId,supplierImage,uniqueSupplierProducts,type SupplierCity,type SupplierProduct} from "./supplier-products";
 const MAX_BYTES=1_500_000;
 async function fetchSupplier(path:string,params:Record<string,string>):Promise<Record<string,unknown>>{
  const url=new URL(WEGOTRIP_API+path);for(const [key,value] of Object.entries(params))url.searchParams.set(key,value);
@@ -22,7 +22,7 @@ async function readSupplier(path:string,params:Record<string,string>,ttl:number)
 function list(value:unknown){return Array.isArray(value)?value.slice(0,100):[];}
 export type SupplierCatalog={items:SupplierProduct[];status:"ready"|"empty"|"unavailable"|"invalid"};
 /** Public supplier catalogue only: no seed records, privileged DB key or customer data. */
-export async function getSupplierCatalog(raw:TourFilters,mode:ExperiencePath):Promise<SupplierCatalog>{
+export async function getSupplierCatalog(raw:TourFilters,mode:ExperiencePath,expectedCountry?:string):Promise<SupplierCatalog>{
  const parsed=parseTourFilters(raw);if(!parsed.ok)return {items:[],status:"invalid"};
  const filters=parsed.filters,currency=filters.currency||"USD";
  // This supplier offers audio tours and ticket products, not guided day trips or city passes.
@@ -32,7 +32,7 @@ export async function getSupplierCatalog(raw:TourFilters,mode:ExperiencePath):Pr
   if(filters.city){
    const data=await readSupplier("/search/",{query:filters.city,currency},86400);
    const needle=filters.city.normalize("NFKC").toLocaleLowerCase().replaceAll("-"," ");
-   cities=list(data.results).filter(value=>object(value).type==="city"&&object(value).available===true).map(supplierCity).filter((city):city is SupplierCity=>Boolean(city)).filter(city=>city.name.normalize("NFKC").toLocaleLowerCase()===needle||city.slug.replaceAll("-"," ")===needle);
+   cities=list(data.results).filter(value=>object(value).type==="city"&&object(value).available===true).map(supplierCity).filter((city):city is SupplierCity=>Boolean(city)).filter(city=>(city.name.normalize("NFKC").toLocaleLowerCase()===needle||city.slug.replaceAll("-"," ")===needle)&&(!expectedCountry||city.country.normalize("NFKC").toLocaleLowerCase()===expectedCountry.normalize("NFKC").toLocaleLowerCase()));
    if(cities.length!==1)return {items:[],status:"empty"}; // Never guess among different cities.
   }else{
    // Public /tours must not depend on the supplier's globally ordered first city page:
@@ -76,4 +76,42 @@ export async function getSupplierCatalog(raw:TourFilters,mode:ExperiencePath):Pr
   if(filters.sort==="price")products.sort((a,b)=>(a.price??Infinity)-(b.price??Infinity));
   return {items:products.slice(0,12),status:products.length?"ready":batches.some(batch=>batch.status==="rejected")?"unavailable":"empty"};
  }catch{return {items:[],status:"unavailable"};}
+}
+
+/**
+ * Popular attractions directly returned by the public supplier city endpoint.
+ * This does NOT query Supabase/OSM, infer a place from a product title, or
+ * synthesize an attraction-specific booking URL. Each link is the supplier's
+ * verified city collection (the attraction page URL is not documented).
+ */
+export type SupplierAttraction=Readonly<{
+ id:number;name:string;image:string|null;city:SupplierCity;href:string;
+}>;
+export async function getSupplierAttractions(cityName:string,countryName:string):Promise<SupplierAttraction[]>{
+ const parsed=parseTourFilters({city:cityName});
+ if(!parsed.ok||!parsed.filters.city||!countryName||countryName.length>100)return [];
+ try{
+  const data=await readSupplier("/search/",{query:parsed.filters.city,currency:"USD"},86400);
+  const normalized=(value:string)=>value.normalize("NFKC").trim().toLocaleLowerCase("en");
+  const candidates=list(data.results).filter(value=>object(value).type==="city"&&object(value).available===true)
+   .map(supplierCity).filter((city):city is SupplierCity=>Boolean(city))
+   .filter(city=>normalized(city.name)===normalized(parsed.filters.city)&&normalized(city.country)===normalized(countryName));
+  if(candidates.length!==1)return [];
+  const city=candidates[0];
+  const results=await readSupplier("/attractions/",{city:String(city.id),lang:"en",popular:"true",page:"1"},86400);
+  const seen=new Set<number>(),items:SupplierAttraction[]=[];
+  const href="https://wegotrip.com/"+city.slug+"-d"+city.id+"/";
+  for(const value of list(results.results)){
+   const row=object(value),id=row.id;
+   const name=typeof row.name==="string"?row.name.trim().slice(0,160):"";
+   if(!supplierId(id)||seen.has(id)||!name||/[^\p{L}\p{M}\p{N} .,()&'’:-]/u.test(name))continue;
+   if(typeof row.itemsCount!=="number"||!Number.isSafeInteger(row.itemsCount)||row.itemsCount<=0)continue;
+   const statedCity=object(row.city);
+   if(statedCity.id!==undefined&&statedCity.id!==city.id)continue;
+   seen.add(id);
+   items.push({id,name,image:supplierImage(row.preview)||supplierImage(row.cover),city,href});
+   if(items.length===3)break;
+  }
+  return items;
+ }catch{return [];}
 }

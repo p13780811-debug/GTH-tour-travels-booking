@@ -44,7 +44,9 @@ test("live source progress has bounded queries and each travel page has a hard n
  for(const route of [guides,attractions,destinations])assert.ok(route.includes("withDiscoveryDeadline("));
  assert.ok(guides.includes("withDiscoveryDeadline(cachedSourceProgress()).catch"));
  assert.ok(attractions.includes("withDiscoveryDeadline(listPlaces(f))"));
- assert.ok(destinations.includes("withDiscoveryDeadline(loadDestinations())"));
- assert.ok(destinations.includes(".abortSignal(AbortSignal.timeout(4_500))"));
+ assert.ok(destinations.includes("withDiscoveryDeadline(readPage(readPageNumber, deadline))"));
+ assert.ok(destinations.includes('query.eq("country", country)'),"Filtered directory must read only selected territory");
+ assert.ok(destinations.includes("const deadline = AbortSignal.timeout(4_500)"));
+ assert.ok(destinations.includes(".abortSignal(signal)"));
  assert.ok(!osm.includes("service_role"),"read only with anonymous permissions");
 });

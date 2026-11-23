@@ -1,17 +1,19 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, Compass, Globe2, Hotel, Plane, Search, ShieldCheck, SlidersHorizontal, MapPinned, BadgeCheck } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationExplorerResults from "@/components/destination/DestinationExplorerResults";
+import DestinationDiscoveryScroll from "@/components/destination/DestinationDiscoveryScroll";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
-import { destinationGeography } from "@/lib/destinations/geography";
+import { destinationCountriesForRegion, destinationGeography, destinationRegions } from "@/lib/destinations/geography";
+import {validatedCountry} from "@/lib/destinations/country";
 import {cachedHomepageCities,withDiscoveryDeadline} from "@/lib/travel/cachedDiscovery";
 import MappedCityDiscovery from "@/components/travel/MappedCityDiscovery";
 import GeoCityIntro from "@/components/destination/GeoCityIntro";
-import { searchWorldwideCities } from "@/lib/router/worldCitySearch";
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -27,6 +29,10 @@ type Props = { searchParams: Promise<{ search?: string | string[]; page?: string
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
 
+/** Identify duplicate worldwide slugs by territory, not the slug alone. */
+const cityKey = (item:Pick<Destination,"slug"|"country">):string =>
+  item.slug+"::"+(item.country||"").normalize("NFKC").toLocaleLowerCase();
+
 function pageLink(search: string, page: number, country = "", region = "", sort = "name", view = "grid") {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
@@ -39,49 +45,92 @@ function pageLink(search: string, page: number, country = "", region = "", sort 
   return "/destinations" + (query ? "?" + query : "") + "#discover";
 }
 
-async function loadDestinations(): Promise<Destination[]> {
-  const base: Destination[] = curatedDestinations.map((item) => ({
-    slug: item.slug,
-    title: item.name,
-    image: item.image_url,
-    description: item.description,
-    location: "Editorial destination guide",
-    ...destinationGeography(item.slug),
-  }));
-  const all = new Map(base.map((item) => [item.slug, item]));
+
+const curatedDirectory: Destination[] = curatedDestinations.map(item => ({
+  slug: item.slug,
+  title: item.name,
+  image: item.image_url,
+  description: item.description,
+  location: "Editorial destination guide",
+  ...destinationGeography(item.slug),
+}));
+const curatedByCity = new Map(curatedDirectory.map(item => [cityKey(item), item]));
+
+async function loadDirectoryPage(
+  requestedPage: number,
+  country: string,
+  region: string,
+  sort: "name" | "country",
+) {
+  const regionCountries = destinationCountriesForRegion(region);
+  const requireRegion = regionCountries.length > 0;
+  if (country && requireRegion && !regionCountries.includes(country)) {
+    return { items: [], total: 0, page: 1, fallback: false };
+  }
+  const scopeCountries = country ? [country] : regionCountries;
+  // Some original editorial rows predate the database country field.
+  const legacySlugs = curatedDirectory.filter(item => item.country && scopeCountries.includes(item.country))
+    .map(item => item.slug);
+
+  async function readPage(page: number, signal: AbortSignal) {
+    const first = (page - 1) * perPage;
+    let query = supabase.from("destinations")
+      .select("name,slug,description,country", { count: "exact" })
+      .eq("is_active", true);
+    if (legacySlugs.length) {
+      // Values are validated country labels and checked-in editorial slugs.
+      const labels = scopeCountries.map(label => '"' + label + '"').join(",");
+      query = query.or(`country.in.(${labels}),and(country.is.null,slug.in.(${legacySlugs.join(",")}))`);
+    } else if (country) query = query.eq("country", country);
+    else if (requireRegion) query = query.in("country", regionCountries);
+    if (sort === "country") query = query.order("country", { ascending: true, nullsFirst: false });
+    return query.order("name").order("slug").order("id")
+      .range(first, first + perPage - 1)
+      .abortSignal(signal);
+  }
+
   try {
-    // Read real published catalogue rows in bounded batches; no page-size 200 truncation.
-    // Never surface inactive records or assume every DB location has licensed media.
-    for (let offset = 0; offset < 1200; offset += 200) {
-      const { data, error } = await supabase.from("destinations")
-        .select("name,slug,description,country")
-        .eq("is_active", true)
-        .order("name", { ascending: true })
-        .range(offset, offset + 199).abortSignal(AbortSignal.timeout(4_500));
-      if (error || !data) break;
-      for (const item of data) {
-      if (typeof item.slug !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(item.slug) || item.slug.length > 80
-        || typeof item.name !== "string" || !item.name.trim()) continue;
-      const previous = all.get(item.slug);
-      all.set(item.slug, {
+    const deadline = AbortSignal.timeout(4_500);
+    let readPageNumber = requestedPage;
+    let result = await withDiscoveryDeadline(readPage(readPageNumber, deadline));
+    // PostgREST can reject an offset past the end without a usable count.
+    if (result.status === 416 && readPageNumber > 1) {
+      readPageNumber = 1;
+      result = await withDiscoveryDeadline(readPage(readPageNumber, deadline));
+    }
+    const total = result.count;
+    if (result.error || total === null) throw new Error("Directory unavailable");
+    const page = Math.min(requestedPage, Math.max(1, Math.ceil(total / perPage)));
+    if (total === 0) return { items: [], total, page, fallback: false };
+    if (page !== readPageNumber) result = await withDiscoveryDeadline(readPage(page, deadline));
+    if (result.error || !result.data) throw new Error("Directory unavailable");
+    const items: Destination[] = result.data.flatMap(item => {
+      if (typeof item.slug !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)
+          || item.slug.length > 140 || typeof item.name !== "string" || !item.name.trim()) return [];
+      const geography = destinationGeography(item.slug, item.country);
+      const guide = curatedByCity.get(cityKey({ slug: item.slug, country: geography.country }));
+      return [{
         slug: item.slug,
         title: item.name.trim().slice(0, 120),
-        image: previous?.image || destinationImageForSlug(item.slug),
-        location: previous ? "Editorial destination guide" : "Destination directory",
-        ...destinationGeography(item.slug, item.country),
+        image: guide?.image || destinationImageForSlug(item.slug),
+        location: guide ? "Editorial destination guide" : "Destination directory",
+        ...geography,
         description: typeof item.description === "string" && item.description.trim()
           ? item.description.trim().slice(0, 280)
-          : previous?.description || "Explore local highlights and verify current travel details with official providers.",
-      });
-      }
-      if (data.length < 200) break;
-    }
+          : guide?.description || "Explore local highlights and current travel options.",
+      }];
+    });
+    return { items, total, page, fallback: false };
   } catch {
-    // Curated editorial guides remain available during data-provider outages.
+    const filtered = curatedDirectory.filter(item =>
+      (!country || item.country === country) && (!region || item.region === region));
+    if (sort === "country") {
+      filtered.sort((a, b) => (a.country ?? "").localeCompare(b.country ?? "") || a.title.localeCompare(b.title));
+    }
+    const page = Math.min(requestedPage, Math.max(1, Math.ceil(filtered.length / perPage)));
+    return { items: filtered.slice((page - 1) * perPage, page * perPage), total: filtered.length, page, fallback: true };
   }
-  return [...all.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
-
 
 function DestinationFilterForm({search,region,country,sort,view,regions,countries}:{
  search:string;region:string;country:string;sort:"name"|"country";view:"grid"|"list";
@@ -90,7 +139,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
  const control="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm text-[var(--text)]";
  return <form role="search" method="get" action="/destinations" aria-label="Refine destination directory" className="grid gap-4">
   <input type="hidden" name="view" value={view}/>
-  <label className="block text-xs font-semibold text-[var(--text)]">City, country or interest
+  <label className="block text-xs font-semibold text-[var(--text)]">City name
    <input type="search" name="search" defaultValue={search} maxLength={70} placeholder="Search destinations" className={control}/>
   </label>
   <label className="block text-xs font-semibold text-[var(--text)]">Region
@@ -105,7 +154,7 @@ function DestinationFilterForm({search,region,country,sort,view,regions,countrie
   </label>
   <label className="block text-xs font-semibold text-[var(--text)]">Sort results
    <select name="sort" defaultValue={sort} className={control}>
-    <option value="name">Destination name A–Z</option><option value="country">Country A–Z</option>
+    <option value="name">City A–Z</option><option value="country">Country A–Z</option>
    </select>
   </label>
   <div className="flex flex-wrap items-center gap-2">
@@ -119,51 +168,29 @@ export default async function DestinationsPage({ searchParams }: Props) {
   const params = await searchParams;
   const mappedPromise=withDiscoveryDeadline(cachedHomepageCities()).catch(()=>null);
   const search = (typeof params.search === "string" ? params.search : "").trim().slice(0, 70);
+  // Strict country context is preserved even when the first global catalog batch lacks it.
+  const requestedCountry = validatedCountry(params.country);
+  // Text searches have their own page. Do not hide the result under the full
+  // directory, where an unchanged hero makes navigation look broken on mobile.
+  if (search) {
+    const query = new URLSearchParams({search});
+    if (requestedCountry) query.set("country", requestedCountry);
+    redirect("/destinations/search?" + query.toString());
+  }
   const rawPage = typeof params.page === "string" ? params.page : "1";
   const requestedPage = /^[1-9]\d{0,3}$/.test(rawPage) ? Number(rawPage) : 1;
-  const fallbackDestinations:Destination[]=curatedDestinations.map(item=>({
-    slug:item.slug,title:item.name,image:item.image_url,description:item.description,
-    location:"Editorial destination guide",...destinationGeography(item.slug),
-  }));
-  const [mapped,allDestinations]=await Promise.all([
-    mappedPromise,
-    withDiscoveryDeadline(loadDestinations()).catch(()=>fallbackDestinations),
-  ]);
-  // User-driven bounded query extends the existing catalogue without
-  // scanning or rendering all 38,671 city rows on every request.
-  if (process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" && search.length >= 2) {
-    const matches = await searchWorldwideCities(supabase, search);
-    const present = new Set(allDestinations.map(city => city.slug));
-    for (const match of matches) {
-      if (present.has(match.slug)) continue;
-      present.add(match.slug);
-      allDestinations.push({
-        slug:match.slug, title:match.name,
-        image:destinationImageForSlug(match.slug),
-        location:"Worldwide city reference · supplier availability unverified",
-        description:"Explore local services, reviewed venues and country-level opportunities.",
-        ...destinationGeography(match.slug,match.country),
-      });
-    }
-  }
-  const countries = [...new Set(allDestinations.flatMap(item => item.country ? [item.country] : []))].sort((a,b) => a.localeCompare(b));
-  const regions = [...new Set(allDestinations.flatMap(item => item.region ? [item.region] : []))].sort((a,b) => a.localeCompare(b));
-  const country = typeof params.country === "string" && countries.includes(params.country) ? params.country : "";
+  const country = requestedCountry;
+  const regions = destinationRegions();
   const region = typeof params.region === "string" && regions.includes(params.region) ? params.region : "";
   const sort = params.sort === "country" ? "country" : "name";
   const view = params.view === "list" ? "list" : "grid";
-  const selected = search.toLowerCase();
-  const filtered = allDestinations.filter(item => 
-    (!selected || [item.title, item.slug, item.description, item.country || "", item.region || ""].some(value => value.toLowerCase().includes(selected))) &&
-    (!country || item.country === country) &&
-    (!region || item.region === region)
-  ).sort((a, b) => sort === "country"
-    ? (a.country || "zzz").localeCompare(b.country || "zzz") || a.title.localeCompare(b.title)
-    : a.title.localeCompare(b.title));
-  const pages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const page = Math.min(requestedPage, pages);
-  const visible = filtered.slice((page - 1) * perPage, page * perPage);
-  const featuredDestinations = featured.map((slug) => allDestinations.find((item) => item.slug === slug)).filter((item): item is Destination => Boolean(item));
+  const [mapped, directory] = await Promise.all([mappedPromise, loadDirectoryPage(requestedPage, country, region, sort)]);
+  const { items: visible, total, page, fallback } = directory;
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  const countries = [...new Set([...curatedDirectory, ...visible].flatMap(item => item.country ? [item.country] : [])
+    .concat(country ? [country] : []))].sort((a, b) => a.localeCompare(b));
+  const featuredDestinations = featured.flatMap(slug => curatedDirectory.filter(item => item.slug === slug
+    && (!country || item.country === country) && (!region || item.region === region)));
   const railNames = [...new Set(visible.map(item=>item.region||"Other regions"))].sort((a,b)=>a.localeCompare(b));
   const rails = railNames.map(name=>({name,items:visible.filter(item=>(item.region||"Other regions")===name)}));
   const countryParam = country || "";
@@ -171,6 +198,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
 
   return (
    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <DestinationDiscoveryScroll country={country}/>
     {process.env.ENABLE_UNIFIED_CITY_ROUTER === "true" &&
       <GeoCityIntro language={typeof params.lang === "string" ? params.lang : undefined}/>}
 
@@ -186,7 +214,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </p>
       <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <form role="search" action="/destinations" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
+      <form role="search" action="/destinations/search" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}
        {sort!=="name"&&<input type="hidden" name="sort" value={sort}/>}
@@ -199,8 +227,8 @@ export default async function DestinationsPage({ searchParams }: Props) {
        <button type="submit" className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold">Search <ArrowRight size={16}/></button>
       </form>
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--text-soft)]">
-       <span className="inline-flex items-center gap-1"><MapPinned size={14}/>{allDestinations.length} catalog destinations</span>
-       <span className="inline-flex items-center gap-1"><Globe2 size={14}/>{countries.length} countries represented</span>
+       <span className="inline-flex items-center gap-1"><MapPinned size={14}/>{total.toLocaleString("en-IN")} {fallback ? "editorial destinations" : "catalog destinations"}</span>
+       <span className="inline-flex items-center gap-1"><Globe2 size={14}/>{country || region || "Worldwide directory"}</span>
        <span className="inline-flex items-center gap-1"><ShieldCheck size={14}/> Source-aware travel research</span>
       </div>
       <p className="mt-2 text-[11px] text-[var(--text-soft)]">GTH PRO destination artwork is illustrative. Listings are not a guarantee of live hotel inventory or independently verified ticket availability.</p>
@@ -212,10 +240,11 @@ export default async function DestinationsPage({ searchParams }: Props) {
      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Your research, in focus</p>
-       <h2 className="mt-1 text-2xl font-bold tracking-tight">Explore destinations</h2>
+       <h2 className="mt-1 text-2xl font-bold tracking-tight">{country ? `Explore ${country} destinations` : "Explore destinations"}</h2>
       </div>
-      <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--text-soft)]">{filtered.length} matches · Page {page} of {pages}</span>
+      <span role="status" className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--text-soft)]">{total.toLocaleString("en-IN")} matches · Page {page} of {pages}</span>
      </div>
+     {fallback && <p role="status" className="mb-3 text-sm text-[var(--text-soft)]">The worldwide directory is temporarily unavailable. Showing editorial guides.</p>}
      <nav aria-label="Explore destination regions" className="mb-5 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-2">
       {[{label:"All regions",value:""},...regions.map(value=>({label:value,value}))].map(item=>
        <Link key={item.label} href={pageLink(search,1,country,item.value,sort,view)} aria-current={region===item.value?"page":undefined}
@@ -226,12 +255,12 @@ export default async function DestinationsPage({ searchParams }: Props) {
       <aside className="min-w-0">
        <details className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 lg:hidden">
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 font-bold"><SlidersHorizontal size={18}/> Refine your search <span className="ml-auto text-xs font-normal text-[var(--text-soft)]">Open filters</span></summary>
-        <div className="mt-4 border-t border-[var(--border)] pt-4"><DestinationFilterForm search={search} country={countryParam} region={regionParam} sort={sort} view={view} countries={countries} regions={regions}/></div>
+        <div className="mt-4 border-t border-[var(--border)] pt-4"><DestinationFilterForm search={search} country={countryParam} region={regionParam} sort={sort} view={view} regions={regions} countries={countries}/></div>
        </details>
        <div className="hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 lg:sticky lg:top-28 lg:block">
         <h3 className="inline-flex items-center gap-2 text-base font-bold"><SlidersHorizontal size={17}/> Refine your search</h3>
         <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Filter the published directory by geography and editorial content.</p>
-        <div className="mt-5"><DestinationFilterForm search={search} country={countryParam} region={regionParam} sort={sort} view={view} countries={countries} regions={regions}/></div>
+        <div className="mt-5"><DestinationFilterForm search={search} country={countryParam} region={regionParam} sort={sort} view={view} regions={regions} countries={countries}/></div>
         <div className="mt-6 border-t border-[var(--border)] pt-4 text-xs leading-5 text-[var(--text-soft)]">
          <p className="inline-flex items-center gap-2 font-semibold text-[var(--text)]"><BadgeCheck size={15}/> Data standards</p>
          <p className="mt-2">Country and region labels are editorial geography. Booking availability, supplier prices and AI verification are not asserted here.</p>

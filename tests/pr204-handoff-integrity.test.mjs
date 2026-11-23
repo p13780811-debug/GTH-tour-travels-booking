@@ -98,8 +98,12 @@ test("city hotel CTAs lead to the Nuitee widget with explicit city, never OSM as
  const booking=read("src/components/hotel/HotelBookingExperience.tsx");
  for(const value of [landing,offers])assert.match(value,/view:"booking"/);
   assert.match(market,/destinationHotelHref\(market\.supplierCity\)/);
- assert.match(detail,/Public hotel directory in/);
- assert.match(detail,/Book stays in/);
+ const supplierPicks=read("src/components/destination/DestinationSupplierPicks.tsx");
+ assert.match(detail,/<DestinationSupplierPicks city=\{destination\.name\}/);
+ assert.match(supplierPicks,/getFreeHotelProfiles\(code,city,1\)/);
+ assert.doesNotMatch(detail,/<HotelResults|<OSMAttractionsRail/);
+ assert.match(detail,/href=\{hotelsHref\}/);
+ assert.match(supplierPicks,/Search stays with dates/);
  assert.match(landing,/<HotelBookingExperience key=\{currency\}/);
  assert.match(booking,/Choose the destination in the genuine worldwide hotel search below/);
  assert.match(landing,/showOffers=\{!initialCity\} showNearby=\{!initialCity\}/);

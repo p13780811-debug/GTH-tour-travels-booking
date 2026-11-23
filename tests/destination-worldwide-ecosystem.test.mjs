@@ -7,6 +7,7 @@ const detail=read("src/app/destinations/[slug]/page.tsx");
 const card=read("src/components/destination/DestinationCard.tsx");
 const rail=read("src/components/destination/DestinationEcosystem.tsx");
 const service=read("src/lib/destinations/ecosystem.ts");
+const supplier=read("src/components/destination/DestinationSupplierPicks.tsx");
 
 test("index and city guide are global theme token consumers, not second CSS themes",()=>{
  for(const text of [index,detail,card,rail]){
@@ -22,12 +23,14 @@ test("index and city guide are global theme token consumers, not second CSS them
 test("all destination, category, tour and guide cards have the same fixed geometry and scroll horizontally at every breakpoint",()=>{
  assert.match(card,/h-64 w-60 shrink-0 snap-start/);
  assert.match(rail,/h-64 w-60 shrink-0 snap-start/);
- assert.match(detail,/h-64 w-60 shrink-0 snap-start/g);
+ assert.match(supplier,/h-64 w-60 shrink-0 snap-start/);
  assert.match(index,/<DestinationCard/);
  assert.match(detail,/<DestinationCard/);
  for(const text of [index,detail,rail]) assert.match(text,/snap-x snap-mandatory gap-4 overflow-x-auto/);
  assert.doesNotMatch(index,/md:grid md:grid-cols-2/);
- assert.match(card,/href=\{"\/destinations\/"\+destination\.slug\}/);
+ assert.match(card,/href=\{destinationDetailHref\(destination\)\}/);
+ assert.match(card,/import \{destinationDetailHref\} from/);
+ assert.match(read("src/lib/destinations/detail-link.ts"),/encodeURIComponent\(exactCountry\)/);
 });
 
 test("every city carries every actual GTH PRO pillar and working category links",()=>{
@@ -63,9 +66,12 @@ test("live hotel and tour data, SEO and source honesty preserved",()=>{
  assert.match(index,/destinationImageForSlug\(item\.slug\)/);
  assert.match(index,/\.eq\("is_active", true\)/);
  assert.match(index,/pageLink\(search,\s*page\s*\+\s*1,\s*country,\s*region,\s*sort,\s*view\)/);
- assert.match(detail,/<HotelResults city=\{destination\.name\} destination=\{slug\} compactRail\/>/);
- assert.match(detail,/getTours\(\{ city: slug \}\)/);
- assert.match(detail,/String\(tour\.id\)/);
+ assert.match(detail,/<DestinationSupplierPicks city=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
+ assert.match(supplier,/getSupplierCatalog\(/);
+ assert.match(supplier,/getSupplierAttractions\(/);
+ assert.match(supplier,/getFreeHotelProfiles\(/);
+ assert.match(supplier,/stadiums\.filter\(/);
+ assert.doesNotMatch(detail,/<HotelResults|<OSMAttractionsRail|<OpenAttractionsRail|getTours\(/);
  assert.match(detail,/notFound\(\)/);
  assert.match(detail,/generateStaticParams/);
  assert.match(detail,/generateMetadata/); // destination-specific canonical, root controls indexing

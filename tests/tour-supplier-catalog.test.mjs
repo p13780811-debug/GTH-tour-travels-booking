@@ -7,7 +7,7 @@ function load(path,deps={},extra={}){const mod={exports:{}};vm.runInNewContext(t
 const products=load('src/lib/tours/supplier-products.ts'),discovery=load('src/lib/tours/discovery.ts');
 const city={id:123,name:'City',slug:'city',country:'Country'};
 const row={id:25,title:'Original audio walk',slug:'original-audio-walk',city:{id:123,slug:'city'},preview:'https://wgt-prod-storage.s3.amazonaws.com/media/store/photo.jpg',price:12.5,currencyCode:'USD',locale:'en',tags:{available:true},type:1};
-function harness(handler){const calls=[];const source=load('src/lib/tours/supplier-catalog.ts',{'server-only':{},'next/cache':{unstable_cache:fn=>fn},'./discovery':discovery,'./supplier-products':products},{fetch:async(url,options)=>{calls.push([String(url),options]);return handler(new URL(url));}});return {calls,search:source.getSupplierCatalog};}
+function harness(handler){const calls=[];const source=load('src/lib/tours/supplier-catalog.ts',{'server-only':{},'next/cache':{unstable_cache:fn=>fn},'./discovery':discovery,'./supplier-products':products},{fetch:async(url,options)=>{calls.push([String(url),options]);return handler(new URL(url));}});return {calls,search:source.getSupplierCatalog,attractions:source.getSupplierAttractions};}
 function json(data){return new Response(JSON.stringify({data}),{headers:{'content-type':'application/json'}});}
 test('supplier IDs and photo hosts create exact product links without invented tracking',()=>{const value=products.normalizeSupplierProduct(row,city);assert.equal(value.href,'https://wegotrip.com/city-d123/original-audio-walk-p25/');assert.equal(value.image,row.preview);assert.equal(new URL(value.href).search,'');assert.equal(value.price,12.5);});
 test('unavailable, wrong-city, malformed identity and stock photos never become cards',()=>{for(const delta of [{id:true},{id:-3},{id:1.5},{slug:'bad/slug'},{city:{id:999,slug:'city'}},{tags:{available:false}},{type:'3'},{locale:'ru'},{preview:'https://images.pexels.com/photo.jpg'},{preview:'https://wgt-prod-storage.s3.amazonaws.com.evil.test/media/a.jpg'},{preview:'https://user:pass@app.wegotrip.com/media/a.jpg'},{preview:'https://app.wegotrip.com/media/a.svg'}])assert.equal(products.normalizeSupplierProduct({...row,...delta},city),null,JSON.stringify(delta));});
@@ -63,4 +63,45 @@ test('failed India city lookups do not erase valid international supplier produc
  const out=await h.search({},'/tours');
  assert.equal(out.status,'ready');
  assert.deepEqual(Array.from(out.items,x=>x.city.name),['Barcelona']);
+});
+
+test('destination catalogue refuses same-name suppliers from the wrong country',async()=>{
+ const wrong={id:456,name:'City',slug:'city',country:'Other'};
+ const h=harness(url=>{
+  if(url.pathname.endsWith('/search/'))return json({results:[
+    {...city,type:'city',available:true},{...wrong,type:'city',available:true}]});
+  if(url.pathname.endsWith('/products/popular/'))return json({results:[{
+    ...row,id:25,city:{id:123,slug:'city'}}]});
+  throw Error('Unexpected call');
+ });
+ const exact=await h.search({city:'City'},'/tours','Country');
+ assert.equal(exact.status,'ready');
+ assert.equal(exact.items.length,1);
+ assert.equal(exact.items[0].city.country,'Country');
+ const mismatched=await h.search({city:'City'},'/tours','Unknown country');
+ assert.equal(mismatched.status,'empty');
+ assert.equal(mismatched.items.length,0);
+ assert.equal(h.calls.filter(([href])=>href.includes('products/popular')).length,1);
+});
+
+test('supplier city attractions are never inferred from another country or forged as exact ticket URLs',async()=>{
+ const wrong={id:456,name:'City',slug:'city',country:'Other'};
+ const h=harness(url=>{
+  if(url.pathname.endsWith('/search/'))return json({results:[
+    {...city,type:'city',available:true},{...wrong,type:'city',available:true}]});
+  if(url.pathname.endsWith('/attractions/'))return json({results:[
+    {id:61,name:'City Museum',itemsCount:4,preview:'https://app.wegotrip.com/media/city.jpg',city:{id:123}},
+    {id:62,name:'Wrong city museum',itemsCount:10,preview:'https://app.wegotrip.com/media/city.jpg',city:{id:456}},
+    {id:63,name:'Empty venue',itemsCount:0,preview:'https://app.wegotrip.com/media/city.jpg'},
+  ]});
+  throw Error('Unexpected supplier endpoint');
+ });
+ const picks=await h.attractions('City','Country');
+ assert.equal(picks.length,1);
+ assert.equal(picks[0].name,'City Museum');
+ assert.equal(picks[0].city.country,'Country');
+ assert.equal(picks[0].href,'https://wegotrip.com/city-d123/');
+ const wrongCountry=await h.attractions('City','Unrelated country');
+ assert.equal(wrongCountry.length,0);
+ assert.equal(h.calls.filter(([url])=>url.includes('/attractions/')).length,1);
 });

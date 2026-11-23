@@ -1,4 +1,5 @@
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
+import {Suspense} from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,17 +9,15 @@ import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane,
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationEcosystem from "@/components/destination/DestinationEcosystem";
 import {destinationServices} from "@/lib/destinations/ecosystem";
-import OpenAttractionsRail from "@/components/travel/OpenAttractionsRail";
-import OSMAttractionsRail from "@/components/travel/OSMAttractionsRail";
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
-import { getTours } from "@/lib/tours";
 import { blogs } from "@/data/blogs";
 import { siteUrl,isPublicLaunch } from "@/lib/seo/site";
 import {isIndexableDestination} from "@/lib/seo/large-sitemaps";
 import JsonLd from "@/components/seo/JsonLd";
-import HotelResults from "@/app/hotels/results/HotelResults";
 import { destinationGeography } from "@/lib/destinations/geography";
+import {validatedCountry} from "@/lib/destinations/country";
 import CitySpineHub from "@/components/destination/CitySpineHub";
+import DestinationSupplierPicks from "@/components/destination/DestinationSupplierPicks";
 import { unifiedCityRouterEnabled } from "@/lib/router/affiliateRouter";
 import { resolveCityContext, type CityContext } from "@/lib/router/cityContext";
 import { SUPPORTED_UI_LOCALES, type UiLocale } from "@/lib/router/edgeGeoAutoDetect";
@@ -27,20 +26,22 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{
     lang?: string | string[];
+    country?: string | string[];
     checkin?: string | string[]; checkout?: string | string[];
     adults?: string | string[]; children?: string | string[];
     currency?: string | string[];
   }>;
 };
-type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean };
+type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean; cityId?:string|null;countryCode:string|null };
 
-async function getDestination(slug: string): Promise<DestinationDetail | null> {
+async function getDestination(slug: string, countryFilter = ""): Promise<DestinationDetail | null> {
   // Leave legacy routing unchanged when the unified feature is disabled.
-  const legacySlug = /^[a-z]+(?:-[a-z]+)*$/.test(slug) && slug.length <= 80;
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
-  if (!legacySlug && !(unifiedCityRouterEnabled() && worldSlug)) return null;
+  // Public city identity pages are independent of the opt-in unified booking router.
+  // Supplier-side city-spine behavior remains feature-gated below.
+  if (!worldSlug) return null;
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
-  const editorial: DestinationDetail | null = editorialBase ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true } : null;
+  const editorial: DestinationDetail | null = editorialBase && (!countryFilter || destinationGeography(slug).country === countryFilter) ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true,countryCode:null } : null;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -48,10 +49,12 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
 
   try {
     const client = createClient(url, key);
-    const { data, error } = await client.from("destinations")
-      .select("slug,name,description,country,is_active,media_rights_verified,source_name,source_url")
+    const lookup = client.from("destinations")
+      .select("id,slug,name,description,country,country_code,is_active,media_rights_verified,source_name,source_url")
       .eq("slug", slug)
-      .eq("is_active", true)
+      .eq("is_active", true);
+    // A city slug may exist in multiple countries. Never choose an arbitrary match.
+    const { data, error } = await (countryFilter ? lookup.eq("country", countryFilter) : lookup)
       .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
 
     if (error || !data) return editorial;
@@ -66,6 +69,8 @@ async function getDestination(slug: string): Promise<DestinationDetail | null> {
       slug,
       name,
       seoApproved:approved,
+      cityId:typeof data.id==="string"&&/^[a-f0-9-]{36}$/i.test(data.id)?data.id:null,
+      countryCode:typeof data.country_code==="string"&&/^[A-Z]{2}$/.test(data.country_code)?data.country_code:null,
       ...destinationGeography(slug, data.country),
       image_url: destinationImageForSlug(slug),
       description: typeof data.description === "string" && data.description.trim()
@@ -81,16 +86,17 @@ export function generateStaticParams() {
   return destinations.map(({ slug }) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const place = await getDestination(slug);
+  const countryFilter = validatedCountry((await searchParams)?.country);
+  const place = await getDestination(slug,countryFilter);
   if (!place) return { title: "Destination not found | GTH PRO", robots: { index: false } };
   const index=isPublicLaunch()&&place.seoApproved;
   return {
     title: `Explore ${place.name} | GTH PRO Destinations`,
     description: place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`,
     robots:{index,follow:index},
-    alternates: { canonical: `/destinations/${slug}` },
+    alternates: { canonical: `/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}` },
     openGraph: {
       title: `Explore ${place.name} | GTH PRO Travel`,
       images: [{ url: place.image_url, alt: place.name }],
@@ -101,7 +107,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DestinationPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const destination = await getDestination(slug);
+  const selectedParams = await searchParams;
+  const countryFilter = validatedCountry(selectedParams?.country);
+  const destination = await getDestination(slug,countryFilter);
   if (!destination) notFound();
 
   // Separate read-only identity proof. No city is inferred from SEO text,
@@ -115,13 +123,18 @@ export default async function DestinationPage({ params, searchParams }: Props) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         {auth:{persistSession:false,autoRefreshToken:false}},
       );
-      const matched = await resolveCityContext(db, { slug });
-      if (matched.status === "found") city = matched.city;
+      // Reuse the exact UUID from the country-filtered public destination lookup.
+      // Looking up slug alone could bind the wrong country to a supplier hub.
+      if (!countryFilter || destination.cityId) {
+        const matched = await resolveCityContext(
+          db, countryFilter ? {id:destination.cityId} : {slug},
+        );
+        if (matched.status === "found" && (!countryFilter || matched.city.country === countryFilter)) city = matched.city;
+      }
     } catch {
       // A provider outage retains the existing stable editorial destination.
     }
   }
-  const selectedParams = await searchParams;
   const selected = selectedParams?.lang;
   const stayParams:Record<string,unknown>={};
   for (const field of ["checkin","checkout","adults","children","currency"] as const) {
@@ -136,19 +149,13 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Destinations", item: siteUrl("/destinations") },
-      { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}`) },
+      { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}`) },
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
   const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
   const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
-  const availableTours = (await getTours({ city: slug })).slice(0, 6);
-  // Preserve the original editorial/tour lookup exactly. Qualified
-  // worldwide slugs can optionally fetch a second, read-only city-name list.
-  const hubTours = city && city.name.toLowerCase().replace(/\s+/g, "-") !== slug
-    ? (await getTours({ city: city.name })).slice(0, 6)
-    : availableTours;
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
     .slice(0, 6);
@@ -198,11 +205,11 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       </section>
       <TravelSectionNav />
 
-      {city ? <CitySpineHub city={city} tours={hubTours} locale={locale} travelParams={stayParams}/> :
+      {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
-      {slug==="goa"&&<OpenAttractionsRail region="goa"/>}
-      <OSMAttractionsRail region={slug==="goa"?"goa":undefined} countryName={destination.country} city={slug==="goa"?null:destination.name}/>
-      {["mumbai","pune","ajanta-ellora","shirdi"].includes(slug)&&<OpenAttractionsRail region="maharashtra"/>}
+      <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
+        <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
+      </Suspense>
 
       <section id="destination-discovery" className="mx-auto grid max-w-7xl scroll-mt-20 gap-6 px-4 py-12 sm:px-6 md:py-14 lg:grid-cols-[1fr_300px]">
         <article>
@@ -221,51 +228,6 @@ export default async function DestinationPage({ params, searchParams }: Props) {
           </div>
           <Link href="/guides" className="mt-5 inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline">Travel Knowledge Hub <ArrowRight size={15}/></Link>
         </aside>
-      </section>
-
-      <section id="destination-hotels" className="scroll-mt-20 border-y border-[var(--border)] bg-[var(--bg-soft)]">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-14">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Source-backed accommodation</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Public hotel directory in {destination.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">These are source-backed location records, not confirmed available rooms. Use the separate booking search to select a supplier-verified city, dates and guests.</p>
-            </div>
-            <Link href={hotelsHref}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">Book stays in {destination.name} <ArrowRight size={15}/></Link>
-          </div>
-          <HotelResults city={destination.name} destination={slug} compactRail/>
-        </div>
-      </section>
-
-      <section id="destination-tours" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-12 sm:px-6 md:py-14">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]">Experience discovery</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Tours & experiences in {destination.name}</h2>
-            <p className="mt-2 text-sm text-[var(--text-soft)]">Real tour catalog entries where present; never simulated availability.</p>
-          </div>
-          <Link href={toursHref} className="inline-flex items-center gap-2 text-sm font-semibold underline">All tours <ArrowRight size={16}/></Link>
-        </div>
-        {availableTours.length>0?(
-          <div role="region" aria-label="Tours horizontal cards" tabIndex={0}
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
-            {availableTours.map((tour)=>(
-              <Link key={String(tour.id)} href={"/tours/"+encodeURIComponent(String(tour.id))}
-                className="group flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:shadow-lg">
-                <span className="flex items-center gap-2 text-xs font-medium text-[var(--text-soft)]"><Compass size={15}/> {tour.category||"Tour listing"}</span>
-                <h3 className="mt-4 line-clamp-2 text-base font-semibold leading-snug">{tour.title}</h3>
-                <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">Verify inclusions, dates and provider conditions.</p>
-                <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold">View experience <ArrowRight size={15}/></span>
-              </Link>
-            ))}
-          </div>
-        ):(
-          <div role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--text-soft)]">
-            No source-backed tours are currently displayed for {destination.name}. This does not mean every experience is unavailable.
-            <Link href={toursHref} className="mt-3 block font-semibold underline">Browse tour discovery</Link>
-          </div>
-        )}
       </section>
 
       <section className="border-y border-[var(--border)] bg-[var(--bg-soft)]">
