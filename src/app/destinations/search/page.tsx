@@ -44,9 +44,8 @@ const searchDirectory = unstable_cache(async (search: string, country: string, e
     .ilike("name", exact ? escaped : "%" + escaped + "%");
   if (country) query.eq("country", country);
   if (!exact) query.order("name");
-  const result = await withDiscoveryDeadline(
-    query.order("slug").limit(MAX_RESULTS).abortSignal(AbortSignal.timeout(4_500)), 4_500,
-  );
+  const lookup = query.order("slug").limit(MAX_RESULTS).abortSignal(AbortSignal.timeout(4_500));
+  const result = await withDiscoveryDeadline(Promise.resolve(lookup), 4_500);
   if (result.error || !result.data) throw new Error("Destination search unavailable");
   return result.data;
 }, ["destination-directory-search-v1"], { revalidate: 300, tags: ["public-destination-catalog"] });

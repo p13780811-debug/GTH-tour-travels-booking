@@ -63,10 +63,8 @@ function directoryQuery(country: string, region: string, countOnly = false) {
   // Some original editorial rows predate the database country field.
   const legacySlugs = curatedDirectory.filter(item => item.country && scopeCountries.includes(item.country))
     .map(item => item.slug);
-  const table = supabase.from("destinations");
-  const query = (countOnly
-    ? table.select("slug", { count: "exact", head: true })
-    : table.select("name,slug,description,country"))
+  const query = supabase.from("destinations")
+    .select("name,slug,description,country", countOnly ? { count: "exact", head: true } : undefined)
     .is("is_active", true);
   if (legacySlugs.length) {
     // Values are validated country labels and checked-in editorial slugs.
@@ -82,9 +80,8 @@ const directoryCache = { revalidate: 600, tags: ["public-destination-catalog"] }
 
 // Share each exact count across all page numbers and sort orders in the same scope.
 const countDirectory = unstable_cache(async (country: string, region: string) => {
-  const { count, error } = await withDiscoveryDeadline(
-    directoryQuery(country, region, true).limit(1).abortSignal(AbortSignal.timeout(4_500)), 4_500,
-  );
+  const query = directoryQuery(country, region, true).limit(1).abortSignal(AbortSignal.timeout(4_500));
+  const { count, error } = await withDiscoveryDeadline(Promise.resolve(query), 4_500);
   if (error || count === null) throw new Error("Destination count unavailable");
   return count;
 }, ["destination-directory-count-v1"], directoryCache);
@@ -95,12 +92,10 @@ const readDirectoryPage = unstable_cache(async (
   const first = (page - 1) * perPage;
   const query = directoryQuery(country, region);
   if (sort === "country") query.order("country", { ascending: true, nullsFirst: false });
-  const result = await withDiscoveryDeadline(
-    query.order("name").order("slug").order("id")
-      .range(first, first + perPage - 1)
-      .abortSignal(AbortSignal.timeout(4_500)),
-    4_500,
-  );
+  const pageQuery = query.order("name").order("slug").order("id")
+    .range(first, first + perPage - 1)
+    .abortSignal(AbortSignal.timeout(4_500));
+  const result = await withDiscoveryDeadline(Promise.resolve(pageQuery), 4_500);
   if (result.error || !result.data) throw new Error("Destination page unavailable");
   return result.data;
 }, ["destination-directory-page-v1"], directoryCache);
