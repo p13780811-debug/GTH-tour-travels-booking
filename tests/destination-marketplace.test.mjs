@@ -27,6 +27,7 @@ test("destination detail renders only exact-city supplier cards, no demo or DB i
   const panels=read("src/components/destination/DestinationSupplierPicks.tsx");
   assert.match(page, /<DestinationSupplierPicks city=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
   assert.match(panels, /getSupplierCatalog\(/);
+  assert.match(panels, /loadPersistedSupplierProducts\(parsed\.filters, mode, country\)/);
   assert.match(panels, /getSupplierAttractions\(/);
   assert.match(panels, /getFreeHotelProfiles\(/);
   assert.match(panels, /stadiums\.filter\(/);
