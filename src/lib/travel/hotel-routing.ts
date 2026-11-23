@@ -74,6 +74,7 @@ export type HotelRouteIntent = {
   hotelId?: string;
   destination?: string;
   placeId?: string;
+  countryCode?: string;
   checkIn?: string;
   checkOut?: string;
   adults?: number | string;
@@ -122,9 +123,13 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   if (intent.placeId !== undefined && !safeId(intent.placeId, 255)) return {status:"invalid",kind};
   // Only supplier-reviewed city IDs are accepted for GTH-created deep links.
   // Unknown arbitrary IDs must use the supplier picker rather than guessed inventory.
+  const cityKey = destination?.toLocaleLowerCase("en");
+  const expectedCountry = cityKey === "mumbai" ? "IN" : cityKey === "london" ? "GB" : undefined;
+  const scopedCityId = cityKey && (intent.countryCode === undefined || intent.countryCode === expectedCountry)
+    ? VERIFIED_CITY_IDS[cityKey] ?? null : null;
   const placeId = intent.placeId !== undefined
     ? Object.values(VERIFIED_CITY_IDS).includes(intent.placeId) ? intent.placeId : null
-    : destination ? VERIFIED_CITY_IDS[destination.toLocaleLowerCase("en")] ?? null : null;
+    : scopedCityId;
   if (intent.placeId !== undefined && !placeId) return {status:"invalid",kind};
   if (kind === "city" && !placeId && !destination) return {status: "invalid", kind};
   const dates = resolveHotelDates(intent.checkIn, intent.checkOut, now);

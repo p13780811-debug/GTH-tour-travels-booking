@@ -1,3 +1,5 @@
+import DestinationTravelSearch from "@/components/destination/DestinationTravelSearch";
+import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {Suspense} from "react";
 import type { Metadata } from "next";
@@ -169,9 +171,9 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
   const mappedAttractions = links.find(item => item.key === "attractions");
-  const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
-  const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
-  const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
+  const hotelsHref="#destination-hotels-tab";
+  const toursHref="#destination-tours";
+  const flightsHref="#destination-transport-tab";
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
     .slice(0, 6);
@@ -219,6 +221,8 @@ export default async function DestinationPage({ params, searchParams }: Props) {
           </div>
         </div>
       </section>
+      <DestinationTravelSearch key={slug + ":" + destination.country} city={destination.name} country={destination.country}
+        countryCode={destination.countryCode ?? countryCodeForDestinationName(destination.country)}/>
       <TravelSectionNav />
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :

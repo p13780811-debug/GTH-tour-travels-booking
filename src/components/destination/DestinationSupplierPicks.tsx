@@ -8,41 +8,20 @@ import {loadPersistedSupplierProducts} from "@/lib/tours/persisted-inventory";
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
-import {trackKlookDestination} from "@/lib/travel/partner-search";
+import {destinationExperienceLinks,destinationPartnerCatalog,supplierPrice} from "@/lib/tours/destination-partner-catalog";
+import {listPlaces} from "@/lib/travel/osmAttractions";
+import {osmPlacePath,validOsmPlace} from "@/lib/travel/osm-place";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import {stadiums} from "@/lib/travel/stadiums";
 
 type Props={city:string;country:string|null;countryCode:string|null};
 type Pick=Readonly<{id:string;title:string;detail:string;href:string;image:string|null;external:boolean}>;
-type Section=Readonly<{id:string;title:string;hint:string;empty:string;href:string;cta:string;items:readonly Pick[]}>;
+type Section=Readonly<{id:string;title:string;hint:string;empty:string;href:string;cta:string;alternateHref?:string|null;items:readonly Pick[]}>;
 
 const cityName=(value:string)=>value.normalize("NFKC").trim().toLocaleLowerCase("en");
 const countryName=(value:string)=>value.normalize("NFKC").trim().toLocaleLowerCase("en");
 const internal=(href:string)=>href.startsWith("/")&&!href.startsWith("//");
 const safeHotelId=(id:string)=>/^[A-Za-z0-9_-]{1,100}$/.test(id);
-
-// Public product pages with itineraries explicitly located in Goa, India.
-// Display the product and direct handoff only. Prices, photos and availability
-// are owned by the supplier and checked on its booking page.
-const goaExperiences = {
-  tours: [
-    ["17261", "North Goa Tour by Luxury Coach", "17261-north-luxury-coach-tour-goa"],
-    ["17259", "South Goa Tour by Luxury Coach", "17259-south-luxury-coach-tour-goa"],
-  ],
-  activities: [
-    ["117288", "Mandovi Sunset Boat Party", "117288-mandovi-sunset-boat-party"],
-    ["185490", "Vihaan Evening Dinner Cruise", "185490-vihaan-evening-dinner-cruise-experience"],
-  ],
-} as const;
-
-function goaProductLinks(kind: keyof typeof goaExperiences): Pick[] {
-  return goaExperiences[kind].flatMap(([id, title, product]) => {
-    const href = trackKlookDestination(new URL("https://www.klook.com/en-IN/activity/" + product + "/"),
-      "gth_goa_" + id);
-    return href ? [{ id: "goa-" + id, title, detail: "Goa, India · Check dates on the booking page",
-      href, image: null, external: true }] : [];
-  });
-}
 
 /**
  * Products come from the supplier and its existing verified catalog snapshots.
@@ -61,11 +40,13 @@ export default async function DestinationSupplierPicks({city,country,countryCode
         loadPersistedSupplierProducts(parsed.filters, mode, country),
       )
     : Promise.resolve({ items: [] });
-  const [tourResult,activityResult,attractionResult,hotelResult]=await Promise.allSettled([
+  const [tourResult,activityResult,attractionResult,hotelResult,partnerResult,mappedResult]=await Promise.allSettled([
     readExperiences("/tours"),
     readExperiences("/activities"),
     validIdentity?getSupplierAttractions(city,country!):Promise.resolve([]),
     validIdentity&&code?getFreeHotelProfiles(code,city,1):Promise.resolve({items:[]}),
+    destinationPartnerCatalog(city,country),
+    code && validIdentity ? listPlaces({country:code,...(isGoa?{region:"goa"}:{city}),limit:8}) : Promise.resolve({items:[]}),
   ] as const);
   const tours=tourResult.status==="fulfilled"?tourResult.value.items:[];
   const activities=activityResult.status==="fulfilled"?activityResult.value.items:[];
@@ -74,12 +55,14 @@ export default async function DestinationSupplierPicks({city,country,countryCode
   // Recheck identity even when an upstream response is already scoped.
   const matching=(value:{city:{name:string;country:string}})=>
     !!country&&cityName(value.city.name)===cityName(city)&&countryName(value.city.country)===countryName(country);
+  const catalog = partnerResult.status === "fulfilled" ? partnerResult.value : {tours:[],activities:[]};
+  const mapped = mappedResult.status === "fulfilled" ? mappedResult.value.items : [];
   const toursCards:Pick[]=tours.filter(matching).slice(0,3).map(p=>({
-    id:"tour-"+p.id,title:p.title,detail:"Supplier-listed audio tour; dates and prices checked on booking",
+    id:"tour-"+p.id,title:p.title,detail:supplierPrice(p.price,p.currency) ?? "Check price and dates on the booking page",
     href:p.href,image:p.image,external:true,
   }));
   const activitiesCards:Pick[]=activities.filter(matching).slice(0,3).map(p=>({
-    id:"activity-"+p.id,title:p.title,detail:p.admissionOnly?"Supplier-listed attraction admission":"Supplier-listed ticket and audio experience",
+    id:"activity-"+p.id,title:p.title,detail:supplierPrice(p.price,p.currency) ?? "Check price and dates on the booking page",
     href:p.href,image:p.image,external:true,
   }));
   const attractionCards:Pick[]=attractions.filter(matching).slice(0,3).map(p=>({
@@ -96,21 +79,31 @@ export default async function DestinationSupplierPicks({city,country,countryCode
     .slice(0,3).map(v=>({id:"stadium-"+v.slug,title:v.name,
       detail:v.sports.join(" · ")+" · official event information",
       href:"/stadiums/"+v.slug,image:null,external:false})):[];
-  const query=new URLSearchParams({city}).toString();
   const hotelQuery = new URLSearchParams({ view: "booking", city, ...(code ? { country: code } : {}) });
   const hasReviewedHotelDestination = isGoa || (code === "AE" && cityName(city) === "dubai");
   const reviewedHotelHref = hasReviewedHotelDestination ? trackedHotelCityHref(city) : null;
-  const goaTours = isGoa ? trackKlookDestination(new URL("https://www.klook.com/en-IN/destination/c178-goa/1001-tours/"), "gth_goa_tours") : null;
-  const goaActivities = isGoa ? trackKlookDestination(new URL("https://www.klook.com/en-IN/destination/c178-goa/1-things-to-do/"), "gth_goa_activities") : null;
+  const tourLinks = destinationExperienceLinks(city,country,"tours");
+  const activityLinks = destinationExperienceLinks(city,country,"activities");
+  const attractionQuery = new URLSearchParams(code ? {country:code,...(isGoa?{region:"goa"}:{city})} : {});
+  const mappedCards:Pick[]=mapped.filter(place => validOsmPlace(place) && place.country_code===code
+    && (isGoa ? place.region_scope==="goa" : place.city && cityName(place.city)===cityName(city))).flatMap(place=>{
+    const href=osmPlacePath(place.source_id);
+    return href ? [{id:place.source_id,title:place.name,detail:"Mapped attraction",href,image:null,external:false}] : [];
+  });
   const sections:Section[]=[
-    {id:"destination-tours",title:"Popular tours in "+city,hint:"Supplier-listed tours for this destination",
-      empty:"No matching supplier tours returned for this city.",href:goaTours || "/tours?"+query+"#discover",
-      cta:"Explore city tours",items: toursCards.length || !isGoa ? toursCards : goaProductLinks("tours")},
-    {id:"destination-activities",title:"Activities in "+city,hint:"Supplier ticket and activity products, checked against city and country",
-      empty:"No matching supplier activities returned for this city.",href:goaActivities || "/activities?"+query+"#discover",
-      cta:"Explore city activities",items: activitiesCards.length || !isGoa ? activitiesCards : goaProductLinks("activities")},
-    {id:"destination-attractions",title:"Attractions in "+city,hint:"Attractions from the supplier city collection, not a separate local DB",
-      empty:"No matching supplier attractions returned for this city.",href:goaActivities || "/activities?"+query+"#discover",cta:"Find city attractions",items:attractionCards},
+    {id:"destination-tours",title:"Tours in "+city,hint:"Guided tours and audio tours",
+      empty:"Check local tours on the booking network.",href:tourLinks.klook || tourLinks.guide,
+      alternateHref:tourLinks.klook ? tourLinks.guide : null,
+      cta:"Browse tours in "+city,
+      items:[...toursCards,...catalog.tours.map(item=>({...item,external:true}))].slice(0,3)},
+    {id:"destination-activities",title:"Activities in "+city,hint:"Tickets and experiences",
+      empty:"Check local activities on the booking network.",href:activityLinks.klook || activityLinks.guide,
+      alternateHref:activityLinks.klook ? activityLinks.guide : null,
+      cta:"Browse activities in "+city,
+      items:[...activitiesCards,...catalog.activities.map(item=>({...item,external:true}))].slice(0,3)},
+    {id:"destination-attractions",title:"Attractions in "+city,hint:"Sights and visitor guides",
+      empty:"Explore local attractions and visitor information.",href:"/attractions"+(attractionQuery.size?"?"+attractionQuery:""),
+      cta:"Explore attractions",items:[...attractionCards,...mappedCards].slice(0,3)},
     {id:"destination-hotels",title:"Stays in "+city,hint:"Supplier hotel profiles only; no fabricated dates or live room rates",
       empty:"No exact city-matched supplier hotel profiles available.",
       href:(!hotelCards.length && reviewedHotelHref) || "/hotels?" + hotelQuery.toString() + "#hotel-booking-experience",
@@ -124,10 +117,6 @@ export default async function DestinationSupplierPicks({city,country,countryCode
       <header>
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-soft)]">GTH PRO · Destination supplier discovery</p>
         <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Explore {city}{country?", "+country:""}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">
-          Each product card must match this city and country. No unrelated destination results,
-          generic demo listings, or unverifiable booking availability.
-        </p>
       </header>
       {sections.map(section=><section key={section.id} id={section.id} aria-labelledby={section.id+"-heading"}
         className="scroll-mt-24">
@@ -139,6 +128,8 @@ export default async function DestinationSupplierPicks({city,country,countryCode
           {internal(section.href)?
             <Link href={section.href} className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline">{section.cta}<ArrowRight size={15}/></Link>:
             <a href={section.href} target="_blank" rel="noopener noreferrer sponsored" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline">{section.cta}<ArrowRight size={15}/></a>}
+          {section.alternateHref && <a href={section.alternateHref} target="_blank" rel="noopener noreferrer sponsored"
+            className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline">More options <ArrowRight size={15}/></a>}
         </div>
         {section.items.length?
           <div role="region" tabIndex={0} aria-label={section.title+" horizontal cards"}
@@ -155,19 +146,15 @@ export default async function DestinationSupplierPicks({city,country,countryCode
                 <p className="line-clamp-2 text-xs leading-5 text-[var(--text-soft)]">{item.detail}</p>
                 {item.external?
                   <a href={item.href} target="_blank" rel="noopener noreferrer sponsored"
-                    className="mt-auto inline-flex min-h-9 items-center gap-2 text-xs font-semibold">View details <ArrowRight size={14}/></a>:
-                  <Link href={item.href} className="mt-auto inline-flex min-h-9 items-center gap-2 text-xs font-semibold">View venue <ArrowRight size={14}/></Link>}
+                    className="mt-auto inline-flex min-h-9 items-center gap-2 text-xs font-semibold">{section.id === "destination-attractions" ? "View details" : "Check availability"} <ArrowRight size={14}/></a>:
+                  <Link href={item.href} className="mt-auto inline-flex min-h-9 items-center gap-2 text-xs font-semibold">View guide <ArrowRight size={14}/></Link>}
               </div>
             </article>)}
           </div>:
-          <p role="status" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--text-soft)]">
-            {section.empty} Use the search link above to check the supplier directly.
-          </p>}
+          <p className="text-sm text-[var(--text-soft)]">{section.empty}</p>}
       </section>)}
       <p className="flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
-        <MapPin size={16} className="mt-1 shrink-0"/>Listings depend on supplier inventory,
-        source permissions and available city identifiers; three products are shown only when
-        three genuine matches exist. Always confirm admission, price, availability and terms with the provider.
+        <MapPin size={16} className="mt-1 shrink-0"/>Confirm current prices, availability and booking terms on the booking page.
       </p>
     </div>
   </section>;

@@ -22,10 +22,10 @@ const modes = [
   { mode: "flight" as const, label: "Flight", Icon: PlaneTakeoff },
 ];
 
-export default function GTHTransportSearchWidget({ mode, flightOnly = false }: { mode: TransportMode; flightOnly?: boolean }) {
+export default function GTHTransportSearchWidget({ mode, flightOnly = false, initialDestination = "" }: { mode: TransportMode; flightOnly?: boolean; initialDestination?: string }) {
   const [activeMode, setActiveMode] = useState<TransportMode>(mode);
   const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [to, setTo] = useState(initialDestination);
   const [invalidJourney, setInvalidJourney] = useState(false);
   useEffect(() => { setInvalidJourney(new URLSearchParams(window.location.search).get("search") === "invalid"); }, []);
   // Never guess supplier routes. Only offer an alternate handoff where an
@@ -102,7 +102,7 @@ export default function GTHTransportSearchWidget({ mode, flightOnly = false }: {
       <p className="mt-3 text-xs leading-6 text-[var(--text-soft)]">
         Search opens a route-specific 12Go partner page with your itinerary and public affiliate tracking.
         Exact stations or airports, schedules, date and passenger selection depend on route coverage; reconfirm on 12Go before payment.
-        GTH PRO may receive a referral commission.
+        Powered by 12Go. GTH PRO may receive a referral commission.
       </p>
       {bookawayRoute && (
         <p className="mt-1 text-xs leading-6 text-[var(--text-soft)]">

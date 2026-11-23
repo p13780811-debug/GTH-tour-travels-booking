@@ -10,10 +10,11 @@ const VERIFIED_HOTEL_DESTINATIONS:Readonly<Record<string,string>>={
   dubai:"https://www.klook.com/en-IN/destination/c78-dubai/3-hotel/",
 };
 
-export function trackedHotelCityHref(value:unknown):string|null{
+export function trackedHotelCityHref(value:unknown,countryCode?:string):string|null{
   const destination=cleanHotelDestination(value);
   if(!destination)return null;
   const key=destination.toLocaleLowerCase("en");
+  if(countryCode !== undefined && countryCode !== (key === "goa" ? "IN" : key === "dubai" ? "AE" : null))return null;
   const href=Object.prototype.hasOwnProperty.call(VERIFIED_HOTEL_DESTINATIONS,key)
     ?VERIFIED_HOTEL_DESTINATIONS[key]:undefined;
   if(!href)return null;
