@@ -5,7 +5,10 @@ const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Destination pages link their hotel section and marketplace to destination slugs",()=>{
  const page=read("src/app/destinations/[slug]/page.tsx");
- assert.match(page,/<HotelResults city=\{destination\.name\} destination=\{slug\} compactRail/);
+ const supplier=read("src/components/destination/DestinationSupplierPicks.tsx");
+ assert.match(page,/<DestinationSupplierPicks city=\{destination\.name\}/);
+ assert.match(supplier,/getFreeHotelProfiles\(code,city,1\)/);
+ assert.doesNotMatch(page,/<HotelResults/);
  assert.ok(page.includes("href={hotelsHref}"));
  const service=read("src/lib/destinations/ecosystem.ts");
  assert.match(service,/href:"\/hotels\?"\+new URLSearchParams\(\{view:"booking",city:place\.name/);

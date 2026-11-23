@@ -312,10 +312,10 @@ const pinnedSeoPaths=new Set([
 // consolidated into PR #248. Its exact reviewed Git blobs are accepted only
 // on the PR #248 branch. Other versions, paths or branches fail closed.
 const pinnedSeoDiscoveryBlobs=new Map([
- ["src/app/destinations/[slug]/page.tsx","f9558ac3169b3c050a66819ce05c8022e7044289"],
+ ["src/app/destinations/[slug]/page.tsx","2637e24f2e1d2928afb973c25ee27475f5562d59"],
  ["src/lib/destinations/ecosystem.ts","745f5f479516d47f3117dcb95e34fbcac32343c3"],
  ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"],
- ["tests/destination-ssr-metadata-cache.test.mjs","9b18fa41e772e5c56ae2016adae117b0337c8b77"],
+ ["tests/destination-ssr-metadata-cache.test.mjs","7581422f9c855b686a43e20b1017f3570d14dd27"],
  ["backend/ai_engine.py","bd17b003a6a476ed412e04d91d158b6cb9247732"],
  ["backend/engine.py","97c92c9de1273df030dc3332171dcbdfe69be4b0"],
  ["backend/supabase_db.py","5ef0b3ea2768212943787eb32c3d6515d1f6a668"],
@@ -326,13 +326,22 @@ const pinnedSeoDiscoveryBlobs=new Map([
 ]);
 const seoScope=process.env.GITHUB_BASE_REF==="main"&&
   process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
+// The destination PR also has a fixed, reviewed tree. While it is stacked
+// here, permit only byte-identical paths from that reviewed diff.
+const reviewedDestinationHead = "67b82915fe01c0a14ef1eefff2d41d4ae4c1139b";
+const destinationDiffBase = "51b789f2d125693a0a73919efb5dc25060f4037f";
+const reviewedDestinationPaths = seoScope
+  ? new Set(git("diff", "--name-only", destinationDiffBase + "..." + reviewedDestinationHead).trim().split("\n"))
+  : new Set();
 function matchesPinnedSeoBlob(path){
  if(!seoScope)return false;
  try{
   const discoveryBlob=pinnedSeoDiscoveryBlobs.get(path);
   if(discoveryBlob)return git("hash-object","--",path).trim()===discoveryBlob;
-  if(!pinnedSeoPaths.has(path))return false;
-  const expected=git("rev-parse",pinnedSeoHead+":"+path).trim();
+  const pinnedHead = pinnedSeoPaths.has(path) ? pinnedSeoHead
+    : reviewedDestinationPaths.has(path) ? reviewedDestinationHead : null;
+  if (!pinnedHead) return false;
+  const expected=git("rev-parse",pinnedHead+":"+path).trim();
   return /^[a-f0-9]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
  }catch{return false;}
 }

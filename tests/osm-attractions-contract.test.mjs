@@ -61,7 +61,11 @@ test("Tours index, API and directory include ODbL attribution; no false tickets"
  assert.match(cache,/server-only/);
  assert.match(page,/Next 24/);
  assert.match(read("src/app/attractions/progress/page.tsx"),/countriesWithRecords/);
- assert.match(read("src/app/destinations\/[slug]\/page.tsx"),/countryName=\{destination.country\}/);
+ const destination=read("src/app/destinations/[slug]/page.tsx");
+ const supplier=read("src/components/destination/DestinationSupplierPicks.tsx");
+ assert.match(destination,/<DestinationSupplierPicks city=\{destination\.name\}/);
+ assert.match(supplier,/getSupplierAttractions\(/);
+ assert.doesNotMatch(destination,/<OSMAttractionsRail/);
  assert.match(api,/photo_url:null/);
  assert.match(page,/robots:\{index:false,follow:true\}/);
  assert.match(page,/snap-x snap-mandatory/);
