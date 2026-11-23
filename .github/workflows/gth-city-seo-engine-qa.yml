@@ -1,0 +1,26 @@
+name: GTH Worldwide City SEO Engine Offline QA
+on:
+  pull_request:
+    paths:
+      - 'backend/ai_engine.py'
+      - 'backend/engine.py'
+      - 'backend/supabase_db.py'
+      - 'tests/test_city_seo_engine.py'
+      - 'requirements.txt'
+      - '.github/workflows/gth-city-seo-engine-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  city-seo-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify batch validation, zero-secret dry run and quota caps
+        run: python -m unittest discover -s tests -p 'test_city_seo_engine.py' -v
+      - name: Compile offline engine without database or Gemini requests
+        run: python -m compileall -q backend/ai_engine.py backend/engine.py backend/supabase_db.py

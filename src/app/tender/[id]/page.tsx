@@ -7,6 +7,7 @@ import { cache } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import { isPublicLaunch, siteUrl } from "@/lib/seo/site";
 import { isIndexableTender, tenderMetadata } from "@/lib/seo/public-listings";
+import { tenderNoticeSchema } from "@/lib/seo/vertical-structured-data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Globe2, ShieldCheck } from "lucide-react";
@@ -49,7 +50,7 @@ export default async function TenderDetailPage({params}: {params: Promise<{id:st
     ],
   };
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    {isPublicLaunch()&&isIndexableTender(tender)&&<JsonLd data={breadcrumbData}/>}
+    {isPublicLaunch()&&isIndexableTender(tender)&&<><JsonLd data={breadcrumbData}/><JsonLd data={tenderNoticeSchema(tender,canonical,url)}/></>}
     <article className="mx-auto max-w-6xl px-4 py-9 sm:px-6 md:py-12">
       <Link href="/tender" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--text-soft)] hover:text-[var(--text)]"><ArrowLeft size={16}/> All tenders</Link>
       <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">Verified-source procurement notice · {tender.country_code}</p>

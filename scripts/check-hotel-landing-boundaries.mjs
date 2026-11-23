@@ -283,7 +283,76 @@ function matchesPinnedIntegrationSnapshot(path){
   return /^[0-9a-f]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
  }catch{return false;}
 }
-const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path));
+// PR #248 combines reviewed SEO/brand metadata with a gated hotel detail
+// schema. Its hotel file legitimately triggers this workflow, so do not skip
+// hotel booking/layout tests. ONLY the exact reviewed blob versions from the
+// immutable prior PR head may pass. Any new or modified SEO file fails closed.
+// The historical CSS, rate-limit, provider and supplier-test checks below
+// remain unchanged and still execute for every PR.
+const pinnedSeoHead="51f998404b95f58854b4f273ddf3601243294258";
+const pinnedSeoPaths=new Set([
+ "src/app/hotels/stay/[id]/page.tsx",
+ "src/app/page.tsx",
+ "src/app/sitemap-index.xml/route.ts",
+ "src/app/tender/[id]/page.tsx",
+ "src/app/tours/[slug]/page.tsx",
+ "src/components/home/FlagshipHome.module.css",
+ "src/components/home/FlagshipHome.tsx",
+ "src/components/seo/SiteIdentitySchema.tsx",
+ "src/lib/seo/large-sitemaps.ts",
+ "src/lib/seo/vertical-structured-data.ts",
+ "tests/flagship-home.test.mjs",
+ "tests/home-public-capabilities.test.mjs",
+ "tests/large-scale-seo-sitemaps.test.mjs",
+ "tests/official-site-identity-search.test.mjs",
+ "tests/seo-master-index-resilience.test.mjs",
+ "tests/seo-vertical-structured-data.test.mjs"
+]);
+// PR #249's independently verified attraction-discovery change set was
+// consolidated into PR #248. Its exact reviewed Git blobs are accepted only
+// on the PR #248 branch. Other versions, paths or branches fail closed.
+const pinnedSeoDiscoveryBlobs=new Map([
+ ["src/app/destinations/[slug]/page.tsx","2637e24f2e1d2928afb973c25ee27475f5562d59"],
+ ["src/lib/destinations/ecosystem.ts","745f5f479516d47f3117dcb95e34fbcac32343c3"],
+ ["tests/destination-travel-intent.test.mjs","273b7cd5c769a7c1edd6de24114dd75834b41c04"],
+ ["tests/destination-ssr-metadata-cache.test.mjs","7581422f9c855b686a43e20b1017f3570d14dd27"],
+ ["backend/ai_engine.py","bd17b003a6a476ed412e04d91d158b6cb9247732"],
+ ["backend/engine.py","97c92c9de1273df030dc3332171dcbdfe69be4b0"],
+ ["backend/supabase_db.py","5ef0b3ea2768212943787eb32c3d6515d1f6a668"],
+ ["tests/test_city_seo_engine.py","5f278a9eef8ba894f75dc287868210e8650bf4c1"],
+ [".github/workflows/gth-city-seo-batch.yml","cd13374a07b15070e03fa236873a426a14ac8dbe"],
+ ["requirements.txt","28e2763271798d1a6c501e30c68ddfcc7ab21a22"],
+ [".github/workflows/gth-city-seo-engine-qa.yml","ad20334e62f9a333916d8f3f078c3964d89ac4b5"]
+]);
+const seoScope=process.env.GITHUB_BASE_REF==="main"&&
+  process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
+// The destination PR also has a fixed, reviewed tree. While it is stacked
+// here, permit only byte-identical paths from that reviewed diff.
+const reviewedDestinationHead = "01f6dbae341f9d6bce7bff46664f64822c9977f5";
+const destinationDiffBase = "51b789f2d125693a0a73919efb5dc25060f4037f";
+const reviewedDestinationPaths = seoScope
+  ? new Set(git("diff", "--name-only", destinationDiffBase + "..." + reviewedDestinationHead).trim().split("\n"))
+  : new Set();
+function matchesPinnedSeoBlob(path){
+ if(!seoScope)return false;
+ try{
+  const discoveryBlob=pinnedSeoDiscoveryBlobs.get(path);
+  if(discoveryBlob)return git("hash-object","--",path).trim()===discoveryBlob;
+  const pinnedHead = pinnedSeoPaths.has(path) ? pinnedSeoHead
+    : reviewedDestinationPaths.has(path) ? reviewedDestinationHead : null;
+  if (!pinnedHead) return false;
+  const expected=git("rev-parse",pinnedHead+":"+path).trim();
+  return /^[a-f0-9]{40}$/.test(expected)&&git("hash-object","--",path).trim()===expected;
+ }catch{return false;}
+}
+if(seoScope){
+ // Also cover paths allowed by older review sets: require exact snapshot
+ // for the whole PR diff, except this scoped guard implementation itself.
+ const drift=[...new Set(paths)].filter(path=>
+  path!=="scripts/check-hotel-landing-boundaries.mjs"&&!matchesPinnedSeoBlob(path));
+ if(drift.length)throw Error("PR #248 contains an unreviewed or changed blob:\n"+drift.join("\n"));
+}
+const outside=[...new Set(paths)].filter(path=>!allowed.has(path)&&!reviewedPublicHandoffs.has(path)&&!reviewedGrowthFiles.has(path)&&!isExactReviewedBrandBlob(path)&&!matchesPinnedIntegrationSnapshot(path)&&!matchesPinnedSeoBlob(path));
 if(outside.length)throw Error("Unreviewed integration changes or unrelated paths:\n"+outside.join("\n"));
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");

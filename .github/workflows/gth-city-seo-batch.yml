@@ -1,0 +1,71 @@
+# Production batches are disabled by default. Enable only with repository
+# variable GTH_SEO_AUTORUN_ENABLED=true and the existing server-only ingestion
+# permission gate. Draft copy never changes SEO approval or RLS.
+name: GTH Worldwide City SEO Bounded Draft Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: "Run bounded Gemini and DB writes (false = read-only preview)"
+        type: boolean
+        default: false
+        required: true
+  schedule:
+    - cron: '19 2,8,14,20 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gth-worldwide-city-seo-draft-writer
+  cancel-in-progress: false
+
+jobs:
+  bounded-city-drafts:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.GTH_SEO_AUTORUN_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_INGESTION_KEY: ${{ secrets.SUPABASE_INGESTION_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GTH_SEO_AI_MODEL: ${{ vars.GTH_SEO_AI_MODEL }}
+      GTH_INGESTION_ENABLED: ${{ vars.GTH_INGESTION_ENABLED }}
+      GTH_SEO_BATCH_SIZE: ${{ vars.GTH_SEO_BATCH_SIZE || '10' }}
+      GTH_SEO_MAX_CALLS: ${{ vars.GTH_SEO_MAX_CALLS || '3' }}
+      GTH_SEO_MAX_READS: ${{ vars.GTH_SEO_MAX_READS || '2' }}
+      GTH_SEO_PAGE_SIZE: ${{ vars.GTH_SEO_PAGE_SIZE || '50' }}
+      GTH_SEO_MIN_INTERVAL: ${{ vars.GTH_SEO_MIN_INTERVAL || '40' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing backend dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Check credentials and explicit ingestion gate
+        shell: bash
+        run: |
+          if [[ "${GTH_INGESTION_ENABLED}" != "true" ]]; then
+            echo "::error::Existing server-side ingestion gate is disabled; no DB access attempted."
+            exit 1
+          fi
+          if [[ -z "${NEXT_PUBLIC_SUPABASE_URL}" || -z "${SUPABASE_INGESTION_KEY}" ]]; then
+            echo "::error::Required server-side database credentials are absent; no DB access attempted."
+            exit 1
+          fi
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.execute }}" == "true" ]]; then
+            if [[ -z "${GEMINI_API_KEY}" || -z "${GTH_SEO_AI_MODEL}" ]]; then
+              echo "::error::Gemini credentials or model are unavailable; no AI/DB writes attempted."
+              exit 1
+            fi
+          fi
+      - name: Run bounded resumable draft generation, never SEO approval
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.execute }}" == "true" ]]; then
+            python backend/engine.py --write
+          else
+            python backend/engine.py
+          fi

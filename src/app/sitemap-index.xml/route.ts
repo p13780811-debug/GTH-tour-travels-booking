@@ -1,11 +1,12 @@
-import {seoShardCounts} from "@/lib/seo/large-sitemaps";
+import {seoShardCountsSafe} from "@/lib/seo/large-sitemaps";
 import {siteOrigin,isPublicLaunch} from "@/lib/seo/site";
 export const dynamic="force-dynamic";
 const ESC=(s:string)=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
 export async function GET(){
  if(!isPublicLaunch())return new Response("Not available",{status:404,headers:{"Cache-Control":"no-store"}});
  try{
-  const origin=siteOrigin(),counts=await seoShardCounts();
+  const origin=siteOrigin(),counts=await seoShardCountsSafe();
+  // OSM has its own index in robots.txt; nested sitemap indexes are not supported.
   const urls=[origin+"/sitemap.xml",...counts.flatMap(({kind,pages})=>Array.from({length:pages},(_,n)=>origin+"/seo-sitemaps/"+kind+"/"+n+".xml"))];
   const xml='<?xml version="1.0" encoding="UTF-8"?>\n'+
    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+

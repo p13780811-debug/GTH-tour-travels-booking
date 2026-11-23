@@ -72,8 +72,8 @@ export default function SiteIdentitySchema() {
       {
         "@type": "Organization",
         "@id": organizationId,
-        name: "GTH PRO",
-        alternateName: ["Global Technical Hub", "GTH PRO Global"],
+        name: "GTH PRO Global",
+        alternateName: ["GTH PRO", "Global Technical Hub"],
         url: origin,
         description: "GTH PRO Global, an initiative of Etios Profession, operates travel technology through the GTH Global Booking Engine, GTH Worldwide Stays, GTH Event Concierge, Global Real Estate research, B2B enquiries and multi-country Tender Intelligence. It provides a unified proprietary branded digital gateway and supplier-operated booking handoffs (GTH Provider-Operated Handoffs) to independent global travel, accommodation and ticket networks. Supplier-reported accommodation networks span millions of listings, but GTH PRO does not own or guarantee that inventory, payment, property title, tender awards or event admission.",
         logo: siteUrl("/images/gth-logo.png"),
@@ -129,8 +129,8 @@ export default function SiteIdentitySchema() {
       {
         "@type": "WebSite",
         "@id": origin + "#website",
-        name: "GTH PRO",
-        alternateName: "Global Technical Hub",
+        name: "GTH PRO Global",
+        alternateName: ["GTH PRO", "Global Technical Hub"],
         url: origin,
         description: "GTH PRO Global connects its GTH Global Booking Engine and GTH Worldwide Stays with Real Estate market intelligence, B2B property enquiries, procurement readiness, and GTH Event Concierge. GTH Provider-Operated Handoffs connect users to independently operated inventory networks; neither local property-directory records nor the GTH-branded website guarantee real-time supplier availability.",
         publisher: { "@id": organizationId },

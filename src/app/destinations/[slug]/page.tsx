@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane, ShieldCheck, Sparkles } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
@@ -32,10 +33,27 @@ type Props = {
     currency?: string | string[];
   }>;
 };
-type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean; cityId?:string|null;countryCode:string|null };
+type DestinationDetail = DestinationOverview & { description: string; country: string | null; region: string | null; seoApproved:boolean; cityId?:string|null;countryCode:string|null; seoTitle?:string|null; seoDescription?:string|null };
+
+// Cache successful anonymous reads by both route slug and validated country.
+const readDestination = unstable_cache(async (slug: string, countryFilter: string) => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) throw new Error("Public destination catalog is unavailable");
+    const client = createClient(url, key);
+    const lookup = client.from("destinations")
+      .select("id,slug,name,description,country,country_code,is_active,media_rights_verified,source_name,source_url,seo_title,seo_description")
+      .eq("slug", slug)
+      .eq("is_active", true);
+    // A city slug may exist in multiple countries. Never choose an arbitrary match.
+    const { data, error } = await (countryFilter ? lookup.eq("country", countryFilter) : lookup)
+      .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
+
+    if (error || !data) throw new Error("Destination could not be read");
+    return data;
+}, ["gth-destination-public-metadata-v2"], { revalidate: 3600 });
 
 async function getDestination(slug: string, countryFilter = ""): Promise<DestinationDetail | null> {
-  // Leave legacy routing unchanged when the unified feature is disabled.
   const worldSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 140;
   // Public city identity pages are independent of the opt-in unified booking router.
   // Supplier-side city-spine behavior remains feature-gated below.
@@ -43,21 +61,8 @@ async function getDestination(slug: string, countryFilter = ""): Promise<Destina
   const editorialBase = destinations.find((item) => item.slug === slug) ?? null;
   const editorial: DestinationDetail | null = editorialBase && (!countryFilter || destinationGeography(slug).country === countryFilter) ? { ...editorialBase, ...destinationGeography(slug), seoApproved:true,countryCode:null } : null;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return editorial;
-
   try {
-    const client = createClient(url, key);
-    const lookup = client.from("destinations")
-      .select("id,slug,name,description,country,country_code,is_active,media_rights_verified,source_name,source_url")
-      .eq("slug", slug)
-      .eq("is_active", true);
-    // A city slug may exist in multiple countries. Never choose an arbitrary match.
-    const { data, error } = await (countryFilter ? lookup.eq("country", countryFilter) : lookup)
-      .abortSignal(AbortSignal.timeout(5_000)).maybeSingle();
-
-    if (error || !data) return editorial;
+    const data = await readDestination(slug, countryFilter);
     const approved=isIndexableDestination(data as unknown as Record<string,unknown>);
     // Never overwrite a curated, source-reviewed editorial page with unapproved imported copy.
     if (!approved && editorial) return editorial;
@@ -69,6 +74,16 @@ async function getDestination(slug: string, countryFilter = ""): Promise<Destina
       slug,
       name,
       seoApproved:approved,
+      // Never treat an unreviewed AI draft as approved site copy. City identity
+      // and content lengths must match before the sourced fields reach <head>.
+      seoTitle:approved && typeof data.seo_title==="string" &&
+        data.seo_title.trim().length>=24 && data.seo_title.trim().length<=85 &&
+        data.seo_title.toLocaleLowerCase().includes(name.toLocaleLowerCase()) &&
+        !/[<>]/.test(data.seo_title) ? data.seo_title.trim() : null,
+      seoDescription:approved && typeof data.seo_description==="string" &&
+        data.seo_description.trim().length>=90 && data.seo_description.trim().length<=165 &&
+        data.seo_description.toLocaleLowerCase().includes(name.toLocaleLowerCase()) &&
+        !/[<>]/.test(data.seo_description) ? data.seo_description.trim() : null,
       cityId:typeof data.id==="string"&&/^[a-f0-9-]{36}$/i.test(data.id)?data.id:null,
       countryCode:typeof data.country_code==="string"&&/^[A-Z]{2}$/.test(data.country_code)?data.country_code:null,
       ...destinationGeography(slug, data.country),
@@ -93,8 +108,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!place) return { title: "Destination not found | GTH PRO", robots: { index: false } };
   const index=isPublicLaunch()&&place.seoApproved;
   return {
-    title: `Explore ${place.name} | GTH PRO Destinations`,
-    description: place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`,
+    title: place.seoTitle || `Explore ${place.name}${place.country ? `, ${place.country}` : ""} | GTH PRO Destinations`,
+    description: place.seoDescription || (place.seoApproved ? place.description.slice(0,175) : `Research ${place.name} and verify destination details with official local sources.`),
     robots:{index,follow:index},
     alternates: { canonical: `/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}` },
     openGraph: {
@@ -153,6 +168,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     ],
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
+  const mappedAttractions = links.find(item => item.key === "attractions");
   const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
   const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
   const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
@@ -207,6 +223,12 @@ export default async function DestinationPage({ params, searchParams }: Props) {
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
+      {city&&mappedAttractions&&<nav aria-label="Mapped attractions discovery" className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-sm sm:px-6">
+        <p className="text-[var(--text-soft)]">Browse real OpenStreetMap records for {mappedAttractions.scope==="destination"?city.name:destination.country||"worldwide locations"}. Community map city tags may be incomplete.</p>
+        <Link prefetch={false} href={mappedAttractions.href} className="inline-flex min-h-11 items-center gap-2 font-semibold underline">
+          Explore mapped attractions <ArrowRight size={16} aria-hidden="true"/>
+        </Link>
+      </nav>}
       <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
         <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
       </Suspense>
