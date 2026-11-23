@@ -87,6 +87,11 @@ export default async function DestinationSearchPage({ searchParams }: Props) {
 
   const valid = search.length <= 70 && NAME_QUERY.test(search) &&
     !search.includes("..") && !search.includes("://");
+  // An established editorial city can open immediately without a supplier or
+  // database round trip. Respect any explicit country filter.
+  const curatedExact = valid ? curatedMatches(search, country).filter(place =>
+    place.title.normalize("NFKC").toLocaleLowerCase("en") === search.toLocaleLowerCase("en")) : [];
+  if (curatedExact.length === 1) redirect(destinationDetailHref(curatedExact[0]));
   const places = valid ? await findMatches(search, country) : [];
   const exact = places.filter(place => place.title.normalize("NFKC").toLocaleLowerCase("en") ===
     search.toLocaleLowerCase("en"));
