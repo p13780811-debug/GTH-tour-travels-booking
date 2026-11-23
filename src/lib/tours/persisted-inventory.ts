@@ -36,7 +36,7 @@ function toCard(row:SourceRow):SupplierProduct|null{
  }catch{return null;}
 }
 /** Optional RLS-scoped public DB supplement. Fail closed if table/migration is absent. */
-export async function loadPersistedSupplierProducts(search:TourSearch,mode:ExperiencePath):Promise<SupplierProduct[]>{
+export async function loadPersistedSupplierProducts(search:TourSearch,mode:ExperiencePath,expectedCountry?:string):Promise<SupplierProduct[]>{
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL, key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  if(!url || !key)return [];
  const currency=search.currency;
@@ -52,6 +52,7 @@ export async function loadPersistedSupplierProducts(search:TourSearch,mode:Exper
   // filter must not silently hide valid INR/EUR rows on the default Tours page.
   if(currency)request=request.eq("currency",currency);
   if(search.city)request=request.ilike("city_name",search.city);
+  if(expectedCountry)request=request.eq("country_name",expectedCountry);
   const {data,error}=await request.order("last_verified_at",{ascending:false}).limit(96)
    .abortSignal(AbortSignal.timeout(4_000));
   if(error || !data)return [];

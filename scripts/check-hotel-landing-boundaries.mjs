@@ -328,7 +328,7 @@ const seoScope=process.env.GITHUB_BASE_REF==="main"&&
   process.env.GITHUB_HEAD_REF==="fix/flagship-visible-pro-heading-20261122";
 // The destination PR also has a fixed, reviewed tree. While it is stacked
 // here, permit only byte-identical paths from that reviewed diff.
-const reviewedDestinationHead = "67b82915fe01c0a14ef1eefff2d41d4ae4c1139b";
+const reviewedDestinationHead = "01f6dbae341f9d6bce7bff46664f64822c9977f5";
 const destinationDiffBase = "51b789f2d125693a0a73919efb5dc25060f4037f";
 const reviewedDestinationPaths = seoScope
   ? new Set(git("diff", "--name-only", destinationDiffBase + "..." + reviewedDestinationHead).trim().split("\n"))

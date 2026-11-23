@@ -2,6 +2,9 @@ import "server-only";
 import Link from "next/link";
 import {ArrowRight, Building2, Compass, Hotel, MapPin} from "lucide-react";
 import {getSupplierCatalog,getSupplierAttractions} from "@/lib/tours/supplier-catalog";
+import {firstAvailableSupplierCatalog} from "@/lib/tours/catalog-selection";
+import {parseTourFilters,type ExperiencePath} from "@/lib/tours/discovery";
+import {loadPersistedSupplierProducts} from "@/lib/tours/persisted-inventory";
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
 import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
@@ -42,8 +45,8 @@ function goaProductLinks(kind: keyof typeof goaExperiences): Pick[] {
 }
 
 /**
- * Cards are supplier-returned products only, never public.destinations,
- * public.hotels, OSM or demo rows. A destination record supplies identity only.
+ * Products come from the supplier and its existing verified catalog snapshots.
+ * Destination records supply location identity.
  * APIs are accessed server-side through the EXISTING bounded/cache-protected
  * WeGoTrip and Nuitee readers. Venue links use the curated official venue guide.
  */
@@ -51,9 +54,16 @@ export default async function DestinationSupplierPicks({city,country,countryCode
   const code=countryCode&&/^[A-Z]{2}$/.test(countryCode)?countryCode:countryCodeForDestinationName(country);
   const isGoa = code === "IN" && cityName(city) === "goa";
   const validIdentity=city.length>=2&&city.length<=80&&!!country&&country.length<=100;
+  const parsed = parseTourFilters({ city, currency: "USD" });
+  const readExperiences = (mode: ExperiencePath) => validIdentity && parsed.ok && country
+    ? firstAvailableSupplierCatalog(
+        getSupplierCatalog({ city: parsed.filters.city, currency: parsed.filters.currency }, mode, country),
+        loadPersistedSupplierProducts(parsed.filters, mode, country),
+      )
+    : Promise.resolve({ items: [] });
   const [tourResult,activityResult,attractionResult,hotelResult]=await Promise.allSettled([
-    validIdentity?getSupplierCatalog({city,currency:"USD"},"/tours",country!):Promise.resolve({items:[]}),
-    validIdentity?getSupplierCatalog({city,currency:"USD"},"/activities",country!):Promise.resolve({items:[]}),
+    readExperiences("/tours"),
+    readExperiences("/activities"),
     validIdentity?getSupplierAttractions(city,country!):Promise.resolve([]),
     validIdentity&&code?getFreeHotelProfiles(code,city,1):Promise.resolve({items:[]}),
   ] as const);
