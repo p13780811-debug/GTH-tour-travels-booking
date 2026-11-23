@@ -100,3 +100,18 @@ test("destination briefing shows accurate country context and valid existing hot
  assert.doesNotMatch(detail,/<HotelResults|getTours\(/);
  assert.doesNotMatch(detail,/reserve now|confirmed booking|guaranteed cheapest/i);
 });
+
+test("destination search opens a separate results page and an exact city detail", () => {
+  const directory = read("src/app/destinations/page.tsx");
+  const search = read("src/app/destinations/search/page.tsx");
+  const geo = read("src/components/destination/GeoCityIntro.tsx");
+  assert.match(directory, /redirect\("\/destinations\/search\?" \+ query\.toString\(\)\)/);
+  assert.match(directory, /action="\/destinations\/search" method="get"/);
+  assert.match(geo, /action="\/destinations\/search"/);
+  assert.match(search, /redirect\(destinationDetailHref\(exact\[0\]\)\)/);
+  assert.match(search, /\.eq\("is_active", true\)/);
+  assert.match(search, /\.limit\(MAX_RESULTS\)/);
+  assert.match(search, /country && geography\.country !== country/);
+  assert.match(directory, /const curatedRank = new Map\(curatedDestinations\.map/);
+  assert.doesNotMatch(search, /Math\.random|guaranteed availability/);
+});
