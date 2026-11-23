@@ -20,11 +20,11 @@ async function inspect(blockVendor,rewriteVendor=false){
   await page.waitForTimeout(3000);
   const snap=async(label)=>page.evaluate((label)=>{
     const $=s=>document.querySelector(s);
-    const nav=$('nav[aria-label="GTH PRO mobile app navigation"]');
+    const nav=$('nav[aria-label="GTH PRO mobile navigation"]');
     const search=$('#tpwl-search');
     const hero=$('main[data-gth-flight-page="true"] h1');
     const category=$('nav[aria-label="Flight travel categories"]');
-    const header=$('nav.sticky') || $('nav[aria-label="GTH PRO mobile app navigation"]');
+    const header=$('nav.sticky') || $('nav[aria-label="GTH PRO mobile navigation"]');
     const styleInfo=[...document.head.querySelectorAll("style,link[rel=stylesheet]")].map(n=>({
       type:n.tagName, href:n.getAttribute("href")?.slice(0,150)||null,
       id:n.id||null, data:n.getAttribute("data-gth-white-label")||null,

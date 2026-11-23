@@ -18,7 +18,7 @@ test("ecosystem and installed PWA expose saved research directly with no additio
  const ecosystem=source("src/app/mega-aggregator/page.tsx");
  const app=source("src/app/app/page.tsx");
  const manifest=source("src/app/manifest.ts");
- assert.match(ecosystem,/aria-label="GTH PRO Home and Research Desk"/);
+ assert.match(ecosystem,/aria-label="GTH PRO app and Research Desk"/);
  assert.match(ecosystem,/href="\/app"/);
  assert.match(ecosystem,/href="\/app\/board"/);
  assert.match(app,/<AppResearchQuickAccess\/>/);

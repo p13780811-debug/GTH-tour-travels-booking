@@ -74,10 +74,10 @@ export default async function MegaAggregator() {
             <div className="relative z-30 mx-auto -mt-10 w-full max-w-7xl px-3 pb-6 sm:-mt-12 sm:px-6 xl:-mt-24">
                 <EcosystemUnifiedSearch />
             </div>
-            <nav aria-label="GTH PRO Home and Research Desk"
+            <nav aria-label="GTH PRO app and Research Desk"
                 className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 px-3 pb-5 sm:gap-3 sm:px-6">
                 <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
-                    Open GTH PRO Home
+                    Open GTH PRO App Home
                 </Link>
                 <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-2 py-3 text-center text-xs font-bold text-[var(--text)] sm:text-sm">
                     My Research Desk
