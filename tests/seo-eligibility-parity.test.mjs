@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import {mobility} from "./helpers/mobility-loader.mjs";
 
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
@@ -13,6 +14,7 @@ function seoModule(){
   const mod={exports:{}};
   const require=name=>{
     if(name==="server-only")return {};
+    if(name==="@/lib/mobility/city")return mobility;
     if(name==="@supabase/supabase-js")return {createClient:()=>{throw Error("No DB in eligibility unit test")}};
     if(name==="@/lib/real-estate/property-seo")return {isIndexableProperty:()=>false};
     if(name==="@/lib/seo/public-listings")return {isIndexableHotel:()=>false,isIndexableTender:()=>false};

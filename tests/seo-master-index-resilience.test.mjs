@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import {mobility} from "./helpers/mobility-loader.mjs";
 
 const read=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const origin="https://www.gthproglobal.com";
@@ -40,7 +41,7 @@ test("one failed public SEO view does not suppress healthy property sitemap shar
   },
  };
  const helper=compile("src/lib/seo/large-sitemaps.ts",{
-  "server-only":{},
+  "server-only":{},"@/lib/mobility/city":mobility,
   "@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},
   "@supabase/supabase-js":{createClient:()=>client},
   "@/lib/seo/public-listings":{isIndexableHotel:()=>false,isIndexableTender:()=>false},
@@ -51,7 +52,7 @@ test("one failed public SEO view does not suppress healthy property sitemap shar
  });
  const results=JSON.parse(JSON.stringify(await helper.seoShardCountsSafe()));
  assert.deepEqual(results,[{kind:"properties",pages:2}]);
- assert.equal(queried.length,6);
+ assert.equal(queried.length,7);
  assert.ok(queried.includes("gth_seo_hotels_v1"));
  const index=compile("src/app/sitemap-index.xml/route.ts",{
   "@/lib/seo/large-sitemaps":helper,

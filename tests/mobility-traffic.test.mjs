@@ -45,3 +45,26 @@ test("unsupported cities and expired reports never enter the city feed",()=>{
   ];
   assert.equal(traffic.reportsForZone(reports,"dadar",Date.parse("2026-11-24T12:00:00Z")).map(report=>report.id).join(","),"new");
 });
+
+const osm=loadTenderTs("src/lib/mobility/osm.ts");
+test("global traffic keys and map requests are city scoped",()=>{
+  assert.equal(traffic.trafficCityFor({name:"Paris",slug:"paris-fr",countryCode:"FR"}),"d:paris-fr");
+  assert.equal(traffic.trafficCityFor({name:"Kolkata",slug:"kolkata",countryCode:"IN"}),"kolkata");
+  assert.equal(traffic.isTrafficCity("d:paris?x"),false);
+  const query=osm.mobilityOverpassQuery({name:"Paris",countryCode:"FR"});
+  assert.match(query,/ISO3166-1"="FR/);
+  assert.match(query,/around\.place:8000/);
+  assert.equal(osm.mobilityOverpassQuery({name:'Paris");out;',countryCode:"FR"}),null);
+});
+test("OSM mapped features reject ambiguous, incomplete or untrusted responses",()=>{
+  const base={osm3s:{timestamp_osm_base:"2026-11-24T12:00:00Z"}};
+  const center={type:"node",id:10};
+  const camera={type:"node",id:20,tags:{highway:"speed_camera",website:"https://example.com"}};
+  const station={type:"way",id:30,tags:{railway:"station",name:"Central"}};
+  assert.equal(osm.parseMobilityMap({...base,remark:"timed out",elements:[center,camera]}),null);
+  assert.equal(osm.parseMobilityMap({...base,elements:[center,{...center,id:11},camera]}),null);
+  const result=osm.parseMobilityMap({...base,elements:[center,camera,camera,station]});
+  assert.equal(result.features.length,2);
+  assert.equal(result.features[0].href,"https://www.openstreetmap.org/node/20");
+  assert.equal(result.features[1].kind,"transit");
+});

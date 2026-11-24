@@ -17,13 +17,13 @@ export function mobilityText(value:unknown,max=120):string {
   const clean=value.normalize("NFKC").trim().replace(/\s+/gu," ");
   return clean.length>0&&clean.length<=max&&plain.test(clean)?clean:"";
 }
-const validSlug=(value:unknown)=>typeof value==="string"&&value.length<=140&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)?value:"";
+export const validMobilitySlug=(value:unknown):value is string=>typeof value==="string"&&value.length<=140&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 const regionNames=new Intl.DisplayNames(["en"],{type:"region",fallback:"none"});
 const trafficCityAliases=new Map(MOBILITY_CITIES.filter(city=>city.slug==="mumbai"||city.slug==="kolkata")
   .map(city=>[city.slug,city]));
 export function mobilityCity(value:{name:unknown;slug:unknown;country:unknown;countryCode:unknown}):MobilityCity|null {
-  const name=mobilityText(value.name),slug=validSlug(value.slug);
-  if(!name||!slug)return null;
+  const name=mobilityText(value.name),slug=value.slug;
+  if(!name||!validMobilitySlug(slug))return null;
   const code=typeof value.countryCode==="string"&&/^[A-Z]{2}$/.test(value.countryCode)?value.countryCode:"";
   const country=mobilityText(value.country,80)||(code?regionNames.of(code)??"":"");
   const hub=trafficCityAliases.get(name.toLocaleLowerCase("en"));
@@ -34,7 +34,7 @@ export function mobilityCity(value:{name:unknown;slug:unknown;country:unknown;co
   return hub&&(code==="IN"||legacyHub)?hub:{name,slug,country,countryCode:code};
 }
 export function mobilityHref(city:MobilityCity) {
-  return "/mobility?"+new URLSearchParams({city:city.name,slug:city.slug,cc:city.countryCode,country:city.country});
+  return "/mobility/"+encodeURIComponent(city.slug);
 }
 export function mobilityCityKey(city:MobilityCity) {
   return [city.countryCode||city.country,city.slug].join(":");

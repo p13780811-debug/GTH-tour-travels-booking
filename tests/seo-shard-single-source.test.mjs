@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import {mobility} from "./helpers/mobility-loader.mjs";
 
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 function compile(path, deps, globals = {}) {
@@ -47,7 +48,7 @@ function setup(opts = {}) {
   };
   const site = {isPublicLaunch:()=>live,siteOrigin:()=> "https://www.gthproglobal.com"};
   const deps = {
-    "server-only":{},
+    "server-only":{},"@/lib/mobility/city":mobility,
     "@supabase/supabase-js":{createClient:()=>client},
     "@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},
     "@/lib/seo/public-listings":{isIndexableHotel:()=>false,isIndexableTender:()=>false},

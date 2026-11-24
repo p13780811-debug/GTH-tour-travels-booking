@@ -1,13 +1,14 @@
 "use client";
 
 import {useCallback,useEffect,useRef,useState,type FormEvent} from "react";
-import {Bell,CheckCircle,Construction,ExternalLink,OctagonAlert,RefreshCw,TrafficCone} from "lucide-react";
+import {Bell,CheckCircle,Construction,ExternalLink,OctagonAlert,RefreshCw,Share2,TrafficCone} from "lucide-react";
 import TrafficVoice from "./TrafficVoice";
 import {supabase} from "@/lib/supabase";
 import {mobilityHref,type MobilityCity} from "@/lib/mobility/city";
 import {REPORT_KINDS,isReportKind,reportsForZone,trafficCityFor,validTrafficZone,type ReportKind,type TrafficFeed,type TrafficReport,type TrafficZone} from "@/lib/mobility/traffic";
 import {TRAFFIC_LANGUAGES,trafficLanguage,trafficLabels,type TrafficLanguage} from "@/lib/mobility/traffic-language";
 import {officialTrafficSources} from "@/lib/mobility/traffic-sources";
+import {PRIMARY_ORIGIN} from "@/lib/seo/site";
 import {trafficDraft} from "@/lib/mobility/traffic-voice";
 
 const control="gth-btn inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold";
@@ -46,7 +47,7 @@ export default function DriverTraffic({city}:{city:MobilityCity}){
   const followKey="gth:mobility:follow:"+pilot;
   const reportKey="gth:mobility:report:"+pilot;
   const draftKey="gth:mobility:draft:"+pilot;
-  const zoneName=(item:TrafficZone)=>((pilot==="mumbai"&&["hi","mr"].includes(language))||(pilot==="kolkata"&&language==="bn"))?item.localLabel:item.label;
+  const zoneName=(item:TrafficZone)=>item.id==="citywide"?city.name:((pilot==="mumbai"&&["hi","mr"].includes(language))||(pilot==="kolkata"&&language==="bn"))?item.localLabel:item.label;
   const zoneLabel=(id:string)=>{const item=feed?.zones.find(z=>z.id===id);return item?zoneName(item):id;};
 
   useEffect(()=>{
@@ -74,7 +75,10 @@ export default function DriverTraffic({city}:{city:MobilityCity}){
       const response=await fetch("/api/mobility/traffic?city="+pilot,{signal:controller.signal});
       if(!response.ok)throw new Error();
       const next=await response.json() as TrafficFeed;
-      if(!controller.signal.aborted){setFeed(next);setLoadError(false);}
+      if(!controller.signal.aborted){
+        setFeed(next);setLoadError(false);
+        if(next.zones.length===1)setDraftZone(current=>current||next.zones[0].id);
+      }
     }catch{
       if(!controller.signal.aborted||controller.signal.reason==="timeout")setLoadError(true);
     }finally{
@@ -87,6 +91,12 @@ export default function DriverTraffic({city}:{city:MobilityCity}){
     void refresh();
     return ()=>{request.current?.abort();request.current=null;};
   },[refresh]);
+
+  useEffect(()=>{
+    const fragment=window.location.hash;
+    if(!feed||!/^#report-[a-f0-9-]{36}$/i.test(fragment))return;
+    document.getElementById(fragment.slice(1))?.scrollIntoView({block:"nearest"});
+  },[feed]);
 
   useEffect(()=>{
     if(following===null)return;
@@ -225,9 +235,18 @@ export default function DriverTraffic({city}:{city:MobilityCity}){
         {active.length>0&&<ul className="max-h-80 space-y-2 overflow-y-auto">
           {active.map(item=>{
             const Icon=icons[item.kind];
-            return <li key={item.id} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
+            return <li key={item.id} id={"report-"+item.id} className="scroll-mt-24 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3">
               <Icon size={20} aria-hidden="true"/><span className="text-sm"><strong>{labels[item.kind]}</strong><br/>{zoneLabel(item.zone)}</span>
-              <time className="ms-auto text-xs text-[var(--text-soft)]" dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(TRAFFIC_LANGUAGES[language][1],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Kolkata"})}</time>
+              <div className="ms-auto flex flex-col items-end gap-1">
+                <time className="text-xs text-[var(--text-soft)]" dateTime={item.createdAt}>
+                  {new Date(item.createdAt).toLocaleTimeString(TRAFFIC_LANGUAGES[language][1],{hour:"numeric",minute:"2-digit"})}
+                </time>
+                <a href={"https://wa.me/?"+new URLSearchParams({text:labels.community+" · "+labels[item.kind]+" · "+
+                  zoneLabel(item.zone)+"\n"+PRIMARY_ORIGIN+mobilityHref(city)+"#report-"+item.id})}
+                  rel="noopener noreferrer" target="_blank" className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold underline">
+                  <Share2 size={14} aria-hidden="true"/> WhatsApp
+                </a>
+              </div>
             </li>;
           })}
         </ul>}
