@@ -1,6 +1,7 @@
 "use client";
 
 import {useMemo,useState} from "react";
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import Link from "next/link";
 import {ArrowUpRight,Globe2,Search,Ticket} from "lucide-react";
 import {ticketCategories,worldwideTicketSources,type TicketCategory} from "@/lib/travel/worldwide-ticket-sources";
@@ -10,7 +11,7 @@ import {stadiums} from "@/lib/travel/stadiums";
 type DiscoveryItem={
  id:string;name:string;region:string;categories:readonly TicketCategory[];
  href:string;kind:"ticket-platform"|"official-box-office"|"official-calendar"|"discovery-platform"|"venue-guide";
- keywords:string;
+ keywords:string;ticketQuery?:string;
 };
 const items:readonly DiscoveryItem[]=[
  ...worldwideTicketSources.map(source=>({...source,href:source.url})),
@@ -25,6 +26,7 @@ const items:readonly DiscoveryItem[]=[
    id:"venue-"+venue.slug,name:venue.name+" — venue & ticket guide",region:venue.country,
    categories:(venue.sports.includes("Concerts")?["sports","concerts"]:["sports"]) as TicketCategory[],
    href:"/stadiums/"+venue.slug,kind:"venue-guide" as const,
+   ticketQuery:venue.name+" "+venue.city,
    keywords:[venue.city,venue.country,venue.aliases,...venue.sports].filter(Boolean).join(" "),
  })),
 ];
@@ -95,6 +97,7 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
          </select>
        </label>
      </div>
+     {query.trim()&&<TicketNetworkLink query={query} label="Search tickets" className="mt-3"/>}
      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
        <p role="status" aria-live="polite" className="text-sm text-[var(--text-soft)]">
          {mode==="matching"?`${display.length} relevant source ${display.length===1?"match":"matches"}`:
@@ -115,6 +118,7 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
        {item.kind==="venue-guide"?
          <Link href={item.href} prefetch={false} className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">{kinds[item.kind].action}<Ticket size={16} aria-hidden="true"/></Link>:
          <a href={item.href} target="_blank" rel="noopener noreferrer" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">{kinds[item.kind].action}<ArrowUpRight size={16} aria-hidden="true"/></a>}
+       {item.ticketQuery&&<TicketNetworkLink query={item.ticketQuery} className="mt-2"/>}
      </article>)}
    </div>
    {!showAll&&display.length>shown.length&&<div className="mt-5 text-center"><button type="button" onClick={()=>setShowAll(true)} className="gth-btn min-h-12 rounded-xl px-5 font-semibold">Show all {display.length} sources</button></div>}

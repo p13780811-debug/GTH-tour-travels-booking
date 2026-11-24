@@ -1,5 +1,6 @@
 "use client";
 import {useState} from "react";
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import Link from "next/link";
 import {ArrowUpRight,Search,ShieldCheck,Ticket} from "lucide-react";
 import {matchReviewedStadiums,stadiumPartnerSearchLinks} from "@/lib/travel/stadium-partner-discovery";
@@ -31,6 +32,7 @@ export default function StadiumPartnerDiscovery(){
       placeholder="Eden Gardens, Kolkata, Wembley, MCG..."
       className="min-h-12 min-w-0 w-full bg-transparent text-sm text-[var(--text)] outline-offset-2"/>
    </div>
+   {term.trim()&&<TicketNetworkLink query={venues.length===1?venues[0].name:term} label="Search tickets" className="mt-3"/>}
    <div className="mt-3 flex flex-wrap gap-2" aria-label="Example global destinations">
     {examples.map(city=><button key={city} type="button" onClick={()=>setTerm(city)} aria-pressed={term===city}
        className={term===city?"gth-btn-gold min-h-10 rounded-xl px-3 text-xs font-semibold":"gth-btn min-h-10 rounded-xl px-3 text-xs font-semibold"}>{city}</button>)}
@@ -63,7 +65,7 @@ export default function StadiumPartnerDiscovery(){
   <p className="mt-5 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
    <ShieldCheck size={16} className="mt-0.5 shrink-0" aria-hidden="true"/>
    Products, dates, admission and prices are confirmed by the linked provider. No paid event API, live inventory,
-   new supplier integration, cron or on-site payment is used. <Link href="/affiliate-disclosure" prefetch={false} className="font-semibold underline">Affiliate disclosure</Link>
+   cron or on-site payment is used. <Link href="/affiliate-disclosure" prefetch={false} className="font-semibold underline">Affiliate disclosure</Link>
   </p>
  </section>;
 }

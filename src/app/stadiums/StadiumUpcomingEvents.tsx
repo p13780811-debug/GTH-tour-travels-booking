@@ -1,3 +1,4 @@
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import Link from "next/link";
 import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
@@ -41,6 +42,7 @@ export default function StadiumUpcomingEvents(){
           <span className="ml-1 text-xs text-[var(--text-soft)]">venue-local date(s)</span>
         </p>
         <div className="mt-auto flex flex-wrap gap-3 pt-5">
+          <TicketNetworkLink query={event.label+" "+venue.name}/>
           <a href={event.url} target="_blank" rel="noopener noreferrer"
             className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">
             Official event details <ArrowUpRight size={15} aria-hidden="true"/>
@@ -59,7 +61,7 @@ export default function StadiumUpcomingEvents(){
     </div>}
     <p className="mt-4 flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
       <ShieldCheck size={16} className="mt-0.5 shrink-0" aria-hidden="true"/>
-      Event links go to official organizer sources. Ticket sales, seating, final dates, prices
+      Official details come from the organizer. Ticket sales, seating, final dates, prices
       and eligibility are independently controlled by event organizers and suppliers.
     </p>
   </section>;

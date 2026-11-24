@@ -15,7 +15,7 @@ test("Sitemap index is launch-gated and discovers every approved pillar in pagin
  assert.match(index,/seoShardCounts/);
  assert.doesNotMatch(index,/osmIndex=/);
  assert.ok(helper.includes("Promise.allSettled(SEO_KINDS.map"));
- assert.ok(index.includes("seoShardCountsSafe()"));
+ assert.ok(index.includes("seoShardCountsSafe(readPages)"));
  assert.ok(helper.includes("export async function seoShardCounts():"));
  assert.match(shards,/knownSeoKind/);
  assert.match(shards,/if\(!urls\.length\)/);

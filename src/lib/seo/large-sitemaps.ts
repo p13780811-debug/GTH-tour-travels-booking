@@ -117,10 +117,10 @@ export async function seoShardPages(kind:SeoKind):Promise<number>{
  * seoShardCounts() and seoShardPages() contracts remain strict for callers.
  * Counts still use exactly one bounded public read per source.
  */
-export async function seoShardCountsSafe():Promise<{kind:SeoKind;pages:number}[]>{
+export async function seoShardCountsSafe(readPages=seoShardPages):Promise<{kind:SeoKind;pages:number}[]>{
  if(!isPublicLaunch())return [];
  const outcomes=await Promise.allSettled(SEO_KINDS.map(async kind=>({
-  kind,pages:await seoShardPages(kind),
+  kind,pages:await readPages(kind),
  })));
  const available:{kind:SeoKind;pages:number}[]=[];
  outcomes.forEach((entry,index)=>{

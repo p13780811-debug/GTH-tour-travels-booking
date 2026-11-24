@@ -1,4 +1,5 @@
 "use client";
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import {useMemo,useState} from "react";
 import {ArrowUpRight} from "lucide-react";
 import {ticketDestinations} from "@/lib/travel/stadium-ticket-destinations";
@@ -24,6 +25,7 @@ export default function StadiumTicketDestinations(){
    <label className="text-sm font-semibold">Region<select value={region} onChange={e=>setRegion(e.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">All regions</option>{regions.map(r=><option key={r} value={r}>{r}</option>)}</select></label>
    <label className="text-sm font-semibold">Destination type<select value={kind} onChange={e=>setKind(e.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-[var(--text)]"><option value="">All sources</option><option value="official-tickets">Official ticket portals</option><option value="official-schedule">Official fixtures</option><option value="authorized-marketplace">Ticket marketplaces</option></select></label>
   </div>
+  {(query.trim()||sport)&&<TicketNetworkLink query={query.trim()||sport} label="Search tickets" className="mt-3"/>}
   <p role="status" className="my-4 text-sm text-[var(--text-soft)]">{matches.length} official or authorized discovery destinations</p>
   {matches.length===0?<div className="gth-glass rounded-2xl p-5"><p>No matching sources in this curated directory.</p><button type="button" onClick={()=>{setQuery("");setSport("");setRegion("");setKind("");}} className="gth-btn mt-3 min-h-11 rounded-xl px-4">Show all sources</button></div>:
   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{matches.map(d=><article key={d.id} className="gth-glass flex flex-col rounded-2xl border border-[var(--border)] p-5">

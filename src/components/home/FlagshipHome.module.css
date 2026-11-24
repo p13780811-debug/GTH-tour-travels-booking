@@ -385,7 +385,7 @@
  .headerBrand {font-size:18px;}
  .topNav {flex-wrap:wrap;gap:5px;}
  .topNav a {min-height:33px;padding:7px 8px;font-size:10px;}
- .topNav a:nth-child(n+3) {display:none;}
+ .topNav a:nth-child(n+2) {display:none;}
  .heroCenter {top:72px;padding:12px;}
  .brand {font-size:clamp(63px,17vw,100px);gap:10px;}
  .ecosystemTitle {font-size:clamp(10px,2.7vw,15px);letter-spacing:.14em;}
@@ -549,17 +549,17 @@
   .pillar { min-height: 510px; }
 }
 @media (max-width: 680px) {
-  .hero { height: clamp(410px, 110vw, 470px); }
+  .hero { height: auto; min-height: 0; padding-bottom: 20px; overflow: clip; }
   .earth::before {
     background-position: 22% center;
     background-size: auto 115%;
   }
-  .heroCenter { top: 91px; }
+  .heroCenter { position: relative; inset: auto; padding: 16px 12px 0; animation: none; }
   .brand { font-size: clamp(58px, 15vw, 88px); }
   .ecosystemTitle { font-size: clamp(10px, 2.7vw, 14px); }
   .pillar { min-height: clamp(520px, 140vw, 670px); }
   .scrollCue { bottom: 69px; }
-  .tagline { bottom: 17px; }
+  .tagline { position: relative; inset: auto; margin: 17px 12px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .earth::before, .heroCenter, .scrollCue span {
@@ -823,9 +823,9 @@
     gap: 9px;
     padding: 0 10px;
   }
-  .masterSearchField input { height: 42px; font-size: 12px; }
-  .masterSearch select { min-height: 42px; font-size: 11px; }
-  .masterSearchSubmit { min-height: 42px; padding: 0 13px; font-size: 12px; }
+  .masterSearchField input { height: 44px; font-size: 16px; }
+  .masterSearch select { min-height: 44px; font-size: 16px; }
+  .masterSearchSubmit { min-height: 44px; padding: 0 13px; font-size: 12px; }
   .scrollCue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -934,9 +934,9 @@
   .pillarTitle h2 { font-size: clamp(19px, 5vw, 25px); }
   .pillarTitle p { font-size: clamp(9px, 2.5vw, 11px); }
   .featureTray { left: 8px; right: 8px; bottom: 9px; height: 89px; padding: 7px 3px; }
-  .feature { font-size: 10px; gap: 4px; }
+  .feature { font-size: 11px; gap: 4px; }
   .feature svg { width: 20px; height: 20px; }
-  .panelEntry { bottom: 111px; right: 12px; min-height: 34px; padding: 7px 11px; font-size: 11px; }
+  .panelEntry { bottom: 111px; right: 12px; min-height: var(--home-tap-target, 44px); padding: 7px 11px; font-size: 12px; }
 }
 
 
@@ -1107,3 +1107,80 @@
 
 /* Four approved desktop pillars; preserve the original phone/tablet swipe UX. */
 @media (min-width:981px) and (max-width:1199px) { .proofGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+.headerActions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+.themeControl { flex: none; }
+.site .themeControl button {
+  color: var(--flag-silver);
+  background: color-mix(in srgb, var(--flag-navy) 82%, var(--flag-silver) 18%);
+  border: 1px solid var(--flag-edge);
+}
+.shortcuts {
+  position: relative;
+  z-index: 10;
+  padding: 10px 12px;
+  border-block: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+.utilityLink {
+  display: inline-flex;
+  min-height: 48px;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--foreground);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.utilityLink svg { flex: none; }
+.site .pillarJump { display: none; }
+@media (max-width: 1199px) {
+  .site .pillarJump {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    padding: 8px 12px 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--flag-navy);
+    backdrop-filter: none;
+  }
+  .site .pillarJump a {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 4px;
+    border: 1px solid var(--flag-edge);
+    border-radius: 9px;
+    color: var(--flag-silver);
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .pillarJump svg { flex: none; color: var(--flag-gold); }
+  .pillar { scroll-margin-block: 12px; }
+  .pillar:target { border-color: var(--flag-gold); }
+}
+@media (max-width: 680px) {
+  .topbar { align-items: center; padding-inline: 10px; }
+  .headerActions { gap: 5px; }
+  .topNav { padding: 0; }
+  .topNav a { min-height: 44px; padding-inline: 6px; }
+  .topNav a svg { display: none; }
+  .site .pillarJump a { flex-direction: column; font-size: 11px; gap: 4px; }
+}

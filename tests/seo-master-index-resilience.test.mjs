@@ -56,6 +56,7 @@ test("one failed public SEO view does not suppress healthy property sitemap shar
  assert.ok(queried.includes("gth_seo_hotels_v1"));
  const index=compile("src/app/sitemap-index.xml/route.ts",{
   "@/lib/seo/large-sitemaps":helper,
+  "next/cache":{unstable_cache:fn=>fn},
   "@/lib/seo/site":site,
  },{
   NEXT_PUBLIC_SUPABASE_URL:"https://test.supabase.co",
@@ -63,6 +64,7 @@ test("one failed public SEO view does not suppress healthy property sitemap shar
  });
  const response=await index.GET();
  assert.equal(response.status,200);
+ assert.equal(response.headers.get("cache-control"),"public, s-maxage=60");
  const xml=await response.text();
  assert.ok(xml.includes(origin+"/sitemap.xml"));
  assert.ok(xml.includes(origin+"/seo-sitemaps/properties/0.xml"));
@@ -74,9 +76,22 @@ test("one failed public SEO view does not suppress healthy property sitemap shar
 test("preview gate does not touch the database or publish a master sitemap",async()=>{
  const index=compile("src/app/sitemap-index.xml/route.ts",{
   "@/lib/seo/large-sitemaps":{seoShardCountsSafe:()=>{throw Error("Count must not run");}},
+  "next/cache":{unstable_cache:fn=>fn},
   "@/lib/seo/site":{isPublicLaunch:()=>false,siteOrigin:()=>origin},
  });
  const response=await index.GET();
  assert.equal(response.status,404);
+ assert.equal(response.headers.get("cache-control"),"no-store");
+});
+
+test("all source failures return a retryable index instead of a one-link success",async()=>{
+ const index=compile("src/app/sitemap-index.xml/route.ts",{
+  "@/lib/seo/large-sitemaps":{SEO_KINDS:["mobility"],seoShardPages:async()=>{throw Error("unavailable");},seoShardCountsSafe:async()=>[]},
+  "@/lib/seo/site":site,
+  "next/cache":{unstable_cache:fn=>fn},
+ });
+ const response=await index.GET();
+ assert.equal(response.status,503);
+ assert.equal(response.headers.get("retry-after"),"60");
  assert.equal(response.headers.get("cache-control"),"no-store");
 });

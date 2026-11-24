@@ -16,7 +16,7 @@ export default function FlagshipImage({ src, alt, className, priority = false }:
       alt={alt}
       fill
       priority={priority}
-      sizes="(max-width: 680px) 100vw, (max-width: 980px) 50vw, 34vw"
+      sizes="(max-width: 680px) calc(100vw - 48px), (max-width: 790px) 86vw, (max-width: 1199px) 680px, 25vw"
       className={className}
     />
   );
