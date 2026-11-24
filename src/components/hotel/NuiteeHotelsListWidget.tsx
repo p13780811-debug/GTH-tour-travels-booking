@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect,useRef,useState} from "react";
-import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT} from "@/lib/travel/hotel-whitelabel";
+import {HOTEL_BOOKING_ORIGIN,HOTEL_WIDGET_SCRIPT,hotelWhiteLabelUrl} from "@/lib/travel/hotel-whitelabel";
 import {hotelWhiteLabelSearchUrl,resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {connectNuiteeWidgetTheme} from "./nuitee-widget-theme";
 import styles from "./NuiteeHotelsListWidget.module.css";
@@ -11,6 +11,8 @@ type LiteHotelsListOptions={
   selector:string;
   placeId:string;
   currency:string;
+  checkin?:string;
+  checkout?:string;
   hasSearchBar:boolean;
   rows:number;
   primaryColor?:string;
@@ -58,27 +60,29 @@ function loadNuiteeHotelsSdk():Promise<LiteHotelsListSdk>{
  * The existing GTH CSS and day/night tokens own the surrounding layout.
  */
 export default function NuiteeHotelsListWidget({
-  placeId,placeLabel,id,rows=1,currency="INR"
+  placeId,placeLabel,id,rows=1,currency="INR",compact=false
 }:{
-  placeId:string;placeLabel:string;id:string;rows?:number;currency?:string;
+  placeId:string;placeLabel:string;id:string;rows?:number;currency?:string;compact?:boolean;
 }){
   const initialized=useRef(false);
   const displayCurrency=hotelCurrency(currency);
   // Official supplier SDK owns exact hotel identity. Only pass default stay
   // context on its deep links, never guess a property or city identifier.
-  const dates=resolveHotelDates(undefined,undefined);
+  const [dates]=useState(()=>resolveHotelDates(undefined,undefined));
   const occupancies=[{adults:2,children:[]}];
   const deepLinkParams=new URLSearchParams({language:"en",currency:displayCurrency,
     checkin:dates.checkin,checkout:dates.checkout,
     occupancies:btoa(JSON.stringify(occupancies))}).toString();
   const safeBookingPicker=hotelWhiteLabelSearchUrl(displayCurrency,{
     checkin:dates.checkin,checkout:dates.checkout,occupancies});
+  const bookingHref=compact?hotelWhiteLabelUrl({placeId,currency:displayCurrency,
+    checkin:dates.checkin,checkout:dates.checkout,occupancies}):safeBookingPicker;
   const supplierRoot=useRef<HTMLDivElement>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
     const root=supplierRoot.current;
-    return root?connectNuiteeWidgetTheme(root):undefined;
-  },[]);
+    return root?connectNuiteeWidgetTheme(root,compact&&displayCurrency==="INR"):undefined;
+  },[compact,displayCurrency]);
   useEffect(()=>{
     if(initialized.current)return;
     if(!/^ChIJ[A-Za-z0-9_-]{12,80}$/.test(placeId))return;
@@ -95,6 +99,7 @@ export default function NuiteeHotelsListWidget({
           currency:displayCurrency,
           hasSearchBar:false,
           rows,
+          ...(compact?{checkin:dates.checkin,checkout:dates.checkout}:{}),
           deepLinkParams,
           labelsOverride:{searchAction:"View hotels",placePlaceholderText:"Choose a destination"}
         };
@@ -106,20 +111,20 @@ export default function NuiteeHotelsListWidget({
       }catch{initialized.current=false;if(live)setFailed(true);}
     }).catch(()=>{if(live)setFailed(true);});
     return ()=>{live=false;};
-  },[id,placeId,rows,displayCurrency]);
+  },[id,placeId,rows,displayCurrency,compact,dates,deepLinkParams]);
 
   return <div className="min-w-0" aria-label={"GTH Worldwide Stays listings near "+placeLabel}>
-    <div ref={supplierRoot} id={id} className={"min-w-0 "+styles.supplier} data-gth-nuitee-supplier-hotels="true"/>
+    <div ref={supplierRoot} id={id} className={`min-w-0 ${styles.supplier} ${compact?styles.compact:""}`} data-gth-nuitee-supplier-hotels="true"/>
     {failed?<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-sm text-[var(--text-soft)]">
       Supplier hotel cards are unavailable in this browser. You can still browse the booking site directly.
     </p>:null}
     <p className="mt-2 text-xs text-[var(--text-soft)]">
       Room photos and details are supplied by the connected accommodation provider. Check dates, total price and booking conditions before payment.
     </p>
-    <a href={safeBookingPicker}
+    <a href={bookingHref}
       target="_blank" rel="noopener noreferrer sponsored"
       className="gth-btn-gold mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">
-      Browse on booking site
+      {compact?`View all ${placeLabel} stays`:"Browse on booking site"}
     </a>
   </div>;
 }

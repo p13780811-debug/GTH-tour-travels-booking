@@ -4,14 +4,17 @@ import Link from "next/link";
 import {ArrowUpRight,Hotel,Ticket} from "lucide-react";
 import NuiteeHotelsListWidget from "@/components/hotel/NuiteeHotelsListWidget";
 import SupplierTourCard from "@/components/tours/SupplierTourCard";
+import {hotelWhiteLabelUrl} from "@/lib/travel/hotel-whitelabel";
+import {resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {getSupplierCatalog} from "@/lib/tours/supplier-catalog";
 import {uniqueSupplierProducts,type SupplierProduct} from "@/lib/tours/supplier-products";
 
+// Place IDs verified through the booking portal's own destination picker.
 const cities=[
- {city:"Mumbai",country:"IN",image:"/images/cities/mumbai.jpg",label:"Mumbai stays"},
- {city:"Kolkata",country:"IN",image:"/images/cities/kolkata.jpg",label:"Kolkata stays"},
- {city:"Goa",country:"IN",image:"/images/cities/goa.jpg",label:"Goa stays"},
- {city:"London",country:"GB",image:"/images/cities/london.jpg",label:"London stays"},
+ {city:"Mumbai",placeId:"ChIJwe1EZjDG5zsRaYxkjY_tpF0",image:"/images/cities/mumbai.jpg",label:"Mumbai stays"},
+ {city:"Kolkata",placeId:"ChIJZ_YISduC-DkRvCxsj-Yw40M",image:"/images/cities/kolkata.jpg",label:"Kolkata stays"},
+ {city:"Goa",placeId:"ChIJQbc2YxC6vzsRkkDzYv-H-Oo",image:"/images/cities/goa.jpg",label:"Goa stays"},
+ {city:"London",placeId:"ChIJdd4hrwug2EcRmSrV3Vo6llI",image:"/images/cities/london.jpg",label:"London stays"},
 ] as const;
 
 /** Editorial city photos are clearly separate from supplier hotel inventory.
@@ -19,6 +22,7 @@ const cities=[
  * No private REST access, paid API refresh or fabricated room-price is added.
  */
 function HotelStays(){
+ const {checkin,checkout}=resolveHotelDates(undefined,undefined);
  return <section aria-labelledby="app-supplier-hotels" className="mx-auto w-full max-w-7xl py-5">
   <div className="flex items-end justify-between gap-3 px-4 sm:px-6">
    <div>
@@ -30,23 +34,23 @@ function HotelStays(){
   </div>
   <div role="region" aria-label="Hotel destination shortcuts — swipe horizontally" tabIndex={0}
     className="mt-3 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain touch-auto px-4 pb-3 sm:px-6">
-   {cities.map(item=><Link key={item.city} href={"/app/hotels?"+new URLSearchParams({view:"booking",city:item.city,country:item.country}).toString()}
+   {cities.map(item=><Link key={item.city} href={hotelWhiteLabelUrl({placeId:item.placeId,checkin,checkout,currency:"INR",occupancies:[{adults:2,children:[]}]})} prefetch={false}
       className="group w-[62vw] max-w-[235px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:w-[230px]">
      <div className="relative h-28 overflow-hidden bg-[var(--bg-soft)]">
       <Image src={item.image} alt={item.city+" destination view"} fill sizes="(max-width:640px) 62vw,230px"
        className="object-cover transition-transform duration-300 group-hover:scale-105"/>
      </div>
      <div className="flex min-h-16 items-center justify-between gap-2 p-3">
-      <span><strong className="block text-sm">{item.label}</strong><span className="mt-1 block text-[11px] text-[var(--text-soft)]">Choose a supplier hotel and dates</span></span>
+      <span><strong className="block text-sm">{item.label}</strong><span className="mt-1 block text-[11px] text-[var(--text-soft)]">View hotels in ₹</span></span>
       <ArrowUpRight className="shrink-0 text-[var(--gold)]" size={16} aria-hidden="true"/>
      </div>
     </Link>)}
   </div>
   <div role="region" className="mx-4 mt-2 overflow-x-auto touch-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6"
    aria-label="GTH Worldwide Stays hotel cards">
-   <div className="min-w-[290px]">
+   <div className="min-w-0">
     <div className="mb-2 flex items-center gap-2 text-xs font-semibold"><Hotel size={15} className="text-[var(--gold)]"/> GTH Worldwide Stays · Mumbai</div>
-    <NuiteeHotelsListWidget id="gth-home-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1} currency="INR"/>
+    <NuiteeHotelsListWidget id="gth-home-nuitee-mumbai" placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0" placeLabel="Mumbai" rows={1} currency="INR" compact/>
    </div>
   </div>
  </section>;

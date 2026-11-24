@@ -7,3 +7,98 @@
 .supplier [data-gth-nuitee-ink="text"] { color: var(--text) !important; }
 .supplier [data-gth-nuitee-ink="muted"] { color: var(--text-soft) !important; }
 .supplier [data-gth-nuitee-border] { border-color: var(--border) !important; }
+
+/* Only App Home uses the compact layout. The supplier still owns the cards,
+ * their prices, paging and booking clicks. */
+.supplier.compact :global(.hotels-outer-wrapper) > div:has(> :global(.hotel-card)) {
+  gap: 0.75rem !important;
+}
+
+.supplier.compact :global(.hotel-card) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 1rem;
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-family: inherit;
+}
+
+.supplier.compact :global(.hotel-card)[data-gth-nuitee-surface] {
+  background-color: var(--card) !important;
+}
+
+.supplier.compact :global(.hotel-image) {
+  display: block;
+  flex-shrink: 0;
+  aspect-ratio: 4 / 3;
+  max-height: 11rem;
+  border-radius: 0;
+}
+
+.supplier.compact :global(.hotel-info) {
+  flex: 1;
+  gap: 0.3rem;
+  padding: 0.65rem;
+}
+
+.supplier.compact :global(.hotel-name) {
+  display: -webkit-box;
+  min-height: 2.5em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.supplier.compact :global(.address) {
+  display: -webkit-box;
+  flex: none;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.supplier.compact :global(.stars) {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.supplier.compact :global(.rating) {
+  gap: 0.25rem;
+  padding: 0.2rem 0.25rem 0.2rem 0.4rem;
+  font-size: 0.625rem;
+}
+
+.supplier.compact :global(.rating) :global(.score) {
+  padding: 0.15rem 0.3rem;
+  font-size: 0.6875rem;
+}
+
+.supplier.compact :global(.price) {
+  margin-top: auto;
+  padding-top: 0.35rem;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+}
+
+.supplier.compact :global(.price) strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}
+
+.supplier.compact :global(.show-more-container) {
+  margin: 0.875rem 0 0.375rem;
+}
+
+.supplier.compact :global(.show-more-button) {
+  min-height: 2.75rem;
+  border-width: 1px;
+  padding: 0.5rem 0.875rem;
+  box-shadow: none;
+}

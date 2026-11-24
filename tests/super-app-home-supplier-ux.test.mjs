@@ -31,7 +31,10 @@ test("GTH PRO Home shows official Nuitee widget and honest photo-based city book
  assert.doesNotMatch(source,/HomeHotelBookingPreview|data-gth-compact-hotel-booking/);
  assert.match(source,/id="gth-home-nuitee-mumbai"/);
  assert.match(source,/placeId="ChIJwe1EZjDG5zsRaYxkjY_tpF0"/);
- assert.match(source,/view:"booking"/);
+ assert.match(source,/href=\{hotelWhiteLabelUrl\(\{placeId:item.placeId,checkin,checkout,currency:"INR"/);
+ assert.match(source,/city:"Kolkata",placeId:"ChIJZ_YISduC-DkRvCxsj-Yw40M"/);
+ assert.match(source,/city:"Goa",placeId:"ChIJQbc2YxC6vzsRkkDzYv-H-Oo"/);
+ assert.match(source,/currency="INR" compact/);
  assert.match(sdk,/sdk\.HotelsList\.create\(options\)/);
  assert.match(sdk,/HOTEL_BOOKING_ORIGIN/);
  assert.doesNotMatch(source,/NUITEE_PRODUCTION_API_KEY|fetch\(|createClient\(|\/api\/hotels|service_role|Math\.random/);
