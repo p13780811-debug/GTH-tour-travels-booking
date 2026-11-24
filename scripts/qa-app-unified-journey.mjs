@@ -91,7 +91,18 @@ try{
      "Actual Nuitee hotel list must be mounted on mobile; never replace with editorial/demo card");
    assert.equal(await page.locator('[data-gth-compact-hotel-booking="true"]').count(),0,
      "The unwanted editorial hotel replacement must not reappear");
-   assert.ok((await page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"}).count())>0);
+   const stays=page.getByRole("region",{name:"Hotel destination shortcuts — swipe horizontally"});
+   const cityIds=new Set();
+   for(const city of ["Mumbai","Kolkata","Goa","London"]){
+    const href=await stays.getByRole("link",{name:new RegExp(city+" stays")}).getAttribute("href");
+    const listing=new URL(href);
+    assert.equal(listing.origin,"https://hotel.gthproglobal.com");
+    assert.equal(listing.pathname,"/hotels");
+    assert.equal(listing.searchParams.get("currency"),"INR");
+    assert.match(listing.searchParams.get("placeId")??"",/^ChIJ[A-Za-z0-9_-]+$/);
+    cityIds.add(listing.searchParams.get("placeId"));
+   }
+   assert.equal(cityIds.size,4);
    await page.screenshot({path:folder+"app-home-390.png",fullPage:true});
   }
   await context.close();

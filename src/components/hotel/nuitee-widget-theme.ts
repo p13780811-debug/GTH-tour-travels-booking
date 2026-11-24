@@ -8,7 +8,7 @@ function neutralColor(value:string):{solid:boolean;neutral:boolean;channel:numbe
   return {solid:alpha>=.95,neutral:Math.max(...channels)-Math.min(...channels)<=24,channel:channels.reduce((sum,c)=>sum+c,0)/3};
 }
 const marks=["data-gth-nuitee-surface","data-gth-nuitee-ink","data-gth-nuitee-border"];
-export function connectNuiteeWidgetTheme(root:HTMLElement):()=>void{
+export function connectNuiteeWidgetTheme(root:HTMLElement,groupRupees=false):()=>void{
   let frame=0,active=true;
   const clear=(element:HTMLElement)=>{for(const mark of marks)element.removeAttribute(mark);};
   const apply=()=>{
@@ -42,7 +42,17 @@ export function connectNuiteeWidgetTheme(root:HTMLElement):()=>void{
     for(const {element,muted}of inks)element.setAttribute("data-gth-nuitee-ink",muted?"muted":"text");
     for(const element of borders)element.setAttribute("data-gth-nuitee-border","");
   };
-  const queue=()=>{if(active&&!frame)frame=requestAnimationFrame(apply);};
+  const amountFormat=new Intl.NumberFormat("en-IN",{maximumFractionDigits:0});
+  const formatRupees=()=>{
+    // Group the amount displayed by the SDK without converting or recalculating it.
+    for(const price of root.querySelectorAll<HTMLElement>(".hotel-card .price strong")){
+      const digits=price.textContent?.match(/^₹\s*([0-9]{4,15})$/)?.[1];
+      if(digits&&price.firstChild instanceof Text&&price.childNodes.length===1){
+        price.firstChild.data="₹"+amountFormat.format(Number(digits));
+      }
+    }
+  };
+  const queue=()=>{if(active&&!frame)frame=requestAnimationFrame(()=>{apply();if(groupRupees)formatRupees();});};
   const observer=new MutationObserver(queue);
   observer.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
   const theme=new MutationObserver(queue);theme.observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
