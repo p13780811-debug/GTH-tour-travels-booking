@@ -5,7 +5,7 @@ import {
   ArrowRight, ArrowUpRight, Building2, ClipboardCheck, FileSearch,
   Globe2, Plane, Search, ShieldCheck
 } from "lucide-react";
-import { parseTenderFilters, TENDER_SECTORS, safeTenderSource } from "@/lib/tender/catalog";
+import { parseTenderFilters, TENDER_SECTORS, MAX_TENDER_PAGE, safeTenderSource } from "@/lib/tender/catalog";
 import {TenderMarketOverview, TenderMarketCard} from "@/components/tender/TenderMarketplacePanels";
 import { COUNTRY_CODES, resolveTenderAudience, nearbyCountries, countryLabel, dateLabel } from "@/lib/tender/localization";
 import { tenderText, LANG_OPTIONS } from "@/lib/tender/i18n";
@@ -47,29 +47,16 @@ const EU_COUNTRIES=new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT L
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 function textParam(raw: string | string[] | undefined) { return typeof raw === "string" ? raw : ""; }
 
-function filterHref(filters: {q:string;country:string;sector:string;closingBefore?:string;closingWithin?:"7";sort?:"deadline"|"newest";scope?:"local"|"world"}, page:number, lang:string) {
-  const q = new URLSearchParams();
-  if (filters.q) q.set("q", filters.q);
-  if (filters.country) q.set("country", filters.country);
-  if (filters.sector) q.set("sector", filters.sector);
-  if (filters.closingBefore) q.set("closingBefore", filters.closingBefore);
-  if (filters.closingWithin) q.set("closingWithin", filters.closingWithin);
-  if (filters.sort && filters.sort!=="deadline") q.set("sort", filters.sort);
-  if (filters.scope) q.set("scope",filters.scope);
-  if (lang) q.set("lang",lang);
-  q.set("page", String(page));
-  return "/tender?" + q.toString();
-}
-
 export default async function TenderPage({searchParams}: Props) {
   const raw = await searchParams;
   const params = new URLSearchParams();
-  for (const name of ["q","country","sector","closingBefore","closingWithin","sort","page","scope"] as const) {
+  for (const name of ["q","country","sector","closingBefore","closingWithin","sort","page","scope","channel"] as const) {
     const value = textParam(raw[name]);
     if (value) params.set(name,value);
   }
+  if(!params.has("scope"))params.set("scope","world");
   const parsed = parseTenderFilters(params);
-  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", closingBefore:"", page:1, scope:"local" as const };
+  const filters = parsed.ok ? parsed.filters : { q:"", country:"", sector:"", closingBefore:"", page:1, scope:"world" as const, channel:undefined };
   const audience=await resolveTenderAudience(filters.country,textParam(raw.lang));
   const homeCountry=filters.country||audience.country||"";
   const language=audience.language;
@@ -91,7 +78,7 @@ export default async function TenderPage({searchParams}: Props) {
   const error = !parsed.ok ? parsed.error : result && !result.ok ? result.error : null;
   const notices = result?.ok ? result.items : [];
   const count = result?.ok ? result.total : 0;
-  const pageCount = result?.ok ? Math.ceil(result.total / result.size) : 0;
+  const pageCount = result?.ok ? Math.min(MAX_TENDER_PAGE,Math.ceil(result.total / result.size)) : 0;
   return <main lang={language} dir={language==="ar"?"rtl":"ltr"} className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-9 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
@@ -105,7 +92,7 @@ export default async function TenderPage({searchParams}: Props) {
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
           {t("intro")}
         </p>
-      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" aria-label="Search official tender notices" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 sm:p-5">
+      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" aria-label="Search public tender notices" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 sm:p-5">
        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
         <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
           <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
@@ -122,11 +109,18 @@ export default async function TenderPage({searchParams}: Props) {
             {TENDER_SECTORS.map(value => <option value={value} key={value}>{value[0].toUpperCase()+value.slice(1)}</option>)}
           </select>
         </label>
+        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{language==="hi"?"नोटिस का प्रकार":"Notice type"}
+          <select name="channel" defaultValue={filters.channel??""} className="gth-input mt-2 min-w-0">
+            <option value="">{language==="hi"?"सभी सार्वजनिक नोटिस":"All public notices"}</option>
+            <option value="procurement_feed">{language==="hi"?"सरकारी और संस्थागत फीड":"Government & institutional feeds"}</option>
+            <option value="company">{language==="hi"?"कंपनी के टेंडर":"Company tenders"}</option>
+          </select>
+        </label>
         <button type="submit" className="gth-btn gth-btn-gold inline-flex items-center justify-center gap-2">
           <Search size={17} aria-hidden="true"/> {t("search")}
         </button>
        </div>
-       <details className="mt-4" open={Boolean(filters.closingBefore||filters.closingWithin||filters.sort==="newest"||filters.scope==="world")}>
+       <details className="mt-4" open={Boolean(filters.closingBefore||filters.closingWithin||filters.sort==="newest"||filters.scope==="local")}>
         <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">More filters · scope, language and deadlines</summary>
         <div className="mt-2 grid min-w-0 gap-3 sm:grid-cols-2">        <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("scope")}
           <select name="scope" defaultValue={filters.scope} className="gth-input mt-2 min-w-0">
@@ -153,7 +147,7 @@ export default async function TenderPage({searchParams}: Props) {
           </select>
         </label></div>
        </details>
-       <div className="mt-3 flex flex-wrap items-center gap-3">        <Link href={tenderFilterHref({q:"",country:homeCountry,sector:"",scope:filters.scope},language)} className="gth-btn inline-flex items-center justify-center">{t("clear")}</Link><Link href="/tender/coverage" className="inline-flex min-h-11 items-center text-sm underline">Country & source coverage</Link></div>
+       <div className="mt-3 flex flex-wrap items-center gap-3">        <Link href={tenderFilterHref({q:"",country:filters.scope==="world"?"":homeCountry,sector:"",scope:filters.scope},language)} className="gth-btn inline-flex items-center justify-center">{t("clear")}</Link><Link href="/tender/coverage" className="inline-flex min-h-11 items-center text-sm underline">Country & source coverage</Link><Link href="/tender/coverage?source=company" className="inline-flex min-h-11 items-center text-sm underline">Company sourcing portals</Link></div>
       </form>
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs text-[var(--text-soft)]">
           <ShieldCheck size={16} aria-hidden="true"/> {t("verified")}
@@ -192,7 +186,7 @@ export default async function TenderPage({searchParams}: Props) {
         <span className="text-sm text-[var(--text-soft)]">{result?.ok ? `${count} ${t("results")}` : "Source-backed catalog"}</span>
       </div>
 
-      <TenderWorkspaceToolbar notices={notices} searchHref={tenderFilterHref(searchFilters,language)} searchLabel={[filters.q||"All notices",localCountry||(filters.scope==="world"?"Worldwide":"Choose country"),filters.sector,filters.closingWithin?"Closing in 7 days":""].filter(Boolean).join(" · ")}/>
+      <TenderWorkspaceToolbar notices={notices} searchHref={tenderFilterHref(searchFilters,language)} searchLabel={[filters.q||"All notices",filters.scope==="world"?(filters.country?localCountry:"Worldwide"):(localCountry||"Choose country"),filters.sector,filters.closingWithin?"Closing in 7 days":""].filter(Boolean).join(" · ")}/>
       {filters.q||filters.sector||filters.closingBefore||filters.closingWithin ? <nav aria-label="Active tender filters" className="mt-4 flex flex-wrap items-center gap-3 text-sm">
         <span className="text-xs text-[var(--text-soft)]">Active filters:</span>
         {(["q","sector","closingBefore","closingWithin"] as const).map(key => filters[key] ? <Link key={key} href={tenderFilterHref({...searchFilters,[key]:undefined},language)} aria-label={"Remove " + key + " filter"} className="gth-btn inline-flex items-center justify-center gap-2">{key === "closingWithin" ? "Closing in 7 days" : filters[key]} ×</Link> : null)}
@@ -234,9 +228,9 @@ export default async function TenderPage({searchParams}: Props) {
             {notices.map(tender=><TenderMarketCard key={tender.id} tender={tender} language={language}/>)}
           </div>
           <nav aria-label="Tender results pages" className="mt-8 flex items-center justify-between gap-4">
-            {filters.page>1?<Link href={filterHref(searchFilters,filters.page-1,language)} className="gth-btn inline-flex items-center justify-center">{t("previous")}</Link>:<span/>}
+            {filters.page>1?<Link href={tenderFilterHref(searchFilters,language,filters.page-1)} className="gth-btn inline-flex items-center justify-center">{t("previous")}</Link>:<span/>}
             <span className="text-sm text-[var(--text-soft)]">{t("page")} {filters.page} / {pageCount}</span>
-            {filters.page<pageCount?<Link href={filterHref(searchFilters,filters.page+1,language)} className="gth-btn inline-flex items-center justify-center">{t("next")}</Link>:<span/>}
+            {filters.page<pageCount?<Link href={tenderFilterHref(searchFilters,language,filters.page+1)} className="gth-btn inline-flex items-center justify-center">{t("next")}</Link>:<span/>}
           </nav>
         </>
       ) : <div role="status" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">

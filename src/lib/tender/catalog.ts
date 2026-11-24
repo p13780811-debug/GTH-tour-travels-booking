@@ -3,17 +3,20 @@ import type { TenderRequirements } from "@/lib/tender/eligibility";
 
 export const TENDER_SECTORS = ["works", "goods", "services", "consultancy", "other"] as const;
 export type TenderSector = typeof TENDER_SECTORS[number];
-const PUBLIC_COLUMNS = "id,title,buyer,country_code,region,sector,summary,deadline_at,published_at,estimated_value,currency,source_name,source_reference,source_url,eligibility_requirements,requirements_verified";
+const PUBLIC_COLUMNS = "id,title,buyer,country_code,region,sector,summary,deadline_at,published_at,estimated_value,currency,source_name,source_reference,source_url,eligibility_requirements,requirements_verified,notice_channel";
 const PAGE_SIZE = 12;
+export const MAX_TENDER_PAGE = 100_000;
+export type TenderNoticeChannel = "procurement_feed"|"company";
 
 export type PublicTender = {
   id: string; title: string; buyer: string; country_code: string; region: string | null;
   sector: TenderSector; summary: string | null; deadline_at: string; published_at: string | null;
   estimated_value: number | null; currency: string | null; source_name: string;
   source_reference: string; source_url: string;
+  notice_channel?: TenderNoticeChannel;
   eligibility_requirements: TenderRequirements; requirements_verified: boolean;
 };
-export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[] };
+export type TenderFilters = { q: string; country: string; sector: string; closingBefore?: string; closingWithin?: "7"; sort?: "deadline"|"newest"; page: number; scope?: "local"|"world"; nearby?: string[]; channel?: TenderNoticeChannel };
 export type TenderResult =
  | { ok: true; items: PublicTender[]; total: number; page: number; size: number; primaryCount?: number; nearbyCount?: number; countryRequired?: boolean; snapshotStale?: boolean; snapshotCheckedAt?: string }
  | { ok: false; status: number; error: string };
@@ -26,6 +29,8 @@ export function parseTenderFilters(params: URLSearchParams):
   const sector = (params.get("sector") ?? "").trim().toLowerCase();
   const closingBefore = (params.get("closingBefore") ?? "").trim();
   const scope = params.get("scope") ?? "local";
+  const channel=params.get("channel")||undefined;
+  if(channel!==undefined&&channel!=="procurement_feed"&&channel!=="company")return {ok:false,error:"Invalid notice type"};
   if (scope !== "local" && scope !== "world") return {ok:false,error:"Invalid search area"};
   const closingWithin=params.get("closingWithin") ?? "";
   if(closingWithin && closingWithin!=="7")return {ok:false,error:"Invalid closing soon filter"};
@@ -40,9 +45,9 @@ export function parseTenderFilters(params: URLSearchParams):
     if (!/^\d{4}-\d{2}-\d{2}$/.test(closingBefore) || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== closingBefore)
       return { ok: false, error: "Invalid closing date" };
   }
-  if (!/^[1-9]\d{0,2}$/.test(rawPage) || Number(rawPage) > 100)
+  if (!/^[1-9]\d{0,5}$/.test(rawPage) || Number(rawPage) > MAX_TENDER_PAGE)
     return { ok: false, error: "Invalid page" };
-  return { ok: true, filters: { q, country, sector, closingBefore, closingWithin:closingWithin==="7"?"7":undefined, sort, page: Number(rawPage), scope } };
+  return { ok: true, filters: { q, country, sector, closingBefore, closingWithin:closingWithin==="7"?"7":undefined, sort, page: Number(rawPage), scope, channel } };
 }
 
 export function safeTenderSource(value: unknown): string | null {
@@ -79,6 +84,7 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
       let query = db.from("tenders").select(PUBLIC_COLUMNS,{count:"exact",head})
         .eq("status","published").eq("source_verified",true).eq("is_public",true)
         .gt("deadline_at",new Date().toISOString());
+      if(filters.channel) query=query.eq("notice_channel",filters.channel);
       if(filters.sector) query=query.eq("sector",filters.sector);
       if(filters.closingBefore) query=query.lte("deadline_at",filters.closingBefore+"T23:59:59.999Z");
       if(filters.closingWithin==="7") query=query.lte("deadline_at",new Date(Date.now()+7*86400000).toISOString());
@@ -174,6 +180,7 @@ export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<T
       .select("id",{count:"exact",head:true})
       .eq("status","published").eq("source_verified",true).eq("is_public",true)
       .gt("deadline_at",new Date().toISOString());
+    if(filters.channel) query=query.eq("notice_channel",filters.channel);
     if(countries.length) query=query.in("country_code",countries);
     return query;
   };
@@ -184,6 +191,7 @@ export async function getTenderDiscoveryStats(filters: TenderFilters): Promise<T
       .eq("status","published").eq("source_verified",true).eq("is_public",true)
       .gt("deadline_at",new Date().toISOString())
       .order("imported_at",{ascending:false}).limit(1);
+    if(filters.channel) newest.eq("notice_channel",filters.channel);
     if(countries.length) newest.in("country_code",countries);
     const results=await Promise.all([
       ...sectorJobs,

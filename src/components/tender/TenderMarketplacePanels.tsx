@@ -146,7 +146,7 @@ export function TenderMarketCard({tender,language}:{
       <span className="rounded-full border border-[var(--border)] px-3 py-1 font-medium">{countryLabel(tender.country_code,language)}</span>
     </div>
     <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[var(--text-soft)]">
-      <span className="flex items-center gap-2"><BadgeCheck size={16} aria-hidden="true"/>{tender.source_name}</span>
+      <span className="flex items-center gap-2"><BadgeCheck size={16} aria-hidden="true"/>{tender.notice_channel==="company"?(language==="hi"?"कंपनी का टेंडर":"Company tender")+" · ":""}{tender.source_name}</span>
       <span className="capitalize">{m(tender.sector)}</span>
     </div>
     <h3 className="mt-4 break-words text-lg font-semibold leading-7">
