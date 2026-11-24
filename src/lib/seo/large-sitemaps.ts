@@ -1,4 +1,5 @@
 import "server-only";
+import {mobilityCity} from "@/lib/mobility/city";
 import {isIndexableProperty} from "@/lib/real-estate/property-seo";
 import {createClient} from "@supabase/supabase-js";
 import type {MetadataRoute} from "next";
@@ -10,9 +11,10 @@ import {siteOrigin,isPublicLaunch} from "@/lib/seo/site";
  */
 export const SEO_PAGE_SIZE=1000;
 export const SEO_MAX_PAGES=500;
-export const SEO_KINDS=["hotels","tours","destinations","attractions","tenders","properties"] as const;
+export const SEO_KINDS=["hotels","tours","destinations","attractions","tenders","properties","mobility"] as const;
 export type SeoKind=typeof SEO_KINDS[number];
 const CONFIG:Record<SeoKind,{view:string;key:string;fields:string;path:string;priority:number;frequency:"weekly"|"monthly"|"daily"}>={
+ mobility:{view:"gth_seo_mobility_v1",key:"slug",fields:"slug,name,country,country_code",path:"/mobility/",priority:.45,frequency:"weekly"},
  hotels:{view:"gth_seo_hotels_v1",key:"id",fields:"id,name,city,country_code,category,source_name,source_url,affiliate_link,created_at",path:"/hotels/stay/",priority:.4,frequency:"weekly"},
  tours:{view:"gth_seo_tours_v1",key:"id",fields:"id,title,city,city_slug,country,provider,source_name,source_url,affiliate_link",path:"/tours/",priority:.4,frequency:"weekly"},
  destinations:{view:"gth_seo_destinations_v1",key:"slug",fields:"slug,name,country,description,source_name,source_url,created_at",path:"/destinations/",priority:.5,frequency:"weekly"},
@@ -59,6 +61,7 @@ export function isIndexableAttraction(value:unknown):boolean{
   typeof row.description==="string"&&row.description.trim().length>=90;
 }
 export function eligibleSeoRow(kind:SeoKind,row:Record<string,unknown>):boolean{
+ if(kind==="mobility")return mobilityCity({name:row.name,slug:row.slug,country:row.country,countryCode:row.country_code})?.slug===row.slug;
  if(kind==="hotels")return UUID.test(String(row.id||""))&&isIndexableHotel({
   name:row.name as string,city:row.city as string,country:row.country_code as string,
   category:(row.category as string)||"hotel",source:row.source_name as string,

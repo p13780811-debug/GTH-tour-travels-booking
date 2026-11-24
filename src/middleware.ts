@@ -33,7 +33,8 @@ export function middleware(_request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  const microphone = _request.nextUrl.pathname === "/mobility" ? "(self)" : "()";
+  const mobilityPath = /^\/mobility(?:\/[a-z0-9-]+)?$/.test(_request.nextUrl.pathname);
+  const microphone = mobilityPath ? "(self)" : "()";
   response.headers.set(
     "Permissions-Policy",
     `camera=(), microphone=${microphone}, geolocation=(), payment=()`,

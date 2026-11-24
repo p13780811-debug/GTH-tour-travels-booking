@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import {mobility} from "./helpers/mobility-loader.mjs";
 
 function harness(launched=true){
  const signals=[],deadlines=new Map();
@@ -28,7 +29,7 @@ function harness(launched=true){
   }});
   return query;
  }};
- const deps={"server-only":{},"@supabase/supabase-js":{createClient:()=>client}};
+ const deps={"server-only":{},"@/lib/mobility/city":mobility,"@supabase/supabase-js":{createClient:()=>client}};
  const site={isPublicLaunch:()=>launched,siteOrigin:()=>"https://www.gthproglobal.com"};
  const listings={isIndexableHotel:()=>false,isIndexableTender:()=>false};
  const shards=compile("src/lib/seo/large-sitemaps.ts",{...deps,"@/lib/real-estate/property-seo":{isIndexableProperty:()=>false},"@/lib/seo/site":site,"@/lib/seo/public-listings":listings});
@@ -56,7 +57,7 @@ test("production-launch sitemap completes through timed-out DB sources and retai
 test("SEO shard count outages fail explicitly and the launch gate avoids all DB reads",async()=>{
  const h=harness();
  await assert.rejects(h.shards.seoShardCounts(),/SEO count unavailable/);
- assert.equal(h.signals.length,6);
+ assert.equal(h.signals.length,7);
  assert.ok(h.signals.every(({deadline})=>deadline===12000));
  const preview=harness(false);
  assert.equal((await preview.sitemap()).length,0);

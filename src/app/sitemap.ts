@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import {MOBILITY_CITIES,mobilityHref} from "@/lib/mobility/city";
 import { destinations } from "@/data/destinations";
 import { airports } from "@/lib/travel/nuiteeAirportDirectory";
 import { blogs } from "@/data/blogs";
@@ -96,6 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [approved,guidePaths]=await Promise.all([publishedRecords().catch(() => [] as DynamicEntry[]),indexableGuidePaths().catch(()=>[] as string[])]);
   return [
     ...pages.map(path => ({ url: base + (path === "/" ? "" : path), changeFrequency: "weekly" as const, priority: path === "/" || path === "/mega-aggregator" ? 1 : 0.6 })),
+    ...MOBILITY_CITIES.map(city=>({url:base+mobilityHref(city),changeFrequency:"weekly" as const,priority:.5})),
     ...stadiums.map(venue => ({ url: base + "/stadiums/" + venue.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...["sports","concerts","theatre","comedy","festivals","attractions","museums","theme-parks","cinema"].map(category=>({url:base+"/tickets/"+category,changeFrequency:"monthly" as const,priority:0.55})),
     ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),

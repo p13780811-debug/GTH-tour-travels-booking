@@ -7,6 +7,7 @@ import {isTrafficCity,validTrafficZone,isReportKind,validReportId,reportsForZone
 const feedTag=(city:TrafficCity)=>"mobility-traffic:"+city;
 const loadFeed=(city:TrafficCity)=>unstable_cache(async()=>{
   const {data,error}=await supabase.rpc("mobility_traffic_feed",{p_city:city}).abortSignal(AbortSignal.timeout(4500));
+  if(!error&&data===null)return null;
   if(error||!data||!Array.isArray(data.zones)||!Array.isArray(data.reports))throw new RequestError("Traffic feed unavailable",503);
   return data as TrafficFeed;
 },["gth-public-traffic-v1",city],{revalidate:45,tags:[feedTag(city)]})();
@@ -16,6 +17,7 @@ export async function GET(request:Request){
     const city=new URL(request.url).searchParams.get("city");
     if(!isTrafficCity(city))throw new RequestError("Traffic reporting unavailable for this city",400);
     const feed=await loadFeed(city);
+    if(!feed)throw new RequestError("Traffic city unavailable",404);
     return Response.json({zones:feed.zones,reports:reportsForZone(feed.reports,"")},{
       headers:{"Cache-Control":"public, max-age=0, s-maxage=25"},
     });
@@ -30,11 +32,10 @@ export async function POST(request:Request){
     }
     const {client}=await authenticatedStorage(request);
     if(id!==undefined){
-      const {data,error}=await client.rpc("mobility_withdraw_traffic_report",{p_id:id}).abortSignal(AbortSignal.timeout(4500));
+      const {data,error}=await client.rpc("mobility_withdraw_traffic_report",{p_id:id,p_city:city}).abortSignal(AbortSignal.timeout(4500));
       if(error)throw new RequestError("Traffic service unavailable",503);
       if(data!==true)throw new RequestError("Report unavailable",404);
-      revalidateTag(feedTag("mumbai"));
-      revalidateTag(feedTag("kolkata"));
+      revalidateTag(feedTag(city));
       return Response.json({ok:true},{headers:{"Cache-Control":"no-store"}});
     }
     const {data,error}=await client.rpc("mobility_submit_traffic_report",{p_city:city,p_zone:zone,p_kind:kind}).abortSignal(AbortSignal.timeout(4500));
