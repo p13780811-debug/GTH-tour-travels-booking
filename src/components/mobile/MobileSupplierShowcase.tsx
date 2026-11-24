@@ -75,8 +75,8 @@ async function SupplierExperiences(){
    Original supplier products and photos · prices are supplier-listed, not live date availability
   </p><TourCardRail items={products}/></>;
  return <nav aria-label="Browse existing tours and activities providers" className="mt-3 grid grid-cols-2 gap-3 px-4 sm:px-6">
-  {[{href:"/tours",label:"Browse tours",image:"/images/mega/tours.jpg"},
-    {href:"/activities",label:"Browse activities",image:"/images/mega/klook.jpg"}].map(item=>
+  {[{href:"/app/services/tours",label:"Browse tours",image:"/images/mega/tours.jpg"},
+    {href:"/app/services/activities",label:"Browse activities",image:"/images/mega/klook.jpg"}].map(item=>
     <Link key={item.href} href={item.href} className="group min-w-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
       <div className="relative h-28 bg-[var(--bg-soft)]">
        <Image src={item.image} alt="" fill sizes="(max-width:640px) 50vw,320px" className="object-cover"/>
@@ -97,7 +97,7 @@ export default async function MobileSupplierShowcase(){
      <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--gold)]"><Ticket size={15} aria-hidden="true"/> Original supplier experiences</p>
      <h2 id="app-supplier-tours" className="mt-1 text-xl font-bold">Tours &amp; activities</h2>
     </div>
-    <Link href="/tours" className="inline-flex min-h-11 shrink-0 items-center gap-1 text-xs font-bold text-[var(--gold)]">Explore all <ArrowUpRight size={15} aria-hidden="true"/></Link>
+    <Link href="/app/services/tours" className="inline-flex min-h-11 shrink-0 items-center gap-1 text-xs font-bold text-[var(--gold)]">Explore all <ArrowUpRight size={15} aria-hidden="true"/></Link>
    </div>
    <Suspense fallback={<p role="status" className="mx-4 mt-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-xs text-[var(--text-soft)] sm:mx-6">Checking original supplier tours and activities…</p>}>
     <SupplierExperiences/>

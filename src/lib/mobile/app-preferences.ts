@@ -20,6 +20,8 @@ export function recordAppService(value:AppPreferences,id:string):AppPreferences{
 }
 export function appServiceForPath(path:string):string|undefined{
  const gateway=/^\/app\/services\/([a-z0-9-]+)$/.exec(path);
+ if(gateway?.[1]==="tender-help")return "tender-help";
  if(gateway)return mobileWebService(gateway[1])?.id;
- return appServices.find(service=>service.href.startsWith("/app/")&&(path===service.href||path.startsWith(`${service.href}/`)))?.id;
+ return appServices.find(service=>service.href.startsWith("/app/")&&service.href===path)?.id ??
+  appServices.find(service=>service.href.startsWith("/app/")&&path.startsWith(`${service.href}/`))?.id;
 }

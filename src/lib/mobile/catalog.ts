@@ -3,12 +3,13 @@ import {createClient} from "@supabase/supabase-js";
 import {destinations} from "@/data/destinations";
 import type {MobileDiscoveryItem} from "./discovery";
 import {mobileAppHref,type MobileSection} from "./routes";
+import {readPublicProjectForPage} from "@/lib/real-estate/public-property-page";
 import {safeTenderSource} from "@/lib/tender/catalog";
 
 export type AppListing={
   items:MobileDiscoveryItem[];total:number;page:number;size:number;error:string|null;
 };
-export type AppQuery={q:string;country:string;category:string;page:number;destination:string};
+export type AppQuery={q:string;country:string;category:string;page:number;destination:string;city?:string;closing?:string};
 export const HOTEL_CATEGORIES=[
  {id:"",name:"All stays"},{id:"hotel",name:"Hotels"},{id:"guest_house",name:"Guest houses"},
  {id:"hostel",name:"Hostels"},{id:"motel",name:"Motels"},{id:"apartment",name:"Apartments"},
@@ -42,7 +43,10 @@ export function normalizeAppQuery(query:Record<string,string|string[]|undefined>
  const category=val("category").trim().slice(0,32);
  const destination=val("destination").trim();
  const p=val("page")||"1";
- return {q,country:/^[A-Z]{2}$/.test(country)?country:"",
+ const city=val("city").trim().replace(/\s+/gu," ");
+ const closing=val("closing");
+ return {q,city:/^[\p{L}\p{M}\p{N} .’'-]{1,70}$/u.test(city)?city:"",
+  closing:closing==="7"||closing==="30"?closing:"",country:/^[A-Z]{2}$/.test(country)?country:"",
   category:/^[a-zA-Z_]{0,32}$/.test(category)?category:"",
   destination:/^[a-z]+(?:-[a-z]+)*$/.test(destination)?destination:"",page:/^[1-9]\d{0,2}$/.test(p)?Math.min(100,Number(p)):1};
 }
@@ -50,6 +54,8 @@ export function appQueryHref(section:MobileSection,query:AppQuery,overrides:Part
  const all={...query,...overrides},params=new URLSearchParams();
  if(section==="hotels")params.set("directory","1");
  if(all.q)params.set("q",all.q);
+ if(section==="property"&&all.city)params.set("city",all.city);
+ if(section==="tenders"&&all.closing)params.set("closing",all.closing);
  if(all.country)params.set("country",all.country);
  if(all.category)params.set("category",all.category);
  if(all.destination)params.set("destination",all.destination);
@@ -71,6 +77,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
   }));
   return {items,total:all.length,page,size:PAGE_SIZE,error:null};
  }
+ signal ??= AbortSignal.timeout(4500);
  const db=publicDb();if(!db)return empty(page,"Service temporarily unavailable");
  try{
   if(section==="hotels"){
@@ -88,7 +95,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
     list=list.or("city.ilike."+hint+",region.ilike."+hint);
    }
    const {data,error,count}=await list.order("name",{ascending:true}).order("source_id",{ascending:true})
-     .range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
+     .range(offset,offset+PAGE_SIZE-1).abortSignal(signal);
    if(error)return empty(page,"Hotel directory temporarily unavailable");
    const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
      if(!/^(node|way|relation)\/[0-9]{1,19}$/.test(row.source_id))return [];
@@ -104,7 +111,8 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
      .not("slug","is",null);
    if(q)list=list.ilike("title","%"+escapeLike(q)+"%");
    if(category)list=list.eq("property_type",category);
-   const {data,error,count}=await list.order("id",{ascending:false}).range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
+   if(query.city)list=list.ilike("city","%"+escapeLike(query.city)+"%");
+   const {data,error,count}=await list.order("id",{ascending:false}).range(offset,offset+PAGE_SIZE-1).abortSignal(signal);
    if(error)return empty(page,"Property directory temporarily unavailable");
    const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
      if(typeof row.slug!=="string"||!/^[a-z0-9][a-z0-9-]{1,127}$/.test(row.slug))return [];
@@ -115,13 +123,15 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
    return {items,total:count??items.length,page,size:PAGE_SIZE,error:null};
   }
   if(category&&!TENDER_CATEGORIES.some(c=>c.id===category))return empty(page,"Invalid procurement sector");
+  const now=new Date();
   let list=db.from("tenders").select("id,title,buyer,country_code,sector,deadline_at",{count:"exact"})
     .eq("status","published").eq("is_public",true).eq("source_verified",true)
-    .gt("deadline_at",new Date().toISOString());
+    .gt("deadline_at",now.toISOString());
+  if(query.closing)list=list.lte("deadline_at",new Date(now.getTime()+Number(query.closing)*86_400_000).toISOString());
   if(q)list=list.ilike("title","%"+escapeLike(q)+"%");
   if(country)list=list.eq("country_code",country);
   if(category)list=list.eq("sector",category);
-  const {data,error,count}=await list.order("deadline_at",{ascending:true}).range(offset,offset+PAGE_SIZE-1).abortSignal(signal ?? new AbortController().signal);
+  const {data,error,count}=await list.order("deadline_at",{ascending:true}).order("id").range(offset,offset+PAGE_SIZE-1).abortSignal(signal);
   if(error)return empty(page,"Tender listings temporarily unavailable");
   const items=(data??[]).flatMap((row):MobileDiscoveryItem[]=>{
     if(typeof row.id!=="string"||!/^[a-f0-9-]{36}$/i.test(row.id))return [];
@@ -135,6 +145,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
  }catch{return empty(page,"Source records could not be loaded");}
 }
 export type AppDetail={
+ propertyEnquiry?:{id:number;mode:"registry"|"listing"};
  title:string;subtitle:string;summary:string;kind:"destination"|"hotel"|"property"|"tender";
  image:string|null;facts:Array<[string,string]>;source:string|null;
  website:string|null;fullSite:string;related:string;
@@ -170,15 +181,17 @@ export async function loadAppDetail(section:MobileSection,id:string):Promise<App
   }
   if(section==="property"){
    if(!/^[a-z0-9][a-z0-9-]{1,127}$/.test(id))return null;
-   const {data,error}=await db.from("properties").select("title,city,location,property_type,image,description,price")
-     .eq("slug",id).maybeSingle();
-   if(error||!data)return null;
-   return {title:small(data.title,160),subtitle:small(data.property_type)||"Property record",
-     summary:small(data.description,850)||"Review this public property listing and confirm all details with the listing authority.",
+   const data=await readPublicProjectForPage(id);
+   if(!data)return null;
+   const registry=Boolean(data.registry_only||data.source_type==="registry"||data.data_quality_limited);
+   return {title:small(data.title,160),subtitle:registry?"Public registry record":small(data.property_type)||"Property record",
+     summary:small(data.description,850)||"Review the property record and confirm details with the source.",
      kind:"property",image:localImage(data.image),
      facts:[["City",small(data.city)||"Not specified"],["Location",small(data.location)||"Not specified"],
-       ["Type",small(data.property_type)||"Not specified"],["Price",small(data.price)||"Price on request"]],
-     source:null,website:null,fullSite:"/real-estate/"+id,related:"/app/property"};
+       ["Type",small(data.property_type)||"Not specified"],
+       registry?["Current price","Request current details"]:["Listed price",small(data.formatted_price)||"Price on request"]],
+     propertyEnquiry:Number.isSafeInteger(data.id)&&data.id>0?{id:data.id,mode:registry?"registry":"listing"}:undefined,
+     source:safeSite(data.official_source_url),website:null,fullSite:"/real-estate/"+id,related:"/app/property"};
   }
   if(section==="tenders"){
    if(!/^[a-f0-9-]{36}$/i.test(id))return null;

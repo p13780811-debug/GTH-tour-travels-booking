@@ -69,9 +69,9 @@ test("all entry points use the same dispatcher; old Explore URLs redirect on spe
  assert.match(home,/form action="\/app\/search"/);
  assert.match(explorer,/form action="\/app\/search"/);
  assert.match(dispatcher,/resolveUniversalTarget\(params.q,params.category\)/);
- assert.match(dispatcher,/redirect\(target.href\)/);
+ assert.match(dispatcher,/redirect\(appSearchHref\(target,params.q\)\)/);
  assert.match(explorer,/resolveUniversalTarget\(q,pillar\)/);
- assert.match(explorer,/if\(target.category!=="all"\)redirect\(target.href\)/);
+ assert.match(explorer,/if\(target.category!=="all"\)redirect\(appSearchHref\(target,q\)\)/);
  assert.match(explorer,/id="search-results"/);
  assert.match(hotelPage,/query.directory==="1"/);
  assert.match(catalog,/if\(destination\)/);
@@ -80,4 +80,21 @@ test("all entry points use the same dispatcher; old Explore URLs redirect on spe
  assert.match(catalog,/href:"\/app\/hotels\/osm:"/);
  assert.match(rail,/mobileAppHref\(item.href\)/);
  assert.doesNotMatch(dispatcher,/createClient|service_role|SUPABASE_SERVICE_ROLE/);
+});
+
+test("website-only tools open through an app confirmation without losing search context",()=>{
+ for (const [query, category, id, website] of [
+  ["Eden Gardens", "ticket", "tickets", "/stadiums/eden-gardens"],
+  ["Goa tours", "tour", "tours", "/tours?city=Goa"],
+  ["apartments in Mumbai", "property", "property-search", "/search?q=apartments+in+Mumbai&category=property"],
+  ["rera registry Thane", "property", "property-registry", "/real-estate/registry?q=Thane"],
+ ]) {
+  const target=route.resolveUniversalTarget(query,category);
+  const app=new URL(route.appSearchHref(target, query),"https://example.test");
+  assert.equal(app.pathname,"/app/services/"+id);
+  assert.equal(app.searchParams.get("q"),query);
+  const fallback=id==="property-registry"?"/real-estate/registry":"/"+id;
+  assert.equal(route.appServiceWebsiteHref(id,fallback,query),website);
+ }
+ assert.equal(route.appSearchHref(route.resolveUniversalTarget("Mumbai property"),"Mumbai property"),"/app/property?q=Mumbai");
 });

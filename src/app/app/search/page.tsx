@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
 import {redirect} from "next/navigation";
-import {resolveUniversalTarget} from "@/lib/mobile/universal-search";
+import {appSearchHref,resolveUniversalTarget} from "@/lib/mobile/universal-search";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
@@ -14,5 +14,5 @@ type Props={searchParams:Promise<Record<string,string|string[]|undefined>>};
 export default async function AppUniversalSearch({searchParams}:Props){
  const params=await searchParams;
  const target=resolveUniversalTarget(params.q,params.category);
- redirect(target.href);
+ redirect(appSearchHref(target,params.q));
 }

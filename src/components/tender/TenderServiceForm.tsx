@@ -3,7 +3,7 @@ import {useRef,useState} from "react";
 import Link from "next/link";
 import {CheckCircle2,Send} from "lucide-react";
 import {TENDER_SERVICES,validateServiceRequest,type TenderServiceId} from "@/lib/tender/services";
-export default function TenderServiceForm({initialService,tender}:{initialService:TenderServiceId;tender:{id:string;title:string}|null}){
+export default function TenderServiceForm({initialService,tender,appMode=false}:{initialService:TenderServiceId;tender:{id:string;title:string}|null;appMode?:boolean}){
   const [service,setService]=useState(initialService),[busy,setBusy]=useState(false),[error,setError]=useState("");
   const [reference,setReference]=useState("");
   const attempt=useRef<{body:string;id:string}|null>(null);
@@ -14,14 +14,14 @@ export default function TenderServiceForm({initialService,tender}:{initialServic
     <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Your request was saved for review. We will use your contact details to discuss availability, scope and a written fee quote. Work begins only after you accept the agreed terms.</p>
     <p className="mt-4 text-xs text-[var(--text-soft)]">Request reference</p>
     <p className="mt-2 break-all font-mono text-sm">{reference}</p>
-    <Link href="/tender" className="gth-btn gth-btn-gold mt-6 inline-flex items-center justify-center">Back to tender discovery</Link>
+    <Link href={appMode?"/app/tenders":"/tender"} className="gth-btn gth-btn-gold mt-6 inline-flex items-center justify-center">Back to tender discovery</Link>
   </section>;
   return <section className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7" aria-labelledby="service-form-title">
     <h2 id="service-form-title" className="text-xl font-semibold">Request a service quote</h2>
     <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">Share your business needs. Fees, delivery time and service availability are confirmed after review.</p>
     {tender&&<div className="mt-5 rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm">
       <p className="text-xs text-[var(--text-soft)]">Selected tender</p><p className="mt-2 break-words font-semibold">{tender.title}</p>
-      <Link className="mt-2 inline-flex min-h-10 items-center text-[var(--gold)] underline" href={`/tender/${tender.id}`}>View notice</Link>
+      <Link className="mt-2 inline-flex min-h-10 items-center text-[var(--gold)] underline" href={`${appMode?"/app/tenders":"/tender"}/${tender.id}`}>View notice</Link>
     </div>}
     <form className="mt-6" onSubmit={async event=>{
       event.preventDefault();if(busy)return;setError("");

@@ -42,6 +42,13 @@ const pillars = [
   {id:"tickets",number:"04",title:"Tickets & Events",eyebrow:"Worldwide stadium and event sources",description:"Discover independent official ticket sources, sports venues and event guides. Suppliers confirm admission, availability and prices.",href:"/tickets",cta:"Explore Worldwide Tickets",image:"/images/editorial/sports.svg",Icon:Ticket,detail:"Sports · Concerts · Theatre · Stadiums"},
 ] as const;
 
+const appPillarRoutes: Record<typeof pillars[number]["id"], string> = {
+  travel: "/app/destinations",
+  "real-estate": "/app/property",
+  tender: "/app/tenders",
+  tickets: "/app/services/tickets",
+};
+
 const quickLinks = [
   { title: "Flights", href: "/flights", Icon: Plane },
   { title: "Hotels", href: "/hotels", Icon: Building2 },
@@ -67,7 +74,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
               From journeys and property discovery to procurement research and worldwide tickets—navigate the entire GTH PRO world from one central gateway.
             </p>
           </div>
-          <Link href="/contact" className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
+          <Link href={appHome ? "/app/services/contact" : "/contact"} className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)]">
             Connect with GTH PRO <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </div>
@@ -89,7 +96,7 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
                 <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{description}</p>
                 <div className="mt-auto pt-5">
                   <p className="border-t border-[var(--border)] pt-3 text-xs font-medium text-[var(--text-soft)]">{detail}</p>
-                  <Link href={href} prefetch={appHome?false:undefined} aria-label={cta} className={"mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+(appHome?"after:absolute after:inset-0 after:content-[\'\'] after:z-10":"")}>
+                  <Link href={appHome ? appPillarRoutes[id] : href} prefetch={appHome?false:undefined} aria-label={cta} className={"mt-4 inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition-colors hover:border-[var(--gold)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] "+(appHome?"after:absolute after:inset-0 after:content-[\'\'] after:z-10":"")}>
                     {cta} <ArrowRight size={17} aria-hidden="true" />
                   </Link>
                 </div>

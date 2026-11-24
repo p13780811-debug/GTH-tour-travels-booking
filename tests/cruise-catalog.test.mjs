@@ -42,9 +42,10 @@ test('every statically generated app service, including cruises, has a renderabl
   'lucide-react':{ArrowLeft:'icon',ArrowUpRight:'icon',ExternalLink:'icon',ShieldCheck:'icon'},
   '@/components/mobile/MobileAppHeader':{default:'header'},
   '@/lib/mobile/app-dashboard':dashboard,
+  '@/lib/mobile/universal-search':{appServiceWebsiteHref:(_id,href)=>href},
  });
  const params=gateway.generateStaticParams();assert.ok(params.some(p=>p.id==='cruises'));
- for(const p of params)assert.ok(await gateway.default({params:Promise.resolve(p)}));
+ for(const p of params)assert.ok(await gateway.default({params:Promise.resolve(p),searchParams:Promise.resolve({})}));
 });
 
 test('cruise photos have local files and retained commercial-use attribution',()=>{

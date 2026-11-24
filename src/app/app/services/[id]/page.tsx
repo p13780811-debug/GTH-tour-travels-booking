@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink, ShieldCheck } from "lucide-react";
+import { appServiceWebsiteHref } from "@/lib/mobile/universal-search";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import { mobileWebService, mobileWebServices } from "@/lib/mobile/app-dashboard";
 
@@ -18,6 +19,41 @@ export function generateStaticParams() {
 export const dynamicParams = false;
 
 const serviceInfo: Record<string, { detail: string; note: string; cta: string }> = {
+  contact: {
+    detail: "Find the existing GTH PRO contact channels.",
+    note: "Use the official contact page for the right service.",
+    cta: "Contact GTH PRO",
+  },
+  "property-search": {
+    detail: "Search with property type, bedrooms and budget using the full search tools.",
+    note: "Confirm listing details and asking prices with the listing party.",
+    cta: "Open advanced property search",
+  },
+  "property-registry": {
+    detail: "Look up source-attributed project registrations by city, project or promoter.",
+    note: "Check the original registry for current registration information.",
+    cta: "Search project registry",
+  },
+  "list-property": {
+    detail: "Submit an owned or authorized property listing with accurate specifications and photos.",
+    note: "Publication follows the existing account, listing and photo review.",
+    cta: "Start a property submission",
+  },
+  "claim-project": {
+    detail: "Request a claim as a builder or authorized representative of a registered project.",
+    note: "Prepare the project reference and evidence of your authority for review.",
+    cta: "Start a project claim",
+  },
+  "travel-deals": {
+    detail: "Browse the existing travel deals collection.",
+    note: "Confirm availability and terms with the travel provider.",
+    cta: "Browse travel deals",
+  },
+  activities: {
+    detail: "Browse the existing collection of travel activities.",
+    note: "Check the current offer and terms with the supplier.",
+    cta: "Browse activities",
+  },
   transfers: {
     detail: "Compare airport pickup and transfer options using the existing GTH PRO travel service.",
     note: "A provider controls available vehicles, pickup requirements, rates and booking confirmation.",
@@ -86,9 +122,10 @@ const serviceInfo: Record<string, { detail: string; note: string; cta: string }>
 };
 
 export default async function AppServiceGateway({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
   const service = mobileWebService(id);
@@ -96,13 +133,15 @@ export default async function AppServiceGateway({
 
   const info = serviceInfo[service.id];
   if (!info) notFound();
+  const {q} = await searchParams;
+  const websiteHref = appServiceWebsiteHref(service.id, service.href, q);
   const related =
     service.pillar === "property"
       ? { href: "/app/property", label: "Browse property records in app" }
       : service.pillar === "tender"
         ? { href: "/app/tenders", label: "Browse published tenders in app" }
         : service.pillar === "tickets"
-          ? { href: "/app/search?category=ticket", label: "Search ticket sources in app" }
+          ? { href: "/app/explore", label: "Search other GTH PRO services" }
           : { href: "/app/destinations", label: "Explore destinations in app" };
 
   return (
@@ -138,7 +177,7 @@ export default async function AppServiceGateway({
               {related.label} <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
             <a
-              href={service.href}
+              href={websiteHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-center text-sm font-semibold"
@@ -147,8 +186,7 @@ export default async function AppServiceGateway({
             </a>
           </div>
           <p className="mt-4 text-xs leading-6 text-[var(--text-soft)]">
-            The website action opens separately. You will only leave app mode when you choose it.
-            GTH PRO does not invent availability, verified pricing or booking outcomes.
+            The website link opens separately, so you can return to this app screen.
           </p>
         </section>
       </div>
