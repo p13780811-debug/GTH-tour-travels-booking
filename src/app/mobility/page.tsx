@@ -4,6 +4,7 @@ import {ArrowUpRight,BusFront,CarFront,TrainFront} from "lucide-react";
 import CityPicker from "@/components/mobility/CityPicker";
 import CityMobility from "@/components/mobility/CityMobility";
 import DriverTools from "@/components/mobility/DriverTools";
+import DriverTraffic from "@/components/mobility/DriverTraffic";
 import {MOBILITY_CITIES,mobilityCity,mobilityCityKey} from "@/lib/mobility/city";
 import {isPublicLaunch} from "@/lib/seo/site";
 
@@ -29,6 +30,7 @@ export default async function MobilityPage({searchParams}:Props){
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">Find transit connections for your city, estimate shift earnings and keep your daily Hisaab in one place.</p>
       </header>
       <CityPicker key={"picker:"+key} city={city}/>
+      <DriverTraffic key={"traffic:"+key} city={city}/>
       <DriverTools key={"driver:"+key} city={city}/>
       <CityMobility city={city}/>
       {isMumbai&&<section aria-labelledby="mumbai-local-title" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
