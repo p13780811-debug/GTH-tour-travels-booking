@@ -28,8 +28,8 @@ export default async function MobilityPage({searchParams}:Props){
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-5xl">Local transport &amp; driver tools</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-soft)] sm:text-base">Find transit connections for your city, estimate shift earnings and keep your daily Hisaab in one place.</p>
       </header>
-      <CityPicker key={key} city={city}/>
-      <DriverTools key={key} city={city}/>
+      <CityPicker key={"picker:"+key} city={city}/>
+      <DriverTools key={"driver:"+key} city={city}/>
       <CityMobility city={city}/>
       {isMumbai&&<section aria-labelledby="mumbai-local-title" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
         <h2 id="mumbai-local-title" className="text-xl font-bold">Mumbai local train corridors</h2>
