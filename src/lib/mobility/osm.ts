@@ -7,7 +7,7 @@ export type MobilityMapData={updatedAt:string;features:MobilityMapFeature[]};
 export function mobilityOverpassQuery(city:MobilityCity):string|null{
   if(!/^[A-Z]{2}$/.test(city.countryCode)||!/^[-\p{L}\p{M}\p{N} .,()&'’‘]{1,120}$/u.test(city.name))return null;
   const name=JSON.stringify(city.name);
-  return `[out:json][timeout:9];
+  return `[out:json][timeout:6];
 area["ISO3166-1"="${city.countryCode}"]["admin_level"="2"]->.country;
 (node["place"~"^(city|town|village)$"]["name"=${name}](area.country);
 node["place"~"^(city|town|village)$"]["name:en"=${name}](area.country);)->.place;

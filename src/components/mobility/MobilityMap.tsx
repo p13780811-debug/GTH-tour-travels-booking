@@ -26,7 +26,7 @@ export default function MobilityMap({city}:{city:MobilityCity}){
   useEffect(()=>{
     if(!opened)return;
     const controller=new AbortController();
-    const timeout=window.setTimeout(()=>controller.abort("timeout"),17000);
+    const timeout=window.setTimeout(()=>controller.abort("timeout"),24000);
     fetch("/api/mobility/map?"+new URLSearchParams({city:city.slug}),{signal:controller.signal})
       .then(response=>response.json()).then(result=>{
         if(controller.signal.aborted)return;
