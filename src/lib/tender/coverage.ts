@@ -1,5 +1,5 @@
 /** Explicit source capability, not a promise of complete or currently live inventory. */
-export type TenderSourceCoverage={id:string;name:string;countries:readonly string[];mode:"feed"|"free-key"|"official-portal";url:string;note:string};
+export type TenderSourceCoverage={id:string;name:string;kind?:"company";countries:readonly string[];mode:"feed"|"free-key"|"official-portal";url:string;note:string};
 const EU="AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE".split(" ");
 export const TENDER_COVERAGE:readonly TenderSourceCoverage[]=[
  {id:"worldbank",name:"World Bank procurement",countries:[],mode:"feed",url:"https://projects.worldbank.org/en/projects-operations/procurement",note:"Country-tagged World Bank-financed procurement. This is not every government's tender feed."},
@@ -23,6 +23,19 @@ export const TENDER_COVERAGE:readonly TenderSourceCoverage[]=[
  {id:"nepal",name:"Nepal e-GP",countries:["NP"],mode:"official-portal",url:"https://bolpatra.gov.np/egp/",note:"Official electronic procurement system."},
  {id:"philippines",name:"Philippines PhilGEPS",countries:["PH"],mode:"official-portal",url:"https://philgeps.gov.ph",note:"Official government electronic procurement system."},
  {id:"malaysia",name:"Malaysia ePerolehan",countries:["MY"],mode:"official-portal",url:"https://www.eperolehan.gov.my",note:"Official government procurement portal."},
+ {id:"saudi-etimad",name:"Saudi Arabia Etimad",countries:["SA"],mode:"official-portal",url:"https://mof.gov.sa/tenders-and-procurement",note:"The Ministry of Finance links to current government procurement and supplier instructions."},
+ {id:"uae-dpp",name:"United Arab Emirates Federal Procurement",countries:["AE"],mode:"official-portal",url:"https://mof.gov.ae/en/public-finance/government-procurement/",note:"The Ministry of Finance links to open RFQs and the federal supplier register."},
+ {id:"chile-mercadopublico",name:"Chile Mercado Público",countries:["CL"],mode:"official-portal",url:"https://www.mercadopublico.cl/home/",note:"ChileCompra’s public procurement platform provides current public-sector opportunities."},
+ {id:"colombia-secop",name:"Colombia SECOP II",countries:["CO"],mode:"official-portal",url:"https://www.colombiacompra.gov.co/secop/secop-ii/busqueda-publica",note:"Find published purchasing processes using Colombia Compra Eficiente’s public search."},
+ {id:"japan-jetro",name:"Japan Government Procurement via JETRO",countries:["JP"],mode:"official-portal",url:"https://www.jetro.go.jp/en/database/procurement/",note:"Search Japanese procurement notices covered by the agreements listed by JETRO."},
+ {id:"acted",name:"Acted humanitarian procurement",countries:[],mode:"official-portal",url:"https://www.acted.org/en/call-for-tenders/",note:"The nonprofit publishes calls for goods, works and services in its operating countries."},
+ {id:"drc",name:"Danish Refugee Council procurement",countries:[],mode:"official-portal",url:"https://drc.ngo/tenders/",note:"Browse this nonprofit issuer’s tender notices by operating region and deadline."},
+ {id:"tata-power",name:"Tata Power public tenders",kind:"company",countries:["IN"],mode:"official-portal",url:"https://www.tatapower.com/tender",note:"Browse publicly advertised RFQs and amendments from the issuer. Match each tender’s reference and check participation deadlines."},
+ {id:"tata-steel",name:"Tata Steel procurement",kind:"company",countries:["IN"],mode:"official-portal",url:"https://www.tatasteel.com/corporate/our-organisation/procurement/",note:"Company procurement and supplier registration. Some opportunities are available only to registered suppliers."},
 ];
-export function tenderSourcesFor(country:string){return TENDER_COVERAGE.filter(row=>!country||!row.countries.length||row.countries.includes(country));}
+export type TenderCoverageKind="company"|"public";
+export function tenderSourcesFor(country:string,kind?:TenderCoverageKind){
+  return TENDER_COVERAGE.filter(row=>(!kind||(kind==="company"?row.kind==="company":row.kind!=="company"))&&
+    (!country||!row.countries.length||row.countries.includes(country)));
+}
 export function coverageLabel(mode:TenderSourceCoverage["mode"]){return mode==="feed"?"Feed connector available":mode==="free-key"?"Free-key connector":"Official portal guidance";}

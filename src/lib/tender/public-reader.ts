@@ -7,7 +7,7 @@ const MAX_SNAPSHOT_AGE=5*60*1000;
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 function normalized(filters:TenderFilters):TenderFilters|null{
  const p=new URLSearchParams();
- for(const key of ["q","country","sector","closingBefore","closingWithin","sort","page","scope"] as const){const value=filters[key];if(value!==undefined&&value!=="")p.set(key,String(value));}
+ for(const key of ["q","country","sector","closingBefore","closingWithin","sort","page","scope","channel"] as const){const value=filters[key];if(value!==undefined&&value!=="")p.set(key,String(value));}
  if(!p.has("scope"))p.set("scope","world");
  const parsed=parseTenderFilters(p);if(!parsed.ok)return null;
  const query=parsed.filters.q.normalize("NFKC").replace(/\s+/g," ").toLocaleLowerCase("en");if(query.length>100)return null;
@@ -37,10 +37,10 @@ const freshStats=(filters:TenderFilters)=>singleFill("stats:"+JSON.stringify(fil
  await reserveTenderRefresh();const result=await getTenderDiscoveryStats(filters);
  if(!result)throw Error("Tender counts unavailable");return {result,readAt:Date.now()};
 });
-const readSearch=unstable_cache(freshSearch,["gth-tender-search-v1"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
-const readDetail=unstable_cache(freshDetail,["gth-tender-detail-v1"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
-const readBatch=unstable_cache(freshBatch,["gth-tender-batch-v1"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
-const readStats=unstable_cache(freshStats,["gth-tender-facets-v1"],{revalidate:300,tags:["gth-public-tenders"]});
+const readSearch=unstable_cache(freshSearch,["gth-tender-search-v2"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
+const readDetail=unstable_cache(freshDetail,["gth-tender-detail-v2"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
+const readBatch=unstable_cache(freshBatch,["gth-tender-batch-v2"],{revalidate:TENDER_READ_TTL,tags:["gth-public-tenders"]});
+const readStats=unstable_cache(freshStats,["gth-tender-facets-v2"],{revalidate:300,tags:["gth-public-tenders"]});
 function usable(readAt:number,maxAge=MAX_SNAPSHOT_AGE){return Date.now()-readAt<=maxAge;}
 function failure(error:unknown):Extract<TenderResult,{ok:false}>{
  const status=error&&typeof error==="object"&&"status" in error&&error.status===429?429:503;

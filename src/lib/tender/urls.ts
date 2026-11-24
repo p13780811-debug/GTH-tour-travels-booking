@@ -1,10 +1,11 @@
 import type { TenderFilters } from "./catalog";
 
-type LinkFilters = Pick<TenderFilters, "q"|"country"|"sector"|"scope"|"closingBefore"|"closingWithin"|"sort">;
+type LinkFilters = Pick<TenderFilters, "q"|"country"|"sector"|"scope"|"closingBefore"|"closingWithin"|"sort"|"channel">;
 export function tenderFilterHref(filters: LinkFilters, language:string, page=1):string {
   const qs=new URLSearchParams();
   if(filters.q)qs.set("q",filters.q);
   if(filters.country)qs.set("country",filters.country);
+  if(filters.channel)qs.set("channel",filters.channel);
   if(filters.sector)qs.set("sector",filters.sector);
   if(filters.scope)qs.set("scope",filters.scope);
   if(filters.closingBefore)qs.set("closingBefore",filters.closingBefore);
