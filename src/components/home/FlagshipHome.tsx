@@ -151,7 +151,7 @@ export default function FlagshipHome() {
               <Search size={21} strokeWidth={1.8} aria-hidden="true" />
               <label htmlFor="gth-master-query" className="sr-only">Search across the GTH PRO ecosystem</label>
               <input id="gth-master-query" type="search" name="q" required maxLength={100}
-                autoComplete="off" placeholder="Hotels, property, tenders or tickets" />
+                autoComplete="off" placeholder="Search across GTH PRO" />
             </div>
             <label htmlFor="gth-master-category" className="sr-only">Choose a GTH PRO platform</label>
             <select id="gth-master-category" name="category" defaultValue="all">

@@ -1114,9 +1114,11 @@
   align-items: center;
   gap: 8px;
 }
-.themeControl {
-  flex: none;
-  color: var(--foreground);
+.themeControl { flex: none; }
+.site .themeControl button {
+  color: var(--flag-silver);
+  background: color-mix(in srgb, var(--flag-navy) 82%, var(--flag-silver) 18%);
+  border: 1px solid var(--flag-edge);
 }
 .shortcuts {
   position: relative;
