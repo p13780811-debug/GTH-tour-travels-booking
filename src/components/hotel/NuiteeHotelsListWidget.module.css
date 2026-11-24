@@ -88,6 +88,7 @@
 }
 
 .supplier.compact :global(.price) strong {
+  color: var(--text) !important;
   font-variant-numeric: tabular-nums;
   font-size: 1rem;
 }
