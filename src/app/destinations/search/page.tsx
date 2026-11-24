@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { destinations as curatedDestinations, destinationImageForSlug } from "@/data/destinations";
 import { destinationGeography } from "@/lib/destinations/geography";
 import { destinationDetailHref } from "@/lib/destinations/detail-link";
 import { validatedCountry } from "@/lib/destinations/country";
+import { withDiscoveryDeadline } from "@/lib/travel/cachedDiscovery";
 import DestinationCard, { type DestinationCardInfo } from "@/components/destination/DestinationCard";
 
 export const metadata: Metadata = {
@@ -33,53 +35,53 @@ function curatedMatches(search: string, country: string): DestinationCardInfo[] 
     .filter(place => !country || place.country === country);
 }
 
+const searchDirectory = unstable_cache(async (search: string, country: string, exact: boolean) => {
+  // Escape LIKE operators so the query remains a bounded literal search.
+  const escaped = search.replace(/[\\%_]/g, "\\$&");
+  const query = supabase.from("destinations")
+    .select("slug,name,description,country")
+    .is("is_active", true)
+    .ilike("name", exact ? escaped : "%" + escaped + "%");
+  if (country) query.eq("country", country);
+  if (!exact) query.order("name");
+  const lookup = query.order("slug").limit(MAX_RESULTS).abortSignal(AbortSignal.timeout(4_500));
+  const result = await withDiscoveryDeadline(Promise.resolve(lookup), 4_500);
+  if (result.error || !result.data) throw new Error("Destination search unavailable");
+  return result.data;
+}, ["destination-directory-search-v1"], { revalidate: 300, tags: ["public-destination-catalog"] });
+
 async function findMatches(search: string, country: string): Promise<{ places: DestinationCardInfo[]; exactLookupSucceeded: boolean }> {
   const found = new Map<string, DestinationCardInfo>();
   for (const place of curatedMatches(search, country)) found.set(identity(place), place);
-  let exactLookupSucceeded = false;
-  // This is only destination identity data. Supplier products are loaded on the city page.
-  try {
-    // Escape user LIKE operators so the query is a bounded literal substring search.
-    const escaped = search.replace(/[\\%_]/g, "\\$&");
-    const scopedLookup = () => {
-      const query = supabase.from("destinations")
-        .select("slug,name,description,country")
-        .eq("is_active", true);
-      return country ? query.eq("country", country) : query;
+  // Rank exact matches independently of the partial limit, including duplicate city names.
+  const [exact, partial] = await Promise.allSettled([
+    withDiscoveryDeadline(searchDirectory(search, country, true), 4_500),
+    withDiscoveryDeadline(searchDirectory(search, country, false), 4_500),
+  ]);
+  const exactLookupSucceeded = exact.status === "fulfilled";
+  const exactRows = exact.status === "fulfilled" ? exact.value : [];
+  const partialRows = partial.status === "fulfilled" ? partial.value : [];
+  for (const place of [...exactRows, ...partialRows]) {
+    if (typeof place.slug !== "string" || place.slug.length > 140 || !SLUG.test(place.slug) ||
+        typeof place.name !== "string" || !place.name.trim()) continue;
+    const geography = destinationGeography(place.slug, typeof place.country === "string" ? place.country : null);
+    if (country && geography.country !== country) continue;
+    const item: DestinationCardInfo = {
+      slug: place.slug, title: place.name.trim().slice(0, 120),
+      image: destinationImageForSlug(place.slug),
+      description: typeof place.description === "string" && place.description.trim()
+        ? place.description.trim().slice(0, 280)
+        : "Explore this destination and confirm current details with travel providers.",
+      location: "Destination directory", ...geography,
     };
-    // Rank exact matches before limiting partial matches, including duplicate
-    // names across different countries or regions.
-    const [exact, partial] = await Promise.all([
-      scopedLookup().ilike("name", escaped).order("slug").limit(MAX_RESULTS)
-        .abortSignal(AbortSignal.timeout(4500)),
-      scopedLookup().ilike("name", "%" + escaped + "%").order("name").order("slug").limit(MAX_RESULTS)
-        .abortSignal(AbortSignal.timeout(4500)),
-    ]);
-    exactLookupSucceeded = !exact.error;
-    for (const place of [...(exact.data ?? []), ...(partial.data ?? [])]) {
-      if (typeof place.slug !== "string" || place.slug.length > 140 || !SLUG.test(place.slug) ||
-          typeof place.name !== "string" || !place.name.trim()) continue;
-      const geography = destinationGeography(place.slug, typeof place.country === "string" ? place.country : null);
-      if (country && geography.country !== country) continue;
-      const item: DestinationCardInfo = {
-        slug: place.slug, title: place.name.trim().slice(0, 120),
-        image: destinationImageForSlug(place.slug),
-        description: typeof place.description === "string" && place.description.trim()
-          ? place.description.trim().slice(0, 280)
-          : "Explore this destination and confirm current details with travel providers.",
-        location: "Destination directory", ...geography,
-      };
-      const key = identity(item);
-      if (!found.has(key)) found.set(key, item);
-    }
-  } catch {
-    // Keep editorial destinations searchable if the database is temporarily unavailable.
+    const key = identity(item);
+    if (!found.has(key)) found.set(key, item);
   }
-  const exact = search.toLocaleLowerCase("en");
+  const normalizedSearch = search.toLocaleLowerCase("en");
   const places = [...found.values()].sort((a, b) => {
     const score = (place: DestinationCardInfo) => {
       const name = place.title.toLocaleLowerCase("en");
-      return name === exact ? 0 : name.startsWith(exact) ? 1 : 2;
+      return name === normalizedSearch ? 0 : name.startsWith(normalizedSearch) ? 1 : 2;
     };
     return score(a) - score(b) || a.title.localeCompare(b.title) ||
       (a.country ?? "").localeCompare(b.country ?? "");

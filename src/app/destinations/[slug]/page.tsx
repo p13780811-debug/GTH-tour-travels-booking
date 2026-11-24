@@ -1,3 +1,5 @@
+import DestinationTravelSearch from "@/components/destination/DestinationTravelSearch";
+import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import {Suspense} from "react";
 import type { Metadata } from "next";
@@ -169,9 +171,9 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   };
   const links=destinationServices({slug,name:destination.name,country:destination.country});
   const mappedAttractions = links.find(item => item.key === "attractions");
-  const hotelsHref=city?"#city-stays-heading":links.find(item=>item.key==="hotels")!.href;
-  const toursHref=city?"#city-experiences-heading":links.find(item=>item.key==="tours")!.href;
-  const flightsHref=city?"#city-mobility-heading":links.find(item=>item.key==="flights")!.href;
+  const hotelsHref="#destination-hotels-tab";
+  const toursHref="#destination-tours";
+  const flightsHref="#destination-transport-tab";
   const morePlaces = destinations.filter((item) => item.slug !== slug)
     .sort((a,b) => Number(destinationGeography(b.slug).region === destination.region) - Number(destinationGeography(a.slug).region === destination.region))
     .slice(0, 6);
@@ -219,7 +221,12 @@ export default async function DestinationPage({ params, searchParams }: Props) {
           </div>
         </div>
       </section>
+      <DestinationTravelSearch key={slug + ":" + destination.country} city={destination.name} country={destination.country}
+        countryCode={destination.countryCode ?? countryCodeForDestinationName(destination.country)}/>
       <TravelSectionNav />
+      <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
+        <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
+      </Suspense>
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
@@ -229,9 +236,6 @@ export default async function DestinationPage({ params, searchParams }: Props) {
           Explore mapped attractions <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </nav>}
-      <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
-        <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
-      </Suspense>
 
       <section id="destination-discovery" className="mx-auto grid max-w-7xl scroll-mt-20 gap-6 px-4 py-12 sm:px-6 md:py-14 lg:grid-cols-[1fr_300px]">
         <article>

@@ -39,6 +39,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   const query = useSearchParams();
   // A text-only city cannot be converted to a supplier Place ID safely.
   // Carry the intent visibly, then require the official Nuitee destination picker.
+  const countryHint = query.get("country") ?? undefined;
   const cityInput=(query.get("city")||query.get("destination")||"").replace(/-/g," ").trim().slice(0,80);
   const hotelInput=(query.get("name")||"").trim().slice(0,80);
   const cityHint=/^[\p{L}\p{M}\s.\x27-]{2,80}$/u.test(cityInput)?cityInput:"";
@@ -68,13 +69,14 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   if (cityHint && !restored) {
     cityParams.set("city", cityHint);
     cityParams.set("currency", displayCurrency);
+    if (countryHint !== undefined) cityParams.set("country", countryHint);
     for (const key of ["checkin", "checkout", "adults", "rooms"]) {
       const value = query.get(key);
       if (value && value.length <= 20 && query.getAll(key).length === 1) cityParams.set(key, value);
     }
   }
   const cityResolution = cityParams.has("city") ? resolveHotelRoute({
-    destination:cityHint,currency:displayCurrency,
+    destination:cityHint,currency:displayCurrency,countryCode:countryHint,
     checkIn:cityParams.get("checkin")??undefined,
     checkOut:cityParams.get("checkout")??undefined,
     adults:cityParams.get("adults")??undefined,
@@ -84,7 +86,7 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   // preserving the selected city. Keep the original real supplier picker for it.
   const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
   const unmappedCityHref=cityResolution?.status==="unmapped"?cityResolution.url:"";
-  const cityAlternativeHref=unmappedCityHref?trackedHotelCityHref(cityHint):null;
+  const cityAlternativeHref=unmappedCityHref?trackedHotelCityHref(cityHint,countryHint):null;
   useEffect(() => {
     if (cityBookingHref) window.location.replace(cityBookingHref);
   }, [cityBookingHref]);

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /** Zero supplier API calls. Fixed-origin redirect; never forward arbitrary fields. */
 export function GET(request: Request) {
   const params=new URL(request.url).searchParams;
-  for (const key of ["hotelId","placeId","city","destination","q","checkin","checkout","adults","rooms","occupancies","currency"]) {
+  for (const key of ["hotelId","placeId","city","destination","q","checkin","checkout","adults","rooms","occupancies","currency","country"]) {
     if (params.getAll(key).length > 1) return new NextResponse("Ambiguous hotel booking parameters.",{status:400});
   }
   // Preserve original fully specified supplier SearchBar links and child ages.
@@ -23,6 +23,7 @@ export function GET(request: Request) {
     hotelId:params.get("hotelId")??undefined,
     placeId:params.get("placeId")??undefined,
     destination:params.get("city")??params.get("destination")??params.get("q")??undefined,
+    countryCode:params.get("country")??undefined,
     checkIn:params.get("checkin")??undefined,checkOut:params.get("checkout")??undefined,
     adults:params.get("adults")??undefined,rooms:params.get("rooms")??undefined,
     currency:params.get("currency")??undefined,
