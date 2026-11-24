@@ -1,3 +1,4 @@
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
@@ -38,6 +39,7 @@ export default function StadiumsPage() {
         <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--text-soft)]">Event organizers and suppliers confirm dates, available seats, final prices and ticket terms. Check whether your selected product includes event admission.</p>
       </header>
       <nav aria-label="Explore stadium tickets" className="mt-5 flex flex-wrap gap-3">
+        <TicketNetworkLink/>
         <Link href="/tickets" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Worldwide ticket finder</Link>
         <a href="#stadium-event-discovery" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Explore upcoming events</a>
         <a href="#stadium-directory" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Browse stadiums</a>
@@ -68,9 +70,10 @@ export default function StadiumsPage() {
               {product.kind==="Event tickets"?"Event admission listing. Confirm the scheduled game and eligible seats with the seller.":
                "Venue experience. Stadium tours do not imply entry to a live match."}
             </p>
+            {product.kind==="Event tickets"&&<TicketNetworkLink query={product.label+" "+venue.name} className="mt-4"/>}
             <a href={href} target="_blank" rel="noopener noreferrer sponsored"
               className="gth-btn-gold mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-center text-sm font-semibold">
-              {product.kind==="Event tickets"?"Check match tickets":"View venue experience"} <span aria-hidden="true">↗</span>
+              {product.kind==="Event tickets"?"View reviewed offer":"View venue experience"} <span aria-hidden="true">↗</span>
             </a>
             <Link href={"/stadiums/"+venue.slug} prefetch={false} className="mt-3 text-center text-xs font-semibold underline">
               Venue details & official event calendar

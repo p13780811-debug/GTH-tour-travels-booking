@@ -1,6 +1,7 @@
 "use client";
 
 import {useMemo,useState} from "react";
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import Link from "next/link";
 import ShareFeedbackActions from "@/components/engagement/ShareFeedbackActions";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
@@ -47,6 +48,7 @@ export default function StadiumEventDiscovery({events}:Props){
     </div>
     <div className="my-4 flex flex-wrap items-center justify-between gap-3">
       <p role="status" aria-live="polite" className="text-sm text-[var(--text-soft)]">{results.length} reviewed upcoming {results.length===1?"event":"events"}</p>
+      {(query.trim()||sport)&&<TicketNetworkLink query={query.trim()||sport} label="Search tickets"/>}
       {(query||sport||country||from)&&<button type="button" onClick={()=>{setQuery("");setSport("");setCountry("");setFrom("");}} className="gth-btn min-h-11 rounded-xl px-4 text-sm">Clear filters</button>}
     </div>
     {results.length===0?<div className="gth-glass rounded-2xl border border-[var(--border)] p-5"><p className="font-semibold">No matching reviewed events</p><p className="mt-2 text-sm text-[var(--text-soft)]">Try another filter or browse official venue calendars below. This is not a claim that no tickets exist.</p><a href="#global-ticket-directory" className="gth-btn mt-4 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">Find official league and organizer sources</a></div>:
@@ -55,7 +57,7 @@ export default function StadiumEventDiscovery({events}:Props){
       <h3 className="mt-3 text-lg font-bold">{e.title}</h3>
       <p className="mt-2 text-sm text-[var(--text-soft)]">{e.venue} · {e.city}, {e.country}</p>
       <p className="mt-2 text-sm"><time dateTime={e.starts}>{e.starts}</time>{e.ends&&<> – <time dateTime={e.ends}>{e.ends}</time></>}</p>
-      <div className="mt-auto flex flex-wrap gap-3 pt-5"><a href={e.officialUrl} target="_blank" rel="noopener noreferrer" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Official event source <ArrowUpRight size={16} aria-hidden="true"/></a><Link prefetch={false} href={"/stadiums/"+e.venueSlug} className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm">Venue guide</Link></div>
+      <div className="mt-auto flex flex-wrap gap-3 pt-5"><TicketNetworkLink query={e.title+" "+e.venue}/><a href={e.officialUrl} target="_blank" rel="noopener noreferrer" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold">Official event source <ArrowUpRight size={16} aria-hidden="true"/></a><Link prefetch={false} href={"/stadiums/"+e.venueSlug} className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm">Venue guide</Link></div>
       <ShareFeedbackActions title={e.title} path={"/stadiums/"+encodeURIComponent(e.venueSlug)}/>
       <ShareTripPlanButton title={e.title} venue={e.venue} city={e.city} countryCode={e.country} eventDate={e.starts} path={"/stadiums/"+encodeURIComponent(e.venueSlug)}/>
     </article>)}</div>}

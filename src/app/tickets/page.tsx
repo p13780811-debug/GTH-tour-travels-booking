@@ -1,3 +1,4 @@
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowUpRight} from "lucide-react";
@@ -32,6 +33,7 @@ export default async function TicketsPage({searchParams}:Props){
     {ticketCategories.map(category=><Link key={category.slug} href={"/tickets/"+category.slug}
       className="gth-btn inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">{category.label}</Link>)}
    </nav>
+   <TicketNetworkLink className="mb-5"/>
    <WorldwideTicketExplorer initialQuery={initialQuery}/>
    <section id="ticket-editorial-guides" aria-labelledby="ticket-editorial-heading" className="gth-glass mt-8 rounded-2xl border border-[var(--border)] p-5 sm:p-7">
      <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Knowledge before booking</p>
@@ -55,7 +57,7 @@ export default async function TicketsPage({searchParams}:Props){
      )}
     </div>
    </section>
-   <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">This is an editorial ticket-source directory, not a licensed worldwide ticket inventory or on-site checkout. Some other GTH PRO pages contain affiliate offers; independent links here do not imply provider approval. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></p>
+   <p className="mt-5 text-xs leading-6 text-[var(--text-soft)]">This is an editorial ticket-source directory, not a licensed worldwide ticket inventory or on-site checkout. We may earn a commission on qualifying bookings through sponsored ticket links. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></p>
   </div>
  </main>;
 }

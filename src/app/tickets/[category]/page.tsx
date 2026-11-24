@@ -1,3 +1,4 @@
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -33,6 +34,7 @@ export default async function TicketCategoryPage({params}:Props){
       <h1 className="mt-3 text-3xl font-bold sm:text-4xl">{selected.label} tickets</h1>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-soft)]">{selected.description} Discover public event sources worldwide; GTH PRO does not claim live inventory or guaranteed seat availability.</p>
     </header>
+    <TicketNetworkLink query={selected.label} className="mb-5"/>
     <WorldwideTicketExplorer initialCategory={selected.slug}/>
     {ticketBlogGuides.filter(guide=>guide.ticketCategory===selected.slug).map(guide=>
       <section key={guide.slug} className="gth-glass mt-7 rounded-2xl border border-[var(--border)] p-5 sm:p-7">

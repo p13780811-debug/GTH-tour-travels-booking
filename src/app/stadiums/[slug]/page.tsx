@@ -1,3 +1,4 @@
+import TicketNetworkLink from "@/components/tickets/TicketNetworkLink";
 import EventShockwave from "@/components/intelligence/EventShockwave";
 import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
@@ -83,7 +84,8 @@ export default async function StadiumPage({ params }: Props) {
         <section className="gth-glass rounded-2xl border border-[var(--border)] p-6">
           <h2 className="text-2xl font-bold">Events & official sources</h2>
           <p className="my-4 text-sm leading-6 text-[var(--text-soft)]">Confirm the venue, event date and ticket release in the organizer’s calendar. Follow the organizer’s approved ticket links.</p>
-          <ExternalLink href={venue.schedule.url}>{venue.schedule.label}</ExternalLink>
+          <TicketNetworkLink query={venue.name+" "+venue.city}/>
+          <div className="mt-3"><ExternalLink href={venue.schedule.url}>{venue.schedule.label}</ExternalLink></div>
           {venue.tickets && <div className="mt-3"><ExternalLink href={venue.tickets.url}>{venue.tickets.label}</ExternalLink></div>}
           {venue.experience && <div className="mt-3"><ExternalLink href={venue.experience.url}>{venue.experience.label}</ExternalLink></div>}
           {upcoming.length > 0 && <div className="mt-6">
@@ -91,7 +93,7 @@ export default async function StadiumPage({ params }: Props) {
             <ul className="mt-3 space-y-4">{upcoming.map(event => <li key={event.url} className="rounded-xl border border-[var(--border)] p-4">
               <h4 className="font-semibold">{event.label}</h4>
               <p className="my-2 text-sm text-[var(--text-soft)]"><time dateTime={event.starts}>{event.starts}</time>{event.ends && <> – <time dateTime={event.ends}>{event.ends}</time></>} · Venue local dates</p>
-              <ExternalLink href={event.url}>Official event details</ExternalLink>
+              <div className="flex flex-wrap gap-2"><TicketNetworkLink query={event.label+" "+venue.name}/><ExternalLink href={event.url}>Official event details</ExternalLink></div>
             </li>)}</ul>
             <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">Selected dates from official announcements. Check the current event page for changes and availability.</p>
           </div>}
@@ -114,7 +116,10 @@ export default async function StadiumPage({ params }: Props) {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">{products.map(product => <article key={product.url} className="rounded-xl border border-[var(--border)] p-5">
           <p className="text-xs font-bold text-[var(--gold)]">{product.kind}</p>
           <h3 className="my-3 text-lg font-semibold">{product.label}</h3>
-          <ExternalLink href={product.href} sponsored>{product.kind === "Event tickets" ? "Check game dates & tickets" : "Explore experience"}</ExternalLink>
+          <div className="flex flex-wrap gap-2">
+            {product.kind === "Event tickets" && <TicketNetworkLink query={product.label+" "+venue.name}/>}
+            <ExternalLink href={product.href} sponsored>{product.kind === "Event tickets" ? "View reviewed offer" : "Explore experience"}</ExternalLink>
+          </div>
           <p className="mt-3 text-xs leading-5 text-[var(--text-soft)]">The selected ticket provider confirms included access, dates, prices and availability. Affiliate link.</p>
         </article>)}</div>
         <p className="mt-4 text-sm text-[var(--text-soft)]">Check the product’s included access before booking a tour, museum visit or event ticket.</p>

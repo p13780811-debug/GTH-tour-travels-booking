@@ -1,5 +1,6 @@
 import { SITE_CONFIG } from "@/lib/site-config";
 import FlagshipImage from "./FlagshipImage";
+import ThemeToggle from "@/components/ThemeToggle";
 import BrandVideo from "@/components/brand/BrandVideo";
 import HomeCapabilityProof from "./HomeCapabilityProof";
 import Link from "next/link";
@@ -58,8 +59,8 @@ const pillars = [
   {
     id:"tickets",
     title:"Worldwide Tickets",
-    image:"/images/editorial/sports.svg",
-    alt:"Original event and stadium ticket editorial illustration",
+    image:"/images/editorial/stadium-night.webp",
+    alt:"Stadium crowd and floodlit pitch at dusk",
     href:"/tickets",
     eyebrow:"Sports · Concerts · Events",
     description:"Discover ticket sources and venue guides",
@@ -127,6 +128,7 @@ export default function FlagshipHome() {
               <span className={styles.headerBrandSubtitle}>GLOBAL TECHNICAL HUB</span>
             </span>
           </Link>
+          <div className={styles.headerActions}>
           <nav className={styles.topNav} aria-label="GTH PRO platforms">
             <Link href="/mega-aggregator" className={styles.ecosystemLink}>Global Gateway <ArrowUpRight size={15}/></Link>
             <Link href="/intelligence">Decision Desk</Link>
@@ -135,6 +137,8 @@ export default function FlagshipHome() {
             <Link href="/tender">Tender</Link>
             <Link href="/tickets">Tickets</Link>
           </nav>
+          <div className={styles.themeControl}><ThemeToggle /></div>
+          </div>
         </header>
         <div className={styles.heroCenter}>
           <h1 className={styles.brand} id="flagship-heading" aria-label="GTH PRO">
@@ -147,7 +151,7 @@ export default function FlagshipHome() {
               <Search size={21} strokeWidth={1.8} aria-hidden="true" />
               <label htmlFor="gth-master-query" className="sr-only">Search across the GTH PRO ecosystem</label>
               <input id="gth-master-query" type="search" name="q" required maxLength={100}
-                autoComplete="off" placeholder="Search hotels, property, tenders, tickets..." />
+                autoComplete="off" placeholder="Hotels, property, tenders or tickets" />
             </div>
             <label htmlFor="gth-master-category" className="sr-only">Choose a GTH PRO platform</label>
             <select id="gth-master-category" name="category" defaultValue="all">
@@ -173,22 +177,27 @@ export default function FlagshipHome() {
 
       {/* Direct, static entry points remain reachable on mobile even when the
           flagship route hides the global bottom bar. No data is fetched. */}
-      <section aria-label="GTH PRO app and Research Desk shortcuts"
-        className="relative z-10 border-y border-[var(--flag-edge)] bg-[var(--flag-navy)] px-3 py-3 sm:py-4">
+      <section aria-label="GTH PRO app and Research Desk shortcuts" className={styles.shortcuts}>
         <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 sm:gap-3">
           <Link href="/app" className="gth-btn-gold inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-3 text-center text-xs font-bold sm:text-sm">
             Open GTH PRO App Home <ArrowUpRight size={16} aria-hidden="true"/>
           </Link>
-          <Link href="/app/board" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--flag-edge)] px-2 py-3 text-center text-xs font-bold text-[var(--flag-gold)] sm:text-sm">
+          <Link href="/app/board" className={styles.utilityLink}>
             My Research Desk <ArrowUpRight size={16} aria-hidden="true"/>
           </Link>
         </div>
       </section>
 
+      <nav className={styles.pillarJump} aria-label="Jump to a platform">
+        {pillars.map(({id,title,Icon})=><a key={id} href={"#home-platform-"+id}>
+          <Icon size={17} aria-hidden="true"/><span>{title}</span>
+        </a>)}
+      </nav>
+
       <section className={styles.pillars} id="pillars" aria-label="Explore Real Estate, Travel, Tender and Worldwide Tickets platforms">
         {pillars.map(({id,title,image,alt,href,eyebrow,description,Icon,links})=>(
-          <article key={id} className={styles.pillar}>
-            <FlagshipImage src={image} alt={alt} priority={id==="travel"} className={styles.pillarImage} />
+          <article key={id} id={"home-platform-"+id} className={styles.pillar}>
+            <FlagshipImage src={image} alt={alt} priority={id==="estate"} className={styles.pillarImage} />
             <div className={styles.pillarShade} aria-hidden="true"/>
             <div className={styles.pillarTitle}>
               <Icon className={styles.pillarIcon} strokeWidth={1.4}/>
