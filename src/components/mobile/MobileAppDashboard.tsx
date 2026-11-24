@@ -108,13 +108,13 @@ export default function MobileAppDashboard({data={destinations:[],hotels:[],prop
     <h2 className="text-base font-bold">Worldwide tickets & stadiums</h2>
     <p className="mt-2 text-xs leading-6 text-[var(--text-soft)]">Discover official event sources and venue guides. Ticket sellers confirm actual events, seats and prices.</p>
     <nav className="mt-3 grid gap-2 sm:grid-cols-3">
-      {[{href:"/tickets",label:"Ticket finder"},{href:"/stadiums",label:"Stadium guides"},{href:"/blog?category=Tickets#journal",label:"Buying guides"}].map(item=><Link key={item.href} href={item.href} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-xs font-semibold">{item.label}</Link>)}
+      {[{href:"/app/services/tickets",label:"Ticket finder"},{href:"/app/services/stadiums",label:"Stadium guides"}].map(item=><Link key={item.href} href={item.href} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-xs font-semibold">{item.label}</Link>)}
     </nav>
    </section>}
   </div>
   <footer className="mx-4 mt-4 border-t border-[var(--border)] py-5 text-xs leading-6 text-[var(--text-soft)] sm:mx-6">
    <p>Fares and room availability are confirmed by booking providers. Property records and tender notices retain their source details.</p>
-   <div className="mt-3 flex flex-wrap gap-4"><Link href="/affiliate-disclosure" className="underline">Disclosures</Link><Link href="/privacy-policy" className="underline">Privacy</Link><Link href="/terms-and-conditions" className="underline">Terms</Link><Link href="/mega-aggregator" className="underline">Website</Link></div>
+   <div className="mt-3 flex flex-wrap gap-4"><Link href="/affiliate-disclosure" className="underline">Disclosures</Link><Link href="/privacy-policy" className="underline">Privacy</Link><Link href="/terms-and-conditions" className="underline">Terms</Link>{!compactHome&&<a href="/" className="underline">Website homepage</a>}</div>
   </footer>
  </div>;
 }

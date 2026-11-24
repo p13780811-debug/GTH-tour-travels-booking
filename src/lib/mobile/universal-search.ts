@@ -100,3 +100,25 @@ export function resolveUniversalTarget(raw:unknown,requested?:unknown):Universal
  }
  return {category:"all",href:"/app/explore?"+queryString({q:query})+"#search-results"};
 }
+
+/** Keep search in the installed app until the visitor chooses a website-only tool. */
+export function appSearchHref(target:UniversalTarget, raw:unknown):string {
+ const q=clean(raw);
+ if(target.href.startsWith("/app/"))return target.href;
+ const service=target.category==="property"
+   ? target.href.startsWith("/real-estate/registry?") ? "property-registry" : "property-search"
+   : target.category==="ticket" ? "tickets" : "tours";
+ return "/app/services/"+service+(q?"?"+queryString({q}):"");
+}
+
+export function appServiceWebsiteHref(id:string, fallback:string, raw:unknown):string {
+ const q=clean(raw);
+ if(id==="property-search")return "/search?"+queryString({...(q?{q}:{}),category:"property"});
+ if(!q)return fallback;
+ if(id==="property-registry"){
+  const subject=trimKeywords(q,/\b(?:find|search|real estate|properties|property|in|near|for|buy|rent|rera|registry|registration)\b/gi);
+  return fallback+"?"+queryString({q:subject||q});
+ }
+ if(id==="tickets"||id==="tours")return resolveUniversalTarget(q,id==="tickets"?"ticket":"tour").href;
+ return fallback;
+}

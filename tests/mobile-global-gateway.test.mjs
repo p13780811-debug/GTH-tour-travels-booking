@@ -40,7 +40,7 @@ test("Travel, Real Estate, Tenders and Tickets open full dedicated platform page
   for (const link of ['href: "/travel"', 'href: "/real-estate"', 'href: "/tender"', 'href:"/tickets"']) {
     assert.ok(pillars.includes(link), "Missing dedicated pillar route " + link);
   }
-  assert.match(pillars, /<Link href=\{href\} prefetch=\{appHome\?false:undefined\} aria-label=\{cta\}/);
+  assert.match(pillars, /<Link href=\{appHome \? appPillarRoutes\[id\] : href\} prefetch=\{appHome\?false:undefined\} aria-label=\{cta\}/);
   assert.doesNotMatch(pillars, /id==="travel"\?"\/app\/destinations"/);
   assert.match(pillars, /after:absolute after:inset-0/);
 });

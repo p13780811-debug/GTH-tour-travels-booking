@@ -11,7 +11,7 @@ const items = [
   { href: "/hotels", appHref: "/app/hotels", name: "Hotels", Icon: Hotel, matches: ["/hotels"] },
   { href: "/real-estate", appHref: "/app/property", name: "Property", Icon: Building2, matches: ["/real-estate"] },
   { href: "/tender", appHref: "/app/tenders", name: "Tenders", Icon: BriefcaseBusiness, matches: ["/tender"] },
-  { href: "/tickets", appHref: "/app/search?category=ticket", name: "Tickets", Icon: Ticket, matches: ["/tickets", "/stadiums"] },
+  { href: "/tickets", appHref: "/app/services/tickets", name: "Tickets", Icon: Ticket, matches: ["/tickets", "/stadiums"] },
 ];
 
 export default function MobileNav() {

@@ -58,7 +58,8 @@ test("unified search uses existing public catalogue and a hard abort deadline",(
  assert.match(data,/controller.abort\(\),4500/);
  assert.match(data,/Promise.allSettled/);
  assert.match(catalog,/signal\?:AbortSignal/);
- assert.equal((catalog.match(/\.abortSignal\(signal \?\? new AbortController\(\)\.signal\)/g)||[]).length,3);
+ assert.match(catalog,/signal \?\?= AbortSignal.timeout\(4500\)/);
+ assert.equal((catalog.match(/\.abortSignal\(signal\)/g)||[]).length,3);
  assert.match(catalog,/\.eq\("source_verified",true\)/);
  assert.match(catalog,/\.eq\("is_public",true\)/);
 });

@@ -28,7 +28,7 @@ test("four ecosystem cards show real photos in a compact theme-aware card layout
   assert.match(pillars, /border-\[var\(--border\)\]/);
   assert.match(pillars, /text-\[var\(--text-soft\)\]/);
   assert.doesNotMatch(pillars, /from-black|via-black\/80|bg-slate-950|mt-16/);
-  assert.match(pillars, /href=\{href\} prefetch=\{appHome\?false:undefined\}/);
+  assert.match(pillars, /href=\{appHome \? appPillarRoutes\[id\] : href\} prefetch=\{appHome\?false:undefined\}/);
   assert.doesNotMatch(pillars, /id==="travel"\?"\/app\/destinations"/);
   assert.match(pillars, /!appHome && <nav aria-label="Popular ecosystem destinations"/);
 });

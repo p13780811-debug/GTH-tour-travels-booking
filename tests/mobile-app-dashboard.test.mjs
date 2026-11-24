@@ -16,7 +16,7 @@ test('service category selection does not mix property records with travel booki
 test('service search accepts case/whitespace and discovers useful airport synonyms',()=>{
  assert.equal(filterAppServices('all','  TAXI  ')[0]?.href,'/transfers');
  assert.equal(filterAppServices('travel','roaming')[0]?.href,'/flights/out/yesim');
- assert.ok(filterAppServices('tender','help').some(service=>service.href==='/tender/services'));
+ assert.ok(filterAppServices('tender','help').some(service=>service.href==='/app/tenders/quote'));
 });
 test('search input cannot create destinations outside the fixed service catalog',()=>{
  const before=JSON.stringify(appServices);

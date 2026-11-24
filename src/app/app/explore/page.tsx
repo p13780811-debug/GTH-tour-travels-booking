@@ -1,7 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
 import {redirect} from "next/navigation";
-import {resolveUniversalTarget} from "@/lib/mobile/universal-search";
+import {appSearchHref,resolveUniversalTarget} from "@/lib/mobile/universal-search";
 import {ArrowLeft,ArrowRight,Bookmark,Building2,FileSearch,Globe2,Hotel,Search,ShieldCheck,Ticket} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
@@ -47,7 +47,7 @@ export default async function GlobalAppExplore({searchParams}:Props){
  // directly to its working results page.
  if(q.length>=2){
   const target=resolveUniversalTarget(q,pillar);
-  if(target.category!=="all")redirect(target.href);
+  if(target.category!=="all")redirect(appSearchHref(target,q));
  }
  const searched=q.length>=2;
  const results=searched?await searchGlobalRecords(q,pillar):[];

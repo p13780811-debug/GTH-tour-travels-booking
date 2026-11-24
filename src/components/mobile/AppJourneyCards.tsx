@@ -6,8 +6,8 @@ import {ArrowUpRight,Building2,Globe2,BriefcaseBusiness,Ticket} from "lucide-rea
 const journeys=[
  {id:"travel",eyebrow:"01 · Discover",title:"Go somewhere extraordinary",description:"Plan flights, stays and experiences.",href:"/app/flights",image:"/images/mega/welcome.jpg",Icon:Globe2,links:[{title:"Hotels",href:"/app/hotels"},{title:"Tours",href:"/app/services/tours"}]},
  {id:"property",eyebrow:"02 · Explore",title:"Find your next address",description:"Research properties and registry projects.",href:"/app/property",image:"/images/real-estate.jpg",Icon:Building2,links:[{title:"Projects",href:"/app/property"},{title:"Property tools",href:"/app/services/property-tools"}]},
- {id:"tender",eyebrow:"03 · Grow",title:"Turn opportunity into progress",description:"Discover published tenders and sources.",href:"/app/tenders",image:"/images/tender.jpg",Icon:BriefcaseBusiness,links:[{title:"Find tenders",href:"/app/tenders"},{title:"Tender services",href:"/app/services/tender-help"}]},
- {id:"tickets",eyebrow:"04 · Experience",title:"Discover tickets worldwide",description:"Stadiums, live events, concerts and official ticket sources.",href:"/tickets",image:"/images/editorial/sports.svg",Icon:Ticket,links:[{title:"Ticket finder",href:"/tickets"},{title:"Stadiums",href:"/stadiums"}]}
+ {id:"tender",eyebrow:"03 · Grow",title:"Turn opportunity into progress",description:"Discover published tenders and sources.",href:"/app/tenders",image:"/images/tender.jpg",Icon:BriefcaseBusiness,links:[{title:"Find tenders",href:"/app/tenders"},{title:"Tender services",href:"/app/tenders/quote"}]},
+ {id:"tickets",eyebrow:"04 · Experience",title:"Discover tickets worldwide",description:"Stadiums, live events, concerts and official ticket sources.",href:"/app/services/tickets",image:"/images/editorial/sports.svg",Icon:Ticket,links:[{title:"Ticket finder",href:"/app/services/tickets"},{title:"Stadiums",href:"/app/services/stadiums"}]}
 ] as const;
 
 export default function AppJourneyCards(){

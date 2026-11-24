@@ -5,6 +5,7 @@ import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowUpRight,Building2,CalendarCheck,ClipboardCheck,FileSearch,Globe,Hotel,MapPin,ShieldCheck} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import {loadAppDetail} from "@/lib/mobile/catalog";
+import EnquiryForm from "@/components/real-estate/EnquiryForm";
 import AppSaveRecord from "@/components/mobile/AppSaveRecord";
 import {isMobileSection} from "@/lib/mobile/routes";
 
@@ -51,12 +52,22 @@ export default async function AppRecordDetail({params}:Props){
        <p className="mt-1 break-words text-xs font-semibold">{value}</p>
       </div>)}
      </div>
+     {record.propertyEnquiry&&<section aria-labelledby="property-enquiry" className="mt-5">
+       <h2 id="property-enquiry" className="mb-2 text-base font-semibold">
+         {record.propertyEnquiry.mode==="registry"?"Request current project information":"Enquire about this property"}
+       </h2>
+       <EnquiryForm propertyId={record.propertyEnquiry.id} mode={record.propertyEnquiry.mode}/>
+     </section>}
      <div className="mt-5 flex flex-col gap-3">
       <Link href={"/app/"+section+"/"+encodeURIComponent(id)+"/prepare"}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         <ClipboardCheck size={16}/> {record.kind==="tender"?"Review tender readiness":
           record.kind==="hotel"?"Plan this stay":record.kind==="property"?"Property review checklist":"Plan this destination"}
       </Link>
+      {record.kind==="tender"&&<Link href={`/app/tenders/quote?tenderId=${encodeURIComponent(id)}`}
+        className="gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+        Request a quote for this tender <ArrowUpRight size={15} aria-hidden="true"/>
+      </Link>}
       {record.kind==="destination"?<Link href={record.related}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         <MapPin size={16}/> Find local hotel records <ArrowUpRight size={15}/>
