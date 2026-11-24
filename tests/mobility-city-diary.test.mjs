@@ -41,3 +41,11 @@ test("shift calculation and local diary edits preserve city, date and currency",
   assert.equal(rows.find(row=>row.cityKey==="IN:mumbai").revenue,1800);
   assert.equal(diary.readShifts("[{},null]").length,0);
 });
+
+test("legacy catalog aliases for the traffic pilot share a city without conflating countries",()=>{
+  const city=(slug,countryCode,country)=>cities.mobilityCity({name:"Kolkata",slug,countryCode,country});
+  assert.equal(cities.mobilityCityKey(city("kolkata",null,null)),"IN:kolkata");
+  assert.equal(cities.mobilityCityKey(city("kolkata-in","IN","India")),"IN:kolkata");
+  assert.equal(cities.mobilityCityKey(city("kolkata","US","United States")),"US:kolkata");
+  assert.equal(cities.mobilityCityKey(city("kolkata-other",null,null)),":kolkata-other");
+});

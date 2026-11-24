@@ -16,7 +16,7 @@ const searchCatalog=unstable_cache(async (prefix:string)=>{
       countryCode:row.country_code??countryCodeForDestinationName(row.country)});
     return city?[city]:[];
   });
-},["gth-mobility-city-prefix-v1"],{revalidate:900,tags:["public-destination-catalog"]});
+},["gth-mobility-city-prefix-v2"],{revalidate:900,tags:["public-destination-catalog"]});
 
 export async function GET(request:Request){
   const query=new URL(request.url).searchParams.get("q");

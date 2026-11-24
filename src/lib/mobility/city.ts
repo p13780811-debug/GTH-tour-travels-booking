@@ -19,12 +19,19 @@ export function mobilityText(value:unknown,max=120):string {
 }
 const validSlug=(value:unknown)=>typeof value==="string"&&value.length<=140&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)?value:"";
 const regionNames=new Intl.DisplayNames(["en"],{type:"region",fallback:"none"});
+const trafficCityAliases=new Map(MOBILITY_CITIES.filter(city=>city.slug==="mumbai"||city.slug==="kolkata")
+  .map(city=>[city.slug,city]));
 export function mobilityCity(value:{name:unknown;slug:unknown;country:unknown;countryCode:unknown}):MobilityCity|null {
   const name=mobilityText(value.name),slug=validSlug(value.slug);
   if(!name||!slug)return null;
   const code=typeof value.countryCode==="string"&&/^[A-Z]{2}$/.test(value.countryCode)?value.countryCode:"";
   const country=mobilityText(value.country,80)||(code?regionNames.of(code)??"":"");
-  return {name,slug,country,countryCode:code};
+  const hub=trafficCityAliases.get(name.toLocaleLowerCase("en"));
+  // Legacy catalog rows for these pilot cities may lack country metadata.
+  // Match only their known slugs when geography cannot be determined.
+  const legacyHub=hub&&!code&&(!country||country.toLocaleLowerCase("en")==="india")&&
+    (slug===hub.slug||slug===hub.slug+"-in");
+  return hub&&(code==="IN"||legacyHub)?hub:{name,slug,country,countryCode:code};
 }
 export function mobilityHref(city:MobilityCity) {
   return "/mobility?"+new URLSearchParams({city:city.name,slug:city.slug,cc:city.countryCode,country:city.country});
