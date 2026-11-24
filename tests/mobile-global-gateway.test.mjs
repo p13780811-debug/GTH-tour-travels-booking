@@ -22,7 +22,7 @@ test("Installed GTH Home displays one service grid and one global bottom bar", (
   assert.match(dashboard, /!compactHome && <div role="tablist"/);
   assert.match(pillars, /!appHome && <nav aria-label="Popular ecosystem destinations"/);
   assert.match(shell, /\{!isRealEstate && !isFlagship && <MobileNav \/>/);
-  assert.match(mobileNav, /aria-label="GTH PRO mobile app navigation"/);
+  assert.match(mobileNav, /aria-label=\{isApp \? "GTH PRO app navigation" : "GTH PRO mobile navigation"\}/);
   assert.doesNotMatch(app, /<MobileNav|<BottomNav/);
 });
 
@@ -65,7 +65,7 @@ test("Public brand uses GTH PRO Global Gateway while old URL remains stable", ()
   assert.match(gateway, /GTH PRO Global Gateway/);
   assert.match(gateway, /canonical: "\/mega-aggregator"/);
   assert.match(header, /name: "Ecosystem", href: "\/mega-aggregator"/); // protected shared Navbar unchanged
-  assert.match(flagship, /Open GTH PRO Home/);
+  assert.match(flagship, /Open GTH PRO App Home/);
   assert.doesNotMatch(flagship + gateway, /Open Super App/);
   assert.match(gateway, /<EcosystemHub \/>/); // Website services remain unchanged
 });

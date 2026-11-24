@@ -73,7 +73,7 @@ export default async function MaldivesEliteEscape({searchParams}:Props){
   const query=await (searchParams??Promise.resolve({}));
   const stay=stayFromQuery(query,new Date());
   const photo=await maldivesPexelsHero();
-  return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(110px+env(safe-area-inset-bottom))] text-[var(--text)] md:pb-16" data-maldives-elite-escape="true">
+  return <main className="min-w-0 overflow-x-clip bg-[var(--bg)] text-[var(--text)]" data-maldives-elite-escape="true">
     <JsonLd data={schema}/>
     <JsonLd data={breadcrumbs}/>
     <MaldivesBookingHero photo={photo}/>

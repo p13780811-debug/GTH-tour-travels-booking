@@ -42,6 +42,9 @@ export default function MobileAppHome(){
       My Research Desk
     </Link>
    </nav>
+   <a href="/" className="inline-flex min-h-11 items-center text-xs font-semibold text-[var(--text-soft)] underline">
+    Website homepage
+   </a>
   </div>
   <EcosystemHeroCarousel embedded/>
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">

@@ -47,7 +47,7 @@ const countryGuidePhotos:Readonly<Record<string,{src:string,city:string}>>={
 const countryGuides=guideCatalog.filter(item=>item.kind==="country");
 
 export default function MaldivesExplore(){
-  return <div className="mx-auto w-full max-w-7xl space-y-12 px-4 pb-16 pt-4 sm:px-6 lg:space-y-16">
+  return <div className="mx-auto w-full max-w-7xl space-y-10 px-4 pb-10 pt-4 sm:px-6 lg:space-y-14 lg:pb-16">
     <section aria-labelledby="maldives-explore-destinations">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -60,7 +60,7 @@ export default function MaldivesExplore(){
       </div>
       <div role="region" aria-label="Explore countries by destination cards — swipe horizontally" tabIndex={0}
         className="mt-5 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-4 lg:grid lg:grid-cols-4 lg:overflow-visible xl:grid-cols-5">
-        {countries.map(item=><Link key={item.name} href={"/destinations?country="+encodeURIComponent(item.name)+"#discover"}
+        {countries.map(item=><Link key={item.name} prefetch={false} href={"/destinations?country="+encodeURIComponent(item.name)+"#discover"}
           className="group flex w-[67vw] max-w-[235px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] lg:w-full lg:max-w-none">
           <span className="relative block aspect-[5/4] overflow-hidden bg-[var(--bg-soft)]">
             <Image src={item.photo} alt={item.photoCity+" destination scenery"} fill loading="lazy"
@@ -92,7 +92,7 @@ export default function MaldivesExplore(){
         className="mt-5 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-4 md:grid md:grid-cols-3 md:overflow-visible">
         {countryGuides.map(guide=>{
           const picture=countryGuidePhotos[guide.slug];
-          return <Link key={guide.slug} href={"/guides/"+encodeURIComponent(guide.slug)}
+          return <Link key={guide.slug} prefetch={false} href={"/guides/"+encodeURIComponent(guide.slug)}
             className="group flex w-[75vw] max-w-[315px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] md:w-full md:max-w-none">
             <span className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-[var(--bg-soft)]">
               {picture?<Image src={picture.src} alt={picture.city+" scenery for "+guide.country+" travel planning"}

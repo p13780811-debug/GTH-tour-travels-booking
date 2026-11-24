@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BriefcaseBusiness, Building2, Home, Hotel, Plane, Ticket } from "lucide-react";
 
-/** One reusable five-tab app bar, scoped to small screens. Real Estate keeps its approved own navigation. */
+/** One reusable six-tab app bar, scoped to small screens. Real Estate keeps its approved own navigation. */
 const items = [
   { href: "/app", appHref: "/app", name: "Home", Icon: Home, matches: ["/app"] },
   { href: "/flights", appHref: "/app/flights", name: "Flights", Icon: Plane, matches: ["/flights", "/travel"] },
@@ -18,18 +18,19 @@ export default function MobileNav() {
   const pathname = usePathname() || "/";
   const isApp = pathname === "/app" || pathname.startsWith("/app/");
   return (
-    <nav aria-label="GTH PRO mobile app navigation"
+    <nav aria-label={isApp ? "GTH PRO app navigation" : "GTH PRO mobile navigation"}
       className={`fixed inset-x-0 bottom-0 z-[180] border-t border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] backdrop-blur-xl ${isApp ? "" : "md:hidden"}`}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="mx-auto grid max-w-lg grid-cols-6 px-1">
         {items.map(({href,appHref,name,Icon,matches}) => {
           const target = isApp ? appHref : href;
           const active = isApp ? (pathname === appHref || (appHref !== "/app" && pathname.startsWith(appHref + "/"))) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
+          const label = name === "Home" && !isApp ? "App Home" : name;
           return (
             <Link key={href} href={target} prefetch={name==="Home"?false:undefined} aria-current={active ? "page" : undefined}
               className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
               <Icon size={19} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
-              <span className="truncate">{name}</span>
+              <span className="truncate">{label}</span>
             </Link>
           );
         })}

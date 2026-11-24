@@ -78,7 +78,7 @@ test("signed Android distribution and global CSS remain out of scope",()=>{
  const main=read("src/app/app/page.tsx");
  assert.match(main,/<AppInstall\/>/);
  assert.match(read("src/components/mobile/AppInstall.tsx"),/Safe install guide/);
- assert.match(read("src/components/home/FlagshipHome.tsx"),/Open GTH PRO Home/);
+ assert.match(read("src/components/home/FlagshipHome.tsx"),/Open GTH PRO App Home/);
  assert.doesNotMatch(read("src/components/home/FlagshipHome.tsx"),/Open Super App/);
  assert.match(read("src/app/app/services/[id]/page.tsx"),/"broker-catalog"/);
  assert.match(read("src/lib/mobile/app-dashboard.ts"),/id:"broker-catalog"/);
