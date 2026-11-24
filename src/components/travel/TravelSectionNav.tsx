@@ -22,6 +22,7 @@ export const TRAVEL_SECTIONS = [
   {href:"/guides",label:"Guides",Icon:BookOpen},
   {href:"/blog",label:"Travel blog",Icon:Newspaper},
   {href:"/transfers",label:"Transfers",Icon:Route},
+  {href:"/mobility",label:"Local transport",Icon:BusFront},
   {href:"/cars",label:"Car rentals",Icon:CarFront},
   {href:"/bus",label:"Buses",Icon:BusFront},
   {href:"/train",label:"Trains",Icon:TrainFront},

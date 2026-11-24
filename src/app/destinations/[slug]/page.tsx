@@ -1,3 +1,5 @@
+import CityMobility from "@/components/mobility/CityMobility";
+import {mobilityCity} from "@/lib/mobility/city";
 import DestinationTravelSearch from "@/components/destination/DestinationTravelSearch";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
@@ -128,6 +130,8 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   const countryFilter = validatedCountry(selectedParams?.country);
   const destination = await getDestination(slug,countryFilter);
   if (!destination) notFound();
+  const mobility=mobilityCity({name:destination.name,slug,country:destination.country,
+    countryCode:destination.countryCode??countryCodeForDestinationName(destination.country)});
 
   // Separate read-only identity proof. No city is inferred from SEO text,
   // country labels, stadium flightCity or an OSM hotel ID.
@@ -227,6 +231,8 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
         <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
       </Suspense>
+
+      {mobility&&<CityMobility city={mobility} compact/>}
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
         <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}

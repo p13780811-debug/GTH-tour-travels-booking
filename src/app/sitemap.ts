@@ -16,7 +16,7 @@ const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
   "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
-  "/destinations", "/guides", "/blog", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/tickets", "/hotels/list-your-property",
+  "/destinations", "/guides", "/blog", "/mobility", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/tickets", "/hotels/list-your-property",
   "/insurance", "/intelligence", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/real-estate/markets", "/tender", "/tender/services", "/tender/coverage",
   "/partners", "/contact", "/about", "/verification", "/system", "/gth-ecosystem-manifest", "/affiliate-disclosure", "/real-estate/guides", "/knowledge/tenders",
   "/privacy-policy", "/terms-and-conditions", "/refund-policy",
