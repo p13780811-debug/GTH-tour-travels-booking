@@ -148,7 +148,10 @@ export async function searchPublicTenders(filters: TenderFilters): Promise<Tende
     }
     return {ok:true,items:[...homeItems,...extra],total:homeCount+nearCount,
       primaryCount:homeCount,nearbyCount:nearCount,page:filters.page,size:PAGE_SIZE};
-  } catch {
+  } catch(error) {
+    const code=error&&typeof error==="object"&&"code" in error&&
+      typeof error.code==="string"&&/^[A-Z0-9]{1,12}$/.test(error.code)?error.code:"unreachable";
+    console.warn("Tender catalogue read failed",code);
     return {ok:false,status:503,error:"Tender catalog unavailable"};
   }
 }
