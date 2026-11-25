@@ -1,3 +1,5 @@
 First staging deployment requested after owner confirmed private environment export and seven recovered GitHub secrets. Deploy only gth-pro-migration; no production domain, no paid resources, no DNS changes.
 
 Retry after run 45703437574: exclude explicitly identified Vercel-generated metadata; preserve validation for all application keys. Deploy only isolated staging Worker.
+
+Retry after run 45703920497: distinguish Supabase and Upstash endpoint validation failures; normalize surrounding whitespace only. No production changes.
