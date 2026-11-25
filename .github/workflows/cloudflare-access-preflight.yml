@@ -3,17 +3,58 @@ on:
   push:
     branches: [infra/cloudflare-preflight-20261125]
     paths: ['.github/workflows/cloudflare-access-preflight.yml']
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/cloudflare-access-preflight.yml']
   workflow_dispatch:
 permissions: {}
 concurrency:
-  group: gth-cloudflare-access-preflight
+  group: gth-cloudflare-access-preflight-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   access:
-    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && (github.ref == 'refs/heads/infra/cloudflare-preflight-20261125' || github.ref == 'refs/heads/main')
+    if: >-
+      github.repository == 'p13780811-debug/GTH-tour-travels-booking' &&
+      (github.ref == 'refs/heads/infra/cloudflare-preflight-20261125' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'infra/cloudflare-preflight-20261125'))
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Inventory existing GitHub secrets by presence only
+        env:
+          PRESENT_NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL: ${{ secrets.NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL != '' }}
+          PRESENT_ENABLE_UNIFIED_CITY_ROUTER: ${{ secrets.ENABLE_UNIFIED_CITY_ROUTER != '' }}
+          PRESENT_NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL: ${{ secrets.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL != '' }}
+          PRESENT_CRON_SECRET: ${{ secrets.CRON_SECRET != '' }}
+          PRESENT_ODDS_API_KEY: ${{ secrets.ODDS_API_KEY != '' }}
+          PRESENT_SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID != '' }}
+          PRESENT_NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID != '' }}
+          PRESENT_NUITEE_PRODUCTION_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY != '' }}
+          PRESENT_PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY != '' }}
+          PRESENT_GTH_PUBLIC_LAUNCH_ENABLED: ${{ secrets.GTH_PUBLIC_LAUNCH_ENABLED != '' }}
+          PRESENT_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+          PRESENT_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL != '' }}
+          PRESENT_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN != '' }}
+          PRESENT_GTH_LEGACY_PEXELS_KEY_DISABLED: ${{ secrets.GTH_LEGACY_PEXELS_KEY_DISABLED != '' }}
+          PRESENT_TRAVELPAYOUTS_API_TOKEN: ${{ secrets.TRAVELPAYOUTS_API_TOKEN != '' }}
+          PRESENT_TRAVELPAYOUTS_MARKER: ${{ secrets.TRAVELPAYOUTS_MARKER != '' }}
+          PRESENT_GEMINI_PRO_KEY: ${{ secrets.GEMINI_PRO_KEY != '' }}
+          PRESENT_AVIASALES_API_TOKEN: ${{ secrets.AVIASALES_API_TOKEN != '' }}
+          PRESENT_AVIASALES_PARTNER_ID: ${{ secrets.AVIASALES_PARTNER_ID != '' }}
+          PRESENT_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY != '' }}
+          PRESENT_NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}
+          PRESENT_NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
+          PRESENT_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+          PRESENT_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+          PRESENT_NEXT_PUBLIC_TICKETNETWORK_AFFILIATE_URL: ${{ secrets.NEXT_PUBLIC_TICKETNETWORK_AFFILIATE_URL != '' }}
+        run: |
+          python3 - <<'PY'
+          import os
+          names = sorted(k for k in os.environ if k.startswith('PRESENT_'))
+          for k in names:
+              print(k.removeprefix('PRESENT_') + ': ' + ('available' if os.environ[k] == 'true' else 'not available to this workflow'))
+          print('Presence only; no secret values passed to this step.')
+          PY
       - name: Verify Cloudflare account and Workers API access without mutation
         shell: bash
         env:
