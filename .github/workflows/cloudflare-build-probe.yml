@@ -82,6 +82,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
           GTH_PUBLIC_LAUNCH_ENABLED: "false"
           GTH_BUNDLE_AUDIT: "1"
+          GTH_SHARED_CHUNK_PROBE: "1"
         run: ./node_modules/.bin/opennextjs-cloudflare build
       - name: Verify Worker bundle without uploading
         run: |
@@ -168,7 +169,7 @@ jobs:
           for gz, raw, name in sorted(manifests, reverse=True)[:20]:
               print("MANIFEST_SIZE", raw, gz, name)
           PY
-      - name: Verify browser PDF parser boundary
+      - name: Verify browser PDF and XLSX parser boundaries
         run: |
           python3 - <<'PY'
           import json, os, pathlib
@@ -180,10 +181,18 @@ jobs:
           names = list(visit(stats.get("modules", [])))
           for c in stats.get("chunks", []):
               names.extend(visit(c.get("modules", [])))
-          if any("pdfjs-dist/build/pdf.mjs" in name for name in names):
-              raise SystemExit("Real browser PDF engine still present in server compilation")
+          if any("pdfjs-dist/build/pdf.mjs" in name or "node_modules/read-excel-file/" in name for name in names):
+              raise SystemExit("Real browser file parser still present in server compilation")
+          client = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-client-audit.json").read_text())
+          client_names = list(visit(client.get("modules", [])))
+          for c in client.get("chunks", []):
+              client_names.extend(visit(c.get("modules", [])))
+          for package in ["pdfjs-dist/build/pdf.mjs", "node_modules/read-excel-file/"]:
+              if not any(package in name for name in client_names):
+                  raise SystemExit("Missing browser parser module: " + package)
+          print("Both real PDF and XLSX parsers retained in client compilation.")
           assets = list(pathlib.Path(".next/static").rglob("pdf.worker*.mjs"))
           if not assets:
               raise SystemExit("Browser PDF worker asset missing")
-          print("Server PDF parser excluded; browser PDF worker asset retained:", len(assets))
+          print("Server browser-only parsers excluded; browser PDF worker asset retained:", len(assets))
           PY
