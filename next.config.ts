@@ -19,9 +19,32 @@ const nextConfig: NextConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         "pdfjs-dist$": `${process.cwd()}/src/lib/real-estate/pdf-browser-only.server.ts`,
+        "read-excel-file/browser$": `${process.cwd()}/src/lib/real-estate/xlsx-browser-only.server.ts`,
       };
     }
-    if (process.env.GTH_BUNDLE_AUDIT === "1" && isServer && nextRuntime === "nodejs") {
+    // Audit-only experiment: deduplicate source-confirmed repeated modules, keeping
+    // RSC and SSR layers separate and preserving all Next.js cache groups.
+    if (process.env.GTH_SHARED_CHUNK_PROBE === "1" && isServer && nextRuntime === "nodejs") {
+      const split = config.optimization?.splitChunks;
+      if (!split || typeof split !== "object") throw new Error("Expected Next server splitChunks config");
+      split.cacheGroups = {
+        ...split.cacheGroups,
+        gthSharedServerModules: {
+          test(module: {resource?: string; layer?: string}) {
+            const resource = (module.resource || "").replaceAll("\\", "/");
+            return (module.layer === "rsc" || module.layer === "ssr") &&
+              (resource.includes("/node_modules/lucide-react/dist/esm/icons/") ||
+               resource.endsWith("/src/components/travel/TravelSectionNav.tsx") ||
+               resource.endsWith("/src/data/destinations.ts"));
+          },
+          name(module: {layer?: string}) { return "gth-shared-" + module.layer; },
+          chunks: "all", minChunks: 2, minSize: 0,
+          maxInitialRequests: Infinity, maxAsyncRequests: Infinity,
+          priority: 50, reuseExistingChunk: true,
+        },
+      };
+    }
+    if (process.env.GTH_BUNDLE_AUDIT === "1" && (!isServer || nextRuntime === "nodejs")) {
       config.plugins.push({
         apply(compiler: {
           hooks: { done: { tapPromise(name: string, callback: (stats: { toJson(options: Record<string, unknown>): unknown }) => Promise<void>): void } };
@@ -33,9 +56,13 @@ const nextConfig: NextConfig = {
             const report = stats.toJson({
               all: false, assets: true, chunks: true, chunkModules: true,
               modules: true, nestedModules: true, ids: true,
+              dependentModules: true, orphanModules: true,
+              groupModulesByAttributes: false, groupModulesByCacheStatus: false,
+              groupModulesByExtension: false, groupModulesByLayer: false,
+              groupModulesByPath: false, groupModulesByType: false,
               modulesSpace: Infinity, chunkModulesSpace: Infinity, nestedModulesSpace: Infinity,
             });
-            writeFileSync(join(process.env.RUNNER_TEMP || compiler.outputPath, "gth-server-audit.json"), JSON.stringify(report));
+            writeFileSync(join(process.env.RUNNER_TEMP || compiler.outputPath, isServer ? "gth-server-audit.json" : "gth-client-audit.json"), JSON.stringify(report));
           });
         },
       });
