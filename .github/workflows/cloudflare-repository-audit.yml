@@ -1,0 +1,53 @@
+name: Cloudflare migration repository audit
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-repository-audit.yml']
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/cloudflare-repository-audit.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Inventory referenced environment names (not values)
+        run: |
+          python3 - <<'PY'
+          import re, subprocess
+          from pathlib import Path
+          files=subprocess.check_output(["git","ls-files","-z"]).decode().split("\0")
+          found={}
+          edge=[]
+          refs=[
+            r"\bprocess\.env\.([A-Z][A-Z0-9_]*)",
+            r"""\bprocess\.env\[\s*['"]([A-Z][A-Z0-9_]*)['"]\s*\]""",
+            r"\b(?:secrets|vars)\.([A-Z][A-Z0-9_]*)",
+            r"""\b(?:os\.getenv|os\.environ\.get|Deno\.env\.get)\(\s*['"]([A-Z][A-Z0-9_]*)['"]""",
+          ]
+          for name in files:
+              if not name: continue
+              p=Path(name)
+              if p.is_symlink() or not p.is_file() or p.stat().st_size>2_000_000: continue
+              if name==".env.example":
+                  patterns=[r"(?m)^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*="]
+              elif p.suffix in {".ts",".tsx",".js",".jsx",".mjs",".cjs",".py",".yml",".yaml"}:
+                  patterns=refs
+              else: continue
+              s=p.read_text(encoding="utf-8",errors="replace")
+              for pattern in patterns:
+                  for key in re.findall(pattern,s): found.setdefault(key,set()).add(name)
+              if name.startswith("src/") and re.search(r"""export\s+const\s+runtime\s*=\s*['"]edge['"]""",s): edge.append(name)
+          lines=["# Cloudflare migration audit","",f"Distinct statically referenced names: {len(found)}","", "These names are code references, not proof of configured or recoverable secrets.", "", "| Name | Reference count |", "|---|---:|"]
+          lines += [f"| {k} | {len(found[k])} |" for k in sorted(found)]
+          lines += ["", "## Edge runtime compatibility review"] + [f"- {p}" for p in sorted(edge)]
+          lines += ["", "Computed variable names, external secrets, provider dashboards and GitHub secret metadata need separate review.", "No deployment or secret transfer was performed."]
+          import os
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as f: f.write("\n".join(lines)+"\n")
+          print(f"Audit complete: {len(found)} names, {len(edge)} Edge runtime declarations.")
+          PY
