@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
               modules: true, nestedModules: true, ids: true,
               modulesSpace: Infinity, chunkModulesSpace: Infinity, nestedModulesSpace: Infinity,
             });
-            writeFileSync(join(compiler.outputPath, "gth-server-audit.json"), JSON.stringify(report));
+            writeFileSync(join(process.env.RUNNER_TEMP || compiler.outputPath, "gth-server-audit.json"), JSON.stringify(report));
           });
         },
       });
