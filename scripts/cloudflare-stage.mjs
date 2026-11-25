@@ -29,6 +29,7 @@ const optional = [
   "GTH_LEGACY_PEXELS_KEY_DISABLED",
 ];
 const allowed = new Set([...required, ...optional]);
+const recoveredNames = ["CRON_SECRET","NUITEE_PRODUCTION_API_KEY","ODDS_API_KEY","SEATGEEK_CLIENT_ID","SUPABASE_SERVICE_ROLE_KEY","UPSTASH_REDIS_REST_TOKEN","UPSTASH_REDIS_REST_URL"];
 const target = "gth-pro-migration";
 const valid = value => typeof value === "string" && value.trim() && !/^(undefined|null|\[redacted\]|\*+)$/i.test(value.trim());
 const token = process.env.CLOUDFLARE_API_TOKEN;
@@ -51,6 +52,13 @@ async function main() {
   if (!valid(token) || !/^[a-f0-9]{32}$/i.test(account || "")) stop("Cloudflare connection settings missing.");
   let values;
   try { values = parse(bundle); } catch { stop("Cannot parse the private dotenv bundle."); }
+  // Vercel exports may include a short-lived platform identity token; never migrate it.
+  delete values.VERCEL_OIDC_TOKEN;
+  // Individually recovered repository secrets are authoritative for these names.
+  for (const name of recoveredNames) {
+    if (!valid(process.env[name])) stop("Missing recovered GitHub secret: " + name);
+    values[name] = process.env[name];
+  }
   const unknown = Object.keys(values).filter(k => !allowed.has(k));
   const missing = required.filter(k => !valid(values[k]));
   if (unknown.length) stop("Unclassified names; reconcile before deployment: " + unknown.join(", "));
