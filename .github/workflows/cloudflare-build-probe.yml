@@ -75,7 +75,7 @@ jobs:
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
       - name: Verify PWA legacy route and approved icon assets
-        run: node --test tests/mobile-app-install.test.mjs
+        run: node --test tests/mobile-app-install.test.mjs tests/legal-urls-and-universal-search-resilience.test.mjs
       - name: OpenNext build (compile-only fixtures; never deployed)
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
@@ -167,4 +167,23 @@ jobs:
                   manifests.append((len(gzip.compress(data, mtime=0)),len(data),str(p)))
           for gz, raw, name in sorted(manifests, reverse=True)[:20]:
               print("MANIFEST_SIZE", raw, gz, name)
+          PY
+      - name: Verify browser PDF parser boundary
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          stats = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-server-audit.json").read_text())
+          def visit(items):
+              for m in items:
+                  yield m.get("name", "")
+                  yield from visit(m.get("modules", []))
+          names = list(visit(stats.get("modules", [])))
+          for c in stats.get("chunks", []):
+              names.extend(visit(c.get("modules", [])))
+          if any("pdfjs-dist/build/pdf.mjs" in name for name in names):
+              raise SystemExit("Real browser PDF engine still present in server compilation")
+          assets = list(pathlib.Path(".next/static").rglob("pdf.worker*.mjs"))
+          if not assets:
+              raise SystemExit("Browser PDF worker asset missing")
+          print("Server PDF parser excluded; browser PDF worker asset retained:", len(assets))
           PY
