@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -8,6 +10,28 @@ const nextConfig: NextConfig = {
   // Do not exclude any application datasets, native image dependencies or route code.
   outputFileTracingExcludes: {
     "/*": ["./docs/**/*", "./tests/**/*", "./.github/**/*"],
+  },
+  // Compile-only diagnostic: map anonymous server chunks to real module names.
+  // No stats plugin is installed for normal development or production builds.
+  webpack(config, { isServer, nextRuntime }) {
+    if (process.env.GTH_BUNDLE_AUDIT === "1" && isServer && nextRuntime === "nodejs") {
+      config.plugins.push({
+        apply(compiler: {
+          hooks: { done: { tap(name: string, callback: (stats: { toJson(options: Record<string, unknown>): unknown }) => void): void } };
+          outputPath: string;
+        }) {
+          compiler.hooks.done.tap("GthServerBundleAudit", (stats) => {
+            const report = stats.toJson({
+              all: false, assets: true, chunks: true, chunkModules: true,
+              modules: true, nestedModules: true, ids: true,
+              modulesSpace: Infinity, chunkModulesSpace: Infinity, nestedModulesSpace: Infinity,
+            });
+            writeFileSync(join(compiler.outputPath, "gth-server-audit.json"), JSON.stringify(report));
+          });
+        },
+      });
+    }
+    return config;
   },
   // Public editorial URL compatibility. A former /tender/guides link must not
   // fall through to the protected /tender/[id] UUID route.
