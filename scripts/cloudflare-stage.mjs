@@ -206,15 +206,17 @@ async function main() {
   for (const [name,bytes] of [...contributions].sort((a,b)=>b[1]-a[1]).slice(0,15)) {
     console.log(JSON.stringify({file:name.replaceAll(process.cwd()+"/",""), bytesInOutput:bytes}));
   }
-  // Cloudflare Workers Free: both compressed and uncompressed limits apply.
-  // Use conservative decimal MB thresholds, converting Wrangler's KiB output to bytes.
+  // Cloudflare removed the gzip platform limit on 2026-09-04. The current platform
+  // cap is 64 MiB uncompressed. Keep the owner's separate 2.8 MB gzip release gate.
+  // https://developers.cloudflare.com/changelog/post/2026-09-04-increased-worker-size-limit/
   const sizeMatch = (String(dryRun.stdout || "") + "\n" + String(dryRun.stderr || "")).match(/Total Upload:\s*([\d.]+)\s*KiB\s*\/\s*gzip:\s*([\d.]+)\s*KiB/i);
   if (!sizeMatch) stop("Cannot confirm compressed and uncompressed bundle sizes. No upload attempted.");
   const rawKiB = Number(sizeMatch[1]), gzipKiB = Number(sizeMatch[2]);
   if (!Number.isFinite(rawKiB) || !Number.isFinite(gzipKiB)) stop("Invalid Worker size measurement.");
   console.log("Worker size: " + rawKiB + " KiB uncompressed; " + gzipKiB + " KiB gzip.");
-  if (rawKiB * 1024 > 64000000 || (gzipKiB + 0.005) * 1024 >= 2800000) stop("Worker exceeds conservative Free-plan size budget (64 MB raw / strictly below 2.8 MB gzip). Optimize before upload.");
-  console.log("Worker bundle passed both Free-plan size budgets.");
+  if ((rawKiB + 0.005) * 1024 > 64 * 1024 * 1024) stop("Worker exceeds Cloudflare platform limit of 64 MiB uncompressed.");
+  if ((gzipKiB + 0.005) * 1024 >= 2800000) stop("Worker exceeds owner-defined 2.8 MB gzip release gate; this is not a Cloudflare platform limit.");
+  console.log("Worker bundle passed platform size limit and owner-defined release gate.");
   // Private staging only: no workers.dev or preview URLs, custom domains or routes.
   const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
     env:cloudEnv, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
