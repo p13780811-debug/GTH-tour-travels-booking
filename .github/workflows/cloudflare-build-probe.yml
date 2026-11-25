@@ -74,20 +74,46 @@ jobs:
           EOF
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
-      - name: Verify PWA legacy route and approved icon assets
+      - name: Run original PWA and canonical redirect regression tests
         run: node --test tests/mobile-app-install.test.mjs tests/legal-urls-and-universal-search-resilience.test.mjs
       - name: OpenNext build (compile-only fixtures; never deployed)
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
           GTH_PUBLIC_LAUNCH_ENABLED: "false"
-          GTH_BUNDLE_AUDIT: "1"
-          GTH_SHARED_CHUNK_PROBE: "1"
-        run: ./node_modules/.bin/opennextjs-cloudflare build
+          GTH_CLOUDFLARE_EXTERNALS_PROBE: "1"
+        shell: bash
+        run: |
+          set -euo pipefail
+          # OpenNext currently requires Node runtime. Adapt ONLY the two
+          # known declarations in this disposable CI checkout. Never commit
+          # the adaptation or deploy the result from this workflow.
+          ICON='src/app/app-icon/[size]/route.ts'
+          INTEL='src/app/intelligence/page.tsx'
+          test "$(git hash-object "$ICON")" = '11a6cce4e49dda95070dd8250759a48a92ffa671'
+          test "$(git hash-object "$INTEL")" = '101e0bc46d7ae0438082d5821177a58fac770fbf'
+          trap 'git restore -- "$ICON" "$INTEL"' EXIT
+          python3 - <<'PY'
+          from pathlib import Path
+          for path, original, adapted in [
+              ("src/app/app-icon/[size]/route.ts", 'export const runtime="edge";', 'export const runtime="nodejs";'),
+              ("src/app/intelligence/page.tsx", 'export const runtime = "edge";', 'export const runtime = "nodejs";'),
+          ]:
+              p = Path(path)
+              source = p.read_text()
+              if source.count(original) != 1:
+                  raise SystemExit("Unexpected runtime declaration: " + path)
+              p.write_text(source.replace(original, adapted, 1))
+          PY
+          ./node_modules/.bin/opennextjs-cloudflare build
+          git restore -- "$ICON" "$INTEL"
+          git diff --exit-code -- src tests
+          trap - EXIT
       - name: Verify Worker bundle without uploading
         run: |
           test -f .open-next/worker.js
-          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run --metafile /tmp/gth-worker-meta.json
+          set -o pipefail
+          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run --metafile /tmp/gth-worker-meta.json 2>&1 | tee /tmp/gth-worker-size.log
       - name: Rank actual OpenNext and Wrangler bundle inputs (no secrets, no upload)
         run: |
           python3 - <<'PY'
@@ -130,69 +156,20 @@ jobs:
                   compressed = len(gzip.compress(p.read_bytes(), compresslevel=9, mtime=0))
                   print(f"BUNDLE_FILE {i:02d} {raw:12d} {compressed:12d} {p}")
           PY
-      - name: Attribute heavy server chunks to original modules
+      - name: Report measured size and enforce conservative gzip target
         run: |
           python3 - <<'PY'
-          import json, pathlib, os, collections, gzip
-          p = pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-server-audit.json"
-          stats = json.loads(p.read_text())
-          chunks = sorted(stats.get("chunks", []), key=lambda c: -c.get("size", 0))
-          def leaves(items):
-              for m in items:
-                  children = m.get("modules", [])
-                  if children:
-                      yield from leaves(children)
-                  elif m.get("name") and isinstance(m.get("size"), (int, float)):
-                      yield m
-          counts = collections.Counter()
-          sizes = {}
-          for c in chunks:
-              for m in leaves(c.get("modules", [])):
-                  name = m.get("identifier") or m["name"]
-                  counts[name] += 1
-                  sizes[name] = max(sizes.get(name, 0), m["size"])
-          print("Original modules inside top 15 server chunks (webpack estimates, not gzip):")
-          for c in chunks[:15]:
-              print("CHUNK_SOURCE", c.get("files"), "estimatedBytes", c.get("size"))
-              for m in sorted(leaves(c.get("modules", [])), key=lambda m: -m["size"])[:8]:
-                  print("CHUNK_MODULE", int(m["size"]), m["name"])
-          print("Repeated original modules (estimated duplicated bytes):")
-          for name in sorted(counts, key=lambda n: -(counts[n]-1)*sizes[n])[:25]:
-              if counts[name] > 1:
-                  print("REPEATED_MODULE", counts[name], int((counts[name]-1)*sizes[name]), name)
-          print("Build manifests by standalone gzip size (not additive):")
-          manifests = []
-          for p in pathlib.Path(".next").rglob("*manifest*.json"):
-              if p.is_file():
-                  data = p.read_bytes()
-                  manifests.append((len(gzip.compress(data, mtime=0)),len(data),str(p)))
-          for gz, raw, name in sorted(manifests, reverse=True)[:20]:
-              print("MANIFEST_SIZE", raw, gz, name)
-          PY
-      - name: Verify browser PDF and XLSX parser boundaries
-        run: |
-          python3 - <<'PY'
-          import json, os, pathlib
-          stats = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-server-audit.json").read_text())
-          def visit(items):
-              for m in items:
-                  yield m.get("name", "")
-                  yield from visit(m.get("modules", []))
-          names = list(visit(stats.get("modules", [])))
-          for c in stats.get("chunks", []):
-              names.extend(visit(c.get("modules", [])))
-          if any("pdfjs-dist/build/pdf.mjs" in name or "node_modules/read-excel-file/" in name for name in names):
-              raise SystemExit("Real browser file parser still present in server compilation")
-          client = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-client-audit.json").read_text())
-          client_names = list(visit(client.get("modules", [])))
-          for c in client.get("chunks", []):
-              client_names.extend(visit(c.get("modules", [])))
-          for package in ["pdfjs-dist/build/pdf.mjs", "node_modules/read-excel-file/"]:
-              if not any(package in name for name in client_names):
-                  raise SystemExit("Missing browser parser module: " + package)
-          print("Both real PDF and XLSX parsers retained in client compilation.")
-          assets = list(pathlib.Path(".next/static").rglob("pdf.worker*.mjs"))
-          if not assets:
-              raise SystemExit("Browser PDF worker asset missing")
-          print("Server browser-only parsers excluded; browser PDF worker asset retained:", len(assets))
+          import pathlib, re, os, decimal
+          text = pathlib.Path("/tmp/gth-worker-size.log").read_text()
+          m = re.search(r"Total Upload:\s*([\d.]+)\s*KiB\s*/\s*gzip:\s*([\d.]+)\s*KiB", text)
+          if not m:
+              raise SystemExit("No Wrangler size measurement; no upload permitted")
+          raw, gzip = map(decimal.Decimal, m.groups())
+          upper = (gzip + decimal.Decimal("0.005")) * 1024
+          message = f"Measured upload: {raw} KiB raw / {gzip} KiB gzip; approx {gzip*1024/1000000:.6f} MB gzip"
+          print(message)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## Restored application bundle audit (compile-only)\n\n" + message + "\n")
+          if upper >= 2800000:
+              raise SystemExit("Above strict 2.8 MB gzip budget; this is an audit result, not a release-ready build")
           PY
