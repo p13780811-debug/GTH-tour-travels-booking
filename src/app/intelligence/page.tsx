@@ -7,7 +7,7 @@ import { isPublicLaunch } from "@/lib/seo/site";
 import MarketBookingHandoffs from "@/components/intelligence/MarketBookingHandoffs";
 import SemanticIntelligenceSearch from "@/components/intelligence/SemanticIntelligenceSearch";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<{country?:string|string[]}> };
 export async function generateMetadata({ searchParams }:Props):Promise<Metadata>{
