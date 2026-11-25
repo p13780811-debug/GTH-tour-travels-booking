@@ -104,3 +104,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-staging.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=5' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Find protected preview activation run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-protected-preview.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
