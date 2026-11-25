@@ -99,12 +99,26 @@ async function main() {
     try { claims = JSON.parse(Buffer.from(anon.split(".")[1], "base64url").toString()); } catch { stop("Invalid public Supabase JWT."); }
     if (claims.role !== "anon") stop("Unexpected public Supabase JWT role.");
   } else if (!anon.startsWith("sb_publishable_")) stop("Expected an anon JWT or publishable Supabase key.");
-  try {
-    const u = new URL(values.NEXT_PUBLIC_SUPABASE_URL);
-    if (u.protocol !== "https:" || !u.hostname.endsWith(".supabase.co") || u.username || u.password || u.search || u.hash) throw new Error();
-    const redis = new URL(values.UPSTASH_REDIS_REST_URL);
-    if (redis.protocol !== "https:" || !redis.hostname.endsWith(".upstash.io") || redis.port || redis.username || redis.password || redis.search || redis.hash || redis.pathname !== "/") throw new Error();
-  } catch { stop("Invalid Supabase or Redis endpoint."); }
+  // Normalize surrounding whitespace only, never infer or rewrite provider hosts.
+  const endpointIssues = [];
+  for (const name of ["NEXT_PUBLIC_SUPABASE_URL", "UPSTASH_REDIS_REST_URL"]) {
+    const raw = values[name].trim();
+    let url;
+    try { url = new URL(raw); } catch { endpointIssues.push(name + ": expected a bare HTTPS URL, not a command, assignment or token"); continue; }
+    const issues = [];
+    if (url.protocol !== "https:") issues.push("HTTPS required");
+    if (url.username || url.password || url.search || url.hash) issues.push("credentials, query or fragment not permitted");
+    if (name === "NEXT_PUBLIC_SUPABASE_URL") {
+      if (!url.hostname.endsWith(".supabase.co")) issues.push("expected Supabase project API hostname");
+    } else {
+      if (!url.hostname.endsWith(".upstash.io")) issues.push("expected Upstash REST hostname");
+      if (url.port || url.pathname !== "/") issues.push("expected REST base URL without port or path");
+    }
+    if (issues.length) endpointIssues.push(name + ": " + issues.join("; "));
+    else values[name] = raw;
+  }
+  if (endpointIssues.length) stop("Endpoint validation failed: " + endpointIssues.join(" | "));
+  console.log("Supabase and Redis endpoint format checks passed.");
 
   // Staging-specific overrides only. Original source configuration is unchanged.
   delete values.GTH_LEGACY_PEXELS_KEY_DISABLED;
