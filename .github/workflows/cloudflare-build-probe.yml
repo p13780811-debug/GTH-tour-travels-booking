@@ -68,4 +68,46 @@ jobs:
       - name: Verify Worker bundle without uploading
         run: |
           test -f .open-next/worker.js
-          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run
+          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run --metafile /tmp/gth-worker-meta.json
+      - name: Rank actual OpenNext and Wrangler bundle inputs (no secrets, no upload)
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, gzip, collections
+          root = pathlib.Path(".open-next/server-functions")
+          def rank_meta(path, label):
+              m = json.loads(path.read_text())
+              sizes = collections.Counter()
+              for output in m.get("outputs", {}).values():
+                  for name, data in output.get("inputs", {}).items():
+                      sizes[name] += data.get("bytesInOutput", 0)
+              if not sizes:
+                  raise RuntimeError("No input byte contributions in " + str(path))
+              print(label)
+              for i, (name, size) in enumerate(sizes.most_common(10), 1):
+                  print(f"BUNDLE_TOP {i:02d} {size:12d} {name}")
+              packages = collections.Counter()
+              for name, size in sizes.items():
+                  if "node_modules/" in name:
+                      tail = name.rsplit("node_modules/", 1)[-1].split("/")
+                      pkg = "/".join(tail[:2]) if tail[0].startswith("@") else tail[0]
+                      packages[pkg] += size
+              print(label + " — dependency groups")
+              for i, (name, size) in enumerate(packages.most_common(10), 1):
+                  print(f"BUNDLE_PACKAGE {i:02d} {size:12d} {name}")
+          metas = sorted(root.rglob("handler.mjs.meta.json"))
+          if not metas:
+              print("OpenNext handler metafile not emitted; reporting final Wrangler input contributions instead.")
+          for meta in metas:
+              rank_meta(meta, "OpenNext input raw bytes: " + str(meta))
+          rank_meta(pathlib.Path("/tmp/gth-worker-meta.json"), "Final Wrangler input raw bytes")
+          for directory, label in [(root, "OpenNext server files (inventory, not all uploaded)"), (pathlib.Path("/tmp/gth-worker-dry-run"), "Wrangler emitted files")]:
+              files = []
+              for p in directory.rglob("*"):
+                  if p.is_file() and not p.is_symlink() and not p.name.endswith(".meta.json") and not p.name.endswith(".map"):
+                      raw = p.stat().st_size
+                      files.append((raw, p))
+              print(label + " — raw bytes and standalone gzip bytes (not additive)")
+              for i, (raw, p) in enumerate(sorted(files, key=lambda x: (-x[0], str(x[1])))[:10], 1):
+                  compressed = len(gzip.compress(p.read_bytes(), compresslevel=9, mtime=0))
+                  print(f"BUNDLE_FILE {i:02d} {raw:12d} {compressed:12d} {p}")
+          PY
