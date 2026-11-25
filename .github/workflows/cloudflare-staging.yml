@@ -67,6 +67,7 @@ jobs:
           {
             "name": "gth-pro-migration",
             "main": ".open-next/worker.js",
+            "minify": true,
             "workers_dev": false,
             "preview_urls": false,
             "routes": [],
