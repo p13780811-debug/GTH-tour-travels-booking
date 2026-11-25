@@ -3,3 +3,5 @@ First staging deployment requested after owner confirmed private environment exp
 Retry after run 45703437574: exclude explicitly identified Vercel-generated metadata; preserve validation for all application keys. Deploy only isolated staging Worker.
 
 Retry after run 45703920497: distinguish Supabase and Upstash endpoint validation failures; normalize surrounding whitespace only. No production changes.
+
+Owner confirmed corrected Redis secret formatting. Retry run 45704230378 with corrected GitHub secrets. Isolated staging only; no DNS or production changes.
