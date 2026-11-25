@@ -169,11 +169,43 @@ async function main() {
     console.log(label + ": exit=" + (Number.isInteger(result.status) ? result.status : "unavailable") +
       "; categories=" + (matches.join(", ") || "unclassified") + "; Cloudflare codes=" + (codes.join(", ") || "none"));
   };
-  const dryRun = spawnSync("./node_modules/.bin/wrangler", ["deploy","--dry-run"], {
+  const { readdirSync, statSync, readFileSync } = await import("node:fs");
+  const { gzipSync } = await import("node:zlib");
+  const { relative } = await import("node:path");
+  const auditRoot = ".open-next/server-functions/default";
+  if (!existsSync(auditRoot)) stop("Missing OpenNext default server function for audit.");
+  const files = [];
+  function scan(root) {
+    for (const entry of readdirSync(root, {withFileTypes:true})) {
+      const p = join(root, entry.name);
+      if (entry.isDirectory()) scan(p);
+      else if (entry.isFile()) files.push({path:p, bytes:statSync(p).size});
+    }
+  }
+  scan(auditRoot);
+  console.log("Top 15 OpenNext server files by raw bytes (individual gzip is not additive):");
+  for (const f of files.sort((a,b)=>b.bytes-a.bytes || a.path.localeCompare(b.path)).slice(0,15)) {
+    console.log(JSON.stringify({file:relative(auditRoot,f.path), rawBytes:f.bytes, standaloneGzipBytes:gzipSync(readFileSync(f.path)).length}));
+  }
+  const metafile = join(dir,"worker-metafile.json");
+  const dryRun = spawnSync("./node_modules/.bin/wrangler", ["deploy","--dry-run","--metafile",metafile], {
     env:base, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
   });
   diagnostics(dryRun, "Wrangler dry run");
   if (dryRun.status !== 0) stop("Dry run failed. No remote upload attempted.");
+  if (!existsSync(metafile)) stop("Wrangler metafile missing; no upload attempted.");
+  const meta = JSON.parse(readFileSync(metafile,"utf8"));
+  const contributions = new Map();
+  for (const output of Object.values(meta.outputs || {})) {
+    for (const [name, input] of Object.entries(output.inputs || {})) {
+      contributions.set(name,(contributions.get(name)||0)+input.bytesInOutput);
+    }
+  }
+  if (!contributions.size) stop("No module contributions in Wrangler metafile.");
+  console.log("Top 15 Wrangler inputs by emitted raw bytes (not individual compressed contributions):");
+  for (const [name,bytes] of [...contributions].sort((a,b)=>b[1]-a[1]).slice(0,15)) {
+    console.log(JSON.stringify({file:name.replaceAll(process.cwd()+"/",""), bytesInOutput:bytes}));
+  }
   // Cloudflare Workers Free: both compressed and uncompressed limits apply.
   // Use conservative decimal MB thresholds, converting Wrangler's KiB output to bytes.
   const sizeMatch = (String(dryRun.stdout || "") + "\n" + String(dryRun.stderr || "")).match(/Total Upload:\s*([\d.]+)\s*KiB\s*\/\s*gzip:\s*([\d.]+)\s*KiB/i);
@@ -181,7 +213,7 @@ async function main() {
   const rawKiB = Number(sizeMatch[1]), gzipKiB = Number(sizeMatch[2]);
   if (!Number.isFinite(rawKiB) || !Number.isFinite(gzipKiB)) stop("Invalid Worker size measurement.");
   console.log("Worker size: " + rawKiB + " KiB uncompressed; " + gzipKiB + " KiB gzip.");
-  if (rawKiB * 1024 > 64000000 || gzipKiB * 1024 > 3000000) stop("Worker exceeds conservative Free-plan size budget (64 MB raw / 3 MB gzip). Optimize before upload.");
+  if (rawKiB * 1024 > 64000000 || (gzipKiB + 0.005) * 1024 >= 2800000) stop("Worker exceeds conservative Free-plan size budget (64 MB raw / strictly below 2.8 MB gzip). Optimize before upload.");
   console.log("Worker bundle passed both Free-plan size budgets.");
   // Private staging only: no workers.dev or preview URLs, custom domains or routes.
   const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
