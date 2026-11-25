@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
   // Compile-only diagnostic: map anonymous server chunks to real module names.
   // No stats plugin is installed for normal development or production builds.
   webpack(config, { isServer, nextRuntime }) {
+    // PDF.js is used exclusively inside a browser file-input event in BulkListingUpload.
+    // Preserve the real client parser and its worker; prevent unused SSR code from
+    // pulling the PDF engine into the Node/Cloudflare server bundle.
+    if (isServer && nextRuntime === "nodejs") {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "pdfjs-dist$": `${process.cwd()}/src/lib/real-estate/pdf-browser-only.server.ts`,
+      };
+    }
     if (process.env.GTH_BUNDLE_AUDIT === "1" && isServer && nextRuntime === "nodejs") {
       config.plugins.push({
         apply(compiler: {
