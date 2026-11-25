@@ -1,0 +1,57 @@
+name: Cloudflare read-only access preflight
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-access-preflight.yml']
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: gth-cloudflare-access-preflight
+  cancel-in-progress: true
+jobs:
+  access:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && (github.ref == 'refs/heads/infra/cloudflare-preflight-20261125' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify Cloudflare account and Workers API access without mutation
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.request
+          import urllib.error
+
+          token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+          account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+          if not token.strip():
+              sys.exit("CLOUDFLARE_API_TOKEN is missing.")
+          if not re.fullmatch(r"[0-9a-fA-F]{32}", account):
+              sys.exit("CLOUDFLARE_ACCOUNT_ID is missing or has an invalid format.")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          req = urllib.request.Request(
+              f"https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts",
+              headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+              method="GET",
+          )
+          try:
+              with urllib.request.build_opener(NoRedirect()).open(req, timeout=30) as res:
+                  result = json.load(res)
+              if not result.get("success") or not isinstance(result.get("result"), list):
+                  sys.exit("Cloudflare Workers API returned an unsuccessful response.")
+          except urllib.error.HTTPError as exc:
+              sys.exit(f"Cloudflare Workers API request failed (HTTP {exc.code}). Verify account ID, token expiry and permissions.")
+          except (urllib.error.URLError, TimeoutError, ValueError):
+              sys.exit("Cloudflare Workers API could not be reached or returned an invalid response.")
+          print("PASS: account and Workers API access confirmed. No resources were created, updated, or deleted.")
+          PY
