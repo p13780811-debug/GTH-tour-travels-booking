@@ -28,8 +28,22 @@ jobs:
           node-version: "24"
       - name: Install locked app dependencies
         run: npm ci --no-audit --no-fund
-      - name: Install pinned adapter for disposable compatibility test
-        run: npm install --no-save --package-lock=false --no-audit --no-fund @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+      - name: Install pinned adapter outside locked app dependency tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL_DIR="$RUNNER_TEMP/gth-cloudflare-tools"
+          mkdir -p "$TOOL_DIR"
+          npm install --prefix "$TOOL_DIR" --no-audit --no-fund --save-exact @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+          mkdir -p node_modules/@opennextjs
+          test ! -e node_modules/@opennextjs/cloudflare
+          test ! -e node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/@opennextjs/cloudflare" node_modules/@opennextjs/cloudflare
+          ln -s "$TOOL_DIR/node_modules/wrangler" node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/.bin/opennextjs-cloudflare" node_modules/.bin/opennextjs-cloudflare
+          ln -s "$TOOL_DIR/node_modules/.bin/wrangler" node_modules/.bin/wrangler
+          echo "$TOOL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
+          git diff --exit-code -- package.json package-lock.json
       - name: Generate isolated Worker configuration (no domain or paid resource)
         run: |
           test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
