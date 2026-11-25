@@ -5,3 +5,5 @@ Retry after run 45703437574: exclude explicitly identified Vercel-generated meta
 Retry after run 45703920497: distinguish Supabase and Upstash endpoint validation failures; normalize surrounding whitespace only. No production changes.
 
 Owner confirmed corrected Redis secret formatting. Retry run 45704230378 with corrected GitHub secrets. Isolated staging only; no DNS or production changes.
+
+Retry after run 45705845987: validated real configuration and completed OpenNext build. Enable redacted Wrangler diagnostics and dry-run size gate. Deploy private Worker only, without public endpoints, DNS changes or paid resources.
