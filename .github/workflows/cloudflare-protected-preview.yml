@@ -31,7 +31,7 @@ jobs:
               def redirect_request(self, req, fp, code, msg, headers, newurl):
                   return None
           opener = urllib.request.build_opener(NoRedirect())
-          def api(method, path, body=None, label="API"):
+          def api(method, path, body=None, label="API", allow_missing_subdomain=False):
               req = urllib.request.Request("https://api.cloudflare.com/client/v4" + path,
                   data=None if body is None else json.dumps(body).encode(),
                   headers={"Authorization":"Bearer "+token,"Content-Type":"application/json","Accept":"application/json"},
@@ -40,6 +40,14 @@ jobs:
                   with opener.open(req, timeout=25) as response:
                       data=json.load(response)
               except urllib.error.HTTPError as e:
+                  try:
+                      errors=json.load(e).get("errors",[])
+                  except Exception:
+                      errors=[]
+                  codes=[str(x.get("code")) for x in errors if isinstance(x.get("code"),int)]
+                  print(label + ": HTTP " + str(e.code) + "; Cloudflare error codes=" + ",".join(codes))
+                  if allow_missing_subdomain and e.code==404 and any("subdomain" in str(x.get("message","")).lower() and any(word in str(x.get("message","")).lower() for word in ("not found","not registered","not exist","no subdomain")) for x in errors):
+                      return None
                   sys.exit(label + " failed: HTTP " + str(e.code) + ". No further activation attempted.")
               except Exception:
                   sys.exit(label + " failed; no further activation attempted.")
@@ -48,10 +56,10 @@ jobs:
               return data
           base="/accounts/"+account
           route=base+"/workers/scripts/"+worker+"/subdomain"
-          sub=api("GET",base+"/workers/subdomain",label="Account workers.dev subdomain")["result"]
-          suffix=sub.get("subdomain","")
+          sub=api("GET",base+"/workers/subdomain",label="Account workers.dev subdomain",allow_missing_subdomain=True)
+          suffix=sub["result"].get("subdomain","") if sub is not None else "gthproglobal-preview-20261126"
           if not re.fullmatch(r"[a-z0-9-]+",suffix):
-              sys.exit("No existing workers.dev account subdomain; no URL enabled.")
+              sys.exit("Invalid workers.dev subdomain; no URL enabled.")
           host=worker+"."+suffix+".workers.dev"
           status=api("GET",route,label="Worker URL status")["result"]
           if status.get("enabled") or status.get("previews_enabled"):
@@ -101,6 +109,16 @@ jobs:
           if not isinstance(policies,list) or len(policies)!=1 or policies[0].get("decision")!="allow" or policies[0].get("include")!=[{"email":{"email":email}}]:
               sys.exit("Exact owner-only policy not verified; URL remains disabled.")
           print("Verified owner-only Cloudflare Access policy on staging Worker.")
+          if sub is None:
+              # Recheck immediately before registering. Never rename an existing
+              # account subdomain or change production DNS.
+              current=api("GET",base+"/workers/subdomain",label="Recheck missing subdomain",allow_missing_subdomain=True)
+              if current is not None:
+                  sys.exit("Account subdomain appeared concurrently; no registration performed.")
+              created=api("PUT",base+"/workers/subdomain",{"subdomain":suffix},label="Register previously absent workers.dev subdomain")["result"]
+              if created.get("subdomain")!=suffix:
+                  sys.exit("Subdomain registration not verified; URL remains disabled.")
+              print("New workers.dev account subdomain registered.")
           enabled=False
           try:
               api("POST",route,{"enabled":True,"previews_enabled":False},label="Enable protected workers.dev URL")
