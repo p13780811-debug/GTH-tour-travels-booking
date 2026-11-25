@@ -1,0 +1,1 @@
+First staging deployment requested after owner confirmed private environment export and seven recovered GitHub secrets. Deploy only gth-pro-migration; no production domain, no paid resources, no DNS changes.
