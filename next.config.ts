@@ -1,6 +1,4 @@
 import type { NextConfig } from "next";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -17,10 +15,12 @@ const nextConfig: NextConfig = {
     if (process.env.GTH_BUNDLE_AUDIT === "1" && isServer && nextRuntime === "nodejs") {
       config.plugins.push({
         apply(compiler: {
-          hooks: { done: { tap(name: string, callback: (stats: { toJson(options: Record<string, unknown>): unknown }) => void): void } };
+          hooks: { done: { tapPromise(name: string, callback: (stats: { toJson(options: Record<string, unknown>): unknown }) => Promise<void>): void } };
           outputPath: string;
         }) {
-          compiler.hooks.done.tap("GthServerBundleAudit", (stats) => {
+          compiler.hooks.done.tapPromise("GthServerBundleAudit", async (stats) => {
+            const { writeFileSync } = await import("node:fs");
+            const { join } = await import("node:path");
             const report = stats.toJson({
               all: false, assets: true, chunks: true, chunkModules: true,
               modules: true, nestedModules: true, ids: true,
