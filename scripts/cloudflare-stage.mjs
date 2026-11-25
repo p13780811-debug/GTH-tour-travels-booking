@@ -1,0 +1,114 @@
+// Trusted staging operator only. Never run this with secrets in a pull_request job.
+import { parse } from "dotenv";
+import { spawnSync } from "node:child_process";
+import { writeFileSync, mkdtempSync, rmSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const stop = message => { console.error(message); process.exitCode = 1; throw new Error("Staging gate failed."); };
+const required = [
+  "NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL", "ENABLE_UNIFIED_CITY_ROUTER",
+  "NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL", "CRON_SECRET", "ODDS_API_KEY",
+  "SEATGEEK_CLIENT_ID", "NEXT_PUBLIC_GA_ID", "NUITEE_PRODUCTION_API_KEY",
+  "PEXELS_API_KEY", "GTH_PUBLIC_LAUNCH_ENABLED", "SUPABASE_SERVICE_ROLE_KEY",
+  "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "TRAVELPAYOUTS_API_TOKEN",
+  "TRAVELPAYOUTS_MARKER", "GEMINI_PRO_KEY", "AVIASALES_API_TOKEN",
+  "AVIASALES_PARTNER_ID", "GEMINI_API_KEY", "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+];
+const optional = [
+  "OPENAI_API_KEY", "NEXT_PUBLIC_SUPPORT_EMAIL", "NEXT_PUBLIC_TICKETNETWORK_AFFILIATE_URL",
+  "TRAVELPAYOUTS_TOKEN", "GTH_HOPEGOO_AFFILIATE_URL", "GTH_KLOOK_AFFILIATE_URL",
+  "GTH_GETYOURGUIDE_AFFILIATE_URL", "GTH_WEGOTRIP_AFFILIATE_URL",
+  "GTH_KKDAY_AFFILIATE_URL", "GTH_GOCITY_AFFILIATE_URL",
+  "GTH_WELCOME_PICKUPS_AFFILIATE_URL", "GTH_GETTRANSFER_AFFILIATE_URL",
+  "GTH_BUSINESS_WHATSAPP_NUMBER", "NEXT_PUBLIC_HOME_LOAN_AFFILIATE_URL",
+  "GOOGLE_PLACES_API_KEY", "GTH_GOOGLE_PLACES_ON_DEMAND_ENABLED",
+  "GTH_GOOGLE_PLACES_DAILY_BUDGET", "GTH_RATE_LIMIT_NAMESPACE",
+  "GTH_INGESTION_ENABLED", "SUPABASE_INGESTION_KEY", "GTH_INTERNAL_KEY",
+  "GTH_LEGACY_PEXELS_KEY_DISABLED",
+];
+const allowed = new Set([...required, ...optional]);
+const target = "gth-pro-migration";
+const valid = value => typeof value === "string" && value.trim() && !/^(undefined|null|\[redacted\]|\*+)$/i.test(value.trim());
+const token = process.env.CLOUDFLARE_API_TOKEN;
+const account = process.env.CLOUDFLARE_ACCOUNT_ID;
+const bundle = process.env.GTH_CLOUDFLARE_RUNTIME_ENV;
+const base = {...process.env};
+delete base.CLOUDFLARE_API_TOKEN;
+delete base.CLOUDFLARE_ACCOUNT_ID;
+delete base.GTH_CLOUDFLARE_RUNTIME_ENV;
+delete base.VERCEL_TOKEN;
+for (const name of Object.keys(base)) {
+  if (allowed.has(name) || name.startsWith("NEXT_PUBLIC_")) delete base[name];
+}
+let dir;
+async function main() {
+  if (process.env.GITHUB_REPOSITORY !== "p13780811-debug/GTH-tour-travels-booking" ||
+      process.env.GITHUB_REF !== "refs/heads/infra/cloudflare-preflight-20261125" ||
+      !["push","workflow_dispatch"].includes(process.env.GITHUB_EVENT_NAME)) stop("Untrusted staging invocation.");
+  if (!valid(bundle)) stop("GTH_CLOUDFLARE_RUNTIME_ENV is not configured. No upload attempted.");
+  if (!valid(token) || !/^[a-f0-9]{32}$/i.test(account || "")) stop("Cloudflare connection settings missing.");
+  let values;
+  try { values = parse(bundle); } catch { stop("Cannot parse the private dotenv bundle."); }
+  const unknown = Object.keys(values).filter(k => !allowed.has(k));
+  const missing = required.filter(k => !valid(values[k]));
+  if (unknown.length) stop("Unclassified names; reconcile before deployment: " + unknown.join(", "));
+  if (missing.length) stop("Missing/empty/redacted names: " + missing.join(", "));
+  for (const k of Object.keys(values)) {
+    if (!valid(values[k])) delete values[k];
+    else if (Buffer.byteLength(values[k], "utf8") > 5120) stop("Variable exceeds Worker size limit: " + k);
+  }
+  const anon = values.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (anon.startsWith("sb_secret_")) stop("Privileged key in public Supabase configuration.");
+  if (anon.split(".").length === 3) {
+    let claims;
+    try { claims = JSON.parse(Buffer.from(anon.split(".")[1], "base64url").toString()); } catch { stop("Invalid public Supabase JWT."); }
+    if (claims.role !== "anon") stop("Unexpected public Supabase JWT role.");
+  } else if (!anon.startsWith("sb_publishable_")) stop("Expected an anon JWT or publishable Supabase key.");
+  try {
+    const u = new URL(values.NEXT_PUBLIC_SUPABASE_URL);
+    if (u.protocol !== "https:" || !u.hostname.endsWith(".supabase.co") || u.username || u.password || u.search || u.hash) throw new Error();
+    const redis = new URL(values.UPSTASH_REDIS_REST_URL);
+    if (redis.protocol !== "https:" || !redis.hostname.endsWith(".upstash.io") || redis.port || redis.username || redis.password || redis.search || redis.hash || redis.pathname !== "/") throw new Error();
+  } catch { stop("Invalid Supabase or Redis endpoint."); }
+
+  // Staging-specific overrides only. Original source configuration is unchanged.
+  delete values.GTH_LEGACY_PEXELS_KEY_DISABLED;
+  values.GTH_PUBLIC_LAUNCH_ENABLED = "false";
+  values.GTH_RATE_LIMIT_NAMESPACE = "gth-pro-cloudflare-preview";
+  values.GTH_INGESTION_ENABLED = "false";
+  values.VERCEL_ENV = "preview"; // Existing SEO and budget code uses this environment label, not VERCEL=1.
+  if (Object.keys(values).length > 64) stop("Worker free-tier environment limit exceeded.");
+  const response = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts", {
+    headers: { Authorization: "Bearer " + token }, redirect: "error", signal: AbortSignal.timeout(30000)
+  });
+  if (!response.ok) stop("Cannot verify staging target (HTTP " + response.status + ").");
+  const data = await response.json();
+  if (!data.success || !Array.isArray(data.result)) stop("Invalid Cloudflare target inventory response.");
+  if (data.result.some(w => w.id === target)) stop("Staging Worker already exists. Inspect before any overwrite.");
+  if (!existsSync("wrangler.jsonc") || !existsSync("open-next.config.ts")) stop("Missing tested Worker config.");
+  const config = JSON.parse((await import("node:fs")).readFileSync("wrangler.jsonc", "utf8"));
+  if (config.name !== target || config.routes?.length || config.workers_dev !== true || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
+  const pub = Object.fromEntries(Object.entries(values).filter(([k])=>k.startsWith("NEXT_PUBLIC_")));
+  console.log("Staging inventory validated. Running real-config build with public variables only.");
+  const build = spawnSync("./node_modules/.bin/opennextjs-cloudflare", ["build"], {
+    env: {...base, ...pub, GTH_PUBLIC_LAUNCH_ENABLED:"false", VERCEL_ENV:"preview"},
+    stdio: "inherit", timeout: 1200000
+  });
+  if (build.status !== 0 || !existsSync(".open-next/worker.js")) stop("Real-config build failed. No deployment attempted.");
+  dir = mkdtempSync(join(tmpdir(), "gth-private-stage-"));
+  const file = join(dir, "secrets.json");
+  writeFileSync(file, JSON.stringify(values), {mode:0o600, flag:"wx"});
+  const cloudEnv = {...base, CLOUDFLARE_API_TOKEN:token, CLOUDFLARE_ACCOUNT_ID:account};
+  // Deploy only the separately named Worker; never create routes, change DNS, or upload fixtures.
+  const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
+    env:cloudEnv, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
+  });
+  if (deploy.status !== 0) stop("Wrangler deployment did not report success. Check staging resource before retrying; raw output suppressed to protect credentials.");
+  const urls = [...(deploy.stdout || "").matchAll(/https:\/\/gth-pro-migration\.[a-z0-9-]+\.workers\.dev\b/g)].map(m=>m[0]);
+  if (!urls.length) stop("Deployment command succeeded but preview URL was not found. Inspect Cloudflare dashboard.");
+  console.log("Staging Worker deployed: " + urls[0]);
+  console.log("DNS unchanged. Production rollout requires smoke tests and explicit release.");
+}
+try { await main(); } catch { if(!process.exitCode) { console.error("Staging operation failed; no success assumed."); process.exitCode=1; } } finally { if(dir) rmSync(dir,{recursive:true,force:true}); }
