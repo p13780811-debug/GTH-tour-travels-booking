@@ -2,10 +2,24 @@ name: Cloudflare OpenNext compatibility build
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/cloudflare-build-probe.yml']
+    paths:
+      - '.github/workflows/cloudflare-build-probe.yml'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/mobile-app-install.test.mjs'
   push:
     branches: [infra/cloudflare-preflight-20261125]
-    paths: ['.github/workflows/cloudflare-build-probe.yml']
+    paths:
+      - '.github/workflows/cloudflare-build-probe.yml'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/mobile-app-install.test.mjs'
 permissions:
   contents: read
 concurrency:
@@ -60,6 +74,8 @@ jobs:
           EOF
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
+      - name: Verify PWA legacy route and approved icon assets
+        run: node --test tests/mobile-app-install.test.mjs
       - name: OpenNext build (compile-only fixtures; never deployed)
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
