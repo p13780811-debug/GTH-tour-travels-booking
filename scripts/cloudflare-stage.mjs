@@ -174,9 +174,15 @@ async function main() {
   });
   diagnostics(dryRun, "Wrangler dry run");
   if (dryRun.status !== 0) stop("Dry run failed. No remote upload attempted.");
-  const sizeMatch = String(dryRun.stdout || "").match(/Total Upload:\s*([\d.]+)\s*KiB/i);
-  if (!sizeMatch || Number(sizeMatch[1]) > 65536) stop("Cannot confirm bundle within Free plan size limit.");
-  console.log("Worker bundle within 64 MiB limit: " + sizeMatch[1] + " KiB.");
+  // Cloudflare Workers Free: both compressed and uncompressed limits apply.
+  // Use conservative decimal MB thresholds, converting Wrangler's KiB output to bytes.
+  const sizeMatch = (String(dryRun.stdout || "") + "\n" + String(dryRun.stderr || "")).match(/Total Upload:\s*([\d.]+)\s*KiB\s*\/\s*gzip:\s*([\d.]+)\s*KiB/i);
+  if (!sizeMatch) stop("Cannot confirm compressed and uncompressed bundle sizes. No upload attempted.");
+  const rawKiB = Number(sizeMatch[1]), gzipKiB = Number(sizeMatch[2]);
+  if (!Number.isFinite(rawKiB) || !Number.isFinite(gzipKiB)) stop("Invalid Worker size measurement.");
+  console.log("Worker size: " + rawKiB + " KiB uncompressed; " + gzipKiB + " KiB gzip.");
+  if (rawKiB * 1024 > 64000000 || gzipKiB * 1024 > 3000000) stop("Worker exceeds conservative Free-plan size budget (64 MB raw / 3 MB gzip). Optimize before upload.");
+  console.log("Worker bundle passed both Free-plan size budgets.");
   // Private staging only: no workers.dev or preview URLs, custom domains or routes.
   const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
     env:cloudEnv, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
