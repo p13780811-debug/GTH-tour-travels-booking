@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
+  // Exclude repository-only documentation and test files from runtime tracing.
+  // Do not exclude any application datasets, native image dependencies or route code.
+  outputFileTracingExcludes: {
+    "/*": ["./docs/**/*", "./tests/**/*", "./.github/**/*"],
+  },
   // Public editorial URL compatibility. A former /tender/guides link must not
   // fall through to the protected /tender/[id] UUID route.
   async redirects() {
