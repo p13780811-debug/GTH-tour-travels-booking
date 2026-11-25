@@ -1,7 +1,7 @@
 import {createElement} from "react";
 import {ImageResponse} from "next/og";
 import {NextResponse} from "next/server";
-export const runtime="edge";
+export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
 /** The same gold shield / G path as src/components/Logo.tsx. */
