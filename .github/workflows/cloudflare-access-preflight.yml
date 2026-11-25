@@ -7,7 +7,8 @@ on:
     branches: [main]
     paths: ['.github/workflows/cloudflare-access-preflight.yml']
   workflow_dispatch:
-permissions: {}
+permissions:
+  actions: read
 concurrency:
   group: gth-cloudflare-access-preflight-${{ github.ref }}
   cancel-in-progress: true
@@ -94,5 +95,12 @@ jobs:
               sys.exit(f"Cloudflare Workers API request failed (HTTP {exc.code}). Verify account ID, token expiry and permissions.")
           except (urllib.error.URLError, TimeoutError, ValueError):
               sys.exit("Cloudflare Workers API could not be reached or returned an invalid response.")
+          for name in ["gth-pro-migration", "gth-pro-preview-20261126"]:
+              print("Worker " + name + ": " + ("exists" if any(w.get("id") == name for w in result["result"]) else "absent"))
           print("PASS: account and Workers API access confirmed. No resources were created, updated, or deleted.")
           PY
+      - name: Locate and report actual private staging workflow result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-staging.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=5' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
