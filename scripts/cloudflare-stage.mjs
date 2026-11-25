@@ -136,7 +136,7 @@ async function main() {
   if (data.result.some(w => w.id === target)) stop("Staging Worker already exists. Inspect before any overwrite.");
   if (!existsSync("wrangler.jsonc") || !existsSync("open-next.config.ts")) stop("Missing tested Worker config.");
   const config = JSON.parse((await import("node:fs")).readFileSync("wrangler.jsonc", "utf8"));
-  if (config.name !== target || config.routes?.length || config.workers_dev !== true || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
+  if (config.name !== target || config.routes?.length || config.workers_dev !== false || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
   const pub = Object.fromEntries(Object.entries(values).filter(([k])=>k.startsWith("NEXT_PUBLIC_")));
   console.log("Staging inventory validated. Running real-config build with public variables only.");
   const build = spawnSync("./node_modules/.bin/opennextjs-cloudflare", ["build"], {
@@ -148,14 +148,50 @@ async function main() {
   const file = join(dir, "secrets.json");
   writeFileSync(file, JSON.stringify(values), {mode:0o600, flag:"wx"});
   const cloudEnv = {...base, CLOUDFLARE_API_TOKEN:token, CLOUDFLARE_ACCOUNT_ID:account};
-  // Deploy only the separately named Worker; never create routes, change DNS, or upload fixtures.
+  // Report only predefined error categories and numeric Cloudflare error codes.
+  // Never echo Wrangler output, because it can contain runtime binding data.
+  const diagnostics = (result, label) => {
+    const output = String(result.stdout || "") + "\n" + String(result.stderr || "");
+    const checks = [
+      [/unknown argument|unknown option|unrecognized option/i, "unsupported CLI option"],
+      [/authentication error|invalid access token|not authorized|unauthorized|permission denied|insufficient permission|forbidden/i, "authentication or permission"],
+      [/workers\.dev subdomain|register.*subdomain/i, "workers.dev subdomain configuration"],
+      [/service binding|service.*not found|service.*does not exist/i, "service binding target"],
+      [/startup|script startup|initialization time/i, "Worker startup validation"],
+      [/size limit|too large|exceeds.*size|script too large/i, "bundle or asset size"],
+      [/asset.*limit|too many assets/i, "asset limit"],
+      [/billing|paid plan|upgrade.*plan/i, "plan restriction"],
+      [/network|fetch failed|ETIMEDOUT|ECONNRESET/i, "network failure"],
+      [/invalid binding|secret.*invalid|binding.*already/i, "binding validation"],
+    ];
+    const matches = checks.filter(([pattern]) => pattern.test(output)).map(([, category]) => category);
+    const codes = [...new Set([...output.matchAll(/\[code:\s*(\d{3,7})\]/gi)].map(m => m[1]))];
+    console.log(label + ": exit=" + (Number.isInteger(result.status) ? result.status : "unavailable") +
+      "; categories=" + (matches.join(", ") || "unclassified") + "; Cloudflare codes=" + (codes.join(", ") || "none"));
+  };
+  const dryRun = spawnSync("./node_modules/.bin/wrangler", ["deploy","--dry-run"], {
+    env:base, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
+  });
+  diagnostics(dryRun, "Wrangler dry run");
+  if (dryRun.status !== 0) stop("Dry run failed. No remote upload attempted.");
+  const sizeMatch = String(dryRun.stdout || "").match(/Total Upload:\s*([\d.]+)\s*KiB/i);
+  if (!sizeMatch || Number(sizeMatch[1]) > 65536) stop("Cannot confirm bundle within Free plan size limit.");
+  console.log("Worker bundle within 64 MiB limit: " + sizeMatch[1] + " KiB.");
+  // Private staging only: no workers.dev or preview URLs, custom domains or routes.
   const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
     env:cloudEnv, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
   });
-  if (deploy.status !== 0) stop("Wrangler deployment did not report success. Check staging resource before retrying; raw output suppressed to protect credentials.");
-  const urls = [...(deploy.stdout || "").matchAll(/https:\/\/gth-pro-migration\.[a-z0-9-]+\.workers\.dev\b/g)].map(m=>m[0]);
-  if (!urls.length) stop("Deployment command succeeded but preview URL was not found. Inspect Cloudflare dashboard.");
-  console.log("Staging Worker deployed: " + urls[0]);
+  diagnostics(deploy, "Wrangler private deployment");
+  const verify = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts", {
+    headers: { Authorization: "Bearer " + token }, redirect:"error", signal:AbortSignal.timeout(30000)
+  });
+  if (!verify.ok) stop("Cannot verify post-deployment Worker inventory (HTTP " + verify.status + ").");
+  const inventory = await verify.json();
+  if (!inventory.success || !Array.isArray(inventory.result)) stop("Invalid post-deployment inventory.");
+  const exists = inventory.result.some(w => w.id === target);
+  console.log("Private staging Worker exists: " + (exists ? "yes" : "no"));
+  if (deploy.status !== 0 || !exists) stop("Private deployment not verified; do not overwrite any existing resource.");
+  console.log("Private staging Worker deployed. Public preview requires separate access protection review.");
   console.log("DNS unchanged. Production rollout requires smoke tests and explicit release.");
 }
 try { await main(); } catch { if(!process.exitCode) { console.error("Staging operation failed; no success assumed."); process.exitCode=1; } } finally { if(dir) rmSync(dir,{recursive:true,force:true}); }
