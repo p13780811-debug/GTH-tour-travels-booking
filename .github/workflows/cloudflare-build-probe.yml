@@ -81,6 +81,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
           GTH_PUBLIC_LAUNCH_ENABLED: "false"
+          GTH_BUNDLE_AUDIT: "1"
         run: ./node_modules/.bin/opennextjs-cloudflare build
       - name: Verify Worker bundle without uploading
         run: |
@@ -127,4 +128,43 @@ jobs:
               for i, (raw, p) in enumerate(sorted(files, key=lambda x: (-x[0], str(x[1])))[:10], 1):
                   compressed = len(gzip.compress(p.read_bytes(), compresslevel=9, mtime=0))
                   print(f"BUNDLE_FILE {i:02d} {raw:12d} {compressed:12d} {p}")
+          PY
+      - name: Attribute heavy server chunks to original modules
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, os, collections, gzip
+          p = pathlib.Path(os.environ["RUNNER_TEMP"]) / "gth-server-audit.json"
+          stats = json.loads(p.read_text())
+          chunks = sorted(stats.get("chunks", []), key=lambda c: -c.get("size", 0))
+          def leaves(items):
+              for m in items:
+                  children = m.get("modules", [])
+                  if children:
+                      yield from leaves(children)
+                  elif m.get("name") and isinstance(m.get("size"), (int, float)):
+                      yield m
+          counts = collections.Counter()
+          sizes = {}
+          for c in chunks:
+              for m in leaves(c.get("modules", [])):
+                  name = m.get("identifier") or m["name"]
+                  counts[name] += 1
+                  sizes[name] = max(sizes.get(name, 0), m["size"])
+          print("Original modules inside top 15 server chunks (webpack estimates, not gzip):")
+          for c in chunks[:15]:
+              print("CHUNK_SOURCE", c.get("files"), "estimatedBytes", c.get("size"))
+              for m in sorted(leaves(c.get("modules", [])), key=lambda m: -m["size"])[:8]:
+                  print("CHUNK_MODULE", int(m["size"]), m["name"])
+          print("Repeated original modules (estimated duplicated bytes):")
+          for name in sorted(counts, key=lambda n: -(counts[n]-1)*sizes[n])[:25]:
+              if counts[name] > 1:
+                  print("REPEATED_MODULE", counts[name], int((counts[name]-1)*sizes[name]), name)
+          print("Build manifests by standalone gzip size (not additive):")
+          manifests = []
+          for p in pathlib.Path(".next").rglob("*manifest*.json"):
+              if p.is_file():
+                  data = p.read_bytes()
+                  manifests.append((len(gzip.compress(data, mtime=0)),len(data),str(p)))
+          for gz, raw, name in sorted(manifests, reverse=True)[:20]:
+              print("MANIFEST_SIZE", raw, gz, name)
           PY
