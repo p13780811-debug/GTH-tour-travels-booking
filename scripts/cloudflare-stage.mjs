@@ -52,8 +52,33 @@ async function main() {
   if (!valid(token) || !/^[a-f0-9]{32}$/i.test(account || "")) stop("Cloudflare connection settings missing.");
   let values;
   try { values = parse(bundle); } catch { stop("Cannot parse the private dotenv bundle."); }
-  // Vercel exports may include a short-lived platform identity token; never migrate it.
-  delete values.VERCEL_OIDC_TOKEN;
+  // Strip only the explicitly identified platform-generated export metadata.
+  // Never migrate Vercel identity, deployment provenance, or build-cache controls.
+  const platformGenerated = [
+    "NX_DAEMON",
+    "TURBO_CACHE",
+    "TURBO_DOWNLOAD_LOCAL_ENABLED",
+    "TURBO_REMOTE_ONLY",
+    "TURBO_RUN_SUMMARY",
+    "VERCEL",
+    "VERCEL_ENV",
+    "VERCEL_GIT_COMMIT_AUTHOR_LOGIN",
+    "VERCEL_GIT_COMMIT_AUTHOR_NAME",
+    "VERCEL_GIT_COMMIT_MESSAGE",
+    "VERCEL_GIT_COMMIT_REF",
+    "VERCEL_GIT_COMMIT_SHA",
+    "VERCEL_GIT_PREVIOUS_SHA",
+    "VERCEL_GIT_PROVIDER",
+    "VERCEL_GIT_PULL_REQUEST_ID",
+    "VERCEL_GIT_REPO_ID",
+    "VERCEL_GIT_REPO_OWNER",
+    "VERCEL_GIT_REPO_SLUG",
+    "VERCEL_TARGET_ENV",
+    "VERCEL_URL",
+    "VERCEL_OIDC_TOKEN"
+  ];
+  for (const name of platformGenerated) delete values[name];
+  // Unknown application variables still fail closed; do not broadly ignore prefixes.
   // Individually recovered repository secrets are authoritative for these names.
   for (const name of recoveredNames) {
     if (!valid(process.env[name])) stop("Missing recovered GitHub secret: " + name);
