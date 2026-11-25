@@ -3,7 +3,6 @@ on:
   push:
     branches: [infra/cloudflare-preflight-20261125]
     paths:
-      - '.github/workflows/cloudflare-staging.yml'
       - 'docs/cloudflare-stage-trigger.txt'
   workflow_dispatch:
 permissions:
@@ -24,7 +23,7 @@ jobs:
       - name: Confirm private runtime bundle is configured
         id: gate
         env:
-          READY: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV != '' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+          READY: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV != '' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CRON_SECRET != '' && secrets.NUITEE_PRODUCTION_API_KEY != '' && secrets.ODDS_API_KEY != '' && secrets.SEATGEEK_CLIENT_ID != '' && secrets.SUPABASE_SERVICE_ROLE_KEY != '' && secrets.UPSTASH_REDIS_REST_TOKEN != '' && secrets.UPSTASH_REDIS_REST_URL != '' }}
         run: |
           if [ "$READY" = true ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
@@ -85,4 +84,11 @@ jobs:
           GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NUITEE_PRODUCTION_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
         run: node scripts/cloudflare-stage.mjs
