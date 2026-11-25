@@ -1,0 +1,53 @@
+name: Cloudflare OpenNext compatibility build
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/cloudflare-build-probe.yml']
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-build-probe.yml']
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-build-probe-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install locked app dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned adapter for disposable compatibility test
+        run: npm install --no-save --package-lock=false --no-audit --no-fund @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+      - name: Generate isolated Worker configuration (no domain or paid resource)
+        run: |
+          test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
+          cat > wrangler.jsonc <<'EOF'
+          {
+            "name": "gth-pro-migration",
+            "main": ".open-next/worker.js",
+            "compatibility_date": "2026-11-18",
+            "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+            "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-migration"}]
+          }
+          EOF
+          test ! -e open-next.config.ts
+          printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
+      - name: OpenNext build (no production credentials)
+        run: ./node_modules/.bin/opennextjs-cloudflare build
+      - name: Verify Worker bundle without uploading
+        run: |
+          test -f .open-next/worker.js
+          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run
