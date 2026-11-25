@@ -67,7 +67,7 @@ jobs:
           {
             "name": "gth-pro-migration",
             "main": ".open-next/worker.js",
-            "workers_dev": true,
+            "workers_dev": false,
             "preview_urls": false,
             "routes": [],
             "compatibility_date": "2026-11-18",
@@ -78,7 +78,7 @@ jobs:
           EOF
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
-      - name: Deploy isolated noindex staging Worker (never production)
+      - name: Deploy isolated private staging Worker (never production)
         if: steps.gate.outputs.ready == 'true'
         env:
           GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
