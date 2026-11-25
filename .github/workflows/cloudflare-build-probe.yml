@@ -59,7 +59,11 @@ jobs:
           EOF
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
-      - name: OpenNext build (no production credentials)
+      - name: OpenNext build (compile-only fixtures; never deployed)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+          GTH_PUBLIC_LAUNCH_ENABLED: "false"
         run: ./node_modules/.bin/opennextjs-cloudflare build
       - name: Verify Worker bundle without uploading
         run: |
