@@ -65,7 +65,7 @@ jobs:
           test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
           cat > wrangler.jsonc <<'EOF'
           {
-            "name": "gth-pro-migration",
+            "name": "gth-pro-preview-20261126",
             "main": ".open-next/worker.js",
             "minify": true,
             "workers_dev": false,
@@ -74,7 +74,7 @@ jobs:
             "compatibility_date": "2026-11-18",
             "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
             "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
-            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-migration"}]
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-preview-20261126"}]
           }
           EOF
           test ! -e open-next.config.ts
