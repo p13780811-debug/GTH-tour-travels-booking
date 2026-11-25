@@ -46,7 +46,7 @@ jobs:
                       errors=[]
                   codes=[str(x.get("code")) for x in errors if isinstance(x.get("code"),int)]
                   print(label + ": HTTP " + str(e.code) + "; Cloudflare error codes=" + ",".join(codes))
-                  if allow_missing_subdomain and e.code==404 and any("subdomain" in str(x.get("message","")).lower() and any(word in str(x.get("message","")).lower() for word in ("not found","not registered","not exist","no subdomain")) for x in errors):
+                  if allow_missing_subdomain and e.code==404 and "10007" in codes:
                       return None
                   sys.exit(label + " failed: HTTP " + str(e.code) + ". No further activation attempted.")
               except Exception:
