@@ -2,7 +2,7 @@ import {unstable_cache} from "next/cache";
 import {createClient} from "@supabase/supabase-js";
 import {getMobilityCity} from "@/lib/mobility/catalog";
 import type {MobilityCity} from "@/lib/mobility/city";
-import {mobilityOverpassQuery,parseMobilityMap} from "@/lib/mobility/osm";
+import {mobilityOverpassQuery,parseMobilityMap,reviewedMapCentre} from "@/lib/mobility/osm";
 
 const OVERPASS=["https://overpass.private.coffee/api/interpreter","https://overpass-api.de/api/interpreter"] as const;
 const cacheHeaders={"Cache-Control":"public, max-age=0, s-maxage=21600, stale-while-revalidate=3600"};
@@ -24,7 +24,7 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
         continue;
       }
       const body=await response.json();
-      const parsed=parseMobilityMap(body);
+      const parsed=parseMobilityMap(body,!!reviewedMapCentre(city));
       if(parsed)return {state:"available",...parsed} as const;
       // A valid empty/ambiguous result means trying an equivalent mirror would not help.
       if(!body.remark)break;
@@ -35,7 +35,7 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
   }
   // Never store provider errors as successful six-hour map snapshots.
   throw new Error("Mobility map unavailable");
-},["mobility-osm-city-v3"],{revalidate:21600});
+},["mobility-osm-city-v4"],{revalidate:21600});
 
 export async function GET(request:Request){
   try{
