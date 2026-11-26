@@ -10,3 +10,5 @@ Retry after run 45705845987: validated real configuration and completed OpenNext
 2026-11-26: Worker metafile audit and strict 2.8 MB gate.
 
 Private staging validation of the intact application under current Cloudflare 64 MiB uncompressed platform limit. Fresh isolated Worker; existing Worker, production domain and DNS unchanged. No public endpoint or production promotion authorized by this trigger.
+
+2026-11-26: Owner authorized Tokyo hotel fix redeployment on existing protected preview, with authenticated core-route audit. No domain/production changes in this workflow.
