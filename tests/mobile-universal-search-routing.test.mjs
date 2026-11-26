@@ -98,3 +98,5 @@ test("website-only tools open through an app confirmation without losing search 
  }
  assert.equal(route.appSearchHref(route.resolveUniversalTarget("Mumbai property"),"Mumbai property"),"/app/property?q=Mumbai");
 });
+
+test("explicit itinerary intent opens native package planner without overriding business searches",()=>{assert.equal(href("plan my trip"),"/app/packages");assert.equal(href("holiday package Tokyo"),"/app/packages");assert.notEqual(href("tender bid package"),"/app/packages");assert.equal(href("Tokyo hotels","hotel"),"/app/hotels?view=booking&city=Tokyo");});
