@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: gth-cloudflare-live-audit
+  group: gth-cloudflare-protected-preview-operations
   cancel-in-progress: false
 jobs:
   audit:
