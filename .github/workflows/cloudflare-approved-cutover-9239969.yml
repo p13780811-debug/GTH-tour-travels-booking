@@ -153,8 +153,34 @@ jobs:
               passed+=int(a[1] and b[1])
           print("PUBLIC_ROUTE_AUDIT",str(passed)+"/26",flush=True)
           require(passed==26,"Live route failures; do not claim zero errors")
-          final_checks=[probe(h,"/") for h in hosts]
-          print("FINAL_PUBLIC_HTTP",list(zip(hosts,final_checks)),flush=True)
-          require(all(ok and status==200 for status,ok in final_checks),"Both hostnames must return direct HTTP 200; inspect final results")
+          # Accept canonical HTTPS redirects only within the two approved hosts.
+          # Independently record initial and terminal HTTP status; never claim a
+          # direct 200 when a canonical redirect actually occurred.
+          def final_homepage(host):
+              url="https://"+host+"/"
+              seen=set()
+              chain=[]
+              for _ in range(5):
+                  require(url not in seen,"Canonical redirect loop for "+host)
+                  seen.add(url)
+                  parsed=urllib.parse.urlsplit(url)
+                  require(parsed.scheme=="https" and parsed.hostname in hosts and not parsed.username and not parsed.password and parsed.port in (None,443),"Unexpected canonical destination")
+                  req=urllib.request.Request(url,headers={"User-Agent":"GTH-Production-Release/1.0"})
+                  try:
+                      with no_redirect.open(req,timeout=20) as resp:
+                          status=resp.status; headers=resp.headers; data=resp.read(2000000)
+                  except urllib.error.HTTPError as e:
+                      status=e.code; headers=e.headers; data=e.read(16000)
+                  chain.append(status)
+                  if status in (301,302,307,308):
+                      require(bool(headers.get("Location")),"Redirect missing Location")
+                      url=urllib.parse.urljoin(url,headers["Location"])
+                      continue
+                  ok=status==200 and b"gth" in data.lower() and "html" in headers.get("Content-Type","") and not any(m in data.lower() for m in (b"application error: a server-side exception",b"worker threw exception",b"exceeded resource limits"))
+                  print("FINAL_PUBLIC_HTTP",host,"chain",chain,"final_host",parsed.hostname,"verified",ok,flush=True)
+                  return ok
+              raise SystemExit("Too many redirects for "+host)
+          final_checks=[final_homepage(h) for h in hosts]
+          require(all(final_checks),"Both HTTPS entrypoints must resolve to verified HTTP 200")
           print("PUBLIC_LAUNCH_VERIFIED",sha,flush=True)
           PY
