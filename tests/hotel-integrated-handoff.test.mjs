@@ -33,7 +33,7 @@ test("verified Mumbai city yields exact official White Label destination with gu
 });
 
 test("unmapped Kolkata/Paris preserve intent and fail over ONLY to supplier destination picker",()=>{
-  for(const city of ["Kolkata","Paris","Goa","Tokyo"]){
+  for(const city of ["Kolkata","Paris","Goa"]){
     const r=routing.resolveHotelRoute({destination:city,currency:"USD"},today);
     assert.equal(r.status,"unmapped");
     assert.equal(r.destination,city);
@@ -45,6 +45,19 @@ test("unmapped Kolkata/Paris preserve intent and fail over ONLY to supplier dest
   }
 });
 
+test("Tokyo uses documented Google Place ID and preserves exact stay dates and guests",()=>{
+  const r=routing.resolveHotelRoute({destination:"Tokyo",countryCode:"JP",checkIn:"2026-12-20",checkOut:"2026-12-23",adults:3,currency:"JPY"},today);
+  assert.equal(r.status,"ready");
+  const u=new URL(r.url);
+  assert.equal(u.origin,"https://hotel.gthproglobal.com");
+  assert.equal(u.pathname,"/hotels");
+  assert.equal(u.searchParams.get("placeId"),"ChIJ51cu8IcbXWARiRtXIothAS4");
+  assert.equal(u.searchParams.get("checkin"),"2026-12-20");
+  assert.equal(u.searchParams.get("checkout"),"2026-12-23");
+  assert.equal(u.searchParams.get("currency"),"JPY");
+  assert.equal(JSON.parse(atob(u.searchParams.get("occupancies")))[0].adults,3);
+  assert.equal(routing.resolveHotelRoute({destination:"Tokyo",countryCode:"US"},today).status,"unmapped");
+});
 test("unsafe or unverified IDs, dates and parties cannot synthesize supplier inventory",()=>{
   assert.equal(routing.resolveHotelRoute({destination:"javascript:alert(1)"},today).status,"invalid");
   assert.equal(routing.resolveHotelRoute({hotelId:"arbitrary-record"},today).status,"invalid");
