@@ -30,7 +30,8 @@ const optional = [
 ];
 const allowed = new Set([...required, ...optional]);
 const recoveredNames = ["CRON_SECRET","NUITEE_PRODUCTION_API_KEY","ODDS_API_KEY","SEATGEEK_CLIENT_ID","SUPABASE_SERVICE_ROLE_KEY","UPSTASH_REDIS_REST_TOKEN","UPSTASH_REDIS_REST_URL"];
-const target = "gth-pro-preview-20261126";
+const productionCandidate=process.env.GTH_CF_DEPLOY_TARGET==="production-candidate";
+const target=productionCandidate?"gth-pro-production":"gth-pro-preview-20261126";
 const valid = value => typeof value === "string" && value.trim() && !/^(undefined|null|\[redacted\]|\*+)$/i.test(value.trim());
 const token = process.env.CLOUDFLARE_API_TOKEN;
 const account = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -122,10 +123,11 @@ async function main() {
 
   // Staging-specific overrides only. Original source configuration is unchanged.
   delete values.GTH_LEGACY_PEXELS_KEY_DISABLED;
-  values.GTH_PUBLIC_LAUNCH_ENABLED = "false";
-  values.GTH_RATE_LIMIT_NAMESPACE = "gth-pro-cloudflare-preview";
+  values.GTH_PUBLIC_LAUNCH_ENABLED=productionCandidate?"true":"false";
+  values.GTH_RATE_LIMIT_NAMESPACE=productionCandidate?"gth-pro-cloudflare-production":"gth-pro-cloudflare-preview";
+  values.GTH_CLOUDFLARE_INGRESS="1";
   values.GTH_INGESTION_ENABLED = "false";
-  values.VERCEL_ENV = "preview"; // Existing SEO and budget code uses this environment label, not VERCEL=1.
+  values.VERCEL_ENV=productionCandidate?"production":"preview"; // Existing SEO and budget code uses this environment label, not VERCEL=1.
   if (Object.keys(values).length > 64) stop("Worker free-tier environment limit exceeded.");
   const response = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts", {
     headers: { Authorization: "Bearer " + token }, redirect: "error", signal: AbortSignal.timeout(30000)
@@ -133,7 +135,8 @@ async function main() {
   if (!response.ok) stop("Cannot verify staging target (HTTP " + response.status + ").");
   const data = await response.json();
   if (!data.success || !Array.isArray(data.result)) stop("Invalid Cloudflare target inventory response.");
-  if (!data.result.some(w => w.id === target)) stop("Expected existing protected preview Worker is missing.");
+  if(productionCandidate&&data.result.some(w=>w.id===target)) stop("Production candidate already exists; refusing to overwrite.");
+  if(!productionCandidate&&!data.result.some(w=>w.id===target)) stop("Expected existing protected preview Worker is missing.");
   const cfRead = async path => {
     const r = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + path, {
       headers:{Authorization:"Bearer "+token}, redirect:"error", signal:AbortSignal.timeout(30000)
@@ -142,7 +145,21 @@ async function main() {
     const d=await r.json(); if(!d.success) stop("Preview protection inventory rejected.");
     return d.result;
   };
-  const verifyProtection = async () => {
+  const verifyProtection = async (afterUpload=false) => {
+    if(productionCandidate){
+      const scripts=await cfRead("/workers/scripts");
+      const domains=await cfRead("/workers/domains");
+      if(!Array.isArray(scripts)||!Array.isArray(domains)||domains.some(d=>d.service===target)) stop("Production candidate custom-domain isolation not verified.");
+      if(!afterUpload){
+        if(scripts.some(w=>w.id===target)) stop("Production candidate appeared during build; refusing overwrite.");
+      }else{
+        const worker=await cfRead("/workers/workers/"+target);
+        const sub=await cfRead("/workers/scripts/"+target+"/subdomain");
+        if(worker?.name!==target||sub?.enabled!==false||sub?.previews_enabled!==false) stop("Production candidate URL isolation not verified.");
+      }
+      console.log("Production candidate isolation verified; no public routes or preview URLs.");
+      return;
+    }
     const worker=await cfRead("/workers/workers/"+target);
     if(worker?.name!==target) stop("Unexpected Worker identity.");
     const sub=await cfRead("/workers/scripts/"+target+"/subdomain");
@@ -163,7 +180,7 @@ async function main() {
   await verifyProtection();
   if (!existsSync("wrangler.jsonc") || !existsSync("open-next.config.ts")) stop("Missing tested Worker config.");
   const config = JSON.parse((await import("node:fs")).readFileSync("wrangler.jsonc", "utf8"));
-  if (config.name !== target || config.routes?.length || config.workers_dev !== true || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
+  if (config.name !== target || config.routes?.length || config.workers_dev !== !productionCandidate || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
   const pub = Object.fromEntries(Object.entries(values).filter(([k])=>k.startsWith("NEXT_PUBLIC_")));
   console.log("Staging inventory validated. Running real-config build with public variables only.");
   // Adapt only the original Edge runtime declarations in this disposable checkout.
@@ -185,7 +202,7 @@ async function main() {
   try {
     for (const [path,before,after] of adaptations) writeFileSync(path, originals.get(path).replace(before,after));
     build = spawnSync("./node_modules/.bin/opennextjs-cloudflare", ["build"], {
-      env: {...base, ...pub, GTH_CLOUDFLARE_EXTERNALS_PROBE:"1", GTH_PUBLIC_LAUNCH_ENABLED:"false", VERCEL_ENV:"preview"},
+      env: {...base, ...pub, GTH_CLOUDFLARE_EXTERNALS_PROBE:"1", GTH_PUBLIC_LAUNCH_ENABLED:values.GTH_PUBLIC_LAUNCH_ENABLED, VERCEL_ENV:values.VERCEL_ENV},
       stdio: "inherit", timeout: 1200000
     });
   } finally {
@@ -283,8 +300,8 @@ async function main() {
   const exists = inventory.result.some(w => w.id === target);
   console.log("Private staging Worker exists: " + (exists ? "yes" : "no"));
   if (deploy.status !== 0 || !exists) stop("Private deployment not verified; do not overwrite any existing resource.");
-  await verifyProtection();
-  console.log("Protected preview redeployed; Access challenge retained. Source commit: "+process.env.GITHUB_SHA);
+  await verifyProtection(true);
+  console.log((productionCandidate?"Isolated production candidate deployed; no public URL.":"Protected preview redeployed; Access challenge retained.")+" Source commit: "+process.env.GITHUB_SHA);
   console.log("DNS unchanged. Production rollout requires smoke tests and explicit release.");
 }
 try { await main(); } catch { if(!process.exitCode) { console.error("Staging operation failed; no success assumed."); process.exitCode=1; } } finally { if(dir) rmSync(dir,{recursive:true,force:true}); }
