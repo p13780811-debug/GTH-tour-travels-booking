@@ -71,6 +71,8 @@ def request(url,headers=None):
             obj=json.loads(data)
             if isinstance(obj,dict):
                 result["counts"]={k:len(obj[k]) for k in ("items","cities","hotels","reports","zones","data","features") if isinstance(obj.get(k),list)}
+                if obj.get("source") in ("dated-osm-extract","overpass"): result["map_source"]=obj["source"]
+                if isinstance(obj.get("updatedAt"),str) and re.fullmatch(r"[0-9T:.+Z-]{10,40}",obj["updatedAt"]): result["map_updated_at"]=obj["updatedAt"]
                 for key in ("state","degraded","countryRequired"):
                     value=obj.get(key)
                     if isinstance(value,bool) or value in ("available","unavailable","unknown","empty","partial"): result[key]=value
@@ -158,7 +160,7 @@ try:
             print("ROUTE_RETRY",json.dumps({"path":path,"result":retry}),flush=True)
         time.sleep(1)
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
-        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or any(x["status"] not in (200,301,302,307,308) or x.get("runtime_error_marker") or x.get("has_error") or x.get("state") in ("unavailable","unknown") or x.get("degraded") is True for x in observations) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
+        if (path=="/api/mobility/map?city=mumbai" and (first.get("state")!="available" or first.get("counts",{}).get("features",0)<5 or not first.get("map_updated_at"))) or (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or any(x["status"] not in (200,301,302,307,308) or x.get("runtime_error_marker") or x.get("has_error") or x.get("state") in ("unavailable","unknown") or x.get("degraded") is True for x in observations) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
             failed=True
     print("ROUTE_AUDIT", "FAILURES_PRESENT" if failed else "HTTP_CHECKS_PASSED",flush=True)
 finally:
