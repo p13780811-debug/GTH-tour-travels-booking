@@ -14,7 +14,7 @@ export type DestinationService = {
   pillar:"Travel"|"Real Estate"|"Tenders"|"Tickets";
 };
 const ISO:Readonly<Record<string,string>>={
- "India":"IN","United Arab Emirates":"AE","France":"FR","Indonesia":"ID","Thailand":"TH",
+ "Australia":"AU","India":"IN","United Arab Emirates":"AE","France":"FR","Indonesia":"ID","Thailand":"TH",
  "Singapore":"SG","Japan":"JP","United Kingdom":"GB","United States":"US",
  "Maldives":"MV","Sri Lanka":"LK","China":"CN","Hungary":"HU","South Africa":"ZA",
  "Denmark":"DK","Ireland":"IE","Switzerland":"CH","Vietnam":"VN","Finland":"FI",
@@ -23,18 +23,23 @@ const ISO:Readonly<Record<string,string>>={
  "Norway":"NO","Portugal":"PT","Czechia":"CZ","Austria":"AT","Sweden":"SE","Italy":"IT"
 };
 /** Destination context is a planning hint, not a ticket or supplier-verified route. */
-export function destinationFlightHref(name:string):string{
- const airport=flightDestinations.find(item=>item.name.toLocaleLowerCase("en")===name.toLocaleLowerCase("en"))?.destination;
+export function destinationFlightHref(name:string,countryCode?:string|null):string{
+ const expected:Readonly<Record<string,string>>={DXB:"AE",BKK:"TH",SIN:"SG",GOI:"IN",DPS:"ID",LHR:"GB"};
+ const match=flightDestinations.find(item=>item.name.toLocaleLowerCase("en")===name.toLocaleLowerCase("en"));
+ const airport=match&&(countryCode===undefined||countryCode===expected[match.destination])?match.destination:undefined;
  const params=new URLSearchParams();
  if(airport)params.set("destination",airport);
  params.set("destinationCity",name.slice(0,80));
  return "/flights?"+params.toString()+"#flight-search";
 }
-export function destinationServices(place:{slug:string;name:string;country:string|null}):DestinationService[]{
- const country=place.country ? ISO[place.country] : undefined;
+export function destinationCountryCode(country:string|null|undefined,recorded?:string|null):string|null{
+ return recorded&&/^[A-Z]{2}$/.test(recorded)?recorded:country?ISO[country]??null:null;
+}
+export function destinationServices(place:{slug:string;name:string;country:string|null;countryCode?:string|null}):DestinationService[]{
+ const country=destinationCountryCode(place.country,place.countryCode)??undefined;
  const realEstate=new URLSearchParams({city:place.name});
  if(place.country)realEstate.set("country",place.country);
- const localVenues=stadiums.filter(venue=>venue.city.toLocaleLowerCase("en")===place.name.toLocaleLowerCase("en")&&(!place.country||venue.country===place.country));
+ const localVenues=stadiums.filter(venue=>venue.city.toLocaleLowerCase("en")===place.name.toLocaleLowerCase("en")&&Boolean(country)&&venue.countryCode===country);
  const localVenue=localVenues.length===1?localVenues[0]:null;
  // Use only directory-supported filters; do not treat regions or countries as cities.
  const attractionFilters=new URLSearchParams();
@@ -49,8 +54,9 @@ export function destinationServices(place:{slug:string;name:string;country:strin
  const tender=new URLSearchParams({scope:"world"});
  if(country)tender.set("country",country);
  return [
-  {key:"hotels",label:"Hotels & stays",description:"Open the Nuitee booking search for this city",href:"/hotels?"+new URLSearchParams({view:"booking",city:place.name,...(country?{country}:{})}).toString(),scope:"destination",pillar:"Travel"},
-  {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name),scope:"destination",pillar:"Travel"},
+  {key:"hotels",label:"Hotels & stays",description:"Find stays with the existing hotel booking network",href:"/hotels?"+new URLSearchParams({view:"booking",city:place.name,...(country?{country}:{})}).toString(),scope:"destination",pillar:"Travel"},
+  {key:"packages",label:"Build a travel plan",description:"Combine flights, stays, experiences and transfers",href:"/travel/packages?"+new URLSearchParams({city:place.name,...(country?{country}:{})}).toString()+"#package-builder",scope:country?"destination":"global",pillar:"Travel"},
+  {key:"flights",label:"Flights",description:"Compare routes and dates",href:destinationFlightHref(place.name,country??null),scope:"destination",pillar:"Travel"},
   {key:"tours",label:"Tours",description:"Explore listed local tours",href:"/tours?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"activities",label:"Activities",description:"Discover local experiences",href:"/activities?"+new URLSearchParams({city:place.name}).toString()+"#discover",scope:"destination",pillar:"Travel"},
   {key:"attractions",label:"Mapped attractions",description:"Browse real community-mapped place records; coverage varies by location",href:attractionHref,scope:attractionScope,pillar:"Travel"},

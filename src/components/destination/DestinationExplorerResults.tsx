@@ -5,7 +5,7 @@ import Link from "next/link";
 import {useEffect, useRef, useState} from "react";
 import {ArrowRight, BookOpen, Check, Columns3, GitCompareArrows, Heart, Hotel, LayoutGrid, List, MapPin, Plane, X} from "lucide-react";
 import type {DestinationCardInfo} from "@/components/destination/DestinationCard";
-import {destinationFlightHref} from "@/lib/destinations/ecosystem";
+import {destinationFlightHref,destinationCountryCode} from "@/lib/destinations/ecosystem";
 import {destinationDetailHref} from "@/lib/destinations/detail-link";
 
 const SAVED_KEY="gth-destination-explorer-saved-v1";
@@ -98,7 +98,7 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
      return <article key={item.slug} className={"group min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-shadow hover:shadow-md "+(view==="list"?"flex flex-col sm:flex-row":"flex flex-col")}>
       <Link href={destinationDetailHref(item)} aria-label={"Explore "+item.title+" destination guide"}
         className={"relative block shrink-0 overflow-hidden bg-[var(--bg-soft)] "+(view==="list"?"aspect-[16/10] w-full sm:aspect-auto sm:w-[220px]":"aspect-[16/10] w-full")}>
-       <Image src={item.image} alt={item.title+" destination illustration"} fill sizes={view==="list"?"(max-width: 640px) 100vw, 220px":"(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"}
+       <Image src={item.image} alt={item.image==="/images/default-city.jpg"?"":item.title+" destination illustration"} fill sizes={view==="list"?"(max-width: 640px) 100vw, 220px":"(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"}
         className="object-cover transition-transform duration-300 group-hover:scale-[1.035]"/>
        <span className="absolute bottom-2 left-2 rounded-lg bg-black/75 px-2 py-1 text-[10px] font-semibold text-white">{isGuide?"Editorial guide":"Destination directory"}</span>
       </Link>
@@ -128,9 +128,9 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
         </Link>
        </div>
        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-3 text-xs">
-        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/hotels?view=booking&city="+encodeURIComponent(item.title)+"&destination="+encodeURIComponent(item.slug)}><Hotel size={13}/> Hotels</Link>
+        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/hotels?view=booking&city="+encodeURIComponent(item.title)+"&destination="+encodeURIComponent(item.slug)+(destinationCountryCode(item.country,item.countryCode)?"&country="+destinationCountryCode(item.country,item.countryCode):"")}><Hotel size={13}/> Hotels</Link>
         <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={"/tours?city="+encodeURIComponent(item.title)+"#discover"}><Columns3 size={13}/> Tours</Link>
-        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={destinationFlightHref(item.title)}><Plane size={13}/> Flights</Link>
+        <Link className="inline-flex min-h-8 items-center gap-1 underline underline-offset-4" href={destinationFlightHref(item.title,destinationCountryCode(item.country,item.countryCode))}><Plane size={13}/> Flights</Link>
        </div>
       </div>
      </article>;
