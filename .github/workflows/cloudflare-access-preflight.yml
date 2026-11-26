@@ -134,3 +134,8 @@ jobs:
                           if term in msg: categories.add(term)
                   print(label+": HTTP "+str(e.code)+" codes="+",".join(str(x.get("code")) for x in errors)+" categories="+",".join(sorted(categories)))
           PY
+      - name: Find latest live audit runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-live-audit.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=3' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
