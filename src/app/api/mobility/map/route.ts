@@ -2,7 +2,9 @@ import {unstable_cache} from "next/cache";
 import {createClient} from "@supabase/supabase-js";
 import {getMobilityCity} from "@/lib/mobility/catalog";
 import type {MobilityCity} from "@/lib/mobility/city";
-import {mobilityOverpassQuery,parseMobilityMap,reviewedMapCentre} from "@/lib/mobility/osm";
+import {mobilityOverpassQuery,parseMobilityMap,reviewedMapCentre,validatedMumbaiSnapshot} from "@/lib/mobility/osm";
+
+import mumbaiSnapshot from "@/lib/mobility/mumbai-osm-snapshot.json";
 
 const OVERPASS=["https://overpass.private.coffee/api/interpreter","https://overpass-api.de/api/interpreter"] as const;
 const cacheHeaders={"Cache-Control":"public, max-age=0, s-maxage=21600, stale-while-revalidate=3600"};
@@ -25,7 +27,7 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
       }
       const body=await response.json();
       const parsed=parseMobilityMap(body,!!reviewedMapCentre(city));
-      if(parsed)return {state:"available",...parsed} as const;
+      if(parsed&&parsed.features.length)return {state:"available",...parsed,source:"overpass"} as const;
       // A valid empty/ambiguous result means trying an equivalent mirror would not help.
       if(!body.remark)break;
       console.warn("Mobility map provider returned a partial snapshot",new URL(endpoint).hostname);
@@ -42,6 +44,10 @@ export async function GET(request:Request){
     const slug=new URL(request.url).searchParams.get("city")??"";
     const city=await getMobilityCity(slug);
     if(!city||city.slug!==slug)return Response.json({state:"unknown"},{status:404,headers:{"Cache-Control":"no-store"}});
+    // Prefer the dated local extract for Mumbai to avoid repeated upstream timeouts.
+    // After its freshness window expires the existing live lookup remains available.
+    const snapshot=validatedMumbaiSnapshot(mumbaiSnapshot,city);
+    if(snapshot)return Response.json({state:"available",...snapshot},{headers:cacheHeaders});
     const result=await mapData(city);
     return Response.json(result,{headers:cacheHeaders});
   }catch{return Response.json({state:"unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
