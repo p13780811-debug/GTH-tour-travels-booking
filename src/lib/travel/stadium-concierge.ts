@@ -1,4 +1,5 @@
 import type {Stadium} from "./stadiums";
+import {eventHotelBookingHref} from "./hotel-routing";
 export const venueLocations:Record<string,{lat:number;lng:number;transit:string}>={
  "eden-gardens":{lat:22.5646,lng:88.3433,transit:"Esplanade / Chandni Chowk Metro; check event-day gate notices."},
  "wankhede-stadium":{lat:18.9389,lng:72.8258,transit:"Churchgate railway station; follow your ticket's gate instructions."},
@@ -18,12 +19,5 @@ export function haversineKm(a:{lat:number;lng:number},b:{lat:number;lng:number})
  return 6371*2*Math.asin(Math.min(1,Math.sqrt(h)));
 }
 export function safeHotelHandoff(venue:Pick<Stadium,"city"|"countryCode"|"slug">):string {
- const custom=process.env.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL;
- let base="https://gthproglobal.nuitee.link/";
- if(custom){try{const u=new URL(custom);if(u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&!u.hash&&u.hostname.endsWith(".nuitee.link"))base=u.origin+"/";}catch{/* safe fallback */}}
- const u=new URL(base);
- u.searchParams.set("city",venue.city.slice(0,80));u.searchParams.set("country",venue.countryCode);
- const geo=venueLocations[venue.slug];
- if(geo){u.searchParams.set("latitude",String(geo.lat));u.searchParams.set("longitude",String(geo.lng));}
- return u.toString();
+ return eventHotelBookingHref(venue.city,venue.countryCode);
 }

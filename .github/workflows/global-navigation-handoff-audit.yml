@@ -1,0 +1,74 @@
+name: Global navigation handoff audit
+on:
+  pull_request:
+    branches: [infra/cloudflare-preflight-20261125]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Inventory navigation and report candidate defects
+        run: node scripts/audit-navigation.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: navigation-audit
+          path: navigation-audit/report.json
+      - name: Existing and new navigation regression tests
+        run: node --test tests/*.test.mjs
+      - name: TypeScript verification
+        run: npx --no-install tsc --noEmit
+  transport-https:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate public certificate and transport redirect chain
+        run: python3 scripts/qa-transport-https.py
+  browser-journeys:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci --legacy-peer-deps
+      - name: Install isolated Chromium
+        run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Start isolated app
+        run: |
+          npm run dev > /tmp/gth-navigation-dev.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl -fsS --max-time 3 http://127.0.0.1:3000/manifest.webmanifest >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          tail -80 /tmp/gth-navigation-dev.log
+          exit 1
+      - name: Existing cross-pillar mobile journeys
+        run: node scripts/qa-app-unified-journey.mjs
+      - name: Melbourne exact hotel handoff and supplier rendering
+        if: success() || failure()
+        run: node scripts/qa-event-hotel-handoff.mjs
+      - name: Local application diagnostics
+        if: failure()
+        run: tail -80 /tmp/gth-navigation-dev.log
