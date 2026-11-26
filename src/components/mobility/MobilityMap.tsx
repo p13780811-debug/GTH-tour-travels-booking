@@ -42,7 +42,7 @@ export default function MobilityMap({city}:{city:MobilityCity}){
     <p className="mt-2 text-sm text-[var(--text-soft)]">Mapped infrastructure and construction come from OpenStreetMap. Check official local information for current restrictions and service status.</p>
     {!opened&&<button type="button" className="gth-btn mt-2 min-h-11 rounded-xl px-3 text-sm" onClick={()=>setOpened(true)}>Load mapped features</button>}
     <p role="status" className="mt-2 text-sm text-[var(--text-soft)]">{data?
-      "Source map snapshot · "+new Date(data.updatedAt).toLocaleDateString() :
+      (data.source==="dated-osm-extract"?"Dated OpenStreetMap extract · ":"Source map snapshot · ")+new Date(data.updatedAt).toLocaleDateString()+(data.source==="dated-osm-extract"?" · Not live traffic":"") :
       failed?"Mapped features are temporarily unavailable here. You can still explore the city map and operator links." :
       opened?"Checking mapped features…":"Explore the map by category."}</p>
     <div className="mt-3 grid gap-3 md:grid-cols-3">
@@ -62,5 +62,6 @@ export default function MobilityMap({city}:{city:MobilityCity}){
     </div>
     <a className="mt-2 inline-flex min-h-11 items-center text-xs underline" href="https://www.openstreetmap.org/copyright"
       target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+    {data?.source==="dated-osm-extract"&&<a className="ml-3 inline-flex min-h-11 items-center text-xs underline" href="https://download.bbbike.org/osm/bbbike/Bombay/" target="_blank" rel="noopener noreferrer">Extract by BBBike · ODbL</a>}
   </section>;
 }
