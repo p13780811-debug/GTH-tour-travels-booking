@@ -2,7 +2,7 @@ import type {MobilityCity} from "./city";
 
 export type MapKind="camera"|"transit"|"roadwork";
 export type MobilityMapFeature={name:string;kind:MapKind;href:string};
-export type MobilityMapData={updatedAt:string;features:MobilityMapFeature[]};
+export type MobilityMapData={updatedAt:string;features:MobilityMapFeature[];source?:"overpass"|"dated-osm-extract"};
 
 // Reviewed city-centre coordinates from OpenStreetMap wiki Mumbai and Kolkata.
 // Fixed, country-scoped centres avoid expensive nationwide name/area lookups.
@@ -67,4 +67,26 @@ export function parseMobilityMap(value:unknown, fixedCentre=false):MobilityMapDa
     features.push({kind,name,href});
   }
   return {updatedAt:timestamp,features};
+}
+
+/** A bounded, date-labelled extract, never represented as live traffic. */
+export function validatedMumbaiSnapshot(value:unknown,city:MobilityCity,now=Date.now()):MobilityMapData|null{
+  if(city.slug!=="mumbai"||city.countryCode!=="IN"||!value||typeof value!=="object")return null;
+  const v=value as Record<string,unknown>;
+  if(v.slug!=="mumbai"||v.countryCode!=="IN"||v.license!=="ODbL-1.0"||
+    v.source!=="https://download.bbbike.org/osm/bbbike/Bombay/Bombay.osm.gz"||
+    typeof v.sha256!=="string"||!(/^[a-f0-9]{64}$/).test(v.sha256)||typeof v.updatedAt!=="string"||
+    !Array.isArray(v.features)||v.features.length>36)return null;
+  const age=now-Date.parse(v.updatedAt);
+  if(!Number.isFinite(age)||age<0||age>30*86400000)return null;
+  const seen=new Set<string>();
+  const features:MobilityMapFeature[]=[];
+  for(const f of v.features){
+    if(!f||!["camera","transit","roadwork"].includes(f.kind)||typeof f.name!=="string"||
+      !f.name.trim()||f.name.length>100||typeof f.href!=="string"||
+      !/^https:\/\/www\.openstreetmap\.org\/(node|way|relation)\/[1-9]\d*$/.test(f.href)||seen.has(f.href))return null;
+    seen.add(f.href);features.push({kind:f.kind,name:f.name,href:f.href});
+  }
+  if(features.filter(f=>f.kind==="transit").length<5)return null;
+  return {updatedAt:v.updatedAt,features,source:"dated-osm-extract"};
 }
