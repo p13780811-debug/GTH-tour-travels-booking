@@ -7,7 +7,7 @@ import {parseTourFilters,type ExperiencePath} from "@/lib/tours/discovery";
 import {loadPersistedSupplierProducts} from "@/lib/tours/persisted-inventory";
 import {getFreeHotelProfiles} from "@/lib/travel/nuitee-free-hotels";
 import {HOTEL_BOOKING_ORIGIN} from "@/lib/travel/hotel-whitelabel";
-import {trackedHotelCityHref} from "@/lib/travel/klook-hotel-search";
+import {destinationHotelHref} from "@/lib/travel/klook-hotel-search";
 import {destinationExperienceLinks,destinationPartnerCatalog,supplierPrice} from "@/lib/tours/destination-partner-catalog";
 import {listPlaces} from "@/lib/travel/osmAttractions";
 import {osmPlacePath,validOsmPlace} from "@/lib/travel/osm-place";
@@ -80,8 +80,9 @@ export default async function DestinationSupplierPicks({city,country,countryCode
       detail:v.sports.join(" · ")+" · official event information",
       href:"/stadiums/"+v.slug,image:null,external:false})):[];
   const hotelQuery = new URLSearchParams({ view: "booking", city, ...(code ? { country: code } : {}) });
-  const hasReviewedHotelDestination = isGoa || (code === "AE" && cityName(city) === "dubai");
-  const reviewedHotelHref = hasReviewedHotelDestination ? trackedHotelCityHref(city) : null;
+  // Reuse the common hotel resolver: exact White Label city ID first,
+  // reviewed city-specific alternate second, genuine search otherwise.
+  const reviewedHotelHref = code ? destinationHotelHref(city, code) : null;
   const tourLinks = destinationExperienceLinks(city,country,"tours");
   const activityLinks = destinationExperienceLinks(city,country,"activities");
   const attractionQuery = new URLSearchParams(code ? {country:code,...(isGoa?{region:"goa"}:{city})} : {});
@@ -106,7 +107,7 @@ export default async function DestinationSupplierPicks({city,country,countryCode
       cta:"Explore attractions",items:[...attractionCards,...mappedCards].slice(0,3)},
     {id:"destination-hotels",title:"Stays in "+city,hint:"Supplier hotel profiles only; no fabricated dates or live room rates",
       empty:"No exact city-matched supplier hotel profiles available.",
-      href:(!hotelCards.length && reviewedHotelHref) || "/hotels?" + hotelQuery.toString() + "#hotel-booking-experience",
+      href:reviewedHotelHref || "/hotels?" + hotelQuery.toString() + "#hotel-booking-experience",
       cta:"Search stays with dates",items:hotelCards},
     {id:"destination-stadiums",title:"Stadiums in "+city,hint:"Up to 3 host-city venue guides with official schedule references; not live seats",
       empty:"No verified stadium guide mapped to this exact city.",href:"/stadiums",cta:"Browse stadium guide directory",items:venueCards},
