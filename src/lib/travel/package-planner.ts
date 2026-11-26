@@ -41,7 +41,7 @@ export function buildPackagePlan(draft:PackageDraft,now=new Date()):{ok:true;pla
  const lead=(Date.parse(trip.end+"T00:00:00Z")-Date.parse(now.toISOString().slice(0,10)+"T00:00:00Z"))/86400000;
  if(nights<1||nights>90||lead>365)return {ok:false,error:"Choose a trip of 1–90 nights ending within the next 365 days."};
  const occupancy=normalizeHotelOccupancies([{adults:trip.adults,rooms:trip.rooms,children:[]}]);
- if(!occupancy)return {ok:false,error:"Check the room and adult counts."};
+ if(!occupancy||trip.adults*trip.rooms>20)return {ok:false,error:"Choose up to 20 adults in total across all rooms."};
  const hotel=resolveHotelRoute({destination:city,countryCode:trip.country,checkIn:trip.start,checkOut:trip.end,occupancies:occupancy,currency:trip.currency},now);
  const flight=connectedFlightHref(trip);
  if(hotel.status==="invalid"||!flight)return {ok:false,error:"The travel dates or booking details could not be validated."};

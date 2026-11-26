@@ -60,13 +60,14 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
   // The same strict allowlist validates both SDK callbacks and restored query strings.
   const selectedStay = bookingQuery ? parseHotelBookingSearch(new URLSearchParams(bookingQuery)) : null;
   const handoff = selectedStay ? hotelWhiteLabelUrl(selectedStay) : "";
-  const invalidStay = query.get("bookingError") === "invalid-stay" ||
-    (["checkin", "checkout", "occupancies"].some(key => query.has(key)) && !restored);
   // When a first-party card/master search explicitly supplied a city, use
   // the fixed-origin zero-API handoff instead of asking users to repeat it
   // in an SDK autocomplete. Other visits still use the genuine supplier SDK.
   const cityParams = new URLSearchParams();
-  if (cityHint && !restored) {
+  const cityInputSafe = !["placeId","hotelId","occupancies"].some(key=>query.has(key)) &&
+    ["city","destination","country","checkin","checkout","adults","rooms","currency"].every(key=>query.getAll(key).length<=1) &&
+    ["checkin","checkout","adults","rooms"].every(key=>!query.has(key)||Boolean(query.get(key))&&query.get(key)!.length<=20);
+  if (cityHint && !restored && cityInputSafe) {
     cityParams.set("city", cityHint);
     cityParams.set("currency", displayCurrency);
     if (countryHint !== undefined) cityParams.set("country", countryHint);
@@ -82,6 +83,10 @@ export default function HotelBookingExperience({ searchPath = "/hotels", currenc
     adults:cityParams.get("adults")??undefined,
     rooms:cityParams.get("rooms")??undefined,
   }) : null;
+  // A valid city-and-date handoff is not a malformed saved Place ID search.
+  const validCityStay = cityInputSafe && cityResolution !== null && cityResolution.status !== "invalid";
+  const invalidStay = query.get("bookingError") === "invalid-stay" ||
+    (["checkin","checkout","occupancies"].some(key=>query.has(key)) && !restored && !validCityStay);
   // Never throw an unknown city onto a generic supplier homepage without
   // preserving the selected city. Keep the original real supplier picker for it.
   const cityBookingHref = cityResolution?.status==="ready" ? "/api/hotels/booking?" + cityParams.toString() : "";
