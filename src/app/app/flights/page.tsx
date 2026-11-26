@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
+import MarketplaceSectionPhoto from "@/components/mobile/MarketplaceSectionPhoto";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
 import GTHTransportSearchWidget from "@/components/travel/GTHTransportSearchWidget";
 import FlightJourneyServices from "@/components/flights/FlightJourneyServices";
@@ -11,7 +12,7 @@ export default async function AppFlights({searchParams}:{searchParams:Promise<Re
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
   <div className="mx-auto w-full max-w-7xl pt-3">
-   <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Flights</h1>
+   <div className="mx-4 mb-4 sm:mx-6"><MarketplaceSectionPhoto kind="flights"/><h1 className="mt-3 text-xl font-semibold">Flights</h1></div>
    <FlightServiceShortcuts/>
    {!isResultsView && <div className="px-4 sm:px-6"><GTHTransportSearchWidget mode="flight" flightOnly /><p className="mb-4 text-sm text-[var(--text-soft)]">No matching first-network flight? Use the alternative flight search below.</p></div>}
    <AviasalesWhiteLabel isResultsView={isResultsView} resultsPath="/app/flights"/>

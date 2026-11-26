@@ -2,6 +2,7 @@ export type AppPillar="all"|"travel"|"property"|"tender"|"tickets";
 export const appServices=[
  {id:"flights",label:"Flights",href:"/app/flights",pillar:"travel",icon:"plane",keywords:"air airport airline tickets"},
  {id:"hotels",label:"Hotels",href:"/app/hotels",pillar:"travel",icon:"hotel",keywords:"stay rooms booking"},
+ {id:"packages",label:"Travel packages",href:"/app/packages",pillar:"travel",icon:"compass",keywords:"combined itinerary holiday flight hotel experiences"},
  {id:"property",label:"Property",href:"/app/property",pillar:"property",icon:"building",keywords:"real estate registry projects home"},
  {id:"tenders",label:"Tenders",href:"/app/tenders",pillar:"tender",icon:"briefcase",keywords:"procurement opportunities bids"},
  {id:"transfers",label:"Airport transfers",href:"/transfers",pillar:"travel",icon:"transfer",keywords:"pickup drop taxi"},

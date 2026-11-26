@@ -1,0 +1,11 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync,existsSync} from "node:fs";
+import ts from "typescript";
+const read=p=>readFileSync(p,"utf8");
+const m={exports:{}};
+new Function("module","exports","require",ts.transpileModule(read("src/lib/mobile/marketplace-visuals.ts"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText)(m,m.exports,n=>{assert.equal(n,"./marketplace-generated-media.json");return JSON.parse(read("src/lib/mobile/marketplace-generated-media.json"));});
+const {marketplacePhoto,marketplaceServices,marketplaceHubs}=m.exports;
+test("all luxury marketplace cards link to existing routes and local images",()=>{for(const item of [...marketplaceServices,...marketplaceHubs]){assert.ok(existsSync("public"+marketplacePhoto(item.kind)));const p=item.href.slice(1);assert.ok(existsSync("src/app/"+p+"/page.tsx")||existsSync("src/app/"+p+"/route.ts")||(/^app\/services\//.test(p)&&existsSync("src/app/app/services/[id]/page.tsx"))||(/^stadiums\//.test(p)&&existsSync("src/app/stadiums/[slug]/page.tsx"))||(/^destinations\//.test(p)&&existsSync("src/app/destinations/[slug]/page.tsx")),p);}});
+test("app reuses PR262 package planner and existing search, supplier showcase and saved tools",()=>{assert.match(read("src/app/app/packages/page.tsx"),/<TravelPackagePlanner\/>/);const home=read("src/app/app/page.tsx");for(const name of ["EcosystemHeroCarousel","EcosystemUnifiedSearch","MobileSupplierShowcase","MobileAppDashboard","AppResearchQuickAccess","EcosystemPillars","MobileMarketplaceShowcase"])assert.ok(home.includes("<"+name));assert.match(read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx"),/Ask GTH AI/);assert.match(read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx"),/action="\/app\/search"/);assert.doesNotMatch(read("src/components/mobile/MobileMarketplaceShowcase.tsx"),/fetch\(|process\.env|Verified Global Hubs/);});
+test("unknown visual keys resolve to existing local fallback",()=>{assert.equal(marketplacePhoto("__proto__"),"/images/global-city.jpg");assert.ok(existsSync("public"+marketplacePhoto("unknown")));});

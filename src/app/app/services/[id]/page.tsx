@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink, ShieldCheck } from "lucide-react";
 import { appServiceWebsiteHref } from "@/lib/mobile/universal-search";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
+import MarketplaceSectionPhoto from "@/components/mobile/MarketplaceSectionPhoto";
 import { mobileWebService, mobileWebServices } from "@/lib/mobile/app-dashboard";
 
 export const metadata: Metadata = {
@@ -159,7 +160,8 @@ export default async function AppServiceGateway({
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">
             GTH PRO · {service.pillar === "travel" ? "Travel" : service.pillar === "property" ? "Real Estate" : service.pillar === "tickets" ? "Tickets & Events" : "Tender"}
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">{service.label}</h1>
+          <MarketplaceSectionPhoto kind={service.id}/>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">{service.label}</h1>
           <p className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
             {info.detail}
           </p>
