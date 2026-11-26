@@ -14,6 +14,10 @@ import {
 const VERIFIED_CITY_IDS: Readonly<Record<string, string>> = {
   "mumbai": "ChIJwe1EZjDG5zsRaYxkjY_tpF0",
   "london": "ChIJdd4hrwug2EcRmSrV3Vo6llI",
+  // Google officially publishes this Tokyo Place ID in its Place Photos example.
+  // https://developers.google.com/maps/documentation/javascript/place-photos
+  // Nuitee White Label accepts Google Place IDs; live results still need provider confirmation.
+  "tokyo": "ChIJ51cu8IcbXWARiRtXIothAS4",
 };
 /** Known travel destinations awaiting exact Place ID verification.
  * Unknown locations also work via provider search; none of these entries
@@ -24,7 +28,7 @@ export const CITY_SEARCH_FALLBACKS = [
   "kolkata", "chennai", "hyderabad", "kochi", "cochin", "pune",
   "ahmedabad", "varanasi", "udaipur", "dubai", "abu dhabi",
   "singapore", "bangkok", "phuket", "bali", "denpasar",
-  "paris", "new york", "tokyo", "kuala lumpur", "hong kong",
+  "paris", "new york", "kuala lumpur", "hong kong",
   "sydney", "melbourne", "rome", "barcelona", "amsterdam",
 ] as const;
 
@@ -124,7 +128,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   // Only supplier-reviewed city IDs are accepted for GTH-created deep links.
   // Unknown arbitrary IDs must use the supplier picker rather than guessed inventory.
   const cityKey = destination?.toLocaleLowerCase("en");
-  const expectedCountry = cityKey === "mumbai" ? "IN" : cityKey === "london" ? "GB" : undefined;
+  const expectedCountry = cityKey === "mumbai" ? "IN" : cityKey === "london" ? "GB" : cityKey === "tokyo" ? "JP" : undefined;
   const scopedCityId = cityKey && (intent.countryCode === undefined || intent.countryCode === expectedCountry)
     ? VERIFIED_CITY_IDS[cityKey] ?? null : null;
   const placeId = intent.placeId !== undefined
