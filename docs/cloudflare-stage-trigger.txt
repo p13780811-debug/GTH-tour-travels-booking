@@ -14,3 +14,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-26: Owner authorized Tokyo hotel fix redeployment on existing protected preview, with authenticated core-route audit. No domain/production changes in this workflow.
 
 2026-11-26: Redeploy bounded stadium detail regeneration and success-only mobility map cache; verify exact catalog venue and upstream availability. Preserve protected preview.
+
+2026-11-26: Validate optimized city-centre maps, Cloudflare direct ingress rate identity and canonical redirect before final cutover.
