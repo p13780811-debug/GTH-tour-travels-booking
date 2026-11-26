@@ -68,3 +68,16 @@ test("OSM mapped features reject ambiguous, incomplete or untrusted responses",(
   assert.equal(result.features[0].href,"https://www.openstreetmap.org/node/20");
   assert.equal(result.features[1].kind,"transit");
 });
+
+test("reviewed Mumbai and Kolkata map centres avoid nationwide queries without weakening generic city validation",()=>{
+  for(const city of [{name:"Mumbai",slug:"mumbai",countryCode:"IN"},{name:"Kolkata",slug:"kolkata",countryCode:"IN"}]){
+    assert.ok(osm.reviewedMapCentre(city));
+    assert.match(osm.mobilityOverpassQuery(city),/around:8000,[\d.]+,[\d.]+/);
+    assert.doesNotMatch(osm.mobilityOverpassQuery(city),/area\.country/);
+  }
+  assert.equal(osm.reviewedMapCentre({name:"Mumbai",slug:"mumbai",countryCode:"US"}),undefined);
+  const snapshot={osm3s:{timestamp_osm_base:"2026-11-24T12:00:00Z"},elements:[{type:"node",id:30,tags:{railway:"station",name:"Central"}}]};
+  assert.equal(osm.parseMobilityMap(snapshot),null);
+  assert.equal(osm.parseMobilityMap(snapshot,true).features.length,1);
+  assert.equal(osm.parseMobilityMap({...snapshot,remark:"partial"},true),null);
+});
