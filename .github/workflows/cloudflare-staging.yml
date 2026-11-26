@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: gth-cloudflare-staging
+  group: gth-cloudflare-protected-preview-operations
   cancel-in-progress: false
 jobs:
   stage:
@@ -68,7 +68,7 @@ jobs:
             "name": "gth-pro-preview-20261126",
             "main": ".open-next/worker.js",
             "minify": true,
-            "workers_dev": false,
+            "workers_dev": true,
             "preview_urls": false,
             "routes": [],
             "compatibility_date": "2026-11-18",
@@ -79,7 +79,7 @@ jobs:
           EOF
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
-      - name: Deploy isolated private staging Worker (never production)
+      - name: Redeploy verified owner-protected preview Worker (never production)
         if: steps.gate.outputs.ready == 'true'
         env:
           GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
@@ -93,3 +93,9 @@ jobs:
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
         run: node scripts/cloudflare-stage.mjs
+      - name: Authenticated route audit after protected redeployment
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/cloudflare-live-audit.py
