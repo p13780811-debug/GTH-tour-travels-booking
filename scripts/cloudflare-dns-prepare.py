@@ -59,7 +59,11 @@ def verify_authoritative():
                 except (ValueError,IndexError): pass
             for e in expected:
                 if (e["name"],e["type"])!=(name,kind): continue
-                if normalized(e) in actual: matched+=1
+                # Cloudflare publishes this documented CAA parameter automatically.
+                # Only accept this exact substitution; all AWS/mail/SSL records remain exact.
+                expected_value=normalized(e)
+                cf_pki=(kind=="CAA" and expected_value[2]=="0 issue pki.goog" and (kind,expected_value[1],"0 issue pki.goog; cansignhttpexchanges=yes",None) in actual)
+                if expected_value in actual or cf_pki: matched+=1
                 else: print("DNS_MISMATCH",ns,kind,name, "expected="+str(normalized(e)[2]) if kind=="CAA" else "", "observed="+str([x[2] for x in actual]) if kind=="CAA" else "",flush=True)
         print("AUTHORITATIVE_PARITY",ns,matched,"/19",flush=True)
         all_ok=all_ok and matched==19
@@ -72,7 +76,7 @@ try:
 except RuntimeError as e:
     print("DNS_API_BLOCKED",str(e),flush=True)
     if verify_authoritative():
-        print("All 19 record values verified on assigned nameservers. Proxy setting and live activation still require separate checks.",flush=True)
+        print("All 19 record requirements verified on assigned nameservers (Cloudflare-managed pki.goog parameter allowed). Dashboard/API record parity and activation still require separate checks.",flush=True)
         raise SystemExit(0)
     raise SystemExit("DNS parity incomplete; no nameserver change")
 pending=z.get("status")=="pending"
