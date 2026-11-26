@@ -8,6 +8,8 @@ on:
       - 'src/lib/travel/package-planner.ts'
       - 'tests/travel-package-planner.test.mjs'
       - 'scripts/qa-travel-package-planner.mjs'
+      - 'scripts/qa-shared-city-mobile.mjs'
+      - 'scripts/qa-city-fixture.mjs'
       - '.github/workflows/travel-package-planner-qa.yml'
 permissions:
   contents: read
@@ -29,7 +31,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      ENABLE_UNIFIED_CITY_ROUTER: 'true'
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
@@ -44,6 +47,7 @@ jobs:
           npm install --no-save --legacy-peer-deps playwright@1.56.0
           npx playwright install --with-deps chromium
       - run: |
+          node scripts/qa-city-fixture.mjs > /tmp/gth-city-fixture.log 2>&1 &
           npm run dev > /tmp/gth-package-dev.log 2>&1 &
           for i in $(seq 1 70); do
             if curl -fsS --max-time 4 http://127.0.0.1:3000/manifest.webmanifest >/dev/null; then exit 0; fi
@@ -52,6 +56,8 @@ jobs:
           tail -80 /tmp/gth-package-dev.log
           exit 1
       - run: node scripts/qa-travel-package-planner.mjs
+      - name: Verify shared city templates at three mobile widths
+        run: node scripts/qa-shared-city-mobile.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
