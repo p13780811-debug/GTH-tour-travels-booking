@@ -1,0 +1,1 @@
+2026-11-26: Prepare separate gth-pro-production Worker with production build flags and encrypted runtime secrets. No workers.dev, version preview URL, DNS, custom domain or public route. Do not merge main or expose until release checks pass.
