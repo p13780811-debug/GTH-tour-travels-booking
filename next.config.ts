@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
       permanent:false,
     }));
     return [
+      // Preserve the existing www canonical origin after DNS moves off Vercel.
+      {source:"/:path*",has:[{type:"host",value:"gthproglobal.com"}],destination:"https://www.gthproglobal.com/:path*",permanent:true},
       // Legacy public policy links are not canonical pages. Redirect rather than
       // serving duplicate legal content or letting old crawlers hit a 404.
       {source:"/privacy",destination:"/privacy-policy",permanent:true},
