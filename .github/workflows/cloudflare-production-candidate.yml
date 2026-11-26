@@ -83,6 +83,7 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         env:
           GTH_CF_DEPLOY_TARGET: production-candidate
+          GTH_CF_ALLOW_ISOLATED_REDEPLOY: '1'
           GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

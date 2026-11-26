@@ -135,7 +135,10 @@ async function main() {
   if (!response.ok) stop("Cannot verify staging target (HTTP " + response.status + ").");
   const data = await response.json();
   if (!data.success || !Array.isArray(data.result)) stop("Invalid Cloudflare target inventory response.");
-  if(productionCandidate&&data.result.some(w=>w.id===target)) stop("Production candidate already exists; refusing to overwrite.");
+  const existingCandidate=productionCandidate?data.result.find(w=>w.id===target):undefined;
+  // Explicitly authorized isolated-candidate redeploy only. Public Workers are never overwritten by this workflow.
+  if(existingCandidate&&process.env.GTH_CF_ALLOW_ISOLATED_REDEPLOY!=="1") stop("Production candidate already exists; refusing to overwrite.");
+  if(existingCandidate&&!existingCandidate.modified_on) stop("Cannot establish existing candidate revision.");
   if(!productionCandidate&&!data.result.some(w=>w.id===target)) stop("Expected existing protected preview Worker is missing.");
   const cfRead = async path => {
     const r = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + path, {
@@ -150,12 +153,29 @@ async function main() {
       const scripts=await cfRead("/workers/scripts");
       const domains=await cfRead("/workers/domains");
       if(!Array.isArray(scripts)||!Array.isArray(domains)||domains.some(d=>d.service===target)) stop("Production candidate custom-domain isolation not verified.");
-      if(!afterUpload){
-        if(scripts.some(w=>w.id===target)) stop("Production candidate appeared during build; refusing overwrite.");
-      }else{
+      const current=scripts.find(w=>w.id===target);
+      if(!afterUpload&&Boolean(current)!==Boolean(existingCandidate)) stop("Production candidate inventory changed during build.");
+      if(!afterUpload&&current&&current.modified_on!==existingCandidate.modified_on) stop("Production candidate revision changed during build.");
+      if(current||afterUpload){
         const worker=await cfRead("/workers/workers/"+target);
         const sub=await cfRead("/workers/scripts/"+target+"/subdomain");
-        if(worker?.name!==target||sub?.enabled!==false||sub?.previews_enabled!==false) stop("Production candidate URL isolation not verified.");
+        if(!current||worker?.name!==target||sub?.enabled!==false||sub?.previews_enabled!==false) stop("Production candidate URL isolation not verified.");
+      }
+      // Verify routes in every accessible account zone, without mutating DNS.
+      const zoneResponse=await fetch("https://api.cloudflare.com/client/v4/zones?account.id="+account+"&per_page=50",{
+        headers:{Authorization:"Bearer "+token},redirect:"error",signal:AbortSignal.timeout(30000)
+      });
+      if(!zoneResponse.ok) stop("Cannot verify account zone inventory: HTTP "+zoneResponse.status);
+      const zoneData=await zoneResponse.json();
+      if(!zoneData.success||!Array.isArray(zoneData.result)||zoneData.result_info?.total_pages>1||!zoneData.result.some(z=>z.name==="gthproglobal.com"&&z.account?.id===account)) stop("Incomplete zone inventory; candidate isolation unverified.");
+      for(const zone of zoneData.result){
+        if(!/^[0-9a-f]{32}$/i.test(zone.id)||zone.account?.id!==account) stop("Unexpected zone identity.");
+        const routeResponse=await fetch("https://api.cloudflare.com/client/v4/zones/"+zone.id+"/workers/routes",{
+          headers:{Authorization:"Bearer "+token},redirect:"error",signal:AbortSignal.timeout(30000)
+        });
+        if(!routeResponse.ok) stop("Cannot verify Worker route isolation: HTTP "+routeResponse.status);
+        const routeData=await routeResponse.json();
+        if(!routeData.success||!Array.isArray(routeData.result)||routeData.result_info?.total_pages>1||routeData.result.some(r=>r.script===target)) stop("Public Worker route exists or inventory incomplete; no isolated redeploy.");
       }
       console.log("Production candidate isolation verified; no public routes or preview URLs.");
       return;
