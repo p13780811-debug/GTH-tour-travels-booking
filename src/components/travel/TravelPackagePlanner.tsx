@@ -11,7 +11,9 @@ export default function TravelPackagePlanner(){
  const [draft,setDraft]=useState(initial),[airportText,setAirportText]=useState({origin:"",destination:""}),[plan,setPlan]=useState<PackagePlan|null>(null),[error,setError]=useState(""),[amounts,setAmounts]=useState<Partial<Record<PackageServiceId,string>>>({});
  const form=useRef<HTMLFormElement>(null),result=useRef<HTMLElement>(null);
  const [context,setContext]=useState("");
+ const [ready,setReady]=useState(false);
  useEffect(()=>{
+  setReady(true);
   const q=new URLSearchParams(window.location.search),city=q.get("city")||"",country=q.get("country")||"";
   if(q.getAll("city").length!==1||q.getAll("country").length!==1||!/^\p{L}[\p{L}\p{M}\p{N} .'-]{1,79}$/u.test(city)||!/^[A-Z]{2}$/.test(country))return;
   setContext(city+" · "+country);
@@ -28,12 +30,12 @@ export default function TravelPackagePlanner(){
    <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     {PACKAGE_DESTINATIONS.map(p=><article key={p.airport} className="min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
      <div className="relative aspect-[16/10]"><Image src={p.image} alt={p.city+" destination scenery"} fill sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw" className="object-cover"/></div>
-     <div className="p-5"><p className="flex items-center gap-2 text-xs text-[var(--text-soft)]"><MapPin size={14}/>{p.city} · {p.country}</p><h3 className="mt-2 text-xl font-bold">{p.title}</h3><p className="mt-2 text-sm text-[var(--text-soft)]">{p.description}</p><button type="button" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center gap-2 px-4" onClick={()=>choose(p.airport)}>Plan {p.city} <ArrowRight size={16}/></button></div>
+     <div className="p-5"><p className="flex items-center gap-2 text-xs text-[var(--text-soft)]"><MapPin size={14}/>{p.city} · {p.country}</p><h3 className="mt-2 text-xl font-bold">{p.title}</h3><p className="mt-2 text-sm text-[var(--text-soft)]">{p.description}</p><button type="button" className="gth-btn-gold mt-4 inline-flex min-h-11 items-center gap-2 px-4" disabled={!ready} onClick={()=>choose(p.airport)}>Plan {p.city} <ArrowRight size={16}/></button></div>
     </article>)}
    </div>
   </section>
   <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6" aria-labelledby="package-builder-title">
-   <form ref={form} id="package-builder" className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 sm:p-7" onSubmit={event=>{event.preventDefault();const built=buildPackagePlan(draft);if(!built.ok){setError(built.error);return;}setPlan(built.plan);setAmounts({});setError("");requestAnimationFrame(()=>result.current?.scrollIntoView({block:"start"}));}}>
+   <form ref={form} data-planner-ready={ready?"true":"false"} id="package-builder" className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 sm:p-7" onSubmit={event=>{event.preventDefault();const built=buildPackagePlan(draft);if(!built.ok){setError(built.error);return;}setPlan(built.plan);setAmounts({});setError("");requestAnimationFrame(()=>result.current?.scrollIntoView({block:"start"}));}}>
     <h2 id="package-builder-title" className="text-2xl font-bold">Build your personal travel plan</h2><p className="mt-2 text-sm text-[var(--text-soft)]">One trip, shared dates and independently booked services. Choose any airport in the existing directory.</p>{context&&<p className="mt-3 text-sm font-semibold" role="status">Requested destination: {context}. Confirm the correct arrival airport before creating your plan.</p>}
     <div className="mt-6 grid gap-4 sm:grid-cols-2">
      <TravelAirportField label="Departure airport" value={airportText.origin} code={draft.origin} onType={value=>{setAirportText(current=>({...current,origin:value}));edit({origin:airportCode(value)});}} onSelect={code=>{setAirportText(current=>({...current,origin:airportLabel(code)}));edit({origin:code});}}/>
@@ -47,7 +49,7 @@ export default function TravelPackagePlanner(){
     <p className="mt-3 text-xs text-[var(--text-soft)]">Plan for up to 20 adults in total. Confirm any child travelers and actual arrival/check-out times separately with each provider.</p>
     <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">{PACKAGE_SERVICES.map(service=><div key={service.id} className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]"><div className="relative aspect-[16/10]"><Image src={service.image} alt={service.alt} fill sizes="(max-width:768px) 50vw,25vw" className="object-cover"/></div><div className="p-3 text-sm font-semibold">{service.id==="flight"||service.id==="hotel"?<span>{service.title} · Included in plan</span>:<label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={service.id==="experience"?draft.experience:draft.transfer} onChange={e=>edit(service.id==="experience"?{experience:e.target.checked}:{transfer:e.target.checked})}/>{service.title}</label>}</div></div>)}</div>
     {error&&<p className="mt-4 text-sm" role="alert">{error}</p>}
-    <button type="submit" className="gth-btn-gold mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 sm:w-auto">Create my travel plan <ArrowRight size={18}/></button>
+    <button type="submit" disabled={!ready} className="gth-btn-gold mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 px-5 sm:w-auto">Create my travel plan <ArrowRight size={18}/></button>
     <p className="mt-3 flex items-start gap-2 text-xs text-[var(--text-soft)]"><ShieldCheck size={16} className="shrink-0"/>No automatic supplier searches or booking charges. Prices are confirmed only when you choose to visit a booking service.</p>
    </form>
   </section>

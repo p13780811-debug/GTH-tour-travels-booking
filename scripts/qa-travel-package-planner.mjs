@@ -10,10 +10,12 @@ try{
  // Block all direct supplier API network activity in this local UI QA.
  await page.route(/^https:\/\/(?:api\.|book\.)?liteapi\.travel\//,r=>{privateCalls.push(new URL(r.request().url()).hostname);return r.abort();});
  await page.goto("http://127.0.0.1:3000/travel/packages",{waitUntil:"domcontentloaded",timeout:90000});
+ await page.locator('[data-planner-ready="true"]').waitFor({timeout:60000});
  await page.getByRole("heading",{name:"Choose your next escape"}).waitFor();
  await page.getByRole("button",{name:"Plan Tokyo"}).click();
  await page.getByRole("combobox",{name:"Departure airport"}).fill("BOM");
- await page.getByRole("option").filter({hasText:"BOM"}).first().click();
+ await page.getByRole("combobox",{name:"Departure airport"}).press("Tab");
+ assert.equal(await page.getByRole("combobox",{name:"Departure airport"}).inputValue(),"BOM");
  const date=n=>new Date(Date.now()+n*86400000).toISOString().slice(0,10);
  await page.getByLabel("Departure / check-in").fill(date(10));
  await page.getByLabel("Return / check-out").fill(date(15));
