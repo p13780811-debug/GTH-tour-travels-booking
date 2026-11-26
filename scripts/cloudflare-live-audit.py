@@ -111,6 +111,19 @@ try:
     pid=p["id"]
     if p.get("decision")!="non_identity": raise RuntimeError("Unexpected temporary policy decision")
     headers={"CF-Access-Client-Id":cid,"CF-Access-Client-Secret":secret}
+    # Access policy changes may take time to propagate. Do not turn an auth
+    # rejection into a misleading application route/latency report.
+    check=api("GET",base+"/access/apps/"+aid+"/policies")
+    if not any(p.get("id")==pid and p.get("decision")=="non_identity" and p.get("include")==[{"service_token":{"token_id":sid}}] for p in check):
+        raise RuntimeError("Temporary service-auth rule not verified")
+    for attempt in range(12):
+        probe=request("https://"+host+"/",headers)
+        print("AUTH_READINESS",json.dumps({"attempt":attempt+1,"status":probe["status"],"redirect_host":probe.get("redirect_host","")}),flush=True)
+        if probe["status"] not in (0,401,403) and not probe.get("redirect_host","").endswith(".cloudflareaccess.com"):
+            break
+        time.sleep(5)
+    else:
+        raise RuntimeError("Access service authentication not accepted after bounded propagation check; no application results claimed")
     routes=[
       "/", "/hotels","/flights","/destinations/goa","/destinations/tokyo",
       "/mobility","/mobility/mumbai","/mobility/kolkata","/go/transport","/real-estate",
@@ -125,7 +138,7 @@ try:
         first=request("https://"+host+path,headers)
         second=request("https://"+host+path,headers) if not path.startswith("/api/") else None
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
-        if (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or first["status"] not in (200,301,302,307,308) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
+        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or first["status"] not in (200,301,302,307,308) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
             failed=True
     print("ROUTE_AUDIT", "FAILURES_PRESENT" if failed else "HTTP_CHECKS_PASSED",flush=True)
 finally:
