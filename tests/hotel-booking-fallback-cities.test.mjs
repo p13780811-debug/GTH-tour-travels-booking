@@ -20,10 +20,12 @@ const hotelWhiteLabel=load("src/lib/travel/hotel-whitelabel.ts");
 const routing=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":hotelWhiteLabel});
 const hotels=load("src/lib/travel/klook-hotel-search.ts",{"./partner-search":affiliate,"./hotel-routing":routing});
 
-test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing campaign",()=>{
+test("Reviewed city hotel handoffs target supplier HOTEL category with existing campaign",()=>{
   for(const [city,path] of [
     ["Goa","/destination/c178-goa/3-hotel/"],
-    ["Dubai","/en-IN/destination/c78-dubai/3-hotel/"]
+    ["Dubai","/en-IN/destination/c78-dubai/3-hotel/"],
+    ["Tokyo","/destination/c28-tokyo/3-hotel/"],
+    ["Singapore","/destination/c6-singapore/3-hotel/"]
   ]){
     const link=hotels.trackedHotelCityHref(city);
     assert.ok(link);
@@ -38,7 +40,7 @@ test("Goa and Dubai hotel handoffs target supplier HOTEL category with existing 
   }
 });
 test("Worldwide routing preserves exact booking kind, never invents a Klook hotel result",()=>{
- const known=["Goa","Dubai"];
+ const known=["Goa","Dubai","Singapore"];
  for(const city of known){
    const url=hotels.destinationHotelHref(city);
    assert.ok(url);
@@ -47,19 +49,25 @@ test("Worldwide routing preserves exact booking kind, never invents a Klook hote
    assert.match(new URL(affiliateUrl.searchParams.get("u")).pathname,/\/3-hotel\/$/);
  }
  // Reviewed supplier Place IDs are the only direct Nuitee city results.
- for(const city of ["Mumbai","London"]){
+ for(const city of ["Mumbai","London","Tokyo"]){
    const target=hotels.destinationHotelHref(city);
    assert.ok(target);
    assert.equal(new URL(target).origin,"https://hotel.gthproglobal.com");
    assert.equal(new URL(target).pathname,"/hotels");
  }
  // No fake Klook category, supplier placeId or hotel match for unverified cities.
- for(const city of ["Singapore","Tokyo","Kolkata","Paris","Abu Dhabi","Sydney"]){
+ for(const city of ["Kolkata","Paris","Abu Dhabi","Sydney"]){
    assert.equal(hotels.trackedHotelCityHref(city),null);
    const href=hotels.destinationHotelHref(city);
    assert.match(href,/^\/hotels\?view=booking&city=/);
    assert.equal(new URL(href,"https://gthproglobal.com").searchParams.get("city"),city);
  }
+});
+test("Country identity prevents cross-country destination mismatch",()=>{
+  assert.equal(hotels.trackedHotelCityHref("Tokyo","IN"),null);
+  assert.equal(hotels.trackedHotelCityHref("Singapore","JP"),null);
+  assert.equal(new URL(hotels.destinationHotelHref("Tokyo","JP")).origin,"https://hotel.gthproglobal.com");
+  assert.match(hotels.destinationHotelHref("Tokyo","US"),/^\/hotels\?/);
 });
 test("No invented city, arbitrary affiliate destination or fake exact hotel match",()=>{
   for(const city of ["evil.example","javascript:alert(1)","東京",42,null])assert.equal(hotels.trackedHotelCityHref(city),null);
