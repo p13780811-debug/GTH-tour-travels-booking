@@ -109,3 +109,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-protected-preview.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Diagnose Zero Trust availability without changing settings
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, json, os
+          base="https://api.cloudflare.com/client/v4"
+          account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          token=os.environ["CLOUDFLARE_API_TOKEN"]
+          for label,path in [("Token status","/user/tokens/verify"),("Zero Trust organization","/accounts/"+account+"/access/organizations"),("Access app listing","/accounts/"+account+"/access/apps?per_page=1")]:
+              req=urllib.request.Request(base+path,headers={"Authorization":"Bearer "+token})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      d=json.load(r); print(label+": HTTP "+str(r.status)+" success="+str(d.get("success")))
+              except urllib.error.HTTPError as e:
+                  try: errors=json.load(e).get("errors",[])
+                  except Exception: errors=[]
+                  categories=set()
+                  for item in errors:
+                      msg=str(item.get("message","")).lower()
+                      for term in ["permission","authentication","authorization","not authorized","not found","not configured","not enrolled","not enabled","organization","subscription","onboard","forbidden"]:
+                          if term in msg: categories.add(term)
+                  print(label+": HTTP "+str(e.code)+" codes="+",".join(str(x.get("code")) for x in errors)+" categories="+",".join(sorted(categories)))
+          PY
