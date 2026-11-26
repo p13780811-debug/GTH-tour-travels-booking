@@ -9,6 +9,7 @@ import EcosystemHeroCarousel from "@/app/mega-aggregator/EcosystemHeroCarousel";
 import EcosystemUnifiedSearch from "@/app/mega-aggregator/EcosystemUnifiedSearch";
 import EcosystemPillars from "@/components/sections/EcosystemPillars";
 import MobileSupplierShowcase from "@/components/mobile/MobileSupplierShowcase";
+import MobileMarketplaceShowcase from "@/components/mobile/MobileMarketplaceShowcase";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={
@@ -27,8 +28,8 @@ export default function MobileAppHome(){
   <MobileAppHeader/>
   <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6">
    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">GTH PRO · Global Technical Hub</p>
-   <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">GTH PRO Home</h1>
-   <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Travel, stays, experiences, property, tenders and tickets. Everything in one place.</p>
+   <h1 aria-label="GTH PRO Home" className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-5xl">Your world. <span className="gold-text">One marketplace.</span></h1>
+   <p className="mt-2 max-w-2xl text-sm leading-5 text-[var(--text-soft)]">Global stays, match hospitality, journeys, property and procurement — connected to your existing GTH PRO tools.</p>
    {/* Restore the original paired high-visibility shortcuts near the first fold.
        They are navigation links, not another icon menu or search/category bar. */}
    <nav aria-label="GTH PRO Home and Research Desk shortcuts"
@@ -50,6 +51,7 @@ export default function MobileAppHome(){
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
    <EcosystemUnifiedSearch appHome/>
   </div>
+  <MobileMarketplaceShowcase/>
   <EcosystemPillars appHome/>
   <AppResearchQuickAccess/>
   <section aria-label="Install GTH PRO on your device" className="mx-auto mt-3 w-full max-w-7xl px-4 sm:px-6">

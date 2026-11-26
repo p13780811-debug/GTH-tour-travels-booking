@@ -3,6 +3,7 @@ import Link from "next/link";
 import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowRight,Building2,FileSearch,Globe2,Hotel,Plane,ShieldCheck,Search} from "lucide-react";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
+import MarketplaceSectionPhoto from "@/components/mobile/MarketplaceSectionPhoto";
 import MobileDiscoveryRail from "@/components/mobile/MobileDiscoveryRail";
 import MobileFlightSearch from "@/components/mobile/MobileFlightSearch";
 import {appQueryHref,HOTEL_CATEGORIES,PROPERTY_CATEGORIES,TENDER_CATEGORIES,
@@ -51,7 +52,8 @@ export default async function MobileAppSection({params,searchParams}:Props){
     <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
       <ArrowLeft size={15}/> App home
     </Link>
-    <div className="mt-1 flex items-start justify-between gap-3">
+    <MarketplaceSectionPhoto kind={section}/>
+    <div className="mt-3 flex items-start justify-between gap-3">
       <div className="min-w-0">
         <h1 className="text-xl font-semibold leading-tight tracking-tight">{current.name}</h1>
         <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{current.subtitle}</p>

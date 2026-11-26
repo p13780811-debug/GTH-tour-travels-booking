@@ -62,6 +62,9 @@ export function resolveUniversalTarget(raw:unknown,requested?:unknown):Universal
  const query=clean(raw);
  const selected=normalizeUniversalCategory(requested);
  const detected=detectedKind(query);
+ // Explicit trip-planning requests use the existing app-native package planner.
+ // Business/ticket intent stays on its existing route; no guessed city or dates.
+ if((selected==="all"||selected==="travel")&&/\b(?:travel packages?|holiday packages?|trip packages?|itinerary|plan (?:a|my) trip)\b/i.test(query)&&!["property","tender","ticket"].includes(detected))return {category:"travel",href:"/app/packages"};
  const category=selected==="all"||selected==="travel"?
   (detected!=="all"?detected:selected):selected;
  if(!query){

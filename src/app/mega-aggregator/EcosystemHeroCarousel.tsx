@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import {marketplacePhoto,generatedMarketplacePhoto} from "@/lib/mobile/marketplace-visuals";
 import {useEffect,useRef,useState} from "react";
 
 const slides=[
@@ -53,11 +54,12 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
         {slides.map((slide,index)=>(
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
-            <Image src={slide.image} alt={slide.alt} fill
+            <Image src={embedded?(index===0?generatedMarketplacePhoto("hero")??slide.image:index===1?marketplacePhoto("flights"):slide.image):slide.image} alt={embedded&&index===0&&generatedMarketplacePhoto("hero")?"":slide.alt} fill
               priority={index===0} sizes="(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"
               className="object-cover object-center" />
           </div>
         ))}
+        {embedded&&active===0&&generatedMarketplacePhoto("hero")&&<span className="absolute bottom-2 left-2 z-10 rounded bg-[var(--card)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
         <div role="group" aria-label="Select ecosystem hero image"
           className="absolute bottom-14 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1">
           {slides.map((slide,index)=>(
