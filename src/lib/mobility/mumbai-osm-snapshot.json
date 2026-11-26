@@ -1,0 +1,135 @@
+{
+  "countryCode": "IN",
+  "slug": "mumbai",
+  "source": "https://download.bbbike.org/osm/bbbike/Bombay/Bombay.osm.gz",
+  "license": "ODbL-1.0",
+  "sha256": "a606c6313edda53b6b1b08afed852a09ed2a0fd705191690bea7c93ba5a98daf",
+  "updatedAt": "2026-11-22T04:45:14Z",
+  "features": [
+    {
+      "kind": "transit",
+      "name": "Guru Tegh Bahadur Nagar",
+      "href": "https://www.openstreetmap.org/node/4264841906"
+    },
+    {
+      "kind": "transit",
+      "name": "King's Circle",
+      "href": "https://www.openstreetmap.org/node/1650694464"
+    },
+    {
+      "kind": "transit",
+      "name": "Rani Laxmibai Chowk (Sion)",
+      "href": "https://www.openstreetmap.org/way/1361614735"
+    },
+    {
+      "kind": "transit",
+      "name": "Antop Hill",
+      "href": "https://www.openstreetmap.org/node/13284781018"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Mapped road construction",
+      "href": "https://www.openstreetmap.org/way/1327085948"
+    },
+    {
+      "kind": "transit",
+      "name": "Sion",
+      "href": "https://www.openstreetmap.org/node/2663263713"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Mahim Railway FOB",
+      "href": "https://www.openstreetmap.org/way/518300993"
+    },
+    {
+      "kind": "transit",
+      "name": "Antop Hill Bus Depot",
+      "href": "https://www.openstreetmap.org/way/625837788"
+    },
+    {
+      "kind": "transit",
+      "name": "Matunga",
+      "href": "https://www.openstreetmap.org/node/4264457295"
+    },
+    {
+      "kind": "transit",
+      "name": "Dharavi T-junction",
+      "href": "https://www.openstreetmap.org/way/1394097474"
+    },
+    {
+      "kind": "transit",
+      "name": "Mahim Junction",
+      "href": "https://www.openstreetmap.org/node/2630075005"
+    },
+    {
+      "kind": "transit",
+      "name": "Acharya Atre Nagar",
+      "href": "https://www.openstreetmap.org/node/3806743187"
+    },
+    {
+      "kind": "transit",
+      "name": "Dharavi",
+      "href": "https://www.openstreetmap.org/node/12855459847"
+    },
+    {
+      "kind": "transit",
+      "name": "Wadala Depot",
+      "href": "https://www.openstreetmap.org/node/632342238"
+    },
+    {
+      "kind": "transit",
+      "name": "Dharavi Depot",
+      "href": "https://www.openstreetmap.org/node/4583600393"
+    },
+    {
+      "kind": "transit",
+      "name": "Matunga Road",
+      "href": "https://www.openstreetmap.org/node/4264462833"
+    },
+    {
+      "kind": "transit",
+      "name": "Shitala Devi Mandir",
+      "href": "https://www.openstreetmap.org/node/12855459846"
+    },
+    {
+      "kind": "transit",
+      "name": "Chuna Bhatti",
+      "href": "https://www.openstreetmap.org/way/909382854"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Ajmera l-Land Road",
+      "href": "https://www.openstreetmap.org/way/1549365183"
+    },
+    {
+      "kind": "roadwork",
+      "name": "BKC - WEH Connector",
+      "href": "https://www.openstreetmap.org/way/1549458412"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Mumbai Coastal Road - Phase II",
+      "href": "https://www.openstreetmap.org/way/625656756"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Kanzul Iman Road",
+      "href": "https://www.openstreetmap.org/way/1351532841"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Acharya Donde Marg",
+      "href": "https://www.openstreetmap.org/way/1053839702"
+    },
+    {
+      "kind": "roadwork",
+      "name": "Elphinstone Bridge",
+      "href": "https://www.openstreetmap.org/way/122141806"
+    },
+    {
+      "kind": "camera",
+      "name": "Mapped speed camera",
+      "href": "https://www.openstreetmap.org/node/13034678227"
+    }
+  ]
+}
