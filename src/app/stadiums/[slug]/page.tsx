@@ -16,7 +16,9 @@ import { isPublicLaunch, safeStructuredData, siteUrl } from "@/lib/seo/site";
 
 type Props = { params: Promise<{ slug: string }> };
 export const revalidate = 3600;
-export const dynamicParams = false;
+// OpenNext may need to regenerate a known venue when no prerender cache is bound.
+// Both metadata and the page still reject any slug absent from the reviewed catalog.
+export const dynamicParams = true;
 export function generateStaticParams() { return stadiums.map(({ slug }) => ({ slug })); }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
