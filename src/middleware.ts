@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { hotelSupplierPathRedirect } from "@/lib/travel/hotel-whitelabel";
+import { publicMumbaiMapResponse } from "@/lib/mobility/public-map-snapshot";
 
 export function middleware(_request: NextRequest) {
   // Recover supplier hotel IDs before the local city-guide router treats them as slugs.
@@ -28,7 +29,9 @@ export function middleware(_request: NextRequest) {
     return response;
   }
 
-  const response = NextResponse.next();
+  // The dated public Mumbai extract needs no Next server, database or provider call.
+  // All refreshes, expired snapshots, other cities and methods continue to the API.
+  const response = publicMumbaiMapResponse(_request) ?? NextResponse.next();
 
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");

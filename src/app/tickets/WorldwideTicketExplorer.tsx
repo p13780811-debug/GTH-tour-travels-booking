@@ -2,6 +2,7 @@
 
 import {Suspense,useEffect,useMemo,useState} from "react";
 import {useSearchParams} from "next/navigation";
+import {readTicketUrlQuery} from "@/lib/travel/ticket-url-query";
 import Link from "next/link";
 import {ArrowUpRight,Globe2,Search,Ticket} from "lucide-react";
 import {ticketCategories,worldwideTicketSources,type TicketCategory} from "@/lib/travel/worldwide-ticket-sources";
@@ -46,8 +47,7 @@ const regionMatches=(source:string,selected:string)=>
 // directory and its initial cards remain in the static HTML.
 function TicketUrlQuery({onQuery}:{onQuery:(query:string)=>void}){
  const params=useSearchParams();
- const values=params.getAll("q");
- const query=values.length===1?values[0].slice(0,100):"";
+ const query=readTicketUrlQuery(params);
  useEffect(()=>{onQuery(query);},[query,onQuery]);
  return null;
 }

@@ -51,7 +51,11 @@ test("airport city routes use existing supplier/discovery pages and never fabric
   const ticketPage=read("src/app/tickets/page.tsx");
   const hotelsPage=read("src/app/hotels/page.tsx");
   assert.match(tourFilters,/const keys = \["city", "category"/);
-  assert.match(ticketPage,/params\.q/);
+  assert.match(ticketPage,/<WorldwideTicketExplorer syncUrlQuery\/>/);
+  const ticketExplorer=read("src/app/tickets/WorldwideTicketExplorer.tsx");
+  assert.match(ticketExplorer,/const params=useSearchParams\(\)/);
+  assert.match(ticketExplorer,/readTicketUrlQuery\(params\)/);
+  assert.match(ticketExplorer,/<TicketUrlQuery onQuery=\{setQuery\}\/>/);
   assert.match(hotelsPage,/params\.get\("city"\)/);
   assert.match(hotelsPage,/params\.get\("view"\) === "directory"/);
 });

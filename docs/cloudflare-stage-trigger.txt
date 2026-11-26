@@ -20,3 +20,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-26: Redeploy verified 25-feature Mumbai OpenStreetMap extract, dated data attribution, opt-in newer map refresh and strict 26-route audit. No public domain changes.
 
 2026-11-26: Owner authorized another protected staging validation of browser-only bulk document parsing, static ticket hub with URL-aware client search, and strict production-candidate gzip gate. No public domain changes or production promotion.
+
+2026-11-26: Validate dated Mumbai map fast path and ticket URL regression coverage. Read aggregate preview CPU outcomes; preserve full 26-route and production bundle gates.

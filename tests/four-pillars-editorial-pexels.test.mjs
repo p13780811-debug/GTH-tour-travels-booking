@@ -37,7 +37,11 @@ test("ticket intent routes to existing curated source explorer, not invented inv
  for(const source of [desktop,mobile,megaSearch])assert.ok(source.includes('"ticket"'),"Missing ticket category");
  assert.ok(desktop.includes('if (category === "ticket") return knownStadiumTicketHref(q) || withParam("/tickets","q",q);'));
  assert.ok(mobile.includes('if(category==="ticket")return {category,href:knownStadiumTicketHref(query)||"/tickets?"'));
- assert.ok(ticketPage.includes('const initialQuery=typeof params.q==="string"?params.q.slice(0,100):""'));
+ assert.match(ticketPage,/<WorldwideTicketExplorer syncUrlQuery\/>/);
+ assert.match(explorer,/const params=useSearchParams\(\)/);
+ assert.match(explorer,/readTicketUrlQuery\(params\)/);
+ assert.match(explorer,/useEffect\(\(\)=>\{onQuery\(query\);\},\[query,onQuery\]\)/);
+ assert.match(explorer,/<TicketUrlQuery onQuery=\{setQuery\}\/>/);
  assert.ok(explorer.includes('useState(initialQuery.slice(0,100))'));
  assert.doesNotMatch(desktop,/style=\{theme\}|const theme\s*=\s*\{/);
  assert.doesNotMatch(desktop,/#[0-9a-f]{6}\b/i);
