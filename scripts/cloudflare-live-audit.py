@@ -108,19 +108,19 @@ try:
     headers={"CF-Access-Client-Id":cid,"CF-Access-Client-Secret":secret}
     routes=[
       "/", "/hotels","/flights","/destinations/goa","/destinations/tokyo",
-      "/mobility","/mobility/mumbai","/mobility/kolkata","/real-estate",
+      "/mobility","/mobility/mumbai","/mobility/kolkata","/go/transport","/real-estate",
       "/real-estate/registry","/real-estate/tools","/tender","/tender/assistant",
       "/stadiums","/stadiums/wankhede-stadium","/tickets","/tickets/sports",
       "/api/mobility/cities?q=Mumbai","/api/mobility/map?city=mumbai",
       "/api/mobility/traffic?city=mumbai","/api/real-estate/registry-preview?q=Mumbai",
-      "/api/tender?country=IN","/api/stadiums/concierge?venue=wankhede-stadium",
+      "/api/tender?scope=world&country=IN","/api/stadiums/concierge?venue=wankhede-stadium",
       "/api/hotels/booking?city=Tokyo&country=JP","/api/hotels/booking?city=Mumbai&country=IN"
     ]
     for path in routes:
         first=request("https://"+host+path,headers)
         second=request("https://"+host+path,headers) if not path.startswith("/api/") else None
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
-        if first["status"] not in (200,301,302,307,308) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
+        if (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or first["status"] not in (200,301,302,307,308) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
             failed=True
     print("ROUTE_AUDIT", "FAILURES_PRESENT" if failed else "HTTP_CHECKS_PASSED",flush=True)
 finally:
