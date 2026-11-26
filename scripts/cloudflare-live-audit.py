@@ -158,7 +158,7 @@ try:
             print("ROUTE_RETRY",json.dumps({"path":path,"result":retry}),flush=True)
         time.sleep(1)
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
-        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or any(x["status"] not in (200,301,302,307,308) or x.get("runtime_error_marker") or x.get("has_error") for x in observations) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
+        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or any(x["status"] not in (200,301,302,307,308) or x.get("runtime_error_marker") or x.get("has_error") or x.get("state") in ("unavailable","unknown") or x.get("degraded") is True for x in observations) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
             failed=True
     print("ROUTE_AUDIT", "FAILURES_PRESENT" if failed else "HTTP_CHECKS_PASSED",flush=True)
 finally:
