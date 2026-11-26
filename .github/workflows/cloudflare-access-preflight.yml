@@ -139,3 +139,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-live-audit.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=3' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Locate DNS preparation run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-dns-prepare.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
