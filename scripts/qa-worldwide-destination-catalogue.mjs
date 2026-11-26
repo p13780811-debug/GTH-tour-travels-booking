@@ -64,7 +64,7 @@ for(let offset=0;;offset+=1000){
    // Strict city-name validation can decline uncommon punctuation. The destination
    // page still offers the existing manual booking picker; never guess a place ID.
    const h=hotels.destinationHotelHref(row.name,code);
-   if(h){const u=new URL(h,base);assert.ok([base,"https://hotel.gthproglobal.com","https://www.klook.com"].includes(u.origin));if(u.origin===base){assert.equal(u.pathname,"/hotels");hotelPicker++;}else if(u.origin==="https://hotel.gthproglobal.com"){assert.equal(u.pathname,"/hotels");assert.ok(u.searchParams.get("placeId"));hotelDirect++;}else hotelAlternative++;}
+   if(h){const u=new URL(h,base);assert.ok([base,"https://hotel.gthproglobal.com","https://tp.media"].includes(u.origin));if(u.origin==="https://tp.media"){assert.equal(u.pathname,"/r");assert.equal(u.searchParams.getAll("u").length,1);const target=new URL(u.searchParams.get("u"));assert.equal(target.origin,"https://www.klook.com");assert.ok(!target.username&&!target.password&&!target.search&&!target.hash);assert.match(target.pathname,/^\/(?:en-IN\/)?destination\/c\d+-[a-z-]+\/3-hotel\/$/);assert.equal(u.searchParams.get("campaign_id"),"137");}if(u.origin===base){assert.equal(u.pathname,"/hotels");hotelPicker++;}else if(u.origin==="https://hotel.gthproglobal.com"){assert.equal(u.pathname,"/hotels");assert.ok(u.searchParams.get("placeId"));hotelDirect++;}else hotelAlternative++;}
    else hotelPicker++;
   }catch(e){fail(row.slug,String(e.message).slice(0,180));}
  }
