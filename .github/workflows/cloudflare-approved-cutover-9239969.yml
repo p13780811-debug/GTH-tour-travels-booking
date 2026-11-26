@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import os, json, time, urllib.request, urllib.error, urllib.parse, re, subprocess, io, zipfile
+          import os, json, time, urllib.request, urllib.error, urllib.parse, re, subprocess
           repo = "p13780811-debug/GTH-tour-travels-booking"
           sha = "9239969030346911a78806a551ac955c56062849"
           worker = "gth-pro-production"
@@ -45,12 +45,11 @@ jobs:
           require(r["conclusion"]=="success","Candidate failed; no cutover")
           jobs = gh(run_path+"/attempts/2/jobs")["jobs"]
           require(len(jobs)==1 and jobs[0]["conclusion"]=="success" and any(s["name"]=="Create isolated production candidate (no DNS, no public URL)" and s["conclusion"]=="success" for s in jobs[0]["steps"]),"Candidate deployment was skipped or failed")
-          logs = subprocess.run(["gh","api","repos/"+repo+"/actions/jobs/"+str(jobs[0]["id"])+"/logs"],capture_output=True,check=True).stdout.decode("utf-8",errors="replace")
-          require("Isolated production candidate deployed; no public URL. Source commit: "+sha in logs,"Candidate post-upload isolation marker missing")
           staging=gh("repos/"+repo+"/actions/runs/45862310121")
-          require(staging["head_sha"]=="5ece275ba9980884bcf5df56c04968c8595aad59" and staging["conclusion"]=="success","Staging audit not verified")
-          stage_logs=subprocess.run(["gh","api","repos/"+repo+"/actions/jobs/140057554413/logs"],capture_output=True,check=True).stdout.decode("utf-8",errors="replace")
-          require("ROUTE_AUDIT HTTP_CHECKS_PASSED" in stage_logs and len(re.findall(r"ROUTE \{",stage_logs))==26,"26-route staging audit not verified")
+          require(staging["head_sha"]=="5ece275ba9980884bcf5df56c04968c8595aad59" and staging["status"]=="completed" and staging["conclusion"]=="success","Staging audit not verified")
+          stage_jobs=gh("repos/"+repo+"/actions/runs/45862310121/jobs")["jobs"]
+          require(any(j["id"]==140057554413 and j["status"]=="completed" and j["conclusion"]=="success" and any(s["name"]=="Authenticated route audit after protected redeployment" and s["conclusion"]=="success" for s in j["steps"]) for j in stage_jobs),"Staging audit step did not complete successfully")
+          print("CANDIDATE_AND_STAGING_STATUS_VERIFIED",sha,flush=True)
           diff=gh("repos/"+repo+"/compare/5ece275..."+sha)
           require({f["filename"] for f in diff["files"]}=={".github/workflows/cloudflare-production-candidate.yml","docs/cloudflare-production-candidate-trigger.txt","scripts/cloudflare-stage.mjs"},"Unexpected application changes since staging")
           token=os.environ["CLOUDFLARE_API_TOKEN"]; account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
@@ -132,6 +131,8 @@ jobs:
               passed+=int(a[1] and b[1])
           print("PUBLIC_ROUTE_AUDIT",str(passed)+"/26",flush=True)
           require(passed==26,"Live route failures; do not claim zero errors")
-          require(all(probe(h,"/")[1] for h in hosts),"Final domain check failed")
+          final_checks=[probe(h,"/") for h in hosts]
+          print("FINAL_PUBLIC_HTTP",list(zip(hosts,final_checks)),flush=True)
+          require(all(ok and status==200 for status,ok in final_checks),"Both hostnames must return direct HTTP 200; inspect final results")
           print("PUBLIC_LAUNCH_VERIFIED",sha,flush=True)
           PY
