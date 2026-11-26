@@ -13,13 +13,12 @@ try{
  await page.getByRole("heading",{name:"Choose your next escape"}).waitFor();
  await page.getByRole("button",{name:"Plan Tokyo"}).click();
  await page.getByRole("combobox",{name:"Departure airport"}).fill("BOM");
- await page.getByRole("combobox",{name:"Departure airport"}).press("ArrowDown");
- await page.getByRole("combobox",{name:"Departure airport"}).press("Enter");
+ await page.getByRole("option").filter({hasText:"BOM"}).first().click();
  const date=n=>new Date(Date.now()+n*86400000).toISOString().slice(0,10);
  await page.getByLabel("Departure / check-in").fill(date(10));
  await page.getByLabel("Return / check-out").fill(date(15));
  await page.getByRole("button",{name:"Create my travel plan"}).click();
- await page.getByRole("heading",{name:"Your Tokyo travel plan"}).waitFor();
+ try{await page.getByRole("heading",{name:"Your Tokyo travel plan"}).waitFor();}catch(e){console.log("PACKAGE_FORM_DIAGNOSTICS",await page.getByRole("alert").allTextContents());await page.screenshot({path:"/tmp/gth-package-qa/failure.png",fullPage:true});throw e;}
  assert.match(await page.getByRole("link",{name:"Find stays in Tokyo"}).getAttribute("href"),/^https:\/\/hotel\.gthproglobal\.com\/hotels\?/);
  assert.match(await page.getByRole("link",{name:"Compare return flights"}).getAttribute("href"),/return_date=/);
  assert.match(await page.getByRole("link",{name:"Find experiences"}).getAttribute("href"),/city=Tokyo/);

@@ -39,8 +39,8 @@ test("every city carries every actual GTH PRO pillar and working category links"
   "hotels","flights","tours","activities","transfers","cars","bus","train",
   "guides","blog","properties","post-property","tenders","tender-assistant","list-hotel"
  ])assert.ok(service.includes('key:"'+entry+'"'),"Missing "+entry);
- assert.match(rail,/destinationServices\(\{slug,name,country\}\)/);
- assert.match(detail,/<DestinationEcosystem slug=\{slug\} name=\{destination\.name\} country=\{destination\.country\}\/>/);
+ assert.match(rail,/destinationServices\(\{slug,name,country,countryCode\}\)/);
+ assert.match(detail,/<DestinationEcosystem slug=\{slug\} name=\{destination\.name\} country=\{destination\.country\} countryCode=\{destination\.countryCode\}\/>/);
  assert.match(service,/scope:"global"/);
  assert.match(service,/scope:"destination"/);
  assert.match(service,/scope:country\?"country":"global"/);

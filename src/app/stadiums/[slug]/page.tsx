@@ -146,6 +146,7 @@ export default async function StadiumPage({ params }: Props) {
           <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ view:"booking", city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
           <Link prefetch={false} href={destinationFlightHref(flightCity)} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Flights to {flightCity}</Link>
           <Link prefetch={false} href="/transfers" className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Choose airport transfer</Link>
+          <Link prefetch={false} href={"/travel/packages?"+new URLSearchParams({city:venue.city,country:venue.countryCode})+"#package-builder"} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Plan your match-day trip</Link>
         </nav>
       </section>
       <footer className="mt-6 text-sm leading-6 text-[var(--text-soft)]">Venue sources reviewed 10 November 2026. Booking terms and confirmation come from the selected seller. GTH PRO may earn commission on qualifying partner bookings. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></footer>

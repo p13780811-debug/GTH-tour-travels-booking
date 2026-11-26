@@ -1,5 +1,7 @@
 // Nuitee Connect airport metadata, read-only lookup 2026-11-05. Not a schedule or booking feed.
+// Supplemental public aviation reference: https://ourairports.com/airports/RJTT/changes.html
 export const japanAirportReference = [
+  {code:"HND",name:"Tokyo Haneda Airport",city:"Tokyo",countryCode:"JP",timezone:"Asia/Tokyo",icao:"RJTT"},
   {
     "code": "NGO",
     "name": "Chubu Centrair International Airport",

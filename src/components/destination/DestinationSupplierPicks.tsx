@@ -1,5 +1,7 @@
 import "server-only";
 import Link from "next/link";
+import DiscoveryCardPhoto from "./DiscoveryCardPhoto";
+import {destinationServicePhoto} from "@/lib/destinations/visual-media";
 import {ArrowRight, Building2, Compass, Hotel, MapPin} from "lucide-react";
 import {getSupplierCatalog,getSupplierAttractions} from "@/lib/tours/supplier-catalog";
 import {firstAvailableSupplierCatalog} from "@/lib/tours/catalog-selection";
@@ -137,10 +139,8 @@ export default async function DestinationSupplierPicks({city,country,countryCode
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4">
             {section.items.map(item=><article key={item.id}
               className="flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-              <div className="flex h-28 shrink-0 items-center justify-center overflow-hidden bg-[var(--bg)]">
-                {item.image?<img src={item.image} alt={item.title} loading="lazy" width={480} height={224}
-                  className="h-full w-full object-cover"/>:
-                  section.id==="destination-hotels"?<Hotel size={26}/>:section.id==="destination-stadiums"?<Building2 size={26}/>:<Compass size={26}/>}
+              <div className="relative flex h-28 shrink-0 items-center justify-center overflow-hidden bg-[var(--bg)]">
+                <DiscoveryCardPhoto source={item.image} fallback={destinationServicePhoto(section.id.replace("destination-",""))} title={item.title}/>
               </div>
               <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
                 <h4 className="line-clamp-2 text-sm font-semibold">{item.title}</h4>
@@ -152,7 +152,7 @@ export default async function DestinationSupplierPicks({city,country,countryCode
               </div>
             </article>)}
           </div>:
-          <p className="text-sm text-[var(--text-soft)]">{section.empty}</p>}
+          <article className="flex max-w-xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:flex-row"><div className="relative h-36 shrink-0 sm:h-auto sm:w-44"><DiscoveryCardPhoto source={null} fallback={destinationServicePhoto(section.id.replace("destination-",""))} title=""/></div><div className="p-4"><p className="text-sm text-[var(--text-soft)]">{section.empty}</p><a href={section.href} className="gth-btn-gold mt-3 inline-flex min-h-11 items-center gap-2 px-4 text-sm" {...(!internal(section.href)?{target:"_blank",rel:"noopener noreferrer sponsored"}:{})}>{section.cta}<ArrowRight size={15}/></a></div></article>}
       </section>)}
       <p className="flex items-start gap-2 text-xs leading-6 text-[var(--text-soft)]">
         <MapPin size={16} className="mt-1 shrink-0"/>Confirm current prices, availability and booking terms on the booking page.

@@ -1,15 +1,23 @@
 "use client";
-import {useRef,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,CalendarDays,MapPin,ShieldCheck} from "lucide-react";
 import TravelAirportField,{airportCode,airportLabel} from "./TravelAirportField";
-import {PACKAGE_DESTINATIONS,PACKAGE_SERVICES,buildPackagePlan,packageEstimate,type PackageDraft,type PackagePlan,type PackageServiceId} from "@/lib/travel/package-planner";
+import {PACKAGE_DESTINATIONS,PACKAGE_SERVICES,buildPackagePlan,packageEstimate,packageContextAirport,type PackageDraft,type PackagePlan,type PackageServiceId} from "@/lib/travel/package-planner";
 const initial:PackageDraft={origin:"",destination:"",start:"",end:"",adults:"2",rooms:"1",currency:"INR",experience:true,transfer:true};
 const field="mt-2 block min-h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-[var(--text)]";
 export default function TravelPackagePlanner(){
  const [draft,setDraft]=useState(initial),[airportText,setAirportText]=useState({origin:"",destination:""}),[plan,setPlan]=useState<PackagePlan|null>(null),[error,setError]=useState(""),[amounts,setAmounts]=useState<Partial<Record<PackageServiceId,string>>>({});
  const form=useRef<HTMLFormElement>(null),result=useRef<HTMLElement>(null);
+ const [context,setContext]=useState("");
+ useEffect(()=>{
+  const q=new URLSearchParams(window.location.search),city=q.get("city")||"",country=q.get("country")||"";
+  if(q.getAll("city").length!==1||q.getAll("country").length!==1||!/^\p{L}[\p{L}\p{M}\p{N} .'-]{1,79}$/u.test(city)||!/^[A-Z]{2}$/.test(country))return;
+  setContext(city+" · "+country);
+  const code=packageContextAirport(city,country);
+  if(code){setDraft(d=>({...d,destination:code}));setAirportText(a=>({...a,destination:airportLabel(code)}));}
+ },[]);
  const edit=(change:Partial<PackageDraft>)=>{setDraft(current=>({...current,...change}));setPlan(null);setError("");};
  const choose=(airport:string)=>{edit({destination:airport});setAirportText(current=>({...current,destination:airportLabel(airport)}));form.current?.scrollIntoView({block:"start"});};
  const total=plan?packageEstimate(plan.legs,amounts):null;
@@ -26,7 +34,7 @@ export default function TravelPackagePlanner(){
   </section>
   <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6" aria-labelledby="package-builder-title">
    <form ref={form} id="package-builder" className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-5 sm:p-7" onSubmit={event=>{event.preventDefault();const built=buildPackagePlan(draft);if(!built.ok){setError(built.error);return;}setPlan(built.plan);setAmounts({});setError("");requestAnimationFrame(()=>result.current?.scrollIntoView({block:"start"}));}}>
-    <h2 id="package-builder-title" className="text-2xl font-bold">Build your personal travel plan</h2><p className="mt-2 text-sm text-[var(--text-soft)]">One trip, shared dates and independently booked services. Choose any airport in the existing directory.</p>
+    <h2 id="package-builder-title" className="text-2xl font-bold">Build your personal travel plan</h2><p className="mt-2 text-sm text-[var(--text-soft)]">One trip, shared dates and independently booked services. Choose any airport in the existing directory.</p>{context&&<p className="mt-3 text-sm font-semibold" role="status">Requested destination: {context}. Confirm the correct arrival airport before creating your plan.</p>}
     <div className="mt-6 grid gap-4 sm:grid-cols-2">
      <TravelAirportField label="Departure airport" value={airportText.origin} code={draft.origin} onType={value=>{setAirportText(current=>({...current,origin:value}));edit({origin:airportCode(value)});}} onSelect={code=>{setAirportText(current=>({...current,origin:airportLabel(code)}));edit({origin:code});}}/>
      <TravelAirportField label="Destination airport" value={airportText.destination} code={draft.destination} onType={value=>{setAirportText(current=>({...current,destination:value}));edit({destination:airportCode(value)});}} onSelect={code=>{setAirportText(current=>({...current,destination:airportLabel(code)}));edit({destination:code});}}/>

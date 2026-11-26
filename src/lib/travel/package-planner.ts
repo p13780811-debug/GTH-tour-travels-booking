@@ -20,6 +20,13 @@ export const PACKAGE_SERVICES=[
  {id:"transfer",title:"Airport transfers",image:"/images/mega/transfers.jpg",alt:"Airport transfer vehicle inspiration"},
 ] as const;
 export type PackageServiceId=typeof PACKAGE_SERVICES[number]["id"];
+/** Carry the requested identity without choosing an ambiguous airport or guessing a code. */
+export function packageContextAirport(city:string,countryCode:string):string {
+ if(!/^[A-Z]{2}$/.test(countryCode))return "";
+ const key=city.normalize("NFKC").trim().toLocaleLowerCase("en");
+ const matches=airportIndex.filter(a=>a.countryCode===countryCode&&a.city.normalize("NFKC").trim().toLocaleLowerCase("en")===key);
+ return matches.length===1?matches[0].code:"";
+}
 export type PackageDraft={origin:string;destination:string;start:string;end:string;adults:string;rooms:string;currency:string;experience:boolean;transfer:boolean};
 export type PackageLeg={id:PackageServiceId;href:string;detail:string;action:string;note:string};
 export type PackagePlan={trip:ConnectedTrip;nights:number;city:string;image:string;legs:PackageLeg[]};
