@@ -86,7 +86,7 @@ export async function nativePublicRead(request,env){
     const name=typeof row.name==="string"?row.name.trim():"",lat=Number(row.latitude),lng=Number(row.longitude);
     if(!name||!Number.isFinite(lat)||!Number.isFinite(lng))return [];
     const distanceKm=haversineKm(location,{lat,lng});if(distanceKm>5||distanceKm<0)return [];
-    let sourceUrl="";try{const u=new URL(row.source_url);if(u.protocol==="https:"&&["www.openstreetmap.org","openstreetmap.org"].includes(u.hostname))sourceUrl=u.toString();}catch{}
+    let sourceUrl="";try{const u=new URL(row.source_url);if(u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&["www.openstreetmap.org","openstreetmap.org"].includes(u.hostname))sourceUrl=u.toString();}catch{/* Reject malformed or untrusted source links. */}
     return [{name:name.slice(0,160),distanceKm:Math.round(distanceKm*100)/100,sourceUrl}];
    }).sort((a,b)=>a.distanceKm-b.distanceKm).filter(h=>{const k=h.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,5);
    return storePublicEdgeCache(request,reply({venue:venue.name,transit:location.transit,bookingUrl:safeHotelHandoff(venue),hotels,note:"Nearest among up to 300 loaded records, not an exhaustive hotel ranking. Distances are straight-line estimates, not walking routes. OSM records are not live Nuitee inventory."},"public, s-maxage=3600"));

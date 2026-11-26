@@ -1,5 +1,5 @@
 // Export only known public prerendered HTML, not the .next server directory.
-import {readFileSync,writeFileSync,mkdirSync,existsSync,copyFileSync,appendFileSync} from "node:fs";
+import {readFileSync,writeFileSync,mkdirSync,existsSync,copyFileSync,appendFileSync,statSync} from "node:fs";
 import {join} from "node:path";
 const root=".open-next",manifest=JSON.parse(readFileSync(".next/prerender-manifest.json","utf8"));
 const directory=join(root,"assets","__gth_static_shells");
@@ -18,7 +18,7 @@ for(const [route,entry] of Object.entries(manifest.routes||{})){
  if(!/^<!DOCTYPE html>/i.test(content)||!content.includes("</html>")||content.length>1_500_000)continue;
  const name=route.slice(1).replaceAll("/","__")+".gth-html";
  copyFileSync(source,join(directory,name));
- shells[route]={path:"/__gth_static_shells/"+name,expiresAt:ttl===false?null:builtAt+ttl*1000};
+ shells[route]={path:"/__gth_static_shells/"+name,expiresAt:ttl===false?null:Math.min(builtAt,statSync(source).mtimeMs)+ttl*1000};
 }
 writeFileSync(join(root,"gth-shell-manifest.mjs"),"export default "+JSON.stringify(shells)+";\n");
 appendFileSync(join(root,"assets","_headers"),"\n/__gth_static_shells/*\n  X-Robots-Tag: noindex, nofollow\n  Content-Type: application/octet-stream\n  X-Content-Type-Options: nosniff\n");

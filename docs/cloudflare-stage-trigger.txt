@@ -30,3 +30,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-26: Correct mobility cache return scope; run cache security tests, static shell offload and repeat every audited GET. Strict Free plan only.
 
 2026-11-26: Deploy the native anonymous read and public prerender shell Worker wrapper; retain OpenNext for every other request. Repeat the 26-route audit. No new Cloudflare products, paid resources or DNS mutations.
+
+2026-11-26: Complete native read contract tests and registry cache dependency coverage. Keep ISR shell expiry bounded by the generated HTML timestamp and reject credentials in public hotel source links.
