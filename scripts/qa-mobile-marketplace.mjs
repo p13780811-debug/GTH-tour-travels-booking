@@ -15,8 +15,13 @@ try{
   assert.equal(await section.locator("img").count(),12);
   for(const img of await section.locator("img").all()){
    await img.scrollIntoViewIfNeeded();
-   await img.evaluate(i=>i.decode());
-   assert.ok(await img.evaluate(i=>i.naturalWidth>0));
+   // Native lazy image selection may not begin until after the first paint.
+   // Wait for a real successful load before decoding; never suppress a broken image.
+   try{
+    await page.waitForFunction(i=>i.complete&&i.naturalWidth>0,await img.elementHandle(),{timeout:15000});
+    await img.evaluate(i=>i.decode());
+    assert.ok(await img.evaluate(i=>i.naturalWidth>0));
+   }catch(error){console.log("MARKETPLACE_IMAGE_FAILURE",width,await img.getAttribute("src"));await page.screenshot({path:folder+"/marketplace-failure-"+width+".png",fullPage:true});throw error;}
   }
   assert.equal(await section.getByRole("link",{name:/Melbourne \(MCG\)/}).getAttribute("href"),"/stadiums/melbourne-cricket-ground");
   assert.equal(await section.getByRole("link",{name:/Mumbai \(Wankhede\)/}).getAttribute("href"),"/stadiums/wankhede-stadium");
