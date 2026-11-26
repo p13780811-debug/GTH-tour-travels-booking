@@ -60,7 +60,7 @@ def verify_authoritative():
             for e in expected:
                 if (e["name"],e["type"])!=(name,kind): continue
                 if normalized(e) in actual: matched+=1
-                else: print("DNS_MISMATCH",ns,kind,name,flush=True)
+                else: print("DNS_MISMATCH",ns,kind,name, "expected="+str(normalized(e)[2]) if kind=="CAA" else "", "observed="+str([x[2] for x in actual]) if kind=="CAA" else "",flush=True)
         print("AUTHORITATIVE_PARITY",ns,matched,"/19",flush=True)
         all_ok=all_ok and matched==19
     for kind in ("NS","DS"):
