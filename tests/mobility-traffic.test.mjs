@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
@@ -80,4 +81,17 @@ test("reviewed Mumbai and Kolkata map centres avoid nationwide queries without w
   assert.equal(osm.parseMobilityMap(snapshot),null);
   assert.equal(osm.parseMobilityMap(snapshot,true).features.length,1);
   assert.equal(osm.parseMobilityMap({...snapshot,remark:"partial"},true),null);
+});
+
+test("Mumbai dated extract is real, city-scoped, bounded and expires rather than faking live data",()=>{
+  const raw=JSON.parse(readFileSync("src/lib/mobility/mumbai-osm-snapshot.json","utf8"));
+  const city={name:"Mumbai",slug:"mumbai",countryCode:"IN"};
+  const now=Date.parse(raw.updatedAt)+86400000;
+  const result=osm.validatedMumbaiSnapshot(raw,city,now);
+  assert.equal(result.source,"dated-osm-extract");
+  assert.ok(result.features.length>=5);
+  assert.equal(osm.validatedMumbaiSnapshot(raw,{...city,slug:"kolkata"},now),null);
+  assert.equal(osm.validatedMumbaiSnapshot(raw,city,now+31*86400000),null);
+  assert.equal(osm.validatedMumbaiSnapshot({...raw,features:[]},city,now),null);
+  assert.equal(osm.validatedMumbaiSnapshot({...raw,features:[...raw.features,{kind:"transit",name:"bad",href:"https://example.com"}]},city,now),null);
 });
