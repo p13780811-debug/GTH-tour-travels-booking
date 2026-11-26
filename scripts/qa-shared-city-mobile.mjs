@@ -38,7 +38,19 @@ try{
     assert.ok(await photos.count()>=8,"Expected photo-led shared sections");
     for(const img of await photos.all()){
      await img.scrollIntoViewIfNeeded();
-     await img.evaluate(async i=>{await i.decode();if(!i.naturalWidth)throw Error("Image failed to decode");});
+     // An image can initially fail, then its hydrated error handler installs
+     // the local fallback. Require a decoded, nonzero image after that transition.
+     try{
+      await img.evaluate(async i=>{
+       const deadline=Date.now()+15000;
+       let lastError;
+       do{
+        try{await i.decode();if(i.complete&&i.naturalWidth>0)return;}catch(e){lastError=e;}
+        await new Promise(resolve=>setTimeout(resolve,200));
+       }while(Date.now()<deadline);
+       throw Error("Image did not decode: "+i.currentSrc+"; src="+i.getAttribute("src")+"; "+String(lastError));
+      });
+     }catch(e){console.log("CITY_IMAGE_FAILURE",JSON.stringify({slug,width,image:await img.evaluate(i=>({src:i.getAttribute("src"),currentSrc:i.currentSrc,complete:i.complete,naturalWidth:i.naturalWidth}))}));throw e;}
     }
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),"Horizontal overflow at "+width+" in "+slug);
     assert.deepEqual(errors,[],"Client rendering errors");
