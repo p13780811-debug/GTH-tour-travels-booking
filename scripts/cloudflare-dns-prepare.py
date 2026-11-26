@@ -1,5 +1,5 @@
 """Prepare only a pending Free DNS zone; never change registrar or live DNS."""
-import os,json,urllib.request,urllib.error,re
+import os,json,urllib.request,urllib.error,re,subprocess,shlex
 token=os.environ["CLOUDFLARE_API_TOKEN"]
 account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
 domain="gthproglobal.com"
@@ -37,7 +37,44 @@ def fetch_records():
     d=api("GET","/zones/"+zone+"/dns_records?per_page=100")
     if d.get("result_info",{}).get("total_pages",1)>1: raise SystemExit("Incomplete DNS inventory")
     return d["result"]
-current=fetch_records()
+def verify_authoritative():
+    # Pending Cloudflare zones answer directly on assigned nameservers.
+    # This is an independent read-only check, not a claim of API access.
+    nameservers=z.get("name_servers",[])
+    if len(nameservers)!=2 or any(not re.fullmatch(r"[a-z0-9-]+\.ns\.cloudflare\.com",n) for n in nameservers):
+        raise SystemExit("Unexpected nameservers")
+    all_ok=True
+    for ns in nameservers:
+        matched=0
+        for name,kind in sorted(set((e["name"],e["type"]) for e in expected)):
+            result=subprocess.run(["dig","@"+ns,name,kind,"+short","+norecurse","+time=3","+tries=1"],capture_output=True,text=True)
+            actual=[]
+            for line in result.stdout.splitlines():
+                try:
+                    fields=shlex.split(line)
+                    if kind=="MX" and len(fields)==2: actual.append(normalized({"type":kind,"name":name,"priority":int(fields[0]),"content":fields[1]}))
+                    elif kind=="CAA" and len(fields)==3: actual.append(normalized({"type":kind,"name":name,"content":" ".join(fields)}))
+                    elif kind=="TXT" and fields: actual.append(normalized({"type":kind,"name":name,"content":"".join(fields)}))
+                    elif kind=="CNAME" and len(fields)==1: actual.append(normalized({"type":kind,"name":name,"content":fields[0]}))
+                except (ValueError,IndexError): pass
+            for e in expected:
+                if (e["name"],e["type"])!=(name,kind): continue
+                if normalized(e) in actual: matched+=1
+                else: print("DNS_MISMATCH",ns,kind,name,flush=True)
+        print("AUTHORITATIVE_PARITY",ns,matched,"/19",flush=True)
+        all_ok=all_ok and matched==19
+    for kind in ("NS","DS"):
+        r=subprocess.run(["dig",domain,kind,"+short","+time=3","+tries=1"],capture_output=True,text=True)
+        print("CURRENT_"+kind,json.dumps(r.stdout.splitlines()),flush=True)
+    return all_ok
+try:
+    current=fetch_records()
+except RuntimeError as e:
+    print("DNS_API_BLOCKED",str(e),flush=True)
+    if verify_authoritative():
+        print("All 19 record values verified on assigned nameservers. Proxy setting and live activation still require separate checks.",flush=True)
+        raise SystemExit(0)
+    raise SystemExit("DNS parity incomplete; no nameserver change")
 pending=z.get("status")=="pending"
 # Never modify active zones or replace existing mismatched records.
 for e in expected:
