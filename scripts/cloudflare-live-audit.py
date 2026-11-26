@@ -23,9 +23,12 @@ def api(method,path,body=None):
         with opener.open(req,timeout=25) as response:
             data=json.load(response)
     except urllib.error.HTTPError as e:
-        try: codes=[x.get("code") for x in json.load(e).get("errors",[])]
-        except Exception: codes=[]
-        raise RuntimeError("HTTP "+str(e.code)+" codes="+str(codes)) from None
+        try:
+            errors=json.load(e).get("errors",[])
+            codes=[x.get("code") for x in errors]
+            categories=sorted({term for x in errors for term in ("precedence","duplicate","reusable","legacy","policy","service token","invalid","required") if term in str(x.get("message","")).lower()})
+        except Exception: codes=[]; categories=[]
+        raise RuntimeError("HTTP "+str(e.code)+" codes="+str(codes)+" categories="+str(categories)) from None
     if not data.get("success"):
         raise RuntimeError("Cloudflare API rejected request")
     return data.get("result")
@@ -47,6 +50,8 @@ def request(url,headers=None):
     result={"status":status,"ms":round((time.perf_counter()-start)*1000),
         "cache":h.get("CF-Cache-Status",""),"content_type":h.get("Content-Type","").split(";")[0],
         "redirect_host":dest.hostname or ("same-origin" if h.get("Location","").startswith("/") else ""),
+        "redirect_path":dest.path if dest.hostname=="hotel.gthproglobal.com" else "",
+        "tokyo_place_match":urllib.parse.parse_qs(dest.query).get("placeId")==["ChIJ51cu8IcbXWARiRtXIothAS4"] if dest.hostname=="hotel.gthproglobal.com" else False,
         "cache_control":h.get("Cache-Control","")}
     if "json" in result["content_type"] and data:
         try:
@@ -102,7 +107,7 @@ try:
         raise RuntimeError("Temporary authenticated audit token creation blocked: "+str(e)) from None
     sid=t["id"]; cid=t["client_id"]; secret=t["client_secret"]
     print("::add-mask::"+cid,flush=True); print("::add-mask::"+secret,flush=True)
-    p=api("POST",base+"/access/apps/"+aid+"/policies",{"name":"Temporary isolated QA "+os.environ["GITHUB_RUN_ID"],"decision":"non_identity","include":[{"service_token":{"token_id":sid}}],"precedence":1})
+    p=api("POST",base+"/access/apps/"+aid+"/policies",{"name":"Temporary isolated QA "+os.environ["GITHUB_RUN_ID"],"decision":"non_identity","include":[{"service_token":{"token_id":sid}}],"precedence":max([int(p.get("precedence") or 0) for p in policies]+[1])+1})
     pid=p["id"]
     if p.get("decision")!="non_identity": raise RuntimeError("Unexpected temporary policy decision")
     headers={"CF-Access-Client-Id":cid,"CF-Access-Client-Secret":secret}
