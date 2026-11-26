@@ -29,7 +29,7 @@ export default function MobileAppHome(){
   <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6">
    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">GTH PRO · Global Technical Hub</p>
    <h1 aria-label="GTH PRO Home" className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-5xl">Your world. <span className="gold-text">One marketplace.</span></h1>
-   <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-soft)]">Global stays, match hospitality, journeys, property and procurement — connected to your existing GTH PRO tools.</p>
+   <p className="mt-2 max-w-2xl text-sm leading-5 text-[var(--text-soft)]">Global stays, match hospitality, journeys, property and procurement — connected to your existing GTH PRO tools.</p>
    {/* Restore the original paired high-visibility shortcuts near the first fold.
        They are navigation links, not another icon menu or search/category bar. */}
    <nav aria-label="GTH PRO Home and Research Desk shortcuts"

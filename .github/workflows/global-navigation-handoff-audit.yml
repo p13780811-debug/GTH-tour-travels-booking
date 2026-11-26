@@ -66,6 +66,8 @@ jobs:
           exit 1
       - name: Existing cross-pillar mobile journeys
         run: node scripts/qa-app-unified-journey.mjs
+      - name: Premium app visual and package navigation
+        run: node scripts/qa-mobile-marketplace.mjs
       - name: Melbourne exact hotel handoff and supplier rendering
         if: success() || failure()
         run: node scripts/qa-event-hotel-handoff.mjs
