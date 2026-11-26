@@ -48,7 +48,9 @@ def request(url,headers=None):
         return {"status":0,"ms":round((time.perf_counter()-start)*1000),"state":"network_or_timeout"}
     dest=urllib.parse.urlparse(h.get("Location",""))
     result={"status":status,"ms":round((time.perf_counter()-start)*1000),
-        "cache":h.get("CF-Cache-Status",""),"content_type":h.get("Content-Type","").split(";")[0],
+        "cache":h.get("CF-Cache-Status",""),
+        "read_cache":h.get("X-GTH-Read-Cache",""),
+        "static_shell":h.get("X-GTH-Static-Shell",""),"content_type":h.get("Content-Type","").split(";")[0],
         "redirect_host":dest.hostname or ("same-origin" if h.get("Location","").startswith("/") else ""),
         "redirect_path":dest.path if dest.hostname=="hotel.gthproglobal.com" else "",
         "tokyo_place_match":urllib.parse.parse_qs(dest.query).get("placeId")==["ChIJ51cu8IcbXWARiRtXIothAS4"] if dest.hostname=="hotel.gthproglobal.com" else False,
@@ -152,7 +154,7 @@ try:
     for path in routes:
         first=request("https://"+host+path,headers)
         time.sleep(1.5)
-        second=request("https://"+host+path,headers) if not path.startswith("/api/") else None
+        second=request("https://"+host+path,headers)
         observations=[first]+([second] if second is not None else [])
         if any(x["status"] in (0,401,403,429,503) for x in observations):
             time.sleep(5)

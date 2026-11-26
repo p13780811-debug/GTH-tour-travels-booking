@@ -17,7 +17,6 @@ const searchCatalog=unstable_cache(async (prefix:string)=>{
       countryCode:row.country_code??countryCodeForDestinationName(row.country)});
     return city?[city]:[];
   });
-  return degraded?response:storePublicEdgeCache(request,response);
 },["gth-mobility-city-prefix-v2"],{revalidate:900,tags:["public-destination-catalog"]});
 
 export async function GET(request:Request){
@@ -34,4 +33,5 @@ export async function GET(request:Request){
   const response=NextResponse.json({cities:[...matches.values()].slice(0,12),degraded},{
     headers:{"Cache-Control":degraded?"no-store":"public, s-maxage=300, stale-while-revalidate=60"},
   });
+  return degraded?response:storePublicEdgeCache(request,response);
 }

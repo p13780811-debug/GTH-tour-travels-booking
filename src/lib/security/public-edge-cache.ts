@@ -25,8 +25,9 @@ export function publicReadCacheKey(req:Request):{key:Request;policy:CachePolicy}
  if(field==="q"){
   value=raw.normalize("NFKC").trim().replace(/\s+/gu," ");
   if(value.length<2||value.length>70||!/^[\p{L}\p{M}\p{N} .&'’-]+$/u.test(value))return null;
-  // Registry and city search both use case-insensitive matching.
-  value=value.toLocaleLowerCase("en");
+  // City search normalizes to lowercase before querying. Preserve registry
+  // case to avoid assumptions about the database collation.
+  if(url.pathname==="/api/mobility/cities")value=value.toLocaleLowerCase("en");
  }else if(field==="city"){
   if(!/^(?:mumbai|kolkata|d:[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(value)||value.length>142)return null;
  }else if(!/^[a-z0-9-]{3,70}$/.test(value))return null;
@@ -56,7 +57,7 @@ export async function storePublicEdgeCache(req:Request,response:Response,expires
   const cache=regionalCache(),entry=publicReadCacheKey(req);
   if(!cache||!entry||response.status!==200||response.headers.has("set-cookie"))return response;
   const ttl=Math.min(entry.policy.ttl,Math.floor((expiresAt-Date.now())/1000)-1);
-  if(ttl<1)return response;
+  if(!Number.isFinite(ttl)||ttl<1)return response;
   const headers=new Headers({"Content-Type":"application/json","Cache-Control":"public, max-age="+ttl,"X-Content-Type-Options":"nosniff"});
   // Limit cached JSON and avoid accidentally persisting a large response.
   const body=await response.clone().text();
