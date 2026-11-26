@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 const services = [
+  { name: "Travel Packages", label: "BUILD YOUR OWN JOURNEY", href: "/travel/packages", img: "/images/cities/dubai.jpg", Icon: Sparkles, detail: "Combine return flights, stays, experiences and airport transfers in one personal travel plan." },
   { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore cruise holidays, harbour sailings and dinner cruises, with detailed itineraries and booking options." },
   { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
   { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },

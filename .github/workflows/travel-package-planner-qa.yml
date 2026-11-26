@@ -1,0 +1,60 @@
+name: Visual travel package planner QA
+on:
+  pull_request:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - 'src/app/travel/**'
+      - 'src/components/travel/**'
+      - 'src/lib/travel/package-planner.ts'
+      - 'tests/travel-package-planner.test.mjs'
+      - 'scripts/qa-travel-package-planner.mjs'
+      - '.github/workflows/travel-package-planner-qa.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - run: node --test tests/*.test.mjs
+      - run: npx --no-install tsc --noEmit
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --legacy-peer-deps
+      - run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - run: |
+          npm run dev > /tmp/gth-package-dev.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl -fsS --max-time 4 http://127.0.0.1:3000/manifest.webmanifest >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          tail -80 /tmp/gth-package-dev.log
+          exit 1
+      - run: node scripts/qa-travel-package-planner.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-planner-mobile-preview
+          path: /tmp/gth-package-qa/
+          if-no-files-found: ignore
