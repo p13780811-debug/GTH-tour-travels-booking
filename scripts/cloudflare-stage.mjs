@@ -133,10 +133,37 @@ async function main() {
   if (!response.ok) stop("Cannot verify staging target (HTTP " + response.status + ").");
   const data = await response.json();
   if (!data.success || !Array.isArray(data.result)) stop("Invalid Cloudflare target inventory response.");
-  if (data.result.some(w => w.id === target)) stop("Staging Worker already exists. Inspect before any overwrite.");
+  if (!data.result.some(w => w.id === target)) stop("Expected existing protected preview Worker is missing.");
+  const cfRead = async path => {
+    const r = await fetch("https://api.cloudflare.com/client/v4/accounts/" + account + path, {
+      headers:{Authorization:"Bearer "+token}, redirect:"error", signal:AbortSignal.timeout(30000)
+    });
+    if(!r.ok) stop("Cannot verify preview protection: HTTP "+r.status);
+    const d=await r.json(); if(!d.success) stop("Preview protection inventory rejected.");
+    return d.result;
+  };
+  const verifyProtection = async () => {
+    const worker=await cfRead("/workers/workers/"+target);
+    if(worker?.name!==target) stop("Unexpected Worker identity.");
+    const sub=await cfRead("/workers/scripts/"+target+"/subdomain");
+    if(sub?.enabled!==true || sub?.previews_enabled!==false) stop("Unexpected preview URL settings.");
+    const domains=await cfRead("/workers/domains");
+    if(!Array.isArray(domains) || domains.some(d=>d.service===target)) stop("Unexpected custom-domain association.");
+    const apps=await cfRead("/access/apps?per_page=100");
+    const matches=Array.isArray(apps)?apps.filter(a=>a.name==="GTH PRO private preview 20261126"&&a.destinations?.some(d=>d.type==="worker"&&d.worker_id===worker.id)):[];
+    if(matches.length!==1) stop("Expected isolated Access application missing.");
+    const policies=await cfRead("/access/apps/"+matches[0].id+"/policies");
+    if(!Array.isArray(policies)||policies.length!==1||policies[0].decision!=="allow"||policies[0].include?.length!==1||!policies[0].include[0].email?.email) stop("Unexpected preview policy; no overwrite.");
+    const challenge=await fetch("https://gth-pro-preview-20261126.p13780811.workers.dev/",{redirect:"manual",signal:AbortSignal.timeout(20000)});
+    const location=new URL(challenge.headers.get("location")||"https://invalid.invalid");
+    if(challenge.status!==302||!location.hostname.endsWith(".cloudflareaccess.com")) stop("Anonymous Access challenge not verified.");
+    await challenge.body?.cancel();
+    console.log("Existing owner-only preview and URL verified; no custom domain attached.");
+  };
+  await verifyProtection();
   if (!existsSync("wrangler.jsonc") || !existsSync("open-next.config.ts")) stop("Missing tested Worker config.");
   const config = JSON.parse((await import("node:fs")).readFileSync("wrangler.jsonc", "utf8"));
-  if (config.name !== target || config.routes?.length || config.workers_dev !== false || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
+  if (config.name !== target || config.routes?.length || config.workers_dev !== true || config.preview_urls !== false) stop("Unexpected staging Worker configuration.");
   const pub = Object.fromEntries(Object.entries(values).filter(([k])=>k.startsWith("NEXT_PUBLIC_")));
   console.log("Staging inventory validated. Running real-config build with public variables only.");
   // Adapt only the original Edge runtime declarations in this disposable checkout.
@@ -241,7 +268,8 @@ async function main() {
   if ((rawKiB + 0.005) * 1024 > 64 * 1024 * 1024) stop("Worker exceeds Cloudflare platform limit of 64 MiB uncompressed.");
   if ((gzipKiB + 0.005) * 1024 >= 2800000) console.log("Private staging only: former 2.8 MB gzip optimization target not met; current platform size limit passed.");
   console.log("Worker bundle passed current platform size limit.");
-  // Private staging only: no workers.dev or preview URLs, custom domains or routes.
+  // Existing protected workers.dev endpoint only; no version preview URLs or custom domains.
+  await verifyProtection();
   const deploy = spawnSync("./node_modules/.bin/wrangler", ["deploy","--secrets-file",file], {
     env:cloudEnv, encoding:"utf8", stdio:["ignore","pipe","pipe"], timeout:300000, maxBuffer:8*1024*1024
   });
@@ -255,7 +283,8 @@ async function main() {
   const exists = inventory.result.some(w => w.id === target);
   console.log("Private staging Worker exists: " + (exists ? "yes" : "no"));
   if (deploy.status !== 0 || !exists) stop("Private deployment not verified; do not overwrite any existing resource.");
-  console.log("Private staging Worker deployed. Public preview requires separate access protection review.");
+  await verifyProtection();
+  console.log("Protected preview redeployed; Access challenge retained. Source commit: "+process.env.GITHUB_SHA);
   console.log("DNS unchanged. Production rollout requires smoke tests and explicit release.");
 }
 try { await main(); } catch { if(!process.exitCode) { console.error("Staging operation failed; no success assumed."); process.exitCode=1; } } finally { if(dir) rmSync(dir,{recursive:true,force:true}); }
