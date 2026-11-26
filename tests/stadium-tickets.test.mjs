@@ -119,7 +119,8 @@ test("web discovery, app service gateway and sitemap include stadiums", () => {
   assert.ok(readFileSync("src/app/app/services/[id]/page.tsx", "utf8").includes("  stadiums: {"));
   const page = readFileSync("src/app/stadiums/[slug]/page.tsx", "utf8");
   assert.match(page, /generateStaticParams/);
-  assert.match(page, /dynamicParams = false/);
+  assert.match(page, /dynamicParams = true/);
+  assert.equal([...page.matchAll(/if \(!venue\) notFound\(\)/g)].length, 2);
   assert.match(page, /revalidate = 3600/);
   for (const path of ["src/lib/travel/stadiums.ts", "src/lib/travel/stadium-affiliates.ts", "src/app/stadiums/page.tsx", "src/app/stadiums/[slug]/page.tsx"]) {
     assert.doesNotMatch(readFileSync(path, "utf8"), /supabase|fetch\(|setInterval/);
