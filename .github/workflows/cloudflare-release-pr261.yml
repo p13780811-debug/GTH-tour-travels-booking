@@ -1,0 +1,151 @@
+name: GTH PR 261 guarded production release
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - '.github/workflows/cloudflare-release-pr261.yml'
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+concurrency:
+  group: gth-cloudflare-public-release
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/infra/cloudflare-preflight-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - name: Confirm private runtime bundle is configured
+        id: gate
+        env:
+          READY: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV != '' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CRON_SECRET != '' && secrets.NUITEE_PRODUCTION_API_KEY != '' && secrets.ODDS_API_KEY != '' && secrets.SEATGEEK_CLIENT_ID != '' && secrets.SUPABASE_SERVICE_ROLE_KEY != '' && secrets.UPSTASH_REDIS_REST_TOKEN != '' && secrets.UPSTASH_REDIS_REST_URL != '' }}
+        run: |
+          if [ "$READY" = true ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Required private deployment configuration unavailable."
+            exit 1
+          fi
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          node-version: "24"
+      - name: Verify exact reviewed application tree and successful PR gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess,json
+          repo="p13780811-debug/GTH-tour-travels-booking"
+          def gh(p):return json.loads(subprocess.check_output(["gh","api",p]))
+          p=gh("repos/"+repo+"/pulls/261")
+          assert p["merged"] and p["merge_commit_sha"]=="ea5ecc1e04a04878ddbaa63382e7254206a93469" and p["head"]["sha"]=="957b514f6edec40adba418b1bd279855070fad5d"
+          for i in [45898944407,45898944364,45898944426,45898944390,45898944365]:
+              r=gh("repos/"+repo+"/actions/runs/"+str(i))
+              assert r["head_sha"]==p["head"]["sha"] and r["status"]=="completed" and r["conclusion"]=="success"
+          PY
+          git fetch --depth=1 origin ea5ecc1e04a04878ddbaa63382e7254206a93469
+          git diff --exit-code FETCH_HEAD HEAD -- src public tests package.json package-lock.json next.config.ts
+      - name: Install locked app dependencies
+        if: steps.gate.outputs.ready == 'true'
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned adapter outside locked app dependency tree
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL_DIR="$RUNNER_TEMP/gth-cloudflare-tools"
+          mkdir -p "$TOOL_DIR"
+          npm install --prefix "$TOOL_DIR" --no-audit --no-fund --save-exact @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+          mkdir -p node_modules/@opennextjs
+          test ! -e node_modules/@opennextjs/cloudflare
+          test ! -e node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/@opennextjs/cloudflare" node_modules/@opennextjs/cloudflare
+          ln -s "$TOOL_DIR/node_modules/wrangler" node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/.bin/opennextjs-cloudflare" node_modules/.bin/opennextjs-cloudflare
+          ln -s "$TOOL_DIR/node_modules/.bin/wrangler" node_modules/.bin/wrangler
+          echo "$TOOL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
+          git diff --exit-code -- package.json package-lock.json
+      - name: Generate production configuration preserving dashboard routes
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
+          cat > wrangler.jsonc <<'EOF'
+          {
+            "name": "gth-pro-production",
+            "main": "scripts/cloudflare-worker.mjs",
+            "minify": true,
+            "workers_dev": false,
+            "preview_urls": false,
+            "compatibility_date": "2026-11-18",
+            "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+            "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-production"}]
+          }
+          EOF
+          test ! -e open-next.config.ts
+          printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
+      - name: Deploy approved merged application to existing public Worker
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          GTH_CF_DEPLOY_TARGET: production-release
+          GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NUITEE_PRODUCTION_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+        run: node scripts/cloudflare-release-pr261.mjs
+      - name: Live production route and booking smoke audit
+        run: |
+          python3 scripts/qa-transport-https.py
+          python3 scripts/qa-public-pr261.py
+      - name: Roll back failed release to recorded prior version
+        if: failure()
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$RUNNER_TEMP/gth-release-upload-attempted" ]; then
+            echo "No upload attempted; existing production unchanged."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import os,json,urllib.request,subprocess,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])
+          previous=(root/"gth-release-previous-version").read_text()
+          url="https://api.cloudflare.com/client/v4/accounts/"+os.environ["CLOUDFLARE_ACCOUNT_ID"]+"/workers/scripts/gth-pro-production/deployments"
+          def active():
+              with urllib.request.urlopen(urllib.request.Request(url,headers={"Authorization":"Bearer "+os.environ["CLOUDFLARE_API_TOKEN"]}),timeout=25) as r: d=json.load(r)
+              assert d["success"]
+              v=d["result"]["deployments"][0]["versions"]
+              assert len(v)==1 and v[0]["percentage"]==100
+              return v[0]["version_id"]
+          current=active()
+          if current==previous:
+              print("Prior version still active; no rollback needed.")
+          else:
+              recorded=root/"gth-release-new-version"
+              if recorded.exists(): assert current==recorded.read_text(),"Concurrent deployment detected; refuse rollback"
+              r=subprocess.run(["./node_modules/.bin/wrangler","rollback",previous,"--name","gth-pro-production","--message","PR261 release smoke rollback"],capture_output=True)
+              assert r.returncode==0,"Rollback command failed"
+              assert active()==previous,"Rollback active version not verified"
+              print("ROLLBACK_VERIFIED")
+          PY
