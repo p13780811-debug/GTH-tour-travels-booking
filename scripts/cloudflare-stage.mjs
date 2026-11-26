@@ -283,7 +283,10 @@ async function main() {
   if (!Number.isFinite(rawKiB) || !Number.isFinite(gzipKiB)) stop("Invalid Worker size measurement.");
   console.log("Worker size: " + rawKiB + " KiB uncompressed; " + gzipKiB + " KiB gzip.");
   if ((rawKiB + 0.005) * 1024 > 64 * 1024 * 1024) stop("Worker exceeds Cloudflare platform limit of 64 MiB uncompressed.");
-  if ((gzipKiB + 0.005) * 1024 >= 2800000) console.log("Private staging only: former 2.8 MB gzip optimization target not met; current platform size limit passed.");
+  if ((gzipKiB + 0.005) * 1024 >= 2800000) {
+     if (productionCandidate) stop("Production candidate exceeds strict 2.8 MB gzip budget. No upload attempted.");
+     console.log("Private staging only: 2.8 MB gzip optimization target not met; current platform size limit passed.");
+   }
   console.log("Worker bundle passed current platform size limit.");
   // Existing protected workers.dev endpoint only; no version preview URLs or custom domains.
   await verifyProtection();

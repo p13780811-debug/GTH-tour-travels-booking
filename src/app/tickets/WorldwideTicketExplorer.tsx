@@ -1,6 +1,7 @@
 "use client";
 
-import {useMemo,useState} from "react";
+import {Suspense,useEffect,useMemo,useState} from "react";
+import {useSearchParams} from "next/navigation";
 import Link from "next/link";
 import {ArrowUpRight,Globe2,Search,Ticket} from "lucide-react";
 import {ticketCategories,worldwideTicketSources,type TicketCategory} from "@/lib/travel/worldwide-ticket-sources";
@@ -41,7 +42,16 @@ const regionMatches=(source:string,selected:string)=>
  (selected==="United States"&&source.includes("USA"))||
  (selected==="Canada"&&source.includes("Canada"))||
  (selected==="United Kingdom"&&source==="Europe");
-export default function WorldwideTicketExplorer({initialCategory="",initialQuery=""}:{initialCategory?:TicketCategory|"";initialQuery?:string}){
+// Confine URL-dependent client rendering to a null-rendering child so the
+// directory and its initial cards remain in the static HTML.
+function TicketUrlQuery({onQuery}:{onQuery:(query:string)=>void}){
+ const params=useSearchParams();
+ const values=params.getAll("q");
+ const query=values.length===1?values[0].slice(0,100):"";
+ useEffect(()=>{onQuery(query);},[query,onQuery]);
+ return null;
+}
+export default function WorldwideTicketExplorer({initialCategory="",initialQuery="",syncUrlQuery=false}:{initialCategory?:TicketCategory|"";initialQuery?:string;syncUrlQuery?:boolean}){
  const [query,setQuery]=useState(initialQuery.slice(0,100));
  const [category,setCategory]=useState<TicketCategory|"">(initialCategory);
  const [region,setRegion]=useState("");
@@ -73,6 +83,7 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
  const shown=showAll?display:display.slice(0,18);
  const reset=()=>{setQuery("");setCategory(initialCategory);setRegion("");setShowAll(false);};
  return <section aria-labelledby="worldwide-ticket-search-title" className="mt-6">
+   {syncUrlQuery&&<Suspense fallback={null}><TicketUrlQuery onQuery={setQuery}/></Suspense>}
    <div className="gth-glass rounded-3xl border border-[var(--border)] p-5 sm:p-7">
      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Globe2 size={17} aria-hidden="true"/> GTH PRO worldwide ticket discovery</p>
      <h2 id="worldwide-ticket-search-title" className="mt-3 text-2xl font-bold sm:text-3xl">Find where to look for your next ticket</h2>
