@@ -45,12 +45,15 @@ end
 return {1, 0}
 `;
 
-// Ignore caller-controlled forwarding headers outside Vercel. Missing/invalid
-// trusted identity collapses to a shared bucket; it cannot bypass the limits.
+// Cloudflare direct ingress is enabled only by trusted Worker deployment config.
+// No generic proxy headers are accepted; global caps remain in force even when
+// a trusted same-zone Worker supplies an identity. Missing identity fails closed.
 export function clientIdentity(req: Request): string {
-  if (process.env.VERCEL !== "1") return "untrusted-origin";
-  const raw = req.headers.get("x-vercel-forwarded-for")?.trim();
-  if (!raw || !isIP(raw)) return "unknown-vercel-client";
+  const vercel=process.env.VERCEL==="1";
+  const cloudflare=!vercel&&process.env.GTH_CLOUDFLARE_INGRESS==="1";
+  if(!vercel&&!cloudflare)return "untrusted-origin";
+  const raw=req.headers.get(vercel?"x-vercel-forwarded-for":"cf-connecting-ip")?.trim();
+  if(!raw||!isIP(raw))return vercel?"unknown-vercel-client":"unknown-cloudflare-client";
   // Canonicalize equivalent IPv6 spellings through URL parsing.
   return isIP(raw) === 6 ? new URL(`http://[${raw}]/`).hostname : raw;
 }
