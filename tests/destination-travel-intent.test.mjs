@@ -70,7 +70,7 @@ test("destination hero and directory link to scoped pages without inventing book
  assert.match(detail,/href=\{flightsHref\}/);
  assert.match(detail,/href=\{mappedAttractions\.href\}/);
  assert.match(detail,/city&&mappedAttractions/);
- assert.match(cards,/destinationFlightHref\(item\.title\)/);
+ assert.match(cards,/destinationFlightHref\(item\.title,destinationCountryCode\(item\.country,item\.countryCode\)\)/);
  assert.match(cards,/encodeURIComponent\(item\.title\)/);
  assert.match(flight,/destinationCity/);
  assert.match(flight,/supplier search form/);
@@ -99,3 +99,5 @@ test("source-mapped attraction links retain verified city, region or country sco
 });
 
 test("all country-coded imported destinations retain scope, and package links never guess airports",()=>{for(const place of [{slug:"melbourne",name:"Melbourne",country:"Australia",countryCode:"AU"},{slug:"accra",name:"Accra",country:"Ghana",countryCode:"GH"},{slug:"springfield",name:"Springfield",country:"United States",countryCode:"US"}]){const items=links.destinationServices(place);for(const item of items){const u=new URL(item.href,"https://www.gthproglobal.com");assert.equal(u.origin,"https://www.gthproglobal.com");assert.notEqual(u.pathname,"/");}const plan=new URL(items.find(x=>x.key==="packages").href,"https://www.gthproglobal.com");assert.equal(plan.searchParams.get("city"),place.name);assert.equal(plan.searchParams.get("country"),place.countryCode);const tender=new URL(items.find(x=>x.key==="tenders").href,"https://www.gthproglobal.com");assert.equal(tender.searchParams.get("country"),place.countryCode);}assert.equal(links.destinationServices({slug:"melbourne",name:"Melbourne",country:"Australia",countryCode:"AU"}).find(x=>x.key==="stadiums").href,"/stadiums/melbourne-cricket-ground");});
+
+test("same-name overseas city cannot inherit a curated airport from the wrong country",()=>{const u=new URL(links.destinationFlightHref("London","CA"),"https://gthproglobal.com");assert.equal(u.searchParams.has("destination"),false);assert.equal(u.searchParams.get("destinationCity"),"London");assert.equal(new URL(links.destinationFlightHref("London","GB"),"https://gthproglobal.com").searchParams.get("destination"),"LHR");});

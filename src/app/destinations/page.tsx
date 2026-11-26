@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Global Destinations | GTH PRO", images: ["/images/global-city.jpg"] },
 };
 
-type Destination = { slug: string; title: string; image: string; description: string; location: string; country: string | null; region: string | null };
+type Destination = { slug: string; title: string; image: string; description: string; location: string; country: string | null; region: string | null; countryCode?:string|null };
 type Props = { searchParams: Promise<{ search?: string | string[]; page?: string | string[]; country?: string | string[]; region?: string | string[]; sort?: string | string[]; view?: string | string[]; lang?: string | string[] }> };
 const perPage = 18;
 const featured = ["dubai", "paris", "bali", "maldives"];
@@ -64,7 +64,7 @@ function directoryQuery(country: string, region: string, countOnly = false) {
   const legacySlugs = curatedDirectory.filter(item => item.country && scopeCountries.includes(item.country))
     .map(item => item.slug);
   const query = supabase.from("destinations")
-    .select("name,slug,description,country", countOnly ? { count: "exact", head: true } : undefined)
+    .select("name,slug,description,country,country_code", countOnly ? { count: "exact", head: true } : undefined)
     .is("is_active", true);
   if (legacySlugs.length) {
     // Values are validated country labels and checked-in editorial slugs.
@@ -98,7 +98,7 @@ const readDirectoryPage = unstable_cache(async (
   const result = await withDiscoveryDeadline(Promise.resolve(pageQuery), 4_500);
   if (result.error || !result.data) throw new Error("Destination page unavailable");
   return result.data;
-}, ["destination-directory-page-v1"], directoryCache);
+}, ["destination-directory-page-v2"], directoryCache);
 
 async function loadDirectoryPage(
   requestedPage: number,
@@ -128,6 +128,7 @@ async function loadDirectoryPage(
         slug: item.slug,
         title: item.name.trim().slice(0, 120),
         image: guide?.image || destinationImageForSlug(item.slug),
+        countryCode:typeof item.country_code==="string"&&/^[A-Z]{2}$/.test(item.country_code)?item.country_code:null,
         location: guide ? "Editorial destination guide" : "Destination directory",
         ...geography,
         description: typeof item.description === "string" && item.description.trim()

@@ -5,15 +5,16 @@ import {destinationDetailHref} from "@/lib/destinations/detail-link";
 
 export type DestinationCardInfo={
  slug:string;title:string;image:string;description:string;
- location:string;country:string|null;region:string|null;
+ location:string;country:string|null;region:string|null;countryCode?:string|null;
 };
 /** Exactly the same card geometry in every rail and every viewport. */
 export default function DestinationCard({destination}: {destination:DestinationCardInfo}){
  return <Link href={destinationDetailHref(destination)}
    className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
    <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
-    <Image src={destination.image} alt={destination.title+" destination"}
+    <Image src={destination.image} alt={destination.image==="/images/default-city.jpg"?"":destination.title+" destination"}
       fill loading="lazy" sizes="240px" className="object-cover transition-transform duration-500 group-hover:scale-105"/>
+    {destination.image==="/images/default-city.jpg"&&<span className="absolute bottom-2 left-2 rounded bg-[var(--card)] px-2 py-1 text-[10px]">Illustrative photo</span>}
    </div>
    <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
     <h3 className="line-clamp-1 text-base font-semibold">{destination.title}</h3>
