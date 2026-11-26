@@ -22,3 +22,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-26: Owner authorized another protected staging validation of browser-only bulk document parsing, static ticket hub with URL-aware client search, and strict production-candidate gzip gate. No public domain changes or production promotion.
 
 2026-11-26: Validate dated Mumbai map fast path and ticket URL regression coverage. Read aggregate preview CPU outcomes; preserve full 26-route and production bundle gates.
+
+2026-11-26: Owner withdrew obsolete gzip target; enforce actual 64 MiB platform limit, correct standalone ticket QA dependencies and bounded World Bank pagination. Retest protected preview; no public DNS mutation.

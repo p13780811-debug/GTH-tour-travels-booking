@@ -77,6 +77,25 @@ class OpenTenderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "schema changed"):
                 module.fetch_worldbank(5)
 
+    def test_worldbank_oversize_page_splits_without_relaxing_response_cap(self):
+        from urllib.parse import parse_qs, urlsplit
+        calls=[]
+        def http(url, **kwargs):
+            query=parse_qs(urlsplit(url).query)
+            width=int(query["rows"][0])
+            offset=int(query["os"][0])
+            calls.append((offset,width))
+            if width>25:
+                raise ValueError("Official API exceeded response size limit")
+            return {"procnotices":[{"id":i} for i in range(offset,offset+width)]}
+        with patch.object(module,"_http_json",side_effect=http):
+            self.assertEqual([r["id"] for r in module.fetch_worldbank(100)],list(range(100)))
+        self.assertEqual(calls,[(0,100),(0,50),(0,25),(25,25),(50,50),(50,25),(75,25)])
+        with patch.object(module,"_http_json",side_effect=ValueError("Unexpected external redirect")) as mocked:
+            with self.assertRaisesRegex(ValueError,"Unexpected external redirect"):
+                module.fetch_worldbank(100)
+            self.assertEqual(mocked.call_count,1)
+
     def test_dry_run_never_writes(self):
         row = {"publication-number": "123456-2026",
                "notice-title": "Public procurement of solar power equipment",

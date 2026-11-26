@@ -258,18 +258,35 @@ def _balanced_pages(batches):
             for batch in batches if i < len(batch)]
 
 
+def _worldbank_page(offset, width, depth=0):
+    """Preserve the requested window while splitting oversized responses only.
+    Keep the 2 MB response safety cap and limit subdivision to four leaf requests.
+    """
+    try:
+        result = _http_json(WORLD_BANK + "?" + urlencode({
+            "format": "json", "rows": width, "os": offset,
+            "srt": "noticedate desc,id asc",
+        }), allowed_host="search.worldbank.org")
+    except ValueError as exc:
+        if str(exc) != "Official API exceeded response size limit" or depth >= 2 or width < 2:
+            raise
+        first_width = width // 2
+        first = _worldbank_page(offset, first_width, depth + 1)
+        if len(first) < first_width:
+            return first
+        return first + _worldbank_page(offset + first_width, width - first_width, depth + 1)
+    notices = result.get("procnotices")
+    if isinstance(notices, dict): notices = list(notices.values())
+    if not isinstance(notices, list): raise ValueError("World Bank response schema changed")
+    return notices[:width]
+
+
 def fetch_worldbank(limit, *, pages=1, window=0):
     batches=[]
     width=100 if pages > 1 else min(limit, 100)
     for page in _source_pages(pages, window):
-        result = _http_json(WORLD_BANK + "?" + urlencode({
-            "format": "json", "rows": width, "os": page * width,
-            "srt": "noticedate desc,id asc",
-        }), allowed_host="search.worldbank.org")
-        notices = result.get("procnotices")
-        if isinstance(notices, dict): notices = list(notices.values())
-        if not isinstance(notices, list): raise ValueError("World Bank response schema changed")
-        batches.append(notices[:width])
+        notices = _worldbank_page(page * width, width)
+        batches.append(notices)
         if not notices: break
     return _balanced_pages(batches)
 

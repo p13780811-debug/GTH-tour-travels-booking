@@ -1,13 +1,13 @@
 # GTH PRO — Cloudflare production cutover checklist
 
-Status: **HOLD — protected runtime verification and release authorization pending.**
+Status: **HOLD — owner release authorization received; protected runtime verification remains required.**
 Do not merge or switch DNS merely because a compile succeeds.
 
 ## Evidence (2026-11-26 UTC)
 - Private Worker `gth-pro-preview-20261126` deployed from `2f6f797`; Wrangler exit 0, 20,168.92 KiB raw / 4,320.15 KiB gzip. [Deploy](https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/45718147791).
 - Owner-only Access policy and workers.dev URL verified. [Activation](https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/45789623579).
 - User confirmed hotel and flight search on preview. Tokyo routing correction `4c2ecad` compiled and production regression workflow passed; it is NOT on the existing deployed revision. [Build](https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/45798577851).
-- The compile-only build reports 20,170.44 KiB raw / 4,318.95 KiB gzip. The old owner-defined 2.8 MB gzip gate fails; it is separate from the published 64 MiB uncompressed Cloudflare limit. Do not remove a release gate without explicit approval.
+- The compile-only build reports 20,170.44 KiB raw / 4,318.95 KiB gzip. Owner has withdrawn the obsolete 2.8 MB gzip gate; apply the published 64 MiB uncompressed Cloudflare limit. Runtime verification remains mandatory.
 - [Live audit](https://github.com/p13780811-debug/GTH-tour-travels-booking/actions/runs/45800088591): protected root anonymous HTTP 302 / 99 ms, existing apex HTTP 402 / 146 ms. Single runner samples, not cold-start or application latency measurements.
 - Preview authenticated QA blocked at service-token creation (403 / 1010); no Access policy widened, no QA credential created. The audit workflow is committed. Required narrowly scoped API permission: Account / Access: Service Tokens / Edit. It creates an expiring 15-minute token and a single service-auth policy, never a bypass, and removes both afterward.
 - Supabase read-only sample verified at least 100 active destination rows, 100 registry rows with RERA IDs, 100 hotel directory rows, 100 tender rows and 100 future-deadline tender rows. This is database connectivity, not proof of anonymous RLS visibility or live inventory.
