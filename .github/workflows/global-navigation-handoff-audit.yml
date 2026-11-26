@@ -1,0 +1,29 @@
+name: Global navigation handoff audit
+on:
+  pull_request:
+    branches: [infra/cloudflare-preflight-20261125]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Inventory navigation and report candidate defects
+        run: node scripts/audit-navigation.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: navigation-audit
+          path: navigation-audit/report.json
+      - name: Existing and new navigation regression tests
+        run: node --test tests/*.test.mjs
+      - name: TypeScript verification
+        run: npx --no-install tsc --noEmit

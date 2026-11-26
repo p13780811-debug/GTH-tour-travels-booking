@@ -2,6 +2,7 @@ import "server-only";
 import {unstable_cache} from "next/cache";
 import {findStadium} from "@/lib/travel/stadiums";
 import {venueLocations,safeHotelHandoff} from "@/lib/travel/stadium-concierge";
+import {eventHotelBookingHref} from "@/lib/travel/hotel-routing";
 import {getOsmPlace} from "@/lib/travel/osm-place-reader";
 import {intelligencePublicDb} from "./infraPulse";
 import {validTarget,type IntelligenceTarget} from "./contracts";
@@ -15,8 +16,7 @@ export async function resolveEventTarget(target:IntelligenceTarget):Promise<Even
  }
  if(target.kind==="osm"){
   const item=await getOsmPlace(target.id).catch(()=>null);if(!item)return null;
-  const u=new URL("https://gthproglobal.nuitee.link/");if(item.city)u.searchParams.set("city",item.city);if(item.country_code)u.searchParams.set("country",item.country_code);
-  return {key:"osm:"+target.id,name:item.name,city:item.city,country:item.country_code,lat:item.latitude,lng:item.longitude,bookingUrl:u.toString()};
+  return {key:"osm:"+target.id,name:item.name,city:item.city,country:item.country_code,lat:item.latitude,lng:item.longitude,bookingUrl:eventHotelBookingHref(item.city,item.country_code)};
  }
  const db=intelligencePublicDb();if(!db)return null;
  const source={table:"gth_open_attractions",key:"wikidata_qid",id:target.id,columns:"name,country_code,latitude,longitude"};
@@ -26,11 +26,10 @@ export async function resolveEventTarget(target:IntelligenceTarget):Promise<Even
  const row=data?.[0] as unknown as Record<string,unknown>|undefined;
  if(error||!row||typeof row.name!=="string")return null;
  const city=typeof row.city==="string"?row.city:null,country=typeof row.country_code==="string"?row.country_code:null;
- const u=new URL("https://gthproglobal.nuitee.link/");if(city)u.searchParams.set("city",city);if(country)u.searchParams.set("country",country);
  // Coordinates identify the source venue, never a supplier hotel ID or a room offer.
  const lat=typeof row.latitude==="number"&&Number.isFinite(row.latitude)&&Math.abs(row.latitude)<=90?row.latitude:null;
  const lng=typeof row.longitude==="number"&&Number.isFinite(row.longitude)&&Math.abs(row.longitude)<=180?row.longitude:null;
- return {key:target.kind+":"+target.id,name:row.name,city,country,lat,lng,bookingUrl:u.toString()};
+ return {key:target.kind+":"+target.id,name:row.name,city,country,lat,lng,bookingUrl:eventHotelBookingHref(city,country)};
 }
 const stays=unstable_cache(async(city:string,country:string)=>{
  const db=intelligencePublicDb();if(!db)return [];

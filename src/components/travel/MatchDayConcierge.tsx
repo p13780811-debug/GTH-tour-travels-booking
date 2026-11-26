@@ -5,12 +5,16 @@ export default function MatchDayConcierge({slug,name,bookingUrl}:{slug:string;na
  const [data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(true);
  useEffect(()=>{const controller=new AbortController();fetch("/api/stadiums/concierge?"+new URLSearchParams({venue:slug}),{signal:controller.signal}).then(r=>r.ok?r.json():Promise.reject()).then((d:Data)=>setData(d)).catch(()=>{}).finally(()=>setLoading(false));return()=>controller.abort();},[slug]);
  const hotels=data?.hotels||[];
+ // The server-rendered venue link is authoritative; cached API payloads may still contain retired URLs.
+ const safeBookingHref=/^\/(?:api\/hotels\/booking\?|hotels\?)/.test(bookingUrl)?bookingUrl:"/hotels?view=booking";
+ const [printBlocked,setPrintBlocked]=useState(false);
  const checklist=["Check event date, admission ticket, stand and entry gate","Review bag, ID, accessibility and prohibited-items rules","Check official weather forecast and carry suitable rain/sun protection","Confirm metro, shuttle, road closures and last service","Allow extra time; check hotel availability and cancellation terms"];
  function printGuide(){
   const w=window.open("","_blank","width=800,height=900");
-  if(!w)return;
+  if(!w){setPrintBlocked(true);return;}
+  setPrintBlocked(false);
   const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
-  const safeUrl=(()=>{try{const u=new URL(data?.bookingUrl||bookingUrl);return u.protocol==="https:"&&u.hostname==="gthproglobal.nuitee.link"?u.toString():"https://gthproglobal.nuitee.link/";}catch{return "https://gthproglobal.nuitee.link/";}})();
+  const safeUrl=new URL(safeBookingHref,window.location.origin).toString();
   w.document.write('<!doctype html><html><head><title>Match-Day Pocket Guide</title><meta charset="utf-8"><style>body{font:16px system-ui;max-width:760px;margin:40px auto;line-height:1.6}h1,h2{margin-bottom:8px}li{margin:8px 0}</style></head><body><h1>'+esc(name)+' — Match-Day Pocket Guide</h1><h2>Transit</h2><p>'+esc(data?.transit||"Confirm venue transit and gate details")+'</p><h2>Checklist</h2><ul>'+checklist.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul><h2>Nearby OSM stays</h2><ol>'+hotels.map(h=>'<li>'+esc(h.name)+' ('+h.distanceKm+' km straight line)</li>').join("")+'</ol><p>Hotel listings are directory data, not guaranteed bookable inventory or walking distances.</p><p><a href="'+esc(safeUrl)+'">Search hotels on GTH PRO booking partner</a></p><p>Confirm all event details with the organizer.</p></body></html>');
   w.document.close();w.focus();w.print();
  }
@@ -27,7 +31,8 @@ export default function MatchDayConcierge({slug,name,bookingUrl}:{slug:string;na
     <p className="mt-2 text-xs text-[var(--text-soft)]">{data?.note||"Distances are not walking routes. Booking inventory and rates must be checked separately."}</p>
    </div>
   </div>
-  <div className="mt-5 flex flex-wrap gap-3"><a href={data?.bookingUrl||bookingUrl} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4">Find hotels for match day</a><button type="button" onClick={printGuide} className="gth-btn min-h-11">Download Match-Day Pocket Guide / Print PDF</button></div>
+  <div className="mt-5 flex flex-wrap gap-3"><a href={safeBookingHref} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold inline-flex min-h-11 items-center rounded-xl px-4">Find hotels for match day</a><button type="button" onClick={printGuide} className="gth-btn min-h-11">Download Match-Day Pocket Guide / Print PDF</button></div>
+  {printBlocked&&<p role="status" className="mt-2 text-sm">Allow pop-ups to print the guide, then try again.</p>}
   <p className="mt-3 text-xs text-[var(--text-soft)]">Hotel booking is handled by the partner. GTH PRO may receive affiliate commission. No ticket or room availability is implied.</p>
  </section>;
 }
