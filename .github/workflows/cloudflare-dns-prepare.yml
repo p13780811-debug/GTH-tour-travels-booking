@@ -1,0 +1,25 @@
+name: Cloudflare Free DNS preparation
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-dns-prepare.yml','scripts/cloudflare-dns-prepare.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gth-cloudflare-dns-prepare
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/infra/cloudflare-preflight-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Reconcile 19 preserved records in pending Free zone only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/cloudflare-dns-prepare.py
