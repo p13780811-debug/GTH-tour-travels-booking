@@ -8,11 +8,13 @@ const originals:Readonly<Record<string,string>>={
  transfers:"/images/mega/transfers.jpg",transport:"/images/mega/transfers.jpg",cars:"/images/mega/transfers.jpg",tours:"/images/mega/tours.jpg",activities:"/images/mega/tours.jpg",
  destination:"/images/global-city.jpg",destinations:"/images/global-city.jpg",melbourne:"/images/global-city.jpg",mumbai:"/images/cities/mumbai.jpg",tokyo:"/images/cities/tokyo.jpg",london:"/images/cities/london.jpg",hero:"/images/global-city.jpg"
 };
+export function generatedMarketplacePhoto(kind:string):string|null{
+ const image=Object.hasOwn(generated,kind)?(generated as Readonly<Record<string,string>>)[kind]:null;
+ return typeof image==="string"&&/^\/images\/luxury\/[a-z-]+\.webp$/.test(image)?image:null;
+}
 export function marketplacePhoto(kind:string):string{
  const key=kind==="hotel"?"hotels":kind==="flight"?"flights":kind==="stadiums"?"tickets":kind;
- const image=(generated as Readonly<Record<string,string>>)[key];
- if(typeof image==="string"&&/^\/images\/luxury\/[a-z-]+\.webp$/.test(image))return image;
- return Object.hasOwn(originals,key)?originals[key]:originals.destination;
+ return generatedMarketplacePhoto(key)??(Object.hasOwn(originals,key)?originals[key]:originals.destination);
 }
 export const marketplaceServices=[
  {kind:"hotels",title:"Hotels & stays",href:"/app/hotels",detail:"Find your next stay"},
