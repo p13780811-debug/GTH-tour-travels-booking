@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { hotelSupplierPathRedirect } from "@/lib/travel/hotel-whitelabel";
 import { publicMumbaiMapResponse } from "@/lib/mobility/public-map-snapshot";
+import { readPublicEdgeCache } from "@/lib/security/public-edge-cache";
 
-export function middleware(_request: NextRequest) {
+export async function middleware(_request: NextRequest) {
+  const pathname = _request.nextUrl.pathname;
   // Recover supplier hotel IDs before the local city-guide router treats them as slugs.
-  const hotelDestination = hotelSupplierPathRedirect(_request.nextUrl.pathname, _request.nextUrl.searchParams);
+  const hotelDestination = pathname.startsWith("/hotels/") ? hotelSupplierPathRedirect(pathname, _request.nextUrl.searchParams) : null;
   if (hotelDestination) {
     const response = NextResponse.redirect(new URL(hotelDestination, _request.url), 307);
     response.headers.set("Cache-Control", "no-store");
@@ -31,7 +33,11 @@ export function middleware(_request: NextRequest) {
 
   // The dated public Mumbai extract needs no Next server, database or provider call.
   // All refreshes, expired snapshots, other cities and methods continue to the API.
-  const response = publicMumbaiMapResponse(_request) ?? NextResponse.next();
+  const response = pathname === "/api/mobility/map"
+    ? publicMumbaiMapResponse(_request) ?? NextResponse.next()
+    : (pathname.startsWith("/api/mobility/") || pathname === "/api/real-estate/registry-preview" || pathname === "/api/stadiums/concierge")
+      ? await readPublicEdgeCache(_request) ?? NextResponse.next()
+      : NextResponse.next();
 
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");

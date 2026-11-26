@@ -1,4 +1,5 @@
 import {unstable_cache,revalidateTag} from "next/cache";
+import {storePublicEdgeCache,invalidateTrafficEdgeCache} from "@/lib/security/public-edge-cache";
 import {supabase} from "@/lib/supabase";
 import {authenticatedStorage} from "@/lib/security/auth";
 import {readJson,requestError,RequestError} from "@/lib/security/request";
@@ -18,9 +19,9 @@ export async function GET(request:Request){
     if(!isTrafficCity(city))throw new RequestError("Traffic reporting unavailable for this city",400);
     const feed=await loadFeed(city);
     if(!feed)throw new RequestError("Traffic city unavailable",404);
-    return Response.json({zones:feed.zones,reports:reportsForZone(feed.reports,"")},{
-      headers:{"Cache-Control":"public, max-age=0, s-maxage=25"},
-    });
+    const reports=reportsForZone(feed.reports,"");
+    const response=Response.json({zones:feed.zones,reports},{headers:{"Cache-Control":"public, max-age=0, s-maxage=25"}});
+    return storePublicEdgeCache(request,response,Math.min(Infinity,...reports.map(report=>Date.parse(report.expiresAt))));
   }catch(error){return requestError(error);}
 }
 
@@ -36,6 +37,7 @@ export async function POST(request:Request){
       if(error)throw new RequestError("Traffic service unavailable",503);
       if(data!==true)throw new RequestError("Report unavailable",404);
       revalidateTag(feedTag(city));
+      await invalidateTrafficEdgeCache(request,city);
       return Response.json({ok:true},{headers:{"Cache-Control":"no-store"}});
     }
     const {data,error}=await client.rpc("mobility_submit_traffic_report",{p_city:city,p_zone:zone,p_kind:kind}).abortSignal(AbortSignal.timeout(4500));
@@ -44,6 +46,7 @@ export async function POST(request:Request){
     if(error?.code==="22023")throw new RequestError("Invalid traffic report",400);
     if(error||!validReportId(data))throw new RequestError("Traffic service unavailable",503);
     revalidateTag(feedTag(city));
+    await invalidateTrafficEdgeCache(request,city);
     return Response.json({id:data},{status:201,headers:{"Cache-Control":"no-store"}});
   }catch(error){return requestError(error);}
 }

@@ -1,4 +1,5 @@
 import {createClient} from "@supabase/supabase-js";
+import {storePublicEdgeCache} from "@/lib/security/public-edge-cache";
 import {findStadium} from "@/lib/travel/stadiums";
 import {haversineKm,venueLocations,safeHotelHandoff} from "@/lib/travel/stadium-concierge";
 export const runtime="nodejs";
@@ -30,6 +31,6 @@ export async function GET(req:Request){
    try{const parsed=new URL(row.source_url);if(parsed.protocol==="https:"&&["www.openstreetmap.org","openstreetmap.org"].includes(parsed.hostname))sourceUrl=parsed.toString();}catch{/* no unsafe URL */}
    return [{name:name.slice(0,160),distanceKm:Math.round(distanceKm*100)/100,sourceUrl}];
   }).sort((a,b)=>a.distanceKm-b.distanceKm).filter(h=>{const k=h.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,5);
-  return Response.json({...base,hotels,note:"Nearest among up to 300 loaded records, not an exhaustive hotel ranking. Distances are straight-line estimates, not walking routes. OSM records are not live Nuitee inventory."},{headers:{"Cache-Control":"public, s-maxage=3600"}});
+  return storePublicEdgeCache(req,Response.json({...base,hotels,note:"Nearest among up to 300 loaded records, not an exhaustive hotel ranking. Distances are straight-line estimates, not walking routes. OSM records are not live Nuitee inventory."},{headers:{"Cache-Control":"public, s-maxage=3600"}}));
  }catch{return Response.json({...base,note:"Hotel directory temporarily unavailable. Continue to booking search."},{headers:{"Cache-Control":"no-store"}});}
 }

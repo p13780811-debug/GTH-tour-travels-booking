@@ -1,4 +1,5 @@
 import {readInfraPulse} from "@/lib/intelligence/infraPulse"
+import {storePublicEdgeCache} from "@/lib/security/public-edge-cache"
 import { readRegistryRecords } from "@/lib/real-estate/registry-reader"
 import { parseRegistryFilters } from "@/lib/real-estate/registry-search"
 
@@ -14,5 +15,7 @@ export async function GET(req: Request) {
   if (result.error) return Response.json({error:"Registry data service is temporarily unavailable."},{status:503,headers:{"Cache-Control":"no-store"}})
   const pulses=await readInfraPulse(result.rows.slice(0,6).map(row=>Number(row.id)))
   const items = result.rows.slice(0,6).map(({id,slug,title,rera_id,developer,builder_name,city,district}) => ({id,infraPulse:pulses[Number(id)],slug,title,rera_id,developer:developer || builder_name,city:city || district}))
-  return Response.json({items},{headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})
+  const response=Response.json({items},{headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})
+  const expiresAt=Math.min(Infinity,...Object.values(pulses).flatMap(pulse=>pulse.notices.map(notice=>Date.parse(notice.deadline))))
+  return storePublicEdgeCache(req,response,expiresAt)
 }

@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+import {storePublicEdgeCache} from "@/lib/security/public-edge-cache";
 import {unstable_cache} from "next/cache";
 import {supabase} from "@/lib/supabase";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
@@ -16,6 +17,7 @@ const searchCatalog=unstable_cache(async (prefix:string)=>{
       countryCode:row.country_code??countryCodeForDestinationName(row.country)});
     return city?[city]:[];
   });
+  return degraded?response:storePublicEdgeCache(request,response);
 },["gth-mobility-city-prefix-v2"],{revalidate:900,tags:["public-destination-catalog"]});
 
 export async function GET(request:Request){
@@ -29,7 +31,7 @@ export async function GET(request:Request){
   let degraded=false;
   try{for(const city of await searchCatalog(prefix))matches.set(mobilityCityKey(city),city);}
   catch{degraded=true;}
-  return NextResponse.json({cities:[...matches.values()].slice(0,12),degraded},{
+  const response=NextResponse.json({cities:[...matches.values()].slice(0,12),degraded},{
     headers:{"Cache-Control":degraded?"no-store":"public, s-maxage=300, stale-while-revalidate=60"},
   });
 }
