@@ -6,6 +6,8 @@ const load=loadTenderTs;
 const cache=load("src/lib/security/public-edge-cache.ts");
 const city=load("src/lib/mobility/city.ts",{"./currencies":load("src/lib/mobility/currencies.ts")});
 const stadiums=load("src/lib/travel/stadiums.ts");
+const hotelWhiteLabel=load("src/lib/travel/hotel-whitelabel.ts",{}, {atob,btoa});
+const hotelRouting=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":hotelWhiteLabel},{atob,btoa});
 const deps={
  "../src/lib/security/public-edge-cache.ts":{publicReadCacheKey:cache.publicReadCacheKey,storePublicEdgeCache:async(_request,response)=>response},
  "../src/lib/mobility/city.ts":city,
@@ -14,7 +16,7 @@ const deps={
  "../src/lib/real-estate/registry-search.ts":load("src/lib/real-estate/registry-search.ts"),
  "../src/lib/real-estate/property-seo.ts":load("src/lib/real-estate/property-seo.ts"),
  "../src/lib/travel/stadiums.ts":stadiums,
- "../src/lib/travel/stadium-concierge.ts":load("src/lib/travel/stadium-concierge.ts"),
+ "../src/lib/travel/stadium-concierge.ts":load("src/lib/travel/stadium-concierge.ts",{"./hotel-routing":hotelRouting}),
 };
 const env={GTH_CLOUDFLARE_INGRESS:"1",NEXT_PUBLIC_SUPABASE_URL:"https://fixture.supabase.co",NEXT_PUBLIC_SUPABASE_ANON_KEY:"sb_publishable_fixture_only"};
 const req=(path,init)=>new Request("https://preview.example.com"+path,init);
@@ -56,6 +58,6 @@ test("native concierge preserves both geographic bounds and ranks actual nearby 
   const url=new URL(input);assert.equal(url.pathname,"/rest/v1/hotel_catalog");assert.equal(url.searchParams.getAll("latitude").length,2);assert.equal(url.searchParams.getAll("longitude").length,2);assert.equal(url.searchParams.get("limit"),"300");
   return Response.json([{name:"Near",latitude:18.9389,longitude:72.8258,source_url:"https://www.openstreetmap.org/node/1"},{name:"Far",latitude:19.4,longitude:73,source_url:"https://www.openstreetmap.org/node/2"}]);
  });
- const response=await run(req("/api/stadiums/concierge?venue=wankhede-stadium"),env);const body=await response.json();assert.equal(body.hotels.length,1);assert.equal(body.hotels[0].name,"Near");assert.equal(body.hotels[0].distanceKm,0);assert.match(body.bookingUrl,/https:\/\//);
+ const response=await run(req("/api/stadiums/concierge?venue=wankhede-stadium"),env);const body=await response.json();assert.equal(body.hotels.length,1);assert.equal(body.hotels[0].name,"Near");assert.equal(body.hotels[0].distanceKm,0);assert.equal(body.bookingUrl,"/api/hotels/booking?city=Mumbai&country=IN");
  const fail=make(async()=>new Response(null,{status:503}));assert.equal(await fail(req("/api/stadiums/concierge?venue=wankhede-stadium"),env),null);
 });
