@@ -27,7 +27,7 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
       }
       const body=await response.json();
       const parsed=parseMobilityMap(body,!!reviewedMapCentre(city));
-      if(parsed&&parsed.features.length)return {state:"available",...parsed,source:"overpass"} as const;
+      if(parsed)return {state:"available",...parsed,source:"overpass"} as const;
       // A valid empty/ambiguous result means trying an equivalent mirror would not help.
       if(!body.remark)break;
       console.warn("Mobility map provider returned a partial snapshot",new URL(endpoint).hostname);
@@ -41,14 +41,20 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
 
 export async function GET(request:Request){
   try{
-    const slug=new URL(request.url).searchParams.get("city")??"";
+    const params=new URL(request.url).searchParams;
+    const slug=params.get("city")??"";
     const city=await getMobilityCity(slug);
     if(!city||city.slug!==slug)return Response.json({state:"unknown"},{status:404,headers:{"Cache-Control":"no-store"}});
     // Prefer the dated local extract for Mumbai to avoid repeated upstream timeouts.
     // After its freshness window expires the existing live lookup remains available.
     const snapshot=validatedMumbaiSnapshot(mumbaiSnapshot,city);
-    if(snapshot)return Response.json({state:"available",...snapshot},{headers:cacheHeaders});
-    const result=await mapData(city);
-    return Response.json(result,{headers:cacheHeaders});
+    if(snapshot&&params.get("refresh")!=="1")return Response.json({state:"available",...snapshot},{headers:cacheHeaders});
+    try{
+      const result=await mapData(city);
+      return Response.json(result,{headers:cacheHeaders});
+    }catch(error){
+      if(snapshot)return Response.json({state:"available",...snapshot},{headers:{"Cache-Control":"no-store"}});
+      throw error;
+    }
   }catch{return Response.json({state:"unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
 }
