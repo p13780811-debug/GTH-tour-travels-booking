@@ -66,7 +66,7 @@ jobs:
           cat > wrangler.jsonc <<'EOF'
           {
             "name": "gth-pro-preview-20261126",
-            "main": ".open-next/worker.js",
+            "main": "scripts/cloudflare-worker.mjs",
             "minify": true,
             "workers_dev": true,
             "preview_urls": false,

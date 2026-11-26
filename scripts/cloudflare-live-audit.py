@@ -50,6 +50,7 @@ def request(url,headers=None):
     result={"status":status,"ms":round((time.perf_counter()-start)*1000),
         "cache":h.get("CF-Cache-Status",""),
         "read_cache":h.get("X-GTH-Read-Cache",""),
+        "edge_read":h.get("X-GTH-Edge-Read",""),
         "static_shell":h.get("X-GTH-Static-Shell",""),"content_type":h.get("Content-Type","").split(";")[0],
         "redirect_host":dest.hostname or ("same-origin" if h.get("Location","").startswith("/") else ""),
         "redirect_path":dest.path if dest.hostname=="hotel.gthproglobal.com" else "",

@@ -28,3 +28,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-26: Validate anonymous edge read cache, static tender assistant shell and lightweight middleware dispatch on Cloudflare Free. No new storage or plan upgrades. Keep strict first/repeat route audit.
 
 2026-11-26: Correct mobility cache return scope; run cache security tests, static shell offload and repeat every audited GET. Strict Free plan only.
+
+2026-11-26: Deploy the native anonymous read and public prerender shell Worker wrapper; retain OpenNext for every other request. Repeat the 26-route audit. No new Cloudflare products, paid resources or DNS mutations.

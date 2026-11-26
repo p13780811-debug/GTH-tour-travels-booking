@@ -211,6 +211,8 @@ async function main() {
   const integrity = spawnSync("git", ["diff","--exit-code","--","src","tests"], {stdio:"ignore"});
   if (integrity.status !== 0) stop("Application source integrity check failed.");
   if (build.status !== 0 || !existsSync(".open-next/worker.js")) stop("Real-config build failed. No deployment attempted.");
+  const shells=spawnSync(process.execPath,["scripts/cloudflare-prepare-static-shells.mjs"],{env:base,stdio:"inherit"});
+  if(shells.status!==0)stop("Static shell preparation failed. No deployment attempted.");
   dir = mkdtempSync(join(tmpdir(), "gth-private-stage-"));
   const file = join(dir, "secrets.json");
   writeFileSync(file, JSON.stringify(values), {mode:0o600, flag:"wx"});
