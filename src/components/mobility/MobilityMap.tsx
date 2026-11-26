@@ -15,6 +15,8 @@ export default function MobilityMap({city}:{city:MobilityCity}){
   const [opened,setOpened]=useState(false);
   const [data,setData]=useState<MobilityMapData|null>(null);
   const [failed,setFailed]=useState(false);
+  const [refresh,setRefresh]=useState(false);
+  const [loading,setLoading]=useState(false);
   useEffect(()=>{
     if(!panel.current||!window.IntersectionObserver)return;
     const observer=new IntersectionObserver(entries=>{
@@ -26,16 +28,18 @@ export default function MobilityMap({city}:{city:MobilityCity}){
   useEffect(()=>{
     if(!opened)return;
     const controller=new AbortController();
+    setLoading(true);
+    setFailed(false);
     const timeout=window.setTimeout(()=>controller.abort("timeout"),24000);
-    fetch("/api/mobility/map?"+new URLSearchParams({city:city.slug}),{signal:controller.signal})
+    fetch("/api/mobility/map?"+new URLSearchParams({city:city.slug,...(refresh?{refresh:"1"}:{})}),{signal:controller.signal})
       .then(response=>response.json()).then(result=>{
         if(controller.signal.aborted)return;
         if(result.state==="available")setData(result);
         else setFailed(true);
-      }).catch(()=>{if(!controller.signal.aborted||controller.signal.reason==="timeout")setFailed(true);})
-      .finally(()=>window.clearTimeout(timeout));
+      }).catch(()=>{if(!controller.signal.aborted||controller.signal.reason==="timeout"){setFailed(true);setLoading(false);}})
+      .finally(()=>{window.clearTimeout(timeout);if(!controller.signal.aborted)setLoading(false);});
     return ()=>{window.clearTimeout(timeout);controller.abort();};
-  },[opened,city.slug]);
+  },[opened,city.slug,refresh]);
 
   return <section ref={panel} aria-labelledby="mobility-map-heading" className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
     <h2 id="mobility-map-heading" className="text-xl font-bold">Road and transit map · {city.name}</h2>
@@ -45,6 +49,8 @@ export default function MobilityMap({city}:{city:MobilityCity}){
       (data.source==="dated-osm-extract"?"Dated OpenStreetMap extract · ":"Source map snapshot · ")+new Date(data.updatedAt).toLocaleDateString()+(data.source==="dated-osm-extract"?" · Not live traffic":"") :
       failed?"Mapped features are temporarily unavailable here. You can still explore the city map and operator links." :
       opened?"Checking mapped features…":"Explore the map by category."}</p>
+    {data?.source==="dated-osm-extract"&&!refresh&&<button type="button" className="gth-btn mt-2 min-h-11 rounded-xl px-3 text-sm" disabled={loading} onClick={()=>setRefresh(true)}>Check for newer mapped features</button>}
+    {refresh&&loading&&<p role="status" className="text-sm text-[var(--text-soft)]">Checking for a newer map snapshot…</p>}
     <div className="mt-3 grid gap-3 md:grid-cols-3">
       {layers.map(({kind,label,term})=>{
         const items=data?.features.filter(item=>item.kind===kind).slice(0,6)??[];
