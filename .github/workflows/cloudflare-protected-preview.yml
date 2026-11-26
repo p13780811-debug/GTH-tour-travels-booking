@@ -68,12 +68,14 @@ jobs:
           wid=metadata.get("id","")
           if metadata.get("name") != worker or not re.fullmatch(r"[a-f0-9]{32}",wid):
               sys.exit("Unexpected worker identity; no changes made.")
-          # Use the actual authenticated Cloudflare user's verified email, never
-          # write an address to the repo/log or use a public email-domain wildcard.
+          # Cloudflare GET /user documents email and id, not email_verified.
+          # Bind the exact authenticated account email; Access must independently
+          # authenticate possession of that address before allowing requests.
           identity=api("GET","/user",label="Cloudflare token owner identity")["result"]
           email=identity.get("email","")
-          if identity.get("email_verified") is not True or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email):
-              sys.exit("Cannot verify token owner's email; no URL enabled.")
+          if identity.get("suspended") is True or not re.fullmatch(r"[a-f0-9]{32}",identity.get("id","")) or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email):
+              sys.exit("Cannot identify active token owner; no URL enabled.")
+          print("Authenticated Cloudflare user identity resolved; email not logged.")
           apps=[]
           for page in range(1,101):
               data=api("GET",base+"/access/apps?per_page=100&page="+str(page),label="Access application inventory")
@@ -96,7 +98,7 @@ jobs:
           app=api("POST",base+"/access/apps",{
               "type":"self_hosted","name":"GTH PRO private preview 20261126",
               "destinations":[{"type":"worker","worker_id":wid}],
-              "policies":[{"name":"Verified Cloudflare token owner only","decision":"allow","include":[{"email":{"email":email}}]}],
+              "policies":[{"name":"Authenticated Cloudflare token owner only","decision":"allow","include":[{"email":{"email":email}}]}],
               "session_duration":"8h"
           },label="Create restricted Worker Access application")["result"]
           aid=app.get("id","")
