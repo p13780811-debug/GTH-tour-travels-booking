@@ -43,7 +43,7 @@ def request(url,headers=None):
         with opener.open(urllib.request.Request(url,headers={"User-Agent":"GTH-Release-Audit/1.0",**(headers or {})}),timeout=25) as r:
             status=r.status; h=r.headers; data=r.read(2_000_000)
     except urllib.error.HTTPError as e:
-        status=e.code; h=e.headers; data=b""
+        status=e.code; h=e.headers; data=e.read(16384)
     except Exception:
         return {"status":0,"ms":round((time.perf_counter()-start)*1000),"state":"network_or_timeout"}
     dest=urllib.parse.urlparse(h.get("Location",""))
@@ -53,6 +53,19 @@ def request(url,headers=None):
         "redirect_path":dest.path if dest.hostname=="hotel.gthproglobal.com" else "",
         "tokyo_place_match":urllib.parse.parse_qs(dest.query).get("placeId")==["ChIJ51cu8IcbXWARiRtXIothAS4"] if dest.hostname=="hotel.gthproglobal.com" else False,
         "cache_control":h.get("Cache-Control","")}
+    if status>=400:
+        lower=data.lower()
+        result["error_category"]=next((label for label,markers in [
+            ("worker_resource_limit",(b"1102",b"exceeded resource limits",b"cpu time")),
+            ("worker_exception",(b"1101",b"worker threw exception")),
+            ("access_denied",(b"access denied",b"cloudflare access",b"unauthorized")),
+            ("service_unavailable",(b"service unavailable",)),
+            ("rate_limit",(b"rate limit",b"too many requests",)),
+            ("not_found",(b"not found",)),
+        ] if any(m in lower for m in markers)),"unclassified")
+        result["cf_ray"]=h.get("CF-Ray","")
+        result["retry_after"]=h.get("Retry-After","")
+        result["error_body_bytes"]=len(data)
     if "json" in result["content_type"] and data:
         try:
             obj=json.loads(data)
@@ -119,7 +132,7 @@ try:
     for attempt in range(12):
         probe=request("https://"+host+"/",headers)
         print("AUTH_READINESS",json.dumps({"attempt":attempt+1,"status":probe["status"],"redirect_host":probe.get("redirect_host","")}),flush=True)
-        if probe["status"] not in (0,401,403) and not probe.get("redirect_host","").endswith(".cloudflareaccess.com"):
+        if probe["status"]==200 and not probe.get("runtime_error_marker") and not probe.get("redirect_host","").endswith(".cloudflareaccess.com"):
             break
         time.sleep(5)
     else:
@@ -136,9 +149,16 @@ try:
     ]
     for path in routes:
         first=request("https://"+host+path,headers)
+        time.sleep(1.5)
         second=request("https://"+host+path,headers) if not path.startswith("/api/") else None
+        observations=[first]+([second] if second is not None else [])
+        if any(x["status"] in (0,401,403,429,503) for x in observations):
+            time.sleep(5)
+            retry=request("https://"+host+path,headers)
+            print("ROUTE_RETRY",json.dumps({"path":path,"result":retry}),flush=True)
+        time.sleep(1)
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
-        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or first["status"] not in (200,301,302,307,308) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
+        if (path=="/api/hotels/booking?city=Tokyo&country=JP" and (first["status"]!=307 or not first.get("tokyo_place_match") or first.get("redirect_path")!="/hotels")) or (path=="/go/transport" and (first["status"]!=307 or first.get("redirect_host") not in ("transport.gthproglobal.com","12go.asia"))) or any(x["status"] not in (200,301,302,307,308) or x.get("runtime_error_marker") or x.get("has_error") for x in observations) or first.get("runtime_error_marker") or first.get("has_error") or first.get("invalid_json") or first.get("redirect_host","").endswith(".cloudflareaccess.com") or first.get("redirect_host")=="gthproglobal.com":
             failed=True
     print("ROUTE_AUDIT", "FAILURES_PRESENT" if failed else "HTTP_CHECKS_PASSED",flush=True)
 finally:
