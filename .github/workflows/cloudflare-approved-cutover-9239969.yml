@@ -1,0 +1,137 @@
+name: GTH approved production cutover 9239969
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-approved-cutover-9239969.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: gth-approved-cutover-9239969
+  cancel-in-progress: false
+jobs:
+  cutover:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/infra/cloudflare-preflight-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Gate exact approved candidate, attach two hostnames, and verify public HTTP
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, json, time, urllib.request, urllib.error, urllib.parse, re, subprocess, io, zipfile
+          repo = "p13780811-debug/GTH-tour-travels-booking"
+          sha = "9239969030346911a78806a551ac955c56062849"
+          worker = "gth-pro-production"
+          apex = "gthproglobal.com"
+          hosts = (apex, "www."+apex)
+          def require(ok, message):
+              if not ok: raise SystemExit(message)
+          def gh(path):
+              p = subprocess.run(["gh","api",path],capture_output=True,check=True)
+              return json.loads(p.stdout)
+          run_path = "repos/"+repo+"/actions/runs/45867222243"
+          for i in range(108):
+              r = gh(run_path)
+              require(r["head_sha"]==sha and r["run_attempt"]==2,"Candidate identity/attempt mismatch; no cutover")
+              print("CANDIDATE",r["status"],r.get("conclusion"),flush=True)
+              if r["status"]=="completed": break
+              time.sleep(20)
+          else: raise SystemExit("Candidate did not finish; no cutover")
+          require(r["conclusion"]=="success","Candidate failed; no cutover")
+          jobs = gh(run_path+"/attempts/2/jobs")["jobs"]
+          require(len(jobs)==1 and jobs[0]["conclusion"]=="success" and any(s["name"]=="Create isolated production candidate (no DNS, no public URL)" and s["conclusion"]=="success" for s in jobs[0]["steps"]),"Candidate deployment was skipped or failed")
+          logs = subprocess.run(["gh","api","repos/"+repo+"/actions/jobs/"+str(jobs[0]["id"])+"/logs"],capture_output=True,check=True).stdout.decode("utf-8",errors="replace")
+          require("Isolated production candidate deployed; no public URL. Source commit: "+sha in logs,"Candidate post-upload isolation marker missing")
+          staging=gh("repos/"+repo+"/actions/runs/45862310121")
+          require(staging["head_sha"]=="5ece275ba9980884bcf5df56c04968c8595aad59" and staging["conclusion"]=="success","Staging audit not verified")
+          stage_logs=subprocess.run(["gh","api","repos/"+repo+"/actions/jobs/140057554413/logs"],capture_output=True,check=True).stdout.decode("utf-8",errors="replace")
+          require("ROUTE_AUDIT HTTP_CHECKS_PASSED" in stage_logs and len(re.findall(r"ROUTE \{",stage_logs))==26,"26-route staging audit not verified")
+          diff=gh("repos/"+repo+"/compare/5ece275..."+sha)
+          require({f["filename"] for f in diff["files"]}=={".github/workflows/cloudflare-production-candidate.yml","docs/cloudflare-production-candidate-trigger.txt","scripts/cloudflare-stage.mjs"},"Unexpected application changes since staging")
+          token=os.environ["CLOUDFLARE_API_TOKEN"]; account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          require(bool(token) and bool(re.fullmatch(r"[a-fA-F0-9]{32}",account)),"Missing private Cloudflare credentials")
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs): return None
+          no_redirect=urllib.request.build_opener(NoRedirect())
+          def cf(method,path,body=None):
+              req=urllib.request.Request("https://api.cloudflare.com/client/v4"+path,method=method,headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"},data=json.dumps(body).encode() if body is not None else None)
+              try:
+                  with no_redirect.open(req,timeout=25) as response: d=json.load(response)
+              except urllib.error.HTTPError as e:
+                  try: codes=[x.get("code") for x in json.load(e).get("errors",[])]
+                  except Exception: codes=[]
+                  raise RuntimeError("Cloudflare HTTP "+str(e.code)+" codes="+str(codes)) from None
+              require(d.get("success") is True,"Cloudflare rejected request")
+              require(d.get("result_info",{}).get("total_pages",1)<=1,"Incomplete inventory")
+              return d["result"]
+          base="/accounts/"+account
+          zones=cf("GET","/zones?name="+apex+"&account.id="+account)
+          require(len(zones)==1 and zones[0]["name"]==apex and zones[0]["status"]=="active" and zones[0]["plan"]["legacy_id"]=="free","Active Free zone not verified")
+          zone=zones[0]["id"]
+          nameservers=set(x.rstrip(".").lower() for x in zones[0]["name_servers"])
+          actual=set(x.rstrip(".").lower() for x in subprocess.run(["dig","+short","+time=3","+tries=2",apex,"NS"],capture_output=True,text=True,check=True).stdout.splitlines())
+          require(len(nameservers)==2 and actual==nameservers,"Public nameserver delegation mismatch")
+          scripts=cf("GET",base+"/workers/scripts")
+          require(sum(s["id"]==worker for s in scripts)==1,"Production Worker not found")
+          sub=cf("GET",base+"/workers/scripts/"+worker+"/subdomain")
+          require(sub.get("enabled") is False and sub.get("previews_enabled") is False,"Unexpected public workers.dev or previews")
+          routes=cf("GET","/zones/"+zone+"/workers/routes")
+          require(not any(x.get("script") for x in routes),"Existing Worker routes require review before cutover")
+          domains=cf("GET",base+"/workers/domains")
+          for d in domains:
+              require(not (d.get("hostname") in hosts and d.get("service")!=worker),"Requested hostname already belongs to another Worker")
+          print("PRE_CUTOVER_GATES_PASSED",flush=True)
+          for host in hosts:
+              if not any(d.get("hostname")==host and d.get("service")==worker and d.get("enabled") is not False for d in domains):
+                  d=cf("PUT",base+"/workers/domains",{"hostname":host,"service":worker,"zone_id":zone,"enabled":True,"previews_enabled":False})
+                  require(d.get("hostname")==host and d.get("service")==worker,"Domain association response mismatch")
+              print("ATTACHED",host,flush=True)
+          domains=cf("GET",base+"/workers/domains")
+          require(all(any(d.get("hostname")==h and d.get("service")==worker and d.get("enabled") is not False for d in domains) for h in hosts),"Both associations not verified")
+          def probe(host,path):
+              try:
+                  with no_redirect.open(urllib.request.Request("https://"+host+path,headers={"User-Agent":"GTH-Production-Release/1.0"}),timeout=20) as r:
+                      status=r.status; headers=r.headers; data=r.read(2000000)
+              except urllib.error.HTTPError as e:
+                  status=e.code; headers=e.headers; data=e.read(16000)
+              except Exception: return (0,False)
+              loc=urllib.parse.urlsplit(headers.get("Location",""))
+              bad=any(m in data.lower() for m in (b"application error: a server-side exception",b"worker threw exception",b"exceeded resource limits"))
+              ok=not bad and status in (200,301,302,307,308)
+              if path=="/":
+                  ok=ok and ((status==200 and b"gth" in data.lower() and "html" in headers.get("Content-Type","")) or (status in (301,302,307,308) and loc.hostname in hosts))
+              if path.startswith("/api/") and status==200:
+                  try:
+                      obj=json.loads(data)
+                      ok=ok and isinstance(obj,dict) and not obj.get("error") and obj.get("state") not in ("unavailable","unknown") and obj.get("degraded") is not True
+                      if path.startswith("/api/mobility/map"):
+                          ok=ok and obj.get("state")=="available" and len(obj.get("features",[]))>=5 and bool(obj.get("updatedAt"))
+                  except Exception: ok=False
+              if path=="/api/hotels/booking?city=Tokyo&country=JP":
+                  ok=ok and status==307 and loc.hostname=="hotel.gthproglobal.com" and loc.path=="/hotels" and urllib.parse.parse_qs(loc.query).get("placeId")==["ChIJ51cu8IcbXWARiRtXIothAS4"]
+              if path=="/go/transport":
+                  ok=ok and status==307 and loc.hostname in ("transport.gthproglobal.com","12go.asia")
+              return status,ok
+          for i in range(24):
+              checks=[probe(h,"/") for h in hosts]
+              print("PUBLIC_HTTP",list(zip(hosts,checks)),flush=True)
+              if all(ok for status,ok in checks) and any(status==200 for status,ok in checks): break
+              time.sleep(10)
+          else: raise SystemExit("Both domains attached but public TLS/HTTP verification failed")
+          routes_to_check=["/","/hotels","/flights","/destinations/goa","/destinations/tokyo","/mobility","/mobility/mumbai","/mobility/kolkata","/go/transport","/real-estate","/real-estate/registry","/real-estate/tools","/tender","/tender/assistant","/stadiums","/stadiums/wankhede-stadium","/tickets","/tickets/sports","/api/mobility/cities?q=Mumbai","/api/mobility/map?city=mumbai","/api/mobility/traffic?city=mumbai","/api/real-estate/registry-preview?q=Mumbai","/api/tender?scope=world&country=IN","/api/stadiums/concierge?venue=wankhede-stadium","/api/hotels/booking?city=Tokyo&country=JP","/api/hotels/booking?city=Mumbai&country=IN"]
+          passed=0
+          canonical=hosts[next(i for i,(status,ok) in enumerate(checks) if status==200 and ok)]
+          for path in routes_to_check:
+              a=probe(canonical,path); time.sleep(1.5); b=probe(canonical,path)
+              print("PUBLIC_ROUTE",path,a,b,flush=True)
+              passed+=int(a[1] and b[1])
+          print("PUBLIC_ROUTE_AUDIT",str(passed)+"/26",flush=True)
+          require(passed==26,"Live route failures; do not claim zero errors")
+          require(all(probe(h,"/")[1] for h in hosts),"Final domain check failed")
+          print("PUBLIC_LAUNCH_VERIFIED",sha,flush=True)
+          PY
