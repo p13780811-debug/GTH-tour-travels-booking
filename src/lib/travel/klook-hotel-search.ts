@@ -39,3 +39,14 @@ export function destinationHotelHref(value:unknown,countryCode?:string):string|n
   const params=new URLSearchParams({view:"booking",city,...(countryCode&&/^[A-Z]{2}$/.test(countryCode)?{country:countryCode}:{})});
   return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }
+
+/** A separately verified local listing alternative, not a hotel profile feed.
+ * Keep original booking handoffs unchanged; local discovery can offer this
+ * explicit secondary action without inventing property IDs or prices. */
+export function localHotelAlternativeHref(value:unknown,countryCode:string):string|null{
+  const city=cleanHotelDestination(value);
+  if(!city||! /^[A-Z]{2}$/.test(countryCode))return null;
+  if(countryCode==="IN"&&city.toLocaleLowerCase("en")==="kolkata")
+    return trackKlookDestination(new URL("https://www.klook.com/destination/c271-kolkata/3-hotel/"),"gth_hotels_kolkata");
+  return trackedHotelCityHref(city,countryCode);
+}
