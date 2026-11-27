@@ -39,3 +39,14 @@ export async function serveStaticShell(request,assets,shells){
   return new Response(asset.body,{status:200,headers});
  }catch{return null;}
 }
+
+// Mirror the existing first Next canonical-host redirect on safe read methods.
+// Change only the hostname, never resolve an untrusted path as an external URL.
+export function canonicalReadRedirect(request){
+ if(request.method!=="GET"&&request.method!=="HEAD")return null;
+ const target=new URL(request.url);
+ if(target.origin!=="https://gthproglobal.com")return null;
+ target.hostname="www.gthproglobal.com";
+ const headers=publicSecurityHeaders(new Response(null,{status:308,headers:{Location:target.toString(),"Cache-Control":"private, no-store"}}));
+ return new Response(null,{status:308,headers});
+}
