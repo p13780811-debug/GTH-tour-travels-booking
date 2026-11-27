@@ -55,3 +55,23 @@ test("Cloudflare Next reader shares the binding for destination cards and hotel 
  await api.getFreeHotelProfiles("IN","Kolkata",1);assert.equal(a.calls.length,1);
  await assert.rejects(reader({GTH_CLOUDFLARE_INGRESS:"1"}).getFreeHotelProfiles("IN","Kolkata",1));assert.equal(guard,0);
 });
+
+import {hotelGeoRequest} from "../scripts/cloudflare-hotel-geo.mjs";
+test("Cloudflare hotel discovery trusts edge geo only, retains explicit URL and strips spoofed geo",()=>{
+ const spoof={"x-vercel-ip-country":"GB","x-vercel-ip-city":"London","x-vercel-ip-latitude":"51","x-vercel-ip-longitude":"0"};
+ const req=new Request("https://www.gthproglobal.com/api/hotels/discovery?country=IN&city=Kolkata",{headers:spoof});
+ Object.defineProperty(req,"cf",{value:{country:"IN",city:"Kolkata",latitude:"22.57",longitude:"88.36"}});
+ const mapped=hotelGeoRequest(req);assert.equal(mapped.url,req.url);
+ assert.equal(mapped.headers.get("x-vercel-ip-country"),"IN");
+ assert.equal(mapped.headers.get("x-vercel-ip-city"),"Kolkata");
+ assert.equal(mapped.headers.get("x-vercel-ip-latitude"),"22.57");
+ assert.equal(mapped.headers.get("x-vercel-ip-longitude"),"88.36");
+ const absent=hotelGeoRequest(new Request(req.url,{headers:spoof}));
+ for(const name of Object.keys(spoof))assert.equal(absent.headers.get(name),null);
+ const invalid=new Request(req.url,{headers:spoof});
+ Object.defineProperty(invalid,"cf",{value:{country:"IN",city:"<script>",latitude:"Infinity",longitude:"88"}});
+ const cleaned=hotelGeoRequest(invalid);
+ assert.equal(cleaned.headers.get("x-vercel-ip-city"),null);
+ assert.equal(cleaned.headers.get("x-vercel-ip-latitude"),null);
+ assert.equal(cleaned.headers.get("x-vercel-ip-longitude"),null);
+});
