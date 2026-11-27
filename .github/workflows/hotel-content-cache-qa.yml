@@ -33,5 +33,12 @@ jobs:
           import {readFileSync} from "node:fs";
           const hero=readFileSync("src/components/HeroSlider.tsx","utf8");
           assert.equal((hero.match(/href=\{current === 0 \? "\/maldives-elite-escape" : "\/hotels"\}/g)||[]).length,2);
+          assert.doesNotMatch(hero,/title: "Maldives Elite Escape"/);
+          const gateway=readFileSync("src/app/mega-aggregator/page.tsx","utf8");
+          assert.match(gateway,/href="\/maldives-elite-escape"[^>]*>Maldives Elite Escape<\/Link>/);
+          assert.match(gateway,/canonical: "\/mega-aggregator"/);
+          const sitemap=readFileSync("src/app/sitemap.ts","utf8");
+          assert.match(sitemap,/"\/maldives-elite-escape"/);
+          assert.match(sitemap,/destinations\.filter\(d => d\.slug !== "maldives"\)/);
           JS
       - run: npx --no-install tsc --noEmit
