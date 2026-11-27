@@ -36,19 +36,22 @@ async function run(path,width,mode){
    await page.waitForFunction(dark=>document.documentElement.classList.contains("dark")===dark,mode==="night");
   }
   if(path==="/app"){
-   const hubs=page.locator("[data-marketplace-hubs]"),services=page.locator("[data-marketplace-services]");
+   const hubs=page.locator("[data-marketplace-destinations]"),services=page.locator("[data-marketplace-services]");
    await hubs.waitFor();await services.waitFor();
    assert.equal(await page.locator('form[action="/app/search"]').count(),1);
    const hero=await page.locator("[data-app-hero-shell]").boundingBox(),photo=await page.locator("[data-app-hero-image]").boundingBox(),search=await page.locator("[data-app-floating-search]").boundingBox(),shortcuts=await page.getByRole("navigation",{name:"GTH PRO Home and Research Desk shortcuts"}).boundingBox();
    assert.ok(hero&&photo&&search&&shortcuts&&search.y<=photo.y+photo.height-24&&search.y<hero.y+hero.height&&search.y+search.height>hero.y+hero.height&&shortcuts.y>=search.y+search.height,"Hero/search/shortcut order or overlap changed");
-   const tabs=page.getByRole("navigation",{name:"Quick travel booking"});for(const [name,href] of [["Find stays","/app/hotels"],["Match tickets","/app/services/tickets"],["Flights","/app/flights"],["Packages","/app/packages"]])assert.equal(await tabs.getByRole("link",{name,exact:true}).getAttribute("href"),href);
+   const tabs=page.getByRole("navigation",{name:"Quick marketplace access"});for(const [name,href] of [["Travel","/travel"],["Real estate","/app/property"],["Tenders","/app/tenders"],["Tickets","/app/services/tickets"]])assert.equal(await tabs.getByRole("link",{name,exact:true}).getAttribute("href"),href);
    assert.ok(await page.getByRole("searchbox",{name:"What would you like to find?"}).isVisible());
-   assert.equal(await hubs.locator('a[href="/stadiums/melbourne-cricket-ground"]').count(),1);
+   assert.equal(await page.locator("[data-marketplace-hubs]").count(),0,"Sports-specific rail must not dominate global Home");
+   assert.equal(await hubs.locator('a[href="/app/destinations/tokyo"]').count(),1);
    assert.equal(await services.locator('a[href="/app/packages"]').count(),1);
    assert.equal(await services.locator('a[href="/go/transport"]').count(),1);
    await decode(page,hubs.locator("img"));await decode(page,services.locator("img"));
    if(width===390){await page.getByRole("button",{name:mode==="night"?"Switch to day theme":"Switch to night theme"}).click();await page.waitForFunction(dark=>document.documentElement.classList.contains("dark")===dark,mode!=="night");await page.getByRole("button",{name:mode==="night"?"Switch to night theme":"Switch to day theme"}).click();await page.waitForFunction(dark=>document.documentElement.classList.contains("dark")===dark,mode==="night");}
   }
+  if(["/app/services/tickets","/app/services/stadiums","/tickets"].includes(path)){const sports=page.locator("[data-marketplace-hubs]");await sports.waitFor();assert.equal(await sports.locator('a[href="/stadiums/melbourne-cricket-ground"]').count(),1);await decode(page,sports.locator("img"));}
+  for(const module of await page.locator("[data-module-home]").all()){const photo=await module.locator("[data-module-photo]").boundingBox(),floating=module.locator("[data-module-floating]");if(await floating.count()){const panel=await floating.boundingBox();assert.ok(photo&&panel&&panel.y<photo.y+photo.height&&panel.y+panel.height>photo.y+photo.height,"Module search must float on its photo "+path);}}
   if(path==="/app/destinations/accra"){await page.getByRole("heading",{name:"Accra",exact:true}).waitFor();const img=page.locator('img[src="/images/luxury/africa.webp"]');assert.ok(await img.count());await decode(page,img);const plan=page.getByRole("link",{name:"Plan flights, stays & experiences"});assert.match(await plan.getAttribute("href"),/city=Accra&country=GH/);}
   if(path==="/app/packages"){await page.locator('[data-planner-ready="true"]').waitFor({timeout:60000});assert.ok(await page.getByLabel("Planning currency").isVisible());}
   const images=path==="/app/services/transfers"?page.locator('[data-marketplace-hero] img'):page.locator('img[src*="/images/luxury/"],img[src*="%2Fimages%2Fluxury%2F"]');assert.ok(await images.count()>0,"No appropriate visuals on "+path);if(path==="/app/services/transfers")assert.ok((await images.first().getAttribute("src")).includes("transfers.jpg"),"Transfer-specific imagery required");await decode(page,images);

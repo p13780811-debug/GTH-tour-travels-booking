@@ -55,7 +55,7 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
         {slides.map((slide,index)=>(
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
-            <Image src={embedded?(index===0?LUXURY_VISUALS.hero:index===1?LUXURY_VISUALS.flights:index===3?LUXURY_VISUALS.property:index===4?LUXURY_VISUALS.tenders:slide.image):slide.image} alt={embedded?"":slide.alt} fill
+            <Image src={embedded?(index===0?"/images/global-city.jpg":index===1?LUXURY_VISUALS.flights:index===3?LUXURY_VISUALS.property:index===4?LUXURY_VISUALS.tenders:slide.image):slide.image} alt={embedded?"":slide.alt} fill
               priority={index===0} unoptimized={embedded} sizes={embedded?"(max-width:640px) 100vw, 1200px":"(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"}
               className="object-cover object-center" />
           </div>

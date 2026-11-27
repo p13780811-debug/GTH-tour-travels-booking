@@ -60,7 +60,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
           <Search size={17} className="shrink-0" aria-hidden="true"/><span className="sr-only">Search all platforms</span>
           <input id="ecosystem-universal-keyword" aria-label="What would you like to find?"
             type="search" name="q" minLength={2} maxLength={100} required
-            autoComplete="off" placeholder="Where would you like to go?"
+            autoComplete="off" placeholder="What would you like to discover?"
             className="min-h-11 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none"/>
         </label>
         <input type="hidden" name="category" value="all"/>
@@ -69,7 +69,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
         </button>
       </form>
       <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
-        Search hotels, tickets, flights, properties and tenders. <Link href="/app/packages" prefetch={false} className="underline">Plan a trip</Link>.<span className="sr-only"> Guided by existing service rules; no generative API calls.</span>
+        Find journeys, properties, tenders and events. <Link href="/app/packages" prefetch={false} className="underline">Plan a trip</Link>.<span className="sr-only"> Guided by existing service rules; no generative API calls.</span>
       </p>
     </section>
   );
