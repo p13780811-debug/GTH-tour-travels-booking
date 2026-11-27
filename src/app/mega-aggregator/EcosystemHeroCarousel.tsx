@@ -39,14 +39,14 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
   }
 
   return (
-    <section aria-labelledby={embedded?undefined:"ecosystem-mobile-hero-title"} aria-label={embedded?"Featured GTH PRO journeys":undefined} className="mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 xl:hidden">
+    <section aria-labelledby={embedded?undefined:"ecosystem-mobile-hero-title"} aria-label={embedded?"Featured GTH PRO journeys":undefined} className={"mx-auto w-full max-w-7xl px-3 pt-3 sm:px-6 "+(embedded?"":"xl:hidden")}>
       {!embedded&&<div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--gold)]">GTH PRO · Global Ecosystem</p>
         <h1 id="ecosystem-mobile-hero-title" className="mt-2 max-w-2xl text-2xl font-bold leading-tight text-[var(--text)] sm:text-3xl">
           Your world. One connected gateway.
         </h1>
       </div>}
-      <div className="relative aspect-[2/1] w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] sm:aspect-[21/9]"
+      <div className={"relative w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] "+(embedded?"aspect-[16/9] max-h-[320px] sm:aspect-[21/9]":"aspect-[2/1] sm:aspect-[21/9]")}
         onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}
         onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}
         onTouchStart={event=>{const p=event.touches[0];touchStart.current=p?{x:p.clientX,y:p.clientY}:null;}}
@@ -56,13 +56,13 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
             <Image src={embedded?(index===0?LUXURY_VISUALS.hero:index===1?LUXURY_VISUALS.flights:index===3?LUXURY_VISUALS.property:index===4?LUXURY_VISUALS.tenders:slide.image):slide.image} alt={embedded?"":slide.alt} fill
-              priority={index===0} unoptimized={embedded} sizes="(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"
+              priority={index===0} unoptimized={embedded} sizes={embedded?"(max-width:640px) 100vw, 1200px":"(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"}
               className="object-cover object-center" />
           </div>
         ))}
-        {embedded&&<span className="absolute bottom-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
+        {embedded&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
         <div role="group" aria-label="Select ecosystem hero image"
-          className="absolute bottom-14 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1">
+          className={"absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 "+(embedded?"bottom-1":"bottom-14")}>
           {slides.map((slide,index)=>(
             <button type="button" key={slide.name} aria-label={"Show "+slide.name+" image"}
               aria-pressed={active===index} onClick={()=>setActive(index)}
