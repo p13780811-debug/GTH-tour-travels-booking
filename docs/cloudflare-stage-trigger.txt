@@ -38,3 +38,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-27: Protected preview validation for merged #268 and reviewed local alternate booking CTA. Keep existing private Access, supplier cache-only mode, zero paid resources, no DNS or public production changes. Run full authenticated route audit.
 
 2026-11-28: Redeploy existing protected preview with merged #269; verify native cache and expanded static-shell fast paths, 26-route audit and aggregate preview/production Worker resource outcomes. No public deploy, DNS or billing changes. Keep all auth controls and supplier-cache-only mode.
+
+2026-11-28: Validate merged #270 with public HTML cache policy and sitemap cache; existing protected preview only. Preserve Access and production DNS. Verify 26-route runtime audit; Cache API production hit measurements remain separate.
