@@ -64,3 +64,25 @@ test("native concierge preserves both geographic bounds and ranks actual nearby 
  const response=await run(req("/api/stadiums/concierge?venue=wankhede-stadium"),env);const body=await response.json();assert.equal(body.hotels.length,1);assert.equal(body.hotels[0].name,"Near");assert.equal(body.hotels[0].distanceKm,0);assert.equal(body.bookingUrl,"/api/hotels/booking?city=Mumbai&country=IN");
  const fail=make(async()=>new Response(null,{status:503}));assert.equal(await fail(req("/api/stadiums/concierge?venue=wankhede-stadium"),env),null);
 });
+
+test("cold Tender native ingress uses one anonymous bounded REST request with exact count",async()=>{
+ let calls=0;
+ const run=make(async(url,init)=>{
+  calls++;
+  assert.equal(new URL(url).pathname,"/rest/v1/tenders");
+  assert.equal(new URL(url).searchParams.get("country_code"),"eq.IN");
+  assert.equal(new URL(url).searchParams.get("limit"),"12");
+  assert.equal(init.headers.Prefer,"count=exact");
+  assert.equal(init.headers.apikey,env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  assert.equal(init.headers.Authorization,undefined);
+  return Response.json([],{headers:{"Content-Range":"*/0"}});
+ });
+ const response=await run(req("/api/tender?scope=world&country=IN"),env);
+ assert.equal(response.status,200);
+ assert.equal(response.headers.get("X-GTH-Edge-Read"),"native-tender");
+ assert.equal((await response.json()).total,0);
+ assert.equal(calls,1);
+ assert.equal(await run(req("/api/tender?scope=local&country=IN"),env),null);
+ assert.equal(await run(req("/api/tender?scope=world&country=IN",{headers:{Cookie:"private=1"}}),env),null);
+ assert.equal(calls,1);
+});
