@@ -22,7 +22,7 @@ import TripPlanner from "@/components/TripPlanner"
 
 const slides = [
     {
-        title: "Maldives Elite Escape",
+        title: "Island Resort Escapes",
         subtitle:
             "Ultra luxury island infrastructure powered through GTH global mobility systems.",
         image:
