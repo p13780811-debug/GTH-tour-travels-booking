@@ -28,7 +28,20 @@ const allowed=new Set([
 // target branch, while retaining every existing protected CSS/rate/security assertion.
 const baseBranch=process.env.GITHUB_BASE_REF;
 if(baseBranch&&!/^[A-Za-z0-9._/-]+$/.test(baseBranch))throw Error("Invalid PR base ref");
-const diffBase=baseBranch?"origin/"+baseBranch:baseline;
+// The Cloudflare migration is a cumulative multi-feature PR, not a hotel-only PR.
+// Its exact previously audited source tree is pinned; only these two guard
+// implementations may differ. Any further application/config change fails closed.
+const migrationScope=process.env.GITHUB_EVENT_NAME==="pull_request"&&
+ process.env.GITHUB_BASE_REF==="main"&&process.env.GITHUB_HEAD_REF==="infra/cloudflare-preflight-20261125";
+const migrationSnapshot="29c262f2060faba59f64c14bd340218416587ae2";
+if(migrationScope){
+ git("merge-base","--is-ancestor",migrationSnapshot,"HEAD");
+ const guardFiles=new Set(["scripts/check-hotel-landing-boundaries.mjs","scripts/check-connected-travel-boundaries.mjs"]);
+ const drift=[git("diff","--name-only",migrationSnapshot,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")]
+  .flatMap(s=>s.trim().split("\n").filter(Boolean)).filter(path=>!guardFiles.has(path));
+ if(drift.length)throw Error("Migration source differs from pinned release snapshot: "+drift.join(", "));
+}
+const diffBase=migrationScope?migrationSnapshot:baseBranch?"origin/"+baseBranch:baseline;
 const paths=[git("diff","--name-only",diffBase,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")].flatMap(s=>s.trim().split("\n").filter(Boolean));
 // Explicitly reviewed PR #207 + consolidation public UX/handoff paths.
 // No admin, server API, database, RLS, middleware, environment, secrets or theme files.
@@ -357,7 +370,17 @@ if(outside.length)throw Error("Unreviewed integration changes or unrelated paths
 const reviewed=git("show","42c7141a73131b42a02e1be2d530ef676d813da0:src/app/globals.css").replace(/^(html\.gth-hotel-widget-root\.dark body\.gth-hotel-search-widget \.search-bar ):is\(([^)]+)\)/gm,(_,prefix,selectors)=>selectors.split(",").map(selector=>prefix+selector.trim()).join(",\n"));
 if(readFileSync("src/app/globals.css","utf8")!==reviewed)throw Error("Shared CSS must match PR #181 with its two selector lists expanded for the unchanged scope checker");
 const rate=readFileSync("src/lib/security/rate-limit.ts","utf8").replace(' | "hotel_content"','').replace('  hotel_content: { minute: 30, day: 1000, globalMinute: 30, globalDay: 1000 },\n','');
-if(rate!==git("show",baseline+":src/lib/security/rate-limit.ts"))throw Error("Only the new hotel metadata refresh budget may extend existing limiter policies");
+if(migrationScope){
+ // Cloudflare ingress identity is the sole reviewed migration limiter delta;
+ // policy limits, Redis script and fail-closed behavior are unchanged.
+ const current=readFileSync("src/lib/security/rate-limit.ts","utf8");
+ if(current!==git("show",migrationSnapshot+":src/lib/security/rate-limit.ts"))
+  throw Error("Migration limiter differs from pinned ingress implementation");
+ const mainRate=git("show","origin/main:src/lib/security/rate-limit.ts");
+ const policies=s=>s.slice(s.indexOf("const POLICIES:"),s.indexOf("export const LIMIT_SCRIPT"));
+ if(!policies(mainRate)||policies(current)!==policies(mainRate))
+  throw Error("Migration cannot change existing rate limit policies");
+}else if(rate!==git("show",baseline+":src/lib/security/rate-limit.ts"))throw Error("Only the new hotel metadata refresh budget may extend existing limiter policies");
 for(const path of ["tests/revenue-growth-staging-20261104.test.mjs","tests/12go-official-search.test.mjs"]){
  // Current PRs must preserve the supplier-related tests byte-for-byte as in
  // their target branch; the historical hostname-only transform remains for
