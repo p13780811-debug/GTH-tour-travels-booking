@@ -55,3 +55,22 @@ test("invalid count and expired records are never invented or cached",async()=>{
  assert.equal((await api.nativeTenderRead(req(),env,async()=>Response.json([row]),{cache})).status,503);
  const response=await api.nativeTenderRead(req(),env,async()=>result([{...row,deadline_at:"2000-01-01T00:00:00Z"}]),{cache});assert.equal(response.status,200);assert.equal((await response.json()).items.length,0);
 });
+
+test("protected preview Access-only cookie permits real public read but never shared cache",async()=>{
+ const api=make(async()=>{});
+ const preview="https://gth-pro-preview-20261126.p13780811.workers.dev/api/tender?scope=world&country=IN";
+ const token="fixture.access.assertion";
+ const accessHeaders={"CF-Access-Jwt-Assertion":token,Cookie:"CF_Authorization="+token};
+ const allowed=new Request(preview,{headers:accessHeaders});
+ assert.equal(api.nativeTenderInput(allowed,env).previewNoCache,true);
+ let calls=0;
+ const cache={async match(){assert.fail("Access request cannot read shared cache")},async put(){assert.fail("Access request cannot write shared cache")}};
+ const response=await api.nativeTenderRead(allowed,env,async()=>{calls++;return result()},{cache});
+ assert.equal(response.status,200);assert.equal(response.headers.get("X-GTH-Edge-Read"),"native-tender");
+ assert.equal(response.headers.get("Cache-Control"),"private, no-store");assert.equal(calls,1);
+ for(const headers of [{Cookie:"CF_Authorization="+token},{...accessHeaders,Cookie:"CF_Authorization="+token+"; session=private"},{...accessHeaders,Cookie:"CF_Authorization=wrong"},{...accessHeaders,Authorization:"Bearer private"}]){
+  assert.equal(api.nativeTenderInput(new Request(preview,{headers}),env),null);
+ }
+ assert.equal(api.nativeTenderInput(allowed,{...env,VERCEL_ENV:"production"}),null);
+ assert.equal(api.nativeTenderInput(new Request("https://www.gthproglobal.com/api/tender?scope=world&country=IN",{headers:accessHeaders}),env),null);
+});
