@@ -81,7 +81,7 @@ export async function nativeTenderRead(request,env,db,{reserveRead=reserve,cache
   if(rows.some(row=>!row||typeof row.id!=="string"||row.country_code!==input.country||!Number.isFinite(Date.parse(row.deadline_at))))return unavailable();
   const items=rows.filter(row=>Date.parse(row.deadline_at)>Date.now()).map(row=>Object.fromEntries(COLUMNS.split(",").filter(k=>Object.prototype.hasOwnProperty.call(row,k)).map(k=>[k,row[k]])));
   const data={items,total,page:1,pageSize:PAGE_SIZE,country:input.country,language:input.language,scope:"world",primaryCount:null,nearbyCount:null,countryRequired:false};
-  const ttl=Math.max(0,Math.min(60,...items.map(row=>Math.floor((Date.parse(row.deadline_at)-Date.now())/1000)-1)));
+  const ttl=Math.max(0,Math.min(60,...rows.map(row=>Math.floor((Date.parse(row.deadline_at)-Date.now())/1000)-1)));
   const response=Response.json(data,{headers:responseHeaders(input,ttl,false)});
   if(cache&&ttl>0)try{
    const text=await response.clone().text();
