@@ -4,13 +4,15 @@ import handler from "../.open-next/worker.js";
 export {HotelContentCache} from "./cloudflare-hotel-content.mjs";
 export * from "../.open-next/worker.js";
 import shells from "../.open-next/gth-shell-manifest.mjs";
-import {serveStaticShell,publicSecurityHeaders} from "./cloudflare-shell-routing.mjs";
+import {serveStaticShell,publicSecurityHeaders,canonicalReadRedirect} from "./cloudflare-shell-routing.mjs";
 import {publicSitemapResponse} from "./cloudflare-sitemap-cache.mjs";
 import {hotelGeoRequest} from "./cloudflare-hotel-geo.mjs";
 import {nativePublicRead} from "./cloudflare-native-public-reads.mjs";
 import {readPublicEdgeCache} from "../src/lib/security/public-edge-cache.ts";
 export default {
  async fetch(request,env,ctx){
+  const canonical=canonicalReadRedirect(request);
+  if(canonical)return canonical;
   const url=new URL(request.url);
   if(url.hostname!=="gthproglobal.com"){
    const shell=await serveStaticShell(request,env.ASSETS,shells);
