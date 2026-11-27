@@ -79,7 +79,7 @@ jobs:
           test ! -e open-next.config.ts
           printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
       - name: Run original PWA and canonical redirect regression tests
-        run: node --test tests/mobile-app-install.test.mjs tests/legal-urls-and-universal-search-resilience.test.mjs tests/cloudflare-native-public-reads.test.mjs tests/cloudflare-static-shells.test.mjs tests/cloudflare-cache-ingress.test.mjs tests/cloudflare-sitemap-cache.test.mjs tests/seo-domain-launch.test.mjs
+        run: node --test tests/mobile-app-install.test.mjs tests/legal-urls-and-universal-search-resilience.test.mjs tests/cloudflare-native-public-reads.test.mjs tests/cloudflare-static-shells.test.mjs tests/cloudflare-cache-ingress.test.mjs tests/cloudflare-sitemap-cache.test.mjs tests/cloudflare-public-html-cache.test.mjs tests/seo-domain-launch.test.mjs
       - name: OpenNext build (compile-only fixtures; never deployed)
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
