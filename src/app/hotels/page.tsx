@@ -358,7 +358,7 @@ function HotelsContent() {
                             </p>
                         </div>
                         <figure className={styles.visual}>
-                            <Image src={LUXURY_VISUALS.hotels} alt="" fill unoptimized sizes="(min-width: 900px) 360px, 1px" className="object-cover" />
+                            <Image src={LUXURY_VISUALS.hotels} alt="" fill unoptimized sizes="(min-width: 900px) 360px, 100vw" className="object-cover" />
                             <figcaption><MapPin size={14} aria-hidden="true" /> Global stays <span>AI illustrative visual</span></figcaption>
                         </figure>
                     </div>

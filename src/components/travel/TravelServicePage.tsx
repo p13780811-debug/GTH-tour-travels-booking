@@ -52,8 +52,9 @@ export default function TravelServicePage({
           ? "mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 sm:py-12 lg:py-14"
           : "mx-auto max-w-7xl px-4 py-3 sm:py-16 md:px-6 md:py-24"}>
           <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-soft)]">{eyebrow}</p>
-          <h1 className="mt-1 sm:mt-4 max-w-4xl text-2xl sm:text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
-          <p className="hidden sm:block mt-5 max-w-3xl text-sm leading-7 text-[var(--text-soft)] md:text-base">{description}</p>
+          <h1 className="mt-1 max-w-4xl text-[clamp(1.65rem,6.4vw,3.25rem)] font-bold leading-[1.12] tracking-tight sm:mt-4">{title}</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-soft)] sm:mt-5 md:text-base">{description}</p>
+          <div className="relative my-3 aspect-[16/9] max-h-64 overflow-hidden rounded-2xl border border-[var(--border)] sm:hidden"><Image src={image} alt="" fill sizes="100vw" className="object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
 
         </div>
       </section>

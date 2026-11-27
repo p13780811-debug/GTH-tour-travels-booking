@@ -4,7 +4,7 @@ import {chromium} from "playwright";
 const base="http://127.0.0.1:3000",folder="/tmp/gth-package-qa";
 await mkdir(folder,{recursive:true});
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
-const pages=["/app/hotels","/app/flights","/app/property","/app/tenders","/app/destinations","/app/destinations/accra","/app/services/tickets","/app/services/stadiums","/app/services/transfers","/app/packages","/stadiums/melbourne-cricket-ground","/tickets","/travel/packages"];
+const pages=["/app/hotels","/app/flights","/app/property","/app/tenders","/app/destinations","/app/destinations/accra","/app/services/tickets","/app/services/stadiums","/app/services/transfers","/app/packages","/stadiums/melbourne-cricket-ground","/tickets","/travel/packages","/stadiums","/tickets/sports","/travel","/flights","/hotels","/destinations"];
 async function decode(page,locator){
  for(const img of await locator.all()){
   await img.scrollIntoViewIfNeeded();
@@ -17,7 +17,7 @@ async function contrast(page){
   const rgba=color=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].map(x=>x/255);};
   const over=(fg,bg)=>fg.slice(0,3).map((x,i)=>x*fg[3]+bg[i]*(1-fg[3])).concat(1);
   const lum=c=>c.slice(0,3).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0);
-  const nodes=[...document.querySelectorAll('[data-marketplace-hubs] p,[data-marketplace-hubs] span,[data-marketplace-services] span,[data-marketplace-services] p,[data-marketplace-hero] p,[data-marketplace-hero] span')].filter(el=>el.textContent?.trim()&&el.getBoundingClientRect().width>0);
+  const nodes=[...document.querySelectorAll('[data-marketplace-hubs] p,[data-marketplace-hubs] span,[data-marketplace-services] span,[data-marketplace-services] p,[data-marketplace-hero] p,[data-marketplace-hero] span,[data-module-home] p,[data-module-home] span')].filter(el=>el.textContent?.trim()&&el.getBoundingClientRect().width>0);
   const root=rgba(getComputedStyle(document.documentElement).getPropertyValue("--bg").trim());
   return nodes.map(el=>{let bg=root;const ancestors=[];for(let n=el;n&&n!==document.documentElement;n=n.parentElement)ancestors.unshift(n);for(const n of ancestors){const css=getComputedStyle(n);bg=over(rgba(css.backgroundColor),bg);}const fg=over(rgba(getComputedStyle(el).color),bg);const a=lum(fg),b=lum(bg);return {text:el.textContent.trim().slice(0,45),ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};});
  });
@@ -50,7 +50,7 @@ async function run(path,width,mode){
    await decode(page,hubs.locator("img"));await decode(page,services.locator("img"));
    if(width===390){await page.getByRole("button",{name:mode==="night"?"Switch to day theme":"Switch to night theme"}).click();await page.waitForFunction(dark=>document.documentElement.classList.contains("dark")===dark,mode!=="night");await page.getByRole("button",{name:mode==="night"?"Switch to night theme":"Switch to day theme"}).click();await page.waitForFunction(dark=>document.documentElement.classList.contains("dark")===dark,mode==="night");}
   }
-  if(["/app/services/tickets","/app/services/stadiums","/tickets"].includes(path)){const sports=page.locator("[data-marketplace-hubs]");await sports.waitFor();assert.equal(await sports.locator('a[href="/stadiums/melbourne-cricket-ground"]').count(),1);await decode(page,sports.locator("img"));}
+  if(["/app/services/tickets","/app/services/stadiums","/tickets","/stadiums","/tickets/sports"].includes(path)){const sports=page.locator("[data-marketplace-hubs]");await sports.waitFor();assert.equal(await sports.locator('a[href="/stadiums/melbourne-cricket-ground"]').count(),1);await decode(page,sports.locator("img"));}
   for(const module of await page.locator("[data-module-home]").all()){const photo=await module.locator("[data-module-photo]").boundingBox(),floating=module.locator("[data-module-floating]");if(await floating.count()){const panel=await floating.boundingBox();assert.ok(photo&&panel&&panel.y<photo.y+photo.height&&panel.y+panel.height>photo.y+photo.height,"Module search must float on its photo "+path);}}
   if(path==="/app/destinations/accra"){await page.getByRole("heading",{name:"Accra",exact:true}).waitFor();const img=page.locator('img[src="/images/luxury/africa.webp"]');assert.ok(await img.count());await decode(page,img);const plan=page.getByRole("link",{name:"Plan flights, stays & experiences"});assert.match(await plan.getAttribute("href"),/city=Accra&country=GH/);}
   if(path==="/app/packages"){await page.locator('[data-planner-ready="true"]').waitFor({timeout:60000});assert.ok(await page.getByLabel("Planning currency").isVisible());}

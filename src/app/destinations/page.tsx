@@ -228,9 +228,10 @@ export default async function DestinationsPage({ searchParams }: Props) {
       <p className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-soft)]">
        <Globe2 size={15}/> GTH PRO · Global Travel Explorer
       </p>
-      <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl">Find your next destination. Know where to start.</h1>
+      <h1 className="mt-4 max-w-2xl text-[clamp(1.65rem,6.4vw,3.25rem)] font-bold leading-[1.12] tracking-tight">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <form role="search" action="/destinations/search" method="get" className="mt-5 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm sm:flex-row">
+      <div className="relative mt-4 aspect-[16/9] max-h-64 overflow-hidden rounded-2xl lg:hidden"><Image src="/images/luxury/europe.webp" alt="" fill unoptimized sizes="100vw" className="object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
+      <form role="search" action="/destinations/search" method="get" className="relative z-10 mx-2 -mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-2 shadow-[var(--shadow)] sm:flex-row lg:mx-0 lg:mt-5">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}
        {sort!=="name"&&<input type="hidden" name="sort" value={sort}/>}
