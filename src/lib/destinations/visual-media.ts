@@ -37,7 +37,7 @@ export const MODULE_HEROES={
  transport:{name:"Transport",image:"/images/mega/transfers.jpg",href:"/transfers"},
  destinations:{name:"Destinations",image:"/images/global-city.jpg",href:"/app/destinations"}
 } as const;
-export const MARKETPLACE_HERO_SLIDES=Object.values(MODULE_HEROES);
+export const MARKETPLACE_HERO_SLIDES=[MODULE_HEROES.travel,MODULE_HEROES.hotels,MODULE_HEROES.flights,MODULE_HEROES.tours,MODULE_HEROES.packages,MODULE_HEROES.tickets,MODULE_HEROES.property,MODULE_HEROES.tenders,MODULE_HEROES.transport,MODULE_HEROES.destinations] as const;
 export const REGIONAL_EDITORIAL_PHOTOS={
  southasia:"/images/cities/munnar.jpg",southeastasia:"/images/cities/bali.jpg",
  eastasia:"/images/cities/seoul.jpg",westasia:"/images/cities/dubai.jpg",

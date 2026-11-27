@@ -43,7 +43,7 @@ test("No unauthorized provider or invented hotel inventory",()=>{
  assert.match(hero,/aspect-\[2\/1\]/);
  assert.match(hero,/onTouchEnd/);
  for(const asset of ["hotels.jpg","flights.jpg","tours.jpg","real-estate.jpg","tender.jpg"])
-   assert.ok(hero.includes(asset),"Hero image missing: "+asset);
+   assert.ok(read("src/lib/destinations/visual-media.ts").includes(asset)&&hero.includes("MARKETPLACE_HERO_SLIDES"),"Shared hero image missing: "+asset);
  assert.match(page,/-mt-10/);
  assert.doesNotMatch(page,/gth-master-intro/);
  assert.doesNotMatch(page,/bg-black|from-black|via-black|bg-gradient|bg-slate/);
