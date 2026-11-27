@@ -79,3 +79,13 @@ test("No invented city, arbitrary affiliate destination or fake exact hotel matc
   assert.match(page,/Search OSM directory/);
   assert.match(page,/The independent hotel directory did not respond/);
 });
+
+test("Local hotel discovery offers verified Kolkata category without changing primary booking",()=>{
+ const href=hotels.localHotelAlternativeHref("Kolkata","IN");assert.ok(href);
+ const tracking=new URL(href);assert.equal(tracking.hostname,"tp.media");
+ assert.equal(new URL(tracking.searchParams.get("u")).href,"https://www.klook.com/destination/c271-kolkata/3-hotel/");
+ assert.equal(hotels.localHotelAlternativeHref("Kolkata","GB"),null);
+ assert.equal(hotels.localHotelAlternativeHref("javascript:alert(1)","IN"),null);
+ assert.equal(hotels.localHotelAlternativeHref("Goa","IN"),hotels.trackedHotelCityHref("Goa","IN"));
+ assert.match(read("src/components/hotel/NearbyHotelDiscovery.tsx"),/localHotelAlternativeHref\(data.scope.city,data.scope.country\)/);
+});
