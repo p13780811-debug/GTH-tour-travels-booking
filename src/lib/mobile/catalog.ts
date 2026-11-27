@@ -71,7 +71,7 @@ function escapeLike(value:string):string{
  return value.replace(/[\\%_]/g,character=>"\\"+character);
 }
 export async function listAppRecords(section:MobileSection,query:AppQuery,signal?:AbortSignal):Promise<AppListing>{
- const {page,q,country,category,destination}=query,offset=(page-1)*PAGE_SIZE;
+ const {q,country,category,destination}=query,page=section==="destinations"?query.page:Math.min(query.page,100),offset=(page-1)*PAGE_SIZE;
  if(section==="destinations"){
   try{return await readWorldDirectory(q,country,destination,page);}catch{/* Retain curated offline fallback. */}
  }

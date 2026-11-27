@@ -54,7 +54,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
             <Link href={appLinks?mobileAppHref(item.href):item.href} className="group flex h-full min-h-0 flex-col" aria-label={"Explore "+item.title}>
               <div className="relative h-[112px] w-full overflow-hidden bg-[var(--bg-soft)] sm:h-[132px]">
                 <DiscoveryCardPhoto source={item.image} title={item.title} fallback={kind==="destination"?regionalMarketplacePhoto(item.countryCode):marketplacePhoto(kind==="hotel"?"hotels":kind==="tender"?"tenders":kind)}/>
-                <span className="absolute bottom-2 left-2 max-w-[90%] truncate rounded-md bg-[var(--card)]/90 px-2 py-1 text-[10px] font-semibold text-[var(--text)]">
+                <span className="absolute top-2 left-2 max-w-[90%] truncate rounded-md bg-[var(--card)]/90 px-2 py-1 text-[10px] font-semibold text-[var(--text)]">
                   {kind==="destination"?"Explore":kind==="hotel"?"Stay":kind==="property"?"Property":"Tender"}
                 </span>
               </div>
@@ -64,6 +64,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
                   <ArrowUpRight size={15} className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden="true"/>
                 </div>
                 <p className="mt-2 line-clamp-1 text-[11px] leading-4 text-[var(--text-soft)]">{item.subtitle||labels[kind]}</p>
+                {!item.image&&kind==="hotel"&&<p className="text-[10px] leading-4 text-[var(--text-soft)]">No licensed photo · illustrative</p>}
                 <p className="mt-auto line-clamp-1 pt-2 text-[11px] leading-4 text-[var(--text-soft)]">{item.detail}</p>
               </div>
             </Link>

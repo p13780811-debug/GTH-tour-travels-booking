@@ -24,7 +24,7 @@ export default function MobileNav() {
       <div className="mx-auto grid max-w-lg grid-cols-6 px-1">
         {items.map(({href,appHref,name,Icon,matches}) => {
           const target = isApp ? appHref : href;
-          const active = isApp ? (pathname === appHref || (appHref !== "/app" && pathname.startsWith(appHref + "/"))) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
+          const active = isApp ? (pathname === appHref || (appHref !== "/app" && pathname.startsWith(appHref + "/")) || (name==="Tickets"&&(pathname.startsWith("/app/venues/")||pathname==="/app/services/stadiums"))) : matches.some(route => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(route + "/"));
           const label = name === "Home" && !isApp ? "App Home" : name;
           return (
             <Link key={href} href={target} prefetch={name==="Home"?false:undefined} aria-current={active ? "page" : undefined}

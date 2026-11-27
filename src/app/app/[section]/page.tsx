@@ -29,6 +29,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
  const {section}=await params;
  if(!isMobileSection(section))notFound();
  const q=normalizeAppQuery(await searchParams);
+ if(section!=="destinations")q.page=Math.min(q.page,100);
  const current=sections[section];
  const Icon=current.Icon;
  const result=await listAppRecords(section,q);
