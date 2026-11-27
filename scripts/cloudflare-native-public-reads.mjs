@@ -32,7 +32,7 @@ function publicDb(env){
 function reply(data,control){return Response.json(data,{headers:{"Cache-Control":control,"X-GTH-Edge-Read":"native","X-Content-Type-Options":"nosniff"}})}
 export async function nativePublicRead(request,env){
  if(env.GTH_CLOUDFLARE_INGRESS!=="1")return null;
- if(nativeTenderInput(request)){
+ if(nativeTenderInput(request,env)){
   try{return await nativeTenderRead(request,env,publicDb(env));}
   catch{return Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
  }
