@@ -1,6 +1,7 @@
 // OpenNext custom Worker: keep full framework fallback, bypass SSR only for
 // reviewed anonymous read contracts and build-verified public page shells.
 import handler from "../.open-next/worker.js";
+export {HotelContentCache} from "./cloudflare-hotel-content.mjs";
 export * from "../.open-next/worker.js";
 import shells from "../.open-next/gth-shell-manifest.mjs";
 import {serveStaticShell,publicSecurityHeaders} from "./cloudflare-shell-routing.mjs";

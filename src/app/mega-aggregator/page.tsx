@@ -84,6 +84,9 @@ export default async function MegaAggregator() {
                 </Link>
             </nav>
 
+            <div className="mx-auto max-w-7xl px-4 pb-5 text-center">
+                <Link href="/maldives-elite-escape" className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold">Maldives Elite Escape</Link>
+            </div>
             <EcosystemPillars />
             <EcosystemHub />
             {/* RIGHT CONTENT */}
