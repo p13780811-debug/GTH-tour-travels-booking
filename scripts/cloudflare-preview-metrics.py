@@ -1,4 +1,4 @@
-"""Read-only aggregate metrics for the owner-protected staging Worker."""
+"""Read-only aggregate metrics for the preview and public production Workers."""
 import datetime
 import json
 import os
@@ -23,26 +23,32 @@ query = """query PreviewMetrics($accountTag: string, $datetimeStart: string, $da
     }
   } }
 }"""
-body = {"query":query,"variables":{"accountTag":account,"datetimeStart":start.isoformat(),"datetimeEnd":end.isoformat(),"scriptName":"gth-pro-preview-20261126"}}
-request = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql",data=json.dumps(body).encode(),headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"},method="POST")
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
-try:
-    with urllib.request.build_opener(NoRedirect()).open(request,timeout=20) as response:
-        data=json.load(response)
-    if data.get("errors"):
-        print("Preview metrics unavailable: analytics API rejected query (check Account Analytics Read).")
-    else:
+
+def report(script, hours, label):
+    since = end - datetime.timedelta(hours=hours)
+    body = {"query":query,"variables":{"accountTag":account,"datetimeStart":since.isoformat(),"datetimeEnd":end.isoformat(),"scriptName":script}}
+    request = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql",data=json.dumps(body).encode(),headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"},method="POST")
+    try:
+        with urllib.request.build_opener(NoRedirect()).open(request,timeout=20) as response:
+            data=json.load(response)
+        if data.get("errors"):
+            print(label+" unavailable: analytics API rejected query.")
+            return
         rows=data["data"]["viewer"]["accounts"][0]["workersInvocationsAdaptive"]
         for row in rows:
             status=row.get("dimensions",{}).get("status","unknown")
             if not isinstance(status,str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}",status):
                 status="unknown"
             metrics={k:v for group in ("sum","quantiles") for k,v in row.get(group,{}).items() if k in ("requests","errors","subrequests","cpuTimeP50","cpuTimeP99") and isinstance(v,(int,float))}
-            print("PREVIEW_METRICS",json.dumps({"status":status,**metrics}))
-        if not rows: print("No sampled preview invocations in selected window.")
-except urllib.error.HTTPError as error:
-    print("Preview metrics unavailable: HTTP",error.code)
-except (OSError,ValueError,KeyError,IndexError,TypeError):
-    print("Preview metrics unavailable: transport or schema error.")
+            print(label,json.dumps({"window_hours":hours,"status":status,**metrics}))
+        if not rows: print(label+" no sampled invocations.")
+    except urllib.error.HTTPError as error:
+        print(label+" unavailable: HTTP",error.code)
+    except (OSError,ValueError,KeyError,IndexError,TypeError):
+        print(label+" unavailable: transport or schema error.")
+
+report("gth-pro-preview-20261126",3,"PREVIEW_METRICS")
+report("gth-pro-production",24,"PRODUCTION_METRICS")
