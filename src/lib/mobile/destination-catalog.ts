@@ -17,7 +17,7 @@ function identity(row:Row){
  const countryCode=destinationCountryCode(geography.country,row.country_code);
  const editorial=destinations.find(d=>d.slug===row.slug);
  const sameCountry=editorial&&geography.country===destinationGeography(row.slug).country;
- return {country:geography.country,countryCode,image:sameCountry?editorial.image_url:destinationImageForSlug(row.slug)};
+ return {country:geography.country,countryCode,image:editorial?(sameCountry?editorial.image_url:"/images/default-city.jpg"):destinationImageForSlug(row.slug)};
 }
 async function queryPage(page:number,q:string,country:string,destination:string,signal?:AbortSignal){
  let list=db().from("destinations").select("slug,name,country,country_code",{count:"exact"}).is("is_active",true);
