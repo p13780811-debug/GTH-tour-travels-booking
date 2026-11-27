@@ -35,7 +35,7 @@ export default {
    const headers=new Headers(response.headers);
    const flags=[
     env.GTH_CLOUDFLARE_INGRESS==="1"?"ingress=1":"ingress=0",
-    nativeTenderInput(request)?"eligible=1":"eligible=0",
+    nativeTenderInput(request,env)?"eligible=1":"eligible=0",
     request.headers.has("cookie")?"cookie=1":"cookie=0",
     request.headers.has("authorization")?"auth=1":"auth=0",
     request.headers.has("rsc")?"rsc=1":"rsc=0",
