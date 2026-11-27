@@ -46,7 +46,7 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
           Your world. One connected gateway.
         </h1>
       </div>}
-      <div className={"relative w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] "+(embedded?"aspect-[16/9] max-h-[320px] sm:aspect-[21/9]":"aspect-[2/1] sm:aspect-[21/9]")}
+      <div data-app-hero-image={embedded?"true":undefined} className={"relative w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] "+(embedded?"aspect-[16/9] max-h-[320px] sm:aspect-[21/9]":"aspect-[2/1] sm:aspect-[21/9]")}
         onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}
         onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}
         onTouchStart={event=>{const p=event.touches[0];touchStart.current=p?{x:p.clientX,y:p.clientY}:null;}}
@@ -62,7 +62,7 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
         ))}
         {embedded&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
         <div role="group" aria-label="Select ecosystem hero image"
-          className={"absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 "+(embedded?"bottom-1":"bottom-14")}>
+          className={"absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 "+(embedded?"bottom-10":"bottom-14")}>
           {slides.map((slide,index)=>(
             <button type="button" key={slide.name} aria-label={"Show "+slide.name+" image"}
               aria-pressed={active===index} onClick={()=>setActive(index)}

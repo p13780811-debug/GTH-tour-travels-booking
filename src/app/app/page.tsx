@@ -26,7 +26,7 @@ export const metadata:Metadata={
 export default function MobileAppHome(){
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <section data-app-hero-shell="true" className="mx-auto w-full max-w-7xl rounded-b-[2rem] border-b border-[var(--border)] bg-[var(--bg-soft)] pb-10 sm:rounded-b-3xl">
+  <section data-app-hero-shell="true" className="mx-auto w-full max-w-7xl rounded-b-[2rem] border-b border-[var(--border)] bg-[var(--bg-soft)] pb-6 sm:rounded-b-3xl">
    <div className="px-4 pt-3 sm:px-6 sm:pt-6">
     <p className="sr-only">GTH PRO · Global Technical Hub</p>
     <h1 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--text-soft)]">GTH PRO Home</h1>
@@ -43,7 +43,7 @@ export default function MobileAppHome(){
    </div>
    <EcosystemHeroCarousel embedded/>
   </section>
-  <div data-app-floating-search="true" className="relative z-10 mx-auto -mt-12 w-full max-w-4xl px-4 sm:-mt-14 sm:px-8">
+  <div data-app-floating-search="true" className="relative z-10 mx-auto -mt-14 w-full max-w-4xl px-4 sm:-mt-16 sm:px-8">
    <EcosystemUnifiedSearch appHome/>
   </div>
   <div className="mx-auto w-full max-w-7xl px-4 pt-3 sm:px-6">

@@ -39,8 +39,8 @@ async function run(path,width,mode){
    const hubs=page.locator("[data-marketplace-hubs]"),services=page.locator("[data-marketplace-services]");
    await hubs.waitFor();await services.waitFor();
    assert.equal(await page.locator('form[action="/app/search"]').count(),1);
-   const hero=await page.locator("[data-app-hero-shell]").boundingBox(),search=await page.locator("[data-app-floating-search]").boundingBox(),shortcuts=await page.getByRole("navigation",{name:"GTH PRO Home and Research Desk shortcuts"}).boundingBox();
-   assert.ok(hero&&search&&shortcuts&&search.y<hero.y+hero.height&&search.y+search.height>hero.y+hero.height&&shortcuts.y>=search.y+search.height,"Hero/search/shortcut order or overlap changed");
+   const hero=await page.locator("[data-app-hero-shell]").boundingBox(),photo=await page.locator("[data-app-hero-image]").boundingBox(),search=await page.locator("[data-app-floating-search]").boundingBox(),shortcuts=await page.getByRole("navigation",{name:"GTH PRO Home and Research Desk shortcuts"}).boundingBox();
+   assert.ok(hero&&photo&&search&&shortcuts&&search.y<=photo.y+photo.height-24&&search.y<hero.y+hero.height&&search.y+search.height>hero.y+hero.height&&shortcuts.y>=search.y+search.height,"Hero/search/shortcut order or overlap changed");
    const tabs=page.getByRole("navigation",{name:"Quick travel booking"});for(const [name,href] of [["Find stays","/app/hotels"],["Match tickets","/app/services/tickets"],["Flights","/app/flights"],["Packages","/app/packages"]])assert.equal(await tabs.getByRole("link",{name,exact:true}).getAttribute("href"),href);
    assert.ok(await page.getByRole("searchbox",{name:"What would you like to find?"}).isVisible());
    assert.equal(await hubs.locator('a[href="/stadiums/melbourne-cricket-ground"]').count(),1);
