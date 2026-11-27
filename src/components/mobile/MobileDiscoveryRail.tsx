@@ -2,7 +2,7 @@
 
 import {useId,useRef} from "react";
 import DiscoveryCardPhoto from "@/components/destination/DiscoveryCardPhoto";
-import {destinationServicePhoto} from "@/lib/destinations/visual-media";
+import {destinationServicePhoto,destinationVisual} from "@/lib/destinations/visual-media";
 import Link from "next/link";
 import {ArrowUpRight,Building2,ChevronLeft,ChevronRight,FileSearch,Hotel,MapPin} from "lucide-react";
 import type {MobileDiscoveryItem,MobileDiscoveryKind} from "@/lib/mobile/discovery";
@@ -53,7 +53,7 @@ export default function MobileDiscoveryRail({heading,description,href,items,kind
            className="gth-glass flex w-[44vw] min-w-[144px] max-w-[188px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)] sm:w-[218px] sm:max-w-[218px]">
             <Link href={appLinks?mobileAppHref(item.href):item.href} className="group flex h-full min-h-0 flex-col" aria-label={"Explore "+item.title}>
               <div className="relative h-[112px] w-full overflow-hidden bg-[var(--bg-soft)] sm:h-[132px]">
-                <DiscoveryCardPhoto source={item.image==="/images/default-city.jpg"?null:item.image} fallback={destinationServicePhoto(kind==="destination"?"packages":kind==="hotel"?"hotels":kind==="property"?"properties":"tenders")} title={item.title}/>
+                <DiscoveryCardPhoto source={kind==="destination"?destinationVisual(item.id,item.countryCode,item.image):item.image} fallback={destinationServicePhoto(kind==="destination"?"packages":kind==="hotel"?"hotels":kind==="property"?"properties":"tenders")} title={item.title}/>
                 {!item.image&&kind==="hotel"&&<span className="sr-only">No licensed photo of this listing</span>}
                 <span className="absolute top-2 left-2 max-w-[90%] truncate rounded-md bg-[var(--card)]/90 px-2 py-1 text-[10px] font-semibold text-[var(--text)]">
                   {kind==="destination"?"Explore":kind==="hotel"?"Stay":kind==="property"?"Property":"Tender"}

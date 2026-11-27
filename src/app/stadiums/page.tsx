@@ -1,3 +1,4 @@
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -30,7 +31,7 @@ export default function StadiumsPage() {
     sport:event.sport,venueSlug:venue.slug,officialUrl:event.url,
   }))).sort((a,b)=>a.starts.localeCompare(b.starts));
   return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
-    <MarketplaceHero title="Match-day discovery" subtitle="Venue information and independent ticket booking handoffs" image="/images/travel.jpg"/>
+    <MarketplaceHero title="Match-day discovery" subtitle="Venue information and independent ticket booking handoffs" image={LUXURY_VISUALS.tickets}/>
     <TravelSectionNav/>
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
       <header className="gth-glass rounded-3xl border border-[var(--border)] p-6 sm:p-8">

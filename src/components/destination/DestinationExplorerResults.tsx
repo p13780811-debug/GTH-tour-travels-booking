@@ -1,4 +1,6 @@
 "use client";
+import {destinationVisual,isIllustrativeVisual} from "@/lib/destinations/visual-media";
+
 
 import Image from "next/image";
 import Link from "next/link";
@@ -95,12 +97,14 @@ export default function DestinationExplorerResults({items,initialView,page}:Prop
      const isSaved=saved.includes(item.slug);
      const isCompared=selected.includes(item.slug);
      const isGuide=item.location==="Editorial destination guide";
+     const visual=destinationVisual(item.slug,destinationCountryCode(item.country,item.countryCode),item.image);
      return <article key={item.slug} className={"group min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-shadow hover:shadow-md "+(view==="list"?"flex flex-col sm:flex-row":"flex flex-col")}>
       <Link href={destinationDetailHref(item)} aria-label={"Explore "+item.title+" destination guide"}
         className={"relative block shrink-0 overflow-hidden bg-[var(--bg-soft)] "+(view==="list"?"aspect-[16/10] w-full sm:aspect-auto sm:w-[220px]":"aspect-[16/10] w-full")}>
-       <Image src={item.image} alt={item.image==="/images/default-city.jpg"?"":item.title+" destination illustration"} fill sizes={view==="list"?"(max-width: 640px) 100vw, 220px":"(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"}
+       <Image src={visual} alt={isIllustrativeVisual(visual)?"":item.title+" destination illustration"} fill sizes={view==="list"?"(max-width: 640px) 100vw, 220px":"(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"}
         className="object-cover transition-transform duration-300 group-hover:scale-[1.035]"/>
        <span className="absolute bottom-2 left-2 rounded-lg bg-black/75 px-2 py-1 text-[10px] font-semibold text-white">{isGuide?"Editorial guide":"Destination directory"}</span>
+       {isIllustrativeVisual(visual)&&<span className="absolute top-2 left-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
       </Link>
       <div className="flex min-w-0 flex-1 flex-col p-4">
        <div className="flex items-start justify-between gap-2">

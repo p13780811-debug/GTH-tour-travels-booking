@@ -1,3 +1,4 @@
+import {destinationVisual,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import CityMobility from "@/components/mobility/CityMobility";
 import {mobilityCity} from "@/lib/mobility/city";
 import DestinationTravelSearch from "@/components/destination/DestinationTravelSearch";
@@ -130,6 +131,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   const countryFilter = validatedCountry(selectedParams?.country);
   const destination = await getDestination(slug,countryFilter);
   if (!destination) notFound();
+  const visual=destinationVisual(slug,destination.countryCode??countryCodeForDestinationName(destination.country),destination.image_url);
   const mobility=mobilityCity({name:destination.name,slug,country:destination.country,
     countryCode:destination.countryCode??countryCodeForDestinationName(destination.country)});
 
@@ -187,7 +189,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData}/>
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
-        <Image src={destination.image_url} alt="" fill priority sizes="100vw"
+        <Image src={visual} alt="" fill priority sizes="100vw"
           className="absolute -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80"/>
         <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.25fr_.75fr]">
@@ -214,7 +216,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
             </nav>
           </div>
           <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-            <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-xl"><Image src={destination.image_url} alt={destination.image_url==="/images/default-city.jpg"?"":destination.name+" destination scenery"} fill sizes="(max-width:1024px) 100vw,40vw" className="object-cover"/>{destination.image_url==="/images/default-city.jpg"&&<span className="absolute bottom-2 left-2 rounded bg-[var(--card)] px-2 py-1 text-xs">Illustrative photo</span>}</div>
+            <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-xl"><Image src={visual} alt={isIllustrativeVisual(visual)?"":destination.name+" destination scenery"} fill sizes="(max-width:1024px) 100vw,40vw" className="object-cover"/>{isIllustrativeVisual(visual)&&<span className="absolute bottom-2 left-2 rounded bg-[var(--card)] px-2 py-1 text-xs">Illustrative visual</span>}</div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><Sparkles size={17}/> One destination · four pillars</p>
             <h2 className="mt-4 text-xl font-semibold">Plan, stay, invest and discover.</h2>
             <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">

@@ -147,7 +147,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
 export type AppDetail={
  propertyEnquiry?:{id:number;mode:"registry"|"listing"};
  title:string;subtitle:string;summary:string;kind:"destination"|"hotel"|"property"|"tender";
- image:string|null;facts:Array<[string,string]>;source:string|null;
+ image:string|null;countryCode?:string|null;facts:Array<[string,string]>;source:string|null;
  website:string|null;fullSite:string;related:string;
 };
 function safeSite(v:unknown):string|null{

@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
 import DiscoveryCardPhoto from "@/components/destination/DiscoveryCardPhoto";
-import {destinationServicePhoto} from "@/lib/destinations/visual-media";
+import {destinationServicePhoto,destinationVisual} from "@/lib/destinations/visual-media";
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowUpRight,CalendarCheck,ClipboardCheck,MapPin,ShieldCheck} from "lucide-react";
@@ -27,7 +27,7 @@ export default async function AppRecordDetail({params}:Props){
    </Link>
    <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
     <div className="relative flex h-44 items-center justify-center bg-[var(--bg-soft)] sm:h-52">
-     <DiscoveryCardPhoto source={record.image==="/images/default-city.jpg"?null:record.image} fallback={destinationServicePhoto(record.kind==="destination"?"packages":record.kind==="hotel"?"hotels":record.kind==="property"?"properties":"tenders")} title={record.title}/>
+     <DiscoveryCardPhoto source={record.kind==="destination"?destinationVisual(id,record.countryCode,record.image):record.image} fallback={destinationServicePhoto(record.kind==="destination"?"packages":record.kind==="hotel"?"hotels":record.kind==="property"?"properties":"tenders")} title={record.title}/>
      {!record.image&&record.kind==="hotel"&&<span className="sr-only">No licensed hotel photo</span>}
     </div>
     <div className="p-5">
