@@ -162,7 +162,7 @@ export default async function ToursExplorer({ searchParams, basePath }: Props) {
   ];
 
   return (
-    <div className="bg-[var(--bg)] text-[var(--text)]">
+    <div data-gth-public-directory-ready={!response.error&&cityData?"1":undefined} className="bg-[var(--bg)] text-[var(--text)]">
       <section aria-label="Experience search results">
         <TourSearchHandoff search={filters} error={response.error} status={response.status}
           catalogTotal={response.catalogTotal} basePath={basePath} />
