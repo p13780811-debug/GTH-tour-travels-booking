@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Check existing production bindings, shared guard and one content-only request
+      - name: Classify shared Redis errors without any supplier request
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -32,7 +32,7 @@ jobs:
               try:
                   with opener.open(urllib.request.Request(url,headers=headers,data=body),timeout=8) as r:
                       return r.status,r.read(limit)
-              except urllib.error.HTTPError as e: return e.code,b""
+              except urllib.error.HTTPError as e: return e.code,e.read(min(limit,4096))
               except Exception: return 0,b""
           def out(label,value): print(label,json.dumps(value,separators=(",",":")),flush=True)
           cf_token,account=os.getenv("CF_TOKEN",""),os.getenv("CF_ACCOUNT","")
@@ -62,22 +62,23 @@ jobs:
           digest=hmac.new(token.encode(),b"user:shared-free-hotel-content",hashlib.sha256).hexdigest()
           prefix="{"+namespace+":production:rl:v1:hotel_content}"
           keys=[prefix+":"+digest+":minute",prefix+":"+digest+":day",prefix+":global:minute",prefix+":global:day"]
-          lua="local retry=0 for i,key in ipairs(KEYS) do local count=tonumber(redis.call('GET',key) or '0') local limit=tonumber(ARGV[(i-1)*2+1]) local window=tonumber(ARGV[(i-1)*2+2]) local ttl=redis.call('TTL',key) if count>=limit then if ttl<1 then ttl=window end retry=math.max(retry,ttl) end end if retry>0 then return {0,retry} end for i,key in ipairs(KEYS) do local count=redis.call('INCR',key) if count==1 or redis.call('TTL',key)<0 then redis.call('EXPIRE',key,tonumber(ARGV[(i-1)*2+2])) end end return {1,0}"
-          if not key:
-              out("GUARD",{"status":"hotel_key_missing","provider_called":False});raise SystemExit(1)
-          s,b=request(redis,headers,json.dumps(["EVAL",lua,4,*keys,30,60,1000,86400,30,60,1000,86400]).encode())
-          try: result=json.loads(b).get("result")
-          except Exception: result=None
-          out("GUARD",{"http":s,"accepted":s==200 and result==[1,0],"retry_after":result[1] if isinstance(result,list) and len(result)==2 and isinstance(result[1],int) else None})
-          if s!=200 or result!=[1,0]: raise SystemExit(1)
-          url="https://api.liteapi.travel/v3.0/data/hotels?countryCode=IN&cityName=Kolkata&limit=24&offset=0"
-          s,b=request(url,{"Accept":"application/json","X-API-Key":key})
-          info={"http":s,"bytes":len(b),"within_existing_size_bound":len(b)<=512000}
-          if s==200 and len(b)<=512000:
-              try:
-                  rows=json.loads(b).get("data",[])
-                  info.update({"records":len(rows),"matching_country_city":sum(isinstance(x,dict) and str(x.get("country","")).upper()=="IN" and str(x.get("city","")).lower()=="kolkata" for x in rows),"with_https_main_photo":sum(isinstance(x,dict) and str(x.get("main_photo","")).startswith("https://") for x in rows)})
-              except Exception: info["invalid_json"]=True
-          out("SUPPLIER_CONTENT",info)
-          if s!=200 or not info.get("matching_country_city"): raise SystemExit(1)
+          def classification(body):
+              try: msg=str(json.loads(body).get("error","")).lower()
+              except Exception: msg=""
+              if any(x in msg for x in ("max daily","max monthly","request limit","quota","max requests","limit exceeded","usage limit","max command")): return "quota_exhausted"
+              if any(x in msg for x in ("max data","storage","memory","oom")): return "storage_limit"
+              if any(x in msg for x in ("unauthorized","invalid token","authentication","wrongpass","noauth")): return "authentication"
+              if any(x in msg for x in ("unsupported","not allowed","not supported","disabled","noperm","unknown command")): return "command_restricted"
+              if any(x in msg for x in ("syntax","wrong number","script","lua","compile","eval")): return "script_or_protocol"
+              if any(x in msg for x in ("suspended","disabled","blocked","payment","billing")): return "account_restriction"
+              if any(x in msg for x in ("not found","database","deleted")): return "database_unavailable"
+              return "unclassified"
+          for command in [["PING"],["MGET",*keys]]:
+              s,b=request(redis,headers,json.dumps(command).encode(),4096)
+              try: result=json.loads(b).get("result")
+              except Exception: result=None
+              info={"command":command[0],"http":s,"error_category":classification(b) if s!=200 else None}
+              if command[0]=="MGET" and isinstance(result,list) and len(result)==4:
+                  info["counts"]=[int(x) if isinstance(x,(str,int)) and str(x).isdigit() else None for x in result]
+              out("REDIS_READ_DIAGNOSTIC",info)
           PY
