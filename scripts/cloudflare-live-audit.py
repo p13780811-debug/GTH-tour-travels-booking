@@ -56,6 +56,9 @@ def request(url,headers=None):
         "redirect_path":dest.path if dest.hostname=="hotel.gthproglobal.com" else "",
         "tokyo_place_match":urllib.parse.parse_qs(dest.query).get("placeId")==["ChIJ51cu8IcbXWARiRtXIothAS4"] if dest.hostname=="hotel.gthproglobal.com" else False,
         "cache_control":h.get("Cache-Control","")}
+    diagnostic=h.get("X-GTH-Preview-Tender-Diagnostic","")
+    if re.fullmatch(r"ingress=[01];eligible=[01];cookie=[01];auth=[01];rsc=[01];range=[01];access=[01]",diagnostic):
+        result["tender_native_diagnostic"]=diagnostic
     if status>=400:
         lower=data.lower()
         result["error_category"]=next((label for label,markers in [
