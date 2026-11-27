@@ -1,0 +1,83 @@
+name: Bounded hotel content production diagnostics
+on:
+  push:
+    branches: [diag/hotel-discovery-production-20261127]
+    paths: ['.github/workflows/hotel-content-diagnostic.yml']
+permissions:
+  contents: read
+concurrency:
+  group: gth-hotel-content-diagnostic
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/diag/hotel-discovery-production-20261127'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check existing production bindings, shared guard and one content-only request
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HOTEL_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }}
+          REDIS_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          REDIS_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          RUNTIME_BUNDLE: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error, urllib.parse, hmac, hashlib, re
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs): return None
+          opener=urllib.request.build_opener(NoRedirect())
+          def request(url,headers,body=None,limit=512001):
+              try:
+                  with opener.open(urllib.request.Request(url,headers=headers,data=body),timeout=8) as r:
+                      return r.status,r.read(limit)
+              except urllib.error.HTTPError as e: return e.code,b""
+              except Exception: return 0,b""
+          def out(label,value): print(label,json.dumps(value,separators=(",",":")),flush=True)
+          cf_token,account=os.getenv("CF_TOKEN",""),os.getenv("CF_ACCOUNT","")
+          key,redis,token=os.getenv("HOTEL_KEY",""),os.getenv("REDIS_URL",""),os.getenv("REDIS_TOKEN","")
+          out("REQUIRED_SECRET_PRESENCE",{"hotel":bool(key),"redis_url":bool(redis),"redis_token":bool(token),"cloudflare":bool(cf_token and account)})
+          if cf_token and re.fullmatch(r"[a-fA-F0-9]{32}",account):
+              s,b=request("https://api.cloudflare.com/client/v4/accounts/"+account+"/workers/scripts/gth-pro-production/settings",{"Authorization":"Bearer "+cf_token})
+              names=set()
+              if s==200:
+                  try: names={v.get("name") for v in json.loads(b).get("result",{}).get("bindings",[])}
+                  except Exception: pass
+              out("PRODUCTION_BINDINGS",{"status":s,"hotel":"NUITEE_PRODUCTION_API_KEY" in names,"redis_url":"UPSTASH_REDIS_REST_URL" in names,"redis_token":"UPSTASH_REDIS_REST_TOKEN" in names,"ingress":"GTH_CLOUDFLARE_INGRESS" in names})
+          try:
+              u=urllib.parse.urlsplit(redis)
+              assert u.scheme=="https" and u.hostname.endswith(".upstash.io") and not u.username and not u.password and not u.port and not u.query and not u.fragment and u.path in ("","/") and token
+          except Exception:
+              out("GUARD",{"status":"invalid_or_missing_config","provider_called":False});raise SystemExit(1)
+          headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
+          # Same identity and key format as the existing rate-limit.ts guard.
+          # Never call the supplier when Redis is unavailable or its guard denies.
+          namespace="gth-pro"
+          for line in os.getenv("RUNTIME_BUNDLE","").splitlines():
+              if line.startswith("GTH_RATE_LIMIT_NAMESPACE="):
+                  namespace=line.split("=",1)[1].strip().strip("'").strip('"')
+          if not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}",namespace):
+              out("GUARD",{"status":"invalid_namespace","provider_called":False});raise SystemExit(1)
+          digest=hmac.new(token.encode(),b"user:shared-free-hotel-content",hashlib.sha256).hexdigest()
+          prefix="{"+namespace+":production:rl:v1:hotel_content}"
+          keys=[prefix+":"+digest+":minute",prefix+":"+digest+":day",prefix+":global:minute",prefix+":global:day"]
+          lua="local retry=0 for i,key in ipairs(KEYS) do local count=tonumber(redis.call('GET',key) or '0') local limit=tonumber(ARGV[(i-1)*2+1]) local window=tonumber(ARGV[(i-1)*2+2]) local ttl=redis.call('TTL',key) if count>=limit then if ttl<1 then ttl=window end retry=math.max(retry,ttl) end end if retry>0 then return {0,retry} end for i,key in ipairs(KEYS) do local count=redis.call('INCR',key) if count==1 or redis.call('TTL',key)<0 then redis.call('EXPIRE',key,tonumber(ARGV[(i-1)*2+2])) end end return {1,0}"
+          if not key:
+              out("GUARD",{"status":"hotel_key_missing","provider_called":False});raise SystemExit(1)
+          s,b=request(redis,headers,json.dumps(["EVAL",lua,4,*keys,30,60,1000,86400,30,60,1000,86400]).encode())
+          try: result=json.loads(b).get("result")
+          except Exception: result=None
+          out("GUARD",{"http":s,"accepted":s==200 and result==[1,0],"retry_after":result[1] if isinstance(result,list) and len(result)==2 and isinstance(result[1],int) else None})
+          if s!=200 or result!=[1,0]: raise SystemExit(1)
+          url="https://api.liteapi.travel/v3.0/data/hotels?countryCode=IN&cityName=Kolkata&limit=24&offset=0"
+          s,b=request(url,{"Accept":"application/json","X-API-Key":key})
+          info={"http":s,"bytes":len(b),"within_existing_size_bound":len(b)<=512000}
+          if s==200 and len(b)<=512000:
+              try:
+                  rows=json.loads(b).get("data",[])
+                  info.update({"records":len(rows),"matching_country_city":sum(isinstance(x,dict) and str(x.get("country","")).upper()=="IN" and str(x.get("city","")).lower()=="kolkata" for x in rows),"with_https_main_photo":sum(isinstance(x,dict) and str(x.get("main_photo","")).startswith("https://") for x in rows)})
+              except Exception: info["invalid_json"]=True
+          out("SUPPLIER_CONTENT",info)
+          if s!=200 or not info.get("matching_country_city"): raise SystemExit(1)
+          PY
