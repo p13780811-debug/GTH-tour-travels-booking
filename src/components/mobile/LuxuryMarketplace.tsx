@@ -1,17 +1,17 @@
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {LUXURY_VISUALS,MODULE_HEROES,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import Link from "next/link";
 import Image from "next/image";
 import {ArrowRight,Search,ShieldCheck} from "lucide-react";
 import type {ReactNode} from "react";
 const services=[
- ["Hotels & stays","/app/hotels",LUXURY_VISUALS.hotels],
- ["Global flights","/app/flights",LUXURY_VISUALS.flights],
+ ["Hotels & stays","/app/hotels",MODULE_HEROES.hotels.image],
+ ["Global flights","/app/flights",MODULE_HEROES.flights.image],
  ["Match passes","/app/services/tickets",LUXURY_VISUALS.tickets],
- ["Travel packages","/app/packages",LUXURY_VISUALS.packages],
- ["Destinations","/app/destinations",LUXURY_VISUALS.hero],
- ["Transport","/go/transport",LUXURY_VISUALS.transport],
- ["Real estate","/app/property",LUXURY_VISUALS.property],
- ["Tenders","/app/tenders",LUXURY_VISUALS.tenders]
+ ["Travel packages","/app/packages",MODULE_HEROES.packages.image],
+ ["Destinations","/app/destinations",MODULE_HEROES.destinations.image],
+ ["Transport","/go/transport",MODULE_HEROES.transport.image],
+ ["Real estate","/app/property",MODULE_HEROES.property.image],
+ ["Tenders","/app/tenders",MODULE_HEROES.tenders.image]
 ] as const;
 export function MarketplaceHero({title,subtitle,image}:{title:string;subtitle:string;image:string}){
  return <section data-marketplace-hero="true" className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6" aria-label={title}>
@@ -20,7 +20,7 @@ export function MarketplaceHero({title,subtitle,image}:{title:string;subtitle:st
  <div className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-[var(--text-soft)]">GTH PRO Global</p><p className="mt-1 text-2xl font-bold tracking-tight">{title}</p><p className="mt-1 text-sm text-[var(--text-soft)]">{subtitle}</p></div>
  </div></section>;
 }
-export function MarketplaceServices(){return <section data-marketplace-services="true" className="mx-auto max-w-7xl px-4 py-5 sm:px-6"><h2 className="text-xl font-bold">Explore the marketplace</h2><div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">{services.map(([name,href,image])=><Link key={href} href={href} prefetch={false} className="min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)]"><div className="relative aspect-[16/10]"><Image src={image} alt="" fill unoptimized={image.startsWith("/images/luxury/")} sizes="(max-width:768px) 50vw,25vw" className="object-cover"/></div><div className="p-3"><span className="block text-[10px] text-[var(--text-soft)]">AI illustrative visual</span><span className="flex min-h-11 items-center justify-between gap-1 text-sm font-semibold">{name}<ArrowRight size={15} className="shrink-0"/></span></div></Link>)}</div><p className="mt-4 flex items-center gap-2 text-xs text-[var(--text-soft)]"><ShieldCheck size={18} className="shrink-0"/> Provider-operated booking handoffs · confirm prices and availability with the provider.</p></section>}
+export function MarketplaceServices(){return <section data-marketplace-services="true" className="mx-auto max-w-7xl px-4 py-5 sm:px-6"><h2 className="text-xl font-bold">Explore the marketplace</h2><div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">{services.map(([name,href,image])=><Link key={href} href={href} prefetch={false} className="min-w-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)]"><div className="relative aspect-[16/10]"><Image src={image} alt="" fill unoptimized={image.startsWith("/images/luxury/")} sizes="(max-width:768px) 50vw,25vw" className="object-cover"/></div><div className="p-3">{isIllustrativeVisual(image)&&<span className="block text-[10px] text-[var(--text-soft)]">Illustrative visual</span>}<span className="flex min-h-11 items-center justify-between gap-1 text-sm font-semibold">{name}<ArrowRight size={15} className="shrink-0"/></span></div></Link>)}</div><p className="mt-4 flex items-center gap-2 text-xs text-[var(--text-soft)]"><ShieldCheck size={18} className="shrink-0"/> Provider-operated booking handoffs · confirm prices and availability with the provider.</p></section>}
 
 const hubs=[
  {name:"Melbourne (MCG)",subtitle:"Australia · cricket and events",href:"/stadiums/melbourne-cricket-ground",image:LUXURY_VISUALS.melbourne},
@@ -46,9 +46,9 @@ export function ModuleHomeHero({module,title,subtitle,image,links=[],children,he
 export function ModuleSearchLink({href,label,description}:{href:string;label:string;description:string}){return <div className="flex min-w-0 items-center gap-3"><Search className="shrink-0" size={21} aria-hidden="true"/><div className="min-w-0 flex-1"><p className="font-bold">{label}</p><p className="mt-1 text-xs text-[var(--text-soft)]">{description}</p></div><Link href={href} prefetch={false} aria-label={label} className="gth-btn-gold flex size-11 shrink-0 items-center justify-center rounded-xl"><ArrowRight size={19} aria-hidden="true"/></Link></div>;}
 export function TicketSearchPanel(){return <form action="/app/search" method="get" role="search" aria-label="Find tickets and events" className="space-y-2"><p className="font-bold text-lg">Find your next event</p><div className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-soft)] p-1.5"><Search size={18} className="ml-2 shrink-0" aria-hidden="true"/><input type="search" name="q" required minLength={2} maxLength={80} aria-label="Search event, venue or city" placeholder="Cricket, MCG, concerts…" className="min-h-11 min-w-0 flex-1 bg-transparent text-sm text-[var(--text)]"/><input type="hidden" name="category" value="ticket"/><button className="gth-btn-gold flex size-11 shrink-0 items-center justify-center rounded-xl" aria-label="Search events"><ArrowRight size={20}/></button></div><p className="text-xs text-[var(--text-soft)]">Explore reviewed event sources, then confirm admission with the seller.</p></form>;}
 const destinations=[
- {name:"Tokyo",href:"/app/destinations/tokyo",image:LUXURY_VISUALS.tokyo},
- {name:"London",href:"/app/destinations/london",image:LUXURY_VISUALS.london},
+ {name:"Tokyo",href:"/app/destinations/tokyo",image:"/images/cities/tokyo.jpg"},
+ {name:"London",href:"/app/destinations/london",image:"/images/cities/london.jpg"},
  {name:"Dubai",href:"/app/destinations/dubai",image:"/images/cities/dubai.jpg"},
  {name:"Singapore",href:"/app/destinations/singapore",image:"/images/cities/singapore.jpg"}
 ] as const;
-export function DestinationInspirationRail(){return <section data-marketplace-destinations="true" className="mx-auto max-w-7xl px-4 py-5 sm:px-6"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-xl font-bold">Discover the world</h2><Link prefetch={false} href="/app/destinations" className="text-xs font-semibold underline">Worldwide destination directory</Link></div><div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-4">{destinations.map(d=><Link prefetch={false} key={d.href} href={d.href} className="w-[55vw] max-w-[240px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:w-auto sm:max-w-none"><div className="relative aspect-[4/3]"><Image src={d.image} alt="" fill unoptimized={d.image.startsWith("/images/luxury/")} sizes="(max-width:640px) 55vw,25vw" className="object-cover"/>{d.image.startsWith("/images/luxury/")&&<span className="absolute top-2 right-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px]">Illustrative visual</span>}</div><div className="flex items-center justify-between gap-2 p-3 font-semibold">{d.name}<ArrowRight size={16}/></div></Link>)}</div></section>;}
+export function DestinationInspirationRail(){return <section data-marketplace-destinations="true" className="mx-auto max-w-7xl px-4 py-5 sm:px-6"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-xl font-bold">Discover the world</h2><Link prefetch={false} href="/app/destinations" className="text-xs font-semibold underline">Worldwide destination directory</Link></div><div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-4">{destinations.map(d=><Link prefetch={false} key={d.href} href={d.href} className="w-[55vw] max-w-[240px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] sm:w-auto sm:max-w-none"><div className="relative aspect-[4/3]"><Image src={d.image} alt="" fill unoptimized={d.image.startsWith("/images/luxury/")} sizes="(max-width:640px) 55vw,25vw" className="object-cover"/>{isIllustrativeVisual(d.image)&&<span className="absolute top-2 right-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px]">Illustrative visual</span>}</div><div className="flex items-center justify-between gap-2 p-3 font-semibold">{d.name}<ArrowRight size={16}/></div></Link>)}</div></section>;}

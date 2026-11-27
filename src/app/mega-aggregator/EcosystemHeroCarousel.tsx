@@ -1,17 +1,13 @@
 "use client";
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MARKETPLACE_HERO_SLIDES,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 
 
 import Image from "next/image";
+import Link from "next/link";
 import {useEffect,useRef,useState} from "react";
 
-const slides=[
-  {name:"Hotels",image:"/images/mega/hotels.jpg",alt:"Modern hotel accommodation"},
-  {name:"Flights",image:"/images/mega/flights.jpg",alt:"Air travel and aviation"},
-  {name:"Tours",image:"/images/mega/tours.jpg",alt:"Travellers exploring the world"},
-  {name:"Real Estate",image:"/images/real-estate.jpg",alt:"Residential and commercial property discovery"},
-  {name:"Tenders",image:"/images/tender.jpg",alt:"Business procurement and tender opportunities"},
-] as const;
+const slides=MARKETPLACE_HERO_SLIDES;
+
 
 /** Mega Aggregator mobile-only media carousel.
  * Photo backgrounds have no handmade CSS, filters or gradient overlays.
@@ -20,13 +16,14 @@ const slides=[
 export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolean}={}){
   const [active,setActive]=useState(0);
   const [paused,setPaused]=useState(false);
+  const [manualPause,setManualPause]=useState(false);
   const touchStart=useRef<{x:number;y:number}|null>(null);
 
   useEffect(()=>{
-    if(paused||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    if(paused||manualPause||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
     const timer=window.setInterval(()=>setActive(index=>(index+1)%slides.length),5500);
     return ()=>window.clearInterval(timer);
-  },[paused,active]);
+  },[paused,manualPause,active]);
 
   function swipe(end:{x:number;y:number}|null){
     const start=touchStart.current;
@@ -55,18 +52,19 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
         {slides.map((slide,index)=>(
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
-            <Image src={embedded?(index===0?"/images/global-city.jpg":index===1?LUXURY_VISUALS.flights:index===3?LUXURY_VISUALS.property:index===4?LUXURY_VISUALS.tenders:slide.image):slide.image} alt={embedded?"":slide.alt} fill
-              priority={index===0} unoptimized={embedded} sizes={embedded?"(max-width:640px) 100vw, 1200px":"(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"}
+            <Image src={slide.image} alt="" fill
+              priority={index===0} unoptimized={slide.image.endsWith(".webp")} sizes={embedded?"(max-width:640px) 100vw, 1200px":"(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"}
               className="object-cover object-center" />
           </div>
         ))}
-        {embedded&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
+        <div className="absolute inset-x-2 top-2 z-10 flex items-start justify-between gap-2"><Link data-hero-module-link="true" href={slides[active].href} prefetch={false} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm font-semibold text-[var(--text)]">Explore {slides[active].name} <span aria-hidden="true">↗</span></Link><button type="button" aria-label={manualPause?"Resume automatic hero":"Pause automatic hero"} aria-pressed={manualPause} onClick={()=>setManualPause(v=>!v)} className="min-h-11 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-xs text-[var(--text)]">{manualPause?"Play":"Pause"}</button></div>
+        {isIllustrativeVisual(slides[active].image)&&<span className="absolute top-14 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
         <div role="group" aria-label="Select ecosystem hero image"
-          className={"absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 "+(embedded?"bottom-10":"bottom-14")}>
+          className={"absolute left-1/2 z-10 flex max-w-full -translate-x-1/2 items-center gap-0 "+(embedded?"bottom-10":"bottom-14")}>
           {slides.map((slide,index)=>(
             <button type="button" key={slide.name} aria-label={"Show "+slide.name+" image"}
               aria-pressed={active===index} onClick={()=>setActive(index)}
-              className="flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
+              className="flex h-9 w-6 sm:w-9 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]">
               <span className={"h-2.5 w-2.5 rounded-full border border-[var(--border)] "+(active===index?"bg-[var(--gold)]":"bg-[var(--card)]")} aria-hidden="true"/>
             </button>
           ))}

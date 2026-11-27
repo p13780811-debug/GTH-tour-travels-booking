@@ -50,7 +50,7 @@ for(let offset=0;;offset+=1000){
    const visual=media.destinationVisual(row.slug,code,cityPhotos.destinationImageForSlug(row.slug));
    assert.ok(existsSync("public"+visual),"Missing destination visual");
    visualCounts.set(visual,(visualCounts.get(visual)??0)+1);
-   if(visual===media.LUXURY_VISUALS.hero)globalFallbackCodes.add(code);
+   if(visual===media.GLOBAL_EDITORIAL_FALLBACK)globalFallbackCodes.add(code);
    const place={slug:row.slug,name:row.name,country:g.country,countryCode:code};
    const target=new URL(detail.destinationDetailHref(place),base);
    assert.equal(target.pathname,"/destinations/"+row.slug);
