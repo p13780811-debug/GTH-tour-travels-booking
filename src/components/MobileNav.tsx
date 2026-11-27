@@ -28,7 +28,7 @@ export default function MobileNav() {
           const label = name === "Home" && !isApp ? "App Home" : name;
           return (
             <Link key={href} href={target} prefetch={name==="Home"?false:undefined} aria-current={active ? "page" : undefined}
-              className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "gold-text" : "text-[var(--text-soft)]"}`}>
+              className={`flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${active ? "border-t-2 border-[var(--gold)] font-bold text-[var(--text)]" : "text-[var(--text-soft)]"}`}>
               <Icon size={19} strokeWidth={active ? 2.4 : 1.8} aria-hidden="true" />
               <span className="truncate">{label}</span>
             </Link>

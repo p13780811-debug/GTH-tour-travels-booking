@@ -1,3 +1,4 @@
+import {LUXURY_VISUALS,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import ConnectedTravelEntry from "@/components/travel/ConnectedTravelEntry";
@@ -18,10 +19,10 @@ export const metadata: Metadata = {
 };
 
 const services = [
-  { name: "Travel Packages", label: "BUILD YOUR OWN JOURNEY", href: "/travel/packages", img: "/images/cities/dubai.jpg", Icon: Sparkles, detail: "Combine return flights, stays, experiences and airport transfers in one personal travel plan." },
+  { name: "Travel Packages", label: "BUILD YOUR OWN JOURNEY", href: "/travel/packages", img: LUXURY_VISUALS.packages, Icon: Sparkles, detail: "Combine return flights, stays, experiences and airport transfers in one personal travel plan." },
   { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore cruise holidays, harbour sailings and dinner cruises, with detailed itineraries and booking options." },
-  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: "/images/mega/flights.jpg", Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
-  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: "/images/mega/hotels.jpg", Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },
+  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: LUXURY_VISUALS.flights, Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
+  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: LUXURY_VISUALS.hotels, Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
   { name: "Destinations", label: "EXPLORE THE WORLD", href: "/destinations", img: "/images/cities/paris.jpg", Icon: Globe2, detail: "Discover international destinations, city highlights and helpful planning information." },
   { name: "Airport Transfers", label: "GROUND TRANSPORT", href: "/transfers", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Plan a journey from airport to accommodation and verify pickup terms with external providers." },
@@ -67,7 +68,8 @@ export default function TravelHomePage() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {services.map(({name,label,href,img,Icon,detail})=><Link prefetch={false} key={href} href={href} className="group min-w-0 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] transition-transform hover:-translate-y-1">
           <div className="relative aspect-[16/10] overflow-hidden">
-            <Image src={img} alt={name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <Image src={img} alt={isIllustrativeVisual(img)?"":name} fill unoptimized={isIllustrativeVisual(img)} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            {isIllustrativeVisual(img)&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">AI illustrative visual</span>}
             <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
             <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white"><Icon size={15}/> {label}</span>
           </div>

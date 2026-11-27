@@ -1,3 +1,4 @@
+import {FlagshipHubRail,MarketplaceServices} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import {Suspense} from "react";
 import Link from "next/link";
@@ -50,6 +51,8 @@ export default function MobileAppHome(){
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
    <EcosystemUnifiedSearch appHome/>
   </div>
+  <FlagshipHubRail/>
+  <MarketplaceServices/>
   <EcosystemPillars appHome/>
   <AppResearchQuickAccess/>
   <section aria-label="Install GTH PRO on your device" className="mx-auto mt-3 w-full max-w-7xl px-4 sm:px-6">

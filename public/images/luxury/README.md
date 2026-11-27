@@ -1,0 +1,2 @@
+# GTH PRO AI illustrative visuals
+Generated editorial art, 2026-11-27. Illustrations are not photographs of a listing, actual venue admission, live inventory or independently verified geography. Preserve supplier media and label illustrations. Nine flagship/service assets are WebP up to 1440 px wide; twelve regional/category tiles are compact mobile-friendly WebP. No runtime image-generation or paid image API.

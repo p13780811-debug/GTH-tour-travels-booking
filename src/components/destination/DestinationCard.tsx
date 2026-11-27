@@ -1,3 +1,5 @@
+import {destinationCountryCode} from "@/lib/destinations/ecosystem";
+import {destinationVisual,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowRight,Globe2,MapPin} from "lucide-react";
@@ -9,12 +11,13 @@ export type DestinationCardInfo={
 };
 /** Exactly the same card geometry in every rail and every viewport. */
 export default function DestinationCard({destination}: {destination:DestinationCardInfo}){
+ const visual=destinationVisual(destination.slug,destinationCountryCode(destination.country,destination.countryCode),destination.image);
  return <Link href={destinationDetailHref(destination)}
    className="group flex h-64 w-60 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
    <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[var(--bg-soft)]">
-    <Image src={destination.image} alt={destination.image==="/images/default-city.jpg"?"":destination.title+" destination"}
-      fill loading="lazy" sizes="240px" className="object-cover transition-transform duration-500 group-hover:scale-105"/>
-    {destination.image==="/images/default-city.jpg"&&<span className="absolute bottom-2 left-2 rounded bg-[var(--card)] px-2 py-1 text-[10px]">Illustrative photo</span>}
+    <Image src={visual} alt={isIllustrativeVisual(visual)?"":destination.title+" destination"}
+      fill unoptimized={isIllustrativeVisual(visual)} loading="lazy" sizes="240px" className="object-cover transition-transform duration-500 group-hover:scale-105"/>
+    {isIllustrativeVisual(visual)&&<span className="absolute bottom-2 left-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
    </div>
    <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
     <h3 className="line-clamp-1 text-base font-semibold">{destination.title}</h3>

@@ -1,3 +1,4 @@
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export default async function FlightsPage({ searchParams }: Props) {
       <section className={"relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" + (isResultsView ? " hidden sm:block" : "")} data-travel-hero="true">
         <div aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
-          <Image src="/images/mega/flights.jpg" alt="" fill priority
+          <Image src={LUXURY_VISUALS.flights} alt="" fill priority unoptimized
             sizes="(max-width: 1024px) 35vw, 580px" className="object-cover object-center" />
         </div>
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 sm:py-12 lg:py-14">

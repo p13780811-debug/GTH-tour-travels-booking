@@ -10,6 +10,13 @@ on:
       - 'scripts/qa-travel-package-planner.mjs'
       - 'scripts/qa-shared-city-mobile.mjs'
       - 'scripts/qa-city-fixture.mjs'
+      - 'scripts/qa-luxury-marketplace-mobile.mjs'
+      - 'tests/luxury-marketplace-visuals.test.mjs'
+      - 'src/app/app/**'
+      - 'src/components/mobile/**'
+      - 'src/components/destination/**'
+      - 'src/lib/destinations/visual-media.ts'
+      - 'public/images/luxury/**'
       - '.github/workflows/travel-package-planner-qa.yml'
 permissions:
   contents: read
@@ -58,6 +65,8 @@ jobs:
       - run: node scripts/qa-travel-package-planner.mjs
       - name: Verify shared city templates at three mobile widths
         run: node scripts/qa-shared-city-mobile.mjs
+      - name: Verify luxury app visuals, themes and native global destination flow
+        run: node scripts/qa-luxury-marketplace-mobile.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:

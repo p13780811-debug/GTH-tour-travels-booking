@@ -1,3 +1,5 @@
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {Suspense} from "react";
@@ -19,6 +21,7 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
  const bookingName=/^[\p{L}\p{M}\p{N}\s.'&-]{2,80}$/u.test(rawName.trim())?rawName.trim():"";
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
+  <MarketplaceHero title="Global stays" subtitle="Explore and continue to the booking provider" image={LUXURY_VISUALS.hotels}/>
   <div className="mx-auto w-full max-w-7xl pt-3">
    <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Hotels</h1>
    {(bookingCity||bookingName)&&<p role="status" className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)] sm:mx-6">

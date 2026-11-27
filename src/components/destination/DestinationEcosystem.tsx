@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {destinationServicePhoto} from "@/lib/destinations/visual-media";
+import {destinationServicePhoto,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import {
  ArrowRight,BookOpen,BriefcaseBusiness,Building2,Bus,CarFront,ClipboardList,
  Compass,FileText,Hotel,MapPin,Plane,Route,TrainFront,WalletCards,Ticket,
@@ -46,7 +46,7 @@ export default function DestinationEcosystem({slug,name,country,countryCode}:{
        const Icon=serviceIcons[service.key]||Compass;
        return <Link prefetch={false} key={service.key} href={service.href}
          className="group flex h-64 w-60 shrink-0 snap-start flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--text)] transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--gold)]">
-         <div className="relative h-24 shrink-0 overflow-hidden rounded-xl"><Image src={destinationServicePhoto(service.key)} alt="" fill sizes="240px" className="object-cover"/></div>
+         <div className="relative h-24 shrink-0 overflow-hidden rounded-xl"><Image src={destinationServicePhoto(service.key)} alt="" fill unoptimized={isIllustrativeVisual(destinationServicePhoto(service.key))} sizes="240px" className="object-cover"/><span className="absolute bottom-1 left-1 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
          <div className="mt-2 flex items-center justify-between gap-2">
           <span className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-2"><Icon size={20} aria-hidden="true"/></span>
           <ArrowRight size={17} aria-hidden="true" className="text-[var(--text-soft)] transition group-hover:translate-x-1"/>

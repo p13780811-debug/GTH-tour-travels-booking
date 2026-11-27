@@ -11,6 +11,7 @@
 // ============================================================================
 
 "use client";
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 
@@ -357,8 +358,8 @@ function HotelsContent() {
                             </p>
                         </div>
                         <figure className={styles.visual}>
-                            <Image src="/images/cities/dubai.jpg" alt="Dubai skyline — destination inspiration" fill sizes="(min-width: 900px) 360px, 1px" className="object-cover" />
-                            <figcaption><MapPin size={14} aria-hidden="true" /> Dubai <span>Destination inspiration</span></figcaption>
+                            <Image src={LUXURY_VISUALS.hotels} alt="" fill unoptimized sizes="(min-width: 900px) 360px, 1px" className="object-cover" />
+                            <figcaption><MapPin size={14} aria-hidden="true" /> Global stays <span>AI illustrative visual</span></figcaption>
                         </figure>
                     </div>
 

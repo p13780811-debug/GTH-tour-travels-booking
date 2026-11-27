@@ -1,7 +1,10 @@
 "use client";
+import {venueVisual} from "@/lib/destinations/visual-media";
+
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, MapPin, Ticket } from "lucide-react";
 import { filterStadiums, stadiumSports, type Stadium, type StadiumSport } from "@/lib/travel/stadiums";
 
@@ -33,6 +36,7 @@ export default function StadiumDirectory({ venues }: { venues: readonly Stadium[
       <button onClick={() => { setQuery(""); setSport(""); }} className="gth-btn-gold mt-4 min-h-12 rounded-xl px-5">Clear filters</button>
     </div> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {results.map(venue => <article key={venue.slug} className="gth-glass flex min-w-0 flex-col rounded-2xl border border-[var(--border)] p-5">
+        <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-xl"><Image src={venueVisual(venue.slug)} alt="" fill sizes="(max-width:768px) 100vw,33vw" className="object-cover" unoptimized/><span className="absolute bottom-2 left-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">AI illustrative visual</span></div>
         <Ticket size={28} aria-hidden="true" className="text-[var(--gold)]"/>
         <h2 className="mt-4 text-xl font-bold">{venue.name}</h2>
         <p className="mt-2 flex items-center gap-2 text-sm text-[var(--text-soft)]"><MapPin size={15} aria-hidden="true"/>{venue.city}, {venue.country}</p>

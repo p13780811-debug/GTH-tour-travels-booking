@@ -1,5 +1,5 @@
 """Read-only public HTTPS checks: no credentials, no bookings, no DNS writes."""
-import socket,ssl,urllib.request,urllib.error,urllib.parse,subprocess,json
+import socket,ssl,urllib.request,urllib.error,urllib.parse,subprocess,json,time
 ctx=ssl.create_default_context()
 host="transport.gthproglobal.com"
 with socket.create_connection((host,443),timeout=15) as sock:
@@ -10,7 +10,7 @@ print("TRANSPORT_CNAME",subprocess.check_output(["dig","+short","+time=3","+trie
 class Manual(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs): return None
 opener=urllib.request.build_opener(Manual(),urllib.request.HTTPSHandler(context=ctx))
-def probe(url):
+def probe_once(url):
     chain=[]
     for _ in range(6):
         parsed=urllib.parse.urlsplit(url)
@@ -24,9 +24,15 @@ def probe(url):
         if status in (301,302,303,307,308):
             url=urllib.parse.urljoin(url,headers["Location"]);continue
         print("TRANSPORT_HTTP",json.dumps({"chain":chain,"final_host":parsed.hostname,"final_path":parsed.path,"status":status}),flush=True)
+        if status in (502,503,504): return False
         assert status==200 and parsed.hostname==host and b"12go" in data.lower(),"Transport white label was not reached"
-        return
+        return True
     raise AssertionError("Redirect limit exceeded")
+def probe(url):
+    for attempt in range(3):
+        if probe_once(url): return
+        if attempt<2: time.sleep(3*(attempt+1))
+    raise AssertionError("Transport handoff returned repeated HTTP 502/503/504")
 probe("https://"+host+"/")
 probe("https://www.gthproglobal.com/go/transport")
 print("TRANSPORT_TLS_AND_HANDOFF_VERIFIED",flush=True)

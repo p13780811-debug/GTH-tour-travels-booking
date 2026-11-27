@@ -1,4 +1,6 @@
 "use client";
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+
 
 import Image from "next/image";
 import {useEffect,useRef,useState} from "react";
@@ -53,11 +55,12 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
         {slides.map((slide,index)=>(
           <div key={slide.name} aria-hidden={active!==index}
             className={"absolute inset-0 transition-opacity duration-700 ease-in-out "+(active===index?"opacity-100":"opacity-0")}>
-            <Image src={slide.image} alt={slide.alt} fill
-              priority={index===0} sizes="(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"
+            <Image src={embedded?(index===0?LUXURY_VISUALS.hero:index===1?LUXURY_VISUALS.flights:index===3?LUXURY_VISUALS.property:index===4?LUXURY_VISUALS.tenders:slide.image):slide.image} alt={embedded?"":slide.alt} fill
+              priority={index===0} unoptimized={embedded} sizes="(max-width:640px) 100vw, (max-width:1280px) 90vw, 1px"
               className="object-cover object-center" />
           </div>
         ))}
+        {embedded&&<span className="absolute bottom-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
         <div role="group" aria-label="Select ecosystem hero image"
           className="absolute bottom-14 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1">
           {slides.map((slide,index)=>(

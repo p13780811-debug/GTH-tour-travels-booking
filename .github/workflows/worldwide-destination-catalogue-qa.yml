@@ -1,10 +1,12 @@
 name: Worldwide destination catalogue read-only contract
 on:
   push:
-    branches: [feat/visual-travel-package-planner-20261127]
+    branches: [feat/visual-travel-package-planner-20261127, feat/luxury-mobile-marketplace-20261127]
     paths:
       - 'scripts/qa-worldwide-destination-catalogue.mjs'
       - '.github/workflows/worldwide-destination-catalogue-qa.yml'
+      - 'src/lib/destinations/visual-media.ts'
+      - 'public/images/luxury/**'
 permissions:
   contents: read
 concurrency:
@@ -12,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   catalogue:
-    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/feat/visual-travel-package-planner-20261127'
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && (github.ref == 'refs/heads/feat/visual-travel-package-planner-20261127' || github.ref == 'refs/heads/feat/luxury-mobile-marketplace-20261127')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
