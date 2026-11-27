@@ -58,18 +58,18 @@ export function clientIdentity(req: Request): string {
   return isIP(raw) === 6 ? new URL(`http://[${raw}]/`).hostname : raw;
 }
 
-export async function enforceRateLimit(req: Request, scope: LimitScope, userId?: string): Promise<void> {
+export async function enforceRateLimit(req: Request, scope: LimitScope, userId?: string, runtimeEnv: Record<string,string|undefined> = process.env): Promise<void> {
   const unavailable = () => new RequestError("Request protection unavailable", 503, { "Retry-After": "60" });
-  const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const rawUrl = runtimeEnv.UPSTASH_REDIS_REST_URL;
+  const token = runtimeEnv.UPSTASH_REDIS_REST_TOKEN;
   if (!rawUrl || !token) throw unavailable();
   let url: URL;
   try {
     url = new URL(rawUrl);
     if (url.protocol !== "https:" || !url.hostname.endsWith(".upstash.io") || url.port || url.username || url.password || url.search || url.hash || (url.pathname !== "/" && url.pathname !== "")) throw new Error();
   } catch { throw unavailable(); }
-  const environment = process.env.VERCEL_ENV || (process.env.NODE_ENV === "production" ? "production" : "development");
-  const namespace = process.env.GTH_RATE_LIMIT_NAMESPACE || "gth-pro";
+  const environment = runtimeEnv.VERCEL_ENV || (runtimeEnv.NODE_ENV === "production" ? "production" : "development");
+  const namespace = runtimeEnv.GTH_RATE_LIMIT_NAMESPACE || "gth-pro";
   if (!/^[a-zA-Z0-9_-]{1,64}$/.test(namespace) || !/^[a-zA-Z0-9_-]{1,64}$/.test(environment)) throw unavailable();
   const identity = userId ? `user:${userId}` : `ip:${clientIdentity(req)}`;
   const digest = createHmac("sha256", token).update(identity).digest("hex");
