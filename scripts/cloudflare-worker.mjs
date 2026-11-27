@@ -5,6 +5,7 @@ export {HotelContentCache} from "./cloudflare-hotel-content.mjs";
 export * from "../.open-next/worker.js";
 import shells from "../.open-next/gth-shell-manifest.mjs";
 import {serveStaticShell,publicSecurityHeaders} from "./cloudflare-shell-routing.mjs";
+import {hotelGeoRequest} from "./cloudflare-hotel-geo.mjs";
 import {nativePublicRead} from "./cloudflare-native-public-reads.mjs";
 import {readPublicEdgeCache} from "../src/lib/security/public-edge-cache.ts";
 export default {
@@ -18,6 +19,6 @@ export default {
     if(response)return new Response(response.body,{status:response.status,headers:publicSecurityHeaders(response)});
    }
   }
-  return handler.fetch(request,env,ctx);
+  return handler.fetch(url.pathname==="/api/hotels/discovery"&&request.method==="GET"?hotelGeoRequest(request):request,env,ctx);
  }
 };
