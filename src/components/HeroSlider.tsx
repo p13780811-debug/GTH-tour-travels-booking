@@ -252,7 +252,7 @@ export default function HeroUltra() {
                             <div className="mt-10 flex items-center gap-4">
 
                                 <Link
-                                    href="/hotels"
+                                    href={current === 0 ? "/maldives-elite-escape" : "/hotels"}
                                     className="gth-btn-gold flex h-14 items-center gap-2 rounded-full px-8 text-[10px] font-black tracking-[0.24em]"
                                 >
 
@@ -349,7 +349,7 @@ export default function HeroUltra() {
                         <div className="mt-8 flex flex-wrap gap-3">
 
                             <Link
-                                href="/hotels"
+                                href={current === 0 ? "/maldives-elite-escape" : "/hotels"}
                                 className="gth-btn-gold flex h-12 items-center rounded-full px-6 text-[10px] font-black tracking-[0.18em]"
                             >
 
