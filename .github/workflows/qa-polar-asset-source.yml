@@ -1,0 +1,36 @@
+name: Public-domain polar editorial asset import verification
+on:
+  push:
+    branches: [feat/luxury-mobile-marketplace-20261127]
+    paths: ['.github/workflows/qa-polar-asset-source.yml']
+permissions:
+  contents: read
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch two source-attributed NASA public-domain regional images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gth-polar
+          curl -fsSL --max-time 20 --retry 1 -A 'GTH PRO editorial image import (gthproglobal.com)' https://upload.wikimedia.org/wikipedia/commons/3/35/South_Georgia_NASA.jpg -o /tmp/gth-polar/gs.jpg
+          curl -fsSL --max-time 20 --retry 1 -A 'GTH PRO editorial image import (gthproglobal.com)' https://upload.wikimedia.org/wikipedia/commons/1/11/Kerguelen_islands.jpg -o /tmp/gth-polar/tf.jpg
+          python3 -m pip install --quiet --disable-pip-version-check Pillow==11.3.0
+          python3 - <<'PY'
+          from PIL import Image
+          import pathlib,base64,hashlib,textwrap
+          for name in ('gs','tf'):
+              src=pathlib.Path('/tmp/gth-polar')/(name+'.jpg')
+              image=Image.open(src).convert('RGB')
+              image.thumbnail((800,600))
+              out=src.with_suffix('.webp')
+              image.save(out,'WEBP',quality=78,method=6)
+              b=out.read_bytes()
+              sha=hashlib.sha1(('blob '+str(len(b))+'\0').encode()+b).hexdigest()
+              data=base64.b64encode(b).decode()
+              print('GTH_ASSET_META:'+name+':'+str(len(data))+':'+sha)
+              for line in textwrap.wrap(data,100):
+                  print('GTH_ASSET_DATA:'+name+':'+line)
+          PY
