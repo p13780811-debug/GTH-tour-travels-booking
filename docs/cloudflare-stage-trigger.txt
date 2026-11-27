@@ -44,3 +44,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-28: Re-audit protected preview after narrow native public Tender world/country page-one fast path, preserved shared Redis+database refresh quota, exact RLS-filtered result count, and mandatory first/repeat HTTP 200 native route marker. No production/DNS changes; owner approval required for cutover.
 
 2026-11-28: Recheck protected preview native Tender eligibility; previous 26/26 HTTP checks were healthy but required native marker was absent. Preserve the strict native gate; capture only fixed credential-presence booleans, never values. No production changes.
+
+2026-11-28: Validate native Tender public RLS reads under protected preview Access-only cookie; cookie must exactly match Access assertion, no application cookie/auth and no cache lookup/write. Retain strict first/repeat native marker and all other 26-route gates; production unchanged.
