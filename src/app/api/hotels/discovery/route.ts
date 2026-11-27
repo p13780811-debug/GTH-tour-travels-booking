@@ -15,8 +15,9 @@ export async function GET(request:Request){
     const local=localResult.status==="fulfilled"?localResult.value:{items:[],hasMore:false};
     const country=countryResult.status==="fulfilled"?countryResult.value:{items:[],hasMore:false};
     if(countryResult.status==="rejected"&&!local.items.length)throw Error("Hotel previews unavailable");
-    const partial=localResult.status==="rejected"||countryResult.status==="rejected";
+    const stale=Boolean(("stale" in local&&local.stale)||("stale" in country&&country.stale));
+    const partial=localResult.status==="rejected"||countryResult.status==="rejected"||stale;
     const nearby=nearestHotelProfiles(local.items,area.point).slice(0,4),seen=new Set(nearby.map(item=>item.id));
-    return NextResponse.json({scope,countries:HOTEL_COUNTRIES,nearby,items:country.items.filter(item=>!seen.has(item.id)),hasMore:country.hasMore&&area.page<100,available:true,partial},{headers:partial?{...headers,"Cache-Control":"private, no-store"}:headers});
+    return NextResponse.json({scope,countries:HOTEL_COUNTRIES,nearby,items:country.items.filter(item=>!seen.has(item.id)),hasMore:country.hasMore&&area.page<100,available:true,partial,stale},{headers:partial?{...headers,"Cache-Control":"private, no-store"}:headers});
   }catch{return NextResponse.json({scope,countries:HOTEL_COUNTRIES,nearby:[],items:[],hasMore:false,available:false,error:"Local hotel previews could not be checked. Use the worldwide booking search or retry."},{status:503,headers:{"Cache-Control":"private, no-store"}});}
 }

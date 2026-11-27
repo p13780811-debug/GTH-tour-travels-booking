@@ -9,10 +9,12 @@ const ip={"x-vercel-ip-country":"IN","x-vercel-ip-city":"Mumbai","x-vercel-ip-la
 const profile=(id,country="IN",city="Mumbai",latitude=19.01)=>({id,name:"Fixture hotel "+id,country,city,address:"Fixture street",main_photo:"https://photos.example.com/property.jpg",stars:3,latitude,longitude:72.8});
 function service({key="fixture-key",fetcher,budget=async()=>{}}={}){
  const calls=[],cache=new Map();
+ const fetchMock=async(url,options)=>{calls.push({url:new URL(url),options});return fetcher?fetcher(url,options):new Response(JSON.stringify({data:[profile("lp12345")]}));};
+ const core=loadTenderTs("src/lib/travel/nuitee-hotel-content-core.ts",{"./hotel-geo-bounds":bounds},{fetch:fetchMock});
  const api=loadTenderTs("src/lib/travel/nuitee-free-hotels.ts",{
-  "server-only":{},"./hotel-geo-bounds":bounds,"./nuitee-read-budget":{reserveNuiteeRefresh:budget},
+  "server-only":{},"./nuitee-hotel-content-core":core,"./nuitee-read-budget":{reserveNuiteeRefresh:budget},
   "next/cache":{unstable_cache:(fn,keys,options)=>{assert.equal(options.revalidate,86400);return ()=>{const key=JSON.stringify(keys);if(!cache.has(key))cache.set(key,fn().catch(error=>{cache.delete(key);throw error;}));return cache.get(key);};}},
- },{process:{env:{NUITEE_PRODUCTION_API_KEY:key}},fetch:async(url,options)=>{calls.push({url:new URL(url),options});return fetcher?fetcher(url,options):new Response(JSON.stringify({data:[profile("lp12345")]}));}});
+ },{process:{env:{NUITEE_PRODUCTION_API_KEY:key}},fetch:fetchMock});
  return {api,calls};
 }
 test("Geo-IP uses trusted country/city headers and a manual country override excludes inferred city/coordinates",()=>{

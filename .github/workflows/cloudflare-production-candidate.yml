@@ -74,7 +74,9 @@ jobs:
             "compatibility_date": "2026-11-18",
             "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
             "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
-            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-production"}]
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-production"}],
+            "durable_objects": {"bindings":[{"name":"GTH_HOTEL_CONTENT","class_name":"HotelContentCache"}]},
+            "migrations": [{"tag":"hotel-content-v1","new_sqlite_classes":["HotelContentCache"]}]
           }
           EOF
           test ! -e open-next.config.ts
