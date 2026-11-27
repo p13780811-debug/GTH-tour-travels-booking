@@ -68,7 +68,7 @@ async function boundedHTML(response){
 }
 
 export function catalogueHTMLTTL(html,path,now=Date.now()){
- if(typeof html!=="string"||!/^<!doctype html>/i.test(html)||!/<\/html>\s*$/i.test(html)||/NEXT_HTTP_ERROR_FALLBACK|BAILOUT_TO_CLIENT_SIDE_RENDERING|Application error: a server-side exception|data-dgst=|<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html))return 0;
+ if(typeof html!=="string"||!/^<!doctype html>/i.test(html)||!/<\/html>/i.test(html)||/NEXT_HTTP_ERROR_FALLBACK|BAILOUT_TO_CLIENT_SIDE_RENDERING|Application error: a server-side exception|data-dgst=|<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html))return 0;
  if(TOURS.has(path)){
   if(!html.includes('data-gth-public-supplier-ready="1"')||!html.includes('data-gth-public-directory-ready="1"'))return 0;
   return 120;
@@ -84,6 +84,7 @@ function outward(response,entry,ttl,hit){
  const headers=new Headers(response.headers);
  headers.delete("x-gth-html-cache-until");headers.delete("x-gth-shell-expires");
  headers.set("X-GTH-HTML-Cache",hit?"HIT":"MISS");
+ headers.set("Vary","Accept, Accept-Encoding, Cookie, Authorization, RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch"+(entry.localized?", Accept-Language":""));
  // Tender is cached only under its internal country/language variant, not
  // advertised as a shared URL-cache response to browsers or external CDNs.
  headers.set("Cache-Control",entry.localized?"private, no-store":"public, max-age=0, must-revalidate");
@@ -111,7 +112,7 @@ export async function publicHtmlResponse(request,env,ctx,version,render,cache=gl
   if(hit&&safeHtml(hit)&&remaining>0)return outward(hit,entry,remaining,true);
  }catch{/* Cache failures never prevent original rendering. */}
  const response=await render(entry.request);
- if(!safeHtml(response))return response;
+ if(!safeHtml(response)||(!entry.localized&&(response.headers.get("vary")||"").toLowerCase().includes("accept-language")))return response;
  const ttl=staticHtmlTTL(response,entry);
  if(ttl>0){
   try{ctx.waitUntil(store(cache,entry,response.clone(),ttl).catch(()=>{}));}catch{}
