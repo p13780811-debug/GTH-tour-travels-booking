@@ -49,7 +49,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
  const pages=Math.min(100,Math.ceil(result.total/result.size));
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <MarketplaceHero title={current.name} subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}/>
+  <MarketplaceHero title={"Explore "+current.name} subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}/>
   <header className="mx-4 mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
     <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
       <ArrowLeft size={15}/> App home
