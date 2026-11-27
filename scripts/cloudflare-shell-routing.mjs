@@ -34,6 +34,8 @@ export async function serveStaticShell(request,assets,shells){
   headers.set("Content-Type","text/html; charset=utf-8");
   headers.set("Cache-Control","private, no-store");
   headers.set("X-GTH-Static-Shell","build");
+  const shell=shells[new URL(request.url).pathname];
+  headers.set("X-GTH-Shell-Expires",shell.expiresAt===null?"never":String(shell.expiresAt));
   headers.delete("X-Robots-Tag"); // actual page metadata (preview/production) is in the built HTML
   headers.delete("Content-Disposition");
   return new Response(asset.body,{status:200,headers});
