@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink, ShieldCheck } from "lucide-react";
 import { appServiceWebsiteHref } from "@/lib/mobile/universal-search";
+import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
+import {destinationServicePhoto} from "@/lib/destinations/visual-media";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import { mobileWebService, mobileWebServices } from "@/lib/mobile/app-dashboard";
 
@@ -147,6 +149,7 @@ export default async function AppServiceGateway({
   return (
     <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
       <MobileAppHeader />
+      <MarketplaceHero title="Discover more with GTH PRO" subtitle="Explore the existing specialist tools and booking providers" image={destinationServicePhoto(service.pillar==="property"?"properties":service.pillar==="tender"?"tenders":service.pillar==="tickets"?"tickets":service.id)}/>
       <div className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
         <Link
           href="/app"

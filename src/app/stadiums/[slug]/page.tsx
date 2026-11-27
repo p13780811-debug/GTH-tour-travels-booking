@@ -1,3 +1,4 @@
+import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
 import EventShockwave from "@/components/intelligence/EventShockwave";
 import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
@@ -64,6 +65,7 @@ export default async function StadiumPage({ params }: Props) {
     }],
   };
   return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
+    <MarketplaceHero title="Match-day discovery" subtitle="Venue information and independent ticket booking handoffs" image="/images/travel.jpg"/>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeStructuredData(schema) }}/>
     <TravelSectionNav/>
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
