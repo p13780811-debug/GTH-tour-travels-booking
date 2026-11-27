@@ -29,7 +29,7 @@ type Props={params:Promise<{section:string}>;searchParams:Promise<Record<string,
 export default async function MobileAppSection({params,searchParams}:Props){
  const {section}=await params;
  if(!isMobileSection(section))notFound();
- const q=normalizeAppQuery(await searchParams);
+ const q=normalizeAppQuery(await searchParams,section);
  const current=sections[section];
  const Icon=current.Icon;
  const result=await listAppRecords(section,q);
@@ -46,7 +46,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
  ]:[["/app/tenders/quote","Request a tender quote"]];
  const title=q.category?(facets.find(t=>t.id===q.category)?.name||current.name):current.name;
  const destination=appQueryHref(section,q,{page:1});
- const pages=Math.min(100,Math.ceil(result.total/result.size));
+ const pages=Math.min(section==="destinations"?2000:100,Math.ceil(result.total/result.size));
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
   <MarketplaceHero title="Explore the marketplace" subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}/>
@@ -79,7 +79,8 @@ export default async function MobileAppSection({params,searchParams}:Props){
         className="h-11 min-w-0 w-full bg-transparent text-sm outline-none"/>
      </label>
      {q.category&&<input type="hidden" name="category" value={q.category}/>}
-     {q.country&&section!=="tenders"&&<input type="hidden" name="country" value={q.country}/>}
+     {q.country&&section!=="tenders"&&section!=="destinations"&&<input type="hidden" name="country" value={q.country}/>}
+     {section==="destinations"&&<label className="col-span-2 text-xs font-semibold">Country code<input name="country" pattern="[A-Za-z]{2}" maxLength={2} defaultValue={q.country} placeholder="IN, JP, AU…" className="gth-input mt-1 w-full"/></label>}
      {section==="property"&&<label className="col-span-2 text-xs font-semibold">City
        <input name="city" maxLength={70} defaultValue={q.city} placeholder="Mumbai, Thane, Kolkata…" className="gth-input mt-1 w-full"/>
      </label>}
@@ -96,6 +97,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
      {q.destination&&<input type="hidden" name="destination" value={q.destination}/>}
      <button type="submit" className="gth-btn-gold col-start-2 min-h-11 rounded-xl px-4 text-xs font-semibold">Search</button>
    </form>}
+  {section==="destinations"&&<div className="mx-4 mt-3 text-xs text-[var(--text-soft)] sm:mx-6"><Link href="/destinations" prefetch={false} className="underline">Full worldwide directory and regional filters</Link></div>}
   {facets.length>0?<nav aria-label={section+" categories"} className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
     {facets.map(f=><Link key={f.id} href={appQueryHref(section,q,{category:f.id,page:1})}
      aria-current={q.category===f.id?"page":undefined}

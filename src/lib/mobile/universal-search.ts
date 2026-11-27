@@ -61,6 +61,8 @@ function hotelTarget(query:string):string{
 export function resolveUniversalTarget(raw:unknown,requested?:unknown):UniversalTarget{
  const query=clean(raw);
  const selected=normalizeUniversalCategory(requested);
+ // Explicit package intent uses the existing zero-API planner. No guessed airport or destination identity.
+ if((selected==="all"||selected==="travel")&&/\b(?:travel packages?|holiday packages?|trip packages?|plan (?:a|my|our) (?:trip|holiday)|itinerary planner)\b/i.test(query))return {category:"travel",href:"/app/packages"};
  const detected=detectedKind(query);
  const category=selected==="all"||selected==="travel"?
   (detected!=="all"?detected:selected):selected;

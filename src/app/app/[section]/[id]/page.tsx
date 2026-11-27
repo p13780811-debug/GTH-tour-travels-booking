@@ -65,8 +65,9 @@ export default async function AppRecordDetail({params}:Props){
       </Link>}
       {record.kind==="destination"?<Link href={record.related}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
-        <MapPin size={16}/> Find local hotel records <ArrowUpRight size={15}/>
+        <MapPin size={16}/> Find stays in {record.title} <ArrowUpRight size={15}/>
        </Link>:null}
+      {record.kind==="destination"&&<Link prefetch={false} href={"/app/packages?"+new URLSearchParams({city:record.title,...(record.countryCode?{country:record.countryCode}:{})})+"#package-builder"} className="gth-btn inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">Plan flights, stays & experiences</Link>}
       <Link href={record.related} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold">
         Browse more {record.kind==="tender"?"tenders":record.kind==="property"?"properties":record.kind==="hotel"?"stays":"destinations"}
       </Link>

@@ -70,7 +70,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
         </button>
       </form>
       <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
-        To open Travel, Real Estate, Tenders or Tickets directly, select the platform card below.
+        Search is guided by existing service rules; no generative API calls. <Link href="/app/packages" prefetch={false} className="underline">Build a multi-service travel plan</Link>.
       </p>
     </section>
   );

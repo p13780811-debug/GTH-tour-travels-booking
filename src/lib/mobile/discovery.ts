@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { destinations as curatedDestinations } from "@/data/destinations";
+import {destinationGeography} from "@/lib/destinations/geography";
+import {destinationCountryCode} from "@/lib/destinations/ecosystem";
 
 export type MobileDiscoveryKind = "destination" | "hotel" | "property" | "tender";
 export type MobileDiscoveryItem = {
@@ -35,7 +37,7 @@ const safeImage=(value:unknown):string|null=>{
 const appDestinations:MobileDiscoveryItem[]=curatedDestinations.slice(0,12)
   .map((city)=>({id:city.slug,title:city.name,
     subtitle:"Destination guide",detail:"Explore the city",
-    image:safeImage(city.image_url),href:"/destinations/"+encodeURIComponent(city.slug)}));
+    image:safeImage(city.image_url),countryCode:destinationCountryCode(destinationGeography(city.slug).country),href:"/destinations/"+encodeURIComponent(city.slug)}));
 
 /** Avoid invented ratings, prices, availability, room imagery or registry photographs. */
 export async function loadMobileDiscovery():Promise<MobileDiscoveryData>{
