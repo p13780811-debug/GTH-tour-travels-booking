@@ -1,3 +1,4 @@
+import MarketplaceHome from "@/components/mobile/MarketplaceHome";
 import type {Metadata} from "next";
 import {Suspense} from "react";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export default function MobileAppHome(){
   <MobileAppHeader/>
   <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6">
    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">GTH PRO · Global Technical Hub</p>
-   <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">GTH PRO Home</h1>
+   <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl" aria-label="GTH PRO Home">Your world, beautifully connected.</h1>
    <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">Travel, stays, experiences, property, tenders and tickets. Everything in one place.</p>
    {/* Restore the original paired high-visibility shortcuts near the first fold.
        They are navigation links, not another icon menu or search/category bar. */}
@@ -50,6 +51,7 @@ export default function MobileAppHome(){
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
    <EcosystemUnifiedSearch appHome/>
   </div>
+  <MarketplaceHome/>
   <EcosystemPillars appHome/>
   <AppResearchQuickAccess/>
   <section aria-label="Install GTH PRO on your device" className="mx-auto mt-3 w-full max-w-7xl px-4 sm:px-6">

@@ -1,5 +1,6 @@
+import DiscoveryCardPhoto from "@/components/destination/DiscoveryCardPhoto";
+import {marketplacePhoto,regionalMarketplacePhoto} from "@/lib/mobile/marketplace-media";
 import type {Metadata} from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowUpRight,Building2,CalendarCheck,ClipboardCheck,FileSearch,Globe,Hotel,MapPin,ShieldCheck} from "lucide-react";
@@ -12,13 +13,11 @@ import {isMobileSection} from "@/lib/mobile/routes";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Details | GTH PRO App",robots:{index:false,follow:false}};
 type Props={params:Promise<{section:string;id:string}>};
-const KindIcon={destination:Globe,hotel:Hotel,property:Building2,tender:FileSearch};
 export default async function AppRecordDetail({params}:Props){
  const {section,id}=await params;
  if(!isMobileSection(section)||section==="flights"||id.length>160)notFound();
  const record=await loadAppDetail(section,id);
  if(!record)notFound();
- const Icon=KindIcon[record.kind];
  const sectionUrl="/app/"+section;
  return <main className="min-h-dvh bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
@@ -28,14 +27,10 @@ export default async function AppRecordDetail({params}:Props){
    </Link>
    <div className="mt-3 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
     <div className="relative flex h-44 items-center justify-center bg-[var(--bg-soft)] sm:h-52">
-     {record.image?<Image src={record.image} fill sizes="(max-width:640px) 100vw,640px"
-       alt={record.title} className="object-cover"/>:
-      <div className="flex flex-col items-center justify-center gap-3 text-[var(--text-soft)]">
-       <Icon size={39} strokeWidth={1.5} className="text-[var(--gold)]"/>
-       <span className="text-xs">{record.kind==="hotel"?"No licensed hotel photo":"Public record"}</span>
-      </div>}
+     <DiscoveryCardPhoto source={record.image} title={record.title} fallback={record.kind==="destination"?regionalMarketplacePhoto(record.countryCode):marketplacePhoto(record.kind==="hotel"?"hotels":record.kind==="tender"?"tenders":record.kind)}/>
     </div>
     <div className="p-5">
+     {!record.image&&record.kind==="hotel"&&<p className="text-xs text-[var(--text-soft)]">No licensed hotel photo; image is illustrative.</p>}
      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--gold)]">GTH PRO · {record.subtitle}</p>
      <h1 className="mt-2 text-xl font-semibold leading-7 tracking-tight">{record.title}</h1>
      <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">{record.summary}</p>
@@ -68,6 +63,7 @@ export default async function AppRecordDetail({params}:Props){
         className="gth-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         Request a quote for this tender <ArrowUpRight size={15} aria-hidden="true"/>
       </Link>}
+      {record.kind==="destination"&&<Link href={"/app/packages?"+new URLSearchParams({city:record.title,...(record.countryCode?{country:record.countryCode}:{})})+"#package-builder"} className="gth-btn-gold inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">Build a travel package</Link>}
       {record.kind==="destination"?<Link href={record.related}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         <MapPin size={16}/> Find local hotel records <ArrowUpRight size={15}/>

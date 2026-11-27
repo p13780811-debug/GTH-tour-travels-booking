@@ -1,3 +1,4 @@
+import MarketplaceVisual from "@/components/mobile/MarketplaceVisual";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {redirect} from "next/navigation";
@@ -66,7 +67,8 @@ export default async function GlobalAppExplore({searchParams}:Props){
      </Link>
     </div>
     <div className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow)] sm:p-6">
-     <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[var(--gold)]">GTH PRO · Discover everywhere</p>
+     <MarketplaceVisual media="destinations"/>
+     <p className="mt-3 text-[10px] font-bold uppercase tracking-[.15em] text-[var(--gold)]">GTH PRO · Discover everywhere</p>
      <h1 className="mt-2 max-w-xl text-xl font-bold leading-snug tracking-tight sm:text-3xl">
       Find the next opportunity. Anywhere.
      </h1>

@@ -12,7 +12,7 @@ export function mobileAppHref(href: string): string {
   };
   if(exact[path])return exact[path]+suffix;
   const patterns:Array<[RegExp,(part:string)=>string]>=[
-    [/^\/destinations\/([a-z0-9-]{2,80})$/,id=>"/app/destinations/"+id],
+    [/^\/destinations\/([a-z0-9-]{2,140})$/,id=>"/app/destinations/"+id],
     [/^\/hotels\/stay\/(osm:(?:node|way|relation)-[0-9]{1,19}|[0-9a-f-]{36})$/i,id=>"/app/hotels/"+id],
     [/^\/real-estate\/([a-z0-9-]{2,128})$/,id=>"/app/property/"+id],
     [/^\/tender\/([0-9a-f-]{36})$/i,id=>"/app/tenders/"+id],
