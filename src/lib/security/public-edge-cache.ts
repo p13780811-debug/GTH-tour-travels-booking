@@ -8,8 +8,8 @@ const policies:Record<string,CachePolicy>={
  "/api/stadiums/concierge":{ttl:300,clientControl:"public, s-maxage=3600"},
 };
 type CacheStore=Pick<Cache,"match"|"put"|"delete">;
-function regionalCache():CacheStore|undefined{
- if(process.env.GTH_CLOUDFLARE_INGRESS!=="1")return undefined;
+function regionalCache(trustedIngress=process.env.GTH_CLOUDFLARE_INGRESS==="1"):CacheStore|undefined{
+ if(!trustedIngress)return undefined;
  return (globalThis as typeof globalThis & {caches?:CacheStorage & {default?:CacheStore}}).caches?.default;
 }
 export function publicReadCacheKey(req:Request):{key:Request;policy:CachePolicy}|null{
@@ -37,9 +37,9 @@ export function publicReadCacheKey(req:Request):{key:Request;policy:CachePolicy}
  key.searchParams.set(field,value);
  return {key:new Request(key.toString()),policy};
 }
-export async function readPublicEdgeCache(req:Request):Promise<Response|null>{
+export async function readPublicEdgeCache(req:Request,trustedIngress?:boolean):Promise<Response|null>{
  try{
-  const cache=regionalCache(),entry=publicReadCacheKey(req);
+  const cache=regionalCache(trustedIngress),entry=publicReadCacheKey(req);
   if(!cache||!entry)return null;
   const stored=await cache.match(entry.key);
   if(!stored)return null;
@@ -52,9 +52,9 @@ export async function readPublicEdgeCache(req:Request):Promise<Response|null>{
 }
 /** Call only with a successful, anonymous, source-backed response after validation.
  * Payload expiry (if any) is a hard cap, never extended by a cache hit. */
-export async function storePublicEdgeCache(req:Request,response:Response,expiresAt=Infinity):Promise<Response>{
+export async function storePublicEdgeCache(req:Request,response:Response,expiresAt=Infinity,trustedIngress?:boolean):Promise<Response>{
  try{
-  const cache=regionalCache(),entry=publicReadCacheKey(req);
+  const cache=regionalCache(trustedIngress),entry=publicReadCacheKey(req);
   if(!cache||!entry||response.status!==200||response.headers.has("set-cookie"))return response;
   const ttl=Math.min(entry.policy.ttl,Math.floor((expiresAt-Date.now())/1000)-1);
   if(!Number.isFinite(ttl)||ttl<1)return response;

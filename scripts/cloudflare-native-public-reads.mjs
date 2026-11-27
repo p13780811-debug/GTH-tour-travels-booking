@@ -34,6 +34,9 @@ export async function nativePublicRead(request,env){
  if(url.hostname==="gthproglobal.com")return null;
  try{
   const db=publicDb(env);
+  // The custom Worker runs before OpenNext initializes process.env. The
+  // native binding check above is authoritative for these anonymous reads.
+  const store=(response,expiresAt=Infinity)=>storePublicEdgeCache(request,response,expiresAt,true);
   if(url.pathname==="/api/mobility/cities"){
    const prefix=mobilityText(url.searchParams.get("q"),70).toLocaleLowerCase("en");
    if(prefix.length<2)return null;
@@ -42,14 +45,14 @@ export async function nativePublicRead(request,env){
    const matches=new Map();
    for(const city of MOBILITY_CITIES)if(city.name.toLocaleLowerCase("en").startsWith(prefix))matches.set(mobilityCityKey(city),city);
    for(const row of rows){const city=mobilityCity({name:row.name,slug:row.slug,country:row.country,countryCode:row.country_code??countryCodeForDestinationName(row.country)});if(city)matches.set(mobilityCityKey(city),city);}
-   return storePublicEdgeCache(request,reply({cities:[...matches.values()].slice(0,12),degraded:false},"public, s-maxage=300, stale-while-revalidate=60"));
+   return store(reply({cities:[...matches.values()].slice(0,12),degraded:false},"public, s-maxage=300, stale-while-revalidate=60"));
   }
   if(url.pathname==="/api/mobility/traffic"){
    const city=url.searchParams.get("city");if(!isTrafficCity(city))return null;
    const feed=await db("rpc/mobility_traffic_feed",null,{p_city:city});
    if(!feed||!Array.isArray(feed.zones)||!Array.isArray(feed.reports))return null;
    const reports=reportsForZone(feed.reports,"");
-   return storePublicEdgeCache(request,reply({zones:feed.zones,reports},"public, max-age=0, s-maxage=25"),Math.min(Infinity,...reports.map(report=>Date.parse(report.expiresAt))));
+   return store(reply({zones:feed.zones,reports},"public, max-age=0, s-maxage=25"),Math.min(Infinity,...reports.map(report=>Date.parse(report.expiresAt))));
   }
   if(url.pathname==="/api/real-estate/registry-preview"){
    const parsed=parseRegistryFilters({q:url.searchParams.get("q")||""});if(!parsed.ok)return null;
@@ -71,7 +74,7 @@ export async function nativePublicRead(request,env){
    }catch{cacheable=false;}
    const items=selected.map(({id,slug,title,rera_id,developer,builder_name,city,district})=>({id,infraPulse:pulses[Number(id)],slug,title,rera_id,developer:developer||builder_name,city:city||district}));
    const response=reply({items},"no-store");
-   return cacheable?storePublicEdgeCache(request,response,Math.min(Infinity,...Object.values(pulses).flatMap(p=>p.notices.map(n=>Date.parse(n.deadline))))):response;
+   return cacheable?store(response,Math.min(Infinity,...Object.values(pulses).flatMap(p=>p.notices.map(n=>Date.parse(n.deadline))))):response;
   }
   if(url.pathname==="/api/stadiums/concierge"){
    const slug=url.searchParams.get("venue"),venue=findStadium(slug),location=venueLocations[slug];
@@ -89,7 +92,7 @@ export async function nativePublicRead(request,env){
     let sourceUrl="";try{const u=new URL(row.source_url);if(u.protocol==="https:"&&!u.username&&!u.password&&!u.port&&["www.openstreetmap.org","openstreetmap.org"].includes(u.hostname))sourceUrl=u.toString();}catch{/* Reject malformed or untrusted source links. */}
     return [{name:name.slice(0,160),distanceKm:Math.round(distanceKm*100)/100,sourceUrl}];
    }).sort((a,b)=>a.distanceKm-b.distanceKm).filter(h=>{const k=h.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,5);
-   return storePublicEdgeCache(request,reply({venue:venue.name,transit:location.transit,bookingUrl:safeHotelHandoff(venue),hotels,note:"Nearest among up to 300 loaded records, not an exhaustive hotel ranking. Distances are straight-line estimates, not walking routes. OSM records are not live Nuitee inventory."},"public, s-maxage=3600"));
+   return store(reply({venue:venue.name,transit:location.transit,bookingUrl:safeHotelHandoff(venue),hotels,note:"Nearest among up to 300 loaded records, not an exhaustive hotel ranking. Distances are straight-line estimates, not walking routes. OSM records are not live Nuitee inventory."},"public, s-maxage=3600"));
   }
  }catch{/* Original bounded and authenticated routes remain authoritative fallback. */}
  return null;

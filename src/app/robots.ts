@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
   // Keep private app routes out of the crawler discovery surface.
   const privateRoutes = [
     "/admin", "/api", "/app", "/go", "/search", "/success",
-    "/real-estate/admin", "/tender/assistant",
+    "/real-estate/admin", "/real-estate/workspace", "/tender/assistant",
   ];
   if (!publicLaunch) {
     return {
