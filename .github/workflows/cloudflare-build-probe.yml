@@ -1,7 +1,7 @@
 name: Cloudflare OpenNext compatibility build
 on:
   pull_request:
-    branches: [main]
+    branches: [main, infra/cloudflare-preflight-20261125]
     paths:
       - '.github/workflows/cloudflare-build-probe.yml'
       - 'next.config.ts'

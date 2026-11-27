@@ -56,7 +56,7 @@ async function run(path,width,mode){
  }catch(e){await page.screenshot({path:folder+"/luxury-failure.png",fullPage:true}).catch(()=>{});throw e;}finally{await context.close();}
 }
 try{
- const raw=await browser.newPage();await raw.goto(base+"/app",{waitUntil:"domcontentloaded",timeout:90000});for(const file of (await readdir("public/images/luxury")).filter(x=>x.endsWith(".webp"))){assert.ok(await raw.evaluate(async src=>{const i=new Image();i.src=src;await i.decode();return i.naturalWidth>0;},"/images/luxury/"+file),file);}await raw.close();
+ const raw=await browser.newPage();await raw.goto(base+"/images/luxury/hero.webp",{waitUntil:"domcontentloaded",timeout:90000});for(const file of (await readdir("public/images/luxury")).filter(x=>x.endsWith(".webp"))){assert.ok(await raw.evaluate(async src=>{const i=new Image();i.src=src;await i.decode();return i.naturalWidth>0;},"/images/luxury/"+file),file);}await raw.close();
  for(const mode of ["day","night"]){for(const width of [320,390,430])await run("/app",width,mode);for(const path of pages)await run(path,390,mode);}
  console.log("LUXURY_MARKETPLACE_IMAGES_THEMES_AND_VIEWPORTS_PASSED");
 }finally{await browser.close();}

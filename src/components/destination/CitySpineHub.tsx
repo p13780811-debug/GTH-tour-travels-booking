@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {destinationServicePhoto} from "@/lib/destinations/visual-media";
+import {destinationServicePhoto,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import type { ReactNode } from "react";
 import {
   ArrowRight, Building2, Compass, FileText, Globe2, Hotel,
@@ -49,7 +49,7 @@ function HubCard({name,description,scope,href,label,icon,media="packages"}: {
   icon:ReactNode;media?:string;
 }) {
   return <article className="gth-glass flex min-w-0 flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--text)] shadow-sm">
-    <div className="relative aspect-[16/7] overflow-hidden rounded-xl"><Image src={destinationServicePhoto(media)} alt="" fill sizes="(max-width:768px) 100vw,33vw" className="object-cover"/></div>
+    <div className="relative aspect-[16/7] overflow-hidden rounded-xl"><Image src={destinationServicePhoto(media)} alt="" fill unoptimized={isIllustrativeVisual(destinationServicePhoto(media))} sizes="(max-width:768px) 100vw,33vw" className="object-cover"/><span className="absolute bottom-1 left-1 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
     <div className="flex items-start justify-between gap-3">
       <span className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-2 text-[var(--gold)]">{icon}</span>
       <span className="rounded-full border border-[var(--border)] px-3 py-1 text-[11px] text-[var(--text-soft)]">{scope}</span>

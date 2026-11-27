@@ -26,6 +26,7 @@ const media:Readonly<Record<string,string>>={
  hotels:LUXURY_VISUALS.hotels,"list-hotel":LUXURY_VISUALS.hotels,flights:LUXURY_VISUALS.flights,packages:LUXURY_VISUALS.packages,
  tours:"/images/mega/tours.jpg",activities:"/images/mega/tours.jpg",attractions:"/images/mega/tours.jpg",
  stadiums:LUXURY_VISUALS.tickets,tickets:LUXURY_VISUALS.tickets,transfers:"/images/mega/transfers.jpg",cars:"/images/mega/transfers.jpg",
+ cruises:"/images/cruises/disney-adventure.jpg",insurance:"/images/mega/insurance.jpg",
  bus:LUXURY_VISUALS.transport,train:LUXURY_VISUALS.transport,transport:LUXURY_VISUALS.transport,
  destinations:LUXURY_VISUALS.hero,guides:LUXURY_VISUALS.packages,blog:LUXURY_VISUALS.packages,
  properties:LUXURY_VISUALS.property,property:LUXURY_VISUALS.property,"post-property":LUXURY_VISUALS.property,
