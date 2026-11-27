@@ -7,7 +7,7 @@ const git=(...args)=>execFileSync("git",args,{encoding:"utf8"});
 // implementations may differ. Any further application/config change fails closed.
 const migrationScope=process.env.GITHUB_EVENT_NAME==="pull_request"&&
  process.env.GITHUB_BASE_REF==="main"&&process.env.GITHUB_HEAD_REF==="infra/cloudflare-preflight-20261125";
-const migrationSnapshot="7c2de4a909450de5cc58eb34ba41c8720a6ad454";
+const migrationSnapshot="d0cc47f28b105c7ff826bfdfedc317ae79f23a38";
 if(migrationScope){
  git("merge-base","--is-ancestor",migrationSnapshot,"HEAD");
  const guardFiles=new Set(["scripts/check-hotel-landing-boundaries.mjs","scripts/check-connected-travel-boundaries.mjs"]);
