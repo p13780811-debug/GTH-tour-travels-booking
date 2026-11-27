@@ -45,7 +45,7 @@ export default function EcosystemHeroCarousel({embedded=false}:{embedded?:boolea
       </div>}
       <div data-app-hero-image={embedded?"true":undefined} className={"relative w-full touch-auto overflow-hidden rounded-2xl border border-[var(--border)] "+(embedded?"aspect-[16/9] max-h-[320px] sm:aspect-[21/9]":"aspect-[2/1] sm:aspect-[21/9]")}
         onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}
-        onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}
+        onFocusCapture={()=>setPaused(true)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget))setPaused(false);}}
         onTouchStart={event=>{const p=event.touches[0];touchStart.current=p?{x:p.clientX,y:p.clientY}:null;}}
         onTouchEnd={event=>{const p=event.changedTouches[0];swipe(p?{x:p.clientX,y:p.clientY}:null);}}
         onTouchCancel={()=>{touchStart.current=null;}}>

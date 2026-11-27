@@ -52,7 +52,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
   // tabs here previously only switched search categories and were confusing.
   if (appHome) return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
-      className="gth-glass scroll-mt-24 rounded-3xl border border-[var(--border)] bg-[var(--bg)] p-3 text-[var(--text)] shadow-[var(--shadow)] backdrop-blur-xl sm:p-5">
+      className="gth-glass scroll-mt-24 rounded-3xl border border-[var(--border)] p-3 text-[var(--text)] shadow-[var(--shadow)] backdrop-blur-xl sm:p-5">
       <div className="flex items-center justify-between gap-2"><div><h2 id="ecosystem-search-title" className="text-xl font-bold tracking-tight sm:text-2xl">Ask GTH</h2><p className="mt-0.5 text-xs text-[var(--text-soft)]">Guided search &amp; planning</p></div><span className="gth-glass flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] text-[var(--text)]"><Sparkles size={21} aria-hidden="true"/></span></div>
       <form action="/app/search" method="get" role="search" aria-label="GTH PRO Home search"
         className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
