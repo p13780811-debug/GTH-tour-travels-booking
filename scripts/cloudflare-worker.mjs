@@ -9,6 +9,7 @@ import {publicHtmlResponse} from "./cloudflare-public-html-cache.mjs";
 import {publicSitemapResponse} from "./cloudflare-sitemap-cache.mjs";
 import {hotelGeoRequest} from "./cloudflare-hotel-geo.mjs";
 import {nativePublicRead} from "./cloudflare-native-public-reads.mjs";
+import {nativeTenderInput} from "./cloudflare-native-tender.mjs";
 import {readPublicEdgeCache} from "../src/lib/security/public-edge-cache.ts";
 export default {
  async fetch(request,env,ctx){
@@ -26,6 +27,25 @@ export default {
   }
   return handler.fetch(url.pathname==="/api/hotels/discovery"&&request.method==="GET"?hotelGeoRequest(request):request,env,ctx);
   };
-  return publicSitemapResponse(request,env,ctx,()=>publicHtmlResponse(request,env,ctx,buildVersion,render));
+  const response=await publicSitemapResponse(request,env,ctx,()=>publicHtmlResponse(request,env,ctx,buildVersion,render));
+  // Protected preview only: report fixed eligibility flags, never credentials,
+  // cookie values, user identity, request headers or private bindings.
+  const auditUrl=new URL(request.url);
+  if(auditUrl.hostname==="gth-pro-preview-20261126.p13780811.workers.dev"&&auditUrl.pathname==="/api/tender"&&request.method==="GET"){
+   const headers=new Headers(response.headers);
+   const flags=[
+    env.GTH_CLOUDFLARE_INGRESS==="1"?"ingress=1":"ingress=0",
+    nativeTenderInput(request)?"eligible=1":"eligible=0",
+    request.headers.has("cookie")?"cookie=1":"cookie=0",
+    request.headers.has("authorization")?"auth=1":"auth=0",
+    request.headers.has("rsc")?"rsc=1":"rsc=0",
+    request.headers.has("range")?"range=1":"range=0",
+    request.headers.has("cf-access-jwt-assertion")?"access=1":"access=0",
+   ];
+   headers.set("X-GTH-Preview-Tender-Diagnostic",flags.join(";"));
+   headers.set("Cache-Control","private, no-store");
+   return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+  }
+  return response;
  }
 };
