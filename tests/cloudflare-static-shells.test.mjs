@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {selectStaticShell,serveStaticShell} from "../scripts/cloudflare-shell-routing.mjs";
+import {selectStaticShell,serveStaticShell,canonicalReadRedirect} from "../scripts/cloudflare-shell-routing.mjs";
 const now=1000,shells={"/tickets":{path:"/__gth_static_shells/tickets.gth-html",expiresAt:null},"/stadiums/wankhede-stadium":{path:"/__gth_static_shells/stadium.gth-html",expiresAt:2000}};
 const req=(path,init)=>new Request("https://preview.example.com"+path,init);
 test("static shell route cannot intercept authentication, RSC, writes or expired ISR",()=>{
@@ -15,4 +15,16 @@ test("static shell streams HTML with security headers and does not forward visit
  assert.match(result.headers.get("content-type"),/text\/html/);
  assert.equal(result.headers.get("x-frame-options"),"DENY");
  assert.equal(result.headers.get("x-gth-static-shell"),"build");
+});
+
+test("canonical redirect preserves exact path and query, fixed host, original method safety",()=>{
+ const result=canonicalReadRedirect(new Request("https://gthproglobal.com//evil.example/path?city=Kolkata"));
+ assert.equal(result.status,308);
+ assert.equal(new URL(result.headers.get("location")).origin,"https://www.gthproglobal.com");
+ assert.equal(new URL(result.headers.get("location")).pathname,"//evil.example/path");
+ assert.equal(new URL(result.headers.get("location")).searchParams.get("city"),"Kolkata");
+ assert.match(result.headers.get("cache-control"),/no-store/);
+ assert.equal(canonicalReadRedirect(new Request("https://gthproglobal.com/api/private",{method:"POST"})),null);
+ assert.equal(canonicalReadRedirect(new Request("https://www.gthproglobal.com/hotels")),null);
+ assert.equal(canonicalReadRedirect(new Request("https://preview.example.com/")),null);
 });

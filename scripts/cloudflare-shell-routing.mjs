@@ -34,8 +34,21 @@ export async function serveStaticShell(request,assets,shells){
   headers.set("Content-Type","text/html; charset=utf-8");
   headers.set("Cache-Control","private, no-store");
   headers.set("X-GTH-Static-Shell","build");
+  const shell=shells[new URL(request.url).pathname];
+  headers.set("X-GTH-Shell-Expires",shell.expiresAt===null?"never":String(shell.expiresAt));
   headers.delete("X-Robots-Tag"); // actual page metadata (preview/production) is in the built HTML
   headers.delete("Content-Disposition");
   return new Response(asset.body,{status:200,headers});
  }catch{return null;}
+}
+
+// Mirror the existing first Next canonical-host redirect on safe read methods.
+// Change only the hostname, never resolve an untrusted path as an external URL.
+export function canonicalReadRedirect(request){
+ if(request.method!=="GET"&&request.method!=="HEAD")return null;
+ const target=new URL(request.url);
+ if(target.origin!=="https://gthproglobal.com")return null;
+ target.hostname="www.gthproglobal.com";
+ const headers=publicSecurityHeaders(new Response(null,{status:308,headers:{Location:target.toString(),"Cache-Control":"private, no-store"}}));
+ return new Response(null,{status:308,headers});
 }

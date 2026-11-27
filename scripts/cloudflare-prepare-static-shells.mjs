@@ -22,6 +22,8 @@ for(const [route,entry] of Object.entries(manifest.routes||{})){
  copyFileSync(source,join(directory,name));
  shells[route]={path:"/__gth_static_shells/"+name,expiresAt:ttl===false?null:Math.min(builtAt,statSync(source).mtimeMs)+ttl*1000};
 }
-writeFileSync(join(root,"gth-shell-manifest.mjs"),"export default "+JSON.stringify(shells)+";\n");
+const buildVersion=readFileSync(".next/BUILD_ID","utf8").trim();
+if(!/^[a-zA-Z0-9_-]{1,100}$/.test(buildVersion))throw Error("Invalid Next build version for public HTML cache");
+writeFileSync(join(root,"gth-shell-manifest.mjs"),"export const buildVersion="+JSON.stringify(buildVersion)+";\nexport default "+JSON.stringify(shells)+";\n");
 appendFileSync(join(root,"assets","_headers"),"\n/__gth_static_shells/*\n  X-Robots-Tag: noindex, nofollow\n  Content-Type: application/octet-stream\n  X-Content-Type-Options: nosniff\n");
 console.log("Prepared public static/ISR shells:",JSON.stringify(Object.keys(shells)));
