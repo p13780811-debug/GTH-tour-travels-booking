@@ -1,6 +1,7 @@
 // Native Worker anonymous public GETs; no Next or Supabase SDK initialization.
 // The original Next API remains the fallback for errors, authentication, and
 // all methods outside these exact read contracts. All database reads use RLS.
+import {nativeTenderRead,nativeTenderInput} from "./cloudflare-native-tender.mjs";
 import {publicReadCacheKey,storePublicEdgeCache} from "../src/lib/security/public-edge-cache.ts";
 import {MOBILITY_CITIES,mobilityCity,mobilityCityKey,mobilityText} from "../src/lib/mobility/city.ts";
 import {countryCodeForDestinationName} from "../src/lib/travel/osmCountryCodes.ts";
@@ -19,17 +20,23 @@ function publicDb(env){
   if(parts.length!==3||JSON.parse(atob(parts[1].replace(/-/g,"+").replace(/_/g,"/"))).role!=="anon")throw Error("Only anonymous keys allowed");
   headers.Authorization="Bearer "+key;
  }
- return async(path,params,body)=>{
+ return async(path,params,body,options)=>{
   const endpoint=new URL("/rest/v1/"+path,url);
   if(params)endpoint.search=new URLSearchParams(params).toString();
-  const response=await fetch(endpoint,{headers:{...headers,...(body?{"Content-Type":"application/json"}:{})},method:body?"POST":"GET",body:body?JSON.stringify(body):undefined,redirect:"error",signal:AbortSignal.timeout(4500)});
+  const response=await fetch(endpoint,{headers:{...headers,...(body?{"Content-Type":"application/json"}:{}),...(options?.exactCount?{Prefer:"count=exact"}:{})},method:body?"POST":"GET",body:body?JSON.stringify(body):undefined,redirect:"error",signal:AbortSignal.timeout(4500)});
+  if(options?.exactCount)return response;
   if(!response.ok)throw Error("Public DB read unavailable");
   return response.json();
  };
 }
 function reply(data,control){return Response.json(data,{headers:{"Cache-Control":control,"X-GTH-Edge-Read":"native","X-Content-Type-Options":"nosniff"}})}
 export async function nativePublicRead(request,env){
- if(env.GTH_CLOUDFLARE_INGRESS!=="1"||!publicReadCacheKey(request))return null;
+ if(env.GTH_CLOUDFLARE_INGRESS!=="1")return null;
+ if(nativeTenderInput(request)){
+  try{return await nativeTenderRead(request,env,publicDb(env));}
+  catch{return Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
+ }
+ if(!publicReadCacheKey(request))return null;
  const url=new URL(request.url);
  if(url.hostname==="gthproglobal.com")return null;
  try{
