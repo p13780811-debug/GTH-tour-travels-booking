@@ -85,5 +85,6 @@ assert.equal(count,expectedCount,"Catalogue count changed or incomplete");
 assert.equal(issues.length,0,"Catalogue contract failures");
 assert.equal(links,count*expected.size);
 assert.equal([...visualCounts.values()].reduce((a,b)=>a+b,0),count);
+assert.equal(globalFallbackCodes.size,0,"Every currently recorded country code needs regional coverage");
 console.log("WORLDWIDE_VISUAL_COVERAGE",JSON.stringify({count,uniqueImages:visualCounts.size,generatedAssets:Object.keys(media.LUXURY_VISUALS).length,genericFallbackCodes:[...globalFallbackCodes],venues:venues.stadiums.length}));
 console.log("ALL_CATALOGUE_LINK_CONTRACTS_PASSED");

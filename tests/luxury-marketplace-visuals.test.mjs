@@ -13,6 +13,7 @@ test("regional and exact-city images stay country-bound and unknown identity has
  assert.equal(m.destinationVisual("london","GB","/images/cities/london.jpg"),m.LUXURY_VISUALS.london);
  assert.equal(m.destinationVisual("london-ca","CA",null),m.LUXURY_VISUALS.northamerica);
  assert.equal(m.destinationVisual("unmapped","ZZ",null),m.LUXURY_VISUALS.hero);
+ for(const code of ["GS","TF"]){const src=m.regionVisual(code);assert.equal(src,"/images/regions/"+code.toLowerCase()+".webp");assert.ok(existsSync("public"+src));assert.equal(m.isIllustrativeVisual(src),true);}
  assert.equal(m.destinationVisual("goa","IN","/images/cities/goa.jpg"),"/images/cities/goa.jpg");
  assert.equal(m.venueVisual("melbourne-cricket-ground"),m.LUXURY_VISUALS.melbourne);
  assert.equal(m.venueVisual("wankhede-stadium"),m.LUXURY_VISUALS.mumbai);

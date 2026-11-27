@@ -34,7 +34,7 @@ const media:Readonly<Record<string,string>>={
 };
 export function destinationServicePhoto(key:string):string{return Object.prototype.hasOwnProperty.call(media,key)?media[key]:LUXURY_VISUALS.hero;}
 export function isIllustrativeVisual(path:string|null|undefined):boolean{
- return !path||path.startsWith("/images/luxury/")||path==="/images/default-city.jpg"||path==="/images/cities/default.jpg"||path==="/images/cities/hotel.jpg";
+ return !path||(path.startsWith("/images/luxury/")||path.startsWith("/images/regions/"))||path==="/images/default-city.jpg"||path==="/images/cities/default.jpg"||path==="/images/cities/hotel.jpg";
 }
 // Broad geographic art direction, never an assertion of exact location.
 const regions:ReadonlyArray<readonly [keyof typeof LUXURY_VISUALS,string]>=[
@@ -50,6 +50,9 @@ const regions:ReadonlyArray<readonly [keyof typeof LUXURY_VISUALS,string]>=[
 ];
 const regionByCode=new Map(regions.flatMap(([key,codes])=>codes.split(" ").map(code=>[code,key] as const)));
 export function regionVisual(countryCode?:string|null):string{
+ // NASA public-domain satellite photographs, regional inspiration only.
+ if(countryCode==="GS")return "/images/regions/gs.webp";
+ if(countryCode==="TF")return "/images/regions/tf.webp";
  const key=countryCode?regionByCode.get(countryCode):undefined;
  return key?LUXURY_VISUALS[key]:LUXURY_VISUALS.hero;
 }
