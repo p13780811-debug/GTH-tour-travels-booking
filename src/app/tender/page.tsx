@@ -81,7 +81,8 @@ export default async function TenderPage({searchParams}: Props) {
   const notices = result?.ok ? result.items : [];
   const count = result?.ok ? result.total : 0;
   const pageCount = result?.ok ? Math.min(MAX_TENDER_PAGE,Math.ceil(result.total / result.size)) : 0;
-  return <main lang={language} dir={language==="ar"?"rtl":"ltr"} className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+  const publicCacheUntil=result?.ok&&!result.snapshotStale&&marketStats&&notices.length?Math.min(Date.now()+60_000,...notices.map(row=>Date.parse(row.deadline_at))):0;
+  return <main data-gth-public-tender-until={Number.isFinite(publicCacheUntil)&&publicCacheUntil>Date.now()?publicCacheUntil:undefined} lang={language} dir={language==="ar"?"rtl":"ltr"} className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-9 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="min-w-0">
