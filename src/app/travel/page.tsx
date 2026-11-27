@@ -1,3 +1,4 @@
+import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
 import {LUXURY_VISUALS,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
@@ -43,7 +44,8 @@ const additional = [
 
 export default function TravelHomePage() {
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <section className={styles.hero} data-travel-hero="true">
+    <div className="md:hidden"><ModuleHomeHero module="Travel" title="Your next journey, beautifully connected." subtitle="Flights, stays, tours and unforgettable destinations." image={LUXURY_VISUALS.packages} links={[["Hotels","/hotels"],["Flights","/flights"],["Tours","/tours"],["Packages","/travel/packages"]]}/></div>
+    <div className="hidden md:block"><section className={styles.hero} data-travel-hero="true">
       <div className={styles.copy}>
         <p className={styles.eyebrow}><Globe2 size={14} aria-hidden="true"/> GTH PRO · YOUR WORLD, CONNECTED</p>
         <h1>Your next journey,<br/><span>beautifully connected.</span></h1>
@@ -55,8 +57,8 @@ export default function TravelHomePage() {
         <div className={styles.smallPhoto}><Image src="/images/cities/paris.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Paris destination scenery"/></div>
         <div className={styles.smallPhoto}><Image src="/images/mega/flights.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Flight journey inspiration"/></div>
       </div>
-    </section>
-      <Suspense fallback={<section className={workspaceStyles.workspace} aria-label="Travel search"><div className={workspaceStyles.searchCard}><div className={workspaceStyles.searchTop}><h2>Where will you go next?</h2></div><nav aria-label="Open a travel search" className={workspaceStyles.categoryLinks}><Link prefetch={false} href="/hotels?view=booking">Search hotels</Link><Link prefetch={false} href="/flights">Search flights</Link><Link prefetch={false} href="/activities">Find experiences</Link></nav><p role="status" className={workspaceStyles.loading}>Preparing your connected search. You can also open a travel search above.</p></div></section>}><ConnectedTravelEntry countries={HOTEL_COUNTRIES}/></Suspense>
+    </section></div>
+      <div data-travel-floating-search="true" className="relative z-10 mx-auto -mt-8 max-w-7xl md:mt-0"><Suspense fallback={<section className={workspaceStyles.workspace} aria-label="Travel search"><div className={workspaceStyles.searchCard}><div className={workspaceStyles.searchTop}><h2>Where will you go next?</h2></div><nav aria-label="Open a travel search" className={workspaceStyles.categoryLinks}><Link prefetch={false} href="/hotels?view=booking">Search hotels</Link><Link prefetch={false} href="/flights">Search flights</Link><Link prefetch={false} href="/activities">Find experiences</Link></nav><p role="status" className={workspaceStyles.loading}>Preparing your connected search. You can also open a travel search above.</p></div></section>}><ConnectedTravelEntry countries={HOTEL_COUNTRIES}/></Suspense></div>
       <TravelSectionNav />
       <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6"><div className="gth-glass rounded-2xl border border-[var(--border)] p-4 sm:p-6"><h2 className="text-lg font-semibold">Plan a trip with friends</h2><p className="mt-2 text-xs text-[var(--text-soft)]">Choose a city and share a ready-to-send trip invitation with hotel and flight research links. No live deal or price is claimed.</p><ShareTripPlanButton title="Weekend / festival group trip" path="/travel"/></div></div>
 

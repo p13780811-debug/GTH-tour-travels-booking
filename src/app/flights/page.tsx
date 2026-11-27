@@ -1,3 +1,4 @@
+import {ModuleHomeHero,ModuleSearchLink} from "@/components/mobile/LuxuryMarketplace";
 import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
@@ -24,6 +25,7 @@ export default async function FlightsPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
+      {!isResultsView&&<div className="sm:hidden"><ModuleHomeHero module="Flights" title="The world is within reach." subtitle="Find a flight for your next journey." image={LUXURY_VISUALS.flights}><ModuleSearchLink href="#journey-search" label="Search flights" description="Compare routes and dates."/></ModuleHomeHero></div>}
       <section className={"relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" + (isResultsView ? " hidden sm:block" : "")} data-travel-hero="true">
         <div aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
@@ -69,7 +71,7 @@ export default async function FlightsPage({ searchParams }: Props) {
           <ShareFeedbackActions title={destination?("Flight research "+origin+" to "+destination):"Flight search"} path={"/flights"+(destination?"?"+new URLSearchParams({origin,destination}).toString():"")}/>
           {destination&&<LocalWatchButton kind="flight" id={origin+"-"+destination} title={"Flight route "+origin+" to "+destination} path={"/flights?"+new URLSearchParams({origin,destination}).toString()}/>}
         </div>
-        {!isResultsView && <section aria-label="Primary flight route search" className="px-4 sm:px-6">
+        {!isResultsView && <section id="journey-search" aria-label="Primary flight route search" className="scroll-mt-24 px-4 sm:px-6">
           <GTHTransportSearchWidget mode="flight" flightOnly />
           <p className="mb-5 text-sm leading-6 text-[var(--text-soft)]">
             If the first booking network has no matching flight, compare the alternative flight search below.

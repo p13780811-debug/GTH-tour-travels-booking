@@ -86,7 +86,7 @@ export default function WorldwideTicketExplorer({initialCategory="",initialQuery
    {syncUrlQuery&&<Suspense fallback={null}><TicketUrlQuery onQuery={setQuery}/></Suspense>}
    <div className="gth-glass rounded-3xl border border-[var(--border)] p-5 sm:p-7">
      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--gold)]"><Globe2 size={17} aria-hidden="true"/> GTH PRO worldwide ticket discovery</p>
-     <h2 id="worldwide-ticket-search-title" className="mt-3 text-2xl font-bold sm:text-3xl">Find where to look for your next ticket</h2>
+     <h2 id="worldwide-ticket-search-title" className="scroll-mt-24 mt-3 text-2xl font-bold sm:text-3xl">Find where to look for your next ticket</h2>
      <p className="mt-3 max-w-4xl text-sm leading-6 text-[var(--text-soft)]">
        Search our curated official ticket offices, event platforms, organizer calendars and venue guides.
        We keep useful non-affiliate links too. This is a source directory, not a live inventory of every event, seat or price.

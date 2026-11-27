@@ -89,13 +89,13 @@ export default async function TenderPage({searchParams}: Props) {
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
           <Globe2 size={16} aria-hidden="true" /> GTH PRO · PILLAR 03
         </p>
-        <h1 className="mt-4 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+        <h1 className="mt-4 max-w-2xl text-[clamp(1.65rem,6.4vw,3.25rem)] font-bold leading-[1.12] tracking-tight">
           {t("hero")}
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--text-soft)]">
           {t("intro")}
         </p>
-      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" aria-label="Search public tender notices" className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 sm:p-5">
+      <form key={tenderFilterHref(searchFilters,language)} method="GET" action="/tender" role="search" aria-label="Search public tender notices" className="relative z-10 mt-6 rounded-3xl border border-[var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow)] sm:p-5">
        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
         <label className="block min-w-0 text-xs font-semibold text-[var(--text-soft)]">{t("keywords")}
           <input name="q" maxLength={100} defaultValue={filters.q} placeholder={t("searchPlaceholder")} className="gth-input mt-2 min-w-0"/>
