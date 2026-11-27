@@ -15,7 +15,7 @@ export default {
    const shell=await serveStaticShell(request,env.ASSETS,shells);
    if(shell)return shell;
    if(request.method==="GET"&&(url.pathname.startsWith("/api/mobility/")||url.pathname==="/api/real-estate/registry-preview"||url.pathname==="/api/stadiums/concierge")){
-    const response=await readPublicEdgeCache(request)??await nativePublicRead(request,env);
+    const response=await readPublicEdgeCache(request,env.GTH_CLOUDFLARE_INGRESS==="1")??await nativePublicRead(request,env);
     if(response)return new Response(response.body,{status:response.status,headers:publicSecurityHeaders(response)});
    }
   }
