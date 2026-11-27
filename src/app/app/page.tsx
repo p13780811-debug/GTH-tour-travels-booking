@@ -1,4 +1,4 @@
-import {MarketplaceHero,MarketplaceServices} from "@/components/mobile/LuxuryMarketplace";
+import {FlagshipHubRail,MarketplaceServices} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import {Suspense} from "react";
 import Link from "next/link";
@@ -51,9 +51,9 @@ export default function MobileAppHome(){
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
    <EcosystemUnifiedSearch appHome/>
   </div>
-  <EcosystemPillars appHome/>
-  <MarketplaceHero title="Global marketplace" subtitle="Stays, match hospitality, travel and business opportunities" image="/images/global-city.jpg"/>
+  <FlagshipHubRail/>
   <MarketplaceServices/>
+  <EcosystemPillars appHome/>
   <AppResearchQuickAccess/>
   <section aria-label="Install GTH PRO on your device" className="mx-auto mt-3 w-full max-w-7xl px-4 sm:px-6">
    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3">

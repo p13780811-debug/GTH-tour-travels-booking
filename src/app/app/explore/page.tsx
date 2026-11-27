@@ -1,3 +1,4 @@
+import {MarketplaceServices} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {redirect} from "next/navigation";
@@ -102,6 +103,7 @@ export default async function GlobalAppExplore({searchParams}:Props){
       </Link>)}
     </nav>
    </header>
+   {!searched&&<MarketplaceServices/>}
    {!searched?<section className="px-4 py-7 sm:px-6" aria-label="Popular research journeys">
      <h2 className="text-lg font-semibold">Pick up where your plans begin</h2>
      <p className="mt-1 text-sm text-[var(--text-soft)]">Explore a specialist service, then save what matters to your Research Desk.</p>
