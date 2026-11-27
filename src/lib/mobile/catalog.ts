@@ -52,7 +52,7 @@ export function normalizeAppQuery(query:Record<string,string|string[]|undefined>
  return {q,city:/^[\p{L}\p{M}\p{N} .’'-]{1,70}$/u.test(city)?city:"",
   closing:closing==="7"||closing==="30"?closing:"",country:/^[A-Z]{2}$/.test(country)?country:"",
   category:/^[a-zA-Z_]{0,32}$/.test(category)?category:"",
-  destination:/^[a-z]+(?:-[a-z]+)*$/.test(destination)?destination:"",page:/^[1-9]\d{0,3}$/.test(p)?Math.min(WORLD_PAGE_LIMIT,Number(p)):1};
+  destination:destination.length<=140&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(destination)?destination:"",page:/^[1-9]\d{0,3}$/.test(p)?Math.min(WORLD_PAGE_LIMIT,Number(p)):1};
 }
 export function appQueryHref(section:MobileSection,query:AppQuery,overrides:Partial<AppQuery>={}):string{
  const all={...query,...overrides},params=new URLSearchParams();
@@ -96,8 +96,11 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
    if(q)list=list.ilike("name","%"+escapeLike(q)+"%");
    if(destination){
     const match=destinations.find(d=>d.slug===destination);
-    if(!match)return empty(page,"Destination not found");
-    const hint="%"+escapeLike(match.name)+"%";
+    const world=match?null:await readWorldDestination(destination);
+    const name=match?.name??world?.title;
+    if(!name||!/^[\p{L}\p{M}\p{N} .'-]{1,80}$/u.test(name))return empty(page,"Destination not found");
+    if(world?.countryCode)list=list.eq("country_code",world.countryCode);
+    const hint="%"+escapeLike(name)+"%";
     // Match published regional names such as North Goa / South Goa as well as Goa.
     list=list.or("city.ilike."+hint+",region.ilike."+hint);
    }
@@ -155,7 +158,7 @@ export type AppDetail={
  propertyEnquiry?:{id:number;mode:"registry"|"listing"};
  title:string;subtitle:string;summary:string;kind:"destination"|"hotel"|"property"|"tender";
  image:string|null;countryCode?:string|null;facts:Array<[string,string]>;source:string|null;
- website:string|null;fullSite:string;related:string;
+ website:string|null;fullSite:string;related:string;booking?:string;
 };
 function safeSite(v:unknown):string|null{
  if(typeof v!=="string"||v.length>2000)return null;
@@ -169,7 +172,7 @@ export async function loadAppDetail(section:MobileSection,id:string):Promise<App
   const dest=destinations.find(d=>d.slug===id);
   return dest?{title:dest.name,subtitle:"Destination guide",summary:dest.description,
    kind:"destination",image:localImage(dest.image_url),countryCode:destinationCountryCode(destinationGeography(id).country),facts:[["Destination",dest.name]],
-   source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?view=booking&city="+encodeURIComponent(dest.name)+(destinationCountryCode(destinationGeography(id).country)?"&country="+destinationCountryCode(destinationGeography(id).country):"")}:null;
+   source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?directory=1&destination="+id,booking:"/app/hotels?view=booking&city="+encodeURIComponent(dest.name)+(destinationCountryCode(destinationGeography(id).country)?"&country="+destinationCountryCode(destinationGeography(id).country):"")}:null;
  }
  const db=publicDb();if(!db)return null;
  try{
@@ -245,5 +248,5 @@ const readWorldDestination=unstable_cache(async(id:string):Promise<AppDetail|nul
  const geo=destinationGeography(id,data.country),code=destinationCountryCode(geo.country,data.country_code),photo=destinationImageForSlug(id),title=small(data.name,120);
  const curated=destinations.find(d=>d.slug===id);
  const q=new URLSearchParams({view:"booking",city:title,...(code?{country:code}:{})});
- return {title,subtitle:geo.country||"Destination directory",summary:curated?.description||"Explore this destination and confirm travel details with local sources and providers.",kind:"destination",image:photo==="/images/default-city.jpg"?null:photo,countryCode:code,facts:[["Destination",title],["Country",geo.country||"Not specified"]],source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?"+q.toString()};
+ return {title,subtitle:geo.country||"Destination directory",summary:curated?.description||"Explore this destination and confirm travel details with local sources and providers.",kind:"destination",image:photo==="/images/default-city.jpg"?null:photo,countryCode:code,facts:[["Destination",title],["Country",geo.country||"Not specified"]],source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?directory=1&destination="+id,booking:"/app/hotels?"+q.toString()};
 },["gth-mobile-world-detail-v1"],{revalidate:3600});

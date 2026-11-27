@@ -64,6 +64,7 @@ export default async function AppRecordDetail({params}:Props){
         Request a quote for this tender <ArrowUpRight size={15} aria-hidden="true"/>
       </Link>}
       {record.kind==="destination"&&<Link href={"/app/packages?"+new URLSearchParams({city:record.title,...(record.countryCode?{country:record.countryCode}:{})})+"#package-builder"} className="gth-btn-gold inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">Build a travel package</Link>}
+      {record.kind==="destination"&&record.booking&&<Link href={record.booking} className="gth-btn-gold inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold">Find bookable stays</Link>}
       {record.kind==="destination"?<Link href={record.related}
         className="gth-btn-gold inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
         <MapPin size={16}/> Find local hotel records <ArrowUpRight size={15}/>

@@ -1,0 +1,65 @@
+name: Luxury installed marketplace QA
+on:
+  pull_request:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - 'src/app/app/**'
+      - 'src/components/mobile/**'
+      - 'src/lib/mobile/**'
+      - 'src/components/MobileNav.tsx'
+      - 'src/app/mega-aggregator/**'
+      - 'public/images/luxury/**'
+      - 'scripts/qa-mobile-luxury-marketplace.mjs'
+      - 'tests/mobile-luxury-marketplace.test.mjs'
+      - '.github/workflows/mobile-luxury-marketplace-qa.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - run: node --test tests/*.test.mjs
+      - run: npx --no-install tsc --noEmit
+      - run: node scripts/audit-navigation.mjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --legacy-peer-deps
+      - run: |
+          npm install --no-save --legacy-peer-deps playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - run: |
+          node scripts/qa-city-fixture.mjs >/tmp/gth-city-fixture.log 2>&1 &
+          npm run dev >/tmp/gth-luxury-dev.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl -fsS --max-time 4 http://127.0.0.1:3000/manifest.webmanifest >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          tail -80 /tmp/gth-luxury-dev.log
+          exit 1
+      - run: node scripts/qa-mobile-luxury-marketplace.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxury-app-mobile-screenshots
+          path: /tmp/gth-luxury-app-qa/
+          if-no-files-found: ignore

@@ -40,8 +40,8 @@ export const marketplaceShortcuts=[
  {label:"Global tenders",href:"/app/tenders",media:"tenders",detail:"Procurement research"}
 ] as const;
 export const flagshipHubs=[
- {title:"Melbourne · MCG",media:"melbourne",href:"/stadiums/melbourne-cricket-ground",description:"Stadium guide & match-day planning"},
- {title:"Mumbai · Wankhede",media:"mumbai",href:"/stadiums/wankhede-stadium",description:"Cricket & city stays"},
+ {title:"Melbourne · MCG",media:"melbourne",href:"/app/venues/melbourne-cricket-ground",description:"Stadium guide & match-day planning"},
+ {title:"Mumbai · Wankhede",media:"mumbai",href:"/app/venues/wankhede-stadium",description:"Cricket & city stays"},
  {title:"Tokyo",media:"tokyo",href:"/app/destinations/tokyo",description:"City discovery & travel"},
  {title:"London",media:"london",href:"/app/destinations/london",description:"City discovery & travel"}
 ] as const;

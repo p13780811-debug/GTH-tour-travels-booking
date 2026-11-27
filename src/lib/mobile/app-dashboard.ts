@@ -12,6 +12,7 @@ export const appServices=[
  {id:"tickets",label:"Worldwide Tickets",href:"/tickets",pillar:"tickets",icon:"ticket",keywords:"events stadium cricket football concert theatre festivals cinema museum live tickets"},
  {id:"cruises",label:"Cruises",href:"/cruises",pillar:"travel",icon:"compass",keywords:"cruise ship sailing cabin disney harbour dinner"},
  {id:"insurance",label:"Travel protection",href:"/insurance",pillar:"travel",icon:"shield",keywords:"insurance flight claims delay"},
+ {id:"travel",label:"Travel marketplace",href:"/app/travel",pillar:"travel",icon:"globe",keywords:"journeys destinations holiday"},
  {id:"packages",label:"Travel packages",href:"/app/packages",pillar:"travel",icon:"compass",keywords:"itinerary package holiday hotel flight experiences"},
  {id:"transport",label:"Transport",href:"/go/transport",pillar:"travel",icon:"transfer",keywords:"bus train ferry rail transit"},
  {id:"destinations",label:"Destinations",href:"/app/destinations",pillar:"travel",icon:"globe",keywords:"cities guides explore"},
