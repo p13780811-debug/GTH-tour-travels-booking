@@ -1,4 +1,4 @@
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -21,7 +21,7 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
  const bookingName=/^[\p{L}\p{M}\p{N}\s.'&-]{2,80}$/u.test(rawName.trim())?rawName.trim():"";
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <ModuleHomeHero module="Hotels" title="Stay somewhere extraordinary." subtitle="Find a city, choose your dates and discover your next stay." image={LUXURY_VISUALS.hotels} links={[["Hotel directory","/app/hotels?directory=1"],["Destinations","/app/destinations"],["Packages","/app/packages"]]}>
+  <ModuleHomeHero module="Hotels" title="Stay somewhere extraordinary." subtitle="Find a city, choose your dates and discover your next stay." image={MODULE_HEROES.hotels.image} links={[["Hotel directory","/app/hotels?directory=1"],["Destinations","/app/destinations"],["Packages","/app/packages"]]}>
    <h1 className="mb-3 text-xl font-semibold">Hotels</h1>
    {(bookingCity||bookingName)&&<p role="status" className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)] sm:mx-6">
      {bookingCity?<>Search <strong className="text-[var(--text)]">{bookingCity}</strong> using the GTH Worldwide Stays booking search below.</>:

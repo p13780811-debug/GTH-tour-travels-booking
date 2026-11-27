@@ -1,5 +1,5 @@
 import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
-import {LUXURY_VISUALS,isIllustrativeVisual} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import ShareTripPlanButton from "@/components/engagement/ShareTripPlanButton";
 import ConnectedTravelEntry from "@/components/travel/ConnectedTravelEntry";
@@ -20,10 +20,10 @@ export const metadata: Metadata = {
 };
 
 const services = [
-  { name: "Travel Packages", label: "BUILD YOUR OWN JOURNEY", href: "/travel/packages", img: LUXURY_VISUALS.packages, Icon: Sparkles, detail: "Combine return flights, stays, experiences and airport transfers in one personal travel plan." },
+  { name: "Travel Packages", label: "BUILD YOUR OWN JOURNEY", href: "/travel/packages", img: MODULE_HEROES.packages.image, Icon: Sparkles, detail: "Combine return flights, stays, experiences and airport transfers in one personal travel plan." },
   { name: "Cruises", label: "CRUISE HOLIDAYS & DAY SAILINGS", href: "/cruises", img: "/images/cities/singapore.jpg", Icon: Ship, detail: "Explore cruise holidays, harbour sailings and dinner cruises, with detailed itineraries and booking options." },
-  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: LUXURY_VISUALS.flights, Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
-  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: LUXURY_VISUALS.hotels, Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },
+  { name: "Flights", label: "FARES & FLIGHT SEARCH", href: "/flights", img: MODULE_HEROES.flights.image, Icon: Plane, detail: "Find international routes, compare travel dates and choose the flight that works for your journey." },
+  { name: "Hotels", label: "HOTEL SEARCH & BOOKING", href: "/hotels", img: MODULE_HEROES.hotels.image, Icon: Hotel, detail: "Search stays worldwide and review current room options, prices and booking terms." },
   { name: "Tours & Activities", label: "GLOBAL EXPERIENCES", href: "/tours", img: "/images/mega/tours.jpg", Icon: Ticket, detail: "Browse travel experiences by destination and compare important operator and booking conditions." },
   { name: "Destinations", label: "EXPLORE THE WORLD", href: "/destinations", img: "/images/cities/paris.jpg", Icon: Globe2, detail: "Discover international destinations, city highlights and helpful planning information." },
   { name: "Airport Transfers", label: "GROUND TRANSPORT", href: "/transfers", img: "/images/mega/transfers.jpg", Icon: CarFront, detail: "Plan a journey from airport to accommodation and verify pickup terms with external providers." },
@@ -44,7 +44,7 @@ const additional = [
 
 export default function TravelHomePage() {
   return <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-    <div className="md:hidden"><ModuleHomeHero module="Travel" title="Your next journey, beautifully connected." subtitle="Flights, stays, tours and unforgettable destinations." image={LUXURY_VISUALS.packages} links={[["Hotels","/hotels"],["Flights","/flights"],["Tours","/tours"],["Packages","/travel/packages"]]}/></div>
+    <div className="md:hidden"><ModuleHomeHero module="Travel" title="Your next journey, beautifully connected." subtitle="Flights, stays, tours and unforgettable destinations." image={MODULE_HEROES.travel.image} links={[["Hotels","/hotels"],["Flights","/flights"],["Tours","/tours"],["Packages","/travel/packages"]]}/></div>
     <div className="hidden md:block"><section className={styles.hero} data-travel-hero="true">
       <div className={styles.copy}>
         <p className={styles.eyebrow}><Globe2 size={14} aria-hidden="true"/> GTH PRO · YOUR WORLD, CONNECTED</p>
@@ -53,7 +53,7 @@ export default function TravelHomePage() {
         <div className={styles.heroLinks}><span><ShieldCheck size={14} aria-hidden="true"/>Explore. Compare. Book with confidence.</span><Link prefetch={false} href="/destinations">Discover destinations <ArrowUpRight size={13} aria-hidden="true"/></Link></div>
       </div>
       <div className={styles.visual} aria-label="Destination inspiration">
-        <div className={styles.mainPhoto}><Image src="/maldives-bg.jpg" fill priority sizes="(max-width:760px) 1px, 310px" alt="Tropical island scenery in the Maldives"/><div className={styles.photoCaption}><span>A little inspiration</span>Somewhere you’ve always wanted to go.</div></div>
+        <div className={styles.mainPhoto}><Image src={MODULE_HEROES.travel.image} fill priority sizes="(max-width:760px) 1px, 310px" alt="Tropical island scenery in the Maldives"/><div className={styles.photoCaption}><span>A little inspiration</span>Somewhere you’ve always wanted to go.</div></div>
         <div className={styles.smallPhoto}><Image src="/images/cities/paris.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Paris destination scenery"/></div>
         <div className={styles.smallPhoto}><Image src="/images/mega/flights.jpg" fill sizes="(max-width:760px) 1px, 210px" alt="Flight journey inspiration"/></div>
       </div>
@@ -71,7 +71,7 @@ export default function TravelHomePage() {
         {services.map(({name,label,href,img,Icon,detail})=><Link prefetch={false} key={href} href={href} className="group min-w-0 overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] transition-transform hover:-translate-y-1">
           <div className="relative aspect-[16/10] overflow-hidden">
             <Image src={img} alt={isIllustrativeVisual(img)?"":name} fill unoptimized={isIllustrativeVisual(img)} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
-            {isIllustrativeVisual(img)&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">AI illustrative visual</span>}
+            {isIllustrativeVisual(img)&&<span className="absolute top-2 right-2 z-10 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
             <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
             <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-2 text-xs font-semibold text-white"><Icon size={15}/> {label}</span>
           </div>

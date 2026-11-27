@@ -1,3 +1,4 @@
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -221,7 +222,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
     <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
      <div className="absolute inset-0 -z-20 bg-[var(--bg-soft)]"/>
      <div className="absolute inset-y-0 right-0 -z-10 hidden w-[52%] lg:block">
-      <Image src="/images/global-city.jpg" alt="" fill priority sizes="52vw" className="object-cover opacity-35"/>
+      <Image src={MODULE_HEROES.destinations.image} alt="" fill priority sizes="52vw" className="object-cover opacity-35"/>
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg)] via-[var(--bg)]/35 to-transparent"/>
      </div>
      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:py-12">
@@ -230,7 +231,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </p>
       <h1 className="mt-4 max-w-2xl text-[clamp(1.65rem,6.4vw,3.25rem)] font-bold leading-[1.12] tracking-tight">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <div className="relative mt-4 aspect-[16/9] max-h-64 overflow-hidden rounded-2xl lg:hidden"><Image src="/images/luxury/europe.webp" alt="" fill unoptimized sizes="100vw" className="object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
+      <div className="relative mt-4 aspect-[16/9] max-h-64 overflow-hidden rounded-2xl lg:hidden"><Image src={MODULE_HEROES.destinations.image} alt="" fill unoptimized sizes="100vw" className="object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
       <form role="search" action="/destinations/search" method="get" className="relative z-10 mx-2 -mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-2 shadow-[var(--shadow)] sm:flex-row lg:mx-0 lg:mt-5">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}

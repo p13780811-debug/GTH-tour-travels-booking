@@ -11,7 +11,7 @@
 // ============================================================================
 
 "use client";
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 
@@ -358,8 +358,8 @@ function HotelsContent() {
                             </p>
                         </div>
                         <figure className={styles.visual}>
-                            <Image src={LUXURY_VISUALS.hotels} alt="" fill unoptimized sizes="(min-width: 900px) 360px, 100vw" className="object-cover" />
-                            <figcaption><MapPin size={14} aria-hidden="true" /> Global stays <span>AI illustrative visual</span></figcaption>
+                            <Image src={MODULE_HEROES.hotels.image} alt="" fill unoptimized sizes="(min-width: 900px) 360px, 100vw" className="object-cover" />
+                            <figcaption><MapPin size={14} aria-hidden="true" /> Global stays <span>Illustrative visual</span></figcaption>
                         </figure>
                     </div>
 

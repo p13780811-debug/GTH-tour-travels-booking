@@ -1,5 +1,5 @@
 import Image from "next/image";
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 import {searchCachedPublicTenders as searchPublicTenders,getCachedTenderStats as getTenderDiscoveryStats} from "@/lib/tender/public-reader";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -85,7 +85,7 @@ export default async function TenderPage({searchParams}: Props) {
     <section className="border-b border-[var(--border)] bg-[var(--card)]">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-9 sm:px-6 md:py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="min-w-0">
-        <div className="relative mb-4 aspect-[16/6] overflow-hidden rounded-2xl border border-[var(--border)]"><Image src={LUXURY_VISUALS.tenders} alt="" fill sizes="(max-width:1024px) 100vw, 60vw" unoptimized className="object-cover"/><span className="absolute bottom-2 right-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
+        <div className="relative mb-4 aspect-[16/6] overflow-hidden rounded-2xl border border-[var(--border)]"><Image src={MODULE_HEROES.tenders.image} alt="" fill sizes="(max-width:1024px) 100vw, 60vw" unoptimized className="object-cover"/><span className="absolute bottom-2 right-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
           <Globe2 size={16} aria-hidden="true" /> GTH PRO · PILLAR 03
         </p>

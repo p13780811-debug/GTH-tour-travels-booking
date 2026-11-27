@@ -1,5 +1,5 @@
 import {ModuleHomeHero,ModuleSearchLink} from "@/components/mobile/LuxuryMarketplace";
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,11 +25,11 @@ export default async function FlightsPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg)] text-[var(--text)]" data-gth-flight-page="true">
-      {!isResultsView&&<div className="sm:hidden"><ModuleHomeHero module="Flights" title="The world is within reach." subtitle="Find a flight for your next journey." image={LUXURY_VISUALS.flights}><ModuleSearchLink href="#journey-search" label="Search flights" description="Compare routes and dates."/></ModuleHomeHero></div>}
+      {!isResultsView&&<div className="sm:hidden"><ModuleHomeHero module="Flights" title="The world is within reach." subtitle="Find a flight for your next journey." image={MODULE_HEROES.flights.image}><ModuleSearchLink href="#journey-search" label="Search flights" description="Compare routes and dates."/></ModuleHomeHero></div>}
       <section className={"relative isolate overflow-hidden border-b border-[var(--border)] bg-[var(--card)]" + (isResultsView ? " hidden sm:block" : "")} data-travel-hero="true">
         <div aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-45 [mask-image:linear-gradient(to_right,transparent,black_18%)] sm:block">
-          <Image src={LUXURY_VISUALS.flights} alt="" fill priority unoptimized
+          <Image src={MODULE_HEROES.flights.image} alt="" fill priority unoptimized
             sizes="(max-width: 1024px) 35vw, 580px" className="object-cover object-center" />
         </div>
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 sm:py-12 lg:py-14">
