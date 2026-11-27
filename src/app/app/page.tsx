@@ -1,3 +1,4 @@
+import {MarketplaceHero,MarketplaceServices,MarketplacePlanner} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import {Suspense} from "react";
 import Link from "next/link";
@@ -46,6 +47,9 @@ export default function MobileAppHome(){
     Website homepage
    </a>
   </div>
+  <MarketplaceHero title="Global marketplace" subtitle="Stays, match hospitality, travel and business opportunities" image="/images/global-city.jpg"/>
+  <MarketplacePlanner/>
+  <MarketplaceServices/>
   <EcosystemHeroCarousel embedded/>
   <div className="relative z-10 mx-auto -mt-3 w-full max-w-7xl px-3 pt-2 sm:-mt-4 sm:px-6">
    <EcosystemUnifiedSearch appHome/>

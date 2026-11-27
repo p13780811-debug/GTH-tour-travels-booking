@@ -1,3 +1,4 @@
+import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import AviasalesWhiteLabel from "@/components/flights/AviasalesWhiteLabel";
@@ -10,6 +11,7 @@ export default async function AppFlights({searchParams}:{searchParams:Promise<Re
  const isResultsView=typeof query.flightSearch==="string"&&/^[A-Za-z0-9]{10,40}$/.test(query.flightSearch);
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
+  <MarketplaceHero title="Global flights" subtitle="Explore and continue to the booking provider" image="/images/mega/flights.jpg"/>
   <div className="mx-auto w-full max-w-7xl pt-3">
    <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Flights</h1>
    <FlightServiceShortcuts/>
