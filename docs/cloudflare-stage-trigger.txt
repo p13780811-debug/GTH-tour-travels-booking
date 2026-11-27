@@ -42,3 +42,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-28: Validate merged #270 with public HTML cache policy and sitemap cache; existing protected preview only. Preserve Access and production DNS. Verify 26-route runtime audit; Cache API production hit measurements remain separate.
 
 2026-11-28: Re-audit protected preview after narrow native public Tender world/country page-one fast path, preserved shared Redis+database refresh quota, exact RLS-filtered result count, and mandatory first/repeat HTTP 200 native route marker. No production/DNS changes; owner approval required for cutover.
+
+2026-11-28: Recheck protected preview native Tender eligibility; previous 26/26 HTTP checks were healthy but required native marker was absent. Preserve the strict native gate; capture only fixed credential-presence booleans, never values. No production changes.
