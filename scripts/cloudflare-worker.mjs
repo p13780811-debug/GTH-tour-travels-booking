@@ -3,8 +3,9 @@
 import handler from "../.open-next/worker.js";
 export {HotelContentCache} from "./cloudflare-hotel-content.mjs";
 export * from "../.open-next/worker.js";
-import shells from "../.open-next/gth-shell-manifest.mjs";
+import shells,{buildVersion} from "../.open-next/gth-shell-manifest.mjs";
 import {serveStaticShell,publicSecurityHeaders,canonicalReadRedirect} from "./cloudflare-shell-routing.mjs";
+import {publicHtmlResponse} from "./cloudflare-public-html-cache.mjs";
 import {publicSitemapResponse} from "./cloudflare-sitemap-cache.mjs";
 import {hotelGeoRequest} from "./cloudflare-hotel-geo.mjs";
 import {nativePublicRead} from "./cloudflare-native-public-reads.mjs";
@@ -13,6 +14,7 @@ export default {
  async fetch(request,env,ctx){
   const canonical=canonicalReadRedirect(request);
   if(canonical)return canonical;
+  const render=async(request)=>{
   const url=new URL(request.url);
   if(url.hostname!=="gthproglobal.com"){
    const shell=await serveStaticShell(request,env.ASSETS,shells);
@@ -22,7 +24,8 @@ export default {
     if(response)return new Response(response.body,{status:response.status,headers:publicSecurityHeaders(response)});
    }
   }
-  const render=()=>handler.fetch(url.pathname==="/api/hotels/discovery"&&request.method==="GET"?hotelGeoRequest(request):request,env,ctx);
-  return publicSitemapResponse(request,env,ctx,render);
+  return handler.fetch(url.pathname==="/api/hotels/discovery"&&request.method==="GET"?hotelGeoRequest(request):request,env,ctx);
+  };
+  return publicSitemapResponse(request,env,ctx,()=>publicHtmlResponse(request,env,ctx,buildVersion,render));
  }
 };
