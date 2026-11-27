@@ -8,7 +8,10 @@ const city=load("src/lib/mobility/city.ts",{"./currencies":load("src/lib/mobilit
 const stadiums=load("src/lib/travel/stadiums.ts");
 const hotelWhiteLabel=load("src/lib/travel/hotel-whitelabel.ts",{}, {atob,btoa});
 const hotelRouting=load("src/lib/travel/hotel-routing.ts",{"./hotel-whitelabel":hotelWhiteLabel},{atob,btoa});
+const audience=load("src/lib/tender/native-audience.ts");
+const nativeTender=load("scripts/cloudflare-native-tender.mjs",{"../src/lib/security/rate-limit.ts":{enforceRateLimit:async()=>{}},"../src/lib/tender/native-audience.ts":audience});
 const deps={
+ "./cloudflare-native-tender.mjs":nativeTender,
  "../src/lib/security/public-edge-cache.ts":{publicReadCacheKey:cache.publicReadCacheKey,storePublicEdgeCache:async(_request,response)=>response},
  "../src/lib/mobility/city.ts":city,
  "../src/lib/travel/osmCountryCodes.ts":load("src/lib/travel/osmCountryCodes.ts"),
