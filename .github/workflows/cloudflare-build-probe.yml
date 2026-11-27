@@ -4,6 +4,7 @@ on:
     branches: [main, infra/cloudflare-preflight-20261125]
     paths:
       - '.github/workflows/cloudflare-build-probe.yml'
+      - 'scripts/cloudflare-*.mjs'
       - 'next.config.ts'
       - 'src/**'
       - 'public/**'
@@ -14,6 +15,7 @@ on:
     branches: [infra/cloudflare-preflight-20261125]
     paths:
       - '.github/workflows/cloudflare-build-probe.yml'
+      - 'scripts/cloudflare-*.mjs'
       - 'next.config.ts'
       - 'src/**'
       - 'public/**'
