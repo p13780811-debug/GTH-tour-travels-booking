@@ -25,7 +25,7 @@ jobs:
       - run: npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
       - run: node --test tests/cloudflare-hotel-content.test.mjs tests/hotel-geographic-discovery.test.mjs tests/nuitee-free-usage-boundary.test.mjs tests/nuitee-free-currencies.test.mjs
       - name: Existing site-wide hotel placement and direct-booking regression tests
-        run: node --test tests/hotel-nearby-search.test.mjs tests/hotel-destination-master.test.mjs tests/nuitee-hotel-discovery-seo.test.mjs tests/hotel-integrated-handoff.test.mjs tests/super-app-home-supplier-ux.test.mjs tests/semantic-ai-supplier-handoff.test.mjs tests/maldives-elite-escape.test.mjs
+        run: node --test tests/hotel-booking-fallback-cities.test.mjs tests/hotel-nearby-search.test.mjs tests/hotel-destination-master.test.mjs tests/nuitee-hotel-discovery-seo.test.mjs tests/hotel-integrated-handoff.test.mjs tests/super-app-home-supplier-ux.test.mjs tests/semantic-ai-supplier-handoff.test.mjs tests/maldives-elite-escape.test.mjs
       - name: Maldives hero navigation regression
         run: |
           node --input-type=module <<'JS'
