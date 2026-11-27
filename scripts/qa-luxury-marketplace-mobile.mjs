@@ -47,7 +47,7 @@ async function run(path,width,mode){
   }
   if(path==="/app/destinations/accra"){await page.getByRole("heading",{name:"Accra",exact:true}).waitFor();const img=page.locator('img[src="/images/luxury/africa.webp"]');assert.ok(await img.count());await decode(page,img);const plan=page.getByRole("link",{name:"Plan flights, stays & experiences"});assert.match(await plan.getAttribute("href"),/city=Accra&country=GH/);}
   if(path==="/app/packages"){await page.locator('[data-planner-ready="true"]').waitFor({timeout:60000});assert.ok(await page.getByLabel("Planning currency").isVisible());}
-  const images=page.locator('img[src*="/images/luxury/"],img[src*="%2Fimages%2Fluxury%2F"]');assert.ok(await images.count()>0,"No generated visuals on "+path);await decode(page,images);
+  const images=path==="/app/services/transfers"?page.locator('[data-marketplace-hero] img'):page.locator('img[src*="/images/luxury/"],img[src*="%2Fimages%2Fluxury%2F"]');assert.ok(await images.count()>0,"No appropriate visuals on "+path);if(path==="/app/services/transfers")assert.ok((await images.first().getAttribute("src")).includes("transfers.jpg"),"Transfer-specific imagery required");await decode(page,images);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),"Overflow "+path+" "+width);
   const scores=await contrast(page);for(const score of scores)assert.ok(score.ratio>=4.5,JSON.stringify({path,width,mode,...score}));
   assert.deepEqual(errors,[],"Hydration or client exception "+path);

@@ -1,4 +1,3 @@
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 // ============================================================================
 // 🌍 GTH PRO — HOTELS GLOBAL 2026
 // 🏆 WORLD-CLASS MOBILE-FIRST + PREMIUM DESKTOP EXPERIENCE
@@ -12,6 +11,7 @@ import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 // ============================================================================
 
 "use client";
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 
 import TravelSectionNav from "@/components/travel/TravelSectionNav";
 
