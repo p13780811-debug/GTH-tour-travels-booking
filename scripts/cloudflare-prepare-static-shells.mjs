@@ -4,7 +4,9 @@ import {join} from "node:path";
 const root=".open-next",manifest=JSON.parse(readFileSync(".next/prerender-manifest.json","utf8"));
 const directory=join(root,"assets","__gth_static_shells");
 mkdirSync(directory,{recursive:true});
-const exact=new Set(["/real-estate/tools","/tender/assistant","/tickets","/tickets/sports"]);
+// Export only existing prerendered public pages. Dynamic routes, queries,
+// authentication and expired ISR continue through the original Next handler.
+const exact=new Set(["/","/hotels","/real-estate","/real-estate/tools","/stadiums","/tender/assistant","/tickets","/tickets/sports"]);
 const shells={};
 const builtAt=Date.now();
 for(const [route,entry] of Object.entries(manifest.routes||{})){
@@ -12,11 +14,11 @@ for(const [route,entry] of Object.entries(manifest.routes||{})){
  const ttl=entry.initialRevalidateSeconds;
  if(ttl!==false&&(!Number.isSafeInteger(ttl)||ttl<1))continue;
  if(entry.initialStatus&&entry.initialStatus!==200)continue;
- const source=".next/server/app"+route+".html";
+ const source=".next/server/app"+(route==="/"?"/index":route)+".html";
  if(!existsSync(source))continue;
  const content=readFileSync(source,"utf8");
  if(!/^<!DOCTYPE html>/i.test(content)||!content.includes("</html>")||content.length>1_500_000)continue;
- const name=route.slice(1).replaceAll("/","__")+".gth-html";
+ const name=(route==="/"?"index":route.slice(1).replaceAll("/","__"))+".gth-html";
  copyFileSync(source,join(directory,name));
  shells[route]={path:"/__gth_static_shells/"+name,expiresAt:ttl===false?null:Math.min(builtAt,statSync(source).mtimeMs)+ttl*1000};
 }
