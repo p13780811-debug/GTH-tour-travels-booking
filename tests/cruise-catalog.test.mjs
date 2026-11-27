@@ -41,6 +41,8 @@ test('every statically generated app service, including cruises, has a renderabl
   'next/link':{default:'link'},'next/navigation':{notFound:()=>{throw Error('not found');}},
   'lucide-react':{ArrowLeft:'icon',ArrowUpRight:'icon',ExternalLink:'icon',ShieldCheck:'icon'},
   '@/components/mobile/MobileAppHeader':{default:'header'},
+  '@/components/mobile/MarketplaceVisual':{default:'visual'},
+  '@/lib/mobile/marketplace-media':load('src/lib/mobile/marketplace-media.ts',{'./marketplace-generated-media.json':{default:JSON.parse(readFileSync('src/lib/mobile/marketplace-generated-media.json','utf8'))}}),
   '@/lib/mobile/app-dashboard':dashboard,
   '@/lib/mobile/universal-search':{appServiceWebsiteHref:(_id,href)=>href},
  });

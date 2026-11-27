@@ -1,3 +1,4 @@
+import MarketplaceVisual from "@/components/mobile/MarketplaceVisual";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {Suspense} from "react";
@@ -21,6 +22,7 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
   <MobileAppHeader/>
   <div className="mx-auto w-full max-w-7xl pt-3">
    <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Hotels</h1>
+   <div className="mx-4 mb-4 sm:mx-6"><MarketplaceVisual media="hotels"/></div>
    {(bookingCity||bookingName)&&<p role="status" className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)] sm:mx-6">
      {bookingCity?<>Search <strong className="text-[var(--text)]">{bookingCity}</strong> using the GTH Worldwide Stays booking search below.</>:
        <>Use the GTH Worldwide Stays booking search below.</>}

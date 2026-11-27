@@ -1,3 +1,4 @@
+import MarketplaceVisual from "@/components/mobile/MarketplaceVisual";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -28,6 +29,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
  const {section}=await params;
  if(!isMobileSection(section))notFound();
  const q=normalizeAppQuery(await searchParams);
+ if(section!=="destinations")q.page=Math.min(q.page,100);
  const current=sections[section];
  const Icon=current.Icon;
  const result=await listAppRecords(section,q);
@@ -44,10 +46,11 @@ export default async function MobileAppSection({params,searchParams}:Props){
  ]:[["/app/tenders/quote","Request a tender quote"]];
  const title=q.category?(facets.find(t=>t.id===q.category)?.name||current.name):current.name;
  const destination=appQueryHref(section,q,{page:1});
- const pages=Math.min(100,Math.ceil(result.total/result.size));
+ const pages=Math.min(section==="destinations"?2000:100,Math.ceil(result.total/result.size));
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
   <header className="mx-4 mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
+    <MarketplaceVisual media={section} compact/>
     <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
       <ArrowLeft size={15}/> App home
     </Link>
@@ -76,7 +79,8 @@ export default async function MobileAppSection({params,searchParams}:Props){
         className="h-11 min-w-0 w-full bg-transparent text-sm outline-none"/>
      </label>
      {q.category&&<input type="hidden" name="category" value={q.category}/>}
-     {q.country&&section!=="tenders"&&<input type="hidden" name="country" value={q.country}/>}
+     {q.country&&section!=="tenders"&&section!=="destinations"&&<input type="hidden" name="country" value={q.country}/>}
+     {section==="destinations"&&<label className="col-span-2 text-xs font-semibold">Country code<input name="country" pattern="[A-Za-z]{2}" maxLength={2} defaultValue={q.country} placeholder="IN, GB, AU…" className="gth-input mt-1 w-full"/></label>}
      {section==="property"&&<label className="col-span-2 text-xs font-semibold">City
        <input name="city" maxLength={70} defaultValue={q.city} placeholder="Mumbai, Thane, Kolkata…" className="gth-input mt-1 w-full"/>
      </label>}

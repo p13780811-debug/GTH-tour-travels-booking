@@ -10,6 +10,7 @@ export type MobileDiscoveryItem = {
   detail: string;
   href: string;
   image: string | null;
+  countryCode?: string | null;
 };
 export type MobileDiscoveryData = {
   destinations: MobileDiscoveryItem[];

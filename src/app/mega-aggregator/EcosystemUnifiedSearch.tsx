@@ -53,7 +53,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
   if (appHome) return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
       className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-3 text-[var(--text)] sm:p-5">
-      <h2 id="ecosystem-search-title" className="text-base font-bold sm:text-xl">Find anything on GTH PRO</h2>
+      <h2 id="ecosystem-search-title" className="text-base font-bold sm:text-xl">Ask GTH AI</h2>
       <form action="/app/search" method="get" role="search" aria-label="GTH PRO Home search"
         className="mt-3 flex min-w-0 flex-wrap items-end gap-2">
         <label htmlFor="ecosystem-universal-keyword" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">
@@ -69,7 +69,7 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
         </button>
       </form>
       <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
-        To open Travel, Real Estate, Tenders or Tickets directly, select the platform card below.
+        Smart keyword routing connects your request to the existing search engines. No generative AI answers or automatic booking. Choose a travel package to plan multiple services together.
       </p>
     </section>
   );

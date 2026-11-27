@@ -1,3 +1,5 @@
+import {serviceMediaKey} from "@/lib/mobile/marketplace-media";
+import MarketplaceVisual from "@/components/mobile/MarketplaceVisual";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,6 +21,7 @@ export function generateStaticParams() {
 export const dynamicParams = false;
 
 const serviceInfo: Record<string, { detail: string; note: string; cta: string }> = {
+  transport:{detail:"Compare bus, train and ferry connections through the existing transport booking portal.",note:"The booking provider confirms routes, availability, rates and ticket conditions.",cta:"Open transport booking portal"},
   contact: {
     detail: "Find the existing GTH PRO contact channels.",
     note: "Use the official contact page for the right service.",
@@ -156,7 +159,8 @@ export default async function AppServiceGateway({
           All app services
         </Link>
         <section className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-7">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">
+          <MarketplaceVisual media={serviceMediaKey(service.id)} />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-[var(--gold)]">
             GTH PRO · {service.pillar === "travel" ? "Travel" : service.pillar === "property" ? "Real Estate" : service.pillar === "tickets" ? "Tickets & Events" : "Tender"}
           </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">{service.label}</h1>
