@@ -10,8 +10,21 @@ let redisRetryAt=0;
 let redisNamespace="";
 const unavailable=()=>Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 const denied=()=>Response.json({error:"Catalogue refresh is busy. Your saved references are safe; retry shortly."},{status:429,headers:{"Cache-Control":"no-store","Retry-After":"60","X-Content-Type-Options":"nosniff"}});
-export function nativeTenderInput(request){
- if(request.method!=="GET"||BLOCKED.some(h=>request.headers.has(h)))return null;
+// Preview Access adds its own cookie even to public GETs. This exception
+// grants no application authorization: only the same anonymous RLS read is
+// allowed, never a cache lookup/write. The deployment gate independently
+// verifies the existing Access policy and anonymous challenge.
+function accessOnlyPreview(request,env){
+ if(env?.VERCEL_ENV!=="preview"||env.GTH_CLOUDFLARE_INGRESS!=="1"||new URL(request.url).origin!=="https://gth-pro-preview-20261126.p13780811.workers.dev")return false;
+ const assertion=request.headers.get("cf-access-jwt-assertion"),cookie=request.headers.get("cookie");
+ if(!assertion||!cookie||assertion.length>8192||cookie.length>8192)return false;
+ const parts=cookie.split(";").map(v=>v.trim()).filter(Boolean);
+ return parts.length===1&&parts[0]==="CF_Authorization="+assertion;
+}
+export function nativeTenderInput(request,env){
+ const previewNoCache=accessOnlyPreview(request,env);
+ if(request.method!=="GET"||BLOCKED.some(h=>request.headers.has(h)&&!(h==="cookie"&&previewNoCache)))return null;
+ if(request.headers.has("cf-access-jwt-assertion")&&!previewNoCache)return null;
  const url=new URL(request.url),p=url.searchParams;
  if(url.pathname!=="/api/tender"||url.hostname==="gthproglobal.com"||url.search.length>160||p.get("scope")!=="world")return null;
  for(const key of p.keys())if(!ALLOWED.has(key)||p.getAll(key).length!==1)return null;
@@ -25,7 +38,7 @@ export function nativeTenderInput(request){
  const key=new URL(url.origin);
  key.pathname="/__gth_native_tender_v1";
  key.searchParams.set("scope","world");key.searchParams.set("country",country);key.searchParams.set("lang",language);
- return {country,language,key:new Request(key),explicitLanguage:explicit!==null};
+ return {country,language,key:new Request(key),explicitLanguage:explicit!==null,previewNoCache};
 }
 // Same Redis scope, identity, limits and database fallback RPC as Next.
 // Only this fixed quota RPC may use the private server-side role binding.
@@ -54,14 +67,15 @@ async function reserve(env){
  }catch{return 503;}
 }
 function responseHeaders(input,ttl,hit){
- const headers={"Cache-Control":input.explicitLanguage&&ttl>0?"public, max-age=0, s-maxage="+ttl+", must-revalidate":"private, no-store","X-GTH-Edge-Read":"native-tender","X-Content-Type-Options":"nosniff"};
+ const headers={"Cache-Control":!input.previewNoCache&&input.explicitLanguage&&ttl>0?"public, max-age=0, s-maxage="+ttl+", must-revalidate":"private, no-store","X-GTH-Edge-Read":"native-tender","X-Content-Type-Options":"nosniff"};
  if(hit)headers["X-GTH-Read-Cache"]="HIT";
  if(!input.explicitLanguage)headers.Vary="Accept-Language";
  return headers;
 }
 export async function nativeTenderRead(request,env,db,{reserveRead=reserve,cache=globalThis.caches?.default}={}){
- const input=nativeTenderInput(request);
+ const input=nativeTenderInput(request,env);
  if(!input||env.GTH_CLOUDFLARE_INGRESS!=="1")return null;
+ if(input.previewNoCache)cache=null;
  try{
   const hit=await cache?.match(input.key);
   const ttl=hit?Math.floor((Number(hit.headers.get("X-GTH-Tender-Until"))-Date.now())/1000):0;
