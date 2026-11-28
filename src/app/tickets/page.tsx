@@ -1,5 +1,5 @@
 import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
-import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
+import {ModuleHomeHero,TicketSearchPanel,FlagshipHubRail} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {ArrowUpRight} from "lucide-react";
@@ -18,7 +18,8 @@ export const metadata:Metadata={
 // The directory is static; only the local browser search depends on the URL.
 export default function TicketsPage(){
  return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
-    <MarketplaceHero title="Match-day discovery" subtitle="Venue information and independent ticket booking handoffs" image={LUXURY_VISUALS.tickets}/>
+    <ModuleHomeHero module="Tickets & events" title="Make every moment an event." subtitle="Sports, concerts, theatre and experiences, worldwide." image={LUXURY_VISUALS.tickets} links={[["Sports","/tickets/sports"],["Concerts","/tickets/concerts"],["Stadiums","/stadiums"]]}><TicketSearchPanel/></ModuleHomeHero>
+    <FlagshipHubRail/>
   <TravelSectionNav/>
   <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
    <header className="gth-glass rounded-3xl border border-[var(--border)] p-6 sm:p-8">

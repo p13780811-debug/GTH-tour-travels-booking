@@ -1,9 +1,9 @@
 "use client"
-import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
 import Image from "next/image"
 import PortalCarousel from "./PortalCarousel"
 const scenes=[
-  {id:"architecture",label:"Architecture inspiration",src:LUXURY_VISUALS.property},
+  {id:"architecture",label:"Architecture inspiration",src:MODULE_HEROES.property.image},
   {id:"property-story",label:"Property perspectives",src:"/brand/property-story.jpg"},
   {id:"city-living",label:"City living",src:"/images/global-city.jpg"},
 ] as const

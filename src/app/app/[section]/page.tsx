@@ -1,4 +1,4 @@
-import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
+import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
 import {destinationServicePhoto} from "@/lib/destinations/visual-media";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -49,28 +49,10 @@ export default async function MobileAppSection({params,searchParams}:Props){
  const pages=Math.min(section==="destinations"?2000:100,Math.ceil(result.total/result.size));
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <MarketplaceHero title="Explore the marketplace" subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}/>
-  <header className="mx-4 mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
-    <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
-      <ArrowLeft size={15}/> App home
-    </Link>
-    <div className="mt-1 flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <h1 className="text-xl font-semibold leading-tight tracking-tight">{current.name}</h1>
-        <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{current.subtitle}</p>
-      </div>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg)]">
-        <Icon size={21} className="text-[var(--gold)]"/>
-      </span>
-    </div>
-  </header>
-  {isBusiness&&<nav aria-label={section==="property"?"Property workspace tools":"Tender workspace tools"} className="mx-4 mt-3 flex flex-wrap gap-2 sm:mx-6">
-    {businessLinks.map(([href,label],i)=><Link key={href} href={href} className={`inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold ${i===0?"gth-btn-gold":"gth-btn"}`}>{label}</Link>)}
-    <Link href="/app/board" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold">Research Desk</Link>
-  </nav>}
+  <ModuleHomeHero module={section==="property"?"Real estate":section==="tenders"?"Tenders":current.name} title={section==="property"?"Find your next address.":section==="tenders"?"Discover your next opportunity.":section==="destinations"?"A world of places to discover.":"Explore "+current.name.toLowerCase()} subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}>
   {section==="flights"?<MobileFlightSearch/>:
    <form action={"/app/"+section} method="get"
-     className="mx-4 mt-3 grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6" role="search">
+     className="grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3" role="search">
      {section==="hotels"&&<input type="hidden" name="directory" value="1"/>}
      <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3">
        <Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
@@ -97,6 +79,25 @@ export default async function MobileAppSection({params,searchParams}:Props){
      {q.destination&&<input type="hidden" name="destination" value={q.destination}/>}
      <button type="submit" className="gth-btn-gold col-start-2 min-h-11 rounded-xl px-4 text-xs font-semibold">Search</button>
    </form>}
+  </ModuleHomeHero>
+  <header className="mx-4 mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
+    <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
+      <ArrowLeft size={15}/> App home
+    </Link>
+    <div className="mt-1 flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="text-xl font-semibold leading-tight tracking-tight">{current.name}</h1>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-soft)]">{current.subtitle}</p>
+      </div>
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg)]">
+        <Icon size={21} className="text-[var(--gold)]"/>
+      </span>
+    </div>
+  </header>
+  {isBusiness&&<nav aria-label={section==="property"?"Property workspace tools":"Tender workspace tools"} className="mx-4 mt-3 flex flex-wrap gap-2 sm:mx-6">
+    {businessLinks.map(([href,label],i)=><Link key={href} href={href} className={`inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold ${i===0?"gth-btn-gold":"gth-btn"}`}>{label}</Link>)}
+    <Link href="/app/board" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold">Research Desk</Link>
+  </nav>}
   {section==="destinations"&&<div className="mx-4 mt-3 text-xs text-[var(--text-soft)] sm:mx-6"><Link href="/destinations" prefetch={false} className="underline">Full worldwide directory and regional filters</Link></div>}
   {facets.length>0?<nav aria-label={section+" categories"} className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
     {facets.map(f=><Link key={f.id} href={appQueryHref(section,q,{category:f.id,page:1})}

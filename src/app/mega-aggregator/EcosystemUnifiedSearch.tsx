@@ -2,7 +2,7 @@
 
 import {useState} from "react";
 import Link from "next/link";
-import {BriefcaseBusiness, Building2, Globe2, Plane, Search, Ticket} from "lucide-react";
+import {ArrowRight, BriefcaseBusiness, Building2, Globe2, Plane, Search, Sparkles, Ticket} from "lucide-react";
 
 /** Uses the existing /search route and its validated pillar-specific routing.
  * No duplicate provider API, invented results, client token or CSS theme.
@@ -52,25 +52,24 @@ export default function EcosystemUnifiedSearch({appHome=false}:{appHome?:boolean
   // tabs here previously only switched search categories and were confusing.
   if (appHome) return (
     <section id="ecosystem-search" aria-labelledby="ecosystem-search-title"
-      className="gth-glass scroll-mt-24 rounded-2xl border border-[var(--border)] p-3 text-[var(--text)] sm:p-5">
-      <h2 id="ecosystem-search-title" className="text-base font-bold sm:text-xl">Find anything on GTH PRO</h2>
-      <p className="mt-1 text-xs text-[var(--text-soft)]">Ask GTH · Guided search and planning</p>
+      className="gth-glass scroll-mt-24 rounded-3xl border border-[var(--border)] p-3 text-[var(--text)] shadow-[var(--shadow)] backdrop-blur-xl sm:p-5">
+      <div className="flex items-center justify-between gap-2"><div><h2 id="ecosystem-search-title" className="text-xl font-bold tracking-tight sm:text-2xl">Ask GTH</h2><p className="mt-0.5 text-xs text-[var(--text-soft)]">Guided search &amp; planning</p></div><span className="gth-glass flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] text-[var(--text)]"><Sparkles size={21} aria-hidden="true"/></span></div>
       <form action="/app/search" method="get" role="search" aria-label="GTH PRO Home search"
-        className="mt-3 flex min-w-0 flex-wrap items-end gap-2">
-        <label htmlFor="ecosystem-universal-keyword" className="min-w-0 flex-1 text-xs font-semibold text-[var(--text-soft)]">
-          Search all platforms
+        className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] p-1.5 focus-within:outline-2 focus-within:outline-[var(--gold)]">
+        <label htmlFor="ecosystem-universal-keyword" className="flex min-w-0 flex-1 items-center gap-2 pl-2 text-xs font-semibold text-[var(--text-soft)]">
+          <Search size={17} className="shrink-0" aria-hidden="true"/><span className="sr-only">Search all platforms</span>
           <input id="ecosystem-universal-keyword" aria-label="What would you like to find?"
             type="search" name="q" minLength={2} maxLength={100} required
-            autoComplete="off" placeholder="Hotels, properties, tenders, events…"
-            className="gth-input mt-1 block min-h-12 w-full min-w-0"/>
+            autoComplete="off" placeholder="What would you like to discover?"
+            className="min-h-11 w-full min-w-0 bg-transparent text-sm text-[var(--text)] outline-none"/>
         </label>
         <input type="hidden" name="category" value="all"/>
-        <button type="submit" className="gth-btn-gold inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
-          <Search size={16} aria-hidden="true"/> Search
+        <button type="submit" aria-label="Search GTH PRO" className="gth-btn-gold inline-flex size-11 shrink-0 items-center justify-center rounded-xl">
+          <ArrowRight size={20} aria-hidden="true"/>
         </button>
       </form>
       <p className="mt-2 text-xs leading-5 text-[var(--text-soft)]">
-        Search is guided by existing service rules; no generative API calls. <Link href="/app/packages" prefetch={false} className="underline">Build a multi-service travel plan</Link>.
+        Find journeys, properties, tenders and events. <Link href="/app/packages" prefetch={false} className="underline">Plan a trip</Link>.<span className="sr-only"> Guided by existing service rules; no generative API calls.</span>
       </p>
     </section>
   );

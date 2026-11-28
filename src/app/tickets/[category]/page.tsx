@@ -1,3 +1,5 @@
+import {ModuleHomeHero,ModuleSearchLink,FlagshipHubRail} from "@/components/mobile/LuxuryMarketplace";
+import {LUXURY_VISUALS} from "@/lib/destinations/visual-media";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -25,6 +27,8 @@ export default async function TicketCategoryPage({params}:Props){
  const selected=ticketCategories.find(item=>item.slug===category);
  if(!selected)notFound();
  return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
+   <ModuleHomeHero module={selected.label} title={selected.slug==="sports"?"Global stays & match hospitality":"Discover "+selected.label.toLowerCase()+" worldwide"} subtitle={selected.description} image={LUXURY_VISUALS.tickets} links={selected.slug==="sports"?[["Find stays","/hotels"],["Match tickets","/tickets/sports"],["Flights","/flights"],["Packages","/travel/packages"]]:[["All events","/tickets"],["Stadiums","/stadiums"]]}><ModuleSearchLink href="#worldwide-ticket-search-title" label={"Find "+selected.label.toLowerCase()+" tickets"} description="Use the existing event and country filters."/></ModuleHomeHero>
+   {selected.slug==="sports"&&<FlagshipHubRail/>}
    <TravelSectionNav/>
    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
     <nav aria-label="Breadcrumb" className="text-sm text-[var(--text-soft)]"><Link href="/tickets" className="underline">Worldwide tickets</Link> / {selected.label}</nav>

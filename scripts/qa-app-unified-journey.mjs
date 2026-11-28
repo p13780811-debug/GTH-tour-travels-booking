@@ -47,7 +47,11 @@ try{
   assert.equal(await exploreShortcut.getAttribute("href"),"/app/explore");
   assert.equal(await deskShortcut.getAttribute("href"),"/app/board");
   const deskBounds=await deskShortcut.boundingBox();
-  assert.ok(deskBounds && deskBounds.y < 380,"Research Desk must appear near the top of the screen");
+  const heroBounds=await page.locator("[data-app-hero-shell]").boundingBox();
+  const floatingBounds=await page.locator("[data-app-floating-search]").boundingBox();
+  assert.ok(heroBounds&&floatingBounds&&deskBounds,"Hero, search and shortcuts must render");
+  assert.ok(floatingBounds.y<heroBounds.y+heroBounds.height&&floatingBounds.y+floatingBounds.height>heroBounds.y+heroBounds.height,"Search must overlap the hero boundary");
+  assert.ok(deskBounds.y>=floatingBounds.y+floatingBounds.height&&deskBounds.y+deskBounds.height<820,"Research Desk must sit below the hero/search and within the first viewport");
 
   await page.getByRole("heading",{name:/Four paths, one Home/}).waitFor({timeout:25000});
   assert.ok(await page.getByRole("link",{name:/Explore Travel/}).isVisible());

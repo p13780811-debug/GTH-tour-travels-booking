@@ -32,7 +32,8 @@ test("the mobile UI reuses the approved photography without new APIs or CSS them
  const dashboard=read("src/components/mobile/MobileAppDashboard.tsx");
  assert.match(hero,/embedded=false/);
  assert.match(hero,/Featured GTH PRO journeys/);
- assert.match(hero,/\/images\/mega\/hotels\.jpg/);
+ assert.match(hero,/MARKETPLACE_HERO_SLIDES/);
+ assert.match(read("src/lib/destinations/visual-media.ts"),/hotels:\{name:"Hotels",image:"\/images\/mega\/hotels\.jpg"/);
  assert.match(dashboard,/<AppJourneyCards \/>/);
  assert.match(dashboard,/<AppResearchQuickAccess \/>/);
  assert.match(dashboard,/<AppInstall \/>/);
