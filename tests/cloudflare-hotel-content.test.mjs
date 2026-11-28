@@ -17,7 +17,7 @@ class Storage{
 const profile=(city,country,id)=>({id,name:"Fixture hotel "+id,city,country,main_photo:"https://images.example.com/hotel.jpg",stars:4});
 function fixture({storage=new Storage(),runtime={VERCEL_ENV:"production",NUITEE_PRODUCTION_API_KEY:"fixture-only"},fail=false}={}){
  const calls=[];
- const core=load("src/lib/travel/nuitee-hotel-content-core.ts",{"./hotel-geo-bounds":bounds},{fetch:async(url,init)=>{const u=new URL(url);calls.push(u);assert.equal(u.pathname,"/v3.0/data/hotels");assert.equal(init.method,"GET");assert.equal(init.redirect,"error");assert.equal(init.headers["X-API-Key"],"fixture-only");if(fail)return new Response(null,{status:503});return Response.json({data:[profile(u.searchParams.get("cityName")||"Kolkata",u.searchParams.get("countryCode"),"lp12345")]});}});
+ const core=load("src/lib/travel/nuitee-hotel-content-core.ts",{"./hotel-geo-bounds":bounds},{fetch:async(url,init)=>{const u=new URL(url);calls.push(u);assert.equal(u.pathname,"/v3.0/data/hotels");assert.equal(init.method,"GET");assert.equal(init.redirect,"manual");assert.equal(init.headers["X-API-Key"],"fixture-only");if(fail)return new Response(null,{status:503});return Response.json({data:[profile(u.searchParams.get("cityName")||"Kolkata",u.searchParams.get("countryCode"),"lp12345")]});}});
  const {HotelContentCache}=load("scripts/cloudflare-hotel-content.mjs",{"cloudflare:workers":{DurableObject:class{}},"../src/lib/travel/nuitee-hotel-content-core.ts":core},{Date:Clock});
  return {object:new HotelContentCache({storage},runtime),calls,storage,core};
 }

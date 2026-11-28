@@ -54,3 +54,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-28: Recheck native Tender fallback when the Redis client fails before returning a response. A real shared quota reservation remains required before any catalogue read.
 
 2026-11-28: Retry the protected deployment after the standalone audit occupied the shared preview queue. Deploy the reviewed Tender fallback before auditing it.
+
+2026-11-28: Verify Worker-compatible redirect handling for native public reads, shared quotas and free hotel metadata. Redirect responses remain rejected. Protected preview only.

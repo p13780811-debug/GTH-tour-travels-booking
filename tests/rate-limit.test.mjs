@@ -42,13 +42,15 @@ test('missing configuration and store failures fail closed', async () => configu
   process.env.UPSTASH_REDIS_REST_TOKEN = 'test-only-token';
   globalThis.fetch = async () => { throw new Error('private backend details'); };
   await assert.rejects(enforceRateLimit(req, 'ai'), { status: 503, message: 'Request protection unavailable' });
+  globalThis.fetch = async () => Response.redirect('https://example.org/');
+  await assert.rejects(enforceRateLimit(req, 'ai'), { status: 503, message: 'Request protection unavailable' });
 }));
 
 test('allowed requests use one atomic EVAL with identity and global counters', async () => configured(async () => {
   globalThis.fetch = async (url, options) => {
     assert.equal(String(url), 'https://test.upstash.io/');
     assert.equal(options.cache, 'no-store');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     const command = JSON.parse(options.body);
     assert.equal(command[0], 'EVAL');
     assert.equal(command[2], 4);

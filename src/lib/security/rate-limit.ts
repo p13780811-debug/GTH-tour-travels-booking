@@ -80,7 +80,7 @@ export async function enforceRateLimit(req: Request, scope: LimitScope, userId?:
   let result: unknown;
   try {
     const response = await fetch(url, {
-      method: "POST", cache: "no-store", redirect: "error",
+      method: "POST", cache: "no-store", redirect: "manual",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(3000),
       body: JSON.stringify(["EVAL", LIMIT_SCRIPT, keys.length, ...keys, ...args]),

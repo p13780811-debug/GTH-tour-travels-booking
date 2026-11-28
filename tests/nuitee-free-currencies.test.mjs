@@ -20,7 +20,7 @@ test("parallel and warm currency reads share the single fixed free GET request",
  const {api,calls}=setup();const all=await Promise.all(Array.from({length:40},()=>api.getHotelCurrencyCatalog()));
  await api.getHotelCurrencyCatalog();assert.equal(calls.length,1);assert.ok(all.every(value=>value.source==="nuitee"));
  assert.equal(calls[0].url,"https://api.liteapi.travel/v3.0/data/currencies");
- assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"error");assert.equal(calls[0].options.credentials,"omit");
+ assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"manual");assert.equal(calls[0].options.credentials,"omit");
  assert.equal(calls[0].options.headers["X-API-Key"],"fixture-private-currency-key");
  assert.doesNotMatch(JSON.stringify(all),/fixture-private|countries|X-API-Key/);
 });

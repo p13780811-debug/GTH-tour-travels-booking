@@ -69,7 +69,7 @@ async function reserve(env,reportFailure){
    if(parts.length!==3||JSON.parse(atob(parts[1].replace(/-/g,"+").replace(/_/g,"/"))).role!=="service_role"){reportFailure("budget_configuration");return 503;}
    headers.Authorization="Bearer "+key;
   }
-  const response=await fetch(new URL("/rest/v1/rpc/tender_reserve_fallback_read",base),{method:"POST",headers,body:JSON.stringify({p_environment:environment}),redirect:"error",signal:AbortSignal.timeout(2500)});
+  const response=await fetch(new URL("/rest/v1/rpc/tender_reserve_fallback_read",base),{method:"POST",headers,body:JSON.stringify({p_environment:environment}),redirect:"manual",signal:AbortSignal.timeout(2500)});
   if(!response.ok){reportFailure("budget_rpc_response");return 503;}
   const allowed=await response.json();
   if(typeof allowed!=="boolean"){reportFailure("budget_rpc_response");return 503;}

@@ -44,12 +44,15 @@ test("budget denial fails closed; only Redis unavailability uses the same fallba
  let fallback=0,reads=0;const db=async()=>{reads++;return result()};
  const limited=make(async()=>{throw Object.assign(Error(),{status:429})},async()=>{fallback++;return Response.json(true)});
  assert.equal((await limited.nativeTenderRead(req(),env,db,{cache:null})).status,429);assert.equal(fallback,0);assert.equal(reads,0);
- const unavailable=make(async()=>{throw Object.assign(Error(),{status:503})},async(url,init)=>{fallback++;assert.equal(new URL(url).pathname,"/rest/v1/rpc/tender_reserve_fallback_read");assert.equal(init.method,"POST");assert.equal(init.headers.apikey,env.SUPABASE_SERVICE_ROLE_KEY);assert.equal(JSON.parse(init.body).p_environment,"preview");return Response.json(true)});
+ const unavailable=make(async()=>{throw Object.assign(Error(),{status:503})},async(url,init)=>{fallback++;assert.equal(new URL(url).pathname,"/rest/v1/rpc/tender_reserve_fallback_read");assert.equal(init.method,"POST");assert.equal(init.redirect,"manual");assert.equal(init.headers.apikey,env.SUPABASE_SERVICE_ROLE_KEY);assert.equal(JSON.parse(init.body).p_environment,"preview");return Response.json(true)});
  assert.equal((await unavailable.nativeTenderRead(req(),env,db,{cache:null})).status,200);assert.equal(fallback,1);assert.equal(reads,1);
  const rejected=make(async()=>{throw Object.assign(Error(),{status:503})},async()=>Response.json(false));
  assert.equal((await rejected.nativeTenderRead(req(),env,db,{cache:null})).status,429);assert.equal(reads,1);
  const redisClientFailure=make(async()=>{throw new Error("Redis client unavailable");},async()=>Response.json(true));
  assert.equal((await redisClientFailure.nativeTenderRead(req(),env,db,{cache:null})).status,200);
+ assert.equal(reads,2);
+ const redirect=make(async()=>{throw Object.assign(Error(),{status:503})},async()=>Response.redirect("https://example.org/"));
+ assert.equal((await redirect.nativeTenderRead(req(),env,db,{cache:null})).status,503);
  assert.equal(reads,2);
 });
 test("invalid count and expired records are never invented or cached",async()=>{

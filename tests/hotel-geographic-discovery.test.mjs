@@ -46,7 +46,7 @@ test("warm/parallel profile reads coalesce, use only free GET content and keep s
  let budget=0;const {api,calls}=service({budget:async()=>{budget++;}});
  await Promise.all(Array.from({length:40},()=>api.getFreeHotelProfiles("IN","Mumbai",1)));await api.getFreeHotelProfiles("IN","Mumbai",1);
  assert.equal(calls.length,1);assert.equal(budget,1);assert.equal(calls[0].url.pathname,"/v3.0/data/hotels");assert.equal(calls[0].url.searchParams.get("limit"),"24");
- assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"error");
+ assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"manual");
  await api.getFreeHotelProfiles("IN","",2);assert.equal(calls[1].url.searchParams.get("offset"),"24");
  await assert.rejects(api.getFreeHotelProfiles("GB","London",1));assert.equal(calls.length,3);
 });

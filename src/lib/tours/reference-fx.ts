@@ -9,7 +9,7 @@ export async function getUsdInrReference():Promise<UsdInrReference|null>{
  try{
   const response=await fetch(RATE_ENDPOINT,{
    headers:{Accept:"application/json"},
-   redirect:"error",
+   redirect:"manual",
    signal:AbortSignal.timeout(2_000),
    next:{revalidate:12*60*60},
   });

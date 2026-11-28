@@ -5,7 +5,7 @@ import {WEGOTRIP_API,normalizeSupplierProduct,object,supplierCity,supplierId,sup
 const MAX_BYTES=1_500_000;
 async function fetchSupplier(path:string,params:Record<string,string>):Promise<Record<string,unknown>>{
  const url=new URL(WEGOTRIP_API+path);for(const [key,value] of Object.entries(params))url.searchParams.set(key,value);
- const response=await fetch(url,{headers:{Accept:"application/json","Accept-Language":"en"},redirect:"error",signal:AbortSignal.timeout(8000),cache:"no-store"});
+ const response=await fetch(url,{headers:{Accept:"application/json","Accept-Language":"en"},redirect:"manual",signal:AbortSignal.timeout(8000),cache:"no-store"});
  if(!response.ok||!response.headers.get("content-type")?.includes("application/json")||Number(response.headers.get("content-length"))>MAX_BYTES||!response.body)throw Error("Supplier unavailable");
  const reader=response.body.getReader();let size=0;const chunks:Uint8Array[]=[];
  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>MAX_BYTES)throw Error("Supplier response too large");chunks.push(part.value);}}finally{await reader.cancel();}

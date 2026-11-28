@@ -23,7 +23,7 @@ function publicDb(env){
  return async(path,params,body,options)=>{
   const endpoint=new URL("/rest/v1/"+path,url);
   if(params)endpoint.search=new URLSearchParams(params).toString();
-  const response=await fetch(endpoint,{headers:{...headers,...(body?{"Content-Type":"application/json"}:{}),...(options?.exactCount?{Prefer:"count=exact"}:{})},method:body?"POST":"GET",body:body?JSON.stringify(body):undefined,redirect:"error",signal:AbortSignal.timeout(4500)});
+  const response=await fetch(endpoint,{headers:{...headers,...(body?{"Content-Type":"application/json"}:{}),...(options?.exactCount?{Prefer:"count=exact"}:{})},method:body?"POST":"GET",body:body?JSON.stringify(body):undefined,redirect:"manual",signal:AbortSignal.timeout(4500)});
   if(options?.exactCount)return response;
   if(!response.ok)throw Error("Public DB read unavailable");
   return response.json();

@@ -43,7 +43,7 @@ export async function readHotelContent(country:string,city:string,page:number,ke
   if(typeof key!=="string"||!key.trim())throw Error("Hotel content is not configured");
   const url=new URL(URL_BASE);url.searchParams.set("countryCode",scope.country);if(scope.city)url.searchParams.set("cityName",scope.city);
   url.searchParams.set("limit",String(HOTEL_PROFILE_PAGE_SIZE));url.searchParams.set("offset",String((scope.page-1)*HOTEL_PROFILE_PAGE_SIZE));
-  const response=await fetcher(url,{method:"GET",headers:{accept:"application/json","X-API-Key":key},redirect:"error",credentials:"omit",signal:AbortSignal.timeout(5000),cache:"no-store"});
+  const response=await fetcher(url,{method:"GET",headers:{accept:"application/json","X-API-Key":key},redirect:"manual",credentials:"omit",signal:AbortSignal.timeout(5000),cache:"no-store"});
   if(!response.ok)throw Error("Hotel content unavailable");
   if(Number(response.headers.get("content-length")||0)>512000)throw Error("Hotel content too large");
   const body=await response.text();if(body.length>512000)throw Error("Hotel content too large");
