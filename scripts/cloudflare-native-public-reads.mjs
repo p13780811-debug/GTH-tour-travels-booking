@@ -1,7 +1,7 @@
 // Native Worker anonymous public GETs; no Next or Supabase SDK initialization.
 // The original Next API remains the fallback for errors, authentication, and
 // all methods outside these exact read contracts. All database reads use RLS.
-import {nativeTenderRead,nativeTenderInput} from "./cloudflare-native-tender.mjs";
+import {nativeTenderRead,nativeTenderInput,nativeTenderUnavailable} from "./cloudflare-native-tender.mjs";
 import {publicReadCacheKey,storePublicEdgeCache} from "../src/lib/security/public-edge-cache.ts";
 import {MOBILITY_CITIES,mobilityCity,mobilityCityKey,mobilityText} from "../src/lib/mobility/city.ts";
 import {countryCodeForDestinationName} from "../src/lib/travel/osmCountryCodes.ts";
@@ -32,9 +32,10 @@ function publicDb(env){
 function reply(data,control){return Response.json(data,{headers:{"Cache-Control":control,"X-GTH-Edge-Read":"native","X-Content-Type-Options":"nosniff"}})}
 export async function nativePublicRead(request,env){
  if(env.GTH_CLOUDFLARE_INGRESS!=="1")return null;
- if(nativeTenderInput(request,env)){
+ const tenderInput=nativeTenderInput(request,env);
+ if(tenderInput){
   try{return await nativeTenderRead(request,env,publicDb(env));}
-  catch{return Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
+  catch{return nativeTenderUnavailable(tenderInput,"db_configuration");}
  }
  if(!publicReadCacheKey(request))return null;
  const url=new URL(request.url);

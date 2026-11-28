@@ -59,6 +59,9 @@ def request(url,headers=None):
     diagnostic=h.get("X-GTH-Preview-Tender-Diagnostic","")
     if re.fullmatch(r"ingress=[01];eligible=[01];cookie=[01];auth=[01];rsc=[01];range=[01];access=[01]",diagnostic):
         result["tender_native_diagnostic"]=diagnostic
+    failure=h.get("X-GTH-Preview-Tender-Failure","")
+    if failure in ("read_budget","catalogue_response","catalogue_count","catalogue_rows","request_failed","db_configuration"):
+        result["tender_native_failure"]=failure
     if status>=400:
         lower=data.lower()
         result["error_category"]=next((label for label,markers in [
@@ -88,6 +91,10 @@ def request(url,headers=None):
         lower=data.lower()
         result["html_bytes"]=len(data)
         result["runtime_error_marker"]=b"application error: a server-side exception" in lower or b"worker threw exception" in lower
+        if urllib.parse.urlsplit(url).path=="/app":
+            result["app_redesign"]=all(marker in lower for marker in (
+                b'data-app-floating-search="true"', b'href="/app/explore"', b'href="/app/board"'
+            ))
     return result
 print("PREVIEW_ANONYMOUS",json.dumps(request("https://"+host+"/")),flush=True)
 print("PRODUCTION_CURRENT",json.dumps(request("https://gthproglobal.com/")),flush=True)
@@ -146,7 +153,7 @@ try:
     else:
         raise RuntimeError("Access service authentication not accepted after bounded propagation check; no application results claimed")
     routes=[
-      "/", "/hotels","/flights","/destinations/goa","/destinations/tokyo",
+      "/", "/app","/hotels","/flights","/destinations/goa","/destinations/tokyo",
       "/mobility","/mobility/mumbai","/mobility/kolkata","/go/transport","/real-estate",
       "/real-estate/registry","/real-estate/tools","/tender","/tender/assistant",
       "/stadiums","/stadiums/wankhede-stadium","/tickets","/tickets/sports",
@@ -166,6 +173,9 @@ try:
             print("ROUTE_RETRY",json.dumps({"path":path,"result":retry}),flush=True)
         time.sleep(1)
         print("ROUTE",json.dumps({"path":path,"first":first,"repeat":second}),flush=True)
+        if path=="/app" and any(x["status"]!=200 or not x.get("app_redesign") for x in observations):
+            failed=True
+            print("APP_REDESIGN_GATE_FAILED",flush=True)
         if path=="/api/tender?scope=world&country=IN" and any(x["status"]!=200 or x.get("edge_read")!="native-tender" or "items" not in x.get("counts",{}) for x in observations):
             failed=True
             print("TENDER_NATIVE_COLD_GATE_FAILED",flush=True)

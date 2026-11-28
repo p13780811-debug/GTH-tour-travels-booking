@@ -8,7 +8,11 @@ const BLOCKED=["authorization","cookie","range","rsc","next-router-state-tree","
 const ALLOWED=new Set(["scope","country","lang","page","sort"]);
 let redisRetryAt=0;
 let redisNamespace="";
-const unavailable=()=>Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
+export function nativeTenderUnavailable(input,stage){
+ const headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};
+ if(input.previewNoCache)headers["X-GTH-Preview-Tender-Failure"]=stage;
+ return Response.json({error:"Tender catalog temporarily unavailable"},{status:503,headers});
+}
 const denied=()=>Response.json({error:"Catalogue refresh is busy. Your saved references are safe; retry shortly."},{status:429,headers:{"Cache-Control":"no-store","Retry-After":"60","X-Content-Type-Options":"nosniff"}});
 // Preview Access adds its own cookie even to public GETs. This exception
 // grants no application authorization: only the same anonymous RLS read is
@@ -83,16 +87,16 @@ export async function nativeTenderRead(request,env,db,{reserveRead=reserve,cache
  }catch{/* Protected preview and cache failures use the real bounded read. */}
  try{
   const permit=await reserveRead(env);
-  if(permit===429)return denied();if(permit!==200)return unavailable();
+  if(permit===429)return denied();if(permit!==200)return nativeTenderUnavailable(input,"read_budget");
   const now=Date.now();
   const raw=await db("tenders",{select:COLUMNS,status:"eq.published",source_verified:"eq.true",is_public:"eq.true",deadline_at:"gt."+new Date(now).toISOString(),country_code:"eq."+input.country,order:"deadline_at.asc,id.asc",limit:String(PAGE_SIZE)},undefined,{exactCount:true});
-  if(!raw.ok||Number(raw.headers.get("content-length"))>512000)return unavailable();
+  if(!raw.ok||Number(raw.headers.get("content-length"))>512000)return nativeTenderUnavailable(input,"catalogue_response");
   const match=(raw.headers.get("content-range")||"").match(/^(?:[0-9]+-[0-9]+|\*)\/([0-9]+)$/);
   const total=match?Number(match[1]):NaN;
-  const body=await raw.text();if(body.length>512000)return unavailable();
+  const body=await raw.text();if(body.length>512000)return nativeTenderUnavailable(input,"catalogue_response");
   const rows=JSON.parse(body);
-  if(!Number.isSafeInteger(total)||total<0||!Array.isArray(rows)||rows.length>PAGE_SIZE||rows.length!==Math.min(total,PAGE_SIZE))return unavailable();
-  if(rows.some(row=>!row||typeof row.id!=="string"||row.country_code!==input.country||!Number.isFinite(Date.parse(row.deadline_at))))return unavailable();
+  if(!Number.isSafeInteger(total)||total<0||!Array.isArray(rows)||rows.length>PAGE_SIZE||rows.length!==Math.min(total,PAGE_SIZE))return nativeTenderUnavailable(input,"catalogue_count");
+  if(rows.some(row=>!row||typeof row.id!=="string"||row.country_code!==input.country||!Number.isFinite(Date.parse(row.deadline_at))))return nativeTenderUnavailable(input,"catalogue_rows");
   const items=rows.filter(row=>Date.parse(row.deadline_at)>Date.now()).map(row=>Object.fromEntries(COLUMNS.split(",").filter(k=>Object.prototype.hasOwnProperty.call(row,k)).map(k=>[k,row[k]])));
   const data={items,total,page:1,pageSize:PAGE_SIZE,country:input.country,language:input.language,scope:"world",primaryCount:null,nearbyCount:null,countryRequired:false};
   const ttl=Math.max(0,Math.min(60,...rows.map(row=>Math.floor((Date.parse(row.deadline_at)-Date.now())/1000)-1)));
@@ -102,5 +106,5 @@ export async function nativeTenderRead(request,env,db,{reserveRead=reserve,cache
    if(text.length<=128000)await cache.put(input.key,new Response(text,{headers:{"Content-Type":"application/json","Cache-Control":"public, max-age="+ttl,"X-GTH-Tender-Until":String(Date.now()+ttl*1000)}}));
   }catch{/* Do not turn a valid source response into a cache error. */}
   return response;
- }catch{return unavailable();}
+ }catch{return nativeTenderUnavailable(input,"request_failed");}
 }
