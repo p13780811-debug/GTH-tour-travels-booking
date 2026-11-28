@@ -231,7 +231,7 @@ export default async function DestinationsPage({ searchParams }: Props) {
       </p>
       <h1 className="mt-4 max-w-2xl text-[clamp(1.65rem,6.4vw,3.25rem)] font-bold leading-[1.12] tracking-tight">Find your next destination. Know where to start.</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--text-soft)]">Browse worldwide destinations with clear country and region context. Save your research, compare options and open the right travel services without going back.</p>
-      <div className="relative mt-4 aspect-[16/9] max-h-64 overflow-hidden rounded-2xl lg:hidden"><Image src={MODULE_HEROES.destinations.image} alt="" fill unoptimized sizes="100vw" className="object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
+      <div className="relative mt-4 aspect-[16/9] min-h-[160px] max-h-64 w-full overflow-hidden rounded-2xl lg:hidden"><Image src={MODULE_HEROES.destinations.image} alt="" width={3200} height={800} priority unoptimized sizes="100vw" className="h-full w-full object-cover"/><span className="absolute right-2 top-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
       <form role="search" action="/destinations/search" method="get" className="relative z-10 mx-2 -mt-6 flex max-w-xl flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-2 shadow-[var(--shadow)] sm:flex-row lg:mx-0 lg:mt-5">
        {country&&<input type="hidden" name="country" value={country}/>}
        {region&&<input type="hidden" name="region" value={region}/>}
