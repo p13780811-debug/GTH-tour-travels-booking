@@ -50,3 +50,5 @@ Private staging validation of the intact application under current Cloudflare 64
 2026-11-28: PR #266 merged after 9/9 workflows, including 1,145 unit tests and both destination-image themes. Verify the combined release under protected staging; retain all strict native Tender and route gates, no production changes.
 
 2026-11-28: Recheck the mobile hotel search layout and record the protected native Tender failure stage when the catalogue is unavailable. Retain the existing release gates and preview Access policy.
+
+2026-11-28: Recheck native Tender fallback when the Redis client fails before returning a response. A real shared quota reservation remains required before any catalogue read.

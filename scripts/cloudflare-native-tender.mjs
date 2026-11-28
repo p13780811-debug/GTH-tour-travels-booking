@@ -46,29 +46,35 @@ export function nativeTenderInput(request,env){
 }
 // Same Redis scope, identity, limits and database fallback RPC as Next.
 // Only this fixed quota RPC may use the private server-side role binding.
-async function reserve(env){
+async function reserve(env,reportFailure){
  const namespace=(env.GTH_RATE_LIMIT_NAMESPACE||"gth-pro")+":"+(env.VERCEL_ENV||"production");
  if(namespace!==redisNamespace){redisNamespace=namespace;redisRetryAt=0;}
  if(Date.now()>=redisRetryAt){
   try{
    await enforceRateLimit(new Request("https://www.gthproglobal.com/api/tender"),"tender_reads","shared-public-catalogue",env);
    return 200;
-  }catch(e){if(e?.status===429)return 429;if(e?.status!==503)return 503;redisRetryAt=Date.now()+60000;}
+  }catch(error){
+   if(error?.status===429)return 429;
+   // An unavailable Redis client still needs the same durable quota decision.
+   redisRetryAt=Date.now()+60000;
+  }
  }
  try{
   const base=new URL(env.NEXT_PUBLIC_SUPABASE_URL||""),key=env.SUPABASE_SERVICE_ROLE_KEY;
   const environment=env.VERCEL_ENV;
-  if(base.protocol!=="https:"||!base.hostname.endsWith(".supabase.co")||base.username||base.password||base.port||base.search||base.hash||base.pathname!=="/"||typeof key!=="string"||!key||!["preview","production"].includes(environment))return 503;
+  if(base.protocol!=="https:"||!base.hostname.endsWith(".supabase.co")||base.username||base.password||base.port||base.search||base.hash||base.pathname!=="/"||typeof key!=="string"||!key||!["preview","production"].includes(environment)){reportFailure("budget_configuration");return 503;}
   const headers={apikey:key,"Content-Type":"application/json",Accept:"application/json"};
   if(!key.startsWith("sb_secret_")){
    const parts=key.split(".");
-   if(parts.length!==3||JSON.parse(atob(parts[1].replace(/-/g,"+").replace(/_/g,"/"))).role!=="service_role")return 503;
+   if(parts.length!==3||JSON.parse(atob(parts[1].replace(/-/g,"+").replace(/_/g,"/"))).role!=="service_role"){reportFailure("budget_configuration");return 503;}
    headers.Authorization="Bearer "+key;
   }
   const response=await fetch(new URL("/rest/v1/rpc/tender_reserve_fallback_read",base),{method:"POST",headers,body:JSON.stringify({p_environment:environment}),redirect:"error",signal:AbortSignal.timeout(2500)});
-  if(!response.ok)return 503;
-  const allowed=await response.json();return allowed===true?200:allowed===false?429:503;
- }catch{return 503;}
+  if(!response.ok){reportFailure("budget_rpc_response");return 503;}
+  const allowed=await response.json();
+  if(typeof allowed!=="boolean"){reportFailure("budget_rpc_response");return 503;}
+  return allowed?200:429;
+ }catch{reportFailure("budget_rpc_request");return 503;}
 }
 function responseHeaders(input,ttl,hit){
  const headers={"Cache-Control":!input.previewNoCache&&input.explicitLanguage&&ttl>0?"public, max-age=0, s-maxage="+ttl+", must-revalidate":"private, no-store","X-GTH-Edge-Read":"native-tender","X-Content-Type-Options":"nosniff"};
@@ -86,8 +92,9 @@ export async function nativeTenderRead(request,env,db,{reserveRead=reserve,cache
   if(hit&&hit.status===200&&ttl>0&&!hit.headers.has("set-cookie"))return new Response(hit.body,{status:200,headers:{"Content-Type":"application/json",...responseHeaders(input,ttl,true)}});
  }catch{/* Protected preview and cache failures use the real bounded read. */}
  try{
-  const permit=await reserveRead(env);
-  if(permit===429)return denied();if(permit!==200)return nativeTenderUnavailable(input,"read_budget");
+  let budgetFailure="read_budget";
+  const permit=await reserveRead(env,stage=>{budgetFailure=stage;});
+  if(permit===429)return denied();if(permit!==200)return nativeTenderUnavailable(input,budgetFailure);
   const now=Date.now();
   const raw=await db("tenders",{select:COLUMNS,status:"eq.published",source_verified:"eq.true",is_public:"eq.true",deadline_at:"gt."+new Date(now).toISOString(),country_code:"eq."+input.country,order:"deadline_at.asc,id.asc",limit:String(PAGE_SIZE)},undefined,{exactCount:true});
   if(!raw.ok||Number(raw.headers.get("content-length"))>512000)return nativeTenderUnavailable(input,"catalogue_response");

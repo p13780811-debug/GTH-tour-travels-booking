@@ -48,6 +48,9 @@ test("budget denial fails closed; only Redis unavailability uses the same fallba
  assert.equal((await unavailable.nativeTenderRead(req(),env,db,{cache:null})).status,200);assert.equal(fallback,1);assert.equal(reads,1);
  const rejected=make(async()=>{throw Object.assign(Error(),{status:503})},async()=>Response.json(false));
  assert.equal((await rejected.nativeTenderRead(req(),env,db,{cache:null})).status,429);assert.equal(reads,1);
+ const redisClientFailure=make(async()=>{throw new Error("Redis client unavailable");},async()=>Response.json(true));
+ assert.equal((await redisClientFailure.nativeTenderRead(req(),env,db,{cache:null})).status,200);
+ assert.equal(reads,2);
 });
 test("invalid count and expired records are never invented or cached",async()=>{
  const api=make(async()=>{});

@@ -60,7 +60,7 @@ def request(url,headers=None):
     if re.fullmatch(r"ingress=[01];eligible=[01];cookie=[01];auth=[01];rsc=[01];range=[01];access=[01]",diagnostic):
         result["tender_native_diagnostic"]=diagnostic
     failure=h.get("X-GTH-Preview-Tender-Failure","")
-    if failure in ("read_budget","catalogue_response","catalogue_count","catalogue_rows","request_failed","db_configuration"):
+    if failure in ("read_budget","budget_configuration","budget_rpc_response","budget_rpc_request","catalogue_response","catalogue_count","catalogue_rows","request_failed","db_configuration"):
         result["tender_native_failure"]=failure
     if status>=400:
         lower=data.lower()
