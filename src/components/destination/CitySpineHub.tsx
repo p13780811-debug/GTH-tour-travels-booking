@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import {destinationServicePhoto,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import type { ReactNode } from "react";
 import {
   ArrowRight, Building2, Compass, FileText, Globe2, Hotel,
@@ -42,11 +44,12 @@ function BookingAction({href,label}: {href:string|null;label:string}) {
       </Link>;
 }
 
-function HubCard({name,description,scope,href,label,icon}: {
+function HubCard({name,description,scope,href,label,icon,media="packages"}: {
   name:string;description:string;scope:string;href:string|null;label:string;
-  icon:ReactNode;
+  icon:ReactNode;media?:string;
 }) {
   return <article className="gth-glass flex min-w-0 flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-[var(--text)] shadow-sm">
+    <div className="relative aspect-[16/7] overflow-hidden rounded-xl"><Image src={destinationServicePhoto(media)} alt="" fill unoptimized={isIllustrativeVisual(destinationServicePhoto(media))} sizes="(max-width:768px) 100vw,33vw" className="object-cover"/><span className="absolute bottom-1 left-1 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span></div>
     <div className="flex items-start justify-between gap-3">
       <span className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-2 text-[var(--gold)]">{icon}</span>
       <span className="rounded-full border border-[var(--border)] px-3 py-1 text-[11px] text-[var(--text-soft)]">{scope}</span>
@@ -163,14 +166,14 @@ export default function CitySpineHub({
         <StaySearchControls city={city} locale={locale} currency={selectedCurrency}
           value={verifiedStay.ok?verifiedStay.value:null} invalid={!verifiedStay.ok}/>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <HubCard icon={<Hotel size={23}/>}
+          <HubCard media="hotels" icon={<Hotel size={23}/>}
             name={preferredHotel.provider==="hopegoo"?"HopeGoo · Asia stays":"GTH Worldwide Stays"}
             scope={preferredHotel.capability==="verified_deep_link"?"Verified destination ID":"Supplier-operated search"}
             description={preferredHotel.provider==="hopegoo"
               ?"Public affiliate landing for eligible Asian markets. Confirm your city, dates, guests and currency on the partner site."
               :"Hosted Nuitee search. Choose the exact supplier destination; dates and inventory must be confirmed there."}
             href={preferredHotel.href} label="Explore stays"/>
-          {hopegoo&&<HubCard icon={<Globe2 size={23}/>}
+          {hopegoo&&<HubCard media="hotels" icon={<Globe2 size={23}/>}
             name={preferredHotel.provider==="hopegoo"?"Alternative GTH worldwide stays":"HopeGoo · Regional stays"}
             scope={preferredHotel.provider==="hopegoo"?"Nuitee search":"Regional provider"}
             description={preferredHotel.provider==="hopegoo"
@@ -188,7 +191,7 @@ export default function CitySpineHub({
           These three cards are supplier discovery paths, not invented top-rated attractions or available products.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
-          {experiences.map(({id,label,summary,result})=><HubCard key={id}
+          {experiences.map(({id,label,summary,result})=><HubCard media="activities" key={id}
             icon={<Compass size={22}/>} name={label}
             scope={result.searchIntentForwarded?"City search":"Supplier directory"}
             description={summary} href={result.href} label="Browse experiences"/>)}
@@ -212,7 +215,7 @@ export default function CitySpineHub({
           Route selection is not a live-fare comparison. Select actual dates and airports in each supplier form.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
-          {flights.map(item=><HubCard key={item.provider}
+          {flights.map(item=><HubCard media="flights" key={item.provider}
             icon={<Plane size={22}/>} name={item.label}
             scope={item.provider==="nuitee"
               ? item.capability==="supplier_search"?"Shared flights & stays portal":"Portal unavailable"
@@ -223,11 +226,11 @@ export default function CitySpineHub({
             label={item.provider==="nuitee"?"Open flights & stays":"Compare flight search"}/>)}
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <HubCard icon={<TrainFront size={22}/>} name="Trains, buses & ferries"
+          <HubCard media="train" icon={<TrainFront size={22}/>} name="Trains, buses & ferries"
             scope="12Go provider form"
             description="Choose departure and arrival cities on the existing supplier widget. No route is fabricated."
             href={transport.href} label="Explore ground travel"/>
-          <HubCard icon={<MapPin size={22}/>} name="Airport & local transfers"
+          <HubCard media="transfers" icon={<MapPin size={22}/>} name="Airport & local transfers"
             scope="Verified widget"
             description="Use the existing transfer provider search to select airport, pickup and passenger details."
             href={transfers.href} label="Find transfers"/>
@@ -238,17 +241,17 @@ export default function CitySpineHub({
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">One city · four pillars</p>
         <h3 id="city-pillars-heading" className="mt-2 text-xl font-bold sm:text-2xl">City-connected opportunities</h3>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <HubCard icon={<Ticket size={22}/>} name="Stadiums & live events"
+          <HubCard media="stadiums" icon={<Ticket size={22}/>} name="Stadiums & live events"
             scope={links.venues.length?"Exact host-city match":"Global venue directory"}
             description={links.venues.length
               ? links.venues.map(v=>v.name).join(", ")+" · Official schedules, not live seat inventory."
               :"No exact city-and-country-reviewed stadium mapping. Browse worldwide venues instead."}
             href={links.venues.length?links.venues[0].href:"/stadiums"} label="Explore stadiums"/>
-          <HubCard icon={<Building2 size={22}/>} name="Real Estate & registry"
+          <HubCard media="properties" icon={<Building2 size={22}/>} name="Real Estate & registry"
             scope={links.realEstate.scope==="city_filter"?"City-filtered research":"Global property directory"}
             description="Explore public property and project references. A city filter does not guarantee local inventory or verified prices."
             href={links.realEstate.href} label="Research property"/>
-          <HubCard icon={<FileText size={22}/>} name="Global tenders"
+          <HubCard media="tenders" icon={<FileText size={22}/>} name="Global tenders"
             scope={links.tenders.scope==="country"?"Country-wide coverage":"Worldwide coverage"}
             description="Procurement discovery is grouped by published jurisdiction, not an unverified city-level tender match."
             href={links.tenders.href} label="Discover tenders"/>

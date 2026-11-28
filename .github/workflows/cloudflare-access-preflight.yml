@@ -1,0 +1,156 @@
+name: Cloudflare read-only access preflight
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-access-preflight.yml']
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/cloudflare-access-preflight.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+concurrency:
+  group: gth-cloudflare-access-preflight-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  access:
+    if: >-
+      github.repository == 'p13780811-debug/GTH-tour-travels-booking' &&
+      (github.ref == 'refs/heads/infra/cloudflare-preflight-20261125' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'infra/cloudflare-preflight-20261125'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inventory existing GitHub secrets by presence only
+        env:
+          PRESENT_NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL: ${{ secrets.NEXT_PUBLIC_HOPEGOO_AFFILIATE_URL != '' }}
+          PRESENT_ENABLE_UNIFIED_CITY_ROUTER: ${{ secrets.ENABLE_UNIFIED_CITY_ROUTER != '' }}
+          PRESENT_NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL: ${{ secrets.NEXT_PUBLIC_NUITEE_WHITE_LABEL_URL != '' }}
+          PRESENT_CRON_SECRET: ${{ secrets.CRON_SECRET != '' }}
+          PRESENT_ODDS_API_KEY: ${{ secrets.ODDS_API_KEY != '' }}
+          PRESENT_SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID != '' }}
+          PRESENT_NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID != '' }}
+          PRESENT_NUITEE_PRODUCTION_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY != '' }}
+          PRESENT_PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY != '' }}
+          PRESENT_GTH_PUBLIC_LAUNCH_ENABLED: ${{ secrets.GTH_PUBLIC_LAUNCH_ENABLED != '' }}
+          PRESENT_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+          PRESENT_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL != '' }}
+          PRESENT_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN != '' }}
+          PRESENT_GTH_LEGACY_PEXELS_KEY_DISABLED: ${{ secrets.GTH_LEGACY_PEXELS_KEY_DISABLED != '' }}
+          PRESENT_TRAVELPAYOUTS_API_TOKEN: ${{ secrets.TRAVELPAYOUTS_API_TOKEN != '' }}
+          PRESENT_TRAVELPAYOUTS_MARKER: ${{ secrets.TRAVELPAYOUTS_MARKER != '' }}
+          PRESENT_GEMINI_PRO_KEY: ${{ secrets.GEMINI_PRO_KEY != '' }}
+          PRESENT_AVIASALES_API_TOKEN: ${{ secrets.AVIASALES_API_TOKEN != '' }}
+          PRESENT_AVIASALES_PARTNER_ID: ${{ secrets.AVIASALES_PARTNER_ID != '' }}
+          PRESENT_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY != '' }}
+          PRESENT_NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}
+          PRESENT_NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
+          PRESENT_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+          PRESENT_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+          PRESENT_NEXT_PUBLIC_TICKETNETWORK_AFFILIATE_URL: ${{ secrets.NEXT_PUBLIC_TICKETNETWORK_AFFILIATE_URL != '' }}
+        run: |
+          python3 - <<'PY'
+          import os
+          names = sorted(k for k in os.environ if k.startswith('PRESENT_'))
+          for k in names:
+              print(k.removeprefix('PRESENT_') + ': ' + ('available' if os.environ[k] == 'true' else 'not available to this workflow'))
+          print('Presence only; no secret values passed to this step.')
+          PY
+      - name: Verify Cloudflare account and Workers API access without mutation
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.request
+          import urllib.error
+
+          token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+          account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+          if not token.strip():
+              sys.exit("CLOUDFLARE_API_TOKEN is missing.")
+          if not re.fullmatch(r"[0-9a-fA-F]{32}", account):
+              sys.exit("CLOUDFLARE_ACCOUNT_ID is missing or has an invalid format.")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          req = urllib.request.Request(
+              f"https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts",
+              headers={"Authorization": "Bearer " + token, "Accept": "application/json"},
+              method="GET",
+          )
+          try:
+              with urllib.request.build_opener(NoRedirect()).open(req, timeout=30) as res:
+                  result = json.load(res)
+              if not result.get("success") or not isinstance(result.get("result"), list):
+                  sys.exit("Cloudflare Workers API returned an unsuccessful response.")
+          except urllib.error.HTTPError as exc:
+              sys.exit(f"Cloudflare Workers API request failed (HTTP {exc.code}). Verify account ID, token expiry and permissions.")
+          except (urllib.error.URLError, TimeoutError, ValueError):
+              sys.exit("Cloudflare Workers API could not be reached or returned an invalid response.")
+          for name in ["gth-pro-migration", "gth-pro-preview-20261126"]:
+              print("Worker " + name + ": " + ("exists" if any(w.get("id") == name for w in result["result"]) else "absent"))
+          print("PASS: account and Workers API access confirmed. No resources were created, updated, or deleted.")
+          PY
+      - name: Locate and report actual private staging workflow result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-staging.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=5' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Find protected preview activation run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-protected-preview.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Diagnose Zero Trust availability without changing settings
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, json, os
+          base="https://api.cloudflare.com/client/v4"
+          account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          token=os.environ["CLOUDFLARE_API_TOKEN"]
+          for label,path in [("Token status","/user/tokens/verify"),("Zero Trust organization","/accounts/"+account+"/access/organizations"),("Access app listing","/accounts/"+account+"/access/apps?per_page=1")]:
+              req=urllib.request.Request(base+path,headers={"Authorization":"Bearer "+token})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      d=json.load(r); print(label+": HTTP "+str(r.status)+" success="+str(d.get("success")))
+              except urllib.error.HTTPError as e:
+                  try: errors=json.load(e).get("errors",[])
+                  except Exception: errors=[]
+                  categories=set()
+                  for item in errors:
+                      msg=str(item.get("message","")).lower()
+                      for term in ["permission","authentication","authorization","not authorized","not found","not configured","not enrolled","not enabled","organization","subscription","onboard","forbidden"]:
+                          if term in msg: categories.add(term)
+                  print(label+": HTTP "+str(e.code)+" codes="+",".join(str(x.get("code")) for x in errors)+" categories="+",".join(sorted(categories)))
+          PY
+      - name: Find latest live audit runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-live-audit.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=3' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Locate DNS preparation run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-dns-prepare.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Locate isolated production candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-production-candidate.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'
+      - name: Locate Mumbai extract snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api 'repos/p13780811-debug/GTH-tour-travels-booking/actions/workflows/cloudflare-mobility-snapshot.yml/runs?branch=infra%2Fcloudflare-preflight-20261125&per_page=2' --jq '.workflow_runs[] | {id,head_sha,status,conclusion,html_url}'

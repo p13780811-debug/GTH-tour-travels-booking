@@ -8,10 +8,16 @@ import { readApiJson } from "@/lib/api-response"
 import LoginModal from "@/components/real-estate/auth/LoginModal"
 import BottomNav from "@/components/mobile/BottomNav"
 import ListingIntakeAssistant from "@/components/real-estate/ListingIntakeAssistant"
-import BulkListingUpload from "@/components/real-estate/BulkListingUpload"
+import dynamic from "next/dynamic"
 import GlobalRegistryOnboarding, { type GlobalOnboardingResult } from "@/components/real-estate/GlobalRegistryOnboarding"
 import type { IntakeFields } from "@/lib/real-estate/listing-intake"
 import styles from "@/components/real-estate/Listing.module.css"
+
+// File parsing (PDF/XLSX) is a browser-only interaction. Avoid shipping its parser in the SSR graph.
+const BulkListingUpload = dynamic(() => import("@/components/real-estate/BulkListingUpload"), {
+    ssr: false,
+    loading: () => <p role="status" className="opacity-70 py-4">Loading bulk property upload…</p>,
+})
 
 const fields = [
     { key:"title", label:"Project or property name", min:3, max:180, hint:"Use the actual name shown in the property documents." },

@@ -1,0 +1,25 @@
+name: Cloudflare protected preview and cutover audit
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths: ['.github/workflows/cloudflare-live-audit.yml','scripts/cloudflare-live-audit.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gth-cloudflare-protected-preview-operations
+  cancel-in-progress: false
+jobs:
+  audit:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/infra/cloudflare-preflight-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Audit existing DNS, Worker, and protected HTTP routes
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/cloudflare-live-audit.py

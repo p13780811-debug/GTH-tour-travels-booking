@@ -2,7 +2,9 @@ import {unstable_cache} from "next/cache";
 import {createClient} from "@supabase/supabase-js";
 import {getMobilityCity} from "@/lib/mobility/catalog";
 import type {MobilityCity} from "@/lib/mobility/city";
-import {mobilityOverpassQuery,parseMobilityMap} from "@/lib/mobility/osm";
+import {mobilityOverpassQuery,parseMobilityMap,reviewedMapCentre,validatedMumbaiSnapshot} from "@/lib/mobility/osm";
+
+import mumbaiSnapshot from "@/lib/mobility/mumbai-osm-snapshot.json";
 
 const OVERPASS=["https://overpass.private.coffee/api/interpreter","https://overpass-api.de/api/interpreter"] as const;
 const cacheHeaders={"Cache-Control":"public, max-age=0, s-maxage=21600, stale-while-revalidate=3600"};
@@ -10,7 +12,7 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
   const query=mobilityOverpassQuery(city);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if(!query||!url||!key)return {state:"unavailable"} as const;
+  if(!query||!url||!key)throw new Error("Mobility map unavailable");
   const db=createClient(url,key,{auth:{autoRefreshToken:false,persistSession:false}});
   for(const endpoint of OVERPASS){
     const {data:allowed,error}=await db.rpc("mobility_reserve_map_read").abortSignal(AbortSignal.timeout(2300));
@@ -24,8 +26,8 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
         continue;
       }
       const body=await response.json();
-      const parsed=parseMobilityMap(body);
-      if(parsed)return {state:"available",...parsed} as const;
+      const parsed=parseMobilityMap(body,!!reviewedMapCentre(city));
+      if(parsed)return {state:"available",...parsed,source:"overpass"} as const;
       // A valid empty/ambiguous result means trying an equivalent mirror would not help.
       if(!body.remark)break;
       console.warn("Mobility map provider returned a partial snapshot",new URL(endpoint).hostname);
@@ -33,15 +35,26 @@ const mapData=unstable_cache(async(city:MobilityCity)=>{
       console.warn("Mobility map provider timed out or was unreachable",new URL(endpoint).hostname);
     }
   }
-  return {state:"unavailable"} as const;
-},["mobility-osm-city-v2"],{revalidate:21600});
+  // Never store provider errors as successful six-hour map snapshots.
+  throw new Error("Mobility map unavailable");
+},["mobility-osm-city-v4"],{revalidate:21600});
 
 export async function GET(request:Request){
   try{
-    const slug=new URL(request.url).searchParams.get("city")??"";
+    const params=new URL(request.url).searchParams;
+    const slug=params.get("city")??"";
     const city=await getMobilityCity(slug);
     if(!city||city.slug!==slug)return Response.json({state:"unknown"},{status:404,headers:{"Cache-Control":"no-store"}});
-    const result=await mapData(city);
-    return Response.json(result,{headers:result.state==="available"?cacheHeaders:{"Cache-Control":"public, max-age=0, s-maxage=300"}});
+    // Prefer the dated local extract for Mumbai to avoid repeated upstream timeouts.
+    // After its freshness window expires the existing live lookup remains available.
+    const snapshot=validatedMumbaiSnapshot(mumbaiSnapshot,city);
+    if(snapshot&&params.get("refresh")!=="1")return Response.json({state:"available",...snapshot},{headers:cacheHeaders});
+    try{
+      const result=await mapData(city);
+      return Response.json(result,{headers:cacheHeaders});
+    }catch(error){
+      if(snapshot)return Response.json({state:"available",...snapshot},{headers:{"Cache-Control":"no-store"}});
+      throw error;
+    }
   }catch{return Response.json({state:"unavailable"},{status:503,headers:{"Cache-Control":"no-store"}});}
 }

@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
@@ -68,3 +69,49 @@ test("OSM mapped features reject ambiguous, incomplete or untrusted responses",(
   assert.equal(result.features[0].href,"https://www.openstreetmap.org/node/20");
   assert.equal(result.features[1].kind,"transit");
 });
+
+test("reviewed Mumbai and Kolkata map centres avoid nationwide queries without weakening generic city validation",()=>{
+  for(const city of [{name:"Mumbai",slug:"mumbai",countryCode:"IN"},{name:"Kolkata",slug:"kolkata",countryCode:"IN"}]){
+    assert.ok(osm.reviewedMapCentre(city));
+    assert.match(osm.mobilityOverpassQuery(city),/around:8000,[\d.]+,[\d.]+/);
+    assert.doesNotMatch(osm.mobilityOverpassQuery(city),/area\.country/);
+  }
+  assert.equal(osm.reviewedMapCentre({name:"Mumbai",slug:"mumbai",countryCode:"US"}),undefined);
+  const snapshot={osm3s:{timestamp_osm_base:"2026-11-24T12:00:00Z"},elements:[{type:"node",id:30,tags:{railway:"station",name:"Central"}}]};
+  assert.equal(osm.parseMobilityMap(snapshot),null);
+  assert.equal(osm.parseMobilityMap(snapshot,true).features.length,1);
+  assert.equal(osm.parseMobilityMap({...snapshot,remark:"partial"},true),null);
+});
+
+test("Mumbai dated extract is real, city-scoped, bounded and expires rather than faking live data",()=>{
+  const raw=JSON.parse(readFileSync("src/lib/mobility/mumbai-osm-snapshot.json","utf8"));
+  const city={name:"Mumbai",slug:"mumbai",countryCode:"IN"};
+  const now=Date.parse(raw.updatedAt)+86400000;
+  const result=osm.validatedMumbaiSnapshot(raw,city,now);
+  assert.equal(result.source,"dated-osm-extract");
+  assert.ok(result.features.length>=5);
+  assert.equal(osm.validatedMumbaiSnapshot(raw,{...city,slug:"kolkata"},now),null);
+  assert.equal(osm.validatedMumbaiSnapshot(raw,city,now+31*86400000),null);
+  assert.equal(osm.validatedMumbaiSnapshot({...raw,features:[]},city,now),null);
+  assert.equal(osm.validatedMumbaiSnapshot({...raw,features:[...raw.features,{kind:"transit",name:"bad",href:"https://example.com"}]},city,now),null);
+});
+
+ test("public Mumbai snapshot fast path preserves date, schema, cache and refresh semantics",async()=>{
+ const raw=JSON.parse(readFileSync("src/lib/mobility/mumbai-osm-snapshot.json","utf8"));
+ const {publicMumbaiMapResponse}=loadTenderTs("src/lib/mobility/public-map-snapshot.ts",{"./osm":osm,"./mumbai-osm-snapshot.json":{default:raw}});
+ const now=Date.parse(raw.updatedAt)+86400000;
+ const request=(query,method="GET",path="/api/mobility/map")=>new Request("https://example.com"+path+query,{method});
+ const response=publicMumbaiMapResponse(request("?city=mumbai"),now);
+ assert.equal(response.status,200);
+ assert.match(response.headers.get("cache-control"),/s-maxage=21600/);
+ const result=await response.json();
+ assert.equal(result.state,"available");
+ assert.equal(result.source,"dated-osm-extract");
+ assert.equal(result.updatedAt,raw.updatedAt);
+ assert.ok(result.features.length>=5);
+ assert.equal(publicMumbaiMapResponse(request("?city=mumbai&refresh=1"),now),null);
+ assert.equal(publicMumbaiMapResponse(request("?city=kolkata"),now),null);
+ assert.equal(publicMumbaiMapResponse(request("?city=mumbai","POST"),now),null);
+ assert.equal(publicMumbaiMapResponse(request("?city=mumbai","GET","/api/mobility/traffic"),now),null);
+ assert.equal(publicMumbaiMapResponse(request("?city=mumbai"),now+31*86400000),null);
+ });

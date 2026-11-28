@@ -1,3 +1,4 @@
+import {destinationVisual,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import CityMobility from "@/components/mobility/CityMobility";
 import {mobilityCity} from "@/lib/mobility/city";
 import DestinationTravelSearch from "@/components/destination/DestinationTravelSearch";
@@ -13,7 +14,7 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, BookOpen, Compass, Globe2, Hotel, MapPin, Plane, ShieldCheck, Sparkles } from "lucide-react";
 import DestinationCard from "@/components/destination/DestinationCard";
 import DestinationEcosystem from "@/components/destination/DestinationEcosystem";
-import {destinationServices} from "@/lib/destinations/ecosystem";
+import {destinationServices,destinationCountryCode} from "@/lib/destinations/ecosystem";
 import { destinations, destinationImageForSlug, type DestinationOverview } from "@/data/destinations";
 import { blogs } from "@/data/blogs";
 import { siteUrl,isPublicLaunch } from "@/lib/seo/site";
@@ -130,6 +131,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
   const countryFilter = validatedCountry(selectedParams?.country);
   const destination = await getDestination(slug,countryFilter);
   if (!destination) notFound();
+  const visual=destinationVisual(slug,destinationCountryCode(destination.country,destination.countryCode),destination.image_url);
   const mobility=mobilityCity({name:destination.name,slug,country:destination.country,
     countryCode:destination.countryCode??countryCodeForDestinationName(destination.country)});
 
@@ -173,7 +175,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       { "@type": "ListItem", position: 2, name: destination.name, item: siteUrl(`/destinations/${slug}${countryFilter?`?country=${encodeURIComponent(countryFilter)}`:""}`) },
     ],
   };
-  const links=destinationServices({slug,name:destination.name,country:destination.country});
+  const links=destinationServices({slug,name:destination.name,country:destination.country,countryCode:destination.countryCode??countryCodeForDestinationName(destination.country)});
   const mappedAttractions = links.find(item => item.key === "attractions");
   const hotelsHref="#destination-hotels-tab";
   const toursHref="#destination-tours";
@@ -187,7 +189,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <JsonLd data={breadcrumbData}/>
       <section className="relative isolate overflow-hidden border-b border-[var(--border)]" data-travel-hero="true">
-        <Image src={destination.image_url} alt={destination.name} fill priority sizes="100vw"
+        <Image src={visual} alt="" fill priority unoptimized={isIllustrativeVisual(visual)} sizes="100vw"
           className="absolute -z-20 object-cover opacity-25" />
         <div className="absolute inset-0 -z-10 bg-[var(--bg)]/80"/>
         <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.25fr_.75fr]">
@@ -207,26 +209,28 @@ export default async function DestinationPage({ params, searchParams }: Props) {
               Booking, current prices, local conditions and room availability require independent supplier confirmation.
             </p>
             <nav aria-label="Destination page sections" className="mt-6 flex flex-wrap gap-3">
-              <Link href="#destination-ecosystem" className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
+              <Link href={city?"#city-spine-hub":"#destination-ecosystem"} className="gth-btn-gold inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold"><Globe2 size={17}/> Explore categories</Link>
               <Link href={hotelsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Hotel size={17}/> Book stays</Link>
               <Link href={toursHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Compass size={17}/> Tours</Link>
               <Link href={flightsHref} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm"><Plane size={17}/> Flights</Link>
             </nav>
           </div>
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+          <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-xl"><Image src={visual} alt={isIllustrativeVisual(visual)?"":destination.name+" destination scenery"} fill unoptimized={isIllustrativeVisual(visual)} sizes="(max-width:1024px) 100vw,40vw" className="object-cover"/>{isIllustrativeVisual(visual)&&<span className="absolute bottom-2 left-2 rounded bg-[var(--card)] px-2 py-1 text-xs">Illustrative visual</span>}</div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-soft)]"><Sparkles size={17}/> One destination · four pillars</p>
             <h2 className="mt-4 text-xl font-semibold">Plan, stay, invest and discover.</h2>
             <p className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
               Start with destination context, move to relevant travel options, explore source-backed property listings and access public tender intelligence.
             </p>
             <div className="mt-5 flex flex-wrap gap-2 text-xs">
-              {["Travel","Real Estate","Tenders"].map((value)=><span key={value} className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2">{value}</span>)}
+              {["Travel","Real Estate","Tenders","Tickets"].map((value)=><span key={value} className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 py-2">{value}</span>)}
             </div>
           </div>
         </div>
       </section>
       <DestinationTravelSearch key={slug + ":" + destination.country} city={destination.name} country={destination.country}
         countryCode={destination.countryCode ?? countryCodeForDestinationName(destination.country)}/>
+      <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6"><Link prefetch={false} href={links.find(item=>item.key==="packages")?.href??"/travel/packages"} className="gth-btn-gold inline-flex min-h-12 items-center gap-2 px-5">Build your {destination.name} travel plan <ArrowRight size={17}/></Link></div>
       <TravelSectionNav />
       <Suspense fallback={<p role="status" className="mx-auto max-w-7xl px-4 py-6 text-sm text-[var(--text-soft)]">Loading city-matched supplier options…</p>}>
         <DestinationSupplierPicks city={destination.name} country={destination.country} countryCode={destination.countryCode}/>
@@ -235,7 +239,7 @@ export default async function DestinationPage({ params, searchParams }: Props) {
       {mobility&&<CityMobility city={mobility} compact/>}
 
       {city ? <CitySpineHub city={city} locale={locale} travelParams={stayParams}/> :
-        <DestinationEcosystem slug={slug} name={destination.name} country={destination.country}/>}
+        <DestinationEcosystem slug={slug} name={destination.name} country={destination.country} countryCode={destination.countryCode}/>}
       {city&&mappedAttractions&&<nav aria-label="Mapped attractions discovery" className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-sm sm:px-6">
         <p className="text-[var(--text-soft)]">Browse real OpenStreetMap records for {mappedAttractions.scope==="destination"?city.name:destination.country||"worldwide locations"}. Community map city tags may be incomplete.</p>
         <Link prefetch={false} href={mappedAttractions.href} className="inline-flex min-h-11 items-center gap-2 font-semibold underline">

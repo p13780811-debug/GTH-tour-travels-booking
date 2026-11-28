@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+import {storePublicEdgeCache} from "@/lib/security/public-edge-cache";
 import {unstable_cache} from "next/cache";
 import {supabase} from "@/lib/supabase";
 import {countryCodeForDestinationName} from "@/lib/travel/osmCountryCodes";
@@ -29,7 +30,8 @@ export async function GET(request:Request){
   let degraded=false;
   try{for(const city of await searchCatalog(prefix))matches.set(mobilityCityKey(city),city);}
   catch{degraded=true;}
-  return NextResponse.json({cities:[...matches.values()].slice(0,12),degraded},{
+  const response=NextResponse.json({cities:[...matches.values()].slice(0,12),degraded},{
     headers:{"Cache-Control":degraded?"no-store":"public, s-maxage=300, stale-while-revalidate=60"},
   });
+  return degraded?response:storePublicEdgeCache(request,response);
 }

@@ -1,0 +1,44 @@
+name: Hotel content cache and usage protection QA
+on:
+  pull_request:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - 'src/lib/travel/nuitee-*.ts'
+      - 'src/app/api/hotels/discovery/route.ts'
+      - 'src/components/hotel/NearbyHotelDiscovery.tsx'
+      - 'scripts/cloudflare-hotel-content.mjs'
+      - 'tests/cloudflare-hotel-content.test.mjs'
+      - '.github/workflows/hotel-content-cache-qa.yml'
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/cloudflare-hotel-content.test.mjs tests/hotel-geographic-discovery.test.mjs tests/nuitee-free-usage-boundary.test.mjs tests/nuitee-free-currencies.test.mjs
+      - name: Existing site-wide hotel placement and direct-booking regression tests
+        run: node --test tests/hotel-booking-fallback-cities.test.mjs tests/hotel-nearby-search.test.mjs tests/hotel-destination-master.test.mjs tests/nuitee-hotel-discovery-seo.test.mjs tests/hotel-integrated-handoff.test.mjs tests/super-app-home-supplier-ux.test.mjs tests/semantic-ai-supplier-handoff.test.mjs tests/maldives-elite-escape.test.mjs
+      - name: Maldives hero navigation regression
+        run: |
+          node --input-type=module <<'JS'
+          import assert from "node:assert/strict";
+          import {readFileSync} from "node:fs";
+          const hero=readFileSync("src/components/HeroSlider.tsx","utf8");
+          assert.equal((hero.match(/href=\{current === 0 \? "\/maldives-elite-escape" : "\/hotels"\}/g)||[]).length,2);
+          assert.doesNotMatch(hero,/title: "Maldives Elite Escape"/);
+          const gateway=readFileSync("src/app/mega-aggregator/page.tsx","utf8");
+          assert.match(gateway,/href="\/maldives-elite-escape"[^>]*>Maldives Elite Escape<\/Link>/);
+          assert.match(gateway,/canonical: "\/mega-aggregator"/);
+          const sitemap=readFileSync("src/app/sitemap.ts","utf8");
+          assert.match(sitemap,/"\/maldives-elite-escape"/);
+          assert.match(sitemap,/destinations\.filter\(d => d\.slug !== "maldives"\)/);
+          JS
+      - run: npx --no-install tsc --noEmit

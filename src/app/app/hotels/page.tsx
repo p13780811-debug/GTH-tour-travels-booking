@@ -1,3 +1,5 @@
+import {MODULE_HEROES} from "@/lib/destinations/visual-media";
+import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {Suspense} from "react";
@@ -19,8 +21,8 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
  const bookingName=/^[\p{L}\p{M}\p{N}\s.'&-]{2,80}$/u.test(rawName.trim())?rawName.trim():"";
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(90px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
-  <div className="mx-auto w-full max-w-7xl pt-3">
-   <h1 className="mb-3 px-4 text-xl font-semibold sm:px-6">Hotels</h1>
+  <ModuleHomeHero module="Hotels" title="Stay somewhere extraordinary." subtitle="Find a city, choose your dates and discover your next stay." image={MODULE_HEROES.hotels.image} links={[["Hotel directory","/app/hotels?directory=1"],["Destinations","/app/destinations"],["Packages","/app/packages"]]}>
+   <h1 className="mb-3 text-xl font-semibold">Hotels</h1>
    {(bookingCity||bookingName)&&<p role="status" className="mx-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-sm leading-6 text-[var(--text-soft)] sm:mx-6">
      {bookingCity?<>Search <strong className="text-[var(--text)]">{bookingCity}</strong> using the GTH Worldwide Stays booking search below.</>:
        <>Use the GTH Worldwide Stays booking search below.</>}
@@ -29,6 +31,8 @@ export default async function AppHotels({searchParams}:{searchParams:Promise<Que
      We do not invent a Place ID or show local directory records as rooms.
    </p>}
    <Suspense fallback={<p role="status">Loading hotel search…</p>}><HotelBookingExperience searchPath="/app/hotels"/></Suspense>
+  </ModuleHomeHero>
+  <div className="mx-auto w-full max-w-7xl pt-3">
    <Link href="/app/hotels?directory=1" className="mx-4 my-4 inline-flex min-h-11 items-center text-sm underline sm:mx-6">Explore separate non-bookable hotel directory</Link>
   </div>
  </main>;

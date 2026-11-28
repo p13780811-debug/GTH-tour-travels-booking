@@ -1,3 +1,5 @@
+import {venueVisual} from "@/lib/destinations/visual-media";
+import {MarketplaceHero} from "@/components/mobile/LuxuryMarketplace";
 import EventShockwave from "@/components/intelligence/EventShockwave";
 import ViralCardGenerator from "@/components/share/ViralCardGenerator";
 import type { Metadata } from "next";
@@ -16,7 +18,9 @@ import { isPublicLaunch, safeStructuredData, siteUrl } from "@/lib/seo/site";
 
 type Props = { params: Promise<{ slug: string }> };
 export const revalidate = 3600;
-export const dynamicParams = false;
+// OpenNext may need to regenerate a known venue when no prerender cache is bound.
+// Both metadata and the page still reject any slug absent from the reviewed catalog.
+export const dynamicParams = true;
 export function generateStaticParams() { return stadiums.map(({ slug }) => ({ slug })); }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -62,6 +66,7 @@ export default async function StadiumPage({ params }: Props) {
     }],
   };
   return <main className="min-h-screen min-w-0 bg-[var(--bg)] text-[var(--text)]">
+    <MarketplaceHero title="Match-day discovery" subtitle="Venue information and independent ticket booking handoffs" image={venueVisual(venue.slug)}/>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeStructuredData(schema) }}/>
     <TravelSectionNav/>
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -144,6 +149,7 @@ export default async function StadiumPage({ params }: Props) {
           <Link prefetch={false} href={"/hotels?" + new URLSearchParams({ view:"booking", city: venue.city, country: venue.countryCode })} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Explore {venue.city} stays</Link>
           <Link prefetch={false} href={destinationFlightHref(flightCity)} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Flights to {flightCity}</Link>
           <Link prefetch={false} href="/transfers" className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Choose airport transfer</Link>
+          <Link prefetch={false} href={"/travel/packages?"+new URLSearchParams({city:venue.city,country:venue.countryCode})+"#package-builder"} className="gth-btn-gold inline-flex min-h-12 items-center rounded-xl px-4">Plan your match-day trip</Link>
         </nav>
       </section>
       <footer className="mt-6 text-sm leading-6 text-[var(--text-soft)]">Venue sources reviewed 10 November 2026. Booking terms and confirmation come from the selected seller. GTH PRO may earn commission on qualifying partner bookings. <Link href="/affiliate-disclosure" className="underline">Affiliate disclosure</Link></footer>

@@ -1,0 +1,58 @@
+First staging deployment requested after owner confirmed private environment export and seven recovered GitHub secrets. Deploy only gth-pro-migration; no production domain, no paid resources, no DNS changes.
+
+Retry after run 45703437574: exclude explicitly identified Vercel-generated metadata; preserve validation for all application keys. Deploy only isolated staging Worker.
+
+Retry after run 45703920497: distinguish Supabase and Upstash endpoint validation failures; normalize surrounding whitespace only. No production changes.
+
+Owner confirmed corrected Redis secret formatting. Retry run 45704230378 with corrected GitHub secrets. Isolated staging only; no DNS or production changes.
+
+Retry after run 45705845987: validated real configuration and completed OpenNext build. Enable redacted Wrangler diagnostics and dry-run size gate. Deploy private Worker only, without public endpoints, DNS changes or paid resources.
+2026-11-26: Worker metafile audit and strict 2.8 MB gate.
+
+Private staging validation of the intact application under current Cloudflare 64 MiB uncompressed platform limit. Fresh isolated Worker; existing Worker, production domain and DNS unchanged. No public endpoint or production promotion authorized by this trigger.
+
+2026-11-26: Owner authorized Tokyo hotel fix redeployment on existing protected preview, with authenticated core-route audit. No domain/production changes in this workflow.
+
+2026-11-26: Redeploy bounded stadium detail regeneration and success-only mobility map cache; verify exact catalog venue and upstream availability. Preserve protected preview.
+
+2026-11-26: Validate optimized city-centre maps, Cloudflare direct ingress rate identity and canonical redirect before final cutover.
+
+2026-11-26: Redeploy verified 25-feature Mumbai OpenStreetMap extract, dated data attribution, opt-in newer map refresh and strict 26-route audit. No public domain changes.
+
+2026-11-26: Owner authorized another protected staging validation of browser-only bulk document parsing, static ticket hub with URL-aware client search, and strict production-candidate gzip gate. No public domain changes or production promotion.
+
+2026-11-26: Validate dated Mumbai map fast path and ticket URL regression coverage. Read aggregate preview CPU outcomes; preserve full 26-route and production bundle gates.
+
+2026-11-26: Owner withdrew obsolete gzip target; enforce actual 64 MiB platform limit, correct standalone ticket QA dependencies and bounded World Bank pagination. Retest protected preview; no public DNS mutation.
+
+2026-11-26: Validate anonymous edge read cache, static tender assistant shell and lightweight middleware dispatch on Cloudflare Free. No new storage or plan upgrades. Keep strict first/repeat route audit.
+
+2026-11-26: Correct mobility cache return scope; run cache security tests, static shell offload and repeat every audited GET. Strict Free plan only.
+
+2026-11-26: Deploy the native anonymous read and public prerender shell Worker wrapper; retain OpenNext for every other request. Repeat the 26-route audit. No new Cloudflare products, paid resources or DNS mutations.
+
+2026-11-26: Complete native read contract tests and registry cache dependency coverage. Keep ISR shell expiry bounded by the generated HTML timestamp and reject credentials in public hotel source links.
+
+2026-11-27: Validate merged PR #267 hotel-content Durable Object binding and Maldives canonical navigation on existing owner-protected preview only. Run existing authenticated route audit; no public domain, DNS, paid resources or production promotion. Preview is supplier-cache-only.
+
+2026-11-27: Protected preview validation for merged #268 and reviewed local alternate booking CTA. Keep existing private Access, supplier cache-only mode, zero paid resources, no DNS or public production changes. Run full authenticated route audit.
+
+2026-11-28: Redeploy existing protected preview with merged #269; verify native cache and expanded static-shell fast paths, 26-route audit and aggregate preview/production Worker resource outcomes. No public deploy, DNS or billing changes. Keep all auth controls and supplier-cache-only mode.
+
+2026-11-28: Validate merged #270 with public HTML cache policy and sitemap cache; existing protected preview only. Preserve Access and production DNS. Verify 26-route runtime audit; Cache API production hit measurements remain separate.
+
+2026-11-28: Re-audit protected preview after narrow native public Tender world/country page-one fast path, preserved shared Redis+database refresh quota, exact RLS-filtered result count, and mandatory first/repeat HTTP 200 native route marker. No production/DNS changes; owner approval required for cutover.
+
+2026-11-28: Recheck protected preview native Tender eligibility; previous 26/26 HTTP checks were healthy but required native marker was absent. Preserve the strict native gate; capture only fixed credential-presence booleans, never values. No production changes.
+
+2026-11-28: Validate native Tender public RLS reads under protected preview Access-only cookie; cookie must exactly match Access assertion, no application cookie/auth and no cache lookup/write. Retain strict first/repeat native marker and all other 26-route gates; production unchanged.
+
+2026-11-28: PR #266 merged after 9/9 workflows, including 1,145 unit tests and both destination-image themes. Verify the combined release under protected staging; retain all strict native Tender and route gates, no production changes.
+
+2026-11-28: Recheck the mobile hotel search layout and record the protected native Tender failure stage when the catalogue is unavailable. Retain the existing release gates and preview Access policy.
+
+2026-11-28: Recheck native Tender fallback when the Redis client fails before returning a response. A real shared quota reservation remains required before any catalogue read.
+
+2026-11-28: Retry the protected deployment after the standalone audit occupied the shared preview queue. Deploy the reviewed Tender fallback before auditing it.
+
+2026-11-28: Verify Worker-compatible redirect handling for native public reads, shared quotas and free hotel metadata. Redirect responses remain rejected. Protected preview only.

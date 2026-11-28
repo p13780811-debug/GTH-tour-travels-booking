@@ -22,10 +22,11 @@ const req = new Request('https://gth-pro.vercel.app/api/chat', { headers: { 'x-v
 
 // No real provider calls or credentials. Preserve environment/fetch on failure.
 async function configured(fn) {
-  const names = ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'VERCEL', 'VERCEL_ENV', 'GTH_RATE_LIMIT_NAMESPACE'];
+  const names = ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'VERCEL', 'VERCEL_ENV', 'GTH_RATE_LIMIT_NAMESPACE', 'GTH_CLOUDFLARE_INGRESS'];
   const prior = Object.fromEntries(names.map(name => [name, process.env[name]]));
   const originalFetch = globalThis.fetch;
   Object.assign(process.env, { UPSTASH_REDIS_REST_URL: 'https://test.upstash.io', UPSTASH_REDIS_REST_TOKEN: 'test-only-token', VERCEL: '1', VERCEL_ENV: 'preview', GTH_RATE_LIMIT_NAMESPACE: 'test' });
+  delete process.env.GTH_CLOUDFLARE_INGRESS;
   try { await fn(); } finally {
     globalThis.fetch = originalFetch;
     for (const name of names) { if (prior[name] === undefined) delete process.env[name]; else process.env[name] = prior[name]; }
@@ -41,13 +42,15 @@ test('missing configuration and store failures fail closed', async () => configu
   process.env.UPSTASH_REDIS_REST_TOKEN = 'test-only-token';
   globalThis.fetch = async () => { throw new Error('private backend details'); };
   await assert.rejects(enforceRateLimit(req, 'ai'), { status: 503, message: 'Request protection unavailable' });
+  globalThis.fetch = async () => Response.redirect('https://example.org/');
+  await assert.rejects(enforceRateLimit(req, 'ai'), { status: 503, message: 'Request protection unavailable' });
 }));
 
 test('allowed requests use one atomic EVAL with identity and global counters', async () => configured(async () => {
   globalThis.fetch = async (url, options) => {
     assert.equal(String(url), 'https://test.upstash.io/');
     assert.equal(options.cache, 'no-store');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     const command = JSON.parse(options.body);
     assert.equal(command[0], 'EVAL');
     assert.equal(command[2], 4);
@@ -98,4 +101,14 @@ test('upload identity uses the verified user instead of request-controlled heade
   await enforceRateLimit(req, 'upload', 'verified-user-b');
   assert.equal(keys[0], keys[1]);
   assert.notEqual(keys[0], keys[2]);
+}));
+
+test('Cloudflare direct ingress requires deployment flag, rejects malformed addresses and ignores arbitrary forwarded identity', async()=>configured(async()=>{
+  delete process.env.VERCEL;
+  const edge=new Request(req.url,{headers:{"cf-connecting-ip":"203.0.113.7","x-real-ip":"198.51.100.9","x-forwarded-for":"198.51.100.8"}});
+  assert.equal(clientIdentity(edge),"untrusted-origin");
+  process.env.GTH_CLOUDFLARE_INGRESS="1";
+  assert.equal(clientIdentity(edge),"203.0.113.7");
+  assert.equal(clientIdentity(new Request(req.url,{headers:{"cf-connecting-ip":"203.0.113.7, 198.51.100.8"}})),"unknown-cloudflare-client");
+  assert.equal(clientIdentity(new Request(req.url,{headers:{"x-real-ip":"198.51.100.9"}})),"unknown-cloudflare-client");
 }));

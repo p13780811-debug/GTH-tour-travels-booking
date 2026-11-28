@@ -3,6 +3,7 @@
 import {useEffect,useState} from "react";
 import {BedDouble, Compass} from "lucide-react";
 import GTHTransportSearchWidget from "@/components/travel/GTHTransportSearchWidget";
+import {resolveHotelRoute} from "@/lib/travel/hotel-routing";
 
 const panels = [
   ["hotels", "Hotels"],
@@ -62,7 +63,16 @@ export default function DestinationTravelSearch({city, country, countryCode}: {
             if (checkin < new Date().toISOString().slice(0,10) || nights < 1 || nights > 90) {
               event.preventDefault();
               setDateError(true);
-            } else setDateError(false);
+            } else {
+              setDateError(false);
+              const adults = new FormData(event.currentTarget).get("adults");
+              const route = resolveHotelRoute({destination:city,countryCode:countryCode??undefined,
+                checkIn:checkin,checkOut:checkout,adults:typeof adults==="string"?adults:undefined});
+              if (route.status==="ready") {
+                event.preventDefault();
+                window.location.assign(route.url);
+              }
+            }
           }}>
           <input type="hidden" name="view" value="booking"/>
           <input type="hidden" name="city" value={city}/>

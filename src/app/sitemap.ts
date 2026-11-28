@@ -16,7 +16,7 @@ export const revalidate = 3600;
 const publicLaunch = process.env.VERCEL_ENV === "production" &&
   process.env.GTH_PUBLIC_LAUNCH_ENABLED === "true";
 const pages = [
-  "/", "/mega-aggregator", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
+  "/", "/mega-aggregator", "/maldives-elite-escape", "/travel", "/travel/airports", "/flights", "/hotels", "/tours",
   "/destinations", "/guides", "/blog", "/mobility", "/bus", "/train", "/ferry", "/transfers", "/cars", "/cruises", "/stadiums", "/tickets", "/hotels/list-your-property",
   "/insurance", "/intelligence", "/real-estate", "/real-estate/registry", "/real-estate/tools", "/real-estate/worldwide", "/real-estate/market-intelligence", "/real-estate/markets", "/tender", "/tender/services", "/tender/coverage",
   "/partners", "/contact", "/about", "/verification", "/system", "/gth-ecosystem-manifest", "/affiliate-disclosure", "/real-estate/guides", "/knowledge/tenders",
@@ -100,7 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...MOBILITY_CITIES.map(city=>({url:base+mobilityHref(city),changeFrequency:"weekly" as const,priority:.5})),
     ...stadiums.map(venue => ({ url: base + "/stadiums/" + venue.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...["sports","concerts","theatre","comedy","festivals","attractions","museums","theme-parks","cinema"].map(category=>({url:base+"/tickets/"+category,changeFrequency:"monthly" as const,priority:0.55})),
-    ...destinations.map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
+    ...destinations.filter(d => d.slug !== "maldives").map(d => ({ url: base + "/destinations/" + d.slug, changeFrequency: "weekly" as const, priority: 0.5 })),
     // Bounded, human-reviewed destination guides; no supplier calls or DB reads in sitemap generation.
     // Hotel ID profiles remain noindex until individually approved for original-content publication.
     ...HOTEL_MARKETS.map(market=>({url:base+"/hotels/explore/"+market.slug,changeFrequency:"monthly" as const,priority:0.45})),

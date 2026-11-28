@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install locked dependencies for TypeScript behavior tests
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Validate ticket sources, categories, fallbacks and URL safety
         run: node --test tests/stadium-ticket-destinations.test.mjs tests/worldwide-ticket-sources.test.mjs
       - name: Ensure no broken in-page official sources anchor

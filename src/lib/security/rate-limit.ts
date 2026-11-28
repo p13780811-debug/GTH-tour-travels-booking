@@ -45,28 +45,31 @@ end
 return {1, 0}
 `;
 
-// Ignore caller-controlled forwarding headers outside Vercel. Missing/invalid
-// trusted identity collapses to a shared bucket; it cannot bypass the limits.
+// Cloudflare direct ingress is enabled only by trusted Worker deployment config.
+// No generic proxy headers are accepted; global caps remain in force even when
+// a trusted same-zone Worker supplies an identity. Missing identity fails closed.
 export function clientIdentity(req: Request): string {
-  if (process.env.VERCEL !== "1") return "untrusted-origin";
-  const raw = req.headers.get("x-vercel-forwarded-for")?.trim();
-  if (!raw || !isIP(raw)) return "unknown-vercel-client";
+  const vercel=process.env.VERCEL==="1";
+  const cloudflare=!vercel&&process.env.GTH_CLOUDFLARE_INGRESS==="1";
+  if(!vercel&&!cloudflare)return "untrusted-origin";
+  const raw=req.headers.get(vercel?"x-vercel-forwarded-for":"cf-connecting-ip")?.trim();
+  if(!raw||!isIP(raw))return vercel?"unknown-vercel-client":"unknown-cloudflare-client";
   // Canonicalize equivalent IPv6 spellings through URL parsing.
   return isIP(raw) === 6 ? new URL(`http://[${raw}]/`).hostname : raw;
 }
 
-export async function enforceRateLimit(req: Request, scope: LimitScope, userId?: string): Promise<void> {
+export async function enforceRateLimit(req: Request, scope: LimitScope, userId?: string, runtimeEnv: Record<string,string|undefined> = process.env): Promise<void> {
   const unavailable = () => new RequestError("Request protection unavailable", 503, { "Retry-After": "60" });
-  const rawUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const rawUrl = runtimeEnv.UPSTASH_REDIS_REST_URL;
+  const token = runtimeEnv.UPSTASH_REDIS_REST_TOKEN;
   if (!rawUrl || !token) throw unavailable();
   let url: URL;
   try {
     url = new URL(rawUrl);
     if (url.protocol !== "https:" || !url.hostname.endsWith(".upstash.io") || url.port || url.username || url.password || url.search || url.hash || (url.pathname !== "/" && url.pathname !== "")) throw new Error();
   } catch { throw unavailable(); }
-  const environment = process.env.VERCEL_ENV || (process.env.NODE_ENV === "production" ? "production" : "development");
-  const namespace = process.env.GTH_RATE_LIMIT_NAMESPACE || "gth-pro";
+  const environment = runtimeEnv.VERCEL_ENV || (runtimeEnv.NODE_ENV === "production" ? "production" : "development");
+  const namespace = runtimeEnv.GTH_RATE_LIMIT_NAMESPACE || "gth-pro";
   if (!/^[a-zA-Z0-9_-]{1,64}$/.test(namespace) || !/^[a-zA-Z0-9_-]{1,64}$/.test(environment)) throw unavailable();
   const identity = userId ? `user:${userId}` : `ip:${clientIdentity(req)}`;
   const digest = createHmac("sha256", token).update(identity).digest("hex");
@@ -77,7 +80,7 @@ export async function enforceRateLimit(req: Request, scope: LimitScope, userId?:
   let result: unknown;
   try {
     const response = await fetch(url, {
-      method: "POST", cache: "no-store", redirect: "error",
+      method: "POST", cache: "no-store", redirect: "manual",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(3000),
       body: JSON.stringify(["EVAL", LIMIT_SCRIPT, keys.length, ...keys, ...args]),

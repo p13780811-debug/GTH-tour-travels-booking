@@ -1,3 +1,5 @@
+import {ModuleHomeHero} from "@/components/mobile/LuxuryMarketplace";
+import {destinationServicePhoto} from "@/lib/destinations/visual-media";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -27,7 +29,7 @@ type Props={params:Promise<{section:string}>;searchParams:Promise<Record<string,
 export default async function MobileAppSection({params,searchParams}:Props){
  const {section}=await params;
  if(!isMobileSection(section))notFound();
- const q=normalizeAppQuery(await searchParams);
+ const q=normalizeAppQuery(await searchParams,section);
  const current=sections[section];
  const Icon=current.Icon;
  const result=await listAppRecords(section,q);
@@ -44,9 +46,40 @@ export default async function MobileAppSection({params,searchParams}:Props){
  ]:[["/app/tenders/quote","Request a tender quote"]];
  const title=q.category?(facets.find(t=>t.id===q.category)?.name||current.name):current.name;
  const destination=appQueryHref(section,q,{page:1});
- const pages=Math.min(100,Math.ceil(result.total/result.size));
+ const pages=Math.min(section==="destinations"?2000:100,Math.ceil(result.total/result.size));
  return <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
   <MobileAppHeader/>
+  <ModuleHomeHero module={section==="property"?"Real estate":section==="tenders"?"Tenders":current.name} title={section==="property"?"Find your next address.":section==="tenders"?"Discover your next opportunity.":section==="destinations"?"A world of places to discover.":"Explore "+current.name.toLowerCase()} subtitle={current.subtitle} image={destinationServicePhoto(section==="property"?"properties":section)}>
+  {section==="flights"?<MobileFlightSearch/>:
+   <form action={"/app/"+section} method="get"
+     className="grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3" role="search">
+     {section==="hotels"&&<input type="hidden" name="directory" value="1"/>}
+     <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3">
+       <Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
+       <input name="q" defaultValue={q.q} maxLength={70} aria-label={"Search "+current.name}
+        placeholder={section==="hotels"?"Hotel name":section==="property"?"Search properties":section==="tenders"?"Tender keyword":"Destination"}
+        className="h-11 min-w-0 w-full bg-transparent text-sm outline-none"/>
+     </label>
+     {q.category&&<input type="hidden" name="category" value={q.category}/>}
+     {q.country&&section!=="tenders"&&section!=="destinations"&&<input type="hidden" name="country" value={q.country}/>}
+     {section==="destinations"&&<label className="col-span-2 text-xs font-semibold">Country code<input name="country" pattern="[A-Za-z]{2}" maxLength={2} defaultValue={q.country} placeholder="IN, JP, AU…" className="gth-input mt-1 w-full"/></label>}
+     {section==="property"&&<label className="col-span-2 text-xs font-semibold">City
+       <input name="city" maxLength={70} defaultValue={q.city} placeholder="Mumbai, Thane, Kolkata…" className="gth-input mt-1 w-full"/>
+     </label>}
+     {section==="tenders"&&<div className="col-span-2 grid grid-cols-2 gap-2">
+       <label className="text-xs font-semibold">Country code
+         <input name="country" pattern="[A-Za-z]{2}" maxLength={2} defaultValue={q.country} placeholder="IN, GB, CA…" className="gth-input mt-1 w-full"/>
+       </label>
+       <label className="text-xs font-semibold">Closing within
+         <select name="closing" defaultValue={q.closing??""} className="gth-input mt-1 w-full">
+           <option value="">Any time</option><option value="7">7 days</option><option value="30">30 days</option>
+         </select>
+       </label>
+     </div>}
+     {q.destination&&<input type="hidden" name="destination" value={q.destination}/>}
+     <button type="submit" className="gth-btn-gold col-start-2 min-h-11 rounded-xl px-4 text-xs font-semibold">Search</button>
+   </form>}
+  </ModuleHomeHero>
   <header className="mx-4 mt-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:mx-6">
     <Link href="/app" className="inline-flex min-h-9 items-center gap-2 text-xs font-medium text-[var(--text-soft)]">
       <ArrowLeft size={15}/> App home
@@ -65,34 +98,7 @@ export default async function MobileAppSection({params,searchParams}:Props){
     {businessLinks.map(([href,label],i)=><Link key={href} href={href} className={`inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold ${i===0?"gth-btn-gold":"gth-btn"}`}>{label}</Link>)}
     <Link href="/app/board" className="gth-btn inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold">Research Desk</Link>
   </nav>}
-  {section==="flights"?<MobileFlightSearch/>:
-   <form action={"/app/"+section} method="get"
-     className="mx-4 mt-3 grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 sm:mx-6" role="search">
-     {section==="hotels"&&<input type="hidden" name="directory" value="1"/>}
-     <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3">
-       <Search size={16} className="shrink-0 text-[var(--text-soft)]" aria-hidden="true"/>
-       <input name="q" defaultValue={q.q} maxLength={70} aria-label={"Search "+current.name}
-        placeholder={section==="hotels"?"Hotel name":section==="property"?"Search properties":section==="tenders"?"Tender keyword":"Destination"}
-        className="h-11 min-w-0 w-full bg-transparent text-sm outline-none"/>
-     </label>
-     {q.category&&<input type="hidden" name="category" value={q.category}/>}
-     {q.country&&section!=="tenders"&&<input type="hidden" name="country" value={q.country}/>}
-     {section==="property"&&<label className="col-span-2 text-xs font-semibold">City
-       <input name="city" maxLength={70} defaultValue={q.city} placeholder="Mumbai, Thane, Kolkata…" className="gth-input mt-1 w-full"/>
-     </label>}
-     {section==="tenders"&&<div className="col-span-2 grid grid-cols-2 gap-2">
-       <label className="text-xs font-semibold">Country code
-         <input name="country" pattern="[A-Za-z]{2}" maxLength={2} defaultValue={q.country} placeholder="IN, GB, CA…" className="gth-input mt-1 w-full"/>
-       </label>
-       <label className="text-xs font-semibold">Closing within
-         <select name="closing" defaultValue={q.closing??""} className="gth-input mt-1 w-full">
-           <option value="">Any time</option><option value="7">7 days</option><option value="30">30 days</option>
-         </select>
-       </label>
-     </div>}
-     {q.destination&&<input type="hidden" name="destination" value={q.destination}/>}
-     <button type="submit" className="gth-btn-gold col-start-2 min-h-11 rounded-xl px-4 text-xs font-semibold">Search</button>
-   </form>}
+  {section==="destinations"&&<div className="mx-4 mt-3 text-xs text-[var(--text-soft)] sm:mx-6"><Link href="/destinations" prefetch={false} className="underline">Full worldwide directory and regional filters</Link></div>}
   {facets.length>0?<nav aria-label={section+" categories"} className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
     {facets.map(f=><Link key={f.id} href={appQueryHref(section,q,{category:f.id,page:1})}
      aria-current={q.category===f.id?"page":undefined}

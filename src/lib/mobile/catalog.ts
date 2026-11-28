@@ -1,6 +1,9 @@
 import "server-only";
 import {createClient} from "@supabase/supabase-js";
 import {destinations} from "@/data/destinations";
+import {readMobileDestinations,readMobileDestinationDetail} from "./destination-catalog";
+import {destinationGeography} from "@/lib/destinations/geography";
+import {destinationCountryCode} from "@/lib/destinations/ecosystem";
 import type {MobileDiscoveryItem} from "./discovery";
 import {mobileAppHref,type MobileSection} from "./routes";
 import {readPublicProjectForPage} from "@/lib/real-estate/public-property-page";
@@ -36,7 +39,7 @@ const localImage=(value:unknown):string|null=>
 const iconName=(value:string)=>value.replaceAll("_"," ");
 const PAGE_SIZE=24;
 const empty=(page:number,message:string):AppListing=>({items:[],total:0,page,size:PAGE_SIZE,error:message});
-export function normalizeAppQuery(query:Record<string,string|string[]|undefined>):AppQuery{
+export function normalizeAppQuery(query:Record<string,string|string[]|undefined>,section?:MobileSection):AppQuery{
  const val=(key:string)=>typeof query[key]==="string"?query[key] as string:"";
  const q=val("q").trim().replace(/[\u0000-\u001f]/g,"").slice(0,70);
  const country=val("country").trim().toUpperCase();
@@ -48,7 +51,7 @@ export function normalizeAppQuery(query:Record<string,string|string[]|undefined>
  return {q,city:/^[\p{L}\p{M}\p{N} .’'-]{1,70}$/u.test(city)?city:"",
   closing:closing==="7"||closing==="30"?closing:"",country:/^[A-Z]{2}$/.test(country)?country:"",
   category:/^[a-zA-Z_]{0,32}$/.test(category)?category:"",
-  destination:/^[a-z]+(?:-[a-z]+)*$/.test(destination)?destination:"",page:/^[1-9]\d{0,2}$/.test(p)?Math.min(100,Number(p)):1};
+  destination:/^[a-z]+(?:-[a-z]+)*$/.test(destination)?destination:"",page:/^[1-9]\d{0,3}$/.test(p)?Math.min(section==="destinations"?2000:100,Number(p)):1};
 }
 export function appQueryHref(section:MobileSection,query:AppQuery,overrides:Partial<AppQuery>={}):string{
  const all={...query,...overrides},params=new URLSearchParams();
@@ -69,11 +72,13 @@ function escapeLike(value:string):string{
 export async function listAppRecords(section:MobileSection,query:AppQuery,signal?:AbortSignal):Promise<AppListing>{
  const {page,q,country,category,destination}=query,offset=(page-1)*PAGE_SIZE;
  if(section==="flights"||section==="destinations"){
+  if(section==="destinations"){const world=await readMobileDestinations(query,signal);if(world)return world;}
   let all=destinations.filter(x=>!q||x.name.toLowerCase().includes(q.toLowerCase()));
   if(destination)all=all.filter(x=>x.slug===destination);
+  if(country)all=all.filter(x=>destinationCountryCode(destinationGeography(x.slug).country)===country);
   const items=all.slice(offset,offset+PAGE_SIZE).map((d):MobileDiscoveryItem=>({
     id:d.slug,title:d.name,subtitle:"Travel destination",detail:"City guide & stays",
-    href:mobileAppHref("/destinations/"+d.slug),image:localImage(d.image_url)
+    href:mobileAppHref("/destinations/"+d.slug),image:localImage(d.image_url),countryCode:destinationCountryCode(destinationGeography(d.slug).country)
   }));
   return {items,total:all.length,page,size:PAGE_SIZE,error:null};
  }
@@ -147,7 +152,7 @@ export async function listAppRecords(section:MobileSection,query:AppQuery,signal
 export type AppDetail={
  propertyEnquiry?:{id:number;mode:"registry"|"listing"};
  title:string;subtitle:string;summary:string;kind:"destination"|"hotel"|"property"|"tender";
- image:string|null;facts:Array<[string,string]>;source:string|null;
+ image:string|null;countryCode?:string|null;facts:Array<[string,string]>;source:string|null;
  website:string|null;fullSite:string;related:string;
 };
 function safeSite(v:unknown):string|null{
@@ -158,9 +163,11 @@ function safeSite(v:unknown):string|null{
 export async function loadAppDetail(section:MobileSection,id:string):Promise<AppDetail|null>{
  if(section==="destinations"){
   const dest=destinations.find(d=>d.slug===id);
-  return dest?{title:dest.name,subtitle:"Destination guide",summary:dest.description,
-   kind:"destination",image:localImage(dest.image_url),facts:[["Destination",dest.name]],
-   source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?destination="+id}:null;
+  if(!dest)return readMobileDestinationDetail(id);
+  const countryCode=destinationCountryCode(destinationGeography(dest.slug).country);
+  return {title:dest.name,subtitle:"Destination guide",summary:dest.description,
+   kind:"destination",image:localImage(dest.image_url),countryCode,facts:[["Destination",dest.name]],
+   source:null,website:null,fullSite:"/destinations/"+id,related:"/app/hotels?"+new URLSearchParams({view:"booking",city:dest.name,...(countryCode?{country:countryCode}:{})})};
  }
  const db=publicDb();if(!db)return null;
  try{

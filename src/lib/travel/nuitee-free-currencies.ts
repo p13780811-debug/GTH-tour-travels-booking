@@ -35,7 +35,7 @@ const cached=unstable_cache(async():Promise<HotelCurrencyCatalog>=>{
   await reserveNuiteeRefresh();
   const response=await fetch(CURRENCIES_URL,{
     method:"GET",headers:{accept:"application/json","X-API-Key":key},
-    redirect:"error",credentials:"omit",signal:AbortSignal.timeout(5000),cache:"no-store",
+    redirect:"manual",credentials:"omit",signal:AbortSignal.timeout(5000),cache:"no-store",
   });
   if(!response.ok)throw Error("Currency metadata unavailable");
   if(Number(response.headers.get("content-length")||0)>128000)throw Error("Currency metadata too large");

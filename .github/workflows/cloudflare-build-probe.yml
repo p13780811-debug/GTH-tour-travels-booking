@@ -1,0 +1,181 @@
+name: Cloudflare OpenNext compatibility build
+on:
+  pull_request:
+    branches: [main, infra/cloudflare-preflight-20261125]
+    paths:
+      - '.github/workflows/cloudflare-build-probe.yml'
+      - 'scripts/cloudflare-*.mjs'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/mobile-app-install.test.mjs'
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - '.github/workflows/cloudflare-build-probe.yml'
+      - 'scripts/cloudflare-*.mjs'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/mobile-app-install.test.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-build-probe-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install locked app dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned adapter outside locked app dependency tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL_DIR="$RUNNER_TEMP/gth-cloudflare-tools"
+          mkdir -p "$TOOL_DIR"
+          npm install --prefix "$TOOL_DIR" --no-audit --no-fund --save-exact @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+          mkdir -p node_modules/@opennextjs
+          test ! -e node_modules/@opennextjs/cloudflare
+          test ! -e node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/@opennextjs/cloudflare" node_modules/@opennextjs/cloudflare
+          ln -s "$TOOL_DIR/node_modules/wrangler" node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/.bin/opennextjs-cloudflare" node_modules/.bin/opennextjs-cloudflare
+          ln -s "$TOOL_DIR/node_modules/.bin/wrangler" node_modules/.bin/wrangler
+          echo "$TOOL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
+          git diff --exit-code -- package.json package-lock.json
+      - name: Generate isolated Worker configuration (no domain or paid resource)
+        run: |
+          test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
+          cat > wrangler.jsonc <<'EOF'
+          {
+            "name": "gth-pro-migration",
+            "main": "scripts/cloudflare-worker.mjs",
+            "minify": true,
+            "compatibility_date": "2026-11-18",
+            "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+            "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-migration"}],
+            "durable_objects": {"bindings":[{"name":"GTH_HOTEL_CONTENT","class_name":"HotelContentCache"}]},
+            "migrations": [{"tag":"hotel-content-v1","new_sqlite_classes":["HotelContentCache"]}]
+          }
+          EOF
+          test ! -e open-next.config.ts
+          printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
+      - name: Run original PWA and canonical redirect regression tests
+        run: node --test tests/mobile-app-install.test.mjs tests/legal-urls-and-universal-search-resilience.test.mjs tests/cloudflare-native-public-reads.test.mjs tests/cloudflare-native-tender.test.mjs tests/tender-read-budget.test.mjs tests/cloudflare-static-shells.test.mjs tests/cloudflare-cache-ingress.test.mjs tests/cloudflare-sitemap-cache.test.mjs tests/cloudflare-public-html-cache.test.mjs tests/seo-domain-launch.test.mjs
+      - name: OpenNext build (compile-only fixtures; never deployed)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+          GTH_PUBLIC_LAUNCH_ENABLED: "false"
+          GTH_CLOUDFLARE_EXTERNALS_PROBE: "1"
+        shell: bash
+        run: |
+          set -euo pipefail
+          # OpenNext currently requires Node runtime. Adapt ONLY the two
+          # known declarations in this disposable CI checkout. Never commit
+          # the adaptation or deploy the result from this workflow.
+          ICON='src/app/app-icon/[size]/route.ts'
+          INTEL='src/app/intelligence/page.tsx'
+          test "$(git hash-object "$ICON")" = '11a6cce4e49dda95070dd8250759a48a92ffa671'
+          test "$(git hash-object "$INTEL")" = '101e0bc46d7ae0438082d5821177a58fac770fbf'
+          trap 'git restore -- "$ICON" "$INTEL"' EXIT
+          python3 - <<'PY'
+          from pathlib import Path
+          for path, original, adapted in [
+              ("src/app/app-icon/[size]/route.ts", 'export const runtime="edge";', 'export const runtime="nodejs";'),
+              ("src/app/intelligence/page.tsx", 'export const runtime = "edge";', 'export const runtime = "nodejs";'),
+          ]:
+              p = Path(path)
+              source = p.read_text()
+              if source.count(original) != 1:
+                  raise SystemExit("Unexpected runtime declaration: " + path)
+              p.write_text(source.replace(original, adapted, 1))
+          PY
+          ./node_modules/.bin/opennextjs-cloudflare build
+          node scripts/cloudflare-prepare-static-shells.mjs
+          git restore -- "$ICON" "$INTEL"
+          git diff --exit-code -- src tests
+          trap - EXIT
+      - name: Verify Worker bundle without uploading
+        run: |
+          test -f .open-next/worker.js
+          set -o pipefail
+          ./node_modules/.bin/wrangler deploy --dry-run --outdir /tmp/gth-worker-dry-run --metafile /tmp/gth-worker-meta.json 2>&1 | tee /tmp/gth-worker-size.log
+      - name: Rank actual OpenNext and Wrangler bundle inputs (no secrets, no upload)
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, gzip, collections
+          root = pathlib.Path(".open-next/server-functions")
+          def rank_meta(path, label):
+              m = json.loads(path.read_text())
+              sizes = collections.Counter()
+              for output in m.get("outputs", {}).values():
+                  for name, data in output.get("inputs", {}).items():
+                      sizes[name] += data.get("bytesInOutput", 0)
+              if not sizes:
+                  raise RuntimeError("No input byte contributions in " + str(path))
+              print(label)
+              for i, (name, size) in enumerate(sizes.most_common(10), 1):
+                  print(f"BUNDLE_TOP {i:02d} {size:12d} {name}")
+              packages = collections.Counter()
+              for name, size in sizes.items():
+                  if "node_modules/" in name:
+                      tail = name.rsplit("node_modules/", 1)[-1].split("/")
+                      pkg = "/".join(tail[:2]) if tail[0].startswith("@") else tail[0]
+                      packages[pkg] += size
+              print(label + " — dependency groups")
+              for i, (name, size) in enumerate(packages.most_common(10), 1):
+                  print(f"BUNDLE_PACKAGE {i:02d} {size:12d} {name}")
+          metas = sorted(root.rglob("handler.mjs.meta.json"))
+          if not metas:
+              print("OpenNext handler metafile not emitted; reporting final Wrangler input contributions instead.")
+          for meta in metas:
+              rank_meta(meta, "OpenNext input raw bytes: " + str(meta))
+          rank_meta(pathlib.Path("/tmp/gth-worker-meta.json"), "Final Wrangler input raw bytes")
+          for directory, label in [(root, "OpenNext server files (inventory, not all uploaded)"), (pathlib.Path("/tmp/gth-worker-dry-run"), "Wrangler emitted files")]:
+              files = []
+              for p in directory.rglob("*"):
+                  if p.is_file() and not p.is_symlink() and not p.name.endswith(".meta.json") and not p.name.endswith(".map"):
+                      raw = p.stat().st_size
+                      files.append((raw, p))
+              print(label + " — raw bytes and standalone gzip bytes (not additive)")
+              for i, (raw, p) in enumerate(sorted(files, key=lambda x: (-x[0], str(x[1])))[:10], 1):
+                  compressed = len(gzip.compress(p.read_bytes(), compresslevel=9, mtime=0))
+                  print(f"BUNDLE_FILE {i:02d} {raw:12d} {compressed:12d} {p}")
+          PY
+      - name: Report measured size and enforce current Cloudflare 64 MiB uncompressed limit
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, os, decimal
+          text = pathlib.Path("/tmp/gth-worker-size.log").read_text()
+          m = re.search(r"Total Upload:\s*([\d.]+)\s*KiB\s*/\s*gzip:\s*([\d.]+)\s*KiB", text)
+          if not m:
+              raise SystemExit("No Wrangler size measurement; no upload permitted")
+          raw, gzip = map(decimal.Decimal, m.groups())
+          upper = (raw + decimal.Decimal("0.005")) * 1024
+          message = f"Measured upload: {raw} KiB raw / {gzip} KiB gzip; approx {gzip*1024/1000000:.6f} MB gzip"
+          print(message)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## Restored application bundle audit (compile-only)\n\n" + message + "\n")
+          if upper > 64 * 1024 * 1024:
+              raise SystemExit("Worker exceeds current Cloudflare 64 MiB uncompressed limit")
+          print("PASS: current Cloudflare Worker size limit; runtime audit remains required.")
+          PY

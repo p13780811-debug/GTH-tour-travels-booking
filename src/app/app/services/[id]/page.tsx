@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink, ShieldCheck } from "lucide-react";
 import { appServiceWebsiteHref } from "@/lib/mobile/universal-search";
+import {MarketplaceHero,ModuleHomeHero,TicketSearchPanel,FlagshipHubRail} from "@/components/mobile/LuxuryMarketplace";
+import {destinationServicePhoto} from "@/lib/destinations/visual-media";
 import MobileAppHeader from "@/components/mobile/MobileAppHeader";
 import { mobileWebService, mobileWebServices } from "@/lib/mobile/app-dashboard";
 
@@ -147,6 +149,7 @@ export default async function AppServiceGateway({
   return (
     <main className="min-h-dvh min-w-0 overflow-x-clip bg-[var(--bg)] pb-[calc(94px+env(safe-area-inset-bottom))] text-[var(--text)]">
       <MobileAppHeader />
+      {service.pillar==="tickets"?<><ModuleHomeHero module="Sports & events" title="Global stays & match hospitality" subtitle="Explore match passes, official venue guides and your match-day journey." image={destinationServicePhoto("tickets")} links={[["Find stays","/app/hotels"],["Match tickets","/tickets/sports"],["Flights","/app/flights"],["Packages","/app/packages"]]}><TicketSearchPanel/></ModuleHomeHero><FlagshipHubRail/></>:<MarketplaceHero title="Discover more with GTH PRO" subtitle="Explore the existing specialist tools and booking providers" image={destinationServicePhoto(service.pillar==="property"?"properties":service.pillar==="tender"?"tenders":service.id)}/>}
       <div className="mx-auto max-w-2xl px-4 pt-4 sm:px-6">
         <Link
           href="/app"

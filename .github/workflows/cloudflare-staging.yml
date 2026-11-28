@@ -1,0 +1,109 @@
+name: Cloudflare guarded staging deployment
+on:
+  push:
+    branches: [infra/cloudflare-preflight-20261125]
+    paths:
+      - 'docs/cloudflare-stage-trigger.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gth-cloudflare-protected-preview-operations
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && github.ref == 'refs/heads/infra/cloudflare-preflight-20261125'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - name: Confirm private runtime bundle is configured
+        id: gate
+        env:
+          READY: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV != '' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CRON_SECRET != '' && secrets.NUITEE_PRODUCTION_API_KEY != '' && secrets.ODDS_API_KEY != '' && secrets.SEATGEEK_CLIENT_ID != '' && secrets.SUPABASE_SERVICE_ROLE_KEY != '' && secrets.UPSTASH_REDIS_REST_TOKEN != '' && secrets.UPSTASH_REDIS_REST_URL != '' }}
+        run: |
+          if [ "$READY" = true ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Awaiting private staging credentials. No deployment attempted."
+          fi
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          node-version: "24"
+      - name: Install locked app dependencies
+        if: steps.gate.outputs.ready == 'true'
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned adapter outside locked app dependency tree
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL_DIR="$RUNNER_TEMP/gth-cloudflare-tools"
+          mkdir -p "$TOOL_DIR"
+          npm install --prefix "$TOOL_DIR" --no-audit --no-fund --save-exact @opennextjs/cloudflare@1.20.17 wrangler@4.168.0
+          mkdir -p node_modules/@opennextjs
+          test ! -e node_modules/@opennextjs/cloudflare
+          test ! -e node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/@opennextjs/cloudflare" node_modules/@opennextjs/cloudflare
+          ln -s "$TOOL_DIR/node_modules/wrangler" node_modules/wrangler
+          ln -s "$TOOL_DIR/node_modules/.bin/opennextjs-cloudflare" node_modules/.bin/opennextjs-cloudflare
+          ln -s "$TOOL_DIR/node_modules/.bin/wrangler" node_modules/.bin/wrangler
+          echo "$TOOL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
+          git diff --exit-code -- package.json package-lock.json
+      - name: Generate isolated Worker configuration (no domain or paid resource)
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          test ! -e wrangler.jsonc && test ! -e wrangler.toml && test ! -e wrangler.json
+          cat > wrangler.jsonc <<'EOF'
+          {
+            "name": "gth-pro-preview-20261126",
+            "main": "scripts/cloudflare-worker.mjs",
+            "minify": true,
+            "workers_dev": true,
+            "preview_urls": false,
+            "routes": [],
+            "compatibility_date": "2026-11-18",
+            "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+            "assets": {"directory": ".open-next/assets", "binding": "ASSETS"},
+            "services": [{"binding": "WORKER_SELF_REFERENCE", "service": "gth-pro-preview-20261126"}],
+            "durable_objects": {"bindings":[{"name":"GTH_HOTEL_CONTENT","class_name":"HotelContentCache"}]},
+            "migrations": [{"tag":"hotel-content-v1","new_sqlite_classes":["HotelContentCache"]}]
+          }
+          EOF
+          test ! -e open-next.config.ts
+          printf '%s\n' 'import { defineCloudflareConfig } from "@opennextjs/cloudflare";' 'export default defineCloudflareConfig();' > open-next.config.ts
+      - name: Redeploy verified owner-protected preview Worker (never production)
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NUITEE_PRODUCTION_API_KEY: ${{ secrets.NUITEE_PRODUCTION_API_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+        run: node scripts/cloudflare-stage.mjs
+      - name: Authenticated route audit after protected redeployment
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/cloudflare-live-audit.py
+      - name: Read aggregate preview CPU and resource outcomes (no request content)
+        if: always() && steps.gate.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 scripts/cloudflare-preview-metrics.py

@@ -5,12 +5,14 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const page=read("src/app/mega-aggregator/page.tsx");
 const hero=read("src/app/mega-aggregator/EcosystemHeroCarousel.tsx");
 const search=read("src/app/mega-aggregator/EcosystemUnifiedSearch.tsx");
+const media=read("src/lib/destinations/visual-media.ts");
 
-test("keeps the exact approved heading and uses five original local photos",()=>{
+test("keeps the approved heading and original photos through the shared module registry",()=>{
  assert.match(hero,/Your world\. One connected gateway\./);
  const images=["/images/mega/hotels.jpg","/images/mega/flights.jpg","/images/mega/tours.jpg","/images/real-estate.jpg","/images/tender.jpg"];
  for(const img of images){
-  assert.ok(hero.includes(img),"Missing slide "+img);
+  assert.match(hero,/const slides=MARKETPLACE_HERO_SLIDES/);
+  assert.ok(media.includes(img),"Missing shared slide "+img);
   assert.ok(existsSync(new URL("../public"+img,import.meta.url)),"Missing uploaded photo "+img);
  }
 });

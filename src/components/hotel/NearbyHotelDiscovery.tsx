@@ -6,8 +6,9 @@ import HotelPropertyImage from "./HotelPropertyImage";
 import {hotelWhiteLabelUrl,parseHotelBookingSearch} from "@/lib/travel/hotel-whitelabel";
 import {resolveHotelDates} from "@/lib/travel/hotel-routing";
 import {hotelCurrency} from "@/lib/travel/hotel-currency";
+import {localHotelAlternativeHref} from "@/lib/travel/klook-hotel-search";
 import type {HotelProfile} from "@/lib/travel/nuitee-free-hotels";
-type Discovery={scope:{country:string;city:string;page:number};countries:{code:string;name:string}[];nearby:HotelProfile[];items:HotelProfile[];hasMore:boolean;available:boolean;partial?:boolean};
+type Discovery={scope:{country:string;city:string;page:number};countries:{code:string;name:string}[];nearby:HotelProfile[];items:HotelProfile[];hasMore:boolean;available:boolean;partial?:boolean;stale?:boolean};
 export default function NearbyHotelDiscovery({currency,onCountry,initialArea,stayQuery,showAreaForm=true}:{currency:string;onCountry:(country:string)=>void;initialArea?:{country:string;city:string};stayQuery?:string;showAreaForm?:boolean}){
   const params=useSearchParams(),[query,setQuery]=useState(initialArea?.country?new URLSearchParams({country:initialArea.country,...(initialArea.city?{city:initialArea.city}:{})}).toString():""),[retry,setRetry]=useState(0),[country,setCountry]=useState(initialArea?.country||""),[city,setCity]=useState(initialArea?.city||"");
   const [data,setData]=useState<Discovery|null>(null),[loading,setLoading]=useState(true),[moreLoading,setMoreLoading]=useState(false),[error,setError]=useState("");
@@ -51,6 +52,7 @@ export default function NearbyHotelDiscovery({currency,onCountry,initialArea,sta
     return hotelWhiteLabelUrl({hotelId:hotel.id,checkin:dates.checkin,
       checkout:dates.checkout,occupancies:[{adults:2,children:[]}],currency:selectedCurrency});
   };
+  const alternative=data?.scope.city&&!data.nearby.length?localHotelAlternativeHref(data.scope.city,data.scope.country):null;
   const name=data?.countries.find(item=>item.code===data.scope.country)?.name||data?.scope.country;
   const cards=(items:HotelProfile[])=> <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">{items.map(hotel=><article key={hotel.id} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
     <a href={href(hotel)} target="_blank" rel="noopener noreferrer sponsored" className="block h-40 overflow-hidden bg-[var(--bg-soft)]" aria-label={"Check rooms at "+hotel.name}>
@@ -74,7 +76,8 @@ export default function NearbyHotelDiscovery({currency,onCountry,initialArea,sta
     {data?.items.length?<div><h3 className="mb-4 text-lg font-semibold">More stays in {name}</h3>{cards(data.items.slice(0,shown))}</div>:null}
     {!loading&&!error&&data?.available&&!data.items.length&&!data.nearby.length&&<p className="rounded-2xl border border-[var(--border)] p-5 text-sm text-[var(--text-soft)]">{data.scope.country?"No property previews were returned for this area. This does not mean rooms are sold out. Try the worldwide booking search above.":"Select a country to explore its hotels, or search any destination above."}</p>}
     {error&&<p role="status" className="mt-4 text-sm leading-6 text-[var(--text-soft)]">{error}<button type="button" onClick={()=>setRetry(n=>n+1)} className="gth-btn ms-3 inline-flex min-h-11 items-center gap-2 px-4"><RotateCcw size={14} aria-hidden="true"/>Retry local hotels</button></p>}
-    {data?.partial&&!error&&<p role="status" className="mt-4 text-sm text-[var(--text-soft)]">Some area previews could not be checked. The available hotel profiles are shown above.<button type="button" className="gth-btn ms-3 inline-flex min-h-11 items-center px-4" onClick={()=>setRetry(n=>n+1)}>Retry area previews</button></p>}
+    {!loading&&alternative&&<a href={alternative} target="_blank" rel="noopener noreferrer sponsored" className="gth-btn-gold mt-3 inline-flex min-h-11 items-center gap-2 px-4 text-sm font-semibold">Explore hotels in {data?.scope.city} <ArrowUpRight size={15} aria-hidden="true"/></a>}
+    {data?.partial&&!error&&<p role="status" className="mt-4 text-sm text-[var(--text-soft)]">{data.stale?"Showing recently cached supplier hotel profiles. Check the booking site for current rooms and prices.":"Some area previews could not be checked. The available hotel profiles are shown above."}<button type="button" className="gth-btn ms-3 inline-flex min-h-11 items-center px-4" onClick={()=>setRetry(n=>n+1)}>Retry area previews</button></p>}
     {data&&(data.hasMore||data.items.length>shown)&&<button type="button" disabled={moreLoading} onClick={()=>void more()} className="gth-btn mt-5 inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold">{moreLoading?"Loading more hotels…":"Explore more in "+name}</button>}
     <p className="mt-4 text-xs leading-5 text-[var(--text-soft)]">Hotel profiles and photographs are supplied by connected accommodation providers. Choose dates on the booking site to check current rooms, total prices and cancellation terms.</p>
   </section>;

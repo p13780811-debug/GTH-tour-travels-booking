@@ -12,13 +12,13 @@ function find(tree,predicate){if(!tree||typeof tree!=='object')return [];if(Arra
 const search=load('src/lib/real-estate/registry-search.ts');
 test('registry homepage API rejects ambiguous, injected or unsupported filters before database work',async()=>{
  let reads=0;
- const {GET}=load('src/app/api/real-estate/registry-preview/route.ts',{'@/lib/intelligence/infraPulse':{readInfraPulse:async()=>({})},'@/lib/real-estate/registry-search':search,'@/lib/real-estate/registry-reader':{readRegistryRecords:async()=>{reads++;return {rows:[],error:false}}}});
+ const {GET}=load('src/app/api/real-estate/registry-preview/route.ts',{'@/lib/security/public-edge-cache':{storePublicEdgeCache:async(_request,response)=>response},'@/lib/intelligence/infraPulse':{readInfraPulse:async()=>({})},'@/lib/real-estate/registry-search':search,'@/lib/real-estate/registry-reader':{readRegistryRecords:async()=>{reads++;return {rows:[],error:false}}}});
  for(const query of ['?q=a&q=b','?page=1','?q=a%2Cor%28id.gt.0%29','?q='+('a'.repeat(71))])assert.equal((await GET(new Request('https://example.test'+query))).status,400);
  assert.equal(reads,0);
 });
 test('homepage projection limits records, excludes private data and preserves outage/recovery distinction',async()=>{
  let down=true;
- const {GET}=load('src/app/api/real-estate/registry-preview/route.ts',{'@/lib/intelligence/infraPulse':{readInfraPulse:async()=>({})},'@/lib/real-estate/registry-search':search,'@/lib/real-estate/registry-reader':{readRegistryRecords:async f=>{assert.equal(f.page,1);assert.equal(f.q,'Thane');return {error:down,rows:Array.from({length:9},(_,i)=>({slug:'project-'+i,title:'Project '+i,rera_id:'P12345678901',developer:null,builder_name:'Recorded promoter',city:null,district:'Thane',private_email:'private',price:2000000,image:'unapproved'}))}}}});
+ const {GET}=load('src/app/api/real-estate/registry-preview/route.ts',{'@/lib/security/public-edge-cache':{storePublicEdgeCache:async(_request,response)=>response},'@/lib/intelligence/infraPulse':{readInfraPulse:async()=>({})},'@/lib/real-estate/registry-search':search,'@/lib/real-estate/registry-reader':{readRegistryRecords:async f=>{assert.equal(f.page,1);assert.equal(f.q,'Thane');return {error:down,rows:Array.from({length:9},(_,i)=>({slug:'project-'+i,title:'Project '+i,rera_id:'P12345678901',developer:null,builder_name:'Recorded promoter',city:null,district:'Thane',private_email:'private',price:2000000,image:'unapproved'}))}}}});
  const request=new Request('https://example.test?q=Thane');const failure=await GET(request);assert.equal(failure.status,503);assert.equal(failure.headers.get('cache-control'),'no-store');assert.equal((await failure.json()).items,undefined);
  down=false;const response=await GET(request),body=await response.json();assert.equal(response.status,200);assert.equal(body.items.length,6);assert.equal(body.items[0].city,'Thane');assert.equal(body.items[0].developer,'Recorded promoter');assert.deepEqual(Object.keys(body.items[0]).sort(),['city','developer','rera_id','slug','title']);
 });

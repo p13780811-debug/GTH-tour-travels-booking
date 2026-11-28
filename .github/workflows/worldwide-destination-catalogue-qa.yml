@@ -1,0 +1,31 @@
+name: Worldwide destination catalogue read-only contract
+on:
+  push:
+    branches: [feat/visual-travel-package-planner-20261127, feat/luxury-mobile-marketplace-20261127]
+    paths:
+      - 'scripts/qa-worldwide-destination-catalogue.mjs'
+      - '.github/workflows/worldwide-destination-catalogue-qa.yml'
+      - 'src/lib/destinations/visual-media.ts'
+      - 'public/images/luxury/**'
+permissions:
+  contents: read
+concurrency:
+  group: gth-worldwide-catalogue-qa
+  cancel-in-progress: true
+jobs:
+  catalogue:
+    if: github.repository == 'p13780811-debug/GTH-tour-travels-booking' && (github.ref == 'refs/heads/feat/visual-travel-package-planner-20261127' || github.ref == 'refs/heads/feat/luxury-mobile-marketplace-20261127')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+      - name: Read all active public destination identities once and validate actual URL builders
+        env:
+          GTH_CLOUDFLARE_RUNTIME_ENV: ${{ secrets.GTH_CLOUDFLARE_RUNTIME_ENV }}
+        run: node scripts/qa-worldwide-destination-catalogue.mjs

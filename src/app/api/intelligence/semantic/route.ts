@@ -32,7 +32,7 @@ export async function POST(req:Request):Promise<Response>{
   const target=new URL("/functions/v1/gth-semantic-intelligence",root);
   let result:Response;
   try{
-   result=await fetch(target,{method:"POST",cache:"no-store",redirect:"error",
+   result=await fetch(target,{method:"POST",cache:"no-store",redirect:"manual",
      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key,"apikey":key},
      body:JSON.stringify({operation:"search",query,country,sector}),signal:AbortSignal.timeout(20000)});
   }catch{throw new RequestError("AI search temporarily unavailable",503);}

@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: false,
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
+  // Only the isolated Cloudflare build experiment externalizes the duplicated
+  // Supabase SDK. OpenNext must still bundle the real runtime implementation.
+  ...(typeof process !== "undefined" && process.env.GTH_CLOUDFLARE_EXTERNALS_PROBE === "1"
+    ? { serverExternalPackages: ["@supabase/supabase-js"] }
+    : {}),
+  outputFileTracingExcludes: {
+    "/*": ["./docs/**/*", "./tests/**/*", "./.github/**/*"],
+  },
   // Public editorial URL compatibility. A former /tender/guides link must not
   // fall through to the protected /tender/[id] UUID route.
   async redirects() {
@@ -17,6 +29,8 @@ const nextConfig: NextConfig = {
       permanent:false,
     }));
     return [
+      // Preserve the existing www canonical origin after DNS moves off Vercel.
+      {source:"/:path*",has:[{type:"host",value:"gthproglobal.com"}],destination:"https://www.gthproglobal.com/:path*",permanent:true},
       // Legacy public policy links are not canonical pages. Redirect rather than
       // serving duplicate legal content or letting old crawlers hit a 404.
       {source:"/privacy",destination:"/privacy-policy",permanent:true},

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
+import {loadTenderTs} from "./helpers/tender-upgrade-loader.mjs";
 
 const source=readFileSync(new URL("../src/lib/travel/worldwide-ticket-sources.ts",import.meta.url),"utf8");
 const match=source.match(/export const worldwideTicketSources: readonly WorldwideTicketSource\[\] = (\[[\s\S]*?\]);/);
@@ -50,3 +51,12 @@ test("worldwide hub uses verified matches or a clearly empty state instead of un
  assert.ok(nav.includes('href:"/tickets"'));
  assert.ok(app.includes('kind:"venue-guide"'));
 });
+
+ test("static ticket directory retains bounded city and event deep links",()=>{
+ const {readTicketUrlQuery}=loadTenderTs("src/lib/travel/ticket-url-query.ts");
+ assert.equal(readTicketUrlQuery(new URLSearchParams("q=London")),"London");
+ assert.equal(readTicketUrlQuery(new URLSearchParams("q=Eden+Gardens")),"Eden Gardens");
+ assert.equal(readTicketUrlQuery(new URLSearchParams("q=London&q=Mumbai")),"");
+ assert.equal(readTicketUrlQuery(new URLSearchParams()),"");
+ assert.equal(readTicketUrlQuery(new URLSearchParams({q:"a".repeat(101)})).length,100);
+ });

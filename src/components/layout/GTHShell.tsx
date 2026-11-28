@@ -28,9 +28,9 @@ export default function GTHShell({ children }: GTHProps) {
                 </div>
 
                 <nav className="flex gap-8 font-medium">
-                    <a href="#" className="hover:text-[var(--gth-accent)] transition-colors">Tenders</a>
-                    <a href="#" className="hover:text-[var(--gth-accent)] transition-colors">Analytics</a>
-                    <a href="#" className="hover:text-[var(--gth-accent)] transition-colors">Studio</a>
+                    <a href="/tender" className="hover:text-[var(--gth-accent)] transition-colors">Tenders</a>
+                    <a href="/real-estate/market-intelligence/research" className="hover:text-[var(--gth-accent)] transition-colors">Property research</a>
+                    <a href="/app" className="hover:text-[var(--gth-accent)] transition-colors">Explore services</a>
                 </nav>
 
                 <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full luxury-glass">
@@ -45,22 +45,22 @@ export default function GTHShell({ children }: GTHProps) {
 
             {/* Mobile Bottom Nav: Native App Look */}
             <footer className="md:hidden fixed bottom-0 left-0 right-0 h-20 luxury-glass flex justify-around items-center rounded-t-3xl border-t-2 border-[var(--gth-accent)]">
-                <div className="flex flex-col items-center gap-1 text-[var(--gth-accent)]">
+                <a href="/app" className="flex flex-col items-center gap-1 text-[var(--gth-accent)]">
                     <Home size={24} />
                     <span className="text-[10px] uppercase font-bold">Home</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 opacity-50">
+                </a>
+                <a href="/tender" className="flex flex-col items-center gap-1 opacity-50">
                     <Briefcase size={24} />
                     <span className="text-[10px] uppercase font-bold">Tenders</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 opacity-50">
+                </a>
+                <a href="/search" className="flex flex-col items-center gap-1 opacity-50">
                     <Search size={24} />
                     <span className="text-[10px] uppercase font-bold">Explore</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 opacity-50">
+                </a>
+                <a href="/real-estate/profile" className="flex flex-col items-center gap-1 opacity-50">
                     <User size={24} />
                     <span className="text-[10px] uppercase font-bold">Profile</span>
-                </div>
+                </a>
             </footer>
 
             {/* Security Layer Indicator */}

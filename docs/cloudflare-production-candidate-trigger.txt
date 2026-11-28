@@ -1,0 +1,5 @@
+2026-11-26: Prepare separate gth-pro-production Worker with production build flags and encrypted runtime secrets. No workers.dev, version preview URL, DNS, custom domain or public route. Do not merge main or expose until release checks pass.
+
+2026-11-26: Owner authorized Free-plan production rollout. Staging run 45862310121 at 5ece275 passed all 26 routes first and repeat; prepare identical isolated production candidate with production flags. No public attachment until candidate verification.
+
+2026-11-26: Rebuild the existing isolated candidate after explicit release authorization. Verify candidate revision, disabled public endpoints, no custom domains and no zone routes before overwrite. Keep public cutover separate.

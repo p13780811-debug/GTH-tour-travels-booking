@@ -1,3 +1,4 @@
+import {MODULE_HEROES,isIllustrativeVisual} from "@/lib/destinations/visual-media";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Building2, Globe2, Plane, BriefcaseBusiness, Compass, ShieldCheck, MapPin, TrainFront, Ticket } from "lucide-react";
@@ -80,11 +81,13 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
         </div>
 
         <div className={appHome?"flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto touch-auto pb-4 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible xl:grid-cols-4":"grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"}>
-          {pillars.map(({id,number,title,eyebrow,description,href,cta,image,Icon,detail}) => (
-            <article key={id} className={"gth-master-pillar group relative flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)] "+(appHome?"w-[76vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink":"")} >
+          {pillars.map(({id,number,title,eyebrow,description,href,cta,image:originalImage,Icon,detail}) => {
+            const image=appHome?(id==="travel"?MODULE_HEROES.travel.image:id==="real-estate"?MODULE_HEROES.property.image:id==="tender"?MODULE_HEROES.tenders.image:MODULE_HEROES.tickets.image):originalImage;
+            return <article key={id} className={"gth-master-pillar group relative flex min-w-0 flex-col overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] shadow-sm transition-[transform,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-[var(--gold)] focus-within:ring-2 focus-within:ring-[var(--gold)] "+(appHome?"w-[76vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink":"")} >
               {/* Keep the source photo visible instead of hiding it beneath a full-card black gradient. */}
               <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--bg-soft)] sm:h-44 md:h-48">
                 <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-105" />
+                {appHome&&isIllustrativeVisual(image)&&<span className="absolute bottom-2 left-2 rounded bg-[var(--bg)] px-2 py-1 text-[10px] text-[var(--text)]">Illustrative visual</span>}
                 <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4" aria-hidden="true">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card-strong)] text-[var(--text)] backdrop-blur-sm"><Icon size={20} /></span>
                   <span className="rounded-full border border-[var(--border)] bg-[var(--card-strong)] px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] text-[var(--text)] backdrop-blur-sm">PILLAR {number}</span>
@@ -101,8 +104,8 @@ export default function EcosystemPillars({appHome=false}:{appHome?:boolean}={}) 
                   </Link>
                 </div>
               </div>
-            </article>
-          ))}
+            </article>;
+          })}
         </div>
 
         {!appHome && <nav aria-label="Popular ecosystem destinations" className="mt-8 flex flex-wrap items-center gap-2">

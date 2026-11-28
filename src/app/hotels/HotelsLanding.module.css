@@ -10,11 +10,22 @@
 .intro { display: grid; align-items: center; gap: 2rem; }
 .eyebrow, .sectionLabel { display: flex; align-items: center; gap: .5rem; font-size: .7rem; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; color: var(--text-soft); }
 .eyebrow { display: none; }
-.title { max-width: 48rem; margin: 0; font-size: clamp(1.9rem, 3.6vw, 3.4rem); font-weight: 650; line-height: 1.12; letter-spacing: -.045em; text-wrap: balance; }
-.title span { display: block; font-family: var(--font-heading), Georgia, serif; font-weight: 500; letter-spacing: -.025em; }
+.title { max-width: 48rem; margin: 0; font-size: clamp(1.65rem, 6.4vw, 3.25rem); font-weight: 700; line-height: 1.12; letter-spacing: -.045em; text-wrap: balance; }
+.title span { display: block; font: inherit; letter-spacing: inherit; }
 .description { max-width: 35rem; margin-top: .65rem; color: var(--text-soft); font-size: .875rem; line-height: 1.7; }
-.visual { display: none; }
+.visual { display: block; position: relative; height: clamp(9rem, 46vw, 17rem); overflow: hidden; border: 1px solid var(--border); border-radius: 1.5rem; }
+.visual figcaption { position: absolute; inset: .5rem .5rem auto auto; display: flex; align-items: center; gap: .35rem; padding: .35rem .5rem; border-radius: .5rem; color: var(--text); background: var(--bg); font-size: .65rem; }
 .controlsBar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin: 1rem 0; }
+@media (max-width: 899px) {
+  .intro { gap: .85rem; }
+  .controlsBar { position: relative; z-index: 2; margin: -.9rem .5rem .9rem; padding: .5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: var(--shadow); }
+}
+@media (max-width: 767px) {
+  .inner { padding-top: .5rem; }
+  .intro { gap: .5rem; }
+  .visual { height: clamp(4.5rem, 24vw, 7rem); }
+  .controlsBar { margin-top: -1.1rem; padding: .375rem; }
+}
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; width: min(100%, 26rem); padding: .25rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card); }
 .modeButton { display: inline-flex; min-height: 44px; min-width: 0; align-items: center; justify-content: center; gap: .4rem; padding: .6rem; border-radius: 999px; color: var(--text-soft); font-size: .8rem; font-weight: 650; cursor: pointer; }
 .modeButton[aria-pressed="true"] { background: var(--text); color: var(--bg); box-shadow: var(--shadow); }
@@ -50,7 +61,7 @@
   .intro { grid-template-columns: minmax(0, 1fr) 21rem; }
   .visual { display: block; position: relative; height: 11rem; overflow: hidden; border: 1px solid var(--border); border-radius: 1.5rem; }
   .visual::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0, 0, 0, .7)); }
-  .visual figcaption { position: absolute; z-index: 1; inset: auto 1rem 1rem; display: flex; align-items: center; gap: .4rem; color: #fff; font-size: .8rem; font-weight: 600; }
+  .visual figcaption { position: absolute; z-index: 1; inset: auto 1rem 1rem; display: flex; align-items: center; gap: .4rem; color: var(--text); background: var(--bg); font-size: .8rem; font-weight: 600; }
   .visual figcaption span { margin-inline-start: auto; font-size: .6rem; font-weight: 400; }
   .destinationGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
   .planning { grid-template-columns: 1fr 1fr; gap: 4rem; }

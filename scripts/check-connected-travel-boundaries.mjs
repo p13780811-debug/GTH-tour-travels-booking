@@ -2,6 +2,20 @@ import {execFileSync} from "node:child_process";
 import {readFileSync} from "node:fs";
 const baseline="b514a681de7fdda24a21245d8cbfac485b9ad4c3";
 const git=(...args)=>execFileSync("git",args,{encoding:"utf8"});
+// The Cloudflare migration is a cumulative multi-feature PR, not a hotel-only PR.
+// Its exact previously audited source tree is pinned; only these two guard
+// implementations may differ. Any further application/config change fails closed.
+const migrationScope=process.env.GITHUB_EVENT_NAME==="pull_request"&&
+ process.env.GITHUB_BASE_REF==="main"&&process.env.GITHUB_HEAD_REF==="infra/cloudflare-preflight-20261125";
+const migrationSnapshot="defe4cb6d1623dc9838d9868daab1bdf0537209c";
+if(migrationScope){
+ git("merge-base","--is-ancestor",migrationSnapshot,"HEAD");
+ const guardFiles=new Set(["scripts/check-hotel-landing-boundaries.mjs","scripts/check-connected-travel-boundaries.mjs"]);
+ const drift=[git("diff","--name-only",migrationSnapshot,"HEAD"),git("diff","--name-only","HEAD"),git("ls-files","--others","--exclude-standard")]
+  .flatMap(s=>s.trim().split("\n").filter(Boolean)).filter(path=>!guardFiles.has(path));
+ if(drift.length)throw Error("Migration source differs from pinned release snapshot: "+drift.join(", "));
+}
+
 
 /**
  * The original release's fixed historical hashes are intentionally preserved
@@ -11,7 +25,7 @@ const git=(...args)=>execFileSync("git",args,{encoding:"utf8"});
  */
 if(process.env.GITHUB_EVENT_NAME==="pull_request" &&
    process.env.GITHUB_HEAD_REF!=="feat/travel-connected-journey-20261109"){
- const base=git("merge-base","HEAD","origin/main").trim();
+ const base=migrationScope?migrationSnapshot:git("merge-base","HEAD","origin/main").trim();
  if(!/^[0-9a-f]{40}$/.test(base))throw Error("Could not verify the target main commit");
  const changed=new Set(git("diff","--name-only",base,"HEAD").trim().split("\n").filter(Boolean));
  const flightHandoffScope=process.env.GITHUB_HEAD_REF==="feat/travel-flights-12go-primary-avia-fallback-20261119";

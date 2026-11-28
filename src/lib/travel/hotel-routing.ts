@@ -14,6 +14,13 @@ import {
 const VERIFIED_CITY_IDS: Readonly<Record<string, string>> = {
   "mumbai": "ChIJwe1EZjDG5zsRaYxkjY_tpF0",
   "london": "ChIJdd4hrwug2EcRmSrV3Vo6llI",
+  // Google officially publishes this Tokyo Place ID in its Place Photos example.
+  // https://developers.google.com/maps/documentation/javascript/place-photos
+  // Nuitee White Label accepts Google Place IDs; live results still need provider confirmation.
+  "tokyo": "ChIJ51cu8IcbXWARiRtXIothAS4",
+  // Published Google Directions locality response; supplier inventory is not guaranteed.
+  // https://github.com/cran/googleway/blob/master/vignettes/melbourne_to_sydney.json
+  "melbourne": "ChIJ90260rVG1moRkM2MIXVWBAQ",
 };
 /** Known travel destinations awaiting exact Place ID verification.
  * Unknown locations also work via provider search; none of these entries
@@ -24,8 +31,8 @@ export const CITY_SEARCH_FALLBACKS = [
   "kolkata", "chennai", "hyderabad", "kochi", "cochin", "pune",
   "ahmedabad", "varanasi", "udaipur", "dubai", "abu dhabi",
   "singapore", "bangkok", "phuket", "bali", "denpasar",
-  "paris", "new york", "tokyo", "kuala lumpur", "hong kong",
-  "sydney", "melbourne", "rome", "barcelona", "amsterdam",
+  "paris", "new york", "kuala lumpur", "hong kong",
+  "sydney", "rome", "barcelona", "amsterdam",
 ] as const;
 
 const genericWords = /\b(?:hotels?|stays?|resorts?|accommodations?|lodgings?|rooms?|find|search|book|booking|best|cheap|top|in|near|at|around|for)\b/giu;
@@ -124,7 +131,7 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
   // Only supplier-reviewed city IDs are accepted for GTH-created deep links.
   // Unknown arbitrary IDs must use the supplier picker rather than guessed inventory.
   const cityKey = destination?.toLocaleLowerCase("en");
-  const expectedCountry = cityKey === "mumbai" ? "IN" : cityKey === "london" ? "GB" : undefined;
+  const expectedCountry = cityKey === "mumbai" ? "IN" : cityKey === "london" ? "GB" : cityKey === "tokyo" ? "JP" : cityKey === "melbourne" ? "AU" : undefined;
   const scopedCityId = cityKey && (intent.countryCode === undefined || intent.countryCode === expectedCountry)
     ? VERIFIED_CITY_IDS[cityKey] ?? null : null;
   const placeId = intent.placeId !== undefined
@@ -179,4 +186,20 @@ export function resolveHotelRoute(intent: HotelRouteIntent, now = new Date()): H
 export function unverifiedHotelDestinationHref(destination: string, currency?: string): string {
   const result=resolveHotelRoute({destination,currency});
   return result.status==="invalid" ? hotelWhiteLabelSearchUrl(currency) : result.url;
+}
+
+/** Event CTAs always enter the existing booking flow, never a legacy supplier
+ * corporate-domain alias. Resolve dates at click time (not during static builds).
+ * Unknown cities retain their hint in the official destination-picker UI.
+ */
+export function eventHotelBookingHref(city: unknown, countryCode?: string | null): string {
+  const destination=cleanHotelDestination(city);
+  const country=typeof countryCode==="string" && /^[A-Z]{2}$/.test(countryCode)?countryCode:undefined;
+  const params=new URLSearchParams();
+  if(destination)params.set("city",destination);
+  if(country)params.set("country",country);
+  if(destination && resolveHotelRoute({destination,countryCode:country}).status==="ready")
+    return "/api/hotels/booking?"+params.toString();
+  params.set("view","booking");
+  return "/hotels?"+params.toString()+"#hotel-booking-experience";
 }

@@ -9,10 +9,12 @@ const ip={"x-vercel-ip-country":"IN","x-vercel-ip-city":"Mumbai","x-vercel-ip-la
 const profile=(id,country="IN",city="Mumbai",latitude=19.01)=>({id,name:"Fixture hotel "+id,country,city,address:"Fixture street",main_photo:"https://photos.example.com/property.jpg",stars:3,latitude,longitude:72.8});
 function service({key="fixture-key",fetcher,budget=async()=>{}}={}){
  const calls=[],cache=new Map();
+ const fetchMock=async(url,options)=>{calls.push({url:new URL(url),options});return fetcher?fetcher(url,options):new Response(JSON.stringify({data:[profile("lp12345")]}));};
+ const core=loadTenderTs("src/lib/travel/nuitee-hotel-content-core.ts",{"./hotel-geo-bounds":bounds},{fetch:fetchMock});
  const api=loadTenderTs("src/lib/travel/nuitee-free-hotels.ts",{
-  "server-only":{},"./hotel-geo-bounds":bounds,"./nuitee-read-budget":{reserveNuiteeRefresh:budget},
+  "server-only":{},"./nuitee-hotel-content-core":core,"./nuitee-read-budget":{reserveNuiteeRefresh:budget},
   "next/cache":{unstable_cache:(fn,keys,options)=>{assert.equal(options.revalidate,86400);return ()=>{const key=JSON.stringify(keys);if(!cache.has(key))cache.set(key,fn().catch(error=>{cache.delete(key);throw error;}));return cache.get(key);};}},
- },{process:{env:{NUITEE_PRODUCTION_API_KEY:key}},fetch:async(url,options)=>{calls.push({url:new URL(url),options});return fetcher?fetcher(url,options):new Response(JSON.stringify({data:[profile("lp12345")]}));}});
+ },{process:{env:{NUITEE_PRODUCTION_API_KEY:key}},fetch:fetchMock});
  return {api,calls};
 }
 test("Geo-IP uses trusted country/city headers and a manual country override excludes inferred city/coordinates",()=>{
@@ -44,7 +46,7 @@ test("warm/parallel profile reads coalesce, use only free GET content and keep s
  let budget=0;const {api,calls}=service({budget:async()=>{budget++;}});
  await Promise.all(Array.from({length:40},()=>api.getFreeHotelProfiles("IN","Mumbai",1)));await api.getFreeHotelProfiles("IN","Mumbai",1);
  assert.equal(calls.length,1);assert.equal(budget,1);assert.equal(calls[0].url.pathname,"/v3.0/data/hotels");assert.equal(calls[0].url.searchParams.get("limit"),"24");
- assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"error");
+ assert.equal(calls[0].options.method,"GET");assert.equal(calls[0].options.redirect,"manual");
  await api.getFreeHotelProfiles("IN","",2);assert.equal(calls[1].url.searchParams.get("offset"),"24");
  await assert.rejects(api.getFreeHotelProfiles("GB","London",1));assert.equal(calls.length,3);
 });

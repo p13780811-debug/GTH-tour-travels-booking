@@ -14,7 +14,10 @@ test("Tender assistant presents real guided application steps and editable draft
  }
  assert.match(ui,/No submission, fee payment or document upload is performed here/);
  assert.match(ui,/aiConsent/);
- assert.match(route,/getPublicTender/);
+ assert.match(route,/<TenderAssistantLoader\/>/);
+ const loader=f("src/components/tender/TenderAssistantLoader.tsx");
+ assert.match(loader,/fetch\("\/api\/tender\/"\+encodeURIComponent\(id\)/);
+ assert.match(f("src/app/api/tender/[id]/route.ts"),/getCachedPublicTender as getPublicTender/);
  assert.match(f("src/app/tender/page.tsx"),/href="\/tender\/assistant"/);
  assert.match(f("src/app/tender/page.tsx"),/t\("guided"\)/);
  assert.match(f("src/lib/tender/i18n.ts"),/Guided Tender Assistant/);
